@@ -55,7 +55,7 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
      */
     public String getSignatureAlgorithm(){ return signaturealgoritm; }
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants 
-	 * @param signaturealgorithm Any of the supported algorithms CATokenInfo.SIGALG_XX 
+	 * @param signaturealgorithm Any of the supported algorithms CATokenConstants.SIGALG_XX 
 	 */
     public void setSignatureAlgorithm(String signaturealgoritm){ this.signaturealgoritm=signaturealgoritm;}
     /**
@@ -63,7 +63,7 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
      */
     public String getEncryptionAlgorithm(){ return encryptionalgoritm; }
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants 
-	 * @param encryptionalgoritm Any of the supported algorithms CATokenInfo.SIGALG_XX 
+	 * @param encryptionalgoritm Any of the supported algorithms CATokenConstants.SIGALG_XX 
 	 */
     public void setEncryptionAlgorithm(String encryptionalgoritm){ this.encryptionalgoritm=encryptionalgoritm;}
     /**

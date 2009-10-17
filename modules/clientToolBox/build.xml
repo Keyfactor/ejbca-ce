@@ -10,8 +10,41 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 
+	<path id="clientToolBox.lib.classpath">
+        <fileset dir="${ejbca.home}/lib">
+            <include name="log4j.jar"/>
+            <include name="bcprov-*.jar"/>
+            <include name="commons-lang-2.4.jar"/>
+            <include name="bcmail-*.jar"/>
+            <include name="cert-cvc.jar"/>
+            <include name="ldap.jar"/>
+            <include name="jline-0.9.94.jar"/>
+            <include name="commons-collections-3.2.jar"/>
+            <include name="commons-configuration-1.5.jar"/>
+            <include name="commons-logging.jar"/>
+        </fileset>
+        <fileset file="${mod.ejbca-entity.lib}"/>
+        <fileset file="${mod.ejbca-util.lib}"/>
+        <fileset file="${mod.ejbca-ws-cli.lib}"/>
+		<path refid="lib.jpa.classpath"/>
+	</path>
+
+	<path id="clientToolBox.endorsed.classpath">
+		<path refid="lib.jaxws-client.classpath"/>
+	</path>
+
     <target name="build" description="Build this module" depends="compile">
+    	<pathconvert property="clientToolBox.dependencies" pathsep=" ">
+    	    <path>
+	        	<fileset dir="${mod.clientToolBox.dist}" includes="lib/*.jar"/>
+    	    </path>
+    		<map from="${mod.clientToolBox.dist}/" to=""/>
+    	</pathconvert>
         <jar jarfile="${mod.clientToolBox.lib}">
+    		<manifest >
+    			<attribute name="Class-path" value="${clientToolBox.dependencies} ./ properties" />
+    			<attribute name="Main-Class" value="org.ejbca.ui.cli.ClientToolBox"/>
+    		</manifest>
             <fileset dir="${build.dir}"/>
             <fileset dir="${ejbca.home}/src">
                 <include name="intresources/**"/>
@@ -33,62 +66,31 @@
         <javac destdir="${build.dir}" srcdir="${src.dir}" debug="on" encoding="iso8859-1" target="${java.target.version}">
             <classpath>
             	<path refid="lib.bouncycastle.classpath"/>
-                <fileset dir="${mod.clientToolBox.dist}/lib" />
-                <fileset dir="${mod.clientToolBox.dist}/endorsed" />
+            	<path refid="clientToolBox.lib.classpath"/>
+               	<path refid="clientToolBox.endorsed.classpath"/>
             </classpath>
         </javac>
     </target>
 
     <target name="setup" depends="ejbca-util, ejbca-entity, ejbca-ws-cli-lib">
     	<mkdir dir="${mod.clientToolBox.dist}"/>
-        <copy todir="${mod.clientToolBox.dist}/endorsed">
-            <fileset dir="${ejbca.home}/lib/jaxws">
-                <include name="jaxb*.jar"/>
-                <include name="saaj-*.jar"/>
-                <include name="jaxws-api.jar"/>
-                <include name="jaxws-rt.jar"/>
-                <include name="sjsxp.jar"/>
-                <include name="jsr181-api.jar"/>
-                <include name="jsr173_api.jar"/>
-                <include name="activation.jar"/>
-            </fileset>
-        </copy>
-        <copy todir="${mod.clientToolBox.dist}/lib">
-            <fileset dir="${ejbca.home}/lib">
-                <include name="log4j.jar"/>
-                <include name="bcprov-jdk${java.ver}.jar"/>
-                <include name="commons-lang-2.4.jar"/>
-                <include name="bcmail-jdk${java.ver}.jar"/>
-                <include name="cert-cvc.jar"/>
-                <include name="ldap.jar"/>
-                <include name="jline-0.9.94.jar"/>
-                <include name="commons-collections-3.2.jar"/><!-- Hibernate + Commons Config dependency -->
-                <include name="commons-configuration-1.5.jar"/>
-                <include name="commons-logging.jar"/>
-                <include name="bc*.jar"/>
-            </fileset>
-            <fileset dir="${ejbca.home}/lib/xdoclet/lib">
-                <include name="dom4j-1.6.1.jar"/><!-- Hibernate dependency -->
-            </fileset>
-        	<!-- These are also defined in propertiesAndPaths.xmli as jpa.classpath -->
-            <fileset dir="${ejbca.home}/lib/hibernate">
-                <include name="antlr-2.7.6.jar"/>
-                <include name="hibernate3.jar"/>
-                <include name="hibernate-core.jar"/>
-                <include name="hibernate-annotations.jar"/>
-                <include name="hibernate-commons-annotations.jar"/>
-                <include name="hibernate-entitymanager.jar"/>
-                <include name="javassist-3.4.GA.jar"/>
-                <include name="ejb3-persistence.jar"/>
-                <include name="slf4j-api-1.5.2.jar"/>
-                <include name="slf4j-log4j12.jar"/>
-                <include name="jta-1.1.jar"/>
-                <include name="*.txt"/>
-            </fileset>
-        </copy>
-        <copy todir="${mod.clientToolBox.dist}/lib" file="${mod.ejbca-entity.lib}"/>
-        <copy todir="${mod.clientToolBox.dist}/lib" file="${mod.ejbca-util.lib}"/>
-        <copy todir="${mod.clientToolBox.dist}/lib" file="${mod.ejbca-ws-cli.lib}"/>
+    	<!-- Copy all the files in the clientToolBox.lib.classpath to mod.clientToolBox.dist/lib -->
+    	<pathconvert property="lib.clientToolBox.classpath.property" pathsep=" ">
+    	    <path refid="clientToolBox.lib.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.clientToolBox.dist}/lib" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${lib.clientToolBox.classpath.property}"/>
+    	</copy>
+    	<!-- Copy all the files in the clientToolBox.lib.classpath to mod.clientToolBox.dist/endorsed -->
+    	<pathconvert property="endorsed.clientToolBox.classpath.property" pathsep=" ">
+    	    <path refid="clientToolBox.lib.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.clientToolBox.dist}/endorsed" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${endorsed.clientToolBox.classpath.property}"/>
+    	</copy>
+    	<!-- Copy scripts etc to mod.clientToolBox.dist -->
         <copy todir="${mod.clientToolBox.dist}">
             <fileset file="${ejbca.home}/src/jaxws/cli/ejbcawsracli.properties"/>
             <fileset dir="${this.dir}">

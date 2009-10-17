@@ -13,29 +13,6 @@
 
     <property name="lib.dir" location="${ejbca.home}/lib"/>
 
-    <path id="classpath">
-         <!-- need to pickup jndi.properties and log4j.properties -->
-        <pathelement path="${ejbca.home}/bin"/>
-        <pathelement path="${ejbca.home}/tmp/bin/classes"/>
-        <fileset dir="${lib.dir}" includes="*.jar"/>
-        <fileset dir="${appserver.home}">
-        	<!-- jboss -->
-            <include name="client/*.jar"/>
-        	<!-- glassfish -->
-            <include name="lib/*.jar"/>
-        	<!-- weblogic -->
-            <include name="server/lib/weblogic.jar"/>
-        	<!-- oracle -->
-            <include name="j2ee/home/oc4jclient.jar"/>
-        	<!-- websphere -->
-            <include name="runtimes/com.ibm.*.jar"/>
-        </fileset>
-    </path>
-	<!-- Can be used for debugging 
-	<property name="cp" refid="classpath"/>
-	-->
-
-
 <!--
     This is a transcript of the install.sh content to avoid platform specific problems
     Hopefully this will simplify maintenance and deployment but it needs more work.
@@ -102,7 +79,7 @@ appserver.home         : ${appserver.home}
 
 	<target name="ejbca:javatruststore" description="Java trust store config">
         <echo message="Getting root certificate in DER format..."/>
-		<ejbca:cli name="ca" arg="getrootcert '${ca.name}' ${java.io.tmpdir}/rootca.der -der"/>
+		<ejbca:cli arg="ca getrootcert '${ca.name}' ${java.io.tmpdir}/rootca.der -der"/>
 		<property name="trust.keystore" value="${ejbca.home}/p12/truststore.jks"/>
 		<property name="trust.password" value="${java.trustpassword}"/>
 		<echo>Adding to or creating keystore: ${trust.keystore}</echo>
@@ -120,7 +97,7 @@ appserver.home         : ${appserver.home}
 
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
         <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..."/>
-        <ejbca:cli name="ca" arg='init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
+        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
         <antcall target="ejbca:adminweb"/>
     	<antcall target="ejbca:javatruststore"/>
     </target>
@@ -130,13 +107,13 @@ appserver.home         : ${appserver.home}
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
 	    </condition>
-		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" "${ca.name}" null 1 JKS SERVER'/>
-		<ejbca:cli name="ra" arg="setclearpwd tomcat ${httpsserver.password}"/>
+		<ejbca:cli arg='ra adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" "${ca.name}" null 1 JKS SERVER'/>
+		<ejbca:cli arg="ra setclearpwd tomcat ${httpsserver.password}"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
-		<ejbca:cli name="ra" arg='adduser superadmin ${superadmin.password} "CN=SuperAdmin" null "${ca.name}" null 65 ${superadmin.keystoretype}'/>
-		<ejbca:cli name="ra" arg="setclearpwd superadmin ${superadmin.password}" />
+		<ejbca:cli arg='ra adduser superadmin ${superadmin.password} "CN=SuperAdmin" null "${ca.name}" null 65 ${superadmin.keystoretype}'/>
+		<ejbca:cli arg="ra setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--
 		this does not work for some reason, if I'm not forking the VM, I'm wondering
@@ -144,7 +121,7 @@ appserver.home         : ${appserver.home}
 		For in ejbca.home in order to have the p12 directory as a child of it.
 		-->
 		<delete file="${ejbca.home}/p12/superadmin.p12" />
-		<java dir="${ejbca.home}" fork="true" classname="org.ejbca.ui.cli.batch.BatchMakeP12" classpathref="classpath"/>
+		<ejbca:cli arg="batch" />
 		<fail message="Batch generation failed!">
 			<condition>
                 <and>
@@ -166,11 +143,10 @@ appserver.home         : ${appserver.home}
     ==============================================================================
     -->
     <macrodef name="cli" uri="ejbca">
-        <attribute name="name"/>
         <attribute name="arg"/>
         <sequential>
-        <echo message="@{name} @{arg}"/>
-        <java classname="org.ejbca.ui.cli.@{name}" classpathref="classpath" fork="true">
+        <echo message="@{arg}"/>
+        <java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true">
             <arg line="@{arg}"/>
         </java>
         </sequential>

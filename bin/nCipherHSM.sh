@@ -18,7 +18,7 @@ JAVACMD=`which java`
 if [ ! -n "$JAVA_HOME" ]; then
     if [ ! -n "$JAVACMD" ]
     then
-        echo "You must set JAVA_HOME before running the EJBCA cli."
+        echo "You must set JAVA_HOME before running the nCipherHSM cli."
         exit 1
     fi
 else
@@ -32,21 +32,18 @@ fi
 
 NFAST_JARS=$NFAST_HOME/java/classes
 
-CLASSES=$EJBCA_HOME/lib/bcprov-jdk15.jar
-CLASSES=$CLASSES:$EJBCA_HOME/lib/bcmail-jdk15.jar
-CLASSES=$CLASSES:$EJBCA_HOME/lib/cert-cvc.jar
-CLASSES=$CLASSES:$EJBCA_HOME/lib/jline-0.9.94.jar
-CLASSES=$CLASSES:$EJBCA_HOME/lib/log4j.jar
-CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
-# use this instead if you want build from eclipse
-#CLASSES=$CLASSES:$EJBCA_HOME/out/classes
-
 # Add nfast's JARs to classpath
 for jar in rsaprivenc.jar nfjava.jar kmjava.jar kmcsp.jar jutils.jar
 do
         CLASSES="$CLASSES:$NFAST_JARS/$jar"
 done
 
+if [ ! -f $EJBCA_HOME/clientToolBox-dist/clientToolBox.jar ] ; then
+	echo "You have to build the ClientToolBox before running this command."
+	exit 1
+fi
+
 # Finally run java
 #set -x
-$JAVACMD -cp $CLASSES org.ejbca.ui.cli.ClientToolBox NCipherHSMKeyTool ${@}
+$JAVACMD -cp $CLASSES -jar $EJBCA_HOME/clientToolBox-dist/clientToolBox.jar NCipherHSMKeyTool "${@}"
+
