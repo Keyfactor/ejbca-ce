@@ -5,30 +5,21 @@ rem Example:
 rem
 
 if "%JAVA_HOME%" == "" (
-    echo You must set JAVA_HOME before running the EJBCA cli.
+    echo You must set JAVA_HOME before running the PKCS#11 cli.
     goto end
 )
 
 if "%EJBCA_HOME%" == "" (
-    echo You must set EJBCA_HOME before running the nCipher cli.
+    echo You must set EJBCA_HOME before running the PKCS#11 cli.
     goto end
 )
 
-set CLASSES=%EJBCA_HOME%\lib\bcprov-jdk15.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\bcmail-jdk15.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\cert-cvc.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\jline-0.9.94.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\log4j.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\commons-lang-2.4.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\tmp\bin\clientToolBox-classes
-rem use this instead if you want build from eclipse
-rem CLASSES=$CLASSES:$EJBCA_HOME/out/classes
+if exist "%EJBCA_HOME%\clientToolBox-dist\clientToolBox.jar" goto exists
+	echo You have to build the ClientToolBox before running this command.
+	goto end
+:exists
 
-rem Finally run java
+@echo on
+"%JAVA_HOME%\bin\java" -jar "%EJBCA_HOME%\clientToolBox-dist\clientToolBox.jar" PKCS11HSMKeyTool %1 %2 %3 %4 %5 %6
 
-rem Finally run java
-echo "%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool %1 %2 %3 %4 %5 %6
-
-"%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool %1 %2 %3 %4 %5 %6
-
-rem $JAVACMD -cp $CLASSES org.ejbca.ui.cli.ClientToolBox PKCS11HSMKeyTool ${@}
+:end

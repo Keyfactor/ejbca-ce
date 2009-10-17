@@ -59,7 +59,7 @@
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="testforgnujava, ejbca.ear" description="Compiles EJBCA, developers can run with '-Dno-xdoc=true' for faster build"/>
+    <target name="build" depends="testforgnujava, ejbca.ear, ejbca-ejb-cli" description="Compiles EJBCA, developers can run with '-Dno-xdoc=true' for faster build"/>
 
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -77,7 +77,7 @@
 	  Installs EJBCA by creating an initial CA, configuring the web container and generating certs for
 	  SSL and the super administrator.
 	  -->
-    <target name="install" description="Install EJBCA application (only once)">
+    <target name="install" depends="ejbca-ejb-cli" description="Install EJBCA application (only once)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
     </target>
 	
@@ -957,8 +957,12 @@
 	</target>
     -->
 
+    <target name="ejbca-ejb-cli" description="Builds EJBCA command line interface">
+    	<ant antfile="build.xml" dir="modules" target="ejbca-ejb-cli" />
+    </target>
+	
     <target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
-    	<ant antfile="build.xml" dir="modules/clientToolBox" target="build" />
+    	<ant antfile="build.xml" dir="modules" target="clientToolBox" />
     </target>
 	
 	<target name="showtime" >

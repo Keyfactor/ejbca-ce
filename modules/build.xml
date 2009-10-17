@@ -17,6 +17,7 @@
     </target>
 
 	<target name="clean" description="Clean all modules">
+		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"/>
@@ -31,11 +32,15 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
+	<target name="ejbca-ejb-cli" description="Build EJBCA EJB CLI">
+		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
 	<target name="clientToolBox" depends="ejbca-entity" description="Build EJBCA client toolbox">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
-	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control. -->
+	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->
 	<target name="ejbca-util" description="Build EJBCA util library">
 		<available file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.exists"/>
 		<antcall target="ejbca-util-internal"/>

@@ -4,7 +4,7 @@ rem
 rem Bruno Bonfils, <asyd@asyd.net>
 rem January 2007
 rem 
-rem Create a key via a netHSM device rem 
+rem Create a key via a netHSM device 
 rem Example:
 rem
 if "%JAVA_HOME%" == "" (
@@ -24,19 +24,15 @@ if "%NFAST_HOME%" == "" (
 
 set NFAST_JARS=%NFAST_HOME%\java\classes
 
-set CLASSES=%EJBCA_HOME%\lib\bcprov-jdk15.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\bcmail-jdk15.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\cert-cvc.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\lib\jline-0.9.94.jar
-set CLASSES=%CLASSES%:%EJBCA_HOME%\lib\log4j.jar
-set CLASSES=%CLASSES%;%EJBCA_HOME%\tmp\bin\classes
-rem use this instead if you want build from eclipse
-rem CLASSES=$CLASSES:$EJBCA_HOME/out/classes
-
 rem Add nfast's JARs to classpath
-set CLASSES=%CLASSES%;%NFAST_JARS%\rsaprivenc.jar;%NFAST_JARS%\nfjava.jar;%NFAST_JARS%\kmjava.jar;%NFAST_JARS%\kmcsp.jar;%NFAST_JARS%\jutils.jar
+set CLASSES=%NFAST_JARS%\rsaprivenc.jar;%NFAST_JARS%\nfjava.jar;%NFAST_JARS%\kmjava.jar;%NFAST_JARS%\kmcsp.jar;%NFAST_JARS%\jutils.jar
 
-rem Finally run java
-echo "%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.ClientToolBox NCipherHSMKeyTool %1 %2 %3 %4 %5 %6
+if exist "%EJBCA_HOME%\clientToolBox-dist\clientToolBox.jar" goto exists
+	echo You have to build the ClientToolBox before running this command.
+	goto end
+:exists
 
-"%JAVA_HOME%\bin\java" -cp %CLASSES% org.ejbca.ui.cli.ClientToolBox NCipherHSMKeyTool %1 %2 %3 %4 %5 %6
+@echo on
+"%JAVA_HOME%\bin\java" -cp %CLASSES% -jar "%EJBCA_HOME%\clientToolBox-dist\clientToolBox.jar" NCipherHSMKeyTool %1 %2 %3 %4 %5 %6
+
+:end

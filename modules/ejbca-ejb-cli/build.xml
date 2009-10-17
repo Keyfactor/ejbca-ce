@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ejbca-ejb-cli" default="build">
+    <description>
+            Build file for the remote EJB access CLI
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.ejbca-ejb-cli}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+
+	<path id="compile.classpath">
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
+		<!--  <path refid="lib.jline.classpath"/> NCipherHSMKeyTool, PKCS11HSMKeyTool -->
+	</path>
+	
+    <target name="build" description="Build this module" depends="compile">
+    	<pathconvert property="ejbca-ejb-cli.dependencies" pathsep=" ">
+    	    <path>
+	        	<fileset dir="${mod.ejbca-ejb-cli.dist}" includes="lib/*.jar"/>
+    	    </path>
+    		<map from="${mod.ejbca-ejb-cli.dist}/" to=""/>
+    	</pathconvert>
+    	<jar destfile="${mod.ejbca-ejb-cli.lib}">
+    		<manifest >
+    			<attribute name="Class-path" value="${ejbca-ejb-cli.dependencies} ./" />
+    			<attribute name="Main-Class" value="org.ejbca.ui.cli.EjbcaEjbCli"/>
+    		</manifest>
+   			<fileset dir="${build.dir}" includes="**/*.class"/>
+    	</jar>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete file="${mod.ejbca-ejb-cli.lib}" />
+    	<delete dir="${mod.ejbca-ejb-cli.dist}" />
+    </target>
+	
+    <target name="compile" depends="setup">
+    	<mkdir dir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<path refid="lib.jee.classpath"/>
+        	</classpath>
+    	</javac>
+    </target>
+
+    <target name="setup" depends="ejbca-util, ejbca-ejb-interface">
+    	<mkdir dir="${mod.ejbca-ejb-cli.dist}" />
+    	<mkdir dir="${mod.ejbca-ejb-cli.dist}/lib" />
+    	<pathconvert property="lib.compile.classpath.property" pathsep=" ">
+    	    <path refid="compile.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${lib.compile.classpath.property}"/>
+    	</copy>
+    	<!-- Add the client libraries from the app server -->
+    	<pathconvert property="lib.jee.classpath.property" pathsep=" ">
+    		<path refid="lib.jee.classpath"/>
+    		<map from="${appserver.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true">
+    		<fileset dir="${appserver.home}" includes="${lib.jee.classpath.property}"/>
+    	</copy>
+    	<copy todir="${mod.ejbca-ejb-cli.dist}">
+    		<fileset dir="${ejbca.home}/src/java" includes="jndi.properties"/>
+    		<fileset dir="${ejbca.home}/src" includes="intresources/intresources.*.properties"/>
+    		<fileset dir="${ejbca.home}/bin" includes="batchtool.properties"/>
+    		<fileset file="${this.dir}/log4j.xml"/>
+    	</copy>
+    </target>
+
+</project>

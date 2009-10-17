@@ -50,6 +50,9 @@
     <property name="mod.dist.path" location="${mod.path}/dist" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
+    <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.home}/dist/ejbca-ejb-cli" />
+    <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
+    <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
     <property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-ejb-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.home}/dist/ejbca-util.jar" />
@@ -74,13 +77,36 @@
 			<include name="commons-io-*.jar"/>	<!-- ProtocolScepHttpTest -->
 		</fileset>
 	</path>
+
+	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>
+	<path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang-*.jar"/></path>
+	<path id="lib.commons-config.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-configuration-*.jar"/></path>
+	<path id="lib.commons-collections.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-collections-*.jar"/></path>
+	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
+	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
+	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
+
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
 			<include name="commons-*.jar"/>
 			<include name="log4j*.jar"/>
 		</fileset>
 	</path>
+
 	<property name="lib.jaxws.dir" location="${ejbca.home}/lib/jaxws"/>
+	<path id="lib.jaxws-client.classpath">
+        <fileset dir="${ejbca.home}/lib/jaxws">
+            <include name="jaxb*.jar"/>
+            <include name="saaj-*.jar"/>
+            <include name="jaxws-api.jar"/>
+            <include name="jaxws-rt.jar"/>
+            <include name="sjsxp.jar"/>
+            <include name="jsr181-api.jar"/>
+            <include name="jsr173_api.jar"/>
+            <include name="activation.jar"/>
+        </fileset>
+	</path>
+
 	<path id="lib.jee.classpath">
 		<fileset dir="${appserver.home}">
 			<!-- jboss -->

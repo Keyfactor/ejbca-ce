@@ -14,7 +14,7 @@
 package org.ejbca.ui.cli;
 
 /**
- * Exception throws when an error occurs in an Admin Command (IadminCommand)
+ * The exception thrown when an error occurs in an Admin Command (IAdminCommand)
  *
  * @version $Id$
  */
