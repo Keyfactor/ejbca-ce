@@ -43,7 +43,17 @@
     <property file="${ejbca.home}/conf/jaxws.properties" />
     <property file="${ejbca.home}/conf/xkms.properties" />
     <property file="${ejbca.home}/conf/externalra.properties" />
-    
+
+    <!-- A little special something to handle backward compatibility with 
+         people using JBOSS_HOME. They can switch to APPSRV_HOME now, and both will work. 
+    -->        
+    <condition property="jboss.home" value="${env.JBOSS_HOME}" >
+        <equals arg1="${appserver.home}" arg2="${appserver.home}"/>
+    </condition>
+    <condition property="appserver.home" value="${env.APPSRV_HOME}" else="${jboss.home}">
+        <contains string="${jboss.home}" substring="JBOSS_HOME"/>
+    </condition>
+	
 	<!-- Define the different modules -->
     <property name="mod.path" location="${ejbca.home}/modules" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
