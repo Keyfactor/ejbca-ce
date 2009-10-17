@@ -641,30 +641,14 @@
     <!-- ========================================================================== -->
     <!-- Upgrades the database for a new version of ejbca                           -->
     <!-- ========================================================================== -->
-    <target name="upgrade">
+    <target name="upgrade" depends="ejbca-ejb-cli">
         <!-- Get input -->
         <input message="Which version of EJBCA are you upgrading from:" addproperty="ejbca.upgradefromversion"
         	validargs="3.2.x,3.3.x,3.4.x,3.5.x,3.6.x,3.7.x,3.8.x,3.9.x"/> 
-        <java classname="org.ejbca.ui.cli.Upgrade" fork="true">
+        <java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true">
             <sysproperty key="ejbcaDB" value="${database.name}" />
             <sysproperty key="ejbcaUpgradeFromVersion" value="${ejbca.upgradefromversion}" />
-            <classpath>
-                <pathelement location="./bin" />
-                <pathelement location="${build}" />
-                <fileset dir="${appserver.home}">
-                	<!-- jboss -->
-                    <include name="client/*.jar"/>
-                	<!-- glassfish -->
-                    <include name="lib/*.jar"/>
-                	<!-- welogic -->
-                    <include name="server/lib/weblogic.jar"/>
-                	<!-- oracle -->
-                    <include name="j2ee/home/oc4jclient.jar"/>
-                	<!-- websphere -->
-                    <include name="runtimes/com.ibm.*.jar"/>
-                </fileset>
-                <fileset dir="${lib}" includes="**/*.jar" />
-            </classpath>
+            <arg line="upgrade"/>
         </java>
     </target>
 
