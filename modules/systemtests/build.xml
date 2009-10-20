@@ -98,8 +98,8 @@
 		<junit printsummary="yes" haltonfailure="no" >
         	<jvmarg value="-Djava.endorsed.dirs=${lib.jaxws.dir}"/>	<!-- Use our bundled JAX-WS implementation instead of the one from the JDK -->
 			<classpath>
-				<path refid="systemtests.classpath" />
 				<path location="${build.dir}" />
+				<path refid="systemtests.classpath" />
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -130,8 +130,8 @@
 		<junit printsummary="yes" haltonfailure="no">
         	<jvmarg value="-Djava.endorsed.dirs=${lib.jaxws.dir}"/>	<!-- Use our bundled JAX-WS implementation instead of the one from the JDK -->
 			<classpath>
-				<path refid="systemtests.classpath" />
 				<path location="${build.dir}" />
+				<path refid="systemtests.classpath" />
 				<pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
 			</classpath>
 			<formatter type="xml" />
@@ -209,8 +209,8 @@
 		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
-				<path refid="systemtests.classpath" />
 				<path location="${build.dir}" />
+				<path refid="systemtests.classpath" />
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -241,8 +241,8 @@
     	<fail if="cmptcplistener.notrunning" message="This test requires a running CMP TCP listener"/>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
-				<path refid="systemtests.classpath" />
 				<path location="${build.dir}" />
+				<path refid="systemtests.classpath" />
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}" unless="cmptcplistener.notrunning">
