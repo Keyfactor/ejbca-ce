@@ -24,7 +24,7 @@
     <condition property="customejbca.extensions" value="*" else="none-at-all">
     	<isset property="customejbca.present" />
     </condition>
-    <condition property="customejbca.dir" value="${customejbca.home}" else="conf">
+    <condition property="customejbca.dir" value="${customejbca.home}" else="${ejbca.home}/conf">	<!-- This is just any dir that we know exists to avoid error messages.. -->
     	<isset property="customejbca.present" />
     </condition>
 	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
