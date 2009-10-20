@@ -37,6 +37,7 @@
 
 # Allow the client/RA to specify that the CA should not verify POP, 
 # set to true to allow no POP (raVerify in the rfc). 
+# Note: only set to true if cmp.operationmode=ra.
 #
 # Default: false
 #cmp.allowraverifypopo=false
