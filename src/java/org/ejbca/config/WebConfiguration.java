@@ -136,4 +136,12 @@ public class WebConfiguration {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getExpandedString("web.renewalenabled", "false"));
 	}
 
+    public static boolean doShowStackTraceOnErrorPage(){
+        final String s=ConfigurationHolder.getString ("web.errorpage.stacktrace", null);
+        return s==null || s.toLowerCase().indexOf("true")>=0;
+	}
+
+    public static String notification(String sDefault){
+        return ConfigurationHolder.getString ("web.errorpage.notification", sDefault);
+    }
 }
