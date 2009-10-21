@@ -120,3 +120,14 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # link to it from the EJBCA public web.
 # Default = false
 #web.renewalenabled=false
+
+# Presentation of the an exception on the web error page.
+#
+# General error message to be presented to the user when an exception occur.
+# Default: An exception has occurred
+#web.errorpage.notification=Something is wrong. Please dial 911.
+#
+# Print the stacktrace of the excpetion
+# Default: true
+#web.errorpage.stacktrace=false
+
