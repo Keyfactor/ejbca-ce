@@ -91,7 +91,9 @@ public abstract class BaseCAToken implements ICAToken {
             log.debug("testSigAlg: "+testSigAlg);        	
             log.debug("provider: "+getProvider());        	
             log.debug("privateKey: "+pair.getPrivate());        	
+            log.debug("privateKey class: "+pair.getPrivate().getClass().getName()); 
             log.debug("publicKey: "+pair.getPublic());        	
+            log.debug("publicKey class: "+pair.getPublic().getClass().getName());        	
         }
         {
             Signature signature = Signature.getInstance(testSigAlg, getProvider());

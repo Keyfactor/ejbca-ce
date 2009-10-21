@@ -21,6 +21,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -422,14 +423,6 @@ public class CATokenContainerImpl extends CATokenContainer {
 				String chompedLabel = StringUtils.removeEnd(keyLabel, end);
 				String newKeyLabel = chompedLabel+newSequence;
 				log.debug("New key label is: "+newKeyLabel);
-				int keysize = KeyTools.getKeyLength(pubK);
-				String alg = pubK.getAlgorithm();
-				String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
-				String slot = properties.getProperty(PKCS11CAToken.SLOT_LABEL_KEY);
-				String attributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
-				if (log.isDebugEnabled()) {
-					log.debug("Generating new PKCS#11 "+alg+" key of size "+keysize+" with label "+newKeyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile "+attributesFile);
-				}
 				char[] authCode = (authenticationCode!=null && authenticationCode.length()>0)? authenticationCode.toCharArray():null;
 				if (authCode == null) {
 					String pin = BaseCAToken.getAutoActivatePin(getProperties());
@@ -439,10 +432,32 @@ public class CATokenContainerImpl extends CATokenContainer {
 					authCode = pin.toCharArray();
 				}
 	            final KeyStore.PasswordProtection pwp =new KeyStore.PasswordProtection(authCode);
-	            
+
+	            // As first choice we check if the used have specified which type of key should be generated, this can be different from the currently used key
+	            // If the user did not specify this, we try to generate a key with the same specification as the currently used key.
+				String keyspec = properties.getProperty(ICAToken.KEYSPEC_PROPERTY); // can be null, and that is ok
+				AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pubK);					
+				if (log.isDebugEnabled()) {
+					String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
+					String slot = properties.getProperty(PKCS11CAToken.SLOT_LABEL_KEY);
+					String attributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
+					if (keyspec != null) {
+						log.debug("Generating new PKCS#11 key with specified spec "+keyspec+" with label "+newKeyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile "+attributesFile);						
+					} else {
+						int keySize = KeyTools.getKeyLength(pubK);
+						String alg = pubK.getAlgorithm();
+						log.debug("Generating new PKCS#11 "+alg+" key with spec "+paramspec+" (size="+keySize+") with label "+newKeyLabel+", on slot "+slot+", using sharedLibrary "+sharedLibrary+", and attributesFile "+attributesFile);
+					}
+				}
 				KeyStoreContainer cont = KeyStoreContainerFactory.getInstance(KeyStoreContainer.KEYSTORE_TYPE_PKCS11, token.getProvider(), pwp);
 				cont.setPassPhraseLoadSave(authCode);
-				cont.generate(keysize, newKeyLabel);
+				if (keyspec != null) {
+					log.debug("Generating from string keyspec: "+keyspec);
+					cont.generate(keyspec, newKeyLabel);
+				} else {
+					log.debug("Generating from AlgorithmParameterSpec: "+paramspec);
+					cont.generate(paramspec, newKeyLabel);
+				}
 				// Set properties so that we will start using the new key
 				KeyStrings kstr = new KeyStrings(properties);
 				String certsignkeystr = kstr.getKey(SecConst.CAKEYPURPOSE_CERTSIGN);

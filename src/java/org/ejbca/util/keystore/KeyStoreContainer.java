@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Key;
 import java.security.KeyStore;
+import java.security.spec.AlgorithmParameterSpec;
 
 import org.ejbca.util.CMS;
 
@@ -32,18 +33,10 @@ public interface KeyStoreContainer {
     public static String KEYSTORE_TYPE_PKCS11 = "pkcs11";
 
     /**
-     * @return
+     * @return In case of soft keystore, the bytes of the encoded keystore. In case of PKCS#11 tokens (HSMs) it returns byte[0].
      * @throws Exception
      */
     byte[] storeKeyStore() throws Exception;
-
-    /**
-     * @param i
-     * @param keyEntryName
-     * @return
-     * @throws Exception 
-     */
-    byte[] generate(int i, String keyEntryName) throws Exception;
 
     /**
      * @param alias
@@ -141,27 +134,20 @@ public interface KeyStoreContainer {
      */
     String getProviderName();
 
-    /**
-     * @param string
+    /** Generates keys in the Keystore token.
+     * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
      * @param keyEntryName
-     * @return
+     * @return In case of soft keystore, the bytes of the encoded keystore. In case of PKCS#11 tokens (HSMs) it returns byte[0].
      * @throws Exception
      */
-    byte[] generate(String string, String keyEntryName) throws Exception;
+    byte[] generate(final String keySpec, final String keyEntryName) throws Exception;
 
-    /**
-     * @param name
+    /** Generates keys in the Keystore token.
+     * @param spec AlgorithmParameterSpec for the KeyPairGenerator. Can be anything like RSAKeyGenParameterSpec, DSAParameterSpec, ECParameterSpec or ECGenParameterSpec. 
      * @param keyEntryName
-     * @return
+     * @return In case of soft keystore, the bytes of the encoded keystore. In case of PKCS#11 tokens (HSMs) it returns byte[0].
      * @throws Exception
      */
-    public byte[] generateEC( final String name, final String keyEntryName) throws Exception;
+    byte[] generate( final AlgorithmParameterSpec spec, final String keyEntryName) throws Exception;
 
-    /**
-     * @param name
-     * @param keyEntryName
-     * @return
-     * @throws Exception
-     */
-    public byte[] generateDSA( final int keysize, final String keyEntryName) throws Exception;
 }

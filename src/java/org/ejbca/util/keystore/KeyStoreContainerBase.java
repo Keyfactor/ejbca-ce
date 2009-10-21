@@ -29,6 +29,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Collection;
 import java.util.Date;
@@ -141,7 +142,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#generateEC(java.lang.String, java.lang.String)
      */
-    public byte[] generateEC( final String name,
+    private byte[] generateEC( final String name,
                               final String keyEntryName) throws Exception {
         if (log.isTraceEnabled()) {
         	log.trace(">generate EC: curve name "+name+", keyEntryName "+keyEntryName);
@@ -159,12 +160,11 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         	log.trace("<generate: curve name "+name+", keyEntryName "+keyEntryName);
         }
         return result;
-
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#generate(int, java.lang.String)
      */
-    public byte[] generate( final int keySize,
+    private byte[] generateRSA(final int keySize,
                             final String keyEntryName) throws Exception {
     	if (log.isTraceEnabled()) {
     		log.trace(">generate: keySize "+keySize+", keyEntryName "+keyEntryName);
@@ -181,7 +181,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#generate(int, java.lang.String)
      */
-    public byte[] generateDSA( final int keySize,
+    private byte[] generateDSA( final int keySize,
                                final String keyEntryName) throws Exception {
      	if (log.isTraceEnabled()) {
     		log.trace(">generate: keySize "+keySize+", keyEntryName "+keyEntryName);
@@ -198,17 +198,50 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#generate(java.lang.String, java.lang.String)
      */
-    public byte[] generate( final String algName,
+    public byte[] generate( final String keySpec,
                             final String keyEntryName) throws Exception {
-    	if (algName.toUpperCase ().startsWith ("DSA")) {
-    		return generateDSA (Integer.parseInt(algName.substring(3).trim()), keyEntryName);
+    	if (keySpec.toUpperCase ().startsWith ("DSA")) {
+    		return generateDSA (Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
     	}
         try {
-            return generate(Integer.parseInt(algName.trim()), keyEntryName);
+            return generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
         } catch (NumberFormatException e) {
-            return generateEC(algName, keyEntryName);
+            return generateEC(keySpec, keyEntryName);
         }
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#generate(java.lang.String, java.lang.String)
+     */
+    public byte[] generate( final AlgorithmParameterSpec spec,
+    		                final String keyEntryName) throws Exception {
+        if (log.isTraceEnabled()) {
+        	log.trace(">generate from AlgorithmParameterSpec: "+spec.getClass().getName());
+        }
+        // Generate the Keypair
+        String algorithm = "EC";
+        String sigAlg = "SHA1withECDSA";
+        String specName = spec.getClass().getName();
+        if (specName.contains("DSA")) {
+        	algorithm = "DSA";
+            sigAlg = "SHA1withDSA";
+        } else if (specName.contains("RSA")) {
+        	algorithm = "RSA";
+            sigAlg = "SHA1withRSA";
+        }
+        final KeyPairGenerator kpg = KeyPairGenerator.getInstance(algorithm, this.providerName);
+        try {
+            kpg.initialize(spec);
+        } catch( InvalidAlgorithmParameterException e ) {
+            log.debug("Algorithm parameters not supported: "+e.getMessage());
+            throw e;
+        }
+        final byte result[] = generate(kpg, keyEntryName, sigAlg);
+        if (log.isTraceEnabled()) {
+        	log.trace("<generate from AlgorithmParameterSpec: "+spec.getClass().getName());
+        }
+        return result;
+    }
+    
     private byte[] generate( final KeyPairGenerator kpg,
                              final String keyEntryName,
                              final String sigAlgName ) throws Exception {
