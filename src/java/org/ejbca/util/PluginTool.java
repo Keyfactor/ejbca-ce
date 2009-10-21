@@ -31,6 +31,8 @@ import org.apache.log4j.Logger;
  * Helper for finding classes from class-path that implement a specified interface
  * 
  * This is used for the EJBCA EJB CLI. It might not work inside an EAR and might require modifications.
+ *
+ * @version $Id$
  */
 public class PluginTool {
 	

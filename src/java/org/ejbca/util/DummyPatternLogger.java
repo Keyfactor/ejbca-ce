@@ -16,6 +16,7 @@ package org.ejbca.util;
 
 /**
  * This class ignores all input.
+ * @version $Id$
  */
 public class DummyPatternLogger implements IPatternLogger {
 

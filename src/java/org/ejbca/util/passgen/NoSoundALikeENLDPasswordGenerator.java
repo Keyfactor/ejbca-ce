@@ -16,6 +16,7 @@ package org.ejbca.util.passgen;
 /**
  * This class allows all letters and digits except those that sound similar in english like aj and eg.
  *
+ * @version $Id$
  */
 public class NoSoundALikeENLDPasswordGenerator extends BasePasswordGenerator {
     
