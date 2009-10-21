@@ -23,7 +23,7 @@ import javax.net.ssl.X509TrustManager;
  * The class must not be used on the server side.
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: $
+ * @version  $Id$
  *
  */
 public class X509TrustManagerAcceptAll implements X509TrustManager {

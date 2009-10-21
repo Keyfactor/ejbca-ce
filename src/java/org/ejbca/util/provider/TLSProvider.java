@@ -18,7 +18,7 @@ import java.security.Provider;
  * Provider with to be used for TLS session.
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: $
+ * @version  $Id$
  *
  */
 public class TLSProvider extends Provider {

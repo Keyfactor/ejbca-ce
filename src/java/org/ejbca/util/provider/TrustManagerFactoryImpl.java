@@ -24,7 +24,7 @@ import javax.net.ssl.X509TrustManager;
 /**
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: $
+ * @version  $Id$
  *
  */
 abstract class TrustManagerFactoryImpl extends TrustManagerFactorySpi {

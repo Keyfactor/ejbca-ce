@@ -16,6 +16,7 @@ package org.ejbca.util.passgen;
 /**
  * This class allows all letters and digits except those that look similar like 0O and l1I.
  *
+ * @version $Id$
  */
 public class NoLookALikeLDPasswordGenerator extends BasePasswordGenerator {
     
