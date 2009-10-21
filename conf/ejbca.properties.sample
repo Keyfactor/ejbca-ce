@@ -199,7 +199,7 @@
 # The directory of the HW token classes. If this is an empty directory no HW token will be used.
 # If the directory is not existing an empty directory will be created.
 # Default: ./hwtoken
-#hwtoken_classes=../primeCard/caTokenClasses-1.5-3.5
+#hwtoken_classes=../primecard/caTokenClasses-1.5-3.5
 
 # ----- Configuration for Luna JCE (java) interface, ignore if using PKCS#11 wich is the recommended way ----
 # Define this property when Luna HW token should be used.
