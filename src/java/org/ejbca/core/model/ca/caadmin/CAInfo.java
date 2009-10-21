@@ -76,7 +76,7 @@ public class CAInfo implements Serializable {
     protected String name;
     /** SecConst.CA_ACTIVE etc */
     protected int status;
-    protected int validity;
+    protected long validity;
     protected Date expiretime;
     protected Date updatetime;
     /** CATYPE_X509 or CATYPE_CVC */
@@ -115,7 +115,7 @@ public class CAInfo implements Serializable {
     public int getSignedBy() {return signedby;}
     public void setSignedBy(int signedby) {this.signedby = signedby;}
     
-    public int getValidity() { return validity;}
+    public long getValidity() { return validity;}
     public void setValidity(int validity) { this.validity = validity; }
     
     public Date getExpireTime() {return this.expiretime;}

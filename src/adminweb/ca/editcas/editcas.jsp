@@ -6,7 +6,7 @@
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
                org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
-               org.ejbca.util.SimpleTime" %>
+               org.ejbca.util.SimpleTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError" %>
 
 
 
@@ -444,14 +444,9 @@
          if(description == null)
            description = "";
          
-         int validity;
-         try {
-        	 // First try with decimal format (days)
-        	 validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
-         } catch(NumberFormatException ex) {
-        	// Use '*y *mo *d'-format
-       		YearMonthDayTime ymod = YearMonthDayTime.getInstance(request.getParameter(TEXTFIELD_VALIDITY), "0"+YearMonthDayTime.TYPE_DAYS);
-           	validity = (int) ymod.daysFrom(new Date());
+         final long validity = ValidityDate.encode(request.getParameter(TEXTFIELD_VALIDITY));
+         if ( validity<0 ) {
+             throw new ParameterError(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
          }
 
          if(catoken != null && catype != 0 && subjectdn != null && caname != null && signedby != 0  ){
@@ -854,14 +849,9 @@
         	 description = "";
          }
          
-         int validity;
-         try {
-        	 // First try with decimal format (days)
-        	 validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
-         } catch(NumberFormatException ex) {
-        	// Use '*y *mo *d'-format
-       		YearMonthDayTime ymod = YearMonthDayTime.getInstance(request.getParameter(TEXTFIELD_VALIDITY), "0"+YearMonthDayTime.TYPE_DAYS);
-           	validity = (int) ymod.daysFrom(new Date());
+         final long validity = ValidityDate.encode(request.getParameter(TEXTFIELD_VALIDITY));
+         if ( validity<0 ) {
+             throw new ParameterError(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
          }
             
 
@@ -1280,15 +1270,10 @@
          if(description == null)
            description = "";
          
-         int validity;
-         try {
-        	 // First try with decimal format (days)
-        	 validity = Integer.parseInt(request.getParameter(TEXTFIELD_VALIDITY));
-         } catch(NumberFormatException ex) {
-        	// Use '*y *mo *d'-format
-       		YearMonthDayTime ymod = YearMonthDayTime.getInstance(request.getParameter(TEXTFIELD_VALIDITY), "0"+YearMonthDayTime.TYPE_DAYS);
-           	validity = (int) ymod.daysFrom(new Date());
-         }    
+         final long validity = ValidityDate.encode(request.getParameter(TEXTFIELD_VALIDITY));
+         if ( validity<0 ) {
+             throw new ParameterError(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+         }
 
          if(catype != 0 && subjectdn != null && caname != null && 
             certprofileid != 0 && signedby != 0 && validity !=0 ){

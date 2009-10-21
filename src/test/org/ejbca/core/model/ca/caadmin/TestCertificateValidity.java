@@ -16,6 +16,7 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import junit.framework.TestCase;
 
@@ -41,8 +42,15 @@ public class TestCertificateValidity extends TestCase {
 	public TestCertificateValidity() {
 		CertTools.installBCProvider();
 	}
-	
-	public void test01TestCertificateValidity() throws Exception {
+    public void test01TestCertificateValidity() throws Exception {
+        testBaseTestCertificateValidity(50);
+    }
+    public void test02TestCertificateValidity() throws Exception {
+        final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        cal.add(Calendar.DATE, 50);
+        testBaseTestCertificateValidity(cal.getTime().getTime());
+    }
+    private void testBaseTestCertificateValidity(long encodedValidity) throws Exception {
 
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
 		
@@ -51,8 +59,8 @@ public class TestCertificateValidity extends TestCase {
 
     	UserDataVO subject = new UserDataVO();
 
-    	CertificateProfile cp = new EndUserCertificateProfile();
-    	cp.setValidity(50);
+    	final CertificateProfile cp = new EndUserCertificateProfile();
+    	cp.setValidity(encodedValidity);
     	cp.setAllowValidityOverride(false);
     
     	// First see that when we don't have a specified time requested and validity override is not allowed, the end time shouldbe ruled by the certificate profile.
@@ -138,11 +146,17 @@ public class TestCertificateValidity extends TestCase {
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
         cal1 = Calendar.getInstance();
-        // This will be counted in number of days since notBefore, and notBefore here is taken from requestNotBefore which is two, 
-        // so we have to add 2 to certificate profile validity to get the resulting notAfter
-        cal1.add(Calendar.DAY_OF_MONTH, 51);
         cal2 = Calendar.getInstance();
-        cal2.add(Calendar.DAY_OF_MONTH, 53);
+        // This will be counted in number of days since notBefore, and notBefore here is taken from requestNotBefore which is two, 
+        // so we have to add 2 to certificate profile validity to get the resulting notAfter but not if certificate end is an 
+        // absolute end date.
+        if ( encodedValidity > Integer.MAX_VALUE) {
+            cal1.add(Calendar.DAY_OF_MONTH, 49);
+            cal2.add(Calendar.DAY_OF_MONTH, 51);
+        } else {
+            cal1.add(Calendar.DAY_OF_MONTH, 51);
+            cal2.add(Calendar.DAY_OF_MONTH, 53);            
+        }
     	assertTrue(notAfter.after(cal1.getTime()));
     	assertTrue(notAfter.before(cal2.getTime()));
 
@@ -207,5 +221,6 @@ public class TestCertificateValidity extends TestCase {
         	}
         }
         assertTrue(thrown);
+        CertificateValidity.setTooLateExpireDate(new Date(Long.MAX_VALUE));
 	}
 }

@@ -54,7 +54,7 @@ public class X509CAInfo extends CAInfo{
      * Constructor that should be used when creating CA and retrieving CA info.
      */
     public X509CAInfo(String subjectdn, String name, int status, Date updateTime, String subjectaltname, int certificateprofileid, 
-                    int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
+                    long validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, List policies,
                     long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
@@ -120,7 +120,7 @@ public class X509CAInfo extends CAInfo{
     /**
      * Constructor that should be used when updating CA data.
      */
-    public X509CAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
+    public X509CAInfo(int caid, long validity, CATokenInfo catokeninfo, String description,
                       long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
                       Collection crlpublishers,
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
