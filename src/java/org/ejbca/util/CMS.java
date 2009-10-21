@@ -41,7 +41,8 @@ import org.bouncycastle.cms.SignerInformation;
 
 /**
  * CMS utils.
- * @author lars
+ * @author Lars Silven
+ * @version $Id$
  *
  */
 public class CMS {
