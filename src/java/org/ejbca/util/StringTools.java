@@ -19,12 +19,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import javax.crypto.BadPaddingException;
@@ -455,60 +450,5 @@ public class StringTools {
 			log.info("incrementKeySequence - Sequence does not contain any nummeric part: "+ret);
 		}
     	return ret;
-    }
-    /**
-     * This method tries to use a date string to get a {@link java.util.Date} object.
-     * Different ways of getting the date is tried. If one is not working the next is tried:
-     * 1. We just assume that the input is a hex string encoded in seconds since epoch (the Unix time).
-     * 2. The default local is used to try to decode the date in {@link java.text.DateFormat#SHORT} format and time in {@link java.text.DateFormat#MEDIUM} format. Time zone 'UTC' is used.
-     * 3. All available locales are tried until one works. Decoding done the same way as 2
-     * @param sDate the encoded date.
-     * @return the date decoded from 'sDate'. null if no decoding can be done.
-     */
-    public static Date getDateFromString(String sDate) {
-        try {
-            final Date date = new Date(Long.parseLong(sDate, 16)*1000);
-            if ( date!=null ) {
-                log.debug("Date as '"+sDate+"' hexadecimal in seconds sinze epoc. Date: "+date);
-                return date;
-            }
-        } catch ( NumberFormatException e) {
-            // just try next
-        }
-        final Locale defaultLocale = Locale.getDefault();
-        final int dateStyle = DateFormat.SHORT;
-        final int timeStyle = DateFormat.MEDIUM;
-        final DateFormat defaultDateFormat = DateFormat.getDateTimeInstance(dateStyle, timeStyle);
-        final TimeZone utcTimeZone = TimeZone.getTimeZone("UTC");
-        defaultDateFormat.setTimeZone(utcTimeZone);
-        try {
-            final Date date = defaultDateFormat.parse(sDate);
-            if ( date!=null ) {
-                log.debug("Date string '"+sDate+"' with default local '"+defaultLocale.getDisplayName()+"' gives '"+date+"' when decoded." );
-                return date;
-            }
-        } catch (ParseException e1) {
-            // just try next
-        }
-        log.debug("The default locale '"+defaultLocale.getDisplayName()+"' can not decode the date string '"+sDate+"'.");
-        final Locale[] locales=DateFormat.getAvailableLocales();
-        for ( int i=0; i<locales.length; i++) {
-            final Locale locale = locales[i];
-            try {
-                final DateFormat dateFormat = DateFormat.getDateTimeInstance(dateStyle, timeStyle, locale);
-                dateFormat.setTimeZone(utcTimeZone);
-                final Date date = dateFormat.parse(sDate);
-                if ( date!=null ) {
-                    log.warn("Default local '"+defaultLocale.getDisplayName()+"' not possible to use. Date string '"+sDate+"' in locale '"+locale.getDisplayName()+"' gives '"+date+"' when decoded. This date will be used. To use the default locale '"+defaultLocale.getDisplayName()+"' specify the date as '"+defaultDateFormat.format(date)+"'." );
-                    return date;
-                }
-            } catch (ParseException e1) {
-                // just try next
-            }
-            log.debug("Locale '"+locale.getDisplayName()+"' can not decode the date string '"+sDate+"'.");
-        }
-        final Date exampleDate=new Date();
-        log.error("Not possible to decode the date '"+sDate+"'. Example: The date '"+exampleDate+"' should be encoded as '"+defaultDateFormat.format(exampleDate)+"' in the default local '"+defaultLocale.getDisplayName()+"'.");
-        return null;
     }
 } // StringTools

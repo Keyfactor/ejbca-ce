@@ -351,9 +351,6 @@ function checkuseextendedkeyusagefield(){
 function checkallfields(){
     var illegalfields = 0;
 
-    if(!checkFieldForYearsMonthsDays("document.editcertificateprofile.<%=TEXTFIELD_VALIDITY%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
-      illegalfields++;
-    
     var availablebitlengths = document.editcertificateprofile.<%= SELECT_AVAILABLEBITLENGTHS%>.options;
     var selected = 0;
     for(var i=0; i < availablebitlengths.length; i++){
@@ -451,12 +448,13 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
+        <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>
         <%= ejbcawebbean.getHelpReference("/manual.html#Validity") %> <br>&nbsp;
       </td>
       <td width="50%"> 
-        <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
-           value="<%= certificateprofiledata.getValidity()+YearMonthDayTime.TYPE_DAYS  %>"><br>
+        <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="20" maxlength="255" 
+           value="<%= ValidityDate.getString(certificateprofiledata.getValidity())  %>"><br>
+           <%= ejbcawebbean.getText("ENDDATEINFO") %> <%= ValidityDate.getDateExample()  %>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 

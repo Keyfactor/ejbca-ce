@@ -70,6 +70,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.ValidityDate;
 
 
 
@@ -122,7 +123,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        
        this.cainfo = cainfo;
               
-       data.put(VALIDITY, new Integer(cainfo.getValidity()));
+       data.put(VALIDITY, new Long(cainfo.getValidity()));
        data.put(SIGNEDBY, new Integer(cainfo.getSignedBy()));
        data.put(DESCRIPTION, cainfo.getDescription());
        data.put(REVOKATIONREASON, new Integer(-1));
@@ -200,8 +201,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public int getCAType(){ return ((Integer)data.get(CATYPE)).intValue();}
     
-    public int getValidity(){ return ((Integer) data.get(VALIDITY)).intValue();}
-    public void setValidity(int validity){ data.put(VALIDITY,  new Integer(validity));}
+    public long getValidity(){ return ((Number) data.get(VALIDITY)).longValue();}
+    public void setValidity(long validity){ data.put(VALIDITY,  new Long(validity));}
     
     public Date getExpireTime(){return ((Date)data.get(EXPIRETIME));}
     public void setExpireTime(Date expiretime) { data.put(EXPIRETIME,expiretime);}    
@@ -458,7 +459,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 	
     public void updateCA(CAInfo cainfo) throws Exception{            
-    	data.put(VALIDITY, new Integer(cainfo.getValidity()));                 
+    	data.put(VALIDITY, new Long(cainfo.getValidity()));                 
     	data.put(DESCRIPTION, cainfo.getDescription());      
     	data.put(CRLPERIOD, new Long(cainfo.getCRLPeriod()));
     	data.put(DELTACRLPERIOD, new Long(cainfo.getDeltaCRLPeriod()));
@@ -513,12 +514,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             CertificateProfile certProfile,
             String sequence) throws Exception {
     	// Calculate the notAfter date
-    	Date notAfter = null;
+        final Date notBefore = new Date(); 
+    	final Date notAfter;
         if(validity != -1) {
-            notAfter = new Date();
-            notAfter.setTime(notAfter.getTime() + ( validity * 24 * 60 * 60 * 1000));        	
+            notAfter = ValidityDate.getDate(validity, notBefore);
+        } else {
+            notAfter = null;
         }
-        Date notBefore = new Date(); 
     	return generateCertificate(subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence); 
     }
 

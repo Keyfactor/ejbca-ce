@@ -371,8 +371,6 @@ function checkallfields(){
    <% } %> 
 
     <% if(!editca || (editca && cainfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA)){ %>
-    if(!checkFieldForYearsMonthsDays("document.ca.<%=TEXTFIELD_VALIDITY%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
-      illegalfields++;
     if((document.ca.<%= TEXTFIELD_VALIDITY %>.value == "") && document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value != <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("VALIDITY", true)%>");
       illegalfields++;
@@ -630,7 +628,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
+        <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>
         <%= ejbcawebbean.getHelpReference("/manual.html#Validity") %> <br>
       </td>
       <td width="50%"> 
@@ -640,11 +638,12 @@ function checkallfields(){
               else
                 out.write(ejbcawebbean.getText("NOTUSED"));
            }else{ %>
-        <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
-           <% if(editca) out.write(" value='" +cainfo.getValidity() + YearMonthDayTime.TYPE_DAYS + "'> <i>" + 
+        <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="20" maxlength="255" 
+           <% if(editca) out.write(" value='" +ValidityDate.getString(cainfo.getValidity()) + "'> <i>" + 
                                     ejbcawebbean.getText("USEDINCARENEWAL") + "</i>");
               else out.write(">");
            }%>
+           <br/><%= ejbcawebbean.getText("ENDDATEINFO") %> <%= ValidityDate.getDateExample()  %>
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
