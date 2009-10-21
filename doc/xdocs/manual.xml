@@ -818,6 +818,28 @@ Enter keystore password: foo123
 </source>
 </subsection>
 
+<subsection name="Renew CAs">
+<p>
+You can renew CAs in different ways:
+</p>
+<ul>
+<li>Renew only CA certificate, using the same keys.</li>
+<li>Renew CA keys and certificate.</li>
+</ul>
+<p>
+To renew only the CA certificate using the same keys you simply press the button "Renew CA". Your CA have to be on-line for this to work, so it can sign the new certificate if it's a self signed CA or the certificate request if it is a sub CA.
+Also if it is a subCA with the rootCA in the same EJBCA instance the root CA must also be on-line. 
+</p>
+<p>
+To renew the CA keys you check the box "Renew keys" and give the CA token authentication code. After this you simply press "Renew CA". 
+<br/>Renewing the keys will not always work if you are using an HSM. It may work with some HSMs and not work with others. 
+<br/>You can report success and failures to us.
+</p>
+<p>When using an HSM you can also make the renewal of keys manually. Simply generate new keys on the HSM with whatever tools you used the first time (preferably the EJBCA cli tools), and then edit the CA token properties
+to use the new key. After the new key has been configured you can simply press "Renew CA" (without the renew keys checkbox), to generate your new CA certificate.
+</p>
+</subsection>
+
 </section>
 
 
@@ -2787,6 +2809,9 @@ EJBCA 3.5 and later has an implementation for a generic PKCS#11 provider, tested
 </p><p>
 EJBCA 3.6 adds tested support for AEP KeyPer and ARX CoSign and Bull TrustWay.
 </p><p>
+Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. Any old jce implementations still exists but are no longer developed. 
+</p>
+<p>
 PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
 <subsection name="Auto-activation of CA tokens">
@@ -2843,6 +2868,8 @@ Besides the keys previously described the property field of the administration G
 <li>slotListIndex	- the index number in the slot list for the slot of the CA</li>
 <li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
 <li>attributesFile - a file specifying PKCS#11 attributes (used mainly for key generation).</li>
+<li>keyspec          - optional key specification used when generating new HSM keys from within the admin GUI. Keyspec that is used as first choice when generating new keys in the GUI of form "1024" for RSA keys, "DSA1024" for DSA keys and secp256r1 for EC keys.
+If keyspec is not given EJBCA tries to generate a key with the same specification as the current cert signing key.</li>
 </ul>
 </p><p>
 But only one of 'slot' or 'slotListIndex' should exist.
@@ -2858,12 +2885,16 @@ attributes(generate,CKO_PRIVATE_KEY,*) = {
   CKA_TOKEN = true
 }
 </source>
+<note>
+If you are using an attributesFile and have more than one CA using the same slot it is very important that BOTH CA token properties configurations contains the attributesFile. 
+This is because the attributes are applied when the provider is installed during startup. If one configuration does not have the attributesFile it can not be applied later on by the other configuration. 
+</note>
 <p>
 The tool "$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool" is used administrate and generate keys. Use it without parameters to get all valid options.
 Keys may be generated in two ways. Examples:
 </p>
 <source>
-./clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 0
+./clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 1
 </source>
 <source>
 ./clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.conf 2048 defaultKey
@@ -2874,7 +2905,24 @@ The second uses a configuration file.
 The contents of the file is specified in the PKCS#11 wrapper documentation from Sun.
 Often it is enough to use the default but with some HSM it necessary to define some PKCS#11
 attributes for the generated key.
-</p><p>
+</p>
+<p>hsmp11.conf looks for example like this for a SafeNet ProtectServer Gold:</p>
+<source>
+name=SafeNet
+library=/opt/PTK/lib/libcryptoki.so
+slot=1
+attributes(*,*,*) = {
+  CKA_TOKEN = true
+}
+attributes(*,CKO_PRIVATE_KEY,*) = {
+  CKA_PRIVATE = true
+  CKA_SIGN = true
+  CKA_DECRYPT = true
+  CKA_EXTRACTABLE = true
+  CKA_SENSITIVE = true
+}
+</source>
+<p>
 All keys to be used has to be generated before the application server is started.
 </p>
 <subsubsection name="SUN or IAIK PKCS#11 Provider">
@@ -3620,7 +3668,8 @@ Signings per second: 68 No crypto available for this key.
 <p>Install the software according to the installation instructions for the ProtectServer. 
 Below are sample commands for installing the SDK rpm on an Ubuntu system, wich means first converting it to a deb.</p>
 <p>Using the SDK you can use the SDK as a good emulator for testing and development.
-If you are installing with a real ProtectServer you should install the Runtime instead of the SDK and use ETcprt instead of ETcpsdk below.
+If you are installing with a real ProtectServer you should install the Runtime instead of the SDK. When using the SDK you may use 
+/opt/ETcpsdk/lib/linux-x86_64 instead of /opt/PTK/lib
 </p>  
 <source>
 fakeroot alien -c $CDROM/Linux64/ptkc_sdk/ETcpsdk-3.32.00-1.x86_64.rpm
@@ -3629,24 +3678,24 @@ sudo dpkg -i ./etcpsdk_3.32.00-2_amd64.deb
 </subsubsection>
 <subsubsection name="Set passwords for admin SO och admin user">
 <source>
-LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctconf
+LD_LIBRARY_PATH=/opt/PTK/lib /opt/PTK/bin/ctconf
 </source>
 </subsubsection>
 # skapa 10 slottar
 <subsubsection name="create 10 slots">
 <source>
-LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctconf -c10
+LD_LIBRARY_PATH=/opt/PTK/lib /opt/PTK/bin/ctconf -c10
 </source>
 </subsubsection>
 <subsubsection name="Set no public crypto">
 <p>See "Programming in FIPS mode" in the Protect Toolkit-C Programmers Manual for information about this flag.</p>
 <source>
-LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctconf -fc
+LD_LIBRARY_PATH=/opt/PTK/lib /opt/PTK/bin/ctconf -fc
 </source>
 </subsubsection>
 <subsubsection name="Initialize slot 5. Sets SO and user password">
 <source>
-LD_LIBRARY_PATH=/opt/ETcpsdk/lib/linux-x86_64 /opt/ETcpsdk/bin/linux-x86_64/ctkmu t -s5 -lroot
+LD_LIBRARY_PATH=/opt/PTK/lib /opt/PTK/bin/ctkmu t -s5 -lroot
 </source>
 </subsubsection>
 <subsubsection name="Generate keys on slot 5">
@@ -3660,7 +3709,7 @@ $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate .
 <subsubsection name="Contents of ./slot5.cfg">
 <source>
 name=SafeNet
-library=/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so
+library=/opt/PTK/lib/libcryptoki.so
 #library=/usr/lib/pkcs11-spy.so
 slot=5
 attributes(*,*,*) = {
@@ -3675,20 +3724,53 @@ attributes(*,CKO_PRIVATE_KEY,*) = {
 }
 </source>
 </subsubsection>
-<subsubsection name="Hard CA Token Properties">
+<subsubsection name="Contents of CA Token Properties">
 <p>When you create the CA in EJBCA you can now use the simple CA token properties below.</p>
 <source>
 certSignKey defaultSign
 crlSignKey defaultSign
 defaultKey default
 testKey test
-sharedLibrary /opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so
-slot 5
+sharedLibrary=/opt/PTK/lib/libcryptoki.so
+slot=5
+attributesFile=/opt/slot5p11.cfg
 </source>
+<p>where /opt/slot5p11.cfg is:</p>
+<source>
+attributes(*,*,*) = {
+  CKA_TOKEN = true
+}
+attributes(*,CKO_PRIVATE_KEY,*) = {
+  CKA_PRIVATE = true
+  CKA_SIGN = true
+  CKA_DECRYPT = true
+  CKA_EXTRACTABLE = true
+  CKA_SENSITIVE = true
+}
+</source>
+<note>The slot5p11.cfg is needed because the ProtectServer has some strange default attributes. If you do not specify an attributes file the private key will
+not be 'sensitive' and will be possible to export in clear text by any user of the HSM. You can see the attributes of the keys by running the test command:
+</note>
+<source>
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
+...
+Testing of key: test
+SunJCE version 1.7SunPKCS11-libcryptoki.so-slot3 version 1.7; modulus length: 2048; byte length 53. The docoded byte string is equal to the original!
+SunPKCS11-libcryptoki.so-slot3 RSA private key, 512 bits (id 4, token object, sensitive, extractable)
+Signature test of key test1: signature length 64; first byte 3d; verifying true
+Signings per second: 257
+Decryptions per second: 260
+</source>
+<p>the attributes are listed as "token object, sensitive, extractable", and here is important that is says 'sensitive' (extractable only means that the key can be backed up securely using SafeNet tools).
+</p>
+<note>
+The above means that if you have more than one CA using the same slot it is very important that BOTH CA token properties configurations contains the attributesFile. 
+This is because the attributes are applied when the provider is installed during startup. If one configuration does not have the attributesFile it can not be applied later on by the other configuration. 
+</note>
 </subsubsection>
 <subsubsection name="Test and list keys on slot 5">
 <source>
-$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so 5
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
 </source>
 </subsubsection>
 <note>

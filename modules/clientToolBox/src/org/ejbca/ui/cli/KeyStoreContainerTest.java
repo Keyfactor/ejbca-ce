@@ -255,6 +255,7 @@ class KeyStoreContainerTest {
             return this.result;
         }
         public void printInfo(PrintStream ps) {
+            ps.println("Private key: "+KeyStoreContainerTest.this.keyPair.getPrivate());
             ps.println("Signature test of key "+KeyStoreContainerTest.this.alias+
                        ": signature length " + this.signBA.length +
                        "; first byte " + Integer.toHexString(0xff&this.signBA[0]) +

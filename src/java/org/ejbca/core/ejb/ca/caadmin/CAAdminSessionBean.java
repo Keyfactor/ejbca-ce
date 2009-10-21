@@ -1569,6 +1569,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      *  @param regenerateKeys, if true and the CA have a softCAToken the keys are regenerated before the certrequest.
      *          
      * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="900"
      */
     public void renewCA(Admin admin, int caid, String keystorepass, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
     	if (log.isTraceEnabled()) {

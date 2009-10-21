@@ -39,12 +39,19 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.DSAParameterSpec;
+import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.EllipticCurve;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
@@ -63,7 +70,9 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.provider.asymmetric.ec.EC5Util;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECCurve;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.util.CertTools;
@@ -200,9 +209,9 @@ public class KeyTools {
 
     /**
      * Gets the key length of supported keys
-     * @param priv PrivateKey to check
+     * @param pk PublicKey used to derive the keysize
      * @return -1 if key is unsupported, otherwise a number >= 0. 0 usually means the length can not be calculated, 
-     * for example if the key is en EC key and the "implicitlyCA" encoding is used.
+     * for example if the key is an EC key and the "implicitlyCA" encoding is used.
      */
 	public static int getKeyLength(PublicKey pk) {
 		int len = -1;
@@ -236,6 +245,57 @@ public class KeyTools {
 			}
 		} 
 		return len;
+	}
+
+    /**
+     * Gets the key AlgorithmParameterSpec of supported keys. Can be used to initialize a KeyPairGenerator to generate a key of equal type and size.
+     * @param pk PublicKey used to derive the AlgorithmParameterSpec
+     * @return null if key is unsupported, otherwise a AlgorithmParameterSpec.
+     */
+	public static AlgorithmParameterSpec getKeyGenSpec(PublicKey pk) {
+		AlgorithmParameterSpec ret = null;
+		if (pk instanceof RSAPublicKey) {
+			log.debug("getKeyGenSpec: RSA");
+			RSAPublicKey rpk = (RSAPublicKey)pk;
+			ret = new RSAKeyGenParameterSpec(getKeyLength(pk), rpk.getPublicExponent());
+		} else if (pk instanceof DSAPublicKey) {
+			log.debug("getKeyGenSpec: DSA");
+			DSAPublicKey dpk = (DSAPublicKey)pk;
+			DSAParams params = dpk.getParams();
+			ret = new DSAParameterSpec(params.getP(), params.getQ(), params.getG());
+		} else if (pk instanceof ECPublicKey) {
+			log.debug("getKeyGenSpec: ECPublicKey");
+			ECPublicKey ecpub = (ECPublicKey) pk;
+			java.security.spec.ECParameterSpec sunsp = ecpub.getParams();
+			EllipticCurve ecurve = new EllipticCurve(sunsp.getCurve().getField(), sunsp.getCurve().getA(), sunsp.getCurve().getB());
+			//ECParameterSpec par = new ECNamedCurveSpec(null, sunsp.getCurve(), sunsp.getGenerator(), sunsp.getOrder(), BigInteger.valueOf(sunsp.getCofactor()));
+			ECParameterSpec params = new ECParameterSpec(ecurve, sunsp.getGenerator(), sunsp.getOrder(), sunsp.getCofactor());
+			if (log.isDebugEnabled()) {
+				log.debug("Fieldsize: "+params.getCurve().getField().getFieldSize());
+				EllipticCurve curve = params.getCurve();
+				log.debug("CurveA: "+curve.getA().toString(16));
+				log.debug("CurveB: "+curve.getB().toString(16));
+				log.debug("CurveSeed: "+curve.getSeed());
+				ECFieldFp field = (ECFieldFp)curve.getField();
+				log.debug("CurveSfield: "+field.getP().toString(16));
+				ECPoint p = params.getGenerator();
+				log.debug("Generator: "+p.getAffineX().toString(16)+", "+p.getAffineY().toString(16));
+				log.debug("Order: "+params.getOrder().toString(16));
+				log.debug("CoFactor: "+params.getCofactor());				
+			}
+			ret = params;
+		} else if (pk instanceof JCEECPublicKey) {
+			log.debug("getKeyGenSpec: JCEECPublicKey");
+			JCEECPublicKey ecpub = (JCEECPublicKey) pk;
+			org.bouncycastle.jce.spec.ECParameterSpec bcsp = ecpub.getParameters();
+			ECCurve curve = bcsp.getCurve();
+			//TODO: this probably does not work for key generation with the Sun PKCS#11 provider. Maybe seed needs to be set to null as above? Or something else, the BC curve is it the same?
+			ECParameterSpec params = new ECNamedCurveSpec(null, curve, bcsp.getG(), bcsp.getN(), bcsp.getH());
+			ret = params;
+			//EllipticCurve ecc = new EllipticCurve(curve.)
+			//ECParameterSpec sp = new ECParameterSpec(, bcsp.getG(), bcsp.getN(), bcsp.getH().intValue());
+		}
+		return ret;
 	}
 
     /**

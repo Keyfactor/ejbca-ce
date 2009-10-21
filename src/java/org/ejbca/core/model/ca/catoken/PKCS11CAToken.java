@@ -128,9 +128,9 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
             isIndex = false;
         }
         String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
-        String atributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
+        String attributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
         // getInstance will run autoActivate()
-        this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, atributesFile, this);
+        this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this);
     }
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.BaseCAToken#reset()

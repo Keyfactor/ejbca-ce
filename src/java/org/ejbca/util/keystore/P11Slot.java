@@ -49,16 +49,17 @@ public class P11Slot {
     private final static Map<String,Set<P11Slot>> libMap = new HashMap<String, Set<P11Slot>>();
     final private String slotNr;
     final private String sharedLibrary;
+    final private String attributesFile;
     final private boolean isIndex;
     final private Set<P11SlotUser> caTokens;
     final private String sunP11ConfigFileName;
-    private String atributesFile;
     final private Provider provider;
     private boolean isSettingProvider = false;
-    private P11Slot(String _slotNr, String _sharedLibrary, boolean _isIndex ) throws CATokenOfflineException {
+    private P11Slot(String _slotNr, String _sharedLibrary, boolean _isIndex, String _attributesFile) throws CATokenOfflineException {
         this.slotNr = _slotNr;
         this.sharedLibrary = _sharedLibrary;
         this.isIndex = _isIndex;
+        this.attributesFile = _attributesFile;
         this.caTokens = new HashSet<P11SlotUser>();
         this.sunP11ConfigFileName = null;
         this.provider = createProvider();
@@ -68,6 +69,7 @@ public class P11Slot {
         this.slotNr = null;
         this.sharedLibrary = null;
         this.isIndex = false;
+        this.attributesFile = null;
         this.caTokens = new HashSet<P11SlotUser>();
         this.provider = createProvider();
     }
@@ -113,7 +115,7 @@ public class P11Slot {
      * @throws CATokenOfflineException if CA token can not be activated, IllegalArgumentException if sharedLibrary is null.
      */
     static public P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
-                                      String _atributesFile, P11SlotUser token) throws CATokenOfflineException {
+                                      String attributesFile, P11SlotUser token) throws CATokenOfflineException {
     	if (sharedLibrary == null) {
     		throw new IllegalArgumentException("sharedLibrary = null");
     	}
@@ -121,7 +123,7 @@ public class P11Slot {
         final String slotLabel = slotNr + libName + isIndex;
         P11Slot slot = slotMap.get(slotLabel);
         if (slot==null) {
-            slot = new P11Slot(slotNr, sharedLibrary, isIndex);
+            slot = new P11Slot(slotNr, sharedLibrary, isIndex, attributesFile);
             slotMap.put(slotLabel, slot);
             Set<P11Slot> libSet = libMap.get(libName);
             if (libSet==null) {
@@ -130,7 +132,6 @@ public class P11Slot {
             }
             libSet.add(slot);
         }
-        slot.atributesFile = _atributesFile;
         slot.caTokens.add(token);
         return slot;
     }
@@ -154,7 +155,6 @@ public class P11Slot {
             }
             libSet.add(slot);
         }
-        slot.atributesFile = null;
         slot.caTokens.add(token);
         return slot;
     }
@@ -204,7 +204,7 @@ public class P11Slot {
             this.isSettingProvider = true;
             if ( this.slotNr!=null && this.sharedLibrary!=null ) {
                 tmpProvider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
-                                                        this.isIndex, this.atributesFile);
+                                                        this.isIndex, this.attributesFile);
             } else if ( this.sunP11ConfigFileName!=null ) {
                 tmpProvider = KeyTools.getSunP11Provider(new FileInputStream(this.sunP11ConfigFileName));
             } else {

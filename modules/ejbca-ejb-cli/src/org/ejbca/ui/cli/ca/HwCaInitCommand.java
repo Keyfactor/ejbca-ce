@@ -62,8 +62,8 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
             HardCATokenInfo catokeninfo = new HardCATokenInfo();
             byte keyStoreID[];{
                 KeyStoreContainer ksc = KeyStoreContainerFactory.getInstance(args[4],args[2], args[3], args.length>8 ? args[8] : null, null, null);
-                ksc.generate(2048, DEFAULT_KEY);
-                ksc.generate(2048, SIGN_KEY);
+                ksc.generate("2048", DEFAULT_KEY);
+                ksc.generate("2048", SIGN_KEY);
                 keyStoreID = ksc.storeKeyStore();
                 catokeninfo.setAuthenticationCode(new String(ksc.getPassPhraseGetSetEntry()));
             }
