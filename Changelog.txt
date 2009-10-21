@@ -1,3 +1,53 @@
+3.9.2, 2009-10-21
+---
+New Feature
+    * [ECA-1377] - Sign and verify of files with clientToolBox when the private key is stored on a HSM.
+    * [ECA-1390] - Possible to limit signing keys for an external OCSP responder to keys within a set of key aliases.
+    * [ECA-1412] - Add support for the TSL signer extended key usage
+
+Improvement
+    * [ECA-1360] - use improved validity period parsing in Certificate Profiles
+    * [ECA-1364] - Deleting certificate profiles in large database slow, new index
+    * [ECA-1366] - Improve debug logging in ProtectedLog
+    * [ECA-1369] - Add command to cli to sign specified nodeGUID
+    * [ECA-1384] - Property in mail.properties for sending start TLS
+    * [ECA-1385] - PKCS11HSMKeyTool test does not work with ECC keys
+    * [ECA-1426] - Rename keystore password to authentication code in admin GUI to make it consistent.
+    * [ECA-1427] - remove ocsp client
+    * [ECA-1433] - Add option to use publisher queue or not for CRLs and certificates
+
+Task
+    * [ECA-1359] - Upgrade commons-upload jar.
+    * [ECA-1399] - Add debug logging of keys and signature when testing CA token keys
+    * [ECA-1425] - Document MS application policies extension
+
+Bug
+    * [ECA-1361] - Wrong default value listed for "build.compiler" property in "ejbca.properties.sample"
+    * [ECA-1363] - CA de-activation can give NPE if CA in some conditions
+    * [ECA-1368] - Setting nodeIP in protectedlog.properties does not work
+    * [ECA-1371] - Revocation is very slow if a user have many certificates. Remove side-effect of revoking user from revokeCert method.
+    * [ECA-1373] - ejbca.sh log accept or log does not increase the counter
+    * [ECA-1379] - ejbcaClientToolBox.bat only accepts 9 parameters
+    * [ECA-1392] - Fix potential NPE with extendedInformation
+    * [ECA-1393] - Handle database exceptions properly for CMP
+    * [ECA-1394] - Error adding end entity does not log username
+    * [ECA-1395] - Error using IAIK provider with several CAs
+    * [ECA-1403] - cert-cvc: bad encoding of EC points in certificates in rare cases where affineX and affineY is not same size.
+    * [ECA-1404] - ClientToolBox PKCS11 key test gives NullPointerException if there are symmetrci keys in the slot
+    * [ECA-1406] - Autoactivation PIN is showed in clear in debug log file
+    * [ECA-1410] - Ldap publisher may "hang" if LDAP server hangs during operations
+    * [ECA-1414] - FNR from UNID not working
+    * [ECA-1415] - Strange errors when reading keys in external OCSP responder
+    * [ECA-1416] - FNR lookup stress test
+    * [ECA-1419] - CRL service may stop running if database is stopped for some period
+    * [ECA-1420] - Check of ProbeableErrorHandler for OCSP audit/transaction log always return false
+    * [ECA-1421] - AdminCA1 does not get a CMS certificate during installation
+    * [ECA-1423] - cert-cvc: getting expiration date returns 00.00 hours but it means it's valid the whole day
+    * [ECA-1430] - Publish CRLs may fail to keep in publisher queue if publish fails
+    * [ECA-1431] - ejbcaClientToolBox.bat does not work
+    * [ECA-1434] - cert-cvc: OIDField.getEncoded() works only for values < 128
+    * [ECA-1437] - Issuing Distribution Point on CRLs is default in CA configuration
+
 3.9.1, 2009-08-16
 ---
 New Feature

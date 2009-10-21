@@ -1,3 +1,29 @@
+EJBCA 3.9.2
+-----------
+This is a minor release but packed with new minor features and fixes, 38 issues have been resolved. 
+Some minor features and options and many bug fixes and stabilizations.
+
+Noteworthy changes:
+- Sign and verify of files with clientToolBox when the private key is stored on a HSM.
+- Possible to limit signing keys for an external OCSP responder to keys within a set of key aliases.
+- Add support for the TSL signer extended key usage
+- Use improved validity period parsing in Certificate Profiles
+- Add option to use publisher queue or not for CRLs and certificates
+- Document MS application policies extension
+- Fixes for ejbcaClientToolBox.bat for windows platform
+- Timeouts for LDAP publishers to handle unstable LDAP servers
+- For issue where CRL service may stop running if database is stopped for some period
+- Change so that Issuing Distribution Point on CRLs is not used by default in CA configuration
+- Fix issue using IAIK provider with several CAs
+- Fix slow revocation if a user have many certificates
+- cert-cvc: getting expiration date returns 00.00 hours but it means it's valid the whole day
+- cert-cvc: bad encoding of EC points in certificates in rare cases where affineX and affineY is not same size
+- Many small optimizations, fixes and improvements.
+
+Read the full changelog for details.
+
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.9.1
 -----------
 This is a minor release but packed with new minor features and fixes, 46 issues have been resolved.
