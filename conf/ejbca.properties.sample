@@ -223,6 +223,7 @@
 
 # Parameter specifying IP addresses authorized to access the healthcheck
 # servlet. Use ';' for between multiple IPs. 
+# Default: 127.0.0.1 
 #healthcheck.authorizedips=127.0.0.1
 
 # Parameter to specify if the check of CA tokens should actually perform a signature test
