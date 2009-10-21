@@ -48,7 +48,7 @@
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
-          <% String[] availablethemes = globalconfiguration .getAvailableThemes();                                    
+          <% String[] availablethemes = globalconfiguration.getAvailableThemes();                                    
              String theme = dup.getTheme();
              if(availablethemes != null){
                for(int i = 0; i < availablethemes.length; i++){

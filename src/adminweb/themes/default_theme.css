@@ -72,12 +72,96 @@ h3, h4 {
 
 body { color: black; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 H { font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
-body#menu {color: black; font-size: 9pt; font-weight: bold; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.2in; background-color: white}
-a#menu {color: black}
-a:link#menu {color: black}
-a:vlink#menu {color: black}
-a:active#menu {color: black}
-a:hover#menu {color: black}
+
+/*--------------------------------------------------------------------------*/
+/* NAVIGATION */
+
+body#menu {
+	margin: 0em;
+	padding: 0em;
+	background-color: #FFF;
+	color: #000;
+}
+
+#navigation {
+	margin: 0em;
+	padding: .75em .75em .75em 1.25em;
+	background-color: #EEE;
+	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
+	font-size: 9pt;
+	font-weight: bold;
+	border-radius: 0em 1em 1em 0em;
+	-o-border-radius: 0em 1em 1em 0em;
+	-moz-border-radius: 0em 1em 1em 0em;
+	-khtml-border-radius: 0em 1em 1em 0em;
+	-webkit-border-radius: 0em 1em 1em 0em;
+}
+
+#navigation ul {
+	margin: 0em;
+	padding: 0em;
+}
+#navigation li {
+	list-style-type: none;
+}
+
+#navigation li.section {
+	margin: .5em 0em .75em 0em;
+}
+#navigation li.section strong {
+	font-size: 11pt;
+	text-shadow: .1em .1em .2em rgba(0,0,0,.2);
+	-o-text-shadow: .1em .1em .2em #BBB;
+	-moz-text-shadow: .1em .1em .2em rgba(0,0,0,.2);
+	-khtml-text-shadow: .1em .1em .2em #BBB;
+	-webkit-text-shadow: .1em .1em .2em rgba(0,0,0,.2);
+}
+#navigation li.section ul {
+	margin-top: .25em;
+}
+
+#navigation a {
+	display: block;
+	padding: .15em .25em;
+	text-decoration: none;
+}
+#navigation ul a {
+	margin-left: -.3em;
+	padding-left: .4em;
+	border-left: 0px none transparent;
+}
+#navigation ul ul a {
+	margin-left: 0em;
+	padding-left: 1em;
+	border-left: .5em solid transparent;
+}
+
+#navigation a:link,
+#navigation a:visited {
+	background-color: transparent;
+	border-color: transparent;
+	color: #00A;
+}
+#navigation a:hover,
+#navigation a:focus,
+#navigation a:active {
+	background-color: #FFF;
+	border-color: #E77;
+	color: #A00;
+	box-shadow: .15em .15em .45em rgba(0,0,0,.2);
+	-o-box-shadow: .15em .15em .45em rgba(0,0,0,.2);
+	-moz-box-shadow: .15em .15em .45em rgba(0,0,0,.2);
+	-khtml-box-shadow: .15em .15em .45em #BBB;
+	-webkit-box-shadow: .15em .15em .45em rgba(0,0,0,.2);
+}
+
+/*--------------------------------------------------------------------------*/
+
+/* Header fix */
+img[src$="ejbcaheader.jpg"] {
+	margin-left: -36px;
+}
+
 
 #alert {color: red; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
 .alert {color: red;

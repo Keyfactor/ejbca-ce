@@ -145,6 +145,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
        data.put(INDEXFILENAME,"index.jsp");
        data.put(MENUFILENAME,"adminmenu.jsp");
        data.put(ERRORPAGE,"errorpage.jsp");
+       data.put(IECSSFILENAMEPOSTFIX,"_ie-fixes");
 
        setHeadBanner(DEFAULTHEADBANNER);
        setFootBanner(DEFAULTFOOTBANNER);
@@ -208,7 +209,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
 		return retval;
 	}        
 
-     /** Checks the themes paht for css files and returns an array of filenames
+     /** Checks the themes path for css files and returns an array of filenames
      *  without the ".css" ending. */
     public   String[] getAvailableThemes() {
        String[] availablethemes;
@@ -275,6 +276,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public   String getIndexFilename(){return (String) data.get(INDEXFILENAME);}
     public   String getMenuFilename(){return (String) data.get(MENUFILENAME);}
     public   String getErrorPage(){return (String) data.get(ERRORPAGE);}
+    public   String getIeCssFilenamePostfix(){return (String) data.get(IECSSFILENAMEPOSTFIX);}
 
     public   String[] getPossibleEntiresPerPage(){return DEFAULTPOSSIBLEENTRIESPERPAGE;}
     public   String[] getPossibleLogEntiresPerPage(){return DEFAULTPOSSIBLELOGENTRIESPERPAGE;}
@@ -419,7 +421,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
    		   return (ret == null ? AUTOENROLL_DEFAULT_USE : ret);
        }
 
-    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
@@ -493,10 +495,11 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final   String THEME_PATH          = "theme_path";
     private static final   String HARDTOKEN_PATH      = "hardtoken_path";
 
-    private static final   String LANGUAGEFILENAME    =  "languagefilename";
-    private static final   String MAINFILENAME        =  "mainfilename";
-    private static final   String INDEXFILENAME       =  "indexfilename";
-    private static final   String MENUFILENAME        =  "menufilename";
-    private static final   String ERRORPAGE           =  "errorpage";
+    private static final   String LANGUAGEFILENAME      =  "languagefilename";
+    private static final   String MAINFILENAME          =  "mainfilename";
+    private static final   String INDEXFILENAME         =  "indexfilename";
+    private static final   String MENUFILENAME          =  "menufilename";
+    private static final   String ERRORPAGE             =  "errorpage";
+    private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
 
 }

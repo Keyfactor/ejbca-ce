@@ -1,17 +1,212 @@
+/* The css items below between "Tigris begin" and "Tigris end" tags have been copied from the
+   Tigris style project, http://style.tigris.org/. */ 
+/* Tigris begin */
+
+.app h3, .app h4, .tabs td, .tabs th, .functnbar {
+	background-image: url(../images/nw_maj_rond.gif);
+	background-repeat: no-repeat;
+}
+.app h3, .app h4 {
+	color: #fff;
+}
+.app h3 {
+	background-color: #333;
+}
+.app h3 a:link, .app h3 a:visited, .app h4 a:link, .app h4 a:visited {
+	color: #fff !important;
+	text-decoration: underline;
+}
+
+.app h4 {
+	background-color: #888;
+}
+.app th {
+	background-color: #bbb;
+	white-space: nowrap;
+}
+body, .app h3, .app h4, #rightcol h3, pre, code, #apphead h2 small {
+	font-size: x-small;
+	voice-family: "\"}\"";
+	voice-family: inherit;
+	font-size: small;
+}
+.app h3, .app h4 {
+	padding: 5px;
+	margin-right: 2px;
+	margin-left: 2px;
+}
+
+.app td, .app th {
+	padding: 2px 3px;
+}
+.app .axial td th {
+	text-align: left;
+}
+.app h3, .app h4, .bars {
+	clear: both;
+}
+body .grid td {
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	background-color: transparent;
+}
+.a td {
+	background: #ddd;
+}
+
+.b td {
+	background: #efefef;
+}
+h4, table {
+	font-size: 1em;
+}
+h3, h4 {
+	margin-bottom: 0;
+}
+
+.app table, th, td {
+	border: none;
+	vertical-align: top;
+}
+/* Tigris end */
+
+body { color: black; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
+H { font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
+
+/*--------------------------------------------------------------------------*/
+/* NAVIGATION */
+
+body#menu {
+	margin: 0em;
+	padding: 0em;
+	background-color: #FFF;
+	color: #000;
+}
+
+#navigation {
+	margin: 0em;
+	padding: .75em .75em .75em 1.25em;
+	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
+	font-size: 9pt;
+	font-weight: bold;
+}
+
+#navigation ul {
+	margin: 0em;
+	padding: 0em;
+}
+#navigation li {
+	list-style-type: none;
+}
+
+#navigation li.section {
+	margin: .5em 0em .75em 0em;
+}
+#navigation li.section strong {
+	font-size: 11pt;
+	text-shadow: .1em .1em .2em rgba(0,0,0,.2);
+	-o-text-shadow: .1em .1em .2em #BBB;
+	-moz-text-shadow: .1em .1em .2em rgba(0,0,0,.2);
+	-khtml-text-shadow: .1em .1em .2em #BBB;
+	-webkit-text-shadow: .1em .1em .2em rgba(0,0,0,.2);
+}
+#navigation li.section ul {
+	margin-top: .25em;
+}
+
+#navigation a {
+	display: block;
+/*	padding: .08em .25em .15em .25em;	/* Vertical space higher */
+	padding: .04em .25em .08em .25em;	/* More compact */
+	text-decoration: none;
+}
+#navigation ul a {
+	margin-left: -.4em;
+	padding-left: .4em;
+	border: 1px solid transparent;
+}
+#navigation ul ul a {
+	margin-left: 0em;
+	padding-left: .5em;
+	border-left-width: 1em;
+}
+
+#navigation a:link,
+#navigation a:visited {
+	background-color: transparent;
+	border-color: transparent;
+	color: #00A;
+}
+#navigation a:hover,
+#navigation a:focus,
+#navigation a:active {
+	background-color: #EEE;
+	border-color: #BBB;
+	color: #A00;
+	border-radius: 1em;
+	-o-border-radius: 1em;
+	-moz-border-radius: 1em;
+	-khtml-border-radius: 1em;
+	-webkit-border-radius: 1em;
+	box-shadow: .15em .15em .45em rgba(0,0,0,.1);
+	-o-box-shadow: .15em .15em .45em rgba(0,0,0,.1);
+	-moz-box-shadow: .15em .15em .45em rgba(0,0,0,.1);
+	-khtml-box-shadow: .15em .15em .45em #DDD;
+	-webkit-box-shadow: .15em .15em .45em rgba(0,0,0,.1);
+}
+
+/*--------------------------------------------------------------------------*/
+
+/* Header fix */
+img[src$="ejbcaheader.jpg"] {
+	margin-left: -36px;
+}
 
 
+#alert {color: red; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
+.alert {color: red;
+    font-size: 12pt;
+	font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;
+	background-color: white;
+}
 
-<!-- Tags used in main frame -->
-body {font: 8 pt Arial; color: black; margin-left: 0.5in; background: white}
+#Row0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
+#Row1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
 
-body#menu {background: yellow}
+td#InfoRow0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
+td#InfoRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #ccffcc }
+td#ErrorRow0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
+td#ErrorRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #ffcccc }
 
-h4#alert {color: red}
+tr#LogTextRow0 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
+tr#LogTextRow1 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
+.jsfrow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
+.jsfrow2 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
+.header {
+  color: black; text-align: center; font-size: x-large
+}
+.subheader {
+	color: black;  font-size: medium;  font-weight: bold
+}
 
-tr#Row0 {background: white}
-tr#Row1 {background: gray}
+.listHeader { color: black; font-size: 14pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; font-weight: bold; text-align: left; }
+.listRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; text-align: left; background-color: white; }
+.listRow2 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; text-align: left; background-color: #e5ecff; }
 
-<!-- Tags used in head frame -->
+.leftColumn { vertical-align: top; text-align: right; width: 50%; }
 
-<!-- Tags used in menu frame -->
+.rulesColumn1 { text-align: left; width: 70%; }
+.rulesColumn2 { text-align: left; width: 15%; }
 
+.caColumn { text-align: left; width: 20%; }
+.withColumn { text-align: left; width: 35%; }
+.typeColumn { text-align: left; width: 20%; }
+.valueColumn { text-align: left; width: 20%; }
+.commandColumn { text-align: left; width: 5%; }
+
+.commandLink { font-size: 10pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: 0.4cm; margin-right: 0.4cm; }
+.commandButton { vertical-align: bottom; font-size: 10pt; margin-left: 0.4cm; margin-right: 0.4cm; }
+
+select option.lightgreen { background-color: #80FF80 }
+select option.lightyellow { background-color: #FFFFB3 }
+select option.lightred { background-color: #FFB8B8 }
