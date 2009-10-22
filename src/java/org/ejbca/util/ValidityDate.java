@@ -23,8 +23,9 @@ import org.apache.log4j.Logger;
 
 /**
  * Class for encoding and decoding certificate validity and end date.
+ * 
  * @author lars
- *
+ * @version $Id$
  */
 public class ValidityDate {
 	final private static Logger log = Logger.getLogger(ValidityDate.class);
