@@ -17,9 +17,9 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -379,8 +379,8 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
         
 		X509CAInfo cainfo = new X509CAInfo("CN="+nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId,
         		365, new Date(System.currentTimeMillis()+364*24*3600*1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null,
-        		catokeninfo, "Used for testing approvals", -1, null, null, 24, 0, 10, 0, Collections.EMPTY_LIST, true,
-        		false, true, false, "", "", "", "", true, Collections.EMPTY_LIST, false, approvalSettings, 1, false, true, false, false, true);
+        		catokeninfo, "Used for testing approvals", -1, null, null, 24, 0, 10, 0, new ArrayList(), true,
+        		false, true, false, "", "", "", "", true, new ArrayList(), false, approvalSettings, 1, false, true, false, false, true);
 		int caID = cainfo.getCAId();
         try {
         	caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);

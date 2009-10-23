@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Date;
 
 import junit.framework.TestCase;
@@ -491,12 +491,12 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
                 catokeninfo,
                 "Used for testing CA keystore export, remove and restore",
                 -1, null, // revokationreason, revokationdate
-                Collections.EMPTY_LIST, // PolicyId
+                new ArrayList(), // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssuePeriod
                 10, // CRLOverlapTime
                 0, //DeltaCRLOverlapTime                
-                Collections.EMPTY_LIST,
+                new ArrayList(),
                 true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -506,9 +506,9 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
                 "", // Default OCSP Service Locator  
                 null, // defaultfreshestcrl
                 true, // Finish User
-                Collections.EMPTY_LIST, //extendedcaservices
+                new ArrayList(), //extendedcaservices
                 false, // use default utf8 settings
-                Collections.EMPTY_LIST, // Approvals Settings
+                new ArrayList(), // Approvals Settings
                 1, // Number of Req approvals
                 false, // Use UTF8 subject DN by default
                 true, // Use LDAP DN order by default
