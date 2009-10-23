@@ -946,7 +946,7 @@
     </target>
 	
     <target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
-    	<ant antfile="build.xml" dir="modules" target="clientToolBox" />
+    	<ant antfile="build.xml" dir="modules/clientToolBox" target="build" />
     </target>
 	
 	<target name="showtime" >
