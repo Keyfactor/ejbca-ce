@@ -132,17 +132,21 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 								userEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
 							}					  
 						}
-						if(isSendToAdmins()){
-							// Populate admin message        		    
-							log.debug("Adding to email queue for admin");
-							NotificationParamGen paramGen = new NotificationParamGen(userData,cert);
-							String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
-							MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
-							adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
-						}	
 					} else {
-						log.info("Trying do send notification to user, but no UserData can be found for user: "+username);
+						log.debug("Trying do send notification to user, but no UserData can be found for user '"+username+"', will only send to admin if admin notifications are defined.");
 					}
+					if(isSendToAdmins()){
+						// If we did not have any user for this, we will simply use empty values for substitution
+						if (userData == null) {
+							userData = new UserDataVO();
+						}
+						// Populate admin message        		    
+						log.debug("Adding to email queue for admin");
+						NotificationParamGen paramGen = new NotificationParamGen(userData,cert);
+						String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
+						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
+						adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
+					}	
 				}
 				if (count == 0) {
 					log.debug("No certificates found for notification.");
