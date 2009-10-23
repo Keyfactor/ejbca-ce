@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -116,7 +116,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 					//String certBase64 = result.getString(2);
 					// Get the certificate through a session bean
 					log.debug("Found a certificate we should notify. Username="+username+", fp="+fingerprint);
-					X509Certificate cert = (X509Certificate )cl.findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
+					Certificate cert = cl.findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
 					UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
 					if(userData != null){
 						if(isSendToEndUsers()){
