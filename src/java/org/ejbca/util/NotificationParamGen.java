@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.util;
 
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -90,7 +90,7 @@ public class NotificationParamGen {
   /**
    * Constructor that mainly should be used when notifying about expiring certificates.
    */
-  public NotificationParamGen(UserDataVO user, X509Certificate expiringCert){
+  public NotificationParamGen(UserDataVO user, Certificate expiringCert){
 	  populate(user,null,null,null,null,null,null, null,null,null,null,expiringCert);
   }
 	
@@ -125,7 +125,7 @@ public class NotificationParamGen {
 		                Integer numberOfApprovalLeft, String approvalRequestURL, String approveComment,
 		                String requestAdminUsername, String requestAdminDN,
 		                String approvalAdminUsername, String approvalAdminDN,
-		                X509Certificate expiringCert){
+		                Certificate expiringCert){
 	  paramPut("NL", System.getProperty("line.separator"));
       String date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
       paramPut("DATE", date);
@@ -203,10 +203,10 @@ public class NotificationParamGen {
 	  
 	  if(expiringCert != null){
 		  paramPut("expiringCert.CERTSERIAL",CertTools.getSerialNumberAsString(expiringCert));
-		  String dateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(expiringCert.getNotAfter());
+		  String dateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(CertTools.getNotAfter(expiringCert));
 		  paramPut("expiringCert.EXPIREDATE",dateString);
-          paramPut("expiringCert.CERTSUBJECTDN",expiringCert.getSubjectDN().toString());
-          paramPut("expiringCert.CERTISSUERDN",expiringCert.getIssuerDN().toString());          
+          paramPut("expiringCert.CERTSUBJECTDN",CertTools.getSubjectDN(expiringCert));
+          paramPut("expiringCert.CERTISSUERDN",CertTools.getIssuerDN(expiringCert));          
 	  }
 
 	  
