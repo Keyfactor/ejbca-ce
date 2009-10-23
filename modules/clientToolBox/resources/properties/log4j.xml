@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<!-- Console output -->
+	<appender name="console" class="org.apache.log4j.ConsoleAppender"> 
+		<param name="Target" value="System.out"/>
+		<param name="Threshold" value="INFO"/>
+		<layout class="org.apache.log4j.PatternLayout"> 
+			<param name="ConversionPattern" value="%d %-5p [%c] %m%n"/> 
+		</layout> 
+	</appender> 
+
+	<!-- File output -->
+	<appender name="full" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="ctb.log"/>
+		<param name="append" value="false" />
+		<param name="encoding" value="UTF-8" />
+		<!--param name="MaxFileSize" value="32MB"/-->
+		<!--param name="MaxBackupIndex" value="1"/-->
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+		</layout>
+	</appender>
+
+	<!-- Make sure we get all to info when running tests. -->
+	<category name="org.ejbca.ui.cli.TestOcspMonitoringTool" additivity="true">
+		<priority value="TRACE"/>
+		<appender-ref ref="full"/>
+	</category>
+
+	<!-- Use DEBUG for all EJBCA classes -->
+	<category name="org.ejbca" additivity="true">
+		<priority value="DEBUG"/>
+		<appender-ref ref="full"/>
+	</category>
+
+	<!-- Limit Hibernate's output to INFO and log-file only -->
+	<category name="org.hibernate" additivity="false">
+		<priority value="INFO"/>
+		<appender-ref ref="full"/>
+	</category>
+
+	<root> 
+		<!-- Set basic limit for console -->
+		<priority value="INFO" /> 
+		<appender-ref ref="console"/>
+	</root> 
+
+</log4j:configuration>
