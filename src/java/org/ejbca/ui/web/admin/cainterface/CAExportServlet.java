@@ -97,7 +97,6 @@ public class CAExportServlet extends HttpServlet {
 			keystorebytes = caadminsession.exportCAKeyStore(ejbcawebbean.getAdminObject(), caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
             ServletUtils.removeCacheHeaders(res);	// We must remove cache headers for IE
         	res.setContentType("application/octet-stream");
-        	res.setHeader("Cache-Control", "no-cache");
         	res.setContentLength(keystorebytes.length);
         	res.setHeader("Content-Disposition", "attachment;filename=\"" + caname + "."+ext+"\"");
 	        res.getOutputStream().write(keystorebytes);
