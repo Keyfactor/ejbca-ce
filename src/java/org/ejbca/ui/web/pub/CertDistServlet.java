@@ -45,6 +45,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -252,8 +253,13 @@ public class CertDistServlet extends HttpServlet {
                         }
                     }
                     if (latestcertno > -1) {
-                        byte[] cert = ((Certificate)certs[latestcertno]).getEncoded();
-                        String filename = CertTools.getPartFromDN(dn,"CN")+".cer";
+                    	Certificate certcert = (Certificate)certs[latestcertno];
+                        byte[] cert = certcert.getEncoded();
+                    	String ending = ".cer";
+                    	if (certcert instanceof CardVerifiableCertificate) {
+                    		ending = ".cvcert";
+                    	}
+                        String filename = CertTools.getPartFromDN(dn,"CN")+ending;
                         // We must remove cache headers for IE
                         ServletUtils.removeCacheHeaders(res);
                         res.setHeader("Content-disposition", "attachment; filename=\"" +  filename+"\"");
@@ -348,9 +354,12 @@ public class CertDistServlet extends HttpServlet {
                     ServletUtils.removeCacheHeaders(res);
                     if (pkcs7){
                         res.setHeader("Content-disposition", "attachment; filename=\""+filename+".p7c\"");
-                    }
-                    else {
-                        res.setHeader("Content-disposition", "attachment; filename=\""+filename+".crt\"");
+                    } else {
+                    	String ending = ".crt";
+                    	if (cacert instanceof CardVerifiableCertificate) {
+                    		ending = ".cvcert";
+                    	}
+                        res.setHeader("Content-disposition", "attachment; filename=\""+filename+ending+"\"");
                     }
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
@@ -422,7 +431,11 @@ public class CertDistServlet extends HttpServlet {
                 } else if (command.equalsIgnoreCase(COMMAND_IEOCSPCERT)) {
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
-                    res.setHeader("Content-disposition", "attachment; filename=\""+filename+".crt\"");
+                	String ending = ".crt";
+                	if (ocspcert instanceof CardVerifiableCertificate) {
+                		ending = ".cvcert";
+                	}
+                    res.setHeader("Content-disposition", "attachment; filename=\""+filename+ending+"\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
