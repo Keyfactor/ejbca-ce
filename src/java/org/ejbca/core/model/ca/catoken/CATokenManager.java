@@ -100,6 +100,16 @@ public class CATokenManager {
         }
     }
 
+    /** Removes a CA token from the cache to force an update the next time the CA is read
+     * 
+     */
+    public synchronized void removeCAToken(int caid) {
+        if (caTokenRegistry.containsKey(new Integer(caid))) {
+        	caTokenRegistry.remove(new Integer(caid));
+            log.debug("Removed old CA token from registry: "+caid);
+        }
+    }
+
     /** Remove all CA tokens
      */
     public synchronized void removeAll() {

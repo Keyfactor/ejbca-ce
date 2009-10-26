@@ -23,7 +23,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
@@ -1606,10 +1608,19 @@ public class CAAdminSessionBean extends BaseSessionBean {
         		// We need to save all this
     			ca.setCAToken(caToken);
     			cadata.setCA(ca);
-    			// After this we need to reload all CAs? really make sure that we do that
-    			// This is because IAIK PKCS#11 provider cuts ALL PKCS#11 sessions when I generate new keys for one CA
-    			CACacheManager.instance().removeAll();
-    			CATokenManager.instance().removeAll();
+    			// After this we need to reload all CAs? 
+    			// Make sure we store the new CA and token and reload or update the caches
+    			Provider prov = Security.getProvider(caToken.getProvider());
+    			log.debug("Provider classname: "+prov.getClass().getName());
+    			if (StringUtils.contains(prov.getClass().getName(), "iaik")) {
+        			// This is because IAIK PKCS#11 provider cuts ALL PKCS#11 sessions when I generate new keys for one CA
+        			CACacheManager.instance().removeAll();
+        			CATokenManager.instance().removeAll();
+    			} else {
+    				// Using the Sun provider we don't have to reload every CA, just update values in the caches
+    				CACacheManager.instance().removeCA(ca.getCAId());
+    				CATokenManager.instance().removeCAToken(ca.getCAId());
+    			}    			
         		cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
         		ca = cadata.getCA();
     			// In order to generate a certificate with this keystore we must make sure it is activated
