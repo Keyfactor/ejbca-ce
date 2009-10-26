@@ -179,6 +179,11 @@ public class CertificateView implements java.io.Serializable {
     		mod = "" + ((DSAPublicKey)certificate.getPublicKey()).getY().toString(16);
     		mod = mod.toUpperCase();
     		mod = StringUtils.abbreviate(mod, 50);
+    	} else if( certificate.getPublicKey() instanceof ECPublicKey){
+    		mod = "" + ((ECPublicKey)certificate.getPublicKey()).getW().getAffineX().toString(16);
+    		mod = mod + ((ECPublicKey)certificate.getPublicKey()).getW().getAffineY().toString(16);
+    		mod = mod.toUpperCase();
+    		mod = StringUtils.abbreviate(mod, 50);
     	}
     	return mod;
     }
