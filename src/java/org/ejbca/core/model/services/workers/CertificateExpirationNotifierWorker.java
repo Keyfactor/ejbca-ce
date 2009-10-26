@@ -139,6 +139,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 						// If we did not have any user for this, we will simply use empty values for substitution
 						if (userData == null) {
 							userData = new UserDataVO();
+							userData.setUsername(username);
 						}
 						// Populate admin message        		    
 						log.debug("Adding to email queue for admin");
