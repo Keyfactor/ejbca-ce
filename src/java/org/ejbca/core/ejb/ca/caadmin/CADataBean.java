@@ -224,6 +224,9 @@ public abstract class CADataBean extends BaseEntityBean {
         ca = CACacheManager.instance().getCA(getCaId().intValue(), this);
         boolean isUpdated = false;
         if (ca != null) {
+        	if (log.isDebugEnabled()) {
+        		log.debug("Found CA ('"+ca.getName()+"', "+getCaId().intValue()+") in cache.");
+        	}
         	long update = ca.getCAInfo().getUpdateTime().getTime();
         	long t = getUpdateTime();
         	//log.debug("updateTime from ca = "+update);
@@ -234,7 +237,7 @@ public abstract class CADataBean extends BaseEntityBean {
         	}
         }
         if ( (ca == null) || isUpdated) {
-        	log.debug("Re-reading CA from database.");
+        	log.debug("Re-reading CA from database: "+getCaId().intValue());
             java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
             HashMap h = (HashMap) decoder.readObject();
             decoder.close();
@@ -259,7 +262,7 @@ public abstract class CADataBean extends BaseEntityBean {
             	// Make sure we upgrade the CAToken as well, if needed
                 ca.getCAToken();
                 setCA(ca);
-                log.debug("Stored upgraded CA '"+ca.getName()+"' with version "+ca.getVersion());
+                log.debug("Stored upgraded CA ('"+ca.getName()+"', "+getCaId().intValue()+") with version "+ca.getVersion());
             }
             // We have to do the same if CAToken was upgraded
             // Add CA to the cache
