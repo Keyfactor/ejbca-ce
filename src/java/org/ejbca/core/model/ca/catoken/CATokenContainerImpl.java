@@ -278,14 +278,26 @@ public class CATokenContainerImpl extends CATokenContainer {
 	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#activate(java.lang.String)
 	 */
 	public void activate(String authorizationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
-		getCAToken().activate(authorizationcode);		
+		ICAToken token = getCAToken();
+		if (token != null) {
+			token.activate(authorizationcode);
+		} else {
+			log.debug("CA token is null and can not be activated.");
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#deactivate()
 	 */
 	public boolean deactivate() throws Exception {
-		return getCAToken().deactivate();
+		boolean ret = false;
+		ICAToken token = getCAToken();
+		if (token != null) {
+			ret = token.deactivate();
+		} else {
+			log.debug("CA token is null and does not need deactivation.");
+		}
+		return ret;
 	}
 
 
