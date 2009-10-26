@@ -31,6 +31,7 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -313,7 +314,11 @@ public class CACertServlet extends HttpServlet {
                     res.getOutputStream().write(enccert);
                     log.debug("Sent CA cert to NS client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
-                    res.setHeader("Content-disposition", "attachment; filename=" + strippedCACN + ".cacert.crt");
+                	String ending = "crt";
+                	if (cacert instanceof CardVerifiableCertificate) {
+                		ending = "cvcert";
+                	}
+                    res.setHeader("Content-disposition", "attachment; filename=" + strippedCACN + ".cacert."+ending);
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
