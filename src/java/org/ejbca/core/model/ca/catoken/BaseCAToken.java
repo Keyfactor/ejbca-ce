@@ -440,7 +440,7 @@ public abstract class BaseCAToken implements ICAToken {
      * @see org.ejbca.core.model.ca.catoken.ICAToken#reset()
      */
     public void reset() {
-        // do nothing. the impimenting class decides whether something could be done to get the HSM working after a failure.
+        // do nothing. the implementing class decides whether something could be done to get the HSM working after a failure.
     }
     public boolean isActive() {
         return this.mKeys != null;
