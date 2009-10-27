@@ -68,7 +68,7 @@
     <property name="mod.ejbca-util.lib" location="${ejbca.home}/dist/ejbca-util.jar" />
     <property name="mod.ejbca-ws-cli.lib" location="${ejbca.home}/dist/ejbcawscli/ejbcawscli.jar" />
     <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.home}/dist/xkmscli/xkmscli.jar" />
-    <property name="mod.clientToolBox.dist" location="${ejbca.home}/clientToolBox-dist" />
+    <property name="mod.clientToolBox.dist" location="${ejbca.home}/dist/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
 

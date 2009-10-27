@@ -20,14 +20,6 @@ else
     JAVACMD=${JAVA_HOME}/bin/java
 fi
 
-CLASSES=${CLASSES}:${TOOLBOX_HOME}/clientToolBox.jar:${TOOLBOX_HOME}/properties
-
-if [ -d ${TOOLBOX_HOME} ] ; then
-	for i in ${TOOLBOX_HOME}/lib/*.jar ; do
-		CLASSES=${CLASSES}:${i}
-    done
-fi
-
 if [ -z ${NFAST_HOME} ]; then
     NFAST_HOME=~nfast
 fi
@@ -40,4 +32,8 @@ fi
 
 # Finally run java
 #set -x
-${JAVACMD} ${JAVA_OPT} -Djava.endorsed.dirs=${TOOLBOX_HOME}/endorsed -cp ${CLASSES} org.ejbca.ui.cli.ClientToolBox "${@}"
+if [ "x$CLASSES" = "x" ] ; then
+	${JAVACMD} ${JAVA_OPT} -Djava.endorsed.dirs=${TOOLBOX_HOME}/endorsed -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
+else
+	${JAVACMD} ${JAVA_OPT} -Djava.endorsed.dirs=${TOOLBOX_HOME}/endorsed -cp ${CLASSES} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
+fi
