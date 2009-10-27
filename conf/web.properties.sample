@@ -7,6 +7,10 @@
 # Run 'ant -Dca.name=FooCA javatruststore' to install the CA-certificate for FooCA instead of the default AdminCA1
 java.trustpassword=changeit
 
+# The DN of the super administrator.
+# Uncomment if you want 'ant install' to prompt for this.
+superadmin.dn=CN=SuperAdmin
+
 # The password used to protect the generated super administrator P12 keystore (to be imported in browser).
 # Choose a good password here.
 superadmin.password=ejbca
