@@ -51,7 +51,11 @@ public class KeyStoreContainerP11 extends KeyStoreContainerBase {
         Provider provider = KeyTools.getP11Provider(slot, libName, isIx, attributesFile);
         final String providerName = provider.getName();
         log.debug("Adding provider with name: "+providerName);
-        Security.addProvider(provider);
+        if (Security.getProvider(providerName) == null) {
+            Security.addProvider(provider);
+        } else {
+            log.debug("Provider already exists, not adding.");
+        }
 
         return getInstance(providerName, protectionParameter);
     }
