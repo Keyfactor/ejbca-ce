@@ -51,6 +51,8 @@ public class EJBCAWSRACommandFactory {
             return new PKCS12ReqCommand(args);
         } else if (args[0].equals("revokecert")) {
             return new RevokeCertCommand(args);
+        } else if (args[0].equals("getpublisherqueuelength")) {
+            return new GetPublisherQueueLength(args);
         } else if (args[0].equals("revoketoken")) {
             return new RevokeTokenCommand(args);
         } else if (args[0].equals("revokeuser")) {

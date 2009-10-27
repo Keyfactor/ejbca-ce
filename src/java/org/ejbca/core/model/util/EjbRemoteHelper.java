@@ -29,6 +29,8 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
@@ -255,22 +257,39 @@ public class EjbRemoteHelper {
 		return logsession;
 	}
 
-	private IPublisherSessionRemote publishersession = null;
-	public IPublisherSessionRemote getPublisherSession() {
-		if(publishersession == null){	  
-			try {
-				publishersession = ((IPublisherSessionHome) getLocator().getRemoteHome(IPublisherSessionHome.JNDI_NAME,IPublisherSessionHome.class)).create();
-			} catch (RemoteException e) {
-				throw new EJBException(e);
-			} catch (ServiceLocatorException e) {
-				throw new EJBException(e);
-			} catch (CreateException e) {
-				throw new EJBException(e);
-			}
-		}
-		return publishersession;
-	}
-	
+    private IPublisherQueueSessionRemote publisherQueueSession;
+    public IPublisherQueueSessionRemote getPublisherQueueSession() {
+        if(this.publisherQueueSession != null){
+            return this.publisherQueueSession;
+        }
+        try {
+            this.publisherQueueSession = ((IPublisherQueueSessionHome) getLocator().getRemoteHome(IPublisherQueueSessionHome.JNDI_NAME,IPublisherQueueSessionHome.class)).create();
+        } catch (RemoteException e) {
+            throw new EJBException(e);
+        } catch (ServiceLocatorException e) {
+            throw new EJBException(e);
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        }
+        return this.publisherQueueSession;
+    }
+    
+    private IPublisherSessionRemote publishersession = null;
+    public IPublisherSessionRemote getPublisherSession() {
+        if(publishersession == null){     
+            try {
+                publishersession = ((IPublisherSessionHome) getLocator().getRemoteHome(IPublisherSessionHome.JNDI_NAME,IPublisherSessionHome.class)).create();
+            } catch (RemoteException e) {
+                throw new EJBException(e);
+            } catch (ServiceLocatorException e) {
+                throw new EJBException(e);
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return publishersession;
+    }
+    
 	private ICreateCRLSessionRemote crlsession = null;
 	public ICreateCRLSessionRemote getCrlSession() {
 		if(crlsession == null){	  
