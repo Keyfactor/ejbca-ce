@@ -39,7 +39,7 @@
     	</pathconvert>
         <jar jarfile="${mod.clientToolBox.lib}">
     		<manifest >
-    			<attribute name="Class-path" value="${clientToolBox.dependencies} ./ properties" />
+    			<attribute name="Class-path" value="${clientToolBox.dependencies} ./ properties/" />
     			<attribute name="Main-Class" value="org.ejbca.ui.cli.ClientToolBox"/>
     		</manifest>
             <fileset dir="${build.dir}"/>
