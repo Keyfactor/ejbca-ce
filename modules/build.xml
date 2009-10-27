@@ -37,7 +37,7 @@
 	</target>
 
 	<target name="clientToolBox" description="Build EJBCA client toolbox">
-		<ant antfile="${ejbca.home}/build.xml" target="clientToolBox" inheritall="false"/>
+		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
 	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->

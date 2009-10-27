@@ -1,107 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="clientToolBox" default="build">
-
     <description>
 		A stand alone CLI toolbox for interacting with EJBCA
     </description>
-    <property name="base.lib" location="${ejbca.home}/${lib}" />
 
-<!-- the properties below defines all needed modules for this module -->
-    <property name="base.mainsrc" location="${ejbca.home}/${mainsrc}" />
-    <property name="my.src" location="src" />
-    <property name="base.src.java" location="${ejbca.home}/${src.java}" />
-    <property name="ejbca-entity.src" location="../ejbca-entity/src" />
-    <property name="ws.src" location="${base.mainsrc}/jaxws/gen-java/client" />
+	<dirname property="this.dir" file="${ant.file.clientToolBox}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
 
-    <target name="clean" description="Clean up this module">
-		<delete dir="${clientToolBox.build}" />
-		<delete dir="${clientToolBox-dist.dir}" />
-    </target>
+	<path id="clientToolBox.lib.classpath">
+        <fileset dir="${ejbca.home}/lib">
+            <include name="log4j.jar"/>
+            <include name="bcprov-*.jar"/>
+            <include name="commons-lang-2.4.jar"/>
+            <include name="bcmail-*.jar"/>
+            <include name="cert-cvc.jar"/>
+            <include name="ldap.jar"/>
+            <include name="jline-0.9.94.jar"/>
+            <include name="commons-collections-3.2.jar"/>
+            <include name="commons-configuration-1.5.jar"/>
+            <include name="commons-logging.jar"/>
+        </fileset>
+		<path refid="lib.jpa.classpath"/>
+	</path>
 
+	<path id="clientToolBox.endorsed.classpath">
+		<path refid="lib.jaxws-client.classpath"/>
+	</path>
 
-    <target name="build" description="Builds command line clients as separate toolbox that can be deployed separately">
-        <mkdir dir="${clientToolBox.build}"/>
-        <copy todir="${clientToolBox-dist.dir}/endorsed">
-            <fileset dir="${base.lib}/jaxws">
-                <include name="jaxb*.jar"/>
-                <include name="saaj-*.jar"/>
-                <include name="jaxws-api.jar"/>
-                <include name="jaxws-rt.jar"/>
-                <include name="sjsxp.jar"/>
-                <include name="jsr181-api.jar"/>
-                <include name="jsr173_api.jar"/>
-                <include name="activation.jar"/>
-            </fileset>
-        </copy>
-        <copy todir="${clientToolBox-dist.dir}/lib">
-            <fileset dir="${base.lib}">
-                <include name="log4j.jar"/>
-                <include name="bcprov-jdk${java.ver}.jar"/>
-                <include name="commons-lang-2.4.jar"/>
-                <include name="bcmail-jdk${java.ver}.jar"/>
-                <include name="cert-cvc.jar"/>
-                <include name="ldap.jar"/>
-                <include name="jline-0.9.94.jar"/>
-                <include name="commons-collections-3.2.jar"/><!-- Hibernate dependency -->
-                <include name="commons-configuration-1.5.jar"/>
-                <include name="commons-logging.jar"/>
-            </fileset>
-            <fileset dir="${base.lib}/xdoclet/lib">
-                <include name="dom4j-1.6.1.jar"/><!-- Hibernate dependency -->
-            </fileset>
-        	<!-- These are also defined in propertiesAndPaths.xmli as jpa.classpath -->
-            <fileset dir="${base.lib}/hibernate">
-                <include name="antlr-2.7.6.jar"/>
-                <include name="hibernate3.jar"/>
-                <include name="hibernate-core.jar"/>
-                <include name="hibernate-annotations.jar"/>
-                <include name="hibernate-commons-annotations.jar"/>
-                <include name="hibernate-entitymanager.jar"/>
-                <include name="javassist-3.4.GA.jar"/>
-                <include name="ejb3-persistence.jar"/>
-                <include name="slf4j-api-1.5.2.jar"/>
-                <include name="slf4j-log4j12.jar"/>
-                <include name="jta-1.1.jar"/>
-                <include name="*.txt"/>
-            </fileset>
-        </copy>
-        <copy todir="${clientToolBox-dist.dir}">
-            <fileset file="${base.mainsrc}/jaxws/cli/ejbcawsracli.properties"/>
-            <fileset dir="./resources"/>
-        </copy>
-        <chmod file="${clientToolBox-dist.dir}/*.sh" perm="a+rx"/>
-        <copy todir="${base.src.java}">
-            <fileset dir="${base.mainsrc}/java" />
-        </copy>
-        <replace file="${base.src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
-        <replace file="${base.src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
-        <replace file="${base.src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>               
-        <replace file="${base.src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.secondarylanguage@" value="${intresources.secondarylanguage}"/>               
-        <replace file="${base.src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@web.docbaseuri@" value="${web.docbaseuri}"/>               
-        <javac destdir="${clientToolBox.build}" debug="on">
-            <include name="org/ejbca/ui/cli/ClientToolBox.java" />
-            <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
-            <include name="org/ejbca/core/protocol/ws/client/cvcwscli.java" />
-            <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
-            <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
-            <classpath>
-                <fileset dir="${clientToolBox-dist.dir}/lib" />
-                <fileset dir="${clientToolBox-dist.dir}/endorsed" />
-            </classpath>
-            <src path="${base.src.java}" />
-            <src path="${ws.src}" />
-            <src path="${ejbca-entity.src}" />
-            <src path="${my.src}" />
-        </javac>
-        <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
-            <fileset dir="${clientToolBox.build}"/>
-            <fileset dir="${base.mainsrc}">
+    <target name="build" description="Build this module" depends="compile">
+    	<pathconvert property="clientToolBox.dependencies" pathsep=" ">
+    	    <path>
+	        	<fileset dir="${mod.clientToolBox.dist}" includes="lib/*.jar"/>
+    	    </path>
+    		<map from="${mod.clientToolBox.dist}/" to=""/>
+    	</pathconvert>
+        <jar jarfile="${mod.clientToolBox.lib}">
+    		<manifest >
+    			<attribute name="Class-path" value="${clientToolBox.dependencies} ./ properties" />
+    			<attribute name="Main-Class" value="org.ejbca.ui.cli.ClientToolBox"/>
+    		</manifest>
+            <fileset dir="${build.dir}"/>
+            <fileset dir="${ejbca.home}/src">
                 <include name="intresources/**"/>
             </fileset>
-            <fileset dir="${base.mainsrc}/java">
+            <fileset dir="${ejbca.home}/src/java">
                 <include name="dncomponents.properties"/>
                 <include name="profilemappings.properties"/>
             </fileset>  
         </jar>
     </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${mod.clientToolBox.dist}" />
+    </target>
+	
+    <target name="compile" depends="setup">
+    	<mkdir dir="${build.dir}" />
+        <javac destdir="${build.dir}" debug="on" encoding="iso8859-1" target="${java.target.version}">
+            <classpath>
+            	<path refid="lib.bouncycastle.classpath"/>
+            	<path refid="clientToolBox.lib.classpath"/>
+               	<path refid="clientToolBox.endorsed.classpath"/>
+            </classpath>
+        	<src path="${src.dir}"/>
+            <src path="${ejbca.home}/src/java" />
+            <src path="${ejbca.home}/src/jaxws/gen-java/client" />
+            <src path="${mod.ejbca-entity.path}/src" />
+            <include name="org/ejbca/ui/cli/ClientToolBox.java" />
+            <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
+            <include name="org/ejbca/core/protocol/ws/client/cvcwscli.java" />
+            <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
+            <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
+        </javac>
+    </target>
+
+    <target name="setup">
+    	<mkdir dir="${mod.clientToolBox.dist}"/>
+    	<!-- Copy all the files in the clientToolBox.lib.classpath to mod.clientToolBox.dist/lib -->
+    	<pathconvert property="lib.clientToolBox.classpath.property" pathsep=" ">
+    	    <path refid="clientToolBox.lib.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.clientToolBox.dist}/lib" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${lib.clientToolBox.classpath.property}"/>
+    	</copy>
+    	<!-- Copy all the files in the clientToolBox.lib.classpath to mod.clientToolBox.dist/endorsed -->
+    	<pathconvert property="endorsed.clientToolBox.classpath.property" pathsep=" ">
+    	    <path refid="clientToolBox.lib.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.clientToolBox.dist}/endorsed" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${endorsed.clientToolBox.classpath.property}"/>
+    	</copy>
+    	<!-- Copy scripts etc to mod.clientToolBox.dist -->
+        <copy todir="${mod.clientToolBox.dist}">
+            <fileset file="${ejbca.home}/src/jaxws/cli/ejbcawsracli.properties"/>
+            <fileset dir="${this.dir}/resources">
+            	<include name="ejbcaClientToolBox.bat"/>
+            	<include name="ejbcaClientToolBox.sh"/>
+            	<include name="README"/>
+            	<include name="properties/**/*.*"/>
+        	</fileset>
+        </copy>
+        <chmod file="${mod.clientToolBox.dist}/*.sh" perm="a+rx"/>
+    </target>
+
 </project>
