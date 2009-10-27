@@ -743,9 +743,9 @@ public interface IEjbcaWS {
 	public abstract String getEjbcaVersion();
 
     /**
-     * ask for the length of a publisher queue
+     * Ask for the length of a publisher queue
      * @param name of the queue
-     * @return the length
+     * @return the length or -4 if the publisher does not exist
      * @throws EjbcaException
      */
     int getPublisherQueueLength(String name) throws EjbcaException;

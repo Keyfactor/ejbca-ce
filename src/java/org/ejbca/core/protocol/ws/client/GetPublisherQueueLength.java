@@ -16,12 +16,11 @@ package org.ejbca.core.protocol.ws.client;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.CertTools;
 
 /**
- * Revokes a given certificate
+ * Displays the length of a publisher queue.
  *
- * @version $Id: RevokeCertCommand.java 6428 2008-10-06 09:15:14Z anatom $
+ * @version $Id$
  */
 public class GetPublisherQueueLength extends EJBCAWSRABaseCommand implements IAdminCommand{
 

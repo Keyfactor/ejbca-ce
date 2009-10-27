@@ -2398,13 +2398,7 @@ public class EjbcaWS implements IEjbcaWS {
             final Admin admin = ejbhelper.getAdmin(true, this.wsContext);
             logAdminName(admin,logger);
             final IPublisherSessionRemote ps = ejbhelper.getPublisherSession();
-            if ( ps==null ) {
-                return -2;
-            }
             final IPublisherQueueSessionRemote pqs = ejbhelper.getPublisherQueueSession();
-            if ( pqs==null ) {
-                return -3;
-            }
             final int id = ps.getPublisherId(admin, name);
             if ( id==0 ) {
                 return -4;// no publisher with this name
