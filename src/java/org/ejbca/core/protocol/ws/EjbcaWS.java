@@ -64,6 +64,8 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
+import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
@@ -2386,5 +2388,41 @@ public class EjbcaWS implements IEjbcaWS {
 	public String getEjbcaVersion() {
 		return GlobalConfiguration.EJBCA_VERSION;
 	}
+    /* (non-Javadoc)
+     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getPublisherQueueLength(java.lang.String)
+     */
+    public int getPublisherQueueLength(String name) throws EjbcaException{
+        final IPatternLogger logger = TransactionLogger.getPatternLogger();
+        try {
+            final EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
+            final Admin admin = ejbhelper.getAdmin(true, this.wsContext);
+            logAdminName(admin,logger);
+            final IPublisherSessionRemote ps = ejbhelper.getPublisherSession();
+            if ( ps==null ) {
+                return -2;
+            }
+            final IPublisherQueueSessionRemote pqs = ejbhelper.getPublisherQueueSession();
+            if ( pqs==null ) {
+                return -3;
+            }
+            final int id = ps.getPublisherId(admin, name);
+            if ( id==0 ) {
+                return -4;// no publisher with this name
+            }
+            return pqs.getPendingEntriesCountForPublisher(id);
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+        } catch (EJBException e) {
+            throw getInternalException(e, logger);
+        } catch (RemoteException e) {
+            throw getInternalException(e, logger);
+        } catch( RuntimeException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+        } finally {
+            logger.writeln();
+            logger.flush();
+        }
+    }
 
 }
