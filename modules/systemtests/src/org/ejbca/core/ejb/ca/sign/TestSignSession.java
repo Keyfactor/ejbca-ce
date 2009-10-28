@@ -1773,6 +1773,28 @@ public class TestSignSession extends TestCase {
         assertEquals("dNSName=foo20.bar.com, dNSName=foo11.bar.com, dNSName=foo4.bar.com, dNSName=foo19.bar.com, dNSName=foo8.bar.com, dNSName=foo1.bar.com, dNSName=foo10.bar.com, dNSName=foo21.bar.com, dNSName=foo15.bar.com, dNSName=foo17.bar.com, dNSName=foo14.bar.com, dNSName=foo12.bar.com, dNSName=foo16.bar.com, dNSName=foo2.bar.com, dNSName=foo18.bar.com, dNSName=foo5.bar.com, dNSName=foo13.bar.com, dNSName=foo7.bar.com, dNSName=foo3.bar.com, dNSName=foo6.bar.com, dNSName=foo9.bar.com", altNames);
     } // test29TestExtensionOverride
 
+    public void test30OfflineCA() throws Exception {
+        // user that we know exists...
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+        // Set CA to offline
+        CAInfo inforsa = TestTools.getCAAdminSession().getCAInfo(admin, rsacaid);
+        inforsa.setStatus(SecConst.CA_OFFLINE);
+        TestTools.getCAAdminSession().editCA(admin, inforsa);
+        
+        TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        boolean thrown = false;
+        try {
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        } catch (Exception e) {
+        	thrown = true;
+        }
+        assertTrue(thrown);
+        
+        inforsa.setStatus(SecConst.CA_ACTIVE);
+        TestTools.getCAAdminSession().editCA(admin, inforsa);
+    }
     
     /**
      * creates new user

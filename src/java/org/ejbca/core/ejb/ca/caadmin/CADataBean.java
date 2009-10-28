@@ -288,6 +288,8 @@ public abstract class CADataBean extends BaseEntityBean {
         log.debug("Saving CA data with length: "+data.length()+" for CA '"+ca.getName()+"'.");
         setData(data);
         setUpdateTime(new Date().getTime());
+        // We have to update status as well, because it is kept in it's own database column
+        setStatus(ca.getStatus());
         // remove the CA from the cache to force an update the next time we load it
         CACacheManager.instance().removeCA(getCaId().intValue());
         // .. and we try to load it right away

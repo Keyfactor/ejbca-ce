@@ -709,7 +709,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		String msg = intres.getLocalizedMessage("caadmin.removedca", new Integer(caid));            	
             getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
         }catch(Exception e) {
-    		String msg = intres.getLocalizedMessage("caadmin.errorremoveca", new Integer(caid));            	
+    		String msg = intres.getLocalizedMessage("caadmin.errorremoveca", new Integer(caid), e.getMessage());            	
             log.error(msg, e);
             getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw new EJBException(e);
@@ -1218,6 +1218,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		        cacertcol.add(cacert);
     				getSignSession().publishCACertificate(admin, cacertcol, ca.getCRLPublishers());
 
+    				// Set status to active, so we can sign certificates for the external services below.
+    				cadata.setStatus(SecConst.CA_ACTIVE);
+    				ca.setStatus(SecConst.CA_ACTIVE);
+
     				// activate External CA Services
     				Iterator iter = ca.getExternalCAServiceTypes().iterator();
     				while(iter.hasNext()){
@@ -1251,8 +1255,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				cadata.setExpireTime(CertTools.getNotAfter(cacert).getTime());    				
                     // Save CA
     				cadata.setCA(ca);
-    				// Finally! Set status to activate CA
-    				cadata.setStatus(SecConst.CA_ACTIVE);
 
     				// Create initial CRL
                     this.getCRLCreateSession().run(admin,ca.getSubjectDN());                    
