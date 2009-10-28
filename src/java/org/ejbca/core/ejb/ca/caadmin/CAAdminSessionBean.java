@@ -1351,7 +1351,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		// Saying that the CA already exists.
     		// However, if we have the same DN, and give the same name, we simply assume that the admin actually wants
     		// to treat an internal CA as an external CA, perhaps there is different HSMs connected for root CA and sub CA?
-    		log.debug("Old castatus="+oldcadata.getStatus());
+    		if (log.isDebugEnabled()) {
+        		log.debug("Old castatus="+oldcadata.getStatus()+", oldcaid="+oldcadata.getCaId().intValue()+", caid="+cainfo.getCAId()+", oldcaname="+oldcadata.getName()+", name="+cainfo.getName());    			
+    		}
     		if ( ((oldcadata.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) || (oldcadata.getStatus() == SecConst.CA_ACTIVE))
     			&& (oldcadata.getCaId().intValue() == cainfo.getCAId()) && (oldcadata.getName().equals(cainfo.getName())) ) {
     			// Yes, we have all the same DN, CAName and the old CA is either waiting for a certificate response or is active
