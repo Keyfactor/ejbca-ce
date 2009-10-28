@@ -418,19 +418,6 @@ public class X509CA extends CA implements Serializable {
 
 	/**
 	 * sequence is ignored by X509CA
-     * @throws CATokenOfflineException
-     * @throws CAOfflineException
-     * @throws IllegalKeyStoreException
-     * @throws IllegalValidityException
-     * @throws NoSuchAlgorithmException
-     * @throws CertificateExtensionException
-	 * @throws CertificateExtentionConfigurationException 
-	 * @throws SignatureException 
-	 * @throws NoSuchProviderException 
-	 * @throws IllegalStateException 
-	 * @throws InvalidKeyException 
-	 * @throws CertificateException 
-	 * @throws IOException 
 	 */
     public Certificate generateCertificate(UserDataVO subject, 
     		                               X509Name requestX509Name,
@@ -440,7 +427,7 @@ public class X509CA extends CA implements Serializable {
                                            Date notAfter,
                                            CertificateProfile certProfile,
                                            X509Extensions extensions,
-                                           String sequence) throws CATokenOfflineException, CAOfflineException, IllegalKeyStoreException, IllegalValidityException, NoSuchAlgorithmException, CertificateExtensionException, CertificateExtentionConfigurationException, InvalidKeyException, IllegalStateException, NoSuchProviderException, SignatureException, CertificateException, IOException {
+                                           String sequence) throws Exception {
     	// Before we start, check if the CA is off-line, we don't have to waste time
     	// one the stuff below of we are off-line. The line below will throw CATokenOfflineException of CA is offline
         getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
