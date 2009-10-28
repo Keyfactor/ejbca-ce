@@ -321,8 +321,6 @@ public abstract class CADataBean extends BaseEntityBean {
     		setCaId(new Integer(subjectdn.hashCode()));
     		setName(name);        
     		setSubjectDN(subjectdn);
-    		setStatus(status);        
-    		
     		
     		if (ca.getCertificateChain().size() != 0) {
     			Certificate cacert = ca.getCACertificate();
@@ -332,6 +330,10 @@ public abstract class CADataBean extends BaseEntityBean {
     		
     		setCA(ca);        
     		
+    		// Set status last, because it can occur in the ca object as well, but we think the one passed as argument here is what
+    		// is desired primarily
+    		setStatus(status);        
+
     		log.debug("Created CA "+ name);
     		return new Integer(subjectdn.hashCode());
     	} catch(java.io.UnsupportedEncodingException e) {
