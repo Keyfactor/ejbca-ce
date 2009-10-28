@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="modules/ejbca-ejb-cli/src"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src"/>
-	<classpathentry kind="src" path="tmp/bin/ocsp-gensrc"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
 	<classpathentry kind="src" path="src/xkms/gen-java"/>
 	<classpathentry kind="src" path="tmp/bin/gensrc"/>
