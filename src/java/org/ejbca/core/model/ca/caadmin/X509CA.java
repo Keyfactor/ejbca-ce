@@ -31,6 +31,7 @@ import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -86,6 +87,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.CAOfflineException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
@@ -98,7 +100,9 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certextensions.CertificateExtension;
+import org.ejbca.core.model.ca.certextensions.CertificateExtensionException;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
+import org.ejbca.core.model.ca.certextensions.CertificateExtentionConfigurationException;
 import org.ejbca.core.model.ca.certextensions.standard.CrlDistributionPoints;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -414,6 +418,19 @@ public class X509CA extends CA implements Serializable {
 
 	/**
 	 * sequence is ignored by X509CA
+     * @throws CATokenOfflineException
+     * @throws CAOfflineException
+     * @throws IllegalKeyStoreException
+     * @throws IllegalValidityException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateExtensionException
+	 * @throws CertificateExtentionConfigurationException 
+	 * @throws SignatureException 
+	 * @throws NoSuchProviderException 
+	 * @throws IllegalStateException 
+	 * @throws InvalidKeyException 
+	 * @throws CertificateException 
+	 * @throws IOException 
 	 */
     public Certificate generateCertificate(UserDataVO subject, 
     		                               X509Name requestX509Name,
@@ -423,10 +440,17 @@ public class X509CA extends CA implements Serializable {
                                            Date notAfter,
                                            CertificateProfile certProfile,
                                            X509Extensions extensions,
-                                           String sequence) throws Exception{
+                                           String sequence) throws CATokenOfflineException, CAOfflineException, IllegalKeyStoreException, IllegalValidityException, NoSuchAlgorithmException, CertificateExtensionException, CertificateExtentionConfigurationException, InvalidKeyException, IllegalStateException, NoSuchProviderException, SignatureException, CertificateException, IOException {
     	// Before we start, check if the CA is off-line, we don't have to waste time
     	// one the stuff below of we are off-line. The line below will throw CATokenOfflineException of CA is offline
         getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+
+        // Also, we must only allow signing to take place if the CA itself if on line, even if the token is on-line.
+        if ((getStatus() != SecConst.CA_ACTIVE)) {
+        	String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
+			log.debug(msg); // This is something we handle so no need to log with higher priority
+        	throw new CAOfflineException(msg);
+        }
 
         final String sigAlg = getCAInfo().getCATokenInfo().getSignatureAlgorithm();
         X509Certificate cacert = (X509Certificate)getCACertificate();
