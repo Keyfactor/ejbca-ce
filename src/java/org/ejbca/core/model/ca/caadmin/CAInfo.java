@@ -74,8 +74,8 @@ public class CAInfo implements Serializable {
     protected String subjectdn;
     protected int caid;
     protected String name;
-    /** SecConst.CA_ACTIVE etc */
-    protected int status;
+    /** SecConst.CA_ACTIVE etc, 0 means not defined (i.e. not updated when editing CA) */
+    protected int status=0;
     protected long validity;
     protected Date expiretime;
     protected Date updatetime;
