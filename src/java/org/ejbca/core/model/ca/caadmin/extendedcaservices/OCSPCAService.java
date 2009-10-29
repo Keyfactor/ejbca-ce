@@ -101,10 +101,10 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         	m_log.debug("Finished loading OCSP keystore");
       
             this.ocspsigningkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
-            // Due to a bug in Glassfish v1 (fixed in v2), we need to make sure all certificates in this 
-            // Array i of SUNs own provider
-            //this.ocspcertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));
-            this.ocspcertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), CertTools.SYSTEM_SECURITY_PROVIDER);
+            // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
+            // Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
+            // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
+            this.ocspcertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
             this.info = new OCSPCAServiceInfo(getStatus(),
                                               getSubjectDN(),
                                               getSubjectAltName(), 
