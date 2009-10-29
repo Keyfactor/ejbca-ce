@@ -70,12 +70,13 @@ public class X509CAInfo extends CAInfo{
         this.expiretime = expiretime;
         this.catype = catype;
         this.signedby = signedby;
-        // Due to a bug in Glassfish v1, we need to make sure all certificates in this 
-        // Array i of SUNs own provider
+        // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
+        // Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
+        // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
 		try {
 			if (certificatechain != null) {
 		        X509Certificate[] certs = (X509Certificate[])certificatechain.toArray(new X509Certificate[0]);
-		        ArrayList list = CertTools.getCertCollectionFromArray(certs, CertTools.SYSTEM_SECURITY_PROVIDER);
+		        ArrayList list = CertTools.getCertCollectionFromArray(certs, null);
 		        this.certificatechain = list;        				
 			} else {
 				this.certificatechain = null;
