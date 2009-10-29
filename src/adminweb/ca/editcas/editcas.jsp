@@ -624,7 +624,7 @@
 				     		  "",
 				     		  keySpec,
 							  keyAlg));
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(), subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, catoken, description, -1, null,
@@ -702,7 +702,7 @@
 				     		          "",
 							  keySpec,
 							  keyAlg));
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(), subjectaltname,
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
                                                         null, catoken, description, -1, null, 
@@ -748,7 +748,7 @@
                  }
                  
                  // Create the CAInfo to be used for either generating the whole CA or making a request
-                 CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
+                 CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(),
                          certprofileid, validity, 
                          null, catype, signedby,
                          null, catoken, description, -1, null,
@@ -1338,7 +1338,7 @@
                             
              if(!illegaldnoraltname){
                if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
-                 cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
+                 cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(), subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, null, description, -1, null,
@@ -1374,7 +1374,7 @@
                  // Create the CAInfo to be used for either generating the whole CA or making a request
                  if(!illegaldnoraltname){
                    if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
-                     cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
+                     cainfo = new CVCCAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(),
                        certprofileid, validity, 
                        null, catype, signedby,
                        null, null, description, -1, null,
