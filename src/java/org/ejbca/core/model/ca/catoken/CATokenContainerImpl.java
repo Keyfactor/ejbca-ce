@@ -60,7 +60,9 @@ public class CATokenContainerImpl extends CATokenContainer {
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 
-	private ICAToken catoken = null; 
+	private ICAToken catoken = null;
+
+    final private int caid; 
 
 	public static final float LATEST_VERSION = 6;
 
@@ -121,12 +123,22 @@ public class CATokenContainerImpl extends CATokenContainer {
 	 * 
 	 * @param tokentype CATokenInfo.CATOKENTYPE_HSM or similar
 	 */
-	public CATokenContainerImpl(CATokenInfo catokeninfo){
+	/**
+	 * @param catokeninfo info about the token to be created.
+	 * @param _caid unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
+	 */
+	public CATokenContainerImpl(CATokenInfo catokeninfo, int _caid){
 		super();
+		this.caid = _caid;
 		updateCATokenInfo(catokeninfo);
 	}
 
-	public CATokenContainerImpl(HashMap data) {
+	/**
+	 * @param data that defines the token.
+	 * @param _caid unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
+	 */
+	public CATokenContainerImpl(HashMap data, int _caid) {
+        this.caid = _caid;
 		loadData(data);  
 	}
 
@@ -654,7 +666,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 				Class implClass = Class.forName( getClassPath());
 				Object obj = implClass.newInstance();
 				this.catoken = (ICAToken) obj;
-				this.catoken.init(getProperties(), data, getSignatureAlgorithm());				
+				this.catoken.init(getProperties(), data, getSignatureAlgorithm(), this.caid);				
 			}catch(Throwable e){
 				log.error("Error contructing CA Token (setting to null): ", e);
 				catoken = null;

@@ -59,7 +59,10 @@ public class SoftCAToken extends BaseCAToken {
     	log.debug("Creating SoftCAToken");
     }
     
-    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.util.HashMap, java.lang.String, int)
+     */
+    public void init(Properties properties, HashMap data, String signaturealgorithm, int caid) throws Exception {
 
     	super.setJCAProviderName(PROVIDER);
     	

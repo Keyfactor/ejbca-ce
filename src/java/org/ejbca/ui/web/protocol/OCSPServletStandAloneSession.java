@@ -210,10 +210,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     sSlot = sSlotRead.trim();
                     isIndex = false;
                 }
-                this.slot = P11Slot.getInstance(sSlot, sharedLibrary, isIndex, null, this);
+                this.slot = P11Slot.getInstance(sSlot, sharedLibrary, isIndex, null, this, 0); // no CA, set id to 0 to indicate just one juser
     			m_log.debug("sharedLibrary is: "+sharedLibrary);
             } else if ( configFile!=null && configFile.length()>0 ) {
-                this.slot = P11Slot.getInstance(configFile, this);
+                this.slot = P11Slot.getInstance(configFile, this, 0); // no CA set caid to 0 to indicate only one user
                 m_log.debug("Sun P11 configuration file is: "+configFile);
             } else {
             	this.slot = null;
@@ -1907,7 +1907,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#deactivate()
      */
     public boolean deactivate() throws Exception {
-        this.slot.removeProviderIfNoTokensActive();
+        this.slot.logoutFromSlotIfNoTokensActive();
         // should allways be active
         return true;
     }

@@ -114,7 +114,7 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
                     isIndex = true;
                     nr = "1";
                 }
-                final P11Slot slot = P11Slot.getInstance(nr, sharedLibraryPath, isIndex, null, this);
+                final P11Slot slot = P11Slot.getInstance(nr, sharedLibraryPath, isIndex, null, this, 0);// no CA set ID to 0 to indicate just one user
                 final AuthProvider provider = (AuthProvider)slot.getProvider();
                 final String providerName = provider.getName();
                 final PasswordHandler handler = new PasswordHandler(password);
