@@ -253,14 +253,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         	Integer tokentype = (Integer) ((HashMap)data.get(CATOKENDATA)).get(CATokenContainer.CATOKENTYPE);
             switch(tokentype.intValue()) {
             case CATokenInfo.CATOKENTYPE_P12:
-                ret = new CATokenContainerImpl((HashMap)data.get(CATOKENDATA)); 
+                ret = new CATokenContainerImpl((HashMap)data.get(CATOKENDATA), caid); 
                 break;
             case CATokenInfo.CATOKENTYPE_HSM:
-                ret = new CATokenContainerImpl((HashMap)data.get(CATOKENDATA)); 
+                ret = new CATokenContainerImpl((HashMap)data.get(CATOKENDATA), caid);
                 break;
             case CATokenInfo.CATOKENTYPE_NULL:
             	NullCATokenInfo info = new NullCATokenInfo();
-                ret = new CATokenContainerImpl(info);
+                ret = new CATokenContainerImpl(info, caid);
                 break;
             default:
                 throw new IllegalKeyStoreException("No CA Token type defined: "+tokentype.intValue());

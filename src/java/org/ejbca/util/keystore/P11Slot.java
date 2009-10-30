@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.util.keystore;
 
 import java.io.File;
@@ -17,6 +30,12 @@ import javax.security.auth.login.LoginException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 
+/**
+ * Each instance of this class represents a slot on a P11 module.
+ * Use an instance of this class for all your access of a specific P11 slot.
+ * Use {@link P11Slot#getProvider()} to get a provider for the slot.
+ *
+ */
 public class P11Slot {
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(P11Slot.class);
@@ -26,7 +45,7 @@ public class P11Slot {
      * The user may decide whether deactivation is allowed or not. Deactivation of a user is done when the {@link P11Slot} object wants to reset P11 session (disconnect and reconnect).
      * <p>
      * If deactivation is allowed and {@link #deactivate()} called the user should:<br>
-     * Deactivate itself (answer false to {@link #isActive()}) and call {@link P11Slot#removeProviderIfNoTokensActive()}
+     * Deactivate itself (answer false to {@link #isActive()}) and call {@link P11Slot#logoutFromSlotIfNoTokensActive()}
      * Then {@link P11Slot#getProvider()} must be called before using the provider again.
      * </p><p>
      * If deactivation is not allowed then the user may just continue to answer true to {@link #isActive()}.
@@ -47,11 +66,12 @@ public class P11Slot {
     }
     private final static Map<String,P11Slot> slotMap = new HashMap<String, P11Slot>();
     private final static Map<String,Set<P11Slot>> libMap = new HashMap<String, Set<P11Slot>>();
+    private final static Map<Integer, P11SlotUser> tokenMap = new HashMap<Integer, P11SlotUser>();
     final private String slotNr;
     final private String sharedLibrary;
     final private String attributesFile;
     final private boolean isIndex;
-    final private Set<P11SlotUser> caTokens;
+    final private Set<Integer> caids = new HashSet<Integer>();
     final private String sunP11ConfigFileName;
     final private Provider provider;
     private boolean isSettingProvider = false;
@@ -60,7 +80,6 @@ public class P11Slot {
         this.sharedLibrary = _sharedLibrary;
         this.isIndex = _isIndex;
         this.attributesFile = _attributesFile;
-        this.caTokens = new HashSet<P11SlotUser>();
         this.sunP11ConfigFileName = null;
         this.provider = createProvider();
     }
@@ -70,7 +89,6 @@ public class P11Slot {
         this.sharedLibrary = null;
         this.isIndex = false;
         this.attributesFile = null;
-        this.caTokens = new HashSet<P11SlotUser>();
         this.provider = createProvider();
     }
     /* (non-Javadoc)
@@ -94,10 +112,10 @@ public class P11Slot {
         final String mapName = this.sharedLibrary!=null ? new File(this.sharedLibrary).getName() : ONLY_ONE;
         final Iterator<P11Slot> i = libMap.get(mapName).iterator();
         while( i.hasNext() ) {
-            Iterator<P11SlotUser> i2 = i.next().caTokens.iterator();
+            Iterator<Integer> i2 = i.next().caids.iterator();
             while( i2.hasNext() ) {
                 try {
-                    i2.next().deactivate();
+                    tokenMap.get(i2.next()).deactivate();
                 } catch (Exception e) {
                     log.error("Not possible to deactivate token.", e);
                 }
@@ -107,65 +125,110 @@ public class P11Slot {
     /**
      * Get P11 slot instance. Only one instance will ever be created for each slot regardles of how many times this method is called.
      * @param slotNr number of the slot
-     * @param sharedLibrary file path of shared 
+     * @param sharedLibrary file path of shared
      * @param isIndex true if not slot number but index in slot list
-     * @param _atributesFile Atributes file. Optional. Set to null if not used
+     * @param attributesFile Attributes file. Optional. Set to null if not used
      * @param token Token that should use this object
+     * @param caid unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return The instance.
      * @throws CATokenOfflineException if CA token can not be activated, IllegalArgumentException if sharedLibrary is null.
      */
     static public P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
-                                      String attributesFile, P11SlotUser token) throws CATokenOfflineException {
-    	if (sharedLibrary == null) {
-    		throw new IllegalArgumentException("sharedLibrary = null");
-    	}
-        final String libName = new File(sharedLibrary).getName();
-        final String slotLabel = slotNr + libName + isIndex;
-        P11Slot slot = slotMap.get(slotLabel);
-        if (slot==null) {
-            slot = new P11Slot(slotNr, sharedLibrary, isIndex, attributesFile);
-            slotMap.put(slotLabel, slot);
-            Set<P11Slot> libSet = libMap.get(libName);
-            if (libSet==null) {
-                libSet=new HashSet<P11Slot>();
-                libMap.put(libName, libSet);
-            }
-            libSet.add(slot);
+                                      String attributesFile, P11SlotUser token, int caid) throws CATokenOfflineException {
+        if (sharedLibrary == null) {
+            throw new IllegalArgumentException("sharedLibrary = null");
         }
-        slot.caTokens.add(token);
-        return slot;
+        return getInstance(new SlotDataParam(slotNr, sharedLibrary, isIndex, attributesFile), token, caid);
     }
     /**
-     * As {@link #getInstance(String, String, boolean, String, org.ejbca.util.keystore.P11Slot.P11SlotUser)} but is using config file instead parameters.
+     * As {@link #getInstance(String, String, boolean, String, org.ejbca.util.keystore.P11Slot.P11SlotUser)} but is using config file instead parameters. Do only use this method if the P11 shared library is ony specified in this config file.
      * @param configFileName name of config file
      * @param token Token that should use this object.
+     * @param caid unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return
-     * @throws CATokenOfflineException 
+     * @throws CATokenOfflineException
      */
-    static public P11Slot getInstance(String configFileName, P11SlotUser token) throws CATokenOfflineException {
-        final String slotLabel = new File(configFileName).getName();
-        P11Slot slot = slotMap.get(slotLabel);
+    static public P11Slot getInstance(String configFileName, P11SlotUser token, int caid) throws CATokenOfflineException {
+        return getInstance(new SlotDataConfigFile(configFileName), token, caid);
+    }
+    static private P11Slot getInstance(ISlotData data, P11SlotUser token, int caid) throws CATokenOfflineException {
+        tokenMap.put(new Integer(caid), token);
+        P11Slot slot = slotMap.get(data.getSlotLabel());
         if (slot==null) {
-            slot = new P11Slot(configFileName);
-            slotMap.put(slotLabel, slot);
-            Set<P11Slot> libSet = libMap.get(ONLY_ONE);
+            slot = data.getNewP11Slot();
+            slotMap.put(data.getSlotLabel(), slot);
+            Set<P11Slot> libSet = libMap.get(data.getLibName());
             if (libSet==null) {
                 libSet=new HashSet<P11Slot>();
-                libMap.put(ONLY_ONE, libSet);
+                libMap.put(data.getLibName(), libSet);
             }
             libSet.add(slot);
         }
-        slot.caTokens.add(token);
+        final Iterator<P11Slot> i = slotMap.values().iterator();
+        while ( i.hasNext() ) {
+            i.next().caids.remove(new Integer(caid));
+        }
+        slot.caids.add(new Integer(caid));
         return slot;
+    }
+    private static interface ISlotData {
+        P11Slot getNewP11Slot() throws CATokenOfflineException;
+        String getSlotLabel();
+        String getLibName();
+    }
+    private static class SlotDataConfigFile implements ISlotData {
+        private final String configFileName;
+        SlotDataConfigFile(String _configFileName) {
+            this.configFileName = _configFileName;
+        }
+        @Override
+        public String getLibName() {
+            return ONLY_ONE;
+        }
+        @Override
+        public P11Slot getNewP11Slot() throws CATokenOfflineException {
+            return new P11Slot(this.configFileName);
+        }
+        @Override
+        public String getSlotLabel() {
+            return new File(this.configFileName).getName();
+        }
+    }
+    private static class SlotDataParam implements ISlotData {
+        private final String slotNr;
+        private final String sharedLibrary;
+        private final String libName;
+        private final boolean isIndex; 
+        private final String attributesFile;
+        SlotDataParam(String _slotNr, String _sharedLibrary, boolean _isIndex, 
+                      String _attributesFile) {
+            this.slotNr = _slotNr;
+            this.sharedLibrary = _sharedLibrary;
+            this.isIndex = _isIndex;
+            this.attributesFile = _attributesFile;
+            this.libName = new File(this.sharedLibrary).getName();
+        }
+        @Override
+        public P11Slot getNewP11Slot() throws CATokenOfflineException {
+            return new P11Slot(this.slotNr, this.sharedLibrary, this.isIndex, this.attributesFile);
+        }
+        @Override
+        public String getSlotLabel() {
+            return this.slotNr + this.libName + this.isIndex;
+        }
+        @Override
+        public String getLibName() {
+            return this.libName;
+        }
     }
     /**
      * Unload if last active token on slot
      * @throws LoginException 
      */
-    public void removeProviderIfNoTokensActive() {
-        final Iterator<P11SlotUser> iTokens = this.caTokens.iterator();
+    public void logoutFromSlotIfNoTokensActive() {
+        final Iterator<Integer> iTokens = this.caids.iterator();
         while( iTokens.hasNext() ) {
-            if ( iTokens.next().isActive() ) {
+            if ( tokenMap.get(iTokens.next()).isActive() ) {
                 return;
             }
         }
@@ -197,7 +260,7 @@ public class P11Slot {
             try {
                 this.wait();
             } catch (InterruptedException e1) {
-                log.fatal("This should never happend", e1);
+                log.fatal("This should never happened", e1);
             }
         }
         try {
@@ -208,7 +271,7 @@ public class P11Slot {
             } else if ( this.sunP11ConfigFileName!=null ) {
                 tmpProvider = KeyTools.getSunP11Provider(new FileInputStream(this.sunP11ConfigFileName));
             } else {
-                throw new Error("Should never happend.");
+                throw new Error("Should never happen.");
             }
         } catch (IOException e) {
             final CATokenOfflineException e2 = new CATokenOfflineException("Not possible to create provider. See cause.");
@@ -220,10 +283,24 @@ public class P11Slot {
         }
         if ( tmpProvider==null )
             throw new CATokenOfflineException("Provider is null");
-        if ( Security.getProvider(tmpProvider.getName())==null ) {
-            Security.addProvider( tmpProvider );
+        if ( Security.getProvider(tmpProvider.getName())!=null ) {
+            Security.removeProvider(tmpProvider.getName());
         }
+        Security.addProvider( tmpProvider );
         log.debug("Provider successfully added: "+tmpProvider);
         return tmpProvider;
+    }
+    /* (non-Javadoc)
+     * @see java.lang.Object#finalize()
+     */
+    @Override
+    public void finalize() {
+        try {
+            super.finalize();
+        } catch (Throwable e) {
+            log.error("Problem. See exception.", e);
+        }
+        Security.removeProvider(this.provider.getName());
+        log.debug("finalize called.");
     }
 }

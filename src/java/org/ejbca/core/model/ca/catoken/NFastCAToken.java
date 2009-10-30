@@ -96,9 +96,9 @@ public class NFastCAToken extends BaseCAToken {
     }
 
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.util.HashMap, java.lang.String, int)
      */
-    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
+    public void init(Properties properties, HashMap data, String signaturealgorithm, int caid) throws Exception {
         setProviders(PROVIDER_CLASS, PROVIDER_CLASS_JCE);
         init(SLOT_LABEL_KEY, properties, signaturealgorithm, true);
     }

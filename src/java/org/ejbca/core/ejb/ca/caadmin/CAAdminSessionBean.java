@@ -359,7 +359,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
         // Create CAToken
         CATokenInfo catokeninfo = cainfo.getCATokenInfo();
-        CATokenContainer catoken = new CATokenContainerImpl(catokeninfo);
+        CATokenContainer catoken = new CATokenContainerImpl(catokeninfo, cainfo.getCAId());
 		String authCode = catokeninfo.getAuthenticationCode();
         authCode = getDefaultKeyStorePassIfSWAndEmpty(authCode, catokeninfo);
         if(catokeninfo instanceof SoftCATokenInfo){
@@ -1424,7 +1424,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         					ca = new CVCCA(cvccainfo);
         				}
     					ca.setCertificateChain(certchain);
-    					CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo());
+    					CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo(), cainfo.getCAId());
     					ca.setCAToken(token);
 
         				// set status to active
@@ -1557,7 +1557,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		ca = new CVCCA(cvccainfo);
     	}
     	ca.setCertificateChain(certificates);
-    	CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo());
+    	CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo(), cainfo.getCAId());
     	ca.setCAToken(token);
     	// set status to active
     	cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					
@@ -1937,7 +1937,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	    	// Create a new CAToken with the same properties but OFFLINE and without keystore
 	    	SoftCATokenInfo thisCATokenInfo = (SoftCATokenInfo) thisCAToken.getCATokenInfo();
 	    	thisCATokenInfo.setCATokenStatus(ICAToken.STATUS_OFFLINE);
-	    	CATokenContainer emptyToken = new CATokenContainerImpl(thisCATokenInfo);
+	    	CATokenContainer emptyToken = new CATokenContainerImpl(thisCATokenInfo, caData.getCaId());
 	    	thisCa.setCAToken(emptyToken);
 	    	
 	    	// Save to database
@@ -2094,7 +2094,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			CATokenOfflineException, IllegalKeyStoreException, CreateException {
 		// Transform into token
 		SoftCATokenInfo sinfo = new SoftCATokenInfo();
-		CATokenContainer catoken = new CATokenContainerImpl(sinfo);
+		CATokenContainer catoken = new CATokenContainerImpl(sinfo, StringTools.strip(CertTools.stringToBCDNString(CertTools.getSubjectDN(signatureCertChain[0]))).hashCode());
 		catoken.importKeys(keystorepass, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
 					p12PublicEncryptionKey, signatureCertChain);
 		log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + catoken.getCATokenInfo().getEncryptionAlgorithm());
@@ -2134,7 +2134,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	hardcatokeninfo.setSignatureAlgorithm(signatureAlgorithm);
 
         CATokenInfo catokeninfo = hardcatokeninfo;
-        CATokenContainer catoken = new CATokenContainerImpl(catokeninfo);
+        CATokenContainer catoken = new CATokenContainerImpl(catokeninfo, StringTools.strip(CertTools.stringToBCDNString(CertTools.getSubjectDN(signatureCertChain[0]))).hashCode());
         catoken.activate(catokenpassword);
 
         String keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;

@@ -15,7 +15,6 @@ package org.ejbca.core.model.ca.catoken;
 import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
 import java.security.Provider;
-import java.security.Security;
 import java.security.KeyStore.PasswordProtection;
 import java.util.HashMap;
 import java.util.Properties;
@@ -110,13 +109,13 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
     @Override
     public boolean deactivate() throws Exception {
         final boolean result = super.deactivate();
-        this.p11slot.removeProviderIfNoTokensActive();
+        this.p11slot.logoutFromSlotIfNoTokensActive();
         return result;
     }
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.util.HashMap, java.lang.String, int)
      */
-    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
+    public void init(Properties properties, HashMap data, String signaturealgorithm, int caid) throws Exception {
     	// Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         init("slot", properties, signaturealgorithm, false);
         final boolean isIndex;
@@ -130,7 +129,7 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
         String sharedLibrary = properties.getProperty(PKCS11CAToken.SHLIB_LABEL_KEY);
         String attributesFile = properties.getProperty(PKCS11CAToken.ATTRIB_LABEL_KEY);
         // getInstance will run autoActivate()
-        this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this);
+        this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, caid);
     }
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.BaseCAToken#reset()

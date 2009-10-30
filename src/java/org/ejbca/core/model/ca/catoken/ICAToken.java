@@ -38,15 +38,15 @@ public interface ICAToken {
     static final String KEYSPEC_PROPERTY = "keyspec";
 
     /**
-    * Method called after creation of instance. Gives the object it's properties.
-    * 
-    * @param properties CA Token properties, as entered for all HSM tokens, can be null for tokens that don't need it
-    * @param data HashMap data as created internally for Soft tokens, can be null for tokens that don't need it
-    * @param signaturealgorithm the signature algorithm used by the CA
-    * 
-    * @throws Exception 
-    */
-    void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception;
+     * Method called after creation of instance. Gives the object it's properties.
+     * 
+     * @param properties CA Token properties, as entered for all HSM tokens, can be null for tokens that don't need it
+     * @param data HashMap data as created internally for Soft tokens, can be null for tokens that don't need it
+     * @param signaturealgorithm the signature algorithm used by the CA
+     * @param caid unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
+     * @throws Exception
+     */
+    void init(Properties properties, HashMap data, String signaturealgorithm, int caid) throws Exception;
 
     /**
      *  Method that returns the current status of the catoken.
