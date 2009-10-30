@@ -28,7 +28,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Collection;
@@ -43,6 +42,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CMS;
@@ -320,13 +320,17 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
      * @see org.ejbca.util.keystore.KeyStoreContainer#generateCertReq(java.lang.String)
      */
     public void generateCertReq(String alias, String sDN) throws Exception {
-        final RSAPublicKey publicKey = (RSAPublicKey)getCertificate(alias).getPublicKey();
+        final PublicKey publicKey = getCertificate(alias).getPublicKey();
         final PrivateKey privateKey = getPrivateKey(alias);
         if (log.isDebugEnabled()) {
             log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
         }
+        String sigAlg = (String)AlgorithmTools.getSignatureAlgorithms(publicKey).iterator().next();
+        if ( sigAlg == null ) {
+        	sigAlg = "SHA1WithRSA";
+        }
         final PKCS10CertificationRequest certReq =
-            new PKCS10CertificationRequest( "SHA1withRSA",
+            new PKCS10CertificationRequest( sigAlg,
                                             sDN!=null ? new X509Name(sDN) : new X509Name("CN="+alias),
                                             publicKey, new DERSet(),
                                             privateKey,
@@ -336,7 +340,9 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
             throw new Exception(msg);
         }
         final Writer writer = new FileWriter(alias+".pem");
+        writer.write(CertTools.BEGIN_CERTIFICATE_REQUEST+"\n");
         writer.write(new String(Base64.encode(certReq.getEncoded())));
+        writer.write("\n"+CertTools.END_CERTIFICATE_REQUEST+"\n");
         writer.close();
     }
     /* (non-Javadoc)
