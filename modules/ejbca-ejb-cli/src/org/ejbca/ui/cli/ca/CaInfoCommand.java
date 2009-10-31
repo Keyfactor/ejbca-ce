@@ -14,8 +14,10 @@
 package org.ejbca.ui.cli.ca;
 
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 
@@ -24,6 +26,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Shows info about a CA.
@@ -48,6 +51,7 @@ public class CaInfoCommand extends BaseCaAdminCommand {
             CAInfo cainfo = getCAInfo(caname);
                                     
             getLogger().info("CA name: " + caname);
+            getLogger().info("CA type: "+cainfo.getCAType());
             getLogger().info("CA ID: " + cainfo.getCAId());
             getLogger().info("CA CRL Expiration Period: " + cainfo.getCRLPeriod());
             getLogger().info("CA CRL Issue Interval: " + cainfo.getCRLIssueInterval());
@@ -61,43 +65,34 @@ public class CaInfoCommand extends BaseCaAdminCommand {
               
             getLogger().info("Size of chain: " + chain.size());
             if (chain.size() > 0) {
-                X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);
+                Certificate rootcert = (Certificate)chain.get(chain.size()-1);
                 getLogger().info("Root CA DN: "+CertTools.getSubjectDN(rootcert));
                 getLogger().info("Root CA id: "+CertTools.getSubjectDN(rootcert).hashCode());
-                getLogger().info("Certificate valid from: "+rootcert.getNotBefore().toString());
-                getLogger().info("Certificate valid to: "+rootcert.getNotAfter().toString());
-                if(rootcert.getPublicKey() instanceof JCEECPublicKey) {
-                	if(((JCEECPublicKey) rootcert.getPublicKey()).getParams() instanceof ECNamedCurveSpec) {
-                		getLogger().info("Root CA ECDSA key spec: " + ((ECNamedCurveSpec) ((JCEECPublicKey) rootcert.getPublicKey()).getParams()).getName());
+                getLogger().info("Certificate valid from: "+CertTools.getNotBefore(rootcert));
+                getLogger().info("Certificate valid to: "+CertTools.getNotAfter(rootcert));
+                getLogger().info("Root CA key algorithm: "+rootcert.getPublicKey().getAlgorithm());
+                getLogger().info("Root CA key size: "+KeyTools.getKeyLength(rootcert.getPublicKey()));
+                if(rootcert.getPublicKey() instanceof ECPublicKey) {
+                	if(((ECPublicKey) rootcert.getPublicKey()).getParams() instanceof ECNamedCurveSpec) {
+                		getLogger().info("Root CA ECDSA key spec: " + ((ECNamedCurveSpec) ((ECPublicKey)rootcert.getPublicKey()).getParams()).getName());
                 	}
-                } else {
-                	getLogger().info("Root CA keysize: "+getKeyLength(rootcert.getPublicKey()));
                 }
                 for(int i = chain.size()-2; i>=0; i--){                                          
-                    X509Certificate cacert = (X509Certificate)chain.get(i);
+                    Certificate cacert = (Certificate)chain.get(i);
                     getLogger().info("CA DN: "+CertTools.getSubjectDN(cacert));
-                    getLogger().info("Certificate valid from: "+cacert.getNotBefore().toString());
-                    getLogger().info("Certificate valid to: "+cacert.getNotAfter().toString());
-                    if(cacert.getPublicKey() instanceof JCEECPublicKey) {
-                    	if(((JCEECPublicKey) cacert.getPublicKey()).getParams() instanceof ECNamedCurveSpec) {
-                    		getLogger().info("CA ECDSA key spec: " + ((ECNamedCurveSpec) ((JCEECPublicKey) cacert.getPublicKey()).getParams()).getName());
+                    getLogger().info("Certificate valid from: "+CertTools.getNotBefore(cacert));
+                    getLogger().info("Certificate valid to: "+CertTools.getNotAfter(cacert));
+                    getLogger().info("CA key algorithm: "+cacert.getPublicKey().getAlgorithm());
+                    getLogger().info("CA key size: "+KeyTools.getKeyLength(cacert.getPublicKey()));
+                    if(cacert.getPublicKey() instanceof ECPublicKey) {
+                    	if(((ECPublicKey) cacert.getPublicKey()).getParams() instanceof ECNamedCurveSpec) {
+                    		getLogger().info("CA ECDSA key spec: " + ((ECNamedCurveSpec) ((ECPublicKey)cacert.getPublicKey()).getParams()).getName());
                     	}
-                    } else {
-                    	getLogger().info("CA keysize: "+getKeyLength(rootcert.getPublicKey()));
                     }
                 }
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-    }
-    
-    private static int getKeyLength(PublicKey key) {
-    	if(key instanceof RSAPublicKey) {
-    		return ((RSAPublicKey) key).getModulus().bitLength();
-    	} else if(key instanceof DSAPublicKey) {
-    		return ((DSAPublicKey) key).getY().bitLength();
-    	}
-    	return 0;
     }
 }
