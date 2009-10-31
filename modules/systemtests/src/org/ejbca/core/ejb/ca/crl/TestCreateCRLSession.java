@@ -21,7 +21,6 @@ import java.security.KeyPairGenerator;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -59,6 +58,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.cert.CrlExtensions;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Tests CRL session (agentrunner and certificatesession).
@@ -488,8 +488,7 @@ public class TestCreateCRLSession extends TestCase {
 		keygen.initialize(512);
 		log.debug("Generating keys, please wait...");
 		KeyPair rsaKeys = keygen.generateKeyPair();
-		log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +
-				((RSAPrivateKey) rsaKeys.getPrivate()).getModulus().bitLength());
+		log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +KeyTools.getKeyLength(rsaKeys.getPublic()));
 
 		return rsaKeys;
 	} // genKeys
