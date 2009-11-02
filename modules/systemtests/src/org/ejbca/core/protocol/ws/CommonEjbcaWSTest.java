@@ -63,6 +63,9 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -107,6 +110,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
@@ -1907,6 +1911,34 @@ public class CommonEjbcaWSTest extends TestCase {
 		} catch (CADoesntExistsException_Exception e) {	}	// Expected
 	}
 
+	protected void test33checkQueueLength(boolean performSetup) throws Exception {
+		if(performSetup){
+			setUpAdmin();
+		}
+		final String PUBLISHER_NAME = "myPublisher";
+		final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+		try {
+			assertEquals( -4, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME) );
+			final CustomPublisherContainer publisher = new CustomPublisherContainer();
+			publisher.setClassPath(DummyCustomPublisher.class.getName());
+			publisher.setDescription("Used in Junit Test, Remove this one");
+			TestTools.getPublisherSession().addPublisher(admin, PUBLISHER_NAME, publisher);
+			assertEquals( 0, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME) );
+			final int publisherID = TestTools.getPublisherSession().getPublisherId(admin, PUBLISHER_NAME);
+			TestTools.getPublisherQueueSession().addQueueData(publisherID, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+			assertEquals( 1, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME) );
+			TestTools.getPublisherQueueSession().addQueueData(publisherID, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+			assertEquals( 2, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME) );
+			TestTools.getPublisherQueueSession().removeQueueData( ((PublisherQueueData)TestTools.getPublisherQueueSession().getPendingEntriesForPublisher(publisherID).iterator().next()).getPk() );
+			assertEquals( 1, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME) );
+			TestTools.getPublisherQueueSession().removeQueueData( ((PublisherQueueData)TestTools.getPublisherQueueSession().getPendingEntriesForPublisher(publisherID).iterator().next()).getPk() );
+			assertEquals( 0, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME) );
+		} catch (EjbcaException_Exception e) {
+			assertTrue(e.getMessage(),false);
+		} finally {
+			TestTools.getPublisherSession().removePublisher(admin, PUBLISHER_NAME);
+		}
+	}
 	protected void test99cleanUpAdmins() throws Exception {
 		//getHardTokenSession().removeHardToken(intAdmin, "12345678");
 		//getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
