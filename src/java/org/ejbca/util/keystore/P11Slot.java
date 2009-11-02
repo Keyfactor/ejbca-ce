@@ -181,15 +181,12 @@ public class P11Slot {
         SlotDataConfigFile(String _configFileName) {
             this.configFileName = _configFileName;
         }
-        @Override
         public String getLibName() {
             return ONLY_ONE;
         }
-        @Override
         public P11Slot getNewP11Slot() throws CATokenOfflineException {
             return new P11Slot(this.configFileName);
         }
-        @Override
         public String getSlotLabel() {
             return new File(this.configFileName).getName();
         }
@@ -208,15 +205,12 @@ public class P11Slot {
             this.attributesFile = _attributesFile;
             this.libName = new File(this.sharedLibrary).getName();
         }
-        @Override
         public P11Slot getNewP11Slot() throws CATokenOfflineException {
             return new P11Slot(this.slotNr, this.sharedLibrary, this.isIndex, this.attributesFile);
         }
-        @Override
         public String getSlotLabel() {
             return this.slotNr + this.libName + this.isIndex;
         }
-        @Override
         public String getLibName() {
             return this.libName;
         }
