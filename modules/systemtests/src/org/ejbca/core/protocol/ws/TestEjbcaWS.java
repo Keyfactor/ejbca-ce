@@ -157,6 +157,10 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
         test32OperationOnNonexistingCA(true);  
     }
 
+    public void test33checkQueueLength() throws Exception {
+		test33checkQueueLength(true);
+	}
+
     public void test99cleanUpAdmins() throws Exception {
     	super.test99cleanUpAdmins();
     }

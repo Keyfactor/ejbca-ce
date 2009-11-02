@@ -122,6 +122,11 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
 			test17GetCertificate(false);
 			assertTrue(false);
 		}catch(AuthorizationDeniedException_Exception e){}		
+		try{
+			test33checkQueueLength(false);
+		}catch(AuthorizationDeniedException_Exception e){
+			assertTrue(false);
+		}
 	}
     
     public void test02GetHardTokenDataWithApprovals() throws Exception{
