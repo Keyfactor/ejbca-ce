@@ -53,7 +53,9 @@ import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
@@ -1387,9 +1389,19 @@ public class CertTools {
 				publicKey = KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
 			} catch (InvalidKeySpecException e) {
 				log.error("Error creating RSAPublicKey from spec: ", e);
-				publicKey = pubKey;
+				throw new InvalidKeyException(e);
 			}			
+		} else if (pubKey instanceof ECPublicKey) {
+			ECPublicKey ecpk = (ECPublicKey)pubKey;
+			ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams());
+			try {
+				publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
+			} catch (InvalidKeySpecException e) {
+				log.error("Error creating ECPublicKey from spec: ", e);
+				throw new InvalidKeyException(e);
+			}
 		} else {
+			log.debug("Not converting key of class. "+pubKey.getClass().getName());
 			publicKey = pubKey;
 		}
 

@@ -13,6 +13,8 @@
  
 package org.ejbca.ui.cli.ca;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -22,10 +24,12 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
@@ -36,6 +40,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Imports a PKCS#8 file and created a new CA from it.
@@ -66,18 +71,28 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
         	// Import key and certificate
 			CertTools.installBCProvider();
 			byte[] pkbytes = FileTools.readFiletoBuffer(pkFile);
-	        KeyFactory keyfact = KeyFactory.getInstance("RSA", "BC");
-	        PrivateKey privKey = keyfact.generatePrivate(new PKCS8EncodedKeySpec(pkbytes));
+	        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(pkbytes);
+	        KeyFactory keyfact = KeyFactory.getInstance("RSA", "BC"); // Doesn't matter if we say RSA here, it will fix an EC key as well
+	        PrivateKey privKey = keyfact.generatePrivate(spec);	        	
 
 	        byte[] certbytes = FileTools.readFiletoBuffer(certFile);
-	        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+	        Certificate cert = null;
+	        try {
+	            // First check if it was a PEM formatted certificate
+	        	Collection certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+	        	cert = (Certificate)certs.iterator().next();
+	        } catch (IOException e) {
+	        	// This was not a PEM certificate, I hope it's binary...
+		        cert = CertTools.getCertfromByteArray(certbytes);
+	        }
 	        PublicKey pubKey = cert.getPublicKey();
 	        // Verify that the public and private key belongs together
-	        testKey(privKey, pubKey);
+	        getLogger().info("Testing keys with algorithm: "+pubKey.getAlgorithm());        	
+	        KeyTools.testKey(privKey, pubKey, null);
 //	        try {
 //	        	cert.verify(pubKey);
 //	        } catch (SignatureException e) {
-//	        	getOutputStream().println("Can not verify self signed certificate '"+certFile+"': "+e.getMessage());
+//	        	getLogger().info("Can not verify self signed certificate '"+certFile+"': "+e.getMessage());
 //            	System.exit(2);
 //            }
 	        Certificate cacert = null;
@@ -110,14 +125,13 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	        } try {
 	        	cacert.verify(pubKey);
 	        } catch (SignatureException e) {
-	        	getLogger().error("Can not verify self signed certificate: "+e.getMessage());
+	        	getLogger().info("Can not verify self signed certificate: "+e.getMessage());
             	System.exit(3);
             }
 
 	        Certificate[] chain = new Certificate[1];
 	        chain[0] = cacert;
-        	getCAAdminSession().importCAFromKeys(getAdmin(), caName, "foo123", chain, pubKey, privKey, null, null);
-        	
+        	getCAAdminSession().importCAFromKeys(getAdmin(), caName, "foo123", chain, pubKey, privKey, null, null);        	
         } catch (ErrorAdminCommandException e) {
         	throw e;
         } catch (Exception e) {
@@ -125,27 +139,4 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
         }
     } // execute
     
-    private void testKey(PrivateKey priv, PublicKey pub) throws Exception {
-        final byte input[] = "Lillan gick p� v�gen ut, m�tte d�r en katt ...".getBytes();
-        final byte signBV[];
-        String keyalg = pub.getAlgorithm();
-        getLogger().info("Testing keys with algorithm: "+keyalg);        	
-        String testSigAlg = "SHA1withRSA";
-        if (StringUtils.equals(keyalg, "EC")) {
-        	testSigAlg = "SHA1withECDSA";
-        }
-        {
-            Signature signature = Signature.getInstance(testSigAlg, "BC");
-            signature.initSign( priv );
-            signature.update( input );
-            signBV = signature.sign();
-        }{
-            Signature signature = Signature.getInstance(testSigAlg, "BC");
-            signature.initVerify(pub);
-            signature.update(input);
-            if ( !signature.verify(signBV) ) {
-                throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
-            }
-        }
-    }
 }
