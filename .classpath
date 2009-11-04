@@ -19,6 +19,8 @@
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-1.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/batik/batik-xml.jar"/>
 	<classpathentry kind="lib" path="lib/batik/batik-dom.jar"/>
 	<classpathentry kind="lib" path="lib/batik/batik-svg-dom.jar"/>
@@ -33,10 +35,8 @@
 	<classpathentry kind="lib" path="lib/ext/htmlunit-1.14.jar"/>
 	<classpathentry kind="lib" path="lib/ext/servlet-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/mail.jar"/>
-	<classpathentry kind="lib" path="lib/ext/commons-io-1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/jline-0.9.94.jar"/>
-	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15.jar"/>

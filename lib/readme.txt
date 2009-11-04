@@ -8,7 +8,8 @@ The jars:
  commons-codec-1.3.jar
  commons-collections-3.2.jar
  commons-fileupload-1.0.jar
-are for example used by MyFaces.
+ commons-io-1.3.2.jar
+are for example used by MyFaces/FileUpload etc.
 
 commons-lang-2.4.jar is used throughout EJBCA.
 

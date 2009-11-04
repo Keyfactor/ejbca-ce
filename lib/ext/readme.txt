@@ -15,4 +15,3 @@ junit-3.8.1.jar
 Used to run Http/Html specific JUnit tests (license apache like...see doc/licenses/LICENSE_HTMLUNIT):
 htmlunit-1.14.jar
 commons-httpclient-3.1.jar
-commons-io-1.3.1.jar
