@@ -74,6 +74,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
@@ -785,6 +786,39 @@ public class KeyTools {
         signer.update(data);
         return (signer.verify(signature));    	
 
+    }
+
+    /** Testing a key pair to verify that it is possible to first sign and then verify with it.
+     * 
+     * @param priv
+     * @param pub
+     * @param provider A provider used for signing with the private key, or null if "BC" should be used.
+     * @throws Exception
+     */
+    public static void testKey(PrivateKey priv, PublicKey pub, String provider) throws Exception {
+        final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
+        final byte signBV[];
+        String testSigAlg = (String)AlgorithmTools.getSignatureAlgorithms(pub).iterator().next();
+        if ( testSigAlg == null ) {
+        	testSigAlg = "SHA1WithRSA";
+        }
+        {
+        	String prov = "BC";
+        	if (provider != null) {
+        		prov = provider;
+        	}
+            Signature signature = Signature.getInstance(testSigAlg, prov);
+            signature.initSign( priv );
+            signature.update( input );
+            signBV = signature.sign();
+        }{
+            Signature signature = Signature.getInstance(testSigAlg, "BC");
+            signature.initVerify(pub);
+            signature.update(input);
+            if ( !signature.verify(signBV) ) {
+                throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
+            }
+        }
     }
 
 } // KeyTools
