@@ -1389,16 +1389,19 @@ public class CertTools {
 				publicKey = KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
 			} catch (InvalidKeySpecException e) {
 				log.error("Error creating RSAPublicKey from spec: ", e);
-				throw new InvalidKeyException(e);
+				publicKey = pubKey;
 			}			
 		} else if (pubKey instanceof ECPublicKey) {
 			ECPublicKey ecpk = (ECPublicKey)pubKey;
-			ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams());
 			try {
+				ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
 				publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
 			} catch (InvalidKeySpecException e) {
 				log.error("Error creating ECPublicKey from spec: ", e);
-				throw new InvalidKeyException(e);
+				publicKey = pubKey;
+			} catch (NullPointerException e) {
+				log.debug("NullPointerException, probably it is implicitlyCA generated keys: "+e.getMessage());
+				publicKey = pubKey;
 			}
 		} else {
 			log.debug("Not converting key of class. "+pubKey.getClass().getName());
