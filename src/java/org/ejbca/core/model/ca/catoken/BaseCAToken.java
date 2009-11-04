@@ -90,10 +90,10 @@ public abstract class BaseCAToken implements ICAToken {
             log.debug("Testing keys with algorithm: "+pair.getPublic().getAlgorithm());        	
             log.debug("testSigAlg: "+testSigAlg);        	
             log.debug("provider: "+getProvider());        	
-            log.debug("privateKey: "+pair.getPrivate());        	
-            log.debug("privateKey class: "+pair.getPrivate().getClass().getName()); 
-            log.debug("publicKey: "+pair.getPublic());        	
-            log.debug("publicKey class: "+pair.getPublic().getClass().getName());        	
+            log.trace("privateKey: "+pair.getPrivate());        	
+            log.trace("privateKey class: "+pair.getPrivate().getClass().getName()); 
+            log.trace("publicKey: "+pair.getPublic());        	
+            log.trace("publicKey class: "+pair.getPublic().getClass().getName());        	
         }
         {
             Signature signature = Signature.getInstance(testSigAlg, getProvider());
@@ -102,8 +102,8 @@ public abstract class BaseCAToken implements ICAToken {
             signBV = signature.sign();
             if (log.isDebugEnabled()) {
             	if (signBV != null) {
-                    log.debug("Created signature of size: "+signBV.length);        	
-                    log.debug("Created signature: "+new String(Hex.encode(signBV)));        	            		
+                    log.trace("Created signature of size: "+signBV.length);        	
+                    log.trace("Created signature: "+new String(Hex.encode(signBV)));        	            		
             	} else {
             		log.warn("Test signature is null?");
             	}
