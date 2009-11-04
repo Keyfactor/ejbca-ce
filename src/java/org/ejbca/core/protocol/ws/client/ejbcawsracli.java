@@ -34,7 +34,7 @@ public class ejbcawsracli  {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | revokecert | revoketoken | revokeuser | checkrevokationstatus | generatenewuser | createcrl | stress");
+                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | revokecert | getpublisherqueuelength | revoketoken | revokeuser | checkrevokationstatus | generatenewuser | createcrl | stress");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
