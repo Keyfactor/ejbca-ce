@@ -21,6 +21,7 @@
     	<pathelement location="${java.home}/../lib/tools.jar"/>
     	<pathelement location="tmp/jaxws/gen-classes/client"/>
     	<pathelement location="${build}"/>
+    	<fileset dir="dist"><include name="ejbca-util.jar"/></fileset> 
     </path>
 	
     <path id="jaxws.test.classpath">

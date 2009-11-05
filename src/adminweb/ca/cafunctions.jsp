@@ -2,7 +2,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="java.util.*, java.security.cert.Certificate, java.security.cert.X509Certificate,org.ejbca.core.model.ra.raadmin.GlobalConfiguration,
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ca.store.CRLInfo, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.SecConst,
-    org.ejbca.core.model.ca.catoken.ICAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.authorization.AvailableAccessRules, org.ejbca.util.CertTools"%>
+    org.ejbca.core.model.ca.catoken.ICAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.authorization.AccessRulesConstants, org.ejbca.util.CertTools"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -46,14 +46,14 @@
        if( request.getParameter(BUTTON_CREATECRL+i) != null ){      
          // Check if user id authorized to create new crl.
          ejbcawebbean.isAuthorized(CREATECRL_LINK);
-         ejbcawebbean.isAuthorized(AvailableAccessRules.CAPREFIX + casubjectdn.hashCode());
+         ejbcawebbean.isAuthorized(AccessRulesConstants.CAPREFIX + casubjectdn.hashCode());
          // Create new crl
          cabean.createCRL(casubjectdn);
       }         
       if( request.getParameter(BUTTON_CREATEDELTACRL+i) != null ){      
            // Check if user id authorized to create new delta crl.
            ejbcawebbean.isAuthorized(CREATECRL_LINK);
-           ejbcawebbean.isAuthorized(AvailableAccessRules.CAPREFIX + casubjectdn.hashCode());
+           ejbcawebbean.isAuthorized(AccessRulesConstants.CAPREFIX + casubjectdn.hashCode());
            // Create new delta crl
            cabean.createDeltaCRL(casubjectdn);
       }

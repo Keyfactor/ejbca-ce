@@ -107,7 +107,7 @@ public class ProtectedLogExporter {
 		try {
 			Class implClass = Class.forName(ProtectedLogConfiguration.getExportHandlerClassName());
 			protectedLogExportHandler = (IProtectedLogExportHandler) implClass.newInstance();
-			getProtectedLogSession().exportLog(protectedLogExportHandler, ProtectedLogActions.ACTION_ALL, currentHashAlgorithm, deleteAfterExport, atLeastThisOld);
+			getProtectedLogSession().exportLog(protectedLogExportHandler, ProtectedLogConstants.ACTION_ALL, currentHashAlgorithm, deleteAfterExport, atLeastThisOld);
 		} catch (Exception e) {
 			log.error(e);
 		} finally {

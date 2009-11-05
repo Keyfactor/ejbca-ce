@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.admins;
 import java.rmi.RemoteException;
 import java.util.Map;
 
-import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.cli.BaseCommand;
 
 /**
@@ -29,34 +29,34 @@ public abstract class BaseAdminsCommand extends BaseCommand {
 	
 	protected String getParsedAccessRule(String resource) throws NumberFormatException, RemoteException {
 		// Check if it is a profile rule, then replace profile id with profile name.
-		if (resource.startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX)) {
-			if (resource.lastIndexOf('/') < AvailableAccessRules.ENDENTITYPROFILEPREFIX.length()) {
-				return AvailableAccessRules.ENDENTITYPROFILEPREFIX + getRaAdminSession().getEndEntityProfileName(
-						getAdmin(), Integer.parseInt(resource.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length())));
+		if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
+			if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
+				return AccessRulesConstants.ENDENTITYPROFILEPREFIX + getRaAdminSession().getEndEntityProfileName(
+						getAdmin(), Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length())));
 			} else {
-				String tmpString = resource.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length());
-				return AvailableAccessRules.ENDENTITYPROFILEPREFIX + getRaAdminSession().getEndEntityProfileName(
+				String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
+				return AccessRulesConstants.ENDENTITYPROFILEPREFIX + getRaAdminSession().getEndEntityProfileName(
 						getAdmin(), Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/')))) + tmpString.substring(tmpString.indexOf('/'));
 			}
 		}
 		// Check if it is a CA rule, then replace CA id with CA name.
-		if (resource.startsWith(AvailableAccessRules.CAPREFIX)) {
+		if (resource.startsWith(AccessRulesConstants.CAPREFIX)) {
 			Map caIdToNameMap = getCAAdminSession().getCAIdToNameMap(getAdmin());
-			if(resource.lastIndexOf('/') < AvailableAccessRules.CAPREFIX.length()) {
-				return AvailableAccessRules.CAPREFIX + caIdToNameMap.get(new Integer(resource.substring(AvailableAccessRules.CAPREFIX.length())));
+			if(resource.lastIndexOf('/') < AccessRulesConstants.CAPREFIX.length()) {
+				return AccessRulesConstants.CAPREFIX + caIdToNameMap.get(new Integer(resource.substring(AccessRulesConstants.CAPREFIX.length())));
 			} else {
-				return AvailableAccessRules.CAPREFIX + caIdToNameMap.get(new Integer(resource.substring(AvailableAccessRules.CAPREFIX.length(),
+				return AccessRulesConstants.CAPREFIX + caIdToNameMap.get(new Integer(resource.substring(AccessRulesConstants.CAPREFIX.length(),
 						resource.lastIndexOf('/')))) + resource.substring(resource.lastIndexOf('/'));
 			}
 		}
 		// Check if it is a User Data Source rule, then replace User Data Source id with User Data Source name.
-		if (resource.startsWith(AvailableAccessRules.USERDATASOURCEPREFIX)) { 
-			if (resource.lastIndexOf('/') < AvailableAccessRules.USERDATASOURCEPREFIX.length()) {
-				return AvailableAccessRules.USERDATASOURCEPREFIX + getUserDataSourceSession().getUserDataSourceName(
-						getAdmin(), Integer.parseInt(resource.substring(AvailableAccessRules.USERDATASOURCEPREFIX.length())));
+		if (resource.startsWith(AccessRulesConstants.USERDATASOURCEPREFIX)) { 
+			if (resource.lastIndexOf('/') < AccessRulesConstants.USERDATASOURCEPREFIX.length()) {
+				return AccessRulesConstants.USERDATASOURCEPREFIX + getUserDataSourceSession().getUserDataSourceName(
+						getAdmin(), Integer.parseInt(resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length())));
 			} else {
-				return AvailableAccessRules.USERDATASOURCEPREFIX + getUserDataSourceSession().getUserDataSourceName(
-						getAdmin(), Integer.parseInt(resource.substring(AvailableAccessRules.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/')))) +
+				return AccessRulesConstants.USERDATASOURCEPREFIX + getUserDataSourceSession().getUserDataSourceName(
+						getAdmin(), Integer.parseInt(resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/')))) +
 						resource.substring(resource.lastIndexOf('/'));
 			}
 		}
@@ -65,33 +65,33 @@ public abstract class BaseAdminsCommand extends BaseCommand {
 
 	protected String getOriginalAccessRule(String resource) throws NumberFormatException, RemoteException {
 		// Check if it is a profile rule, then replace profile id with profile name.
-		if (resource.startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX)) {
-			if (resource.lastIndexOf('/') < AvailableAccessRules.ENDENTITYPROFILEPREFIX.length()) {
-				return AvailableAccessRules.ENDENTITYPROFILEPREFIX + getRaAdminSession().getEndEntityProfileId(
-						getAdmin(), resource.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length()));
+		if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
+			if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
+				return AccessRulesConstants.ENDENTITYPROFILEPREFIX + getRaAdminSession().getEndEntityProfileId(
+						getAdmin(), resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()));
 			} else {
-				String tmpString = resource.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length());
-				return AvailableAccessRules.ENDENTITYPROFILEPREFIX + getRaAdminSession().getEndEntityProfileId(
+				String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
+				return AccessRulesConstants.ENDENTITYPROFILEPREFIX + getRaAdminSession().getEndEntityProfileId(
 						getAdmin(), tmpString.substring(0, tmpString.indexOf('/'))) + tmpString.substring(tmpString.indexOf('/'));
 			}
 		}
 		// Check if it is a CA rule, then replace CA id with CA name.
-		if (resource.startsWith(AvailableAccessRules.CAPREFIX)) {
-			if(resource.lastIndexOf('/') < AvailableAccessRules.CAPREFIX.length()) {
-				return AvailableAccessRules.CAPREFIX + getCAAdminSession().getCAInfo(getAdmin(), resource.substring(AvailableAccessRules.CAPREFIX.length())).getCAId();
+		if (resource.startsWith(AccessRulesConstants.CAPREFIX)) {
+			if(resource.lastIndexOf('/') < AccessRulesConstants.CAPREFIX.length()) {
+				return AccessRulesConstants.CAPREFIX + getCAAdminSession().getCAInfo(getAdmin(), resource.substring(AccessRulesConstants.CAPREFIX.length())).getCAId();
 			} else {
-				return AvailableAccessRules.CAPREFIX + getCAAdminSession().getCAInfo(getAdmin(), resource.substring(AvailableAccessRules.CAPREFIX.length(),
+				return AccessRulesConstants.CAPREFIX + getCAAdminSession().getCAInfo(getAdmin(), resource.substring(AccessRulesConstants.CAPREFIX.length(),
 						resource.lastIndexOf('/'))).getCAId() + resource.substring(resource.lastIndexOf('/'));
 			}
 		}
 		// Check if it is a User Data Source rule, then replace User Data Source id with User Data Source name.
-		if (resource.startsWith(AvailableAccessRules.USERDATASOURCEPREFIX)) { 
-			if (resource.lastIndexOf('/') < AvailableAccessRules.USERDATASOURCEPREFIX.length()) {
-				return AvailableAccessRules.USERDATASOURCEPREFIX + getUserDataSourceSession().getUserDataSourceId(
-						getAdmin(), resource.substring(AvailableAccessRules.USERDATASOURCEPREFIX.length()));
+		if (resource.startsWith(AccessRulesConstants.USERDATASOURCEPREFIX)) { 
+			if (resource.lastIndexOf('/') < AccessRulesConstants.USERDATASOURCEPREFIX.length()) {
+				return AccessRulesConstants.USERDATASOURCEPREFIX + getUserDataSourceSession().getUserDataSourceId(
+						getAdmin(), resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length()));
 			} else {
-				return AvailableAccessRules.USERDATASOURCEPREFIX + getUserDataSourceSession().getUserDataSourceId(
-						getAdmin(), resource.substring(AvailableAccessRules.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/'))) +
+				return AccessRulesConstants.USERDATASOURCEPREFIX + getUserDataSourceSession().getUserDataSourceId(
+						getAdmin(), resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/'))) +
 						resource.substring(resource.lastIndexOf('/'));
 			}
 		}

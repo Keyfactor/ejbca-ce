@@ -235,7 +235,7 @@ public class Authorizer extends Object implements java.io.Serializable {
         while(iter.hasNext()){
             Integer caid = (Integer) iter.next();
             try{           
-                isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid.toString());               
+                isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid.toString());               
                 returnval.add(caid); 
             }catch(AuthorizationDeniedException e){
             	if (log.isDebugEnabled()) {
@@ -261,7 +261,7 @@ public class Authorizer extends Object implements java.io.Serializable {
         while(iter.hasNext()){
             Integer profileid = (Integer) iter.next();
             try{
-                isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
+                isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
                 returnval.add(profileid); 
             }catch(AuthorizationDeniedException e){
             	if (log.isDebugEnabled()) {

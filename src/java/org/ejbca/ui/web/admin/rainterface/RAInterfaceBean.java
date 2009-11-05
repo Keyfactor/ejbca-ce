@@ -50,8 +50,8 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -331,7 +331,7 @@ public class RAInterfaceBean implements java.io.Serializable {
        UserDataVO user = adminsession.findUser(administrator, username);
        
        if(this.informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-         if(!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AvailableAccessRules.EDIT_RIGHTS, false)) {
+         if(!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_RIGHTS, false)) {
            throw new AuthorizationDeniedException("Not authorized to edit user.");
          }
        }
@@ -454,12 +454,12 @@ public class RAInterfaceBean implements java.io.Serializable {
 
     public boolean isAuthorizedToViewUserHistory(String username) throws Exception {
       UserDataVO user = adminsession.findUser(administrator, username);
-      return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AvailableAccessRules.HISTORY_RIGHTS, false);
+      return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.HISTORY_RIGHTS, false);
     }
     
     public boolean isAuthorizedToEditUser(String username) throws Exception {
         UserDataVO user = adminsession.findUser(administrator, username);
-        return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AvailableAccessRules.EDIT_RIGHTS, false);
+        return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_RIGHTS, false);
       }
 
     /* Method to resort filtered user data. */
@@ -673,7 +673,7 @@ public class RAInterfaceBean implements java.io.Serializable {
 
     public void loadCertificates(BigInteger serno, String issuerdn) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
 	  try{	
-		  authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.CAPREFIX + issuerdn.hashCode());        
+		  authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.CAPREFIX + issuerdn.hashCode());        
 		  Certificate cert = certificatesession.findCertificateByIssuerAndSerno(administrator, issuerdn, serno);
 		  
 		  if(cert != null){
@@ -681,7 +681,7 @@ public class RAInterfaceBean implements java.io.Serializable {
 			  String username = certificatesession.findUsernameByCertSerno(administrator,serno, CertTools.getIssuerDN(cert));
 			  if(this.adminsession.findUser(administrator, username) != null){
 				  int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
-				  this.endEntityAuthorization(administrator,endentityprofileid,AvailableAccessRules.VIEW_RIGHTS,true);
+				  this.endEntityAuthorization(administrator,endentityprofileid,AccessRulesConstants.VIEW_RIGHTS,true);
 			  }
 			  RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
 			  if(revinfo != null) {
@@ -716,27 +716,27 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
 
     public boolean authorizedToEditUser(int profileid) throws RemoteException{
-      return endEntityAuthorization(administrator, profileid, AvailableAccessRules.EDIT_RIGHTS, false);
+      return endEntityAuthorization(administrator, profileid, AccessRulesConstants.EDIT_RIGHTS, false);
     }
 
     public boolean authorizedToViewHistory(int profileid) throws RemoteException{
-      return endEntityAuthorization(administrator, profileid, AvailableAccessRules.HISTORY_RIGHTS, false);
+      return endEntityAuthorization(administrator, profileid, AccessRulesConstants.HISTORY_RIGHTS, false);
     }
 
     public boolean authorizedToViewHardToken(String username) throws Exception{      
       int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
-      if(!endEntityAuthorization(administrator, profileid, AvailableAccessRules.HARDTOKEN_RIGHTS, false)){
+      if(!endEntityAuthorization(administrator, profileid, AccessRulesConstants.HARDTOKEN_RIGHTS, false)){
     	  throw new AuthorizationDeniedException();
       }
       if(!GlobalConfiguration.HARDTOKEN_DIPLAYSENSITIVEINFO){
     	  return false;
       }
       
-      return endEntityAuthorization(administrator, profileid, AvailableAccessRules.HARDTOKEN_PUKDATA_RIGHTS, false);
+      return endEntityAuthorization(administrator, profileid, AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS, false);
     }
 
     public boolean authorizedToViewHardToken(int profileid) throws Exception{
-      return endEntityAuthorization(administrator, profileid, AvailableAccessRules.HARDTOKEN_RIGHTS, false);
+      return endEntityAuthorization(administrator, profileid, AccessRulesConstants.HARDTOKEN_RIGHTS, false);
     }    
 
     public boolean authorizedToRevokeCert(String username) throws FinderException, RemoteException, AuthorizationDeniedException{
@@ -748,7 +748,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       int profileid = data.getEndEntityProfileId();
 
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-       returnval= endEntityAuthorization(administrator, profileid, AvailableAccessRules.REVOKE_RIGHTS, false);
+       returnval= endEntityAuthorization(administrator, profileid, AccessRulesConstants.REVOKE_RIGHTS, false);
       } else {
        returnval=true;
       }
@@ -760,7 +760,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       boolean returnval = true;
       
       try{
-        authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.REGULAR_KEYRECOVERY);
+        authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_KEYRECOVERY);
       }catch(AuthorizationDeniedException ade){
       	returnval = false;
       }
@@ -769,7 +769,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       	UserDataVO data = adminsession.findUser(administrator, username);
       	if(data != null){       	
           int profileid = data.getEndEntityProfileId();
-		  returnval = endEntityAuthorization(administrator, profileid, AvailableAccessRules.KEYRECOVERY_RIGHTS, false);		  
+		  returnval = endEntityAuthorization(administrator, profileid, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);		  
       	}else {
           returnval = false;
       	}
@@ -781,7 +781,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       boolean authorized = true;
       int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
-        authorized = endEntityAuthorization(administrator, profileid, AvailableAccessRules.KEYRECOVERY_RIGHTS, false);
+        authorized = endEntityAuthorization(administrator, profileid, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);
       }
 
       if(authorized){
@@ -825,11 +825,11 @@ public class RAInterfaceBean implements java.io.Serializable {
       }
       try{
         if(log) {
-           returnval = authorizationsession.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights) &&
-           authorizationsession.isAuthorized(admin, AvailableAccessRules.REGULAR_RAFUNCTIONALITY + rights);
+           returnval = authorizationsession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights) &&
+           authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         } else {
-           returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights)&&
-           authorizationsession.isAuthorized(admin, AvailableAccessRules.REGULAR_RAFUNCTIONALITY + rights);
+           returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights)&&
+           authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         }
       } catch(AuthorizationDeniedException e){}
 

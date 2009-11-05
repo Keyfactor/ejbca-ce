@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, 
-              org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AvailableAccessRules,
+              org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AccessRulesConstants,
                org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.publisher.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper, 
                org.ejbca.core.model.ca.publisher.PublisherExistsException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents"%>
 
@@ -16,7 +16,7 @@
   String includefile = "publisherspage.jspf"; 
 
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.ROLE_SUPERADMINISTRATOR); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_SUPERADMINISTRATOR); 
                                             cabean.initialize(request, ejbcawebbean); 
                                             publisherhelper.initialize(request,ejbcawebbean, cabean);
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editpublishers/editpublishers.jsp";

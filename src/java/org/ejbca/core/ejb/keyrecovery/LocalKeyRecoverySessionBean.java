@@ -44,8 +44,8 @@ import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
@@ -205,7 +205,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 	 * If /superadmin -> true
 	 * 
 	 * Other must have both
-	 * AvailableAccessRules.
+	 * AccessRulesConstants.
 	 *  /ra_functionality/keyrecovery
 	 *  and /endentityprofilesrules/<endentityprofile>/ keyrecovery
 	 *  
@@ -227,8 +227,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         }
         	
         if(!returnval){
-        	returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + AvailableAccessRules.KEYRECOVERY_RIGHTS) &&
-        	authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_KEYRECOVERY);                         
+        	returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.KEYRECOVERY_RIGHTS) &&
+        	authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_KEYRECOVERY);                         
         }
         	
         return returnval;

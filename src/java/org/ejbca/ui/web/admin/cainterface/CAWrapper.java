@@ -18,8 +18,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
@@ -53,7 +53,7 @@ public class CAWrapper implements Serializable {
 		this.mbean = mbean;
 
 		try {
-			can_activate = webBean.isAuthorizedNoLog(AvailableAccessRules.REGULAR_ACTIVATECA);
+			can_activate = webBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_ACTIVATECA);
 		} catch (AuthorizationDeniedException ade) {}
 
 	}

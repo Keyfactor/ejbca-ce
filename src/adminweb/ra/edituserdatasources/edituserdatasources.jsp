@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, 
-              org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AvailableAccessRules,
+              org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AccessRulesConstants,
                org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.userdatasource.*, org.ejbca.ui.web.admin.rainterface.EditUserDataSourceJSPHelper, 
                org.ejbca.util.dn.DNFieldExtractor"%>
 
@@ -16,7 +16,7 @@
   String includefile = "userdatasourcespage.jspf"; 
 
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.REGULAR_EDITUSERDATASOURCES); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES); 
                                             rabean.initialize(request, ejbcawebbean); 
                                             userdatasourcehelper.initialize(request,ejbcawebbean, rabean);
   String THIS_FILENAME            =  globalconfiguration.getRaPath()  + "/edituserdatasources/edituserdatasources.jsp";

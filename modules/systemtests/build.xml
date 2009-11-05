@@ -18,16 +18,17 @@
     	<path refid="lib.jpa.classpath"/>
     	<path refid="lib.bouncycastle.classpath"/>
     	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
-    	<path refid="lib.ejbca-util.classpath"/>
     	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
     	<pathelement location="${mod.ejbca-entity.lib}"/>
     	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
     	<pathelement location="${mod.ejbca-xkms-cli.lib}"/>
     	<pathelement location="${mod.clientToolBox.lib}"/>
     	<pathelement location="${mod.ejbca-ejb-cli.lib}"/>
+    	<pathelement location="${mod.ejbca-util.lib}"/>
+    	<pathelement location="${mod.ejbca-ejb.lib}"/>
 	</path>
 	
-    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli-lib, ejbca-xkms-cli-lib, ejbca-ejb-cli, compile"/>
+    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli-lib, ejbca-xkms-cli-lib, ejbca-ejb-cli, ejbca-ejb, compile"/>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
@@ -35,10 +36,6 @@
     </target>
 
     <target name="compile" depends="assert-notinproduction, ejbca-entity, ejbca-ejb-interface, clientToolBox">
-    	<!--
-    	<property name="debug-systemtests.classpath" refid="systemtests.classpath"/>
-    	<echo message="systemtests.classpath = ${debug-systemtests.classpath}"/>
-    	--> 
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}"/>
@@ -73,18 +70,6 @@
 			<http url="http://localhost:${httpserver.pubhttp}/ejbca/publicweb/status/ocsp/"/>
 		</waitfor>
 		<fail message="Please start application server before running this script" if="appserver.notrunning.ocsp"/>	
-	</target>
-
-	<target name="createreport">
-		<fail message="'reports.dir' is not set." unless="reports.dir" />
-		<junitreport todir="${reports.dir}">
-			<fileset dir="${reports.dir}">
-				<include name="TEST-*.xml" />
-			</fileset>
-			<report format="frames" todir="${reports.dir}/html" />
-		</junitreport>
-    	<echo message=""/>
-    	<echo message="Results are available in file://${reports.dir}/html/index.html"/>
 	</target>
 
 	<target name="runone-internal" depends="build, assert-appserverrunning-ocsp">
@@ -380,10 +365,6 @@
 			</batchtest>
 		</junit>
     	<antcall target="createreport"/>
-    	<!--
-    	<property name="debug-systemtests.classpath" refid="lib.clientToolBox.classpath"/>
-    	<echo message="lib.clientToolBox.classpath = ${debug-systemtests.classpath}"/>
-    	-->
    	</target>
 
 </project>

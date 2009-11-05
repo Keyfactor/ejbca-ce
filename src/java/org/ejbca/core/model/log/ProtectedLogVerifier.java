@@ -48,7 +48,7 @@ public class ProtectedLogVerifier {
 	private ProtectedLogActions protectedLogActions = null;
 	
 	private ProtectedLogVerifier() {
-		protectedLogActions = new ProtectedLogActions(ProtectedLogActions.ACTION_ALL);
+		protectedLogActions = new ProtectedLogActions(ProtectedLogConstants.ACTION_ALL);
 	}
 	
 	/**
@@ -134,7 +134,7 @@ public class ProtectedLogVerifier {
 				// Verify that log hasn't been frozen for any node
 				// Verify that each protect operation had a valid certificate and is not about to expire without a valid replacement
 				try {
-					protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_ALL, freezeThreshold);	//verifyEntireLog();
+					protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_ALL, freezeThreshold);	//verifyEntireLog();
 					if (protectedLogEventIdentifier != null) {
 				    	log.error(intres.getLocalizedMessage("protectedlog.verifier.failed", protectedLogEventIdentifier.getNodeGUID(),
 				    			protectedLogEventIdentifier.getCounter()));
@@ -165,7 +165,7 @@ public class ProtectedLogVerifier {
 	 */
 	private ProtectedLogEventIdentifier verifyLastEvent() {
 		log.trace(">verifyLastEvent");
-		ProtectedLogActions protectedLogActions = new ProtectedLogActions(ProtectedLogActions.ACTION_ALL); 
+		ProtectedLogActions protectedLogActions = new ProtectedLogActions(ProtectedLogConstants.ACTION_ALL); 
 		ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().findNewestProtectedLogEventRow();
 		// Is log empy?
 		if (protectedLogEventIdentifier == null) {

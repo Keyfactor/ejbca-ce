@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.CertificateView;
@@ -108,7 +108,7 @@ public class EndEntityCertServlet extends HttpServlet {
           }
 
         try{
-          ejbcawebbean.initialize(req,AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
+          ejbcawebbean.initialize(req,AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
           rabean.initialize(req,ejbcawebbean);                    
         } catch(Exception e){
            throw new java.io.IOException("Authorization Denied");

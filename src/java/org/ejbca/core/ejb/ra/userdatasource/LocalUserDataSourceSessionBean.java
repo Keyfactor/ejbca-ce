@@ -31,8 +31,8 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
@@ -538,7 +538,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         // If superadmin return all available user data sources
         try {
         	try{
-              superadmin = getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+              superadmin = getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         	}catch (AuthorizationDeniedException e1) {
               	log.debug("AuthorizationDeniedException: ", e1);
             }
@@ -716,16 +716,16 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToUserDataSource(Admin admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
-    		if(isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR)){
+    		if(isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
     			return true;
     		}
     		
     		if(remove){
-    			isAuthorized(admin,AvailableAccessRules.USERDATASOURCEPREFIX + id + AvailableAccessRules.UDS_REMOVE_RIGHTS);
+    			isAuthorized(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS);
     		}else{
-    			isAuthorized(admin,AvailableAccessRules.USERDATASOURCEPREFIX + id + AvailableAccessRules.UDS_FETCH_RIGHTS);    			
+    			isAuthorized(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS);    			
     		}
-    		if(isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR)){
+    		if(isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR)){
     			if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
     				return true;
     			}
@@ -762,7 +762,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * The following checks are performed.
      * 
      * 1. If the admin is an administrator
-     * 2. If tha admin is authorized AvailableAccessRules.REGULAR_EDITUSERDATASOURCES
+     * 2. If tha admin is authorized AccessRulesConstants.REGULAR_EDITUSERDATASOURCES
      * 3. Only the superadmin should have edit access to user data sources with 'ANYCA' set
      * 4. Administrators should be authorized to all the user data source applicable cas.
      * 
@@ -770,13 +770,13 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      */
     private boolean isAuthorizedToEditUserDataSource(Admin admin, BaseUserDataSource userdatasource) {
     	try {
-    		if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR)){
+    		if(getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
     			return true;
     		}
     	} catch (AuthorizationDeniedException e) {}
     	try {
-    		if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR) &&
-    				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_EDITUSERDATASOURCES)){
+    		if(getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR) &&
+    				getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)){
     			if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
     				return false;
     			}

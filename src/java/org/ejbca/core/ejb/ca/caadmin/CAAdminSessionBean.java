@@ -57,7 +57,6 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -78,8 +77,8 @@ import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CACacheManager;
@@ -1854,7 +1853,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         try{
             // check authorization
 			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
-				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
 			}
             // load keystore
             java.security.KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
@@ -1924,7 +1923,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         try {
             // check authorization
 			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
-				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
 			}
 
 			CADataLocal caData = cadatahome.findByName(caname); 
@@ -1978,7 +1977,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         try{
             // check authorization
 			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
-				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
 			}
 
 			CADataLocal caData = cadatahome.findByName(caname); 
@@ -2373,7 +2372,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	    	}
 	    	// Check authorization
 			if(admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
-				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
 			}
             // Fetch keys
 	    	// This is a way of verifying the passowrd. If activate fails, we will get an exception and the export will not proceed
@@ -2482,7 +2481,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     public String getKeyFingerPrint(Admin admin, String caname) throws Exception  {
 		try {
 			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
-				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
 			}
 			CA thisCa;
 			thisCa = cadatahome.findByName(caname).getCA();
@@ -2526,7 +2525,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     public void activateCAToken(Admin admin, int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException{
        // Authorize
         try{
-            getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_ACTIVATECA);
+            getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_ACTIVATECA);
         }catch(AuthorizationDeniedException ade){
     		String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoactivatetoken", new Integer(caid));            	
             getLogSession().log (admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,ade);
@@ -2624,7 +2623,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     public void deactivateCAToken(Admin admin, int caid) throws AuthorizationDeniedException, EjbcaException{
        // Authorize
         try{
-            getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_ACTIVATECA);
+            getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_ACTIVATECA);
         }catch(AuthorizationDeniedException ade){
     		String msg = intres.getLocalizedMessage("caadmin.notauthorizedtodeactivatetoken", new Integer(caid));            	
             getLogSession().log (admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,ade);
@@ -2746,7 +2745,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	  return true;	// Skip database seach since this is always ok
       }
       try{
-        returnval = getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
+        returnval = getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
       }catch(AuthorizationDeniedException e){}
       return returnval;
     }

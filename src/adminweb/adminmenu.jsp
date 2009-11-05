@@ -2,7 +2,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,
                                           org.ejbca.core.model.authorization.AuthorizationDeniedException,
-                                          org.ejbca.core.model.authorization.AvailableAccessRules"%>
+                                          org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -67,7 +67,7 @@
   final String REPORTS_RESOURCE2                      = "/log_functionality/view_log/ra_entries";
   final String EDITPUBLISHERS_RESOURCE                = "/super_administrator";
   final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
-  final String RAEDITUSERDATASOURCES_RESOURCE         = AvailableAccessRules.REGULAR_EDITUSERDATASOURCES;
+  final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
   final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
   final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
   final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionality/view_end_entity";
@@ -75,7 +75,7 @@
   final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
   final String LOGVIEW_RESOURCE                       = "/log_functionality/view_log";
   final String LOGCONFIGURATION_RESOURCE              = "/log_functionality/edit_log_configuration";
-  final String SYSTEMCONFIGURATION_RESOURCE           = AvailableAccessRules.REGULAR_EDITSYSTEMCONFIGURATION;
+  final String SYSTEMCONFIGURATION_RESOURCE           = AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION;
   final String SERVICES_RESOURCE                      = "/super_administrator";
   final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
 
@@ -245,10 +245,10 @@
    		boolean approveendentity = false;
 		boolean approvecaaction = false;
 		try{
-			approveendentity = ejbcawebbean.isAuthorizedNoLog(AvailableAccessRules.REGULAR_APPROVEENDENTITY);
+			approveendentity = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
 		}catch(AuthorizationDeniedException e){}
 		try{
-			approvecaaction = ejbcawebbean.isAuthorizedNoLog(AvailableAccessRules.REGULAR_APPROVECAACTION);
+			approvecaaction = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_APPROVECAACTION);
 		}catch(AuthorizationDeniedException e){}
 		if(approveendentity || approvecaaction){
 			logheaderprinted = true;%>

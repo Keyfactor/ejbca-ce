@@ -1,143 +1,69 @@
 <?xml version="1.0"?>
 <project name="ejbcatest" basedir=".">
 
-    <!-- compile JUnit testcases -->
-    <target name="test:compile" depends="compile">
-        <mkdir dir="${test.dir}" />
-        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
-            <classpath refid="jpa.classpath" />
-            <classpath refid="test.compile.classpath" />
-        	<exclude name="org/ejbca/ui/cli/TestOcspMonitoringTool.java" />
-        	<exclude name="org/ejbca/core/protocol/xkms/*" />
-        </javac>
-        <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
-        <copy file="${src.java}/jndi.properties" todir="${test.dir}" failonerror="false"/>
-        <!-- log4j.properties needs to be in the classpath to see error messages from the Junit tests -->
-        <copy file="${test.src.dir}/log4j.xml" todir="${test.dir}" failonerror="false"/>
-    </target>
-    
-    <!-- compile JUnit testcases -->
-    <target name="test:compile-ctb" depends="test:compile,clientToolBox">
-        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
-            <classpath refid="jpa.classpath" />
-            <classpath refid="test.base.classpath" />
-            <classpath location="${clientToolBox-dist.dir}/clientToolBox.jar" />
-        	<include name="org/ejbca/ui/cli/TestOcspMonitoringTool.java" />
-        </javac>
-    </target>
-
     <target name="test:run" description="run both stand-alone JUnit test cases and system test">
     	<antcall target="test:runsa" />
     	<antcall target="test:runsys" />
-    	<echo message="Please observe that there are additional reports from the test:runsa tests in file://${basedir}/${test.dir}/reports/html/index.html" /> 
+    	<echo message="Please observe that there are additional reports from the test:runsa tests" /> 
     </target>
 
     <target name="test:runsys" description="run system test">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
     </target>
 
-    <target name="test:runsa" depends="test:compile" description="run stand-alone JUnit test cases">
-        <delete dir="${test.dir}/reports" />
-        <mkdir dir="${test.dir}/reports/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-                <pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
-            </classpath>
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${test.dir}/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/*.class" />
-                    <!-- Exclude all helper classes -->
-                	<exclude name="org/ejbca/core/model/InternalResourcesTestClass.class" />
-                    <exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper$JunitApprovalExecutorUtil1.class" />
-                    <exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper$JunitApprovalExecutorUtil2.class" />
-                    <exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper$JunitApprovalExecutorUtil3.class" />
-                    <exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper.class" />
-                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockDSAPublicKey.class" />
-                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockECDSAPublicKey.class" />
-                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockNotSupportedPublicKey.class" />
-                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockPublicKey.class" />
-                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper$MockRSAPublicKey.class" />
-                    <exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper.class" />
-                    <exclude name="org/ejbca/core/protocol/ocsp/CacheExceptionHandler.class" />
-                    <exclude name="org/ejbca/core/protocol/ocsp/CacheTester.class" />
-                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockDSAPublicKey.class" />
-                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockECDSAPublicKey.class" />
-                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockNotSupportedPublicKey.class" />
-                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockPublicKey.class" />
-                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups$MockRSAPublicKey.class" />
-                    <exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups.class" />
-                    <exclude name="org/ejbca/util/DummyHashMap.class" />
-                    <exclude name="org/ejbca/util/DummyLocalHome.class" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/reports">
-            <fileset dir="${test.dir}/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/reports/html" />
-        </junitreport>
+    <target name="test:runsa" description="run stand-alone JUnit test cases">
+    	<ant antfile="build.xml" dir="modules/ejbca-util" target="test" />
+    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" />
     </target>
 
-    <target name="test:runone" depends="test:compile" description="run a single JUnit-test specified -Dtest.runone=classname">
+    <target name="test:runone" description="run a single JUnit-test specified -Dtest.runone=classname">
     	<fail message="'test.runone' not set. Example -Dtest.runone=TestDnComponents " unless="test.runone" />
-        <property name="test.reportsdir" value="${test.dir}/reports-runone" />
-        <delete dir="${test.reportsdir}" />
-        <mkdir dir="${test.reportsdir}/html" />
-        <!-- Determine if the test is a system test or a normal JUnit test -->
-		<fileset dir="${test.dir}" id="test.runone.fileset">
-			<include name="**/${test.runone}.class" />
-		</fileset>
-		<pathconvert refid="test.runone.fileset" property="test.runone.fileset.notempty" setonempty="false"/>
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runone" />
-    	<antcall target="test:runone-internal" />
-    </target>
-    <target name="test:runone-internal" if="test.runone.fileset.notempty">
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="test.compile.classpath" />
-                <path location="${test.dir}" />
-            </classpath>
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${test.reportsdir}">
-                <fileset dir="${test.dir}">
-                	<include name="**/${test.runone}.class" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.reportsdir}">
-            <fileset dir="${test.reportsdir}">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.reportsdir}/html" />
-        </junitreport>
+    	<!-- Locate the right module where the test resides.. -->
+        <pathconvert property="test-fullname" pathsep=" " setonempty="false">
+    	    <path>
+				<fileset dir="${ejbca.home}" id="test.runone.fileset">
+					<include name="modules/ejbca-ejb/src-test/**/${test.runone}.java" />
+					<include name="modules/ejbca-util/src-test/**/${test.runone}.java" />
+					<include name="modules/systemtests/src/**/${test.runone}.java" />
+				</fileset>
+    	    </path>
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<condition property="module" value="modules/ejbca-ejb">
+    		<matches string="${test-fullname}" pattern="^modules/ejbca-ejb/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/ejbca-util">
+    		<matches string="${test-fullname}" pattern="^modules/ejbca-util/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/systemtests">
+    		<matches string="${test-fullname}" pattern="^modules/systemtests/.*$"/>
+    	</condition>
+        <fail message="The requested test was not found." unless="module"/>
+    	<ant antfile="build.xml" dir="${module}" target="runone" />
     </target>
 
-    <target name="test:runlots" depends="test:compile" description="run JUnit testcases that creates lots of users and certificates">
+    <target name="test:runlots" description="run JUnit testcases that creates lots of users and certificates">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runlotsofusers" />
     	<ant antfile="build.xml" dir="modules/systemtests" target="runperf" />
     </target>
 
-    <target name="test:runlotsperuser" depends="test:compile" description="run JUnit testcases that creates lots of users and certificates for each user">
+    <target name="test:runlotsperuser" description="run JUnit testcases that creates lots of users and certificates for each user">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runlotsperuser" />
     </target>
 
-    <target name="test:runperf" depends="test:compile" description="run JUnit performance tests">
+    <target name="test:runperf" description="run JUnit performance tests">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runperf" />
     </target>
 
-    <target name="test:runweb" depends="test:compile" description="run JUnit web system tests">
+    <target name="test:runweb" description="run JUnit web system tests">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runweb" />
     </target>
 
-    <target name="test:runcmpra" depends="test:compile" description="run JUnit CMP RA system tests">
+    <target name="test:runcmpra" description="run JUnit CMP RA system tests">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runcmp" />
     </target>
 
-    <target name="test:runocsp" depends="test:compile" description="run JUnit standalone OCSP system tests">
+    <target name="test:runocsp" description="run JUnit standalone OCSP system tests">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp" />
     </target>
 
@@ -145,40 +71,8 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp.setuptest" />
     </target>
 
-    <target name="test:logstress" depends="test:compile" description="run JUnit log stress test">
+    <target name="test:logstress" description="run JUnit log stress test">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runlogstress" />
     </target>
-
-    <target name="test:ctb" depends="test:compile-ctb" description="run JUnit ClientToolBox tests">
-		<echo message="Use ejbca-custom/clientToolBox/lib for your JDBC driver and ejbca-custom/clientToolBox/properties/META-INF/persistence.xml for your modified database config."/>
-        <delete dir="${test.dir}/ctb/reports" />
-        <mkdir dir="${test.dir}/ctb/reports/html" />
-        <junit printsummary="yes" haltonfailure="no">
-            <classpath>
-                <path refid="jpa.classpath" />
-                <path refid="test.base.classpath" />
-                <path location="${test.dir}" />
-                <path location="${clientToolBox-dist.dir}/properties" />
-                <!--path location="${clientToolBox-dist.dir}/lib/mysql-connector-java.jar" /-->
-                <path location="${clientToolBox.build}" />
-                <path>
-					<fileset dir="${clientToolBox-dist.dir}/lib" includes="*.jar" />
-				</path>
-            </classpath>
-            <formatter type="xml" />
-        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
-            <batchtest fork="yes" todir="${test.dir}/ctb/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/cli/TestOcspMonitoringTool*" />
-                </fileset>
-            </batchtest>
-        </junit>
-        <junitreport todir="${test.dir}/ctb/reports">
-            <fileset dir="${test.dir}/ctb/reports">
-                <include name="TEST-*.xml" />
-            </fileset>
-            <report format="frames" todir="${test.dir}/ctb/reports/html" />
-        </junitreport>
-   	</target>
 
 </project>

@@ -31,8 +31,8 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -380,7 +380,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     			boolean authorized = true;
     			if(event == LogConstants.EVENT_INFO_CUSTOMLOG || event == LogConstants.EVENT_ERROR_CUSTOMLOG){
     				try{
-    					getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_LOG_CUSTOM_EVENTS);
+    					getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_LOG_CUSTOM_EVENTS);
     				}catch(AuthorizationDeniedException e){
     					String msg = intres.getLocalizedMessage("log.notauthtocustomlog");
     					getLogSession().doSyncronizedLog(dev, admin,caid,LogConstants.MODULE_LOG,new Date(),username, null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,null);

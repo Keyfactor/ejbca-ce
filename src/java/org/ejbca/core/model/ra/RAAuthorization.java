@@ -21,8 +21,8 @@ import java.util.TreeMap;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -77,7 +77,7 @@ public class RAAuthorization implements Serializable {
      */
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
-      	Collection result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AvailableAccessRules.VIEW_RIGHTS);     	
+      	Collection result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS);     	
       	result.retainAll(this.raadminsession.getAuthorizedEndEntityProfileIds(admin));
       	Iterator iter = result.iterator();
       	                    
@@ -113,7 +113,7 @@ public class RAAuthorization implements Serializable {
     
 	public TreeMap getCreateAuthorizedEndEntityProfileNames() {
 		if(authcreateprofilenames == null){
-			authcreateprofilenames = this.authEndEntityProfileNames(AvailableAccessRules.CREATE_RIGHTS);
+			authcreateprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.CREATE_RIGHTS);
 		}
 	       
 		return authcreateprofilenames;  
@@ -121,7 +121,7 @@ public class RAAuthorization implements Serializable {
 	      
 	public TreeMap getViewAuthorizedEndEntityProfileNames(){
 	  if(authviewprofilenames == null){
-	  	  authviewprofilenames = this.authEndEntityProfileNames(AvailableAccessRules.VIEW_RIGHTS);
+	  	  authviewprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.VIEW_RIGHTS);
 	  }
 	  
       
@@ -163,7 +163,7 @@ public class RAAuthorization implements Serializable {
 		  returnval = true;
 	  } else {
 		  try{
-			   returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+			   returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
 		  }catch(AuthorizationDeniedException e){}		  
 	  }
 

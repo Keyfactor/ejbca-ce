@@ -20,4 +20,16 @@
 			<arg line="${ejbca-cli.arg}"/>
 		</java>
 	</target>
+
+	<target name="createreport">
+		<fail message="'reports.dir' is not set." unless="reports.dir" />
+		<junitreport todir="${reports.dir}">
+			<fileset dir="${reports.dir}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${reports.dir}/html" />
+		</junitreport>
+    	<echo message=""/>
+    	<echo message="Results are available in file://${reports.dir}/html/index.html"/>
+	</target>
 </project>

@@ -60,18 +60,21 @@
     <property name="mod.dist.path" location="${mod.path}/dist" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
+    <property name="mod.ejbca-ejb.lib" location="${ejbca.home}/dist/ejbca-ejb.jar" />
+    <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
     <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.home}/dist/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
     <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
     <property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-ejb-interface.jar" />
+    <property name="mod.ejbca-util.path" location="${mod.path}/ejbca-util" />
     <property name="mod.ejbca-util.lib" location="${ejbca.home}/dist/ejbca-util.jar" />
     <property name="mod.ejbca-ws-cli.lib" location="${ejbca.home}/dist/ejbcawscli/ejbcawscli.jar" />
     <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.home}/dist/xkmscli/xkmscli.jar" />
     <property name="mod.clientToolBox.dist" location="${ejbca.home}/dist/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
-
+	
 	<!-- Files of global interest -->
     <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
     
@@ -79,6 +82,8 @@
     <property name="java.target.version" value="1.5"/>	<!-- This should probably be defined in internal.properties -->
 
 	<!-- Define class-paths of global interest -->
+	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc.jar"/></path>
+
 	<path id="lib.junit.classpath">
 		<fileset dir="${ejbca.home}/lib/ext">
 			<include name="junit-*.jar"/>
@@ -95,6 +100,13 @@
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
 	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
 	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
+	<path id="lib.mail.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="mail.jar"/></path>
+	<path id="lib.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/></path>
+	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
+	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
+	<path id="lib.xmlsec.classpath"><fileset dir="${ejbca.home}/lib/xmlsign/" includes="xmlsec-*.jar"/></path>
+	<path id="lib.clover.classpath"><pathelement location="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/></path>
+	
 
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
@@ -148,10 +160,6 @@
 		</fileset>
 	</path>
 
-	<path id="lib.ldap.classpath">
-    	<pathelement location="${ejbca.home}/lib/ldap.jar"/>
-	</path>
-	
 	<path id="lib.jpa.classpath">
         <fileset dir="${ejbca.home}/lib/xdoclet/lib" includes="dom4j-1.6.1.jar.jar"/>
         <fileset dir="${ejbca.home}/lib/hibernate">

@@ -19,11 +19,10 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogEntry;
 
 /**
  * A class that looks up the which modules a administrator have right to view.
@@ -56,7 +55,7 @@ public class LogAuthorization implements Serializable {
         
         for(int i = 0 ; i < LogConstants.MODULETEXTS.length; i++){
           authorized = false; 
-          String resource = AvailableAccessRules.VIEWLOGACCESSRULES[i];
+          String resource = AccessRulesConstants.VIEWLOGACCESSRULES[i];
           try{ 
             authorized = this.authorizationsession.isAuthorizedNoLog(administrator,resource);
           }catch(AuthorizationDeniedException e){} 
@@ -119,9 +118,9 @@ public class LogAuthorization implements Serializable {
        if(authorizedmodules == null){
 	     authorizedmodules = new ArrayList();
 	     
-	     for(int i=0; i < AvailableAccessRules.VIEWLOGACCESSRULES.length; i++){
+	     for(int i=0; i < AccessRulesConstants.VIEWLOGACCESSRULES.length; i++){
 	     	 try{
-	     	 	this.authorizationsession.isAuthorizedNoLog(administrator,AvailableAccessRules.VIEWLOGACCESSRULES[i]);
+	     	 	this.authorizationsession.isAuthorizedNoLog(administrator,AccessRulesConstants.VIEWLOGACCESSRULES[i]);
 				authorizedmodules.add(new Integer(i));
 	         }catch(AuthorizationDeniedException ade){}  
 	     }	             

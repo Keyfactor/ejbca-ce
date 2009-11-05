@@ -73,7 +73,7 @@ public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
         		}
         	} else {
         		getLogger().info("Signing "+nodeGUID+"...");
-        		if (getProtectedLogSession().signUnsignedChain(null, nodeGUID)) {
+        		if (getProtectedLogSession().signUnsignedChainUsingSingleSignerNode(nodeGUID)) {
         			getLogger().info("SUCCESS!");
         		} else {
         			getLogger().error("FAILED!");
