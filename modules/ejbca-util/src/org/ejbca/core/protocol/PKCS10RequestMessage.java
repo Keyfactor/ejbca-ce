@@ -162,8 +162,9 @@ public class PKCS10RequestMessage implements IRequestMessage {
      * @return challenge password from certification request or null if none exist in the request.
      */
     public String getPassword() {
-        if (password != null)
+        if (password != null) {
             return password;
+        }
         try {
             if (pkcs10 == null) {
                 init();
@@ -248,8 +249,9 @@ public class PKCS10RequestMessage implements IRequestMessage {
      * @return username, which is the CN field from the subject DN in certification request.
      */
     public String getUsername() {
-        if (username != null)
+        if (username != null) {
             return username;
+        }
         String name = CertTools.getPartFromDN(getRequestDN(), "CN");
         if (name == null) {
             log.error("No CN in DN: "+getRequestDN());

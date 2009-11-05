@@ -62,8 +62,6 @@ import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RespID;
-import org.ejbca.core.protocol.ocsp.FnrFromUnidExtension;
-import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
@@ -134,8 +132,9 @@ public class OCSPUnidClient {
      * @throws Exception
 	 */
 	public static OCSPUnidClient getOCSPUnidClient(String ksfilename, String pwd, String ocspurl, boolean doSignRequst, boolean getfnr) throws Exception {
-	    if ( doSignRequst && ksfilename==null )
+	    if ( doSignRequst && ksfilename==null ) {
             throw new Exception("You got to give the path name for a keystore to use when using signing.");
+	    }
         final KeyStore ks;
         if (ksfilename != null) {
 	        ks = KeyStore.getInstance("PKCS12", "BC");
@@ -143,16 +142,18 @@ public class OCSPUnidClient {
             Enumeration en = ks.aliases();
             String alias = null;
             // If this alias is a trusted certificate entry, we don't want to fetch that, we want the key entry
-            while ( (alias==null || ks.isCertificateEntry(alias)) && en.hasMoreElements() )
+            while ( (alias==null || ks.isCertificateEntry(alias)) && en.hasMoreElements() ) {
                 alias = (String)en.nextElement();
+            }
             final Certificate[] certs = KeyTools.getCertChain(ks, alias);
             if (certs == null) {
                 throw new IOException("Can not find a certificate entry in PKCS12 keystore for alias "+alias);
             }
             final PrivateKey privateKey = doSignRequst ? (PrivateKey)ks.getKey(alias, null) : null;
             return new OCSPUnidClient(ks, pwd, ocspurl, certs, privateKey, getfnr);
-		} else
+		} else {
             return new OCSPUnidClient(null, null, ocspurl, null, null, getfnr);
+		}
 	}
 	/**
 	 * @param cert X509Certificate to query, the DN should contain serialNumber which is Unid to be looked up
@@ -203,9 +204,9 @@ public class OCSPUnidClient {
             final X509Certificate localCertChain[] = this.certChain!=null ? this.certChain : new X509Certificate[] {(X509Certificate)cacert};
             gen.setRequestorName(localCertChain[0].getSubjectX500Principal());
             req = gen.generate("SHA1withRSA", this.signKey, localCertChain, "BC");
-        } else
+        } else {
             req = gen.generate();
-
+        }
         // write request if directory exists.
         File  ocspReqDir = new File(requestDirectory);
         if ( ocspReqDir.isDirectory() ) {
@@ -243,7 +244,9 @@ public class OCSPUnidClient {
                 os = con.getOutputStream();
                 os.write(ocspPackage);
             } finally {
-                if (os != null) os.close();
+                if (os != null) {
+                	os.close();
+                }
             }
     	}
         final OCSPUnidResponse ret = new OCSPUnidResponse();

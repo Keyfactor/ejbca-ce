@@ -13,14 +13,13 @@
 
 package org.ejbca.config;
 
-import org.apache.log4j.Logger;
 
 /**
  * This file handles configuration from protection.properties
  */
 public class ProtectConfiguration {
 	
-	private static final Logger log = Logger.getLogger(ProtectConfiguration.class);
+	//private static final Logger log = Logger.getLogger(ProtectConfiguration.class);
 	
 	public static final String CONFIG_PROTECTIONENABLED     = "protection.enabled";
 	

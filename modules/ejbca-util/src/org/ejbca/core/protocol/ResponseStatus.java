@@ -69,13 +69,16 @@ public class ResponseStatus implements Serializable {
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ResponseStatus)) return false;
-
+        if (this == o) {
+        	return true;
+        }
+        if (!(o instanceof ResponseStatus)) {
+        	return false;
+        }
         final ResponseStatus scepResponseStatus = (ResponseStatus) o;
-
-        if (value != scepResponseStatus.value) return false;
-
+        if (value != scepResponseStatus.value) {
+        	return false;
+        }
         return true;
     }
 

@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -76,7 +75,7 @@ public class InternalResources implements Serializable {
 	    		try {
 	    			primaryStream = new FileInputStream("build-test/intresources/intresources." + primaryLanguage + ".properties");
 	    			secondaryStream = new FileInputStream("build-test/intresources/intresources." + secondaryLanguage + ".properties");	    	
-	    		} catch (FileNotFoundException e) {} catch (IOException e) {
+	    		} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
 	    	} else {

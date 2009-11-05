@@ -22,7 +22,6 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
@@ -41,7 +40,7 @@ import org.ejbca.util.TestTools;
  */
 public class TestPublisherQueueProcess extends TestCase {
 
-    private static final Logger log = Logger.getLogger(TestPublisherQueueProcess.class);
+    //private static final Logger log = Logger.getLogger(TestPublisherQueueProcess.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     private static byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
@@ -89,10 +88,6 @@ public class TestPublisherQueueProcess extends TestCase {
      *
      */
     public void test01PublishQueueProcessFail() throws Exception {
-        // Create a new user
-        String username = genRandomUserName();
-        String pwd = "foo123";
-        
     	TestTools.getPublisherQueueSession().addQueueData(12345, PublisherQueueData.PUBLISH_TYPE_CERT, "TestPublishQueueProcessService12345", null, PublisherQueueData.STATUS_PENDING);
     	Collection<PublisherQueueData> c = TestTools.getPublisherQueueSession().getPendingEntriesForPublisher(12345);
     	assertEquals(1, c.size());

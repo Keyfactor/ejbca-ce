@@ -274,28 +274,28 @@ public class TestAuthenticationSession extends TestCase {
     private void loginMaxNumFailedLoginsMinusOneAndThenOk(String username, String password) throws Exception {
     	// Login attempt: 1
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
         	// OK
         }
         // Login attempt: 2
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
         	// OK
         }
         // Login attempt: 3
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
         	// OK
         }
         // Login attempt: 4: This time with the right password which should work
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
         } catch (AuthStatusException e) { // This time the status is wrong
         	fail("The account shold not have been locked");
         } catch (AuthLoginException e) {
@@ -306,35 +306,35 @@ public class TestAuthenticationSession extends TestCase {
     private void loginUntilLocked(String username, String password) throws Exception {
     	// Login attempt: 1
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
         	// OK
         }
         // Login attempt: 2
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
         	// OK
         }
         // Login attempt: 3
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
         	// OK
         }
         // Login attempt: 4
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
         	// OK
         }
         // Login attempt: 5: This time with the right password but the account should have been locked
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthStatusException e) { // This time the status is wrong
         	// OK
@@ -342,7 +342,7 @@ public class TestAuthenticationSession extends TestCase {
         
         // Login attempt: 6: Should still be locked
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthStatusException e) { // This time the status is wrong
         	// OK
@@ -350,7 +350,7 @@ public class TestAuthenticationSession extends TestCase {
         
         // Login attempt: 7: Should still be locked
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
+            TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthStatusException e) { // This time the status is wrong
         	// OK

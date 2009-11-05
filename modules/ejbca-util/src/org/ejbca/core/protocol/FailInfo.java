@@ -99,13 +99,16 @@ public class FailInfo implements Serializable {
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof FailInfo)) return false;
-
+        if (this == o) {
+        	return true;
+        }
+        if (!(o instanceof FailInfo)) { 
+        	return false;
+        }
         final FailInfo scepResponseStatus = (FailInfo) o;
-
-        if (value != scepResponseStatus.value) return false;
-
+        if (value != scepResponseStatus.value) {
+        	return false;
+        }
         return true;
     }
 
