@@ -30,6 +30,8 @@
     	    </path>
     		<map from="${mod.ejbca-ejb-cli.dist}/" to=""/>
     	</pathconvert>
+    	<dirname file="${mod.ejbca-ejb-cli.lib}" property="mod.ejbca-ejb-cli.lib.dir"/>
+    	<mkdir dir="${mod.ejbca-ejb-cli.lib.dir}" />	<!-- Make sure the dir exists before we start the jar-task -->
     	<jar destfile="${mod.ejbca-ejb-cli.lib}">
     		<manifest >
     			<attribute name="Class-path" value="${ejbca-ejb-cli.dependencies} ./" />

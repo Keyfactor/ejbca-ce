@@ -54,24 +54,25 @@
         <contains string="${jboss.home}" substring="JBOSS_HOME"/>
     </condition>
 	
-	<!-- Define the different modules -->
+    <property name="ejbca.dist.path" location="${ejbca.home}/dist" />
+    <!-- Define the different modules -->
     <property name="mod.path" location="${ejbca.home}/modules" />
     <property name="mod.systemtests.path" location="${mod.path}/systemtests" />
     <property name="mod.dist.path" location="${mod.path}/dist" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
-    <property name="mod.ejbca-ejb.lib" location="${ejbca.home}/dist/ejbca-ejb.jar" />
+    <property name="mod.ejbca-ejb.lib" location="${ejbca.dist.path}/ejbca-ejb.jar" />
     <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
-    <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.home}/dist/ejbca-ejb-cli" />
+    <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.dist.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
     <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
     <property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-ejb-interface.jar" />
     <property name="mod.ejbca-util.path" location="${mod.path}/ejbca-util" />
-    <property name="mod.ejbca-util.lib" location="${ejbca.home}/dist/ejbca-util.jar" />
-    <property name="mod.ejbca-ws-cli.lib" location="${ejbca.home}/dist/ejbcawscli/ejbcawscli.jar" />
-    <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.home}/dist/xkmscli/xkmscli.jar" />
-    <property name="mod.clientToolBox.dist" location="${ejbca.home}/dist/clientToolBox" />
+    <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
+    <property name="mod.ejbca-ws-cli.lib" location="${ejbca.dist.path}/ejbcawscli/ejbcawscli.jar" />
+    <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.dist.path}/xkmscli/xkmscli.jar" />
+    <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
 	
