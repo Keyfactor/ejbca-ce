@@ -162,9 +162,15 @@ public class TestKeyTools extends TestCase {
         for (int i = 0; i < certs.length; i++) {
             X509Certificate cert = (X509Certificate) certs[i];
             log.debug("SubjectDN: " + cert.getSubjectDN().toString());
-            if (i == 0) assertEquals("Wrong subjectDN", cert.getSubjectDN().toString(), "CN=fooca,C=SE");
-            if (i == 1) assertEquals("Wrong subjectDN", cert.getSubjectDN().toString(), "CN=TestSubCA,O=AnaTom,C=SE");
-            if (i == 2) assertEquals("Wrong subjectDN", cert.getSubjectDN().toString(), "CN=TestCA,O=AnaTom,C=SE");
+            if (i == 0) {
+            	assertEquals("Wrong subjectDN", cert.getSubjectDN().toString(), "CN=fooca,C=SE");
+            }
+            if (i == 1) {
+            	assertEquals("Wrong subjectDN", cert.getSubjectDN().toString(), "CN=TestSubCA,O=AnaTom,C=SE");
+            }
+            if (i == 2) {
+            	assertEquals("Wrong subjectDN", cert.getSubjectDN().toString(), "CN=TestCA,O=AnaTom,C=SE");
+            }
         }
         log.trace("<test01GetCertChain()");
     }

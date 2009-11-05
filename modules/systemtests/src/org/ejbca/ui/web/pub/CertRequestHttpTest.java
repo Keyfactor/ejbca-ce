@@ -161,8 +161,12 @@ public class CertRequestHttpTest extends TestCase {
         log.info("Content-Type: "+con.getContentType());
         boolean ok = false;
         // Some containers return the content type with a space and some without...
-        if ("text/html;charset=UTF-8".equals(con.getContentType())) ok = true;
-        if ("text/html; charset=UTF-8".equals(con.getContentType())) ok = true;
+        if ("text/html;charset=UTF-8".equals(con.getContentType())) {
+        	ok = true;
+        }
+        if ("text/html; charset=UTF-8".equals(con.getContentType())) {
+        	ok = true;
+        }
         assertTrue(con.getContentType(), ok);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and PKCS12 requests are small
@@ -209,8 +213,12 @@ public class CertRequestHttpTest extends TestCase {
         assertEquals("Response code", 200, con.getResponseCode());
         boolean ok = false;
         // Some containers return the content type with a space and some without...
-        if ("text/html;charset=UTF-8".equals(con.getContentType())) ok = true;
-        if ("text/html; charset=UTF-8".equals(con.getContentType())) ok = true;
+        if ("text/html;charset=UTF-8".equals(con.getContentType())) {
+        	ok = true;
+        }
+        if ("text/html; charset=UTF-8".equals(con.getContentType())) {
+        	ok = true;
+        }
         assertTrue(con.getContentType(), ok);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and PKCS12 requests are small
@@ -258,8 +266,12 @@ public class CertRequestHttpTest extends TestCase {
         assertEquals("Response code", 200, con.getResponseCode());
         boolean ok = false;
         // Some containers return the content type with a space and some without...
-        if ("text/html;charset=UTF-8".equals(con.getContentType())) ok = true;
-        if ("text/html; charset=UTF-8".equals(con.getContentType())) ok = true;
+        if ("text/html;charset=UTF-8".equals(con.getContentType())) {
+        	ok = true;
+        }
+        if ("text/html; charset=UTF-8".equals(con.getContentType())) {
+        	ok = true;
+        }
         assertTrue(con.getContentType(), ok);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and PKCS12 requests are small

@@ -135,7 +135,7 @@ public class TestAddLotsofCertsPerUser extends TestCase {
             for (int j=0; j<CERTS_OF_EACH_KIND; j++) {
                 userAdminSession.setClearTextPassword(administrator, username, password);
             	userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
-                Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
+                signSession.createCertificate(administrator, username, password, keys.getPublic());
             }
             // Create some revoked certs
             for (int j=0; j<CERTS_OF_EACH_KIND; j++) {

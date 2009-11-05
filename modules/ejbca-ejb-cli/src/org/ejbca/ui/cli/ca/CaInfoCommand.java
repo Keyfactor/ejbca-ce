@@ -13,15 +13,10 @@
  
 package org.ejbca.ui.cli.ca;
 
-import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 
-import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;

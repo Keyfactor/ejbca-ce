@@ -1719,7 +1719,7 @@ public class TestSignSession extends TestCase {
         // Extension request attribute is a set of X509Extensions
         // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
         // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
-        ASN1EncodableVector extvalue = new ASN1EncodableVector();
+        // ASN1EncodableVector extvalue = new ASN1EncodableVector();
         Vector oidvec = new Vector();
         oidvec.add(X509Extensions.SubjectAlternativeName);
         Vector valuevec = new Vector();
