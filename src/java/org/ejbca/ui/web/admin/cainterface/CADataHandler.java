@@ -288,22 +288,25 @@ public class CADataHandler implements Serializable {
 	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	while(iter.hasNext()){
 		ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
-		if(next instanceof OCSPCAServiceInfo){
-			List ocspcert = ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath();
-			if (ocspcert != null) {
-				signsession.publishCACertificate(administrator, ocspcert, publishers);
+		// Only publish certificates for active services
+		if (next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+			if(next instanceof OCSPCAServiceInfo){
+				List ocspcert = ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath();
+				if (ocspcert != null) {
+					signsession.publishCACertificate(administrator, ocspcert, publishers);
+				}
 			}
-		}
-		if(next instanceof XKMSCAServiceInfo){
-			List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
-			if (xkmscert != null) {
-				signsession.publishCACertificate(administrator, xkmscert, publishers);				
+			if(next instanceof XKMSCAServiceInfo){
+				List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
+				if (xkmscert != null) {
+					signsession.publishCACertificate(administrator, xkmscert, publishers);				
+				}
 			}
-		}
-		if(next instanceof CmsCAServiceInfo){
-			List cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
-			if (cmscert != null) {
-				signsession.publishCACertificate(administrator, cmscert, publishers);
+			if(next instanceof CmsCAServiceInfo){
+				List cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
+				if (cmscert != null) {
+					signsession.publishCACertificate(administrator, cmscert, publishers);
+				}
 			}
 		}
 	}  
