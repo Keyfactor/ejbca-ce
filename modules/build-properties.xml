@@ -101,7 +101,10 @@
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
 	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
 	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
-	<path id="lib.mail.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="mail.jar"/></path>
+	<path id="lib.mail.classpath">
+		<fileset dir="${ejbca.home}/lib/ext" includes="mail.jar"/>
+		<fileset dir="${ejbca.home}/lib/jaxws" includes="activation.jar"/> <!-- Apparently a dependency from JavaMail under Java 5 -->
+	</path>
 	<path id="lib.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/></path>
 	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
