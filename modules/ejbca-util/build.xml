@@ -45,6 +45,8 @@
 	</path>
 
     <target name="build" description="Build this module" depends="compile">
+    	<dirname file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.dir"/>
+    	<mkdir dir="${mod.ejbca-util.lib.dir}" />	<!-- Make sure the dir exists before we start the jar-task -->
     	<jar destfile="${mod.ejbca-util.lib}">
    			<fileset dir="${build.dir}" includes="**/*.class"/>
         	<fileset dir="${ejbca.home}/src/java">
