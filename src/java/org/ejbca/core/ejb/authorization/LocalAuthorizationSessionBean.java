@@ -43,6 +43,7 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRule;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
@@ -369,7 +370,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, "SuperAdmin", caid));
                 addAdminEntities(admin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
                 ArrayList accessrules = new ArrayList();
-                accessrules.add(new AccessRule(AvailableAccessRules.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));
+                accessrules.add(new AccessRule(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));
                 addAccessRules(admin, AdminGroup.TEMPSUPERADMINGROUP, accessrules);
             }
         } catch (FinderException e) {
@@ -393,16 +394,16 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 agdl.addAdminEntities(adminentities);
 
                 ArrayList accessrules = new ArrayList();
-                accessrules.add(new AccessRule(AvailableAccessRules.ROLE_ADMINISTRATOR, AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule(AvailableAccessRules.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));
+                accessrules.add(new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));
 
-                accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_CAFUNCTIONALTY, AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_RAFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_LOGFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_SYSTEMFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule(AvailableAccessRules.HARDTOKEN_HARDTOKENFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule(AvailableAccessRules.CABASE, AccessRule.RULE_ACCEPT, true));
-                accessrules.add(new AccessRule(AvailableAccessRules.ENDENTITYPROFILEBASE, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_CAFUNCTIONALTY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AccessRulesConstants.HARDTOKEN_HARDTOKENFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AccessRulesConstants.CABASE, AccessRule.RULE_ACCEPT, true));
+                accessrules.add(new AccessRule(AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRule.RULE_ACCEPT, true));
 
                 agdl.addAccessRules(accessrules);
 
@@ -438,15 +439,15 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 		agdl.addAdminEntities(adminentities);
 
 		ArrayList accessrules = new ArrayList();
-		accessrules.add(new AccessRule(AvailableAccessRules.ROLE_PUBLICWEBUSER, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AccessRulesConstants.ROLE_PUBLICWEBUSER, AccessRule.RULE_ACCEPT, false));
 
-		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_CABASICFUNCTIONS, AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_VIEWCERTIFICATE, AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_CREATECERTIFICATE, AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_STORECERTIFICATE, AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule(AvailableAccessRules.REGULAR_VIEWENDENTITY, AccessRule.RULE_ACCEPT, false));
-		accessrules.add(new AccessRule(AvailableAccessRules.CABASE, AccessRule.RULE_ACCEPT, true));
-		accessrules.add(new AccessRule(AvailableAccessRules.ENDENTITYPROFILEBASE, AccessRule.RULE_ACCEPT, true));
+		accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_CABASICFUNCTIONS, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_STORECERTIFICATE, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRule.RULE_ACCEPT, false));
+		accessrules.add(new AccessRule(AccessRulesConstants.CABASE, AccessRule.RULE_ACCEPT, true));
+		accessrules.add(new AccessRule(AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRule.RULE_ACCEPT, true));
 
 		agdl.addAccessRules(accessrules);
 	}
@@ -731,7 +732,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
         boolean issuperadmin = false;
         try {
-            issuperadmin = this.isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+            issuperadmin = this.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         } catch (AuthorizationDeniedException e1) {
         }
         HashSet authorizedcaids = new HashSet();
@@ -773,19 +774,19 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                         while (iter.hasNext()) {
                             AccessRule accessrule = ((AccessRule) iter.next());
                             String rule = accessrule.getAccessRule();
-                            if (rule.equals(AvailableAccessRules.ROLE_SUPERADMINISTRATOR) && accessrule.getRule() == AccessRule.RULE_ACCEPT) {
+                            if (rule.equals(AccessRulesConstants.ROLE_SUPERADMINISTRATOR) && accessrule.getRule() == AccessRule.RULE_ACCEPT) {
                                 superadmingroup = true;
                                 break;
                             }
-                            if (rule.equals(AvailableAccessRules.CABASE)) {
+                            if (rule.equals(AccessRulesConstants.CABASE)) {
                                 if (accessrule.getRule() == AccessRule.RULE_ACCEPT && accessrule.isRecursive()) {
                                     if (authorizedcaids.containsAll(allcaids)) {
                                         carecursive = true;
                                     }
                                 }
                             } else {
-                                if (rule.startsWith(AvailableAccessRules.CAPREFIX) && accessrule.getRule() == AccessRule.RULE_ACCEPT) {
-                                    groupcaids.add(new Integer(rule.substring(AvailableAccessRules.CAPREFIX.length())));
+                                if (rule.startsWith(AccessRulesConstants.CAPREFIX) && accessrule.getRule() == AccessRule.RULE_ACCEPT) {
+                                    groupcaids.add(new Integer(rule.substring(AccessRulesConstants.CAPREFIX.length())));
                                 }
                             }
                         }
@@ -929,7 +930,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     		while (i.hasNext()) {
     			int currentCaId = ((AdminEntity) i.next()).getCaId();
     			if (!al.contains(currentCaId)) {
-    				isAuthorizedNoLog(administrator, AvailableAccessRules.CAPREFIX + currentCaId);
+    				isAuthorizedNoLog(administrator, AccessRulesConstants.CAPREFIX + currentCaId);
         			al.add(currentCaId);
     			}
     		}
@@ -977,7 +978,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * the administrator is authorized to view.
      *
      * @param admin        the administrator
-     * @param rapriviledge should be one of the end entity profile authorization constans defined in AvailableAccessRules.
+     * @param rapriviledge should be one of the end entity profile authorization constans defined in AccessRulesConstants.
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
@@ -1000,7 +1001,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         ResultSet rs = null;
         int count = 1; // return true as default.
 
-        String whereclause = "accessRule  LIKE '" + AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + "%'";
+        String whereclause = "accessRule  LIKE '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "%'";
 
         try {
             // Construct SQL query.
@@ -1088,7 +1089,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         ResultSet rs = null;
         int count = 1; // return true as default.
 
-        String whereclause = "accessRule  LIKE '" + AvailableAccessRules.CABASE + "/" + caid + "%'";
+        String whereclause = "accessRule  LIKE '" + AccessRulesConstants.CABASE + "/" + caid + "%'";
 
         try {
             // Construct SQL query.

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ejbca-ejb" default="build">
+    <description>
+            The EJBCA EJB component
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.ejbca-ejb}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-test.dir" location="${this.dir}/build-test"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src-test.dir" location="${this.dir}/src-test"/>
+	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
+
+	<path id="compile.classpath">
+		<path location="${mod.ejbca-util.lib}" />
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.jee.classpath"/>
+	</path>
+
+	<path id="test.classpath">
+		<path location="${build-test.dir}" />
+		<path location="${mod.ejbca-ejb.lib}" />
+		<path refid="compile.classpath"/>
+		<path refid="lib.junit.classpath"/>
+	</path>
+
+    <target name="build" description="Build this module" depends="ejbca-ejb">
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${build-test.dir}" />
+		<delete file="${mod.ejbca-ejb.lib}" />
+    </target>
+	
+    <target name="compile">
+    	<fail message="This component currently only holds the tests that depends on classes from the EJB component!"/>
+    </target>
+
+    <target name="compile-tests" depends="build">
+    	<mkdir dir="${build-test.dir}" />
+        <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+				<path location="${mod.ejbca-ejb.lib}" />
+        		<path refid="compile.classpath"/>
+        		<path refid="lib.junit.classpath"/>
+        	</classpath>
+    	</javac>
+    </target>
+
+	<target name="test" depends="compile-tests" description="Run tests for this module">
+    	<antcall target="showtime"/>
+    	<property name="reports.dir" location="${reports.base.dir}/test"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+        <copy file="${this.dir}/log4j.xml" todir="${build-test.dir}" failonerror="true"/>
+		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+			<classpath>
+        		<path refid="test.classpath"/>
+        		<path refid="lib.clover.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}" includes="**/*.class">
+					<exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper*.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="createreport"/>
+    	<antcall target="showtime"/>
+    </target>
+	
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=TestApprovalExecutorUtil" unless="test.runone" />
+    	<property name="reports.dir" location="${reports.base.dir}/runone"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<junit printsummary="yes" haltonfailure="no" >
+			<classpath>
+        		<path refid="test.classpath"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="createreport"/>
+	</target>
+</project>

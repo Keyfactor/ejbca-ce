@@ -17,6 +17,8 @@
     </target>
 
 	<target name="clean" description="Clean all modules">
+		<ant antfile="${mod.ejbca-util.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="false"/>
@@ -40,13 +42,17 @@
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
-	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->
 	<target name="ejbca-util" description="Build EJBCA util library">
-		<available file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.exists"/>
-		<antcall target="ejbca-util-internal"/>
+		<ant antfile="${mod.ejbca-util.path}/build.xml" target="build" inheritall="false"/>
 	</target>
-	<target name="ejbca-util-internal" unless="mod.ejbca-util.lib.exists">
-		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-util.jar" inheritall="false"/>
+
+	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->
+	<target name="ejbca-ejb" description="Build EJBCA EJB module">
+		<available file="${mod.ejbca-ejb.lib}" property="mod.ejbca-ejb.lib.exists"/>
+		<antcall target="ejbca-ejb-internal"/>
+	</target>
+	<target name="ejbca-ejb-internal" unless="mod.ejbca-ejb.lib.exists">
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-ejb.jar" inheritall="false"/>
 	</target>
 
 	<target name="ejbca-ws-cli-lib" description="Build EJBCA WS CLI library">

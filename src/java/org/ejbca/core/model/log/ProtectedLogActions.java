@@ -29,10 +29,6 @@ public class ProtectedLogActions implements Serializable {
 
     private static final Logger log = Logger.getLogger(ProtectedLogActions.class);
 
-	public static final int ACTION_NONE = 0;
-	public static final int ACTION_TEST = 1;
-	public static final int ACTION_ALL  = 2;
-
 	private ArrayList actions = null;	// <IProtectedLogAction>
 	
 	private ProtectedLogActions() {}
@@ -44,10 +40,10 @@ public class ProtectedLogActions implements Serializable {
 		if (actions == null) {
 			actions = new ArrayList();	
 			switch (actionType) {
-			case ACTION_TEST:
+			case ProtectedLogConstants.ACTION_TEST:
 				actions.add(new ProtectedLogTestAction());
 				break;
-			case ACTION_ALL:
+			case ProtectedLogConstants.ACTION_ALL:
 				if (ProtectedLogConfiguration.getUseDummyAction()) {
 					log.debug("adding DummyAction");
 					actions.add(new ProtectedLogDummyAction());
@@ -69,7 +65,7 @@ public class ProtectedLogActions implements Serializable {
 					actions.add(new ProtectedLogTestAction());
 				}
 				break;
-			case ACTION_NONE:
+			case ProtectedLogConstants.ACTION_NONE:
 			default:
 				break;
 			}

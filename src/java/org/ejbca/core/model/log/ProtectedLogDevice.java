@@ -121,7 +121,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		protectionIntensity = ProtectedLogConfiguration.getProtectionIntensity(); 
 		allowConfigurableEvents = ProtectedLogConfiguration.getAllowEventConfig(); 
 		protectionHashAlgorithm = ProtectedLogConfiguration.getHashAlgorithm();
-		protectedLogActions = new ProtectedLogActions(ProtectedLogActions.ACTION_ALL);
+		protectedLogActions = new ProtectedLogActions(ProtectedLogConstants.ACTION_ALL);
 		if (protectionIntensity != 0 && ProtectedLogConfiguration.getExportDeleteAfterExport()) {
 	    	log.warn(intres.getLocalizedMessage("protectedlog.warn.usingunsafeconfig", ProtectedLogConfiguration.CONFIG_EXP_DELETEAFTEREXPORT, ProtectedLogConfiguration.CONFIG_PROTECTION_INTENSITY));
 		}

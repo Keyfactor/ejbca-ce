@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -77,7 +77,7 @@ public class CAExportServlet extends HttpServlet {
 	       req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
 	    }
 	    try{
-	    	ejbcawebbean.initialize(req, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+	    	ejbcawebbean.initialize(req, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
 	    } catch(Exception e) {
 	    	throw new java.io.IOException("Authorization Denied");
 	    }

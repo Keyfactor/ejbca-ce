@@ -99,7 +99,7 @@
      if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null){
        try{  
          ejbcawebbean.isAuthorizedNoLog("/ca_functionality/basic_functions");
-         ejbcawebbean.isAuthorized(org.ejbca.core.model.authorization.AvailableAccessRules.CAPREFIX + caid);
+         ejbcawebbean.isAuthorized(org.ejbca.core.model.authorization.AccessRulesConstants.CAPREFIX + caid);
          rabean.loadCACertificates(cabean.getCACertificates(caid)); 
          numberofcertificates = rabean.getNumberOfCertificates();
          if(numberofcertificates > 0)

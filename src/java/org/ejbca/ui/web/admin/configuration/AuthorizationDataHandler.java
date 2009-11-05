@@ -19,11 +19,11 @@ import java.util.Iterator;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.model.authorization.AccessRule;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -201,7 +201,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
 
     private void authorizedToEditAdministratorPrivileges(String admingroup) throws AuthorizationDeniedException{
        // Authorized to edit administrative privileges
-      authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.REGULAR_EDITADMINISTRATORPRIVILEDGES);
+      authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES);
       // Authorized to group
       authorizationsession.isAuthorizedToGroup(administrator, admingroup);
       // Check if admin group is among available admin groups

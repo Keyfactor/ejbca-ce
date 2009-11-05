@@ -146,7 +146,7 @@ xkms.serviceport                = ${xkms.serviceport}
     <!-- =================================================================== -->
     <!-- Compile java sources                                                -->
     <!-- =================================================================== -->
-    <target name="compile" depends="run-xdoc" unless="precompiled">
+    <target name="compile" depends="ejbca-util.jar, run-xdoc" unless="precompiled">
         <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <exclude name="**/appserver/**" />

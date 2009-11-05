@@ -64,9 +64,9 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
+import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -78,8 +78,8 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
@@ -199,8 +199,8 @@ public class EjbcaWS implements IEjbcaWS {
 		  Admin admin = ejbhelper.getAdmin(wsContext);
           logAdminName(admin,logger);
 		  UserDataVO userdatavo = ejbhelper.convertUserDataVOWS(admin, userdata);
-		  
-		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +userdatavo.getCAId());
+
+		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +userdatavo.getCAId());
 		  
 		  if(ejbhelper.getUserAdminSession().findUser(admin, userdatavo.getUsername()) != null){
 			  log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
@@ -802,8 +802,8 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			int caid = userdata.getCAId();
 			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
 
 			// Check tokentype
 			if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
@@ -970,9 +970,9 @@ public class EjbcaWS implements IEjbcaWS {
 			  }
 			  int caid = userdata.getCAId();
 			  ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
-			  ejbhelper.getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.CAPREFIX +caid);
+			  ejbhelper.getAuthorizationSession().isAuthorized(admin,AccessRulesConstants.CAPREFIX +caid);
 
-			  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
+			  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
 			  
 			  // Check tokentype
 			  if(userdata.getTokenType() != SecConst.TOKEN_SOFT_P12){
@@ -1062,7 +1062,7 @@ public class EjbcaWS implements IEjbcaWS {
 			String username = ejbhelper.getCertStoreSession().findUsernameByCertSerno(admin,serno,issuerDN);
 
 			// check that admin is autorized to CA
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);			  
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);			  
 
 			if(reason == RevokedCertInfo.NOT_REVOKED){
 				java.security.cert.Certificate cert = ejbhelper.getCertStoreSession().findCertificateByIssuerAndSerno(admin, issuerDN, serno);
@@ -1119,7 +1119,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			int caid = userdata.getCAId();
 			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);						
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);						
 			if (deleteUser) {
 				ejbhelper.getUserAdminSession().revokeAndDeleteUser(admin,username,reason);
 			} else {
@@ -1175,7 +1175,7 @@ public class EjbcaWS implements IEjbcaWS {
 			// check CAID
 			int caid = userdata.getCAId();
 			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);						
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);						
 
 			// Do the work, mark user for key recovery
 			ejbhelper.getKeyRecoverySession().markNewestAsRecoverable(admin, username, userdata.getEndEntityProfileId());
@@ -1246,7 +1246,7 @@ public class EjbcaWS implements IEjbcaWS {
 				// check that admin is authorized to CA
 				int caid = CertTools.getIssuerDN(next).hashCode();
 				ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
+				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 				if(reason == RevokedCertInfo.NOT_REVOKED){
 					String issuerDN = CertTools.getIssuerDN(next);
 					BigInteger serno = CertTools.getSerialNumber(next);
@@ -1326,7 +1326,7 @@ public class EjbcaWS implements IEjbcaWS {
 		  // check that admin is autorized to CA
 		  int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
 		  ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
-		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
+		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 		  
 		  RevokedCertInfo certinfo = ejbhelper.getCertStoreSession().isRevoked(admin,issuerDN,new BigInteger(certificateSN,16));
 		  if(certinfo != null){
@@ -1487,23 +1487,23 @@ public class EjbcaWS implements IEjbcaWS {
 			
 			
 			if(ejbhelper.isAdmin(wsContext)){			
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_CREATECERTIFICATE);
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.HARDTOKEN_ISSUEHARDTOKENS);
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + significantcAInfo.getCAId());
+				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
+				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + significantcAInfo.getCAId());
 				if(userExists){
-					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_EDITENDENTITY);					
+					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_EDITENDENTITY);					
 					endEntityProfileId = userDataVO.getEndEntityProfileId();
-					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + endEntityProfileId + AvailableAccessRules.EDIT_RIGHTS);
+					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.EDIT_RIGHTS);
 					if(overwriteExistingSN){
-						ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_REVOKEENDENTITY);
-						ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + endEntityProfileId + AvailableAccessRules.REVOKE_RIGHTS);
+						ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY);
+						ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.REVOKE_RIGHTS);
 					}
 				}else{
-					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_CREATEENDENTITY);
-					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + endEntityProfileId + AvailableAccessRules.CREATE_RIGHTS);
+					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATEENDENTITY);
+					ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.CREATE_RIGHTS);
 					if(overwriteExistingSN){
-						ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_REVOKEENDENTITY);
-						ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + endEntityProfileId + AvailableAccessRules.REVOKE_RIGHTS);				       
+						ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY);
+						ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.REVOKE_RIGHTS);				       
 					}
 				}
 
@@ -1647,7 +1647,7 @@ public class EjbcaWS implements IEjbcaWS {
 						logger, ErrorCode.CA_NOT_EXISTS, null);
 				}
 
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + cAInfo.getCAId());
+				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + cAInfo.getCAId());
 				if(next.getType() == HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST){						
 					userData.setCertificateProfileId(certificateProfileId);
 					userData.setCAId(cAInfo.getCAId());
@@ -1972,7 +1972,7 @@ public class EjbcaWS implements IEjbcaWS {
 				HardTokenData next = (HardTokenData) iter.next();
 				int caid = next.getSignificantIssuerDN().hashCode();
 				ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
-				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
+				ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
 				Collection certs = ejbhelper.getHardTokenSession().findCertificatesInHardToken(admin, next.getTokenSN());
 				if(onlyValidCertificates){
 					certs = ejbhelper.returnOnlyValidCertificates(admin, certs);
@@ -2179,8 +2179,8 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
-			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid);
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
+			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
 
 			java.security.cert.Certificate cert = ejbhelper.getCertStoreSession().findCertificateByIssuerAndSerno(admin, issuerDN, new BigInteger(certSNinHex,16));
 			if(cert != null){

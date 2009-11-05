@@ -1,6 +1,6 @@
 package org.ejbca.core.protocol.ws; 
 
-import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * To run you must have the file tmp/bin/junit/jndi.properties
@@ -71,7 +71,7 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     	setUpAdmin();
     	
 		// This is a superadmin keystore, improve in the future
-		assertTrue(ejbcaraws.isAuthorized(AvailableAccessRules.ROLE_SUPERADMINISTRATOR));
+		assertTrue(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_SUPERADMINISTRATOR));
 	}
 
  

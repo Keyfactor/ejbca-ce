@@ -24,8 +24,8 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
@@ -119,7 +119,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
             admin = ejbcawebbean.getAdminObject();
             this.ejbcawebbean = ejbcawebbean;
             try{
-                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }catch(AuthorizationDeniedException ade){}
         }
     }

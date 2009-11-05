@@ -38,8 +38,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -91,7 +91,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			// Check that user have the administrator flag set.
 			if(!allowNonAdmins){
 				getUserAdminSession().checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
-				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
+				getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR);
 			}
 
 			RevokedCertInfo revokeResult =  getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
@@ -130,7 +130,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		Admin admin = new Admin(certificates[0]);
 		try{
 			getUserAdminSession().checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
-			getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
+			getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR);
 			retval = true;
 		}catch(AuthorizationDeniedException e){
 		} catch (EJBException e) {			
@@ -145,7 +145,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 
 	protected void isAuthorizedToRepublish(Admin admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException, RemoteException{
 		try {
-			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
+			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
 			UserDataVO userdata = null;
 			try {
 				userdata = getUserAdminSession().findUser(admin, username);
@@ -155,8 +155,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			if(userdata == null){
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "Error the  user doesn't seem to exist.");
 			}
-			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.VIEW_RIGHTS);
-			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid );		
+			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS);
+			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid );		
 		} catch (RemoteException e) {
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		} catch (EJBException e) {
@@ -168,7 +168,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	
 	protected void isAuthorizedToHardTokenData(Admin admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException, RemoteException {
 		try {
-			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
+			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
 			UserDataVO userdata = null;
 			boolean userExists = false;
 			try {
@@ -180,15 +180,15 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				// Do nothing
 			}
 
-			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
+			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
 			if(viewPUKData){
-				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWPUKS);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWPUKS);
 			}
 
 			if(userExists){		
-				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_RIGHTS);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS);
 				if(viewPUKData){
-					getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_PUKDATA_RIGHTS);			
+					getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS);			
 				}
 			}
 
@@ -479,7 +479,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				int caid = CertTools.getIssuerDN(next).hashCode();
 				Boolean authorized = authorizationCache.get(caid);
 				if (authorized == null) {
-					authorized = getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
+					authorized = getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 					authorizationCache.put(caid, authorized);
 				}
 				if (authorized) {

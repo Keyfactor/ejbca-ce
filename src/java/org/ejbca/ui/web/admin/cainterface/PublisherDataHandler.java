@@ -19,8 +19,8 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
@@ -158,7 +158,7 @@ public class PublisherDataHandler implements Serializable {
      */    
     private boolean authorizedToEditPublishers(){          
         try{
-          authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+          authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
           return true;  
         }catch(AuthorizationDeniedException ade){}
               

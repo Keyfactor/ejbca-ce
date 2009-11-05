@@ -70,6 +70,7 @@
             <src path="${ejbca.home}/src/java" />
             <src path="${ejbca.home}/src/jaxws/gen-java/client" />
             <src path="${mod.ejbca-entity.path}/src" />
+            <src path="${mod.ejbca-util.path}/src" />
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
             <include name="org/ejbca/core/protocol/ws/client/cvcwscli.java" />

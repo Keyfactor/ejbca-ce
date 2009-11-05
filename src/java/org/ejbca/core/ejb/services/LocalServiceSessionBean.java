@@ -31,8 +31,8 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.services.IInterval;
@@ -498,7 +498,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         Collection allVisibleServiceIds = new ArrayList();
         // If superadmin return all visible services
         try {
-        	getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+        	getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         	allServiceIds = getServiceIdToNameMap(admin).keySet();
         	Iterator i = allServiceIds.iterator();
         	while (i.hasNext()) {
@@ -698,7 +698,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     			return false;
     		} else if (serviceConfiguraion.isHidden() && admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
     			return true;
-    		} if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR)){
+    		} if(getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
     			return true;
     		}
     	} catch (AuthorizationDeniedException e) {}

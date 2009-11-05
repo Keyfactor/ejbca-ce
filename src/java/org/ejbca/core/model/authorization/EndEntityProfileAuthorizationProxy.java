@@ -39,14 +39,14 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
 
     // Public Constants.
     /* Constants specifying the kind user access rights to look for, */
-    public static final String VIEW_RIGHTS           = AvailableAccessRules.VIEW_RIGHTS;
-    public static final String EDIT_RIGHTS           = AvailableAccessRules.EDIT_RIGHTS;
-    public static final String CREATE_RIGHTS         = AvailableAccessRules.CREATE_RIGHTS;
-    public static final String DELETE_RIGHTS         = AvailableAccessRules.DELETE_RIGHTS;
-    public static final String REVOKE_RIGHTS         = AvailableAccessRules.REVOKE_RIGHTS;
-    public static final String HISTORY_RIGHTS        = AvailableAccessRules.HISTORY_RIGHTS;
-    public static final String HARDTOKEN_VIEW_RIGHTS = AvailableAccessRules.HARDTOKEN_RIGHTS;
-    public static final String KEYRECOVERY_RIGHTS    = AvailableAccessRules.KEYRECOVERY_RIGHTS;    
+    public static final String VIEW_RIGHTS           = AccessRulesConstants.VIEW_RIGHTS;
+    public static final String EDIT_RIGHTS           = AccessRulesConstants.EDIT_RIGHTS;
+    public static final String CREATE_RIGHTS         = AccessRulesConstants.CREATE_RIGHTS;
+    public static final String DELETE_RIGHTS         = AccessRulesConstants.DELETE_RIGHTS;
+    public static final String REVOKE_RIGHTS         = AccessRulesConstants.REVOKE_RIGHTS;
+    public static final String HISTORY_RIGHTS        = AccessRulesConstants.HISTORY_RIGHTS;
+    public static final String HARDTOKEN_VIEW_RIGHTS = AccessRulesConstants.HARDTOKEN_RIGHTS;
+    public static final String KEYRECOVERY_RIGHTS    = AccessRulesConstants.KEYRECOVERY_RIGHTS;    
     
     /** Creates a new instance of ProfileAuthorizationProxy. */
     public EndEntityProfileAuthorizationProxy(IAuthorizationSessionRemote authorizationsession) {
@@ -101,17 +101,17 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
             return true;
         }
         adm = new String(CertTools.getSignature(admin.getAdminInformation().getX509Certificate()));
-        resource = adm + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
+        resource = adm + AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
         // Check if name is in hashmap
         returnval = (Boolean) profileauthstore.get(resource);
         
         if(returnval != null && log){
             if(returnval.booleanValue()){
                 getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,
-                        "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                        "Resource : " + AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
             }else{
                 getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
-                        "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                        "Resource : " + AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
             }
         }
         
@@ -120,15 +120,15 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
             try{
                 if(local){
                     if(log) {
-                        authorizationsessionlocal.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                        authorizationsessionlocal.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
                     } else {
-                        authorizationsessionlocal.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                        authorizationsessionlocal.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
                     }
                 }else{
                     if(log) {
-                        authorizationsessionremote.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                        authorizationsessionremote.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
                     } else {
-                        authorizationsessionremote.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                        authorizationsessionremote.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
                     }
                 }
                 returnval = Boolean.TRUE;

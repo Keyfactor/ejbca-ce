@@ -26,8 +26,8 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceSessionLocal;
 import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -129,10 +129,10 @@ public class EjbcaJSFHelper  {
  		boolean approveendentity = false;
  		boolean approvecaaction = false;
  		try{
- 			approveendentity = getEjbcaWebBean().isAuthorizedNoLog(AvailableAccessRules.REGULAR_APPROVEENDENTITY);
+ 			approveendentity = getEjbcaWebBean().isAuthorizedNoLog(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
  		}catch(AuthorizationDeniedException e){}
  		try{
- 			approvecaaction = getEjbcaWebBean().isAuthorizedNoLog(AvailableAccessRules.REGULAR_APPROVECAACTION);
+ 			approvecaaction = getEjbcaWebBean().isAuthorizedNoLog(AccessRulesConstants.REGULAR_APPROVECAACTION);
  		}catch(AuthorizationDeniedException e){}		
  		if(!approveendentity && !approvecaaction){
  			throw new AuthorizationDeniedException("Not authorized to view approval pages");
@@ -145,10 +145,10 @@ public class EjbcaJSFHelper  {
       *
       */
      public void authorizedToServicesPages() throws AuthorizationDeniedException{
-		getEjbcaWebBean().isAuthorizedNoLog(AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+		getEjbcaWebBean().isAuthorizedNoLog(AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
      }
      public void authorizedToReportPages() throws AuthorizationDeniedException{
- 		getEjbcaWebBean().isAuthorizedNoLog(AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
+ 		getEjbcaWebBean().isAuthorizedNoLog(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
       }
      
     public int getEntriesPerPage(){

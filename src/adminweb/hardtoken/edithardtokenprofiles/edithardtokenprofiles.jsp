@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-               org.ejbca.core.model.authorization.AvailableAccessRules,
+               org.ejbca.core.model.authorization.AccessRulesConstants,
                org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.profiles.*, org.ejbca.ui.web.admin.hardtokeninterface.EditHardTokenProfileJSPHelper, 
                org.ejbca.core.model.hardtoken.HardTokenProfileExistsException"%>
 
@@ -16,7 +16,7 @@
   String includefile = "hardtokenprofilespage.jspf"; 
 
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.HARDTOKEN_EDITHARDTOKENPROFILES); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES); 
                                             hardtokenbean.initialize(request, ejbcawebbean); 
                                             edithardtokenprofile.initialize(ejbcawebbean, hardtokenbean);
   String THIS_FILENAME            =  globalconfiguration.getHardTokenPath()  + "/edithardtokenprofiles/edithardtokenprofiles.jsp";

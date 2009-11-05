@@ -97,9 +97,9 @@ public class TestProtectedLog extends TestCase {
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Test if log-freeze is detected
-		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, -1);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_TEST, -1);
 		assertEquals(ERROR_FROZENLOG, IProtectedLogAction.CAUSE_FROZEN, ProtectedLogTestAction.getLastActionCause());
-		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_TEST, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Test if removed logevents are detected
 		long testTime1 = System.currentTimeMillis();
@@ -108,12 +108,12 @@ public class TestProtectedLog extends TestCase {
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertEquals(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
-		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_TEST, 3600*1000);
 		assertEquals(ERROR_MISSINGROW, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
 		// Recover
 		TestTools.getProtectedLogSession().resetEntireLog(false);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_TEST, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 	}
 
@@ -143,7 +143,7 @@ public class TestProtectedLog extends TestCase {
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_EMPTY_LOG, ProtectedLogTestAction.getLastActionCause());
-		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_TEST, 3600*1000);
 		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_UNVERIFYABLE_CHAIN, ProtectedLogTestAction.getLastActionCause());
 		// Sign unsigned chain so it can be linked in
 		TestTools.getProtectedLogSession().signAllUnsignedChains(true);
@@ -153,12 +153,12 @@ public class TestProtectedLog extends TestCase {
 		TestTools.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(new Date().getTime()+10*1000), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, LOGMESSAGE+messageCounter++, null);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_TEST, 3600*1000);
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 		// Now try to remove the first chain and see if it will be detected
 		TestTools.getProtectedLogSession().removeNodeChain(TestTools.getProtectedLogSession().findOldestProtectedLogEventRow().getNodeGUID());
 		assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
-		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_TEST, 3600*1000);
+		TestTools.getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_TEST, 3600*1000);
 		assertEquals(ERROR_UNPROTECTED, IProtectedLogAction.CAUSE_MISSING_LOGROW, ProtectedLogTestAction.getLastActionCause());
 	}
 
@@ -225,7 +225,7 @@ public class TestProtectedLog extends TestCase {
 			}
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// Do export
-			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), ProtectedLogActions.ACTION_TEST, "SHA-256", false, 0);
+			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), ProtectedLogConstants.ACTION_TEST, "SHA-256", false, 0);
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// See if any file was exported
 			File file = null;
@@ -251,7 +251,7 @@ public class TestProtectedLog extends TestCase {
 			}
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// Do export
-			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), ProtectedLogActions.ACTION_TEST, "SHA-256", false, 0);
+			TestTools.getProtectedLogSession().exportLog(new ProtectedLogCMSExportHandler(), ProtectedLogConstants.ACTION_TEST, "SHA-256", false, 0);
 			assertTrue(ERROR_LASTACTION, ProtectedLogTestAction.getLastActionCause() == null);
 			// See if any file was exported
 			file = null;

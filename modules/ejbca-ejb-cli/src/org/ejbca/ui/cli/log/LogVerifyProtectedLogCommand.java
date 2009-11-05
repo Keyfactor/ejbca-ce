@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.log;
 
 import java.rmi.RemoteException;
 
-import org.ejbca.core.model.log.ProtectedLogActions;
+import org.ejbca.core.model.log.ProtectedLogConstants;
 import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -40,7 +40,7 @@ public class LogVerifyProtectedLogCommand extends BaseLogAdminCommand  {
 		long freezeThreshold = Long.parseLong(args[1]) * 1000;
 		getLogger().info("Starting verification..");
         try {
-			ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(ProtectedLogActions.ACTION_NONE, freezeThreshold);
+			ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_NONE, freezeThreshold);
 			if (protectedLogEventIdentifier == null) {
 				getLogger().info("Log verification OK!");
 		        return;

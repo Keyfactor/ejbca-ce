@@ -89,7 +89,7 @@
     <!-- =================================================================== -->
     <!-- Compile ocsp resonder java sources                                  -->
     <!-- =================================================================== -->
-    <target name="ocsp-compile" depends="ocsp-run-xdoc">
+    <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-run-xdoc">
         <javac destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
@@ -348,7 +348,8 @@
     			<include name="*.jar"/>
     		</fileset>
     	</unjar>
-        <jar jarfile="${dist.dir}/ejbca-ejb.jar">
+    	<copy file="${dist.dir}/ejbca-util.jar" tofile="${dist.dir}/ejbca-ejb.jar" overwrite="true"/>
+        <jar jarfile="${dist.dir}/ejbca-ejb.jar" update="true">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
@@ -377,54 +378,8 @@
         <!-- =================================================================== -->
         <!-- Build ejbca util part                                                    -->
         <!-- =================================================================== -->
-        <target name="ejbca-util.jar" depends="compile" description="Creates ejbca util classes for use in other projects.jar">
-        <!-- create empty direktory for HW tokens if not existing -->
-            <jar jarfile="${dist.dir}/ejbca-util.jar">
-                <manifest>
-                    <!-- todo: autogenerate this from a fileset -->
-                    <attribute name="Class-Path" value="" />
-                </manifest>
-                <fileset dir="${build}">
-                	<include name="org/ejbca/util/**"/>
-                	<include name="org/ejbca/config/*" /> 
-                	<include name="org/ejbca/core/*" /> 
-                	<include name="org/ejbca/core/model/**"/>
-                	<include name="org/ejbca/core/protocol/*"/>
-                	<include name="org/ejbca/core/protocol/cmp/*"/>
-                	<include name="org/ejbca/core/protocol/scep/*"/>
-                	<include name="com/novosec/pkix/asn1/**"/>
-                	<include name="**/*Exception**"/>
-                	<include name="**/SecConst**"/>
-                	<include name="**/IAdminCommand**"/>
-                	<include name="**/UserDoesntFullfillEndEntityProfile**"/>
-                	<include name="**/RevokedCertInfo**"/>
-                	<include name="**/ServiceLocator**"/>
-                	<include name="**/SernoGenerator.*"/>
-                	<include name="**/ISernoGenerator.*"/>
-                    <include name="**/BaseEntityBean.*" />
-                    <include name="**/BaseSessionBean.*" /> 
-                	<include name="**/ServiceLocator.*"/>
-                	<include name="**/JNDINames.*"/>
-                    <include name="org/ejbca/**/I*SessionLocal.*"/>
-                	<include name="**/HealthCheckServlet.*"/>                	
-                    <include name="org/ejbca/ui/web/RequestHelper.*"/>
-                    <include name="org/ejbca/ui/cli/**"/>
-                	<include name="org/ejbca/ui/web/pub/cluster/**"/>
-                    <include name="org/ejbca/ui/web/pub/ServletUtils.*"/>   
-                    <include name="org/ejbca/ui/web/admin/configuration/LanguageProperties.*"/>
-                    <include name="org/ejbca/config/ConfigurationHolder.*"/>
-                    <include name="org/ejbca/core/ejb/ca/store/CertificateStatus.class"/>
-                    <include name="org/ejbca/core/ejb/InitialContextBuilder.class"/>
-                    <include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.class"/>
-                    <include name="org/ejbca/core/protocol/ocsp/CertificateCache.class"/>
-                    <include name="org/ejbca/core/protocol/ocsp/OCSPUtil.class"/>
-                    <include name="org/ejbca/core/protocol/ocsp/OCSPUnidResponse.class"/>
-                </fileset>
-            	<fileset dir="${src}/java">
-            	    <include name="dncomponents.properties"/>
-            		<include name="profilemappings.properties"/>
-            	</fileset>
-            </jar>
+        <target name="ejbca-util.jar" description="Creates ejbca util classes for use in other projects.jar">
+        	<ant antfile="build.xml" dir="modules" target="ejbca-util" />
         </target>    	
 	
     
@@ -433,7 +388,8 @@
     <!-- =================================================================== -->
     <target name="ocsp-jar" depends="ocsp-compile">
         <mkdir dir="${ocsp.hardToken.classes}"/>
-        <jar jarfile="${ocsp-dist.dir}/ejbca-ejb.jar">
+    	<copy file="${dist.dir}/ejbca-util.jar" tofile="${ocsp-dist.dir}/ejbca-ejb.jar" overwrite="true"/>
+        <jar jarfile="${ocsp-dist.dir}/ejbca-ejb.jar" update="true">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="${jar.extclasspath}" />

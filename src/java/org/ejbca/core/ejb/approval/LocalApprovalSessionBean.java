@@ -62,8 +62,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ApprovedActionAdmin;
 import org.ejbca.core.model.log.LogConstants;
@@ -414,7 +414,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      *  
      *  2. check if the administrator is authorized using the follwing rules:
      *     2.1 if getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
-     *         authorized to AvailableAccessRules.REGULAR_APPROVECAACTION othervise AvailableAccessRules.REGULAR_APPORVEENDENTITY 
+     *         authorized to AccessRulesConstants.REGULAR_APPROVECAACTION othervise AccessRulesConstants.REGULAR_APPORVEENDENTITY 
      *         and APPROVAL_RIGHTS for the end entity profile.
      *     2.2 Checks if the admin is authoried to the approval requests getCAId()
      *     
@@ -516,7 +516,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      *  
      *  2. check if the administrator is authorized using the follwing rules:
      *     2.1 if getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
-     *         authorized to AvailableAccessRules.REGULAR_APPROVECAACTION othervise AvailableAccessRules.REGULAR_APPORVEENDENTITY 
+     *         authorized to AccessRulesConstants.REGULAR_APPROVECAACTION othervise AccessRulesConstants.REGULAR_APPORVEENDENTITY 
      *         and APPROVAL_RIGHTS for the end entity profile.
      *     2.2 Checks if the admin is authoried to the approval requests getCAId()
      *     
@@ -608,13 +608,13 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	
     	if(retval != null){
     		if(retval.getEndEntityProfileId() == ApprovalDataVO.ANY_ENDENTITYPROFILE){
-    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.REGULAR_APPROVECAACTION);				
+    			getAuthorizationSession().isAuthorized(admin,AccessRulesConstants.REGULAR_APPROVECAACTION);				
     		}else{
-    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.REGULAR_APPROVEENDENTITY);
-    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.ENDENTITYPROFILEPREFIX + retval.getEndEntityProfileId() + AvailableAccessRules.APPROVAL_RIGHTS);
+    			getAuthorizationSession().isAuthorized(admin,AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+    			getAuthorizationSession().isAuthorized(admin,AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndEntityProfileId() + AccessRulesConstants.APPROVAL_RIGHTS);
     		}
     		if(retval.getCaId() != ApprovalDataVO.ANY_CA){
-    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.CAPREFIX + retval.getCaId());
+    			getAuthorizationSession().isAuthorized(admin,AccessRulesConstants.CAPREFIX + retval.getCaId());
     		}
 
 
@@ -821,10 +821,10 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
         
         try {
-			authorizedToApproveCAActions = getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_APPROVECAACTION);
+			authorizedToApproveCAActions = getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
 		} catch (AuthorizationDeniedException e1) {}
         try {
-			authorizedToApproveRAActions = getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_APPROVEENDENTITY);
+			authorizedToApproveRAActions = getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
 		} catch (AuthorizationDeniedException e1) {
 		}
 

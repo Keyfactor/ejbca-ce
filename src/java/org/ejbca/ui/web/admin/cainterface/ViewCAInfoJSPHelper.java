@@ -20,8 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
@@ -71,8 +71,8 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
         can_activate = false;
         authorized = false;
 		try{
-			authorized = ejbcawebbean.isAuthorizedNoLog(AvailableAccessRules.REGULAR_CABASICFUNCTIONS);
-			can_activate = ejbcawebbean.isAuthorizedNoLog(AvailableAccessRules.REGULAR_ACTIVATECA);
+			authorized = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_CABASICFUNCTIONS);
+			can_activate = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_ACTIVATECA);
 		}catch(AuthorizationDeniedException ade){}
       }
     }

@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.ejbca.core.model.authorization.AccessRule;
-import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 
 /**
@@ -57,8 +57,8 @@ public class AccessRulesView implements java.io.Serializable {
         boolean regular = true;
         
         // Check if rule is a role based one
-        for(int i=0; i< AvailableAccessRules.ROLEACCESSRULES.length; i++){
-           if(accessrulestring.equals(AvailableAccessRules.ROLEACCESSRULES[i])){
+        for(int i=0; i< AccessRulesConstants.ROLEACCESSRULES.length; i++){
+           if(accessrulestring.equals(AccessRulesConstants.ROLEACCESSRULES[i])){
              this.rolebasedaccessrules.add(accessrule);
              regular=false;
            }  
@@ -71,13 +71,13 @@ public class AccessRulesView implements java.io.Serializable {
         }
         
         // Check if rule is CA access rule
-        if(accessrulestring.startsWith(AvailableAccessRules.CAPREFIX) || accessrulestring.equals(AvailableAccessRules.CABASE)){
+        if(accessrulestring.startsWith(AccessRulesConstants.CAPREFIX) || accessrulestring.equals(AccessRulesConstants.CABASE)){
           this.caaccessrules.add(accessrule);
           regular=false;
         }
         
         // Check if rule is end entity profile access rule
-        if(accessrulestring.startsWith(AvailableAccessRules.USERDATASOURCEBASE)){
+        if(accessrulestring.startsWith(AccessRulesConstants.USERDATASOURCEBASE)){
           this.userdatasourceaccessrules.add(accessrule);
           regular=false;
         }

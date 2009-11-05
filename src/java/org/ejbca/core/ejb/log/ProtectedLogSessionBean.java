@@ -1740,6 +1740,18 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	}
 
 	/**
+	 * Create a new signed log event that links in unsigned log chain identified by nodeGUID
+	 * @param nodeGUID the nodeGUID to accept and link in
+	 * @return true if ok, false if MessageDigest cannot be created of any signed log events could not be found (if newestProtectedLogEventRow is null)
+	 * 
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
+	 */
+	public boolean signUnsignedChainUsingSingleSignerNode(Integer nodeGUID) {
+		return signUnsignedChain(null, nodeGUID);
+	}
+
+	/**
 	 * @param newestProtectedLogEventRow the latest real signed event or null if the method should try to find it itself
 	 * @param nodeGUID the nodeGUID to accept and link in
 	 * @return true if ok, false if MessageDigest can not be created of any signed log evens could not be found (if newestProtectedLogEventRow is null)
