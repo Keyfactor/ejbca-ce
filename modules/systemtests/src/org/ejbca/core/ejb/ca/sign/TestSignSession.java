@@ -28,10 +28,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Vector;
-
 import javax.ejb.DuplicateKeyException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -1681,6 +1680,7 @@ public class TestSignSession extends TestCase {
     } // test28TestDNOverride
 
     public void test29TestExtensionOverride() throws Exception {
+        final String altnames ="dNSName=foo1.bar.com,dNSName=foo2.bar.com,dNSName=foo3.bar.com,dNSName=foo4.bar.com,dNSName=foo5.bar.com,dNSName=foo6.bar.com,dNSName=foo7.bar.com,dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com";
         // Create a good certificate profile (good enough), using QC statement
         TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTEXTENSIONOVERRIDE");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
@@ -1708,7 +1708,8 @@ public class TestSignSession extends TestCase {
         ASN1EncodableVector extensionattr = new ASN1EncodableVector();
         extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         // AltNames
-        GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo1.bar.com,dNSName=foo2.bar.com,dNSName=foo3.bar.com,dNSName=foo4.bar.com,dNSName=foo5.bar.com,dNSName=foo6.bar.com,dNSName=foo7.bar.com,dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com");
+	String[] namearray = altnames.split(",");
+        GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
         ByteArrayOutputStream extOut = new ByteArrayOutputStream();
         DEROutputStream derOut = new DEROutputStream(extOut);
         try {
@@ -1724,7 +1725,7 @@ public class TestSignSession extends TestCase {
         oidvec.add(X509Extensions.SubjectAlternativeName);
         Vector valuevec = new Vector();
         valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));
-        X509Extensions exts = new X509Extensions(oidvec,valuevec);
+        X509Extensions exts = new X509Extensions(oidvec, valuevec);
         extensionattr.add(new DERSet(exts));
         // Complete the Attribute section of the request, the set (Attributes) contains one sequence (Attribute)
         ASN1EncodableVector v = new ASN1EncodableVector();
@@ -1769,8 +1770,10 @@ public class TestSignSession extends TestCase {
         c = cert.getSubjectAlternativeNames();
         assertNotNull(c);
         assertEquals(21,c.size());
-        String altNames = CertTools.getSubjectAlternativeName(cert);
-        assertEquals("dNSName=foo20.bar.com, dNSName=foo11.bar.com, dNSName=foo4.bar.com, dNSName=foo19.bar.com, dNSName=foo8.bar.com, dNSName=foo1.bar.com, dNSName=foo10.bar.com, dNSName=foo21.bar.com, dNSName=foo15.bar.com, dNSName=foo17.bar.com, dNSName=foo14.bar.com, dNSName=foo12.bar.com, dNSName=foo16.bar.com, dNSName=foo2.bar.com, dNSName=foo18.bar.com, dNSName=foo5.bar.com, dNSName=foo13.bar.com, dNSName=foo7.bar.com, dNSName=foo3.bar.com, dNSName=foo6.bar.com, dNSName=foo9.bar.com", altNames);
+        String retAltNames = CertTools.getSubjectAlternativeName(cert);
+        List originalNames = Arrays.asList(altnames.split(","));
+        List returnNames = Arrays.asList(retAltNames.split(","));
+	assertTrue(originalNames.containsAll(returnNames));
     } // test29TestExtensionOverride
 
     public void test30OfflineCA() throws Exception {
