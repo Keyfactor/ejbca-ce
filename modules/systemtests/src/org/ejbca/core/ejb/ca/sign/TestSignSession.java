@@ -1772,7 +1772,7 @@ public class TestSignSession extends TestCase {
         assertEquals(21,c.size());
         String retAltNames = CertTools.getSubjectAlternativeName(cert);
         List originalNames = Arrays.asList(altnames.split(","));
-        List returnNames = Arrays.asList(retAltNames.split(","));
+        List returnNames = Arrays.asList(retAltNames.split(", "));
 	assertTrue(originalNames.containsAll(returnNames));
     } // test29TestExtensionOverride
 
