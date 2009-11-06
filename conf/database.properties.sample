@@ -23,6 +23,7 @@
 # The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added
 # See the document doc/howto/HOWTO-database.txt for database specifics and tips and tricks.
+# (Note that the names below are fixed for the database type, it is not the name of your database instance.)
 # Default: hsqldb
 #database.name=mysql
 #database.name=postgres
