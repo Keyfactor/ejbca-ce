@@ -687,6 +687,7 @@ public class LdapPublisher extends BasePublisher {
 		do {
 			connectionFailed = false;
 			String currentServer = (String) servers.next();
+			log.debug("Current server is: "+currentServer);
 			String ldapdn = constructLDAPDN(dn);
 			try {
 				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
