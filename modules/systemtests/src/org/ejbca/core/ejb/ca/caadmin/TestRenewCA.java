@@ -49,7 +49,7 @@ public class TestRenewCA extends TestCase {
     }
 
     /**
-     * edits ca and checks that it's stored correctly.
+     * renews CA.
      *
      * @throws Exception error
      */
@@ -67,7 +67,7 @@ public class TestRenewCA extends TestCase {
         byte[] samekey = newcertsamekeys.getPublicKey().getEncoded();
         assertTrue(Arrays.equals(orgkey,samekey));
         // The new certificate must have a validity greater than the old cert
-        assertTrue("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter() + " orgcert.getNotAfter: ", newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
+        assertTrue("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter() + " orgcert.getNotAfter: "+orgcert.getNotAfter(), newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
 
         // This assumes that the default system keystore password is not changed from foo123
         TestTools.getCAAdminSession().renewCA(admin,info.getCAId(),"foo123",true);
