@@ -26,7 +26,7 @@
   </note>
   </section>
 
-<section name="About EJBCA">
+<section name="EJBCA Enterprise PKI">
 <p>
 EJBCA is an enterprise class PKI Certificate Authority built on J2EE technology. 
 It is a robust, high performance, platform independent, flexible, and component based CA to be used 
@@ -68,7 +68,7 @@ You can also use EJBCA to set up a CA independent, high performance, highly avai
 </ul>
 </p>
 </section>
-<section name="Open Source">
+<section name="Open Source PKI">
 <p>
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
