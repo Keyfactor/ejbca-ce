@@ -42,7 +42,7 @@ acronym {
 
 .menucontainer {
     float: left;
-    background-color: #EEEEEE;
+    background-color: #ffffff;
     margin: 0px;
     width: 250px;
     height: 100%;
@@ -60,17 +60,18 @@ acronym {
 .menu a:hover { text-decoration: underline; }
 .menu ul { margin: 0px 0px 0px 20px; padding: 0px; }
 .menu li  {  list-style-type: none; font-weight : normal ; }
-.menu ul ul li .sel { list-style-type: none; font-style : italic; }
-.menu ul ul li  { list-style-type: disc; font-weight : normal; }
+.menu ul ul li .sel { list-style-type: none; font-style : italic; ; color: #559635; font-weight: bold}
+.menu ul ul li  { list-style-type: disc; font-weight : normal; color: #005a9c;}
 
 .menuheader {
-	font: italic normal 10pt georgia;
+	font: bold normal 10pt georgia;
 	letter-spacing: 1px;
 	border-bottom: 1px dashed #688B9A;
 	margin-top: 8px;
 	margin-bottom: 5px;
 	padding: 2px;
 	padding-left: 5px;
+; color: #005a9c
 }
 
 .sel {
@@ -99,7 +100,7 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 .content .ForrestTable { width: 100%; background-color: #7099C5; color: #ffffff; font-size : 90%;}
 .content .ForrestTable caption { text-align: left; color: black; font-weight: bold; }
 .content .ForrestTable th { text-align: center; }
-.content .ForrestTable td { background-color: #f0f0ff; color: black; }
+.content .ForrestTable td { background-color: #f4f2f2; color: black; }
 
 .content .externals { width: 80%; background-color: #7099C5; color: #ffffff; font-size : 90%;}
 .content .externals caption { text-align: left; color: black; font-weight: bold; }
@@ -120,7 +121,7 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 }
 .frame .content {
   padding: 5px 10px;
-  background: #F0F0FF;
+  background: #f4f2f2;
   color: black;
   line-height: 120%;
   font-size: 90%;
@@ -156,19 +157,20 @@ h1, h2, h3, h4, h5, h6 {
   	font-weight: bold;
     margin-top: 1em;
     margin-bottom: 1em;
-    padding-bottom: 5px;
+    padding-bottom: 1px;
 }
 
 h1 {
   	font-size: 160%;
-    color: rgb(218, 92, 5);    
+    color: rgb(218, 92, 5);
+    margin-top: 0em;    
 }
 
 h3 { 
-    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 100%;;
-    font-style: italic;
-    font-weight: normal;
+    font-style: normal;
+    font-weight: bold;
     letter-spacing: 1px;
     margin-top: 2em;
     margin-right-value: 0px;
@@ -176,6 +178,7 @@ h3 {
     padding-top: 0px;
     padding-bottom: 0px;
 	border-bottom: 1px dashed black;
+	color: #005a9c
 }
 h4 {
     font-family: Verdana,Arial,Helvetica,sans-serif;
@@ -238,7 +241,7 @@ h4 {
 
 .bluebar {
     padding: 5px 5px 5px 10px;
-    background-color: #4C6C8F;
+    background-color: #006699;
     margin: 0px;
 }
 
@@ -251,17 +254,14 @@ h4 {
 }
 
 .logobar {
-    background-color: #005B88;
+    background-color: #f4f2f2;
     
-    color: white;
-    font-size: 16pt;
+    color: #000000;
+    font-size: 14pt;
     font-style: italic;
-    padding-right: 10px;
-    margin: 0px;
-    padding-left: 18pt;
-    padding-top: 12pt;
-    padding-bottom: 6pt;
+    margin: 0px 0px;
     border-bottom: 1px solid #ddd;
+; padding: 4pt 0px 0pt 15pt
 }
 
 .searchcaption {
@@ -307,8 +307,8 @@ a.externalLink, a.externalLink:link, a.externalLink:visited, a.externalLink:acti
 }
 
 #minitoc-area {
-    border-top: solid 1px #4C6C8F;
-    border-bottom: solid 1px #4C6C8F;
+    /* border-top: solid 1px #4C6C8F;
+    border-bottom: solid 1px #4C6C8F; */
     margin-bottom: 15px;
     margin-left: 5px;
     margin-right: 10%;
@@ -316,7 +316,8 @@ a.externalLink, a.externalLink:link, a.externalLink:visited, a.externalLink:acti
     padding-top: 5px;
 }
 .minitoc {
-	margin: 5px 5px 5px 5px;
-    list-style-image: url('images/current.gif');
+	margin: 0px 5px; 
+	color: #559635;
     font-weight: normal;
+	
 }
