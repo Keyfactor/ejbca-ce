@@ -46,6 +46,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
+import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -373,22 +374,28 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthEncPIN(),ht.getAuthEncPUK()));
 			}
 			retval.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
-		}else
-			if(data.getHardToken() instanceof EnhancedEIDHardToken){
-				EnhancedEIDHardToken ht = (EnhancedEIDHardToken) data.getHardToken();
-				retval.setEncKeyKeyRecoverable(ht.getEncKeyRecoverable());
-				if(includePUK){
-				  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
-				  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthPIN(),ht.getAuthPUK()));
-				}
-				retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
-			}else{
-				throw new EjbcaException(ErrorCode.INTERNAL_ERROR,
-                    "Error: only SwedishEIDHardToken, EnhancedEIDHardToken supported.");
+			return retval;
+		}
+		if(data.getHardToken() instanceof EnhancedEIDHardToken){
+			EnhancedEIDHardToken ht = (EnhancedEIDHardToken) data.getHardToken();
+			retval.setEncKeyKeyRecoverable(ht.getEncKeyRecoverable());
+			if(includePUK){
+				retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
+				retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthPIN(),ht.getAuthPUK()));
 			}
-
-
-		return retval;
+			retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
+			return retval;
+		}
+		if(data.getHardToken() instanceof TurkishEIDHardToken){
+			TurkishEIDHardToken ht = (TurkishEIDHardToken) data.getHardToken();
+			if(includePUK){
+			  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialPIN(),ht.getPUK()));
+			}
+			retval.setTokenType(HardTokenConstants.TOKENTYPE_TURKISHEID);
+			return retval;
+		}
+		throw new EjbcaException(ErrorCode.INTERNAL_ERROR,
+		                         "Error: only SwedishEIDHardToken, EnhancedEIDHardToken, TurkishEIDHardToken supported.");
 	}
 	
 	/**
