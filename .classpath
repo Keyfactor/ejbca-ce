@@ -13,7 +13,6 @@
 	<classpathentry kind="src" path="modules/systemtests/src"/>
 	<classpathentry kind="src" path="src/xkms/gen-java"/>
 	<classpathentry kind="src" path="tmp/bin/gensrc"/>
-	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/jstl-1.1.0.jar"/>
