@@ -14,12 +14,14 @@ package org.ejbca.core.protocol.ws.common;
 
 import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
+import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 
 /**
  * @version $Id$
  */
 public interface HardTokenConstants {
+	public static final int TOKENTYPE_TURKISHEID = TurkishEIDProfile.TYPE_TURKISHEID;
 	public static final int TOKENTYPE_SWEDISHEID = SwedishEIDProfile.TYPE_SWEDISHEID;
 	public static final int TOKENTYPE_ENHANCEDEID = EnhancedEIDProfile.TYPE_ENHANCEDEID;
 	
