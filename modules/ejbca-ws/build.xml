@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ejbca-ws" default="build">
+    <description>
+		The EJBCA Web Services web application.
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.ejbca-ws}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src-gen.dir" location="${this.dir}/src-gen"/>
+	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
+
+	<path id="compile.classpath">
+		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<pathelement location="${mod.ejbca-interface.lib}" /> 
+		<pathelement location="${mod.ejbca-ejb.lib}" /> 
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+	</path>
+
+	<path id="generate.classpath">
+    	<pathelement location="${java.home}/../lib/tools.jar"/>
+		<path refid="lib.jaxws.classpath" /> 
+		<path refid="lib.cert-cvc.classpath" /> 
+		<path refid="lib.jee.classpath" /> 
+		<path refid="lib.bouncycastle.classpath" /> 
+		<path refid="lib.log4j.classpath" /> 
+		<path refid="lib.commons-lang.classpath" /> 
+		<path refid="lib.servlet.classpath" /> 
+		<pathelement location="${mod.ejbca-ejb-interface.lib}" /> 
+		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<pathelement location="${mod.ejbca-ejb.lib}" /> 
+	</path>
+
+	<path id="wsdl-generate.classpath">
+		<path refid="generate.classpath" /> 
+		<pathelement location="${build.dir}" /> 
+	</path>
+
+    <target name="build" description="Build this module" depends="build-war, build-jar"/>
+
+    <target name="build-war" description="Build the WAR that handles Web Services in EJBCA" depends="compile">
+    	<dirname file="${mod.ejbca-ws.war}" property="mod.ejbca-ws.war.dir"/>
+    	<mkdir dir="${mod.ejbca-ws.war.dir}" />
+    	<!--
+    		From the EJBCA 3.9 build-scripts it is clear that WebSphere should bundle ejbca-ejb.jar, ejbca-util.jar, log4j.jar,
+    		and bc*.jar, but no jax-ws libs. Since WebSphere is not officially supported since EJBCA 3.6 this is left as an
+    		exercise to the interested developer.. =)
+    		
+    		The file WEB-INF/web-websphere.xml should be used instead of WEB-INF/web.xml as webxml on WebSphere.
+    	-->
+        <war warfile="${mod.ejbca-ws.war}" webxml="${this.dir}/WEB-INF/web.xml">
+            <webinf dir="${this.dir}/WEB-INF" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
+            <classes dir="${build.dir}"/>
+         	<lib refid="lib.jaxws.fileset"/>
+        </war>
+    </target>
+
+    <target name="build-jar" description="Build EJBCA WS common library" depends="compile">
+    	<dirname file="${mod.ejbca-ws.lib}" property="mod.ejbca-ws.lib.dir"/>
+    	<mkdir dir="${mod.ejbca-ws.lib.dir}" />
+    	<jar destfile="${mod.ejbca-ws.lib}">
+        	<fileset dir="${build.dir}">
+        	    <include name="org/ejbca/core/protocol/ws/common/*.class"/>
+        	    <include name="org/ejbca/core/protocol/ws/objects/*.class"/>
+        	</fileset>
+    	</jar>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete file="${mod.ejbca-ws.war}" />
+		<delete file="${mod.ejbca-ws.lib}" />
+		<delete file="${mod.ejbca-ws.wsdl}" />
+		<delete file="${mod.ejbca-ws.wsdl-schema}" />
+    </target>
+	
+    <target name="compile" depends="ejbca-util, ejbca-ejb">
+    	<mkdir dir="${build.dir}" />
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
+        	<src path="${src-gen.dir}"/>
+        	<src path="${src.dir}"/>
+    	</javac>
+    </target>
+
+	<target name="generate-wsdl" depends="compile">
+		<available classname="com.sun.tools.ws.ant.WsGen" classpathref="lib.jaxws.classpath" property="tool.present"/>
+		<fail unless="tool.present" message="WSDL generation requires the tool com.sun.tools.ws.ant.WsGen to be present."/>
+		<!-- Generate a WSDL file that can be used for client stub generation -->
+        <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen" classpathref="lib.jaxws.classpath"/>
+		<mkdir dir="temp" />
+		<!-- This is maybe not the optimal way of doing this since it compiles the whole thing again.. but it still
+			 better than deploying the application server first. -->
+        <wsgen debug="true" keep="true" destdir="temp" resourcedestdir="${mod.dist.path}"
+        	classpathref="wsdl-generate.classpath" sei="org.ejbca.core.protocol.ws.EjbcaWS" genwsdl="true" >
+        </wsgen>
+		<delete dir="temp" includeemptydirs="true"/>
+    </target>
+
+    <target name="generate" depends="ejbca-util, ejbca-ejb, ejbca-ejb-interface" description="Generate WS server stubs from implementation">
+		<available classname="com.sun.tools.ws.ant.Apt" classpathref="lib.jaxws.classpath" property="tool.present"/>
+		<fail unless="tool.present" message="Generation of server side Web Services code requires the tool com.sun.tools.ws.ant.Apt to be present."/>
+		<delete><fileset dir="${src-gen.dir}" includes="**"></fileset></delete>
+    	<taskdef name="apt" classname="com.sun.tools.ws.ant.Apt" classpathref="lib.jaxws.classpath"/>
+		<apt fork="true" sourcedestdir="${src-gen.dir}" sourcepath="${src.dir}"
+			verbose="false" debug="true" deprecation="true" classpathref="generate.classpath" nocompile="true">
+			<!-- This is used for..?
+			<option key="r" value="dist" />
+			-->
+			<source dir="${src.dir}">
+				<include name="org/ejbca/core/protocol/ws/EjbcaWS.java"/>
+			</source>
+		</apt>
+    </target>
+
+</project>

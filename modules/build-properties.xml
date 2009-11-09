@@ -70,7 +70,14 @@
     <property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-ejb-interface.jar" />
     <property name="mod.ejbca-util.path" location="${mod.path}/ejbca-util" />
     <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
-    <property name="mod.ejbca-ws-cli.lib" location="${ejbca.dist.path}/ejbcawscli/ejbcawscli.jar" />
+    <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />
+    <property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/ejbca-ws-cli.jar" />
+    <property name="mod.ejbca-ws-cli.path" location="${mod.path}/ejbca-ws-cli" />
+    <property name="mod.ejbca-ws.war" location="${mod.dist.path}/ejbcaws.war" />
+    <property name="mod.ejbca-ws.path" location="${mod.path}/ejbca-ws" />
+    <property name="mod.ejbca-ws.lib" location="${mod.dist.path}/ejbca-ws.jar" />
+    <property name="mod.ejbca-ws.wsdl" location="${mod.dist.path}/EjbcaWSService.wsdl" />
+    <property name="mod.ejbca-ws.wsdl-schema" location="${mod.dist.path}/EjbcaWSService_schema1.xsd" />
     <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.dist.path}/xkmscli/xkmscli.jar" />
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
@@ -81,6 +88,7 @@
     
     <!-- Variables of global interest -->
     <property name="java.target.version" value="1.5"/>	<!-- This should probably be defined in internal.properties -->
+	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
 
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc.jar"/></path>
@@ -133,6 +141,9 @@
         </fileset>
 	</path>
 
+    <fileset id="lib.jaxws.fileset" dir="${ejbca.home}/lib/jaxws" includes="*.jar"/>
+	<path id="lib.jaxws.classpath"><fileset refid="lib.jaxws.fileset"/></path>
+
 	<path id="lib.jee.classpath">
 		<fileset dir="${appserver.home}">
 			<!-- jboss -->
@@ -156,6 +167,7 @@
     	<pathelement location="${mod.ejbca-util.lib}"/>
 	</path>
 
+	<path id="lib.bouncycastle-provonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcprov-jdk15.jar"/></fileset></path>
 	<path id="lib.bouncycastle.classpath">
 		<fileset dir="${ejbca.home}/lib">
 			<include name="bcmail-jdk15.jar"/>

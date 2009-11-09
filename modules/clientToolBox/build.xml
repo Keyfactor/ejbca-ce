@@ -68,7 +68,9 @@
             </classpath>
         	<src path="${src.dir}"/>
             <src path="${ejbca.home}/src/java" />
-            <src path="${ejbca.home}/src/jaxws/gen-java/client" />
+            <src path="${mod.ejbca-ws.path}/src" />
+            <src path="${mod.ejbca-ws-cli.path}/src" />
+            <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-entity.path}/src" />
             <src path="${mod.ejbca-util.path}/src" />
             <include name="org/ejbca/ui/cli/ClientToolBox.java" />
@@ -99,7 +101,7 @@
     	</copy>
     	<!-- Copy scripts etc to mod.clientToolBox.dist -->
         <copy todir="${mod.clientToolBox.dist}">
-            <fileset file="${ejbca.home}/src/jaxws/cli/ejbcawsracli.properties"/>
+            <fileset file="${mod.ejbca-ws-cli.path}/resources/ejbcawsracli.properties"/>
             <fileset dir="${this.dir}/resources">
             	<include name="ejbcaClientToolBox.bat"/>
             	<include name="ejbcaClientToolBox.sh"/>
