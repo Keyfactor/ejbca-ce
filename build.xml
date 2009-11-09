@@ -11,9 +11,6 @@
 	&compile;
 
 	<import file="bin/${appserver.type}.xml" />
-	<!--
-	<import file="./jaxws.xmli" />
-	-->
 	<import file="./xkms.xmli" />
 	<import file="./cmptcp.xmli" />
 	<import file="./test.xmli" />
