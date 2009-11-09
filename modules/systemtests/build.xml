@@ -28,7 +28,7 @@
     	<pathelement location="${mod.ejbca-ejb.lib}"/>
 	</path>
 	
-    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli-lib, ejbca-xkms-cli-lib, ejbca-ejb-cli, ejbca-ejb, compile"/>
+    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli, ejbca-xkms-cli-lib, ejbca-ejb-cli, ejbca-ejb, compile"/>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />

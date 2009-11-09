@@ -22,6 +22,8 @@
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
@@ -46,6 +48,27 @@
 		<ant antfile="${mod.ejbca-util.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
+	<target name="ejbca-ws" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-ws-wsdl" description="Generate the EJBCA Web Services WSDL">
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-ws-common" description="Build the EJBCA Web Services common library">
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build-jar" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-ws-cli" if="ejbcaws.enabled.true" description="Build EJBCA Web Services CLI">
+		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-ws-generate" description="Generate the EJBCA Web Services server and client source code files (used by developers of new WS API calls)">
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate" inheritall="false"/>
+		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="generate" inheritall="false"/>
+	</target>
+
 	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->
 	<target name="ejbca-ejb" description="Build EJBCA EJB module">
 		<available file="${mod.ejbca-ejb.lib}" property="mod.ejbca-ejb.lib.exists"/>
@@ -53,14 +76,6 @@
 	</target>
 	<target name="ejbca-ejb-internal" unless="mod.ejbca-ejb.lib.exists">
 		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-ejb.jar" inheritall="false"/>
-	</target>
-
-	<target name="ejbca-ws-cli-lib" description="Build EJBCA WS CLI library">
-		<available file="${mod.ejbca-ws-cli.lib}" property="mod.ejbca-ws-cli.lib.exists"/>
-		<antcall target="ejbca-ws-cli-internal"/>
-	</target>
-	<target name="ejbca-ws-cli-internal" unless="mod.ejbca-ws-cli.lib.exists">
-		<ant dir="${ejbca.home}" antfile="build.xml" target="ws.build.client" inheritall="false"/>
 	</target>
 
 	<target name="ejbca-xkms-cli-lib" description="Build EJBCA XKMS CLI library">

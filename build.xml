@@ -11,7 +11,9 @@
 	&compile;
 
 	<import file="bin/${appserver.type}.xml" />
+	<!--
 	<import file="./jaxws.xmli" />
+	-->
 	<import file="./xkms.xmli" />
 	<import file="./cmptcp.xmli" />
 	<import file="./test.xmli" />
@@ -530,6 +532,7 @@
 	</target>
 	
 	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war">
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>"/>
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
@@ -551,6 +554,9 @@
             <fileset dir="${dist.dir}">
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
+            </fileset>
+            <fileset dir="modules/dist">
+                <include name="ejbcaws.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -911,5 +917,17 @@
 		</tstamp>
 		<echo message="Task completed ${completiontime}."/>
 	</target>
+	
+    <target name="ejbcaws.client" description="Build the EJBCA WS-API client">
+    	<ant antfile="build.xml" dir="modules" target="ejbca-ws-cli" />
+    </target>
+
+    <target name="ejbcaws.war" description="Build the EJBCA WS WAR">
+    	<ant antfile="build.xml" dir="modules" target="ejbca-ws"/>
+    </target>
+
+    <target name="ejbca-ws-generate">
+    	<ant antfile="build.xml" dir="modules" target="ejbca-ws-generate"/>
+    </target>
 
 </project>
