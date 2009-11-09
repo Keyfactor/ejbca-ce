@@ -25,6 +25,11 @@
 		<path refid="lib.commons-logging.classpath"/>
 	</path>
 
+	<path id="compile-withws.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="lib.jaxws.classpath"/>
+	</path>
+
     <target name="build" description="Build this module" depends="compile, setup">
     	<pathconvert property="ejbca-ws-cli.dependencies" pathsep=" ">
     	    <path>
@@ -50,7 +55,7 @@
     <target name="compile" depends="ejbca-util, ejbca-ws-common">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-withws.classpath">
         	<src path="${src-gen.dir}"/>
         	<src path="${src.dir}"/>
     	</javac>
