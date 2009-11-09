@@ -39,6 +39,7 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.model.InternalResources;
@@ -317,10 +318,10 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         return CMS.verify(in, out, getCertificate(alias));
     }
     /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#generateCertReq(java.lang.String)
+     * @see org.ejbca.util.keystore.KeyStoreContainer#generateCertReq(java.lang.String, java.lang.String, boolean)
      */
-    public void generateCertReq(String alias, String sDN) throws Exception {
-        final PublicKey publicKey = getCertificate(alias).getPublicKey();
+    public void generateCertReq(String alias, String sDN, boolean explicitEccParameters) throws Exception {
+        PublicKey publicKey = getCertificate(alias).getPublicKey();
         final PrivateKey privateKey = getPrivateKey(alias);
         if (log.isDebugEnabled()) {
             log.debug("alias: " + alias + " SHA1 of public key: " + CertTools.getFingerprintAsString(publicKey.getEncoded()));
@@ -328,6 +329,12 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         String sigAlg = (String)AlgorithmTools.getSignatureAlgorithms(publicKey).iterator().next();
         if ( sigAlg == null ) {
         	sigAlg = "SHA1WithRSA";
+        }
+        if (sigAlg.contains("ECDSA") && explicitEccParameters) {
+            log.info("Using explicit parameter encoding for ECC key.");
+            publicKey = ECKeyUtil.publicToExplicitParameters(publicKey, "BC");
+        } else {
+            log.info("Using named curve parameter encoding for ECC key.");
         }
         final PKCS10CertificationRequest certReq =
             new PKCS10CertificationRequest( sigAlg,
@@ -339,11 +346,13 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
             String msg = intres.getLocalizedMessage("catoken.errorcertreqverify", alias);
             throw new Exception(msg);
         }
-        final Writer writer = new FileWriter(alias+".pem");
+        String filename = alias+".pem";
+        final Writer writer = new FileWriter(filename);
         writer.write(CertTools.BEGIN_CERTIFICATE_REQUEST+"\n");
         writer.write(new String(Base64.encode(certReq.getEncoded())));
         writer.write("\n"+CertTools.END_CERTIFICATE_REQUEST+"\n");
         writer.close();
+        log.info("Wrote csr to file: "+filename);
     }
     /* (non-Javadoc)
      * @see org.ejbca.util.keystore.KeyStoreContainer#installCertificate(java.lang.String)

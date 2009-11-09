@@ -23,6 +23,7 @@ import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.ui.cli.hardtoken.importer.IHardTokenImporter;
+import org.ejbca.util.CliTools;
 
 /**
  * Command used to import hard token data from a source.
@@ -44,7 +45,7 @@ public class ImportDataCommand extends BaseCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
 		// Get and remove switches
-		List<String> argsList = getAsModifyableList(args);
+		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean force = argsList.remove("-force");
 		args = argsList.toArray(new String[0]);
 		// Parse the rest of the arguments

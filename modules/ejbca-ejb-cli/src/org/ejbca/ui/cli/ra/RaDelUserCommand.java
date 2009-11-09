@@ -18,6 +18,7 @@ import java.util.List;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.util.CliTools;
 
 /**
  * Deletes a user from the database.
@@ -32,7 +33,7 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
 		// Get and remove switches
-		List<String> argsList = getAsModifyableList(args);
+		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean force = argsList.remove("-force");
 		args = argsList.toArray(new String[0]);
 		// Parse the rest of the arguments
