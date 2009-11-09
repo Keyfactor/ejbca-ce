@@ -22,6 +22,7 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.jaxws.classpath" /> 
 	</path>
 
 	<path id="generate.classpath">
