@@ -4562,7 +4562,7 @@ publishing has been done, status will merely be changed from PENDING to SUCCESS.
 EJBCA support ECDSA signature keys in addition to RSA. You can create a CA using ECDSA keys both using the admin-GUI 
 and using the cli (bin/ejbca.sh ca init).
 </p>
-<subsection name="Genarated keys and certificate">
+<subsection name="Generated keys and certificate">
 <p>
 When generating a CA in EJBCA up to three keys and certificates are generated:
 <ul>
@@ -4579,8 +4579,19 @@ The encryption keypair will always be RSA, using 1024 or 2048 bit key length. It
 <subsection name="Using ECDSA with an HSM">
 <p>
 See the section about HSM property parameters to see which keys can be of different sorts. 
-Note that the keyEncryptKey can not be ECDSA, but should be an RSA key. Your HSM must support both ECDSA and RSA keys.
+Note that the keyEncryptKey can not be ECDSA, but should be an RSA key. Your HSM must support both ECDSA and RSA keys. 
+You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certificate requests from an HSM.
 </p>
+</subsection>
+<subsection name="ECC named curves vs explicit parameters">
+<p>
+Normally you want to generate requests and certificates using named curves encoded in certificates and requests, this is what IETF recommends. 
+In some cases you need to generate the request and certificate with explicit parameters instead, this is for instance mandated by ICAO for usage in CSCA's and DS's for ePassports.
+</p>
+<ul>
+<li>When generating requests with <i>clientToolBox PKCS11HSMKeyTool certreq</i> you can specify a flag to use explicit parameters instead of named curves. Named curves is the default.</li>
+<li>When EJBCA issues certificate with public keys from certificate requests (csr's) the key in the certificate will be the same as in the csr. If the csr uses explicit parameters, so will the issued certificate.</li>
+</ul>
 </subsection>
 <subsection name="Named curves">
 <p>

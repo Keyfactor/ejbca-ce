@@ -54,11 +54,12 @@ public interface KeyStoreContainer {
     byte[] renameAlias( String oldAlias, String newAlias ) throws Exception;
 
     /**
-     * @param string alias for the key to be used
+     * @param alias for the key to be used
      * @param dn the DN to be used. If null the 'CN=alias' will be used
+     * @param explicitEccParameters false should be default and will use NamedCurve encoding of ECC public keys (IETF recommendation), use true to include all parameters explicitly (ICAO ePassport requirement).
      * @throws Exception
      */
-    void generateCertReq(String string, String dn) throws Exception;
+    void generateCertReq(String alias, String dn, boolean explicitEccParameters) throws Exception;
 
     /**
      * Install certificate chain to key in keystore.

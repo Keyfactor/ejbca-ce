@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CliTools;
 
 /**
  * Export root CA certificate.
@@ -34,7 +35,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
 		// Get and remove switches
-		List<String> argsList = getAsModifyableList(args);
+		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean pem = !argsList.remove("-der");
 		args = argsList.toArray(new String[0]);
 		// Parse the rest of the arguments

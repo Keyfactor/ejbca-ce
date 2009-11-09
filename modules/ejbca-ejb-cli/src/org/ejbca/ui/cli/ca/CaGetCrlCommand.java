@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CliTools;
 
 /**
  * Retrieves the latest CRL from a CA.
@@ -32,7 +33,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
 		// Get and remove switches
-		List<String> argsList = getAsModifyableList(args);
+		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean deltaSelector = argsList.remove("-delta");
 		boolean pem = argsList.remove("-pem");
 		args = argsList.toArray(new String[0]);

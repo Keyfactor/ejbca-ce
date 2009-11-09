@@ -24,6 +24,7 @@ import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CliTools;
 
 /**
  * Re-publishes the certificates of all users belonging to a particular CA.
@@ -39,7 +40,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
     		// Get and remove switches
-    		List<String> argsList = getAsModifyableList(args);
+    		List<String> argsList = CliTools.getAsModifyableList(args);
     		boolean addAll = argsList.remove("-all");
     		args = argsList.toArray(new String[0]);
     		// Parse the rest of the arguments

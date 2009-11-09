@@ -20,10 +20,12 @@ import java.io.PrintWriter;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.ejbca.util.CMS;
+import org.ejbca.util.CliTools;
 import org.ejbca.util.keystore.KeyStoreContainer;
 import org.ejbca.util.keystore.KeyStoreContainerBase;
 import org.ejbca.util.keystore.KeyStoreContainerFactory;
@@ -151,11 +153,15 @@ public class HSMKeyTool extends ClientToolBox {
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(CERT_REQ)) {
+        	// First we check if we have a switch for "-explicitecc" for explicit ecc parameters used in ICAO epassports.
+    		List<String> argsList = CliTools.getAsModifyableList(args);
+    		boolean explicitEccParameters = argsList.remove("-explicitecc");
+    		args = argsList.toArray(new String[0]);
             if ( args.length < 7 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>]");
+                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>] -explicitecc");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6], args.length>7 ? args[7] : null);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6], args.length>7 ? args[7] : null, explicitEccParameters);
             }
             return true;
         }
