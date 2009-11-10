@@ -127,5 +127,43 @@ public class TestStringTools extends TestCase {
     	assertNotNull(ipv6oct);
     	assertEquals(16, ipv6oct.length);
     }
+    
+    public void testHasSqlStripChars() throws Exception {
+    	String str = "select * from Table";
+    	boolean ret = StringTools.hasSqlStripChars(str);
+    	assertFalse(ret);
+
+    	str = "select * from Table; delete from password";
+    	ret = StringTools.hasSqlStripChars(str);
+    	assertTrue(ret);
+    	
+    	str = "select * from User where username like 'foo\\%'";
+    	ret = StringTools.hasSqlStripChars(str);
+    	assertTrue(ret);
+
+    	// check that we can escape commas
+    	str = "foo\\,";
+    	ret = StringTools.hasSqlStripChars(str);
+    	assertFalse(ret);
+
+    	// Check that escaping does not work for other characters
+    	str = "foo\\;";
+    	ret = StringTools.hasSqlStripChars(str);
+    	assertTrue(ret);
+
+    	str = "foo\\;bar";
+    	ret = StringTools.hasSqlStripChars(str);
+    	assertTrue(ret);
+
+    	str = "\\;bar";
+    	ret = StringTools.hasSqlStripChars(str);
+    	assertTrue(ret);
+
+    	// Check special case that a slash at the end also returns bad
+    	str = "foo\\";
+    	ret = StringTools.hasSqlStripChars(str);
+    	assertTrue(ret);
+
+    }
 
 }
