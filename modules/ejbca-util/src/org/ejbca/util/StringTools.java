@@ -117,9 +117,13 @@ public class StringTools {
                 if (stripSqlChars[i] == '\\') {
                     // If it is an escaped char, allow it if it is an allowed escapechar
                     int index = ret.indexOf('\\');
-                    while (index > -1) {
+                    // Handle special case where this is the last character
+                    if ((index+1) == ret.length()) {
+                    	return true;
+                    }
+                    while ( (index > -1) && ((index+1) < ret.length()) ) {
                         if (isAllowed(ret.charAt(index+1))) {
-                            return true;
+                            break; // If the escape character is allowed we want to continue in the outer for loop cheking the rest of the string
                         }
                         index = ret.indexOf('\\',index+1);
                     }
@@ -131,7 +135,7 @@ public class StringTools {
         return false;
     } // hasSqlStripChars
 
-    /** Checks if a character is an allowed escape characted according to allowedEscapeChars
+    /** Checks if a character is an allowed escape character according to allowedEscapeChars
      * 
      * @param ch the char to check
      * @return true if char is an allowed escape character, false if now
