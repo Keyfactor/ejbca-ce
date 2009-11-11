@@ -792,14 +792,12 @@
              }
              
              values = request.getParameterValues(SELECT_APPROVALSETTINGS);
-             System.err.println("Got values:" + Arrays.toString(values));
              ArrayList approvalsettings = new ArrayList(); 
              if(values != null){
                for(int i=0; i < values.length; i++){
             	   approvalsettings.add(new Integer(values[i]));
                }
              }
-			System.err.println("To set:" + approvalsettings); // TODO remove
 			certificateprofiledata.setApprovalSettings(approvalsettings);
 			value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
 			int numofreqapprovals = 1;
