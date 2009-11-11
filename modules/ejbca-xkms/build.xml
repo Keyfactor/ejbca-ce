@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ejbca-xkms" default="build">
+    <description>
+		The EJBCA XKMS web application.
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.ejbca-xkms}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+
+	<path id="compile.classpath">
+		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<pathelement location="${mod.ejbca-interface.lib}" /> 
+		<pathelement location="${mod.ejbca-ejb.lib}" /> 
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.jaxws.classpath" /> 
+	</path>
+
+	<path id="wsdl-generate.classpath">
+		<path refid="generate.classpath" /> 
+		<pathelement location="${build.dir}" /> 
+	</path>
+
+    <target name="build" description="Build this module" depends="build-war, build-jar"/>
+
+    <target name="build-war" description="Build the WAR that handles XKMS in EJBCA" depends="compile">
+    	<dirname file="${mod.ejbca-xkms.war}" property="mod.ejbca-xkms.war.dir"/>
+    	<mkdir dir="${mod.ejbca-xkms.war.dir}" />
+    	<mkdir dir="${this.dir}/temp" />
+        <copy file="${this.dir}/xkms.wsdl" tofile="${this.dir}/temp/xkms.wsdl" overwrite="true" failonerror="true" >
+			<filterchain>
+				<tokenfilter>
+					<replacestring from="@httpsserver.hostname@" to="${httpsserver.hostname}"/>
+					<replacestring from="@xkms.serviceport@" to="${xkms.serviceport}"/>
+				</tokenfilter>
+			</filterchain>
+        </copy>
+        <war warfile="${mod.ejbca-xkms.war}" webxml="${this.dir}/WEB-INF/web.xml">
+            <webinf dir="${this.dir}/WEB-INF" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
+            <classes dir="${build.dir}"/>
+        	<fileset file="${this.dir}/temp/xkms.wsdl"/>
+         	<lib refid="lib.jaxws.fileset"/>
+        </war>
+    	<delete dir="${this.dir}/temp"/>
+    </target>
+
+    <target name="build-jar" description="Build EJBCA XKMS common library" depends="compile">
+    	<dirname file="${mod.ejbca-xkms.lib}" property="mod.ejbca-xkms.lib.dir"/>
+    	<mkdir dir="${mod.ejbca-xkms.lib.dir}" />
+    	<jar destfile="${mod.ejbca-xkms.lib}">
+        	<fileset dir="${build.dir}">
+        	    <include name="org/ejbca/core/protocol/xkms/XKMSService.class"/>
+        	    <include name="org/ejbca/core/protocol/xkms/common/*.class"/>
+        	    <include name="org/w3/_2000/_09/xmldsig_/*.class"/>
+        	    <include name="org/w3/_2001/_04/xmlenc_/*.class"/>
+           	    <include name="org/w3/_2002/_03/xkms_/*.class"/>
+        	</fileset>
+    	</jar>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete file="${mod.ejbca-xkms.war}" />
+		<delete file="${mod.ejbca-xkms.lib}" />
+    </target>
+	
+    <target name="compile" depends="ejbca-util, ejbca-ejb">
+    	<mkdir dir="${build.dir}" />
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
+        	<src path="${src.dir}"/>
+    	</javac>
+    </target>
+</project>

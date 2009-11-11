@@ -364,7 +364,7 @@ public class XKMSProvider implements Provider<Source> {
 
 							cpv.validate(cp, param); 
 
-							// Check revokation status
+							// Check revocation status
 							RevokedCertInfo revCertInfo = getCertStoreSession().isRevoked(intAdmin, CertTools.getIssuerDN(verCert), verCert.getSerialNumber());
 							if(revCertInfo.getReason() != RevokedCertInfo.NOT_REVOKED){
 								return false;

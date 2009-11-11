@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ejbca-xkms-cli" default="build">
+    <description>
+		The EJBCA XKMS Command Line Interface
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.ejbca-xkms-cli}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+
+	<path id="compile.classpath">
+		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<pathelement location="${mod.ejbca-xkms.lib}" /> 
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.bouncycastle-provonly.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.xmlsec.classpath"/>
+	</path>
+
+	<path id="compile-withws.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="lib.jaxws.classpath"/>
+	</path>
+
+    <target name="build" description="Build this module" depends="compile, setup">
+    	<pathconvert property="ejbca-xkms-cli.dependencies" pathsep=" ">
+    	    <path>
+	        	<fileset dir="${mod.ejbca-xkms-cli.dist}" includes="lib/*.jar"/>
+    	    </path>
+    		<map from="${mod.ejbca-xkms-cli.dist}/" to=""/>
+    	</pathconvert>
+    	<jar destfile="${mod.ejbca-xkms-cli.lib}">
+            <manifest>
+    			<attribute name="Class-path" value="${ejbca-xkms-cli.dependencies} ./" />
+				<attribute name="Main-Class" value="org.ejbca.core.protocol.xkms.client.xkmscli"/>
+            </manifest>
+        	<fileset dir="${build.dir}" includes="**"/>
+        	<fileset file="${profilemappings.properties.file}"/>
+    	</jar>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${mod.ejbca-xkms-cli.dist}" />
+    </target>
+	
+    <target name="compile" depends="ejbca-util, ejbca-xkms-common">
+    	<mkdir dir="${build.dir}" />
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-withws.classpath">
+        	<src path="${src.dir}"/>
+    	</javac>
+    </target>
+
+    <target name="setup">
+    	<mkdir dir="${mod.ejbca-xkms-cli.dist}/lib" />
+    	<pathconvert property="compile.classpath.property" pathsep=" ">
+    	    <path refid="compile.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.ejbca-xkms-cli.dist}/lib" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${compile.classpath.property}"/>
+    	</copy>
+    	<pathconvert property="lib.jaxws-client.classpath.property" pathsep=" ">
+    	    <path refid="lib.jaxws-client.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.ejbca-xkms-cli.dist}/lib/endorsed" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${lib.jaxws-client.classpath.property}"/>
+    	</copy>
+    	<copy todir="${mod.ejbca-xkms-cli.dist}" flatten="true">
+    		<fileset dir="${this.dir}/resources" includes="**"/>
+    	</copy>
+        <chmod file="${mod.ejbca-xkms-cli.dist}/*.sh" perm="a+rx"/>
+    </target>
+</project>

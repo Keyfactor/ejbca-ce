@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
@@ -56,6 +57,8 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  */
 public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 
+	private static Logger log = Logger.getLogger(LocateCommand.class);
+			
 	private ObjectFactory xKMSObjectFactory = new ObjectFactory();
 	private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 	
@@ -153,7 +156,9 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
                 }
                 validationRequestType.setQueryKeyBinding(queryKeyBindingType);
                 getPrintStream().println("Sending validation request with id " + reqId + " to XKMS Service");
-                
+                if (clientCert == null) {
+                    log.info("Client cert was not found and will not be used.");
+                }
                 ValidateResultType validateResult = getXKMSInvoker().validate(validationRequestType, clientCert, privateKey);                
                 keyBindings = validateResult.getKeyBinding();                                
                 
@@ -167,6 +172,9 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
                 locateRequestType.setQueryKeyBinding(queryKeyBindingType);
                 
                 getPrintStream().println("Sending locate request with id " + reqId + " to XKMS Service");
+                if (clientCert == null) {
+                    log.info("Client cert was not found and will not be used.");
+                }
                 LocateResultType locateResult = getXKMSInvoker().locate(locateRequestType, clientCert, privateKey);
                 keyBindings = locateResult.getUnverifiedKeyBinding();                                                
             }

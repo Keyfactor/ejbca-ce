@@ -78,17 +78,24 @@
     <property name="mod.ejbca-ws.lib" location="${mod.dist.path}/ejbca-ws.jar" />
     <property name="mod.ejbca-ws.wsdl" location="${mod.dist.path}/EjbcaWSService.wsdl" />
     <property name="mod.ejbca-ws.wsdl-schema" location="${mod.dist.path}/EjbcaWSService_schema1.xsd" />
-    <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.dist.path}/xkmscli/xkmscli.jar" />
+    <property name="mod.ejbca-xkms-cli.lib" location="${ejbca.dist.path}/ejbca-xkms-cli/xkmscli.jar" />
+    <property name="mod.ejbca-xkms-cli.dist" location="${ejbca.dist.path}/ejbca-xkms-cli" />
+    <property name="mod.ejbca-xkms-cli.path" location="${mod.path}/ejbca-xkms-cli" />
+    <property name="mod.ejbca-xkms.path" location="${mod.path}/ejbca-xkms" />
+    <property name="mod.ejbca-xkms.war" location="${mod.dist.path}/xkms.war" />
+    <property name="mod.ejbca-xkms.lib" location="${mod.dist.path}/ejbca-xkms.jar" />
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
 	
 	<!-- Files of global interest -->
     <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
+    <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
     
     <!-- Variables of global interest -->
     <property name="java.target.version" value="1.5"/>	<!-- This should probably be defined in internal.properties -->
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
+	<condition property="xkms.enabled.true"><istrue value="${xkms.enabled}"/></condition>
 
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc.jar"/></path>
@@ -138,6 +145,7 @@
             <include name="jsr181-api.jar"/>
             <include name="jsr173_api.jar"/>
             <include name="activation.jar"/>
+            <include name="libidn.jar"/>
         </fileset>
 	</path>
 

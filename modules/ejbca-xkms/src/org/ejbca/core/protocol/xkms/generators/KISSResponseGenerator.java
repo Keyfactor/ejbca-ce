@@ -141,7 +141,7 @@ public class KISSResponseGenerator extends
 					Iterator<UserDataVO> userIter = userDatas.iterator();
 					while(userIter.hasNext() && retval.size() <= resSize){
 						UserDataVO nextUser = userIter.next();
-						// Find all the certificates of the mathing users
+						// Find all the certificates of the matching users
 						try {
 							Collection userCerts = getCertStoreSession().findCertificatesByUsername(pubAdmin, nextUser.getUsername());
 							// For all the certificates

@@ -11,7 +11,6 @@
 	&compile;
 
 	<import file="bin/${appserver.type}.xml" />
-	<import file="./xkms.xmli" />
 	<import file="./cmptcp.xmli" />
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
@@ -529,7 +528,14 @@
 	</target>
 	
 	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war">
-    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>"/>
+		<condition property="ejbcaws.enabled.replace-string" else="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>">
+			<istrue value="${ejbcaws.enabled}"/>
+		</condition>
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="${ejbcaws.enabled.replace-string}"/>
+		<condition property="xkms.enabled.replace-string" else="!--@xkms.war@-->" value="module>&lt;web>&lt;web-uri>xkms.war&lt;/web-uri>&lt;context-root>/${app.name}/xkms&lt;/context-root>&lt;/web>&lt;/module>">
+			<istrue value="${xkms.enabled}"/>
+		</condition>
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@xkms.war@-->" value="${xkms.enabled.replace-string}"/>
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
@@ -554,6 +560,7 @@
             </fileset>
             <fileset dir="modules/dist">
                 <include name="ejbcaws.war" />
+                <include name="xkms.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -925,6 +932,14 @@
 
     <target name="ejbca-ws-generate">
     	<ant antfile="build.xml" dir="modules" target="ejbca-ws-generate"/>
+    </target>
+
+    <target name="xkms.client" description="Build the EJBCA XKMS client">
+    	<ant antfile="build.xml" dir="modules" target="ejbca-xkms-cli" />
+    </target>
+
+    <target name="xkms.war" description="Build the EJBCA XKMS WAR">
+    	<ant antfile="build.xml" dir="modules" target="ejbca-xkms"/>
     </target>
 
 </project>

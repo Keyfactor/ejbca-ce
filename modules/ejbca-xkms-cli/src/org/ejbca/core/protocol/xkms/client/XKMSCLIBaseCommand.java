@@ -29,6 +29,7 @@ import java.util.Random;
 
 import javax.xml.bind.JAXBElement;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
@@ -48,6 +49,8 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  */
 
 public abstract class XKMSCLIBaseCommand {
+	
+	private static Logger log = Logger.getLogger(XKMSCLIBaseCommand.class);
 	
 	protected String[] args = null;
 	private XKMSInvoker xkms = null;
@@ -129,7 +132,7 @@ public abstract class XKMSCLIBaseCommand {
 			      }
 			      String alias = getKeyStoreAlias();       
 			      clientCert = (java.security.cert.X509Certificate)clientKeyStore.getCertificate(alias);            
-			      privateKey = clientKeyStore.getKey(alias,"foo123".toCharArray());
+			      privateKey = clientKeyStore.getKey(alias, getKeyStorePassword().toCharArray());
 			      Certificate[] trustedcerts = clientKeyStore.getCertificateChain(alias);
 			      catrustlist = new ArrayList();
 			      for(int i=0;i<trustedcerts.length;i++ ){
@@ -151,24 +154,38 @@ public abstract class XKMSCLIBaseCommand {
 	}
 
 	private String getKeyStorePassword() throws FileNotFoundException, IOException {
+		final String CONF_KEYSTORE_PASSWORD = "xkmscli.keystore.password";
 		if(password == null){
-			if(getProperties().getProperty("xkmscli.keystore.password") == null){
+			if(getProperties().getProperty(CONF_KEYSTORE_PASSWORD) == null){
 			   BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			   System.out.print("Enter keystore password :");
 			   password = reader.readLine();
 			}else{
-				password = getProperties().getProperty("xkmscli.keystore.password");
+				password = getProperties().getProperty(CONF_KEYSTORE_PASSWORD);
+				if (log.isDebugEnabled()) {
+					log.debug(CONF_KEYSTORE_PASSWORD + ": <set in config file>");
+				}
 			}
 		}
 		return password;
 	}
 
 	private String getKeyStorePath() throws FileNotFoundException, IOException {
-		return getProperties().getProperty("xkmscli.keystore.path");
+		final String CONF_KEYSTORE_PATH = "xkmscli.keystore.path";
+		String value = getProperties().getProperty(CONF_KEYSTORE_PATH);
+		if (log.isDebugEnabled()) {
+			log.debug(CONF_KEYSTORE_PATH + ": " + value);
+		}
+		return value;
 	}
 
 	private String getKeyStoreAlias() throws FileNotFoundException, IOException {
-		return getProperties().getProperty("xkmscli.keystore.alias");
+		final String CONF_KEYSTORE_ALIAS = "xkmscli.keystore.alias";
+		String value = getProperties().getProperty(CONF_KEYSTORE_ALIAS);
+		if (log.isDebugEnabled()) {
+			log.debug(CONF_KEYSTORE_ALIAS + ": " + value);
+		}
+		return value;
 	}
 	
 	private String getWebServiceURL() throws FileNotFoundException, IOException {	
