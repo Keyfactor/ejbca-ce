@@ -28,4 +28,4 @@ set q=%9
 shift
 set r=%9
 
-java  -jar xkmscli.jar %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m% %n% %o% %p% %q% %r%
+java -Djava.endorsed.dirs=lib/endorsed -jar xkmscli.jar %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m% %n% %o% %p% %q% %r%

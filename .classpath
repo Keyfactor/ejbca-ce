@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="modules/ejbca-xkms/src"/>
+	<classpathentry kind="src" path="modules/ejbca-xkms-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src"/>

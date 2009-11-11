@@ -787,7 +787,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
                     lastupdatetime = new Date().getTime();
                 }
             }catch (Throwable t) {
-                log.debug("Failed to load gloabal configuarion", t);
+                log.debug("Failed to load global configuration", t);
             }
             if ( globalconfiguration!=null ) {
                 return globalconfiguration;
