@@ -13,7 +13,6 @@
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
-	<classpathentry kind="src" path="src/xkms/gen-java"/>
 	<classpathentry kind="src" path="tmp/bin/gensrc"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
@@ -74,43 +73,36 @@
 	<classpathentry kind="var" path="JBOSS_HOME/client/activation.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/commons-httpclient.jar">
-		<!--  JBoss 4.2.3 -->
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-j2ee.jar">
-		<!--  JBoss 4.2.3 -->
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-logging-log4j.jar">
-		<!--  JBoss 5.0.0 -->
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system-jmx.jar">
-		<!--  JBoss 5.0.0 -->
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-j2se.jar">
-		<!--  JBoss 5.0.0 -->
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-kernel.jar">
-		<!--  JBoss 5.0.0 -->
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-javaee.jar">
-		<!--  JBoss 5.0.0 -->
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
