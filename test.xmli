@@ -75,4 +75,8 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="runlogstress" />
     </target>
 
+    <target name="test:xkms" description="run JUnit log stress test">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runxkms" />
+    </target>
+
 </project>
