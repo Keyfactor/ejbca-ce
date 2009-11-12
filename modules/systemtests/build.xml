@@ -260,9 +260,15 @@
 		<antcall target="runone-internal"/>
 	</target>
 
+	<target name="runws" description="Run Web Services system tests">
+    	<property name="test.runone" value="TestEjbcaWS*"/>
+    	<property name="reports.dir" location="${reports.base.dir}/runws"/>
+		<antcall target="runone-internal"/>
+	</target>
+
 	<target name="runxkms" description="Run XKMS system tests">
     	<property name="test.runone" value="TestXKMS*"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runlotsperuser"/>
+    	<property name="reports.dir" location="${reports.base.dir}/runxkms"/>
 		<antcall target="runone-internal"/>
 	</target>
 
