@@ -340,7 +340,7 @@ ejbcaws.enabled=false<br/>
 See https://jira.primekey.se/browse/ECA-687, tips are welcome.</li>
 
 <li>Edit conf/xkms.properties and change/set some values:<br/>
-xkms.enabled=false<br/>
+xkms.enabled=false (Default from EJBCA 3.10.)<br/>
 Disabling xkms must be done until we have fixed JaxWS configuration for weblogic.</li>
 
 <li>Edit 'jndi.properties.weblogic' in the directory 'ejbca/conf'and modify the principal and credentials 
@@ -491,7 +491,7 @@ Currently EJBCA works both with Glassfish v1 and v2 with the Derby/JavaDB databa
      (Tips how to solve these probles are welcome.)
      <ul>
      <li>Edit conf/jaxws.properties and set 'ejbcaws.enabled=false'.</li>
-     <li>Edit conf/xkms.properties and set 'xkms.enabled=false'.</li>
+     <li>Edit conf/xkms.properties and set 'xkms.enabled=false'. (Default from EJBCA 3.10.)</li>
      </ul>
      </li>
 </ol>
@@ -659,7 +659,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <subsubsection name="Deploy and setup">
 <p>
 To be able to use the WS-API you must select 'search local classes first' for 'ejbcaws' under 'Configure classloading' (step 3) when deploying the ejbca application.
-  Otherwise you have to set 'xkms.enabled=false' in conf/xkms.properties, 
+  Otherwise you have to set 'xkms.enabled=false' in conf/xkms.properties (default from EJBCA 3.10), 
   and 'ejbcaws.enabled=false' in conf/jaxws.properties, 
   and also edit src/deploy/ear/META-INF/orion-application.xml
 <ol>
@@ -752,7 +752,7 @@ sudo perl -p -i -e "s/\/sh$/\/bash/"  /opt/IBM/WebSphere/AppServer/bin/*.sh
 <li>Edit conf/mail.properties, set 'mail.jndi-name=EjbcaMail'</li>
 <li>Edit conf/jaxws.properties, set 'ejbcaws.enabled=false'<br/>
       You can use the WS-API, i.e set the property to true, in WebSphere. But if you do not plan to use it, we recommend that you keep it as false. See below for more WS-API info.</li>
-<li>Edit conf/xkms.properties, set 'xkms.enabled=false'</li>
+<li>Edit conf/xkms.properties, set 'xkms.enabled=false' (default from EJBCA 3.10)</li>
 <li>Edit conf/log.properties, enable the ProtectedLogDevice, 'usedLogDevices=Log4jLogDevice;ProtectedLogDevice'</li>
 <li>Edit conf/jndi.properties.websphere and set the currect port from Servers->Application servers->server1 (your server)->Ports->BOOTSTRAP_ADDRESS.</li>
 </ol>
