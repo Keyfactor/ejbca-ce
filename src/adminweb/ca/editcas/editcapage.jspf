@@ -895,7 +895,7 @@ function checkallfields(){
       </td>
     </tr>    
     <% } %>    
-    <% if(!editca || (editca && xkmscainfo != null)){ %>
+    <% if((!editca || (editca && xkmscainfo != null)) && org.ejbca.config.XkmsConfiguration.getEnabled()){ %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("XKMSSERVICE") %>

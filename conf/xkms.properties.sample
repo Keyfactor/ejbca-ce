@@ -12,7 +12,7 @@
 #------------------- XKMS settings -------------
 
 # Disable this (set to false) if you do not want to deploy the XKMS Service in EJBCA
-# Default: true
+# Default: false
 #xkms.enabled=true
 
 # Should signed XKMS request be required 

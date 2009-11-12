@@ -17,11 +17,20 @@ import org.apache.log4j.Logger;
 
 /**
  * Configuration from xkms.properties
+ *
+ * @version $Id$
  */
 public class XkmsConfiguration {
 
 	private static final Logger log = Logger.getLogger(XkmsConfiguration.class);
 
+	/**
+	 * Return true if the XKMS service is enabled.
+	 */
+	public static boolean getEnabled() {
+		return "true".equalsIgnoreCase(ConfigurationHolder.getExpandedString("xkms.enabled", "false"));
+	}
+	
 	/**
 	 * Should signed XKMS request be required
 	 */

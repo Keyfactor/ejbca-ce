@@ -1960,7 +1960,7 @@ In jboss-log4j.xml 'org.ejbca.core.protocol.ws.logger.TransactionLogger' should 
 <p>
 From EJBCA 3.4 the XKMS protocol is supported as a service as a complement to the EJBCA Web Service interface.
 </p><p>
-It's included (but can be disabled) in the standard installation. And have the Web Service URL http://"hostname":8080/ejbca/xkms/xkms
+It's disabled in the standard installation (from EJBCA 3.10) and have the Web Service URL http://"hostname":8080/ejbca/xkms/xkms
 </p>
 <p>
 <strong>NOTE:</strong> XKMS only works well with JDK 1.5, it does not work with JDK 6.
@@ -1973,7 +1973,7 @@ The XKMS service is configured in the file conf/xkms.properties, just edit the f
 The following settings exists:
 </p>
 <ul>
-<li>xkms.enabled: Enables the XKMS Service (default: true)</li>
+<li>xkms.enabled: Enables the XKMS Service (default: false)</li>
 <li>xkms.request.requiresignature: id signed XKMS request should be required  (default: false)</li>
 <li>xkms.request.acceptedcas: List of CA names that are accepted for XKMS signed requests. Use ';' as a separate for multiple. (default 'AdminCA1')</li>
 <li>xkms.response.acceptsignrequest: Accept signed responses on request (default: true)</li>
