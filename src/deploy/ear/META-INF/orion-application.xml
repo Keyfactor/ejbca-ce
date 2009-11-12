@@ -11,7 +11,9 @@
 	<web-module id="webdist" path="webdist.war" />
 	<web-module id="adminweb" path="adminweb.war" />
 	<web-module id="ejbcaws" path="ejbcaws.war" />
+	<!-- Not enabled by default from EJBCA 3.10
 	<web-module id="xkms" path="xkms.war" />
+	 -->
 	<web-module id="doc" path="doc.war" />
 	<persistence path="persistence" />
 	<imported-shared-libraries>
