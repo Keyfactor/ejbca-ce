@@ -260,6 +260,12 @@
 		<antcall target="runone-internal"/>
 	</target>
 
+	<target name="runxkms" description="Run XKMS system tests">
+    	<property name="test.runone" value="TestXKMS*"/>
+    	<property name="reports.dir" location="${reports.base.dir}/runlotsperuser"/>
+		<antcall target="runone-internal"/>
+	</target>
+
 	<target name="runlotsperuser" description="Run system tests that creates lots of users and certificates for each user">
     	<property name="test.runone" value="TestAddLotsofCertsPerUser"/>
     	<property name="reports.dir" location="${reports.base.dir}/runlotsperuser"/>

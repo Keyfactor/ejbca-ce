@@ -2066,7 +2066,7 @@ All queries find their data using beginwith (except PKIX) of the identifier.
 <subsection name="Using the XKMS client">
 <p>
 When building EJBCA, a XKMS CLI tool is also generated. The tool is placed
-in the directory dist/xkmscli and consists of the all the necessary files needed to run the cli.
+in the directory dist/ejbca-xkms-cli and consists of the all the necessary files needed to run the cli.
 </p><p>
 To use the client do the following, copy the directory with all included files to
 the computer you want to remote administrate from. (Optionally create a JKS keystore from
@@ -2082,7 +2082,7 @@ To automatic test the XKMS Service do the following:
 </p><p>
 1. Start with a fresh installation with all the default values. Then activate the XKMS CA service in the Edit CA page for AdminCA1.
 </p><p>
-2. Run 'ant test:xkms' and a report will be generated in tmp/bin/junit/xkms/reports/html/index.html
+2. Run 'ant test:xkms' and a link to the report will be shown.
 </p>
 </subsection>
 </section>
