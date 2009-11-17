@@ -15,6 +15,8 @@ package org.ejbca.config;
 
 /**
  * This file handles configuration from internal.properties
+ *
+ * @version $Id$
  */
 public class InternalConfiguration {
 	
@@ -23,6 +25,13 @@ public class InternalConfiguration {
 	 */
 	public static String getAppNameLower() {
 		return ConfigurationHolder.getExpandedString("app.name", "ejbca");
+	}
+
+	/**
+	 * Dynamic version of getAppNameLower() for use from JSP/JSF
+	 */
+	public String getAppNameLowerDynamic() {
+		return InternalConfiguration.getAppNameLower();
 	}
 
 	/**
