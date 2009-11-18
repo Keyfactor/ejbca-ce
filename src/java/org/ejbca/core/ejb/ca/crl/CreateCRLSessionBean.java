@@ -182,7 +182,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 
 	/**
 	 * Generates a new CRL by looking in the database for revoked certificates and generating a
-	 * CRL. This method also "archives" certificates when after they are no longer neeeded in the CRL. 
+	 * CRL. This method also "archives" certificates when after they are no longer needed in the CRL. 
 	 *
 	 * @param admin administrator performing the task
 	 * @param issuerdn of the ca (normalized for EJBCA)
@@ -216,13 +216,13 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             	Iterator iter = revcerts.iterator();
             	while (iter.hasNext()) {
             		RevokedCertInfo data = (RevokedCertInfo)iter.next();
-            		Date revDate = data.getRevocationDate();
             		// We want to include certificates that was revoked after the last CRL was issued, but before this one
             		// so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
             		if ( data.getExpireDate().before(now) ) {
             			// Certificate has expired, set status to archived in the database 
             			setArchivedStatus(data.getCertificateFingerprint());
             		} else {
+                		Date revDate = data.getRevocationDate();
             			if (revDate == null) {
             				data.setRevocationDate(new Date());
             				CertificateDataPK pk = new CertificateDataPK(data.getCertificateFingerprint());

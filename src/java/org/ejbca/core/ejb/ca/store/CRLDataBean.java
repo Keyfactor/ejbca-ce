@@ -268,9 +268,10 @@ public abstract class CRLDataBean extends BaseEntityBean {
     	setFingerprint(fp);
 
     	// Make sure names are always looking the same
-    	setIssuerDN(CertTools.stringToBCDNString(issuerDN));
+    	String issuer = CertTools.stringToBCDNString(issuerDN);
+    	setIssuerDN(issuer);
     	if (log.isDebugEnabled()) {
-    		log.debug("Creating crldata, fp="+fp+", issuer=" + getIssuerDN()+", crlNumber="+number+", deltaCRLIndicator="+deltaCRLIndicator);
+    		log.debug("Creating crldata, fp="+fp+", issuer=" + issuer+", crlNumber="+number+", deltaCRLIndicator="+deltaCRLIndicator);
     	}
 
     	setCaFingerprint(cafingerprint);
@@ -279,7 +280,7 @@ public abstract class CRLDataBean extends BaseEntityBean {
     	setNextUpdate(nextUpdate);
     	setDeltaCRLIndicator(deltaCRLIndicator);
 
-    	CRLDataPK pk = new CRLDataPK(getFingerprint());
+    	CRLDataPK pk = new CRLDataPK(fp);
 
         return pk;
     }

@@ -314,7 +314,7 @@ public class LdapPublisher extends BasePublisher {
     							// Check if the intermediate parent node is present, and if it is not
     							// we can create it, of allowed to do so by the publisher configuration
     							if(getCreateIntermediateNodes()) {
-    								final String parentDN = dn.substring(dn.indexOf(',') + 1);
+    								final String parentDN = new String(dn.substring(dn.indexOf(',') + 1));
     								try {
     									lc.read(parentDN, ldapSearchConstraints);
     								} catch(LDAPException e) {
@@ -378,10 +378,10 @@ public class LdapPublisher extends BasePublisher {
 		int ix = dn.lastIndexOf(getBaseDN()) - 1;
 
 		while((ix = dn.lastIndexOf(',', ix - 1)) >= 0) {
-			dnFragment = dn.substring(ix + 1);
-			rdn = dnFragment.substring(0, dnFragment.indexOf(','));
-			field = rdn.substring(0, rdn.indexOf('='));
-			value = rdn.substring(rdn.indexOf('=') + 1);
+			dnFragment = new String(dn.substring(ix + 1));
+			rdn = new String(dnFragment.substring(0, dnFragment.indexOf(',')));
+			field = new String(rdn.substring(0, rdn.indexOf('=')));
+			value = new String(rdn.substring(rdn.indexOf('=') + 1));
 			try {
 				lc.read(dnFragment, ldapSearchConstraints);
 			} catch(LDAPException e) {
@@ -437,11 +437,17 @@ public class LdapPublisher extends BasePublisher {
 		X509CRL crl = null;
 		String dn = null;
 		String crldn = null;
+		boolean isDeltaCRL = false;
 		try {
 			// Extract the users DN from the crl.
 			crl = CertTools.getCRLfromByteArray(incrl);
 			crldn = CertTools.getIssuerDN(crl);
-			dn = constructLDAPDN(CertTools.getIssuerDN(crl));
+			// Is it a delta CRL?
+			if (crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId()) != null) {
+				isDeltaCRL = true;
+			}
+			// Construct the DN used for the LDAP object entry
+			dn = constructLDAPDN(crldn);
 		} catch (Exception e) {
 			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "CRL");
 			log.error(msg, e);        	
@@ -463,31 +469,25 @@ public class LdapPublisher extends BasePublisher {
 			attributeSet = getAttributeSet(null, this.getCAObjectClass(), crldn, null, true, false, null,null);
 		}
 
-		try {
-			if(crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId()) != null) {
-				// It's a delta CRL.
-				LDAPAttribute attr = new LDAPAttribute(getDeltaCRLAttribute(), crl.getEncoded());
-				if (oldEntry != null) {
-					modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
-				} else {
-					attributeSet.add(attr);
-				}
+		if(isDeltaCRL) {
+			// It's a delta CRL.
+			LDAPAttribute attr = new LDAPAttribute(getDeltaCRLAttribute(), incrl);
+			if (oldEntry != null) {
+				modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 			} else {
-				// It's a CRL
-				LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), crl.getEncoded());
-				LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), crl.getEncoded());
-				if (oldEntry != null) {
-					modSet.add(new LDAPModification(LDAPModification.REPLACE, crlAttr));
-					modSet.add(new LDAPModification(LDAPModification.REPLACE, arlAttr));
-				} else {
-					attributeSet.add(crlAttr);
-					attributeSet.add(arlAttr);
-				}
+				attributeSet.add(attr);
 			}
-		} catch (CRLException e) {
-			String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "CRL");
-			log.error(msg, e);
-			throw new PublisherException(msg);            
+		} else {
+			// It's a CRL
+			LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), incrl);
+			LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), incrl);
+			if (oldEntry != null) {
+				modSet.add(new LDAPModification(LDAPModification.REPLACE, crlAttr));
+				modSet.add(new LDAPModification(LDAPModification.REPLACE, arlAttr));
+			} else {
+				attributeSet.add(crlAttr);
+				attributeSet.add(arlAttr);
+			}
 		}
 		if (oldEntry == null) {
 			newEntry = new LDAPEntry(dn, attributeSet);
@@ -1304,7 +1304,7 @@ public class LdapPublisher extends BasePublisher {
 							sn = cn;
 						} else {
 							if (index < cn.length()) {
-								sn = cn.substring(index+1);
+								sn = new String(cn.substring(index+1));
 							}
 						}
 					}
@@ -1325,7 +1325,7 @@ public class LdapPublisher extends BasePublisher {
 								gn = cn;
 							}
 						} else {
-							gn = cn.substring(0, index);
+							gn = new String(cn.substring(0, index));
 						}
 					}
 				}
@@ -1407,7 +1407,7 @@ public class LdapPublisher extends BasePublisher {
 							sn = cn;
 						} else {
 							if (index < cn.length()) {
-								sn = cn.substring(index+1);
+								sn = new String(cn.substring(index+1));
 							}
 						}
 					}
@@ -1431,7 +1431,7 @@ public class LdapPublisher extends BasePublisher {
 								gn = cn;
 							}
 						} else {
-							gn = cn.substring(0, index);
+							gn = new String(cn.substring(0, index));
 						}
 					}
 					if ( ( ((gn != null) && (oldgn == null)) && addNonExisting) || ( ((gn != null) && (oldgn != null )) && modifyExisting) ) {
@@ -1493,11 +1493,11 @@ public class LdapPublisher extends BasePublisher {
 			if (StringUtils.isNotEmpty(dnField)) {
 				if (dnField.startsWith("SN")) {
 					// This is SN in Bouncycastle, but it should be serialNumber in LDAP
-					dnField = "serialNumber"+dnField.substring(2);
+					dnField = "serialNumber"+new String(dnField.substring(2));
 				}
 				if (dnField.startsWith("E")) {
 					// This is E in Bouncycastle, but it should be mail in LDAP
-					dnField = "mail"+dnField.substring(1);
+					dnField = "mail"+new String(dnField.substring(1));
 				}
 				if(retval.length() == 0) {
 					retval += dnField; // first item, don't start with a comma
