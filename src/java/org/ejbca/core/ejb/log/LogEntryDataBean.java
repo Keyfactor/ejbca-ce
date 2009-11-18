@@ -216,7 +216,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
         setEvent(event);
         if ( (comment != null) && (comment.length() > COMMENT_MAXLEN) ) {
         	log.warn("Too large comment for LogEntry was truncated. The full comment was: " + comment);
-        	comment = comment.substring(0, COMMENT_MAXLEN-3) + "...";
+        	comment = new String(comment.substring(0, COMMENT_MAXLEN-3)) + "..."; // new String to avoid possible memory leak, see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4513622
         }
         setComment(comment);
         return null;

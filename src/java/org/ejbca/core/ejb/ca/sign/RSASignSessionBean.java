@@ -1158,7 +1158,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     public byte[] createCRL(Admin admin, int caid, Collection certs, int basecrlnumber) throws CATokenOfflineException {
         trace(">createCRL()");
-        byte[] crlBytes = null;
+        byte[] crlBytes = null; // return value
         CADataLocal cadata = null;
         try {
             // get CA
@@ -1220,14 +1220,13 @@ public class RSASignSessionBean extends BaseSessionBean {
 
                 // Store CRL in the database
                 String fingerprint = CertTools.getFingerprintAsString(cacert);
+                crlBytes = crl.getEncoded();            	
                 log.debug("Storing CRL in certificate store.");
-                certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
+                certificateStore.storeCRL(admin, crlBytes, fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
                 // Store crl in ca CRL publishers.
                 log.debug("Storing CRL in publishers");
                 IPublisherSessionLocal pub = publishHome.create();
-                pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
-
-                crlBytes = crl.getEncoded();            	
+                pub.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, number);
             }
         } catch (CATokenOfflineException ctoe) {
             String cadn = null;
