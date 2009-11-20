@@ -394,6 +394,7 @@ See the file create-tables-ejbca3-oracle.sql for table definitions, or just run 
   mail.user=foouser
   mail.pop3.host=pop.foo.com
   mail.smtp.host=smtp.foo.com
+  mail.smtp.port=25
   mail.smtp.auth=false
   mail.smtp.starttls.enable=false
   mail.from=foouser@foo.com

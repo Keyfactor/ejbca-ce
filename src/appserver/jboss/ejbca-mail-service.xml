@@ -39,6 +39,7 @@ $Id$
 
           <!-- Change to the SMTP gateway server -->
           <property name="mail.smtp.host" value="${mail.smtp.host}"/>
+          <property name="mail.smtp.port" value="${mail.smtp.port}"/>
           <!-- Set to true to enable authentication on the SMTP server -->
           <property name="mail.smtp.auth" value="${mail.smtp.auth}"/>
 

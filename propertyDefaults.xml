@@ -27,6 +27,7 @@
 	<property name="mail.password" value="primekey" />
 	<property name="mail.pop3.host" value="localhost" />
 	<property name="mail.smtp.host" value="localhost" />
+	<property name="mail.smtp.port" value="25" />
 	<property name="mail.smtp.auth" value="false" />
 	<property name="mail.smtp.starttls.enable" value="false" />
 	<property name="mail.debug" value="false" />
