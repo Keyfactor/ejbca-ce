@@ -22,6 +22,10 @@
 # Default: localhost
 #mail.smtp.host=localhost
 
+# SMTP server port.
+# Default: 25
+#mail.smtp.port=25
+
 # Use SMTP authentication if you smtp host requires it
 # Default: false
 #mail.smtp.auth=false
