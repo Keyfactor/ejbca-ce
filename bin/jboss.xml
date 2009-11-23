@@ -118,8 +118,8 @@
                 <expandproperties/>
             </filterchain>
         </copy>
-		<chmod dir="dist/datasources" includes="*.xml" perm="600"/>
-        <copy todir="${jboss.farm.dir}" overwrite="true">
+		<chmod dir="dist/datasources" includes="*.xml" perm="600" failonerror="false"/>
+        <copy todir="${jboss.farm.dir}" overwrite="true" failonerror="false">
             <fileset dir="dist/datasources" includes="**"/>
         </copy>
 		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
