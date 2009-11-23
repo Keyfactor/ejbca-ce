@@ -60,6 +60,7 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 
     protected Properties properties = null;
     protected String serviceName = null;
+    protected ServiceConfiguration serviceConfiguration = null;
     private IAction action = null;
     private IInterval interval = null;
     
@@ -76,6 +77,7 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		this.admin = admin;
 		this.serviceName = serviceName;
 		this.properties = serviceConfiguration.getWorkerProperties();
+		this.serviceConfiguration = serviceConfiguration;
 		
 		String actionClassPath = serviceConfiguration.getActionClassPath();
 		if(actionClassPath != null){
