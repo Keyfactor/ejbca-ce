@@ -59,6 +59,8 @@
         	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
         	<fileset dir="${docs.src}" includes="sensornet/**/*"/>
         </copy>
+        
+        <echo message="Local documentation is now available in file://${docs.dest}/index.html"/>
     </target>
     
     <!-- This target depends on having the jsch classes installed in ant

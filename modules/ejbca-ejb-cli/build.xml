@@ -33,7 +33,7 @@
     	<dirname file="${mod.ejbca-ejb-cli.lib}" property="mod.ejbca-ejb-cli.lib.dir"/>
     	<mkdir dir="${mod.ejbca-ejb-cli.lib.dir}" />	<!-- Make sure the dir exists before we start the jar-task -->
     	<jar destfile="${mod.ejbca-ejb-cli.lib}">
-    		<manifest >
+    		<manifest>
     			<attribute name="Class-path" value="${ejbca-ejb-cli.dependencies} ./" />
     			<attribute name="Main-Class" value="org.ejbca.ui.cli.EjbcaEjbCli"/>
     		</manifest>

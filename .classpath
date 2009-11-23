@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="modules/externalra-scep/src-test"/>
+	<classpathentry kind="src" path="modules/externalra-scep/src"/>
+	<classpathentry kind="src" path="modules/externalra/src"/>
+	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-xkms/src"/>
 	<classpathentry kind="src" path="modules/ejbca-xkms-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>

@@ -118,6 +118,10 @@
                 <expandproperties/>
             </filterchain>
         </copy>
+		<chmod dir="dist/datasources" includes="*.xml" perm="600"/>
+        <copy todir="${jboss.farm.dir}" overwrite="true">
+            <fileset dir="dist/datasources" includes="**"/>
+        </copy>
 		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
 		<chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
 
@@ -138,6 +142,13 @@
             </filterchain>
         </copy>
 		<chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
+	</target>
+
+	<target name="j2ee:deploy-scep-war" depends="j2ee:check">
+		<chmod dir="dist/datasources" includes="ramessage-ds.xml" perm="600"/>
+        <copy todir="${jboss.farm.dir}" overwrite="true" file="dist/datasources/ramessage-ds.xml"/>
+		<chmod dir="dist" includes="scepraserver.war" perm="600"/>
+        <copy todir="${jboss.farm.dir}" overwrite="true" file="dist/scepraserver.war"/>
 	</target>
 
 	<target name="j2ee:ocspbasewebdeploy" if="j2ee.web-noconfigure">

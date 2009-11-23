@@ -43,6 +43,7 @@
     <property file="${ejbca.home}/conf/jaxws.properties" />
     <property file="${ejbca.home}/conf/xkms.properties" />
     <property file="${ejbca.home}/conf/externalra.properties" />
+    <property file="${ejbca.home}/conf/scep.properties" />
 
     <!-- A little special something to handle backward compatibility with 
          people using JBOSS_HOME. They can switch to APPSRV_HOME now, and both will work. 
@@ -87,6 +88,14 @@
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
+    <property name="mod.externalra.path" location="${mod.path}/externalra" />
+    <property name="mod.externalra.lib" location="${mod.dist.path}/externalra.jar" />
+    <property name="mod.externalra-cli.path" location="${ejbca.dist.path}/externalra-cli" />
+    <property name="mod.externalra-cli.lib" location="${mod.externalra-cli.path}/externalra-cli.jar" />
+    <property name="mod.externalra-service.lib" location="${mod.dist.path}/externalra-service.jar" />
+    <property name="mod.externalra-datasources.dist" location="${ejbca.dist.path}/datasources" />
+    <property name="mod.externalra-scep.path" location="${mod.path}/externalra-scep" />
+    <property name="mod.externalra-scep.war" location="${ejbca.dist.path}/scepraserver.war" />
 	
 	<!-- Files of global interest -->
     <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
@@ -94,8 +103,10 @@
     
     <!-- Variables of global interest -->
     <property name="java.target.version" value="1.5"/>	<!-- This should probably be defined in internal.properties -->
+	<property name="externalra.enabled" value="false"/>
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
 	<condition property="xkms.enabled.true"><istrue value="${xkms.enabled}"/></condition>
+	<condition property="externalra.enabled.true"><istrue value="${externalra.enabled}"/></condition>
 
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc.jar"/></path>
@@ -176,12 +187,11 @@
 	</path>
 
 	<path id="lib.bouncycastle-provonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcprov-jdk15.jar"/></fileset></path>
+	<path id="lib.bouncycastle-mailonly.classpath"><fileset dir="${ejbca.home}/lib"><include name="bcmail-jdk15.jar"/></fileset></path>
 	<path id="lib.bouncycastle.classpath">
-		<fileset dir="${ejbca.home}/lib">
-			<include name="bcmail-jdk15.jar"/>
-			<include name="bcprov-jdk15.jar"/>
-			<include name="bctsp-jdk15.jar"/>
-		</fileset>
+		<path refid="lib.bouncycastle-provonly.classpath"/>
+		<path refid="lib.bouncycastle-mailonly.classpath"/>
+		<fileset dir="${ejbca.home}/lib"><include name="bctsp-jdk15.jar"/></fileset>
 	</path>
 
 	<path id="lib.jpa.classpath">
@@ -193,12 +203,15 @@
             <include name="hibernate-annotations.jar"/>
             <include name="hibernate-commons-annotations.jar"/>
             <include name="hibernate-entitymanager.jar"/>
-            <include name="hibernate-validator.jar"/>
+            <include name="hibernate-search-*.jar"/>
+            <include name="lucene-core-*.jar"/>
+            <include name="hibernate-validator-*.jar"/>
             <include name="javassist-3.4.GA.jar"/>
             <include name="ejb3-persistence.jar"/>
             <include name="slf4j-api-1.5.2.jar"/>
             <include name="slf4j-log4j12.jar"/>
             <include name="jta-1.1.jar"/>
+            <include name="dom4j-*.jar"/>
         </fileset>
 	</path>
 
