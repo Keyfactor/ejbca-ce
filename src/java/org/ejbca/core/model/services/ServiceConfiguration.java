@@ -48,6 +48,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	private static final String DESCRIPTION = "DESCRIPTION";
 	private static final String ACTIVE = "ACTIVE";
 	private static final String NEXTRUNTIMESTAMP = "NEXTRUNTIMESTAMP";
+	private static final String OLDRUNTIMESTAMP = "OLDRUNTIMESTAMP";
 	private static final String HIDDEN = "HIDDEN";
 	
 	/**
@@ -132,11 +133,25 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	}
 
 	/**
+	 * @return the last value of the previous method.
+	 * 
+	 */
+	public Date getOldRunTimestamp() {
+		if(data.get(OLDRUNTIMESTAMP) == null){
+			return new Date(0);
+		}
+		
+		return new Date(((Long) data.get(OLDRUNTIMESTAMP)).longValue());
+	}
+
+	/**
 	 * @param active the active to set
 	 */
 	public void setNextRunTimestamp(Date nextRunTimeStamp) {
+		data.put (OLDRUNTIMESTAMP, new Long(getNextRunTimestamp ().getTime()));
 		data.put(NEXTRUNTIMESTAMP, new Long(nextRunTimeStamp.getTime()));
 	}
+
 
 	/**
 	 * @return the description
