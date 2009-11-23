@@ -10,9 +10,8 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.web.admin.services;
-
-
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -35,7 +34,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.ServiceType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
 /**
- * Class resposible for converting the data between the GUI and a
+ * Class responsible for converting the data between the GUI and a
  * SystemConfiguration VO
  * 
  * @author Philip Vendil 2006 sep 30

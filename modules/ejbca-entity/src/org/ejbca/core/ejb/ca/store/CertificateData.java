@@ -44,7 +44,7 @@ import org.ejbca.util.StringTools;
  * 
  * KEEP THIS FILE IN SYNC WITH org.ejbca.core.ejb.ca.store.CertificateDataBean until EJB2.1 is dropped
  *  
- * @version $Id: $
+ * @version $Id$
  */ 
 @Entity
 @Table(name="CertificateData")
@@ -52,7 +52,7 @@ public class CertificateData implements Serializable {
 
 	private static final long serialVersionUID = -8493105317760641442L;
 
-    // Constants used to contruct KeyUsage
+    // Constants used to construct KeyUsage
     /**
      * @see org.ejbca.core.ejb.ca.sign.ISignSessionRemote
      */
@@ -468,7 +468,7 @@ public class CertificateData implements Serializable {
 
 	//
 	// Search functions. 
-	// These methods could easyly be wrapped in a sessionbean with a injected '@PersistenceContext(unitName="unitname") EntityManager manager;'
+	// These methods could easily be wrapped in a sessionbean with a injected '@PersistenceContext(unitName="unitname") EntityManager manager;'
 	// By keeping them here the ORM mapping is isolated to this file.
 	//
 

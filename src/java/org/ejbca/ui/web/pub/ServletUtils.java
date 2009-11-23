@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 /** 
- * A class containing some helpful functions used in more than one servlet, avoiding code duplication.
+ * A class containing some helpful functions used in more than one Servlet, avoiding code duplication.
  * 
  * @author tomasg
  * @version $Id$
@@ -14,8 +14,8 @@ public class ServletUtils {
     private static Logger log = Logger.getLogger(ServletUtils.class);
 
     /** Helper methods that removes no-cache headers from a response. No-cache headers 
-     * makes IE refuse to save a file that is sent (for exmaple a certificate). 
-     * No-cache headers are also autmatically added by Tomcat by default, so we better
+     * makes IE refuse to save a file that is sent (for example a certificate). 
+     * No-cache headers are also automatically added by Tomcat by default, so we better
      * make sure they are set to a harmless value.
      * 
      * @param res HttpServletResponse parameter as taken from the doGet, doPost methods in a Servlet.

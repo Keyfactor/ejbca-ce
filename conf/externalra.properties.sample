@@ -1,8 +1,40 @@
 # 
-# This properties file is for configuring where external RA components that should be deployed in EJBCA is located.
-# Configuration of the external RA itself is done in the external RA module configuration files.
+# EJBCA's external RA service can be used to only allow outgoing network traffic from the CA installation.
+# This file is used for configuring the service that polls the external database.
 # 
-# Default no location. When this property is not set, no external RA component will be included in ejbca.
-# In this location EJBCA will look for dist/lib/extracaservice.jar
+# From EJBCA 3.10 properties should be configured in the EJBCA Admin GUI for each worker. For example:
+#
+#  Select Worker:            Custom Worker
+#  Custom Worker Class Path: org.ejbca.extra.caservice.ExtRACAServiceWorker
+#  Custom Worker Properties: externalra-caservice.persistenceunit=RAMessage1DS
+#                            externalra-caservice.raissuer=AdminCA1
+#                            externalra-caservice.encryption.required=false
+#                            externalra-caservice.signature.required=false
+#                            externalra-caservice.keystore.path=keystore/extrakeystore.p12
+#                            externalra-caservice.keystore.pwd=foo123
+# Select Interval:           Periodical Interval
+# Period:                    5 seconds
+# Select Action:             No Action
+# Active:                    Checked
+#
 
-#externalra.home=../extra
+# Enable External RA service
+# Default: false
+#externalra.enabled=true
+
+# Specify DataSources that should be available to the External RA service.
+# The SQL dialect and JDBC driver class is derived from the JDBC URL.
+# The DataSources (and JPA persistence units) configured below will be named 'RAMessage1DS', 'RAMessage2DS' etc.
+
+externalra.source-1.jdbc-url=jdbc:mysql://127.0.0.1/messages
+externalra.source-1.username=ejbca
+externalra.source-1.password=ejbca
+
+externalra.source-2.jdbc-url=jdbc:postgresql://127.0.0.1/extra
+externalra.source-2.username=ejbca
+externalra.source-2.password=ejbca
+
+externalra.source-3.jdbc-url=jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB
+externalra.source-3.username=sa
+externalra.source-3.password=
+

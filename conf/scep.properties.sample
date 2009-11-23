@@ -1,0 +1,77 @@
+#####
+# Configuration file for default values for the stand-alone SCEP RA Server
+# Configure as you please, but all values must be set to something.
+#
+# Default values (that you enter here) is built into the application and deployed
+# as default values.
+#
+# 'datasource.jndi-name-prefix' (see conf/database.properties.sample) and 'appserver.home'
+# (see conf/ejbca.properties.sample) also has to be configured. 
+#####
+
+# Allow dynamic re-configuration.
+#
+# By setting this property to true, you can also dynamically re-configure
+# the RA by changing values in properties files in the file system.
+# 
+# You can put a scep.properties file in your "app server runtime home"/conf directory
+# to override these values. To find out which this directory is, it is logged during startup as for example:
+# [ExtraConfiguration] Added file to configuration source: /opt/jboss-4.2.2.GA/bin/conf/scep.properties
+# This file is re-read if changes so changes can be made in runtime.
+#
+# You can put a /etc/ejbca/conf/extra/scep.properties file to override these values.
+# This file is re-read if changes so changes can be made in runtime.
+#
+# Finally you can override anything by setting system properties for your appserver, for example:
+# java -Dscep.ra.authpwd=mysecret
+allow.external-dynamic.configuration=false
+
+# Path to RA keystore. Should be a full pathname.
+scep.ra.keyStorePath.1=/opt/jboss-4.2.2.GA/bin/conf/keystore/sceprakeystore.p12
+
+# Password to the RA keystore configured above
+scep.ra.keyStorePassword.1=foo123
+
+# Advanced users: In theory it is possible to have several SCEP RAs configured with different keystores. 
+# In that case add more keystores with .2 etc. And configure new Servlets and mappings in src/WEB-INF/web.xml 
+# with these keystoreNumber.
+  
+# Set to another value than none if the Scep RA should require 
+# a specific password in the SCEP request. 
+# This should be used with createOrEditUser=true and will in this case be a set password 
+# required in the SCEP Request message. If this password is correct, the request will be automatically granted. 
+#
+# Leave as 'none' to not require any password, i.e. allow anything.
+# If createOrEditUser=false this will require the user to be pre-registered and the password in the request will
+# be used to authenticate this user with the pre-registered password.
+#
+# If createOrEdit=false and authPwd=none you can also use Approvals in EJBCA to require an administrator to 
+# approve the request in the CA Admin-GUI before a certificate is issued. 
+scep.ra.authPwd=none
+
+# Defines if a request to the RA will create a new user, 
+# or edit an existing in EJBCA. If false users must be 
+# pre-registered in EJBCA with a pwd.
+scep.ra.createOrEditUser=true
+
+# The Certificate profile used to register new SCEP users, if createOrEditUser=false.
+scep.ra.certificateProfile=ENDUSER
+
+# The End entity profile used to register new SCEP users, if createOrEditUser=false.
+scep.ra.entityProfile=EMPTY
+
+# The default CA used to register new SCEP users, if createOrEditUser=false.
+scep.ra.defaultCA=ScepCA
+
+# Mapping a CAs issuer DN (as from the Admin-GUI->Edit CAs), which will be 
+# received from the client to a CA name.
+# This is used to find a CA from the request. If no CA can be found with a mapping, the defaultCA is used.
+# You can create several mappings for different CAs like this.
+# Note that all =, : or whitespace must be escaped with a \. See example below. 
+CN\=Scep\ CA,O\=EJBCA\ Sample,C\=SE=ScepCA
+
+# Database connection information. The right JDBC driver has to be installed manually in the application server.
+# SQL dialect and driver class name is derived from the JDBC URL.
+scep.ra.datasource.jdbc-url=jdbc:mysql://127.0.0.1/messages
+scep.ra.datasource.username=ejbca
+scep.ra.datasource.password=ejbca

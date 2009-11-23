@@ -14,7 +14,6 @@
 	<import file="./cmptcp.xmli" />
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
-	<import file="./externalra.xmli" />
 	
 
     <!-- =================================================================== -->
@@ -524,10 +523,10 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ejbca.ear" depends="ca.ear, externalra.jar">
+	<target name="ejbca.ear" depends="ca.ear">
 	</target>
 	
-	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war">
+	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war, externalra-service">
 		<condition property="ejbcaws.enabled.replace-string" else="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${ejbcaws.enabled}"/>
 		</condition>
@@ -564,7 +563,8 @@
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
-            </fileset>            
+            </fileset>
+        	<zipfileset prefix="lib" dir="modules/dist" includes="externalra-service.jar"/>
 	</ear>
 
     <antcall target="signjar">
@@ -692,7 +692,6 @@
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
     <target name="deploy" depends="failinproduction-ca,build, buildwithcmptcpservice" description="Deploy the main EJBCA application">
-        <antcall target="externalra.deploy" />
         <antcall target="j2ee:deploy" />
         <antcall target="showtime" />
     </target>
@@ -750,7 +749,7 @@
 	<target name="ziprelease" description="Make a zip file for EJBCA release">
 		<antcall target="clean" />
 
-	<!-- A small script that converts the version x.y.z to x_y_z to be used in the file -->
+	<!-- A small script that converts the version x.y.z to x_y_z to be used in the file. JavaScript does not work under Java 1.5. -->
 	<scriptdef name="convertdot" language="javascript">
 	    <![CDATA[
           ver = project.getProperty("app.version.number");
@@ -941,5 +940,22 @@
     <target name="xkms.war" description="Build the EJBCA XKMS WAR">
     	<ant antfile="build.xml" dir="modules" target="ejbca-xkms"/>
     </target>
+	
+	<target name="externalra-service">
+    	<ant antfile="build.xml" dir="modules" target="externalra-service"/>
+	</target>
+
+	<target name="externalra-client">
+    	<ant antfile="build.xml" dir="modules" target="externalra-client"/>
+	</target>
+
+	<target name="externalra-scep" description="Build the EJBCA External RA StandAlone SCEP application">
+    	<ant antfile="build.xml" dir="modules" target="externalra-scep"/>
+	</target>
+
+	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application" depends="externalra-scep">
+        <antcall target="j2ee:deploy-scep-war" />
+	</target>
+
 
 </project>

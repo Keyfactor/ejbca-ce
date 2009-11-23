@@ -25,6 +25,7 @@
 					<include name="modules/ejbca-ejb/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-util/src-test/**/${test.runone}.java" />
 					<include name="modules/systemtests/src/**/${test.runone}.java" />
+					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -83,4 +84,16 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="runxkms" />
     </target>
 
+    <target name="test:externalra" description="run JUnit External RA test">
+    	<ant antfile="build.xml" dir="modules/externalra" target="test" />
+    </target>
+
+    <target name="test:externalra-scep" description="run JUnit stand-alone SCEP External RA tests">
+    	<echo message="Hint: use the ant-target 'test:externalra-scep.setuptest' to setup a proper testing environment for this test."/>
+    	<ant antfile="build.xml" dir="modules/externalra-scep" target="setuptest" />
+    </target>
+
+    <target name="test:externalra-scep.setuptest" description="setup some a basic environment for the stand-alone SCEP External RA tests">
+    	<ant antfile="build.xml" dir="modules/externalra-scep" target="setuptest" />
+    </target>
 </project>
