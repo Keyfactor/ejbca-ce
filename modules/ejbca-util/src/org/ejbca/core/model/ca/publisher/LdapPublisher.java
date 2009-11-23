@@ -61,8 +61,6 @@ public class LdapPublisher extends BasePublisher {
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 
-	private static byte[] fakecrl = null;
-
 	public static final float LATEST_VERSION = 11;
 
 	public static final int TYPE_LDAPPUBLISHER = 2;
@@ -162,9 +160,6 @@ public class LdapPublisher extends BasePublisher {
 		setAddMultipleCertificates(false);
 		setRemoveRevokedCertificates(true);
 		setRemoveUsersWhenCertRevoked(false);
-
-		getFakeCRL();
-		
 	}
 
 	// Public Methods
@@ -432,6 +427,7 @@ public class LdapPublisher extends BasePublisher {
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
 	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException{
+    	log.trace(">storeCRL");
 		int ldapVersion = LDAPConnection.LDAP_V3;
 
 		X509CRL crl = null;
@@ -439,9 +435,9 @@ public class LdapPublisher extends BasePublisher {
 		String crldn = null;
 		boolean isDeltaCRL = false;
 		try {
-			// Extract the users DN from the crl.
+			// Extract the users DN from the crl. Use the least number of encodings...
 			crl = CertTools.getCRLfromByteArray(incrl);
-			crldn = CertTools.getIssuerDN(crl);
+			crldn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 			// Is it a delta CRL?
 			if (crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId()) != null) {
 				isDeltaCRL = true;
@@ -539,6 +535,7 @@ public class LdapPublisher extends BasePublisher {
 				}
 			}
 		} while (connectionFailed && servers.hasNext()) ;
+    	log.trace("<storeCRL");
 		return true;
 	}
 
@@ -1524,15 +1521,13 @@ public class LdapPublisher extends BasePublisher {
 	 * Method to lazy create the fake CRL.
 	 */
 	protected byte[] getFakeCRL(){
-        if(fakecrl == null){          
-  		  try {
-  			X509CRL crl = CertTools.getCRLfromByteArray(fakecrlbytes);
-  			fakecrl = crl.getEncoded();
-  		  } catch (CRLException e) {}
-  		    catch (IOException e) {}
-  		}
-        
-        return fakecrl;
+		byte[] fakecrl = null;
+		try {
+			X509CRL crl = CertTools.getCRLfromByteArray(fakecrlbytes);
+			fakecrl = crl.getEncoded();
+		} catch (CRLException e) {}
+		catch (IOException e) {}
+		return fakecrl;
 	}
 
 	/** 
