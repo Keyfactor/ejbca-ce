@@ -86,7 +86,7 @@
     <!-- =================================================================== -->
     <!-- Compile ocsp resonder java sources                                  -->
     <!-- =================================================================== -->
-    <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-run-xdoc, ejbca-ws-common">
+    <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-run-xdoc">
         <javac destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
