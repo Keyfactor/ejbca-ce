@@ -30,10 +30,11 @@ externalra.source-1.jdbc-url=jdbc:mysql://127.0.0.1/messages
 externalra.source-1.username=ejbca
 externalra.source-1.password=ejbca
 
-#externalra.source-2.jdbc-url=jdbc:postgresql://127.0.0.1/extra
+#externalra.source-2.jdbc-url=jdbc:postgresql://127.0.0.1/messages
 #externalra.source-2.username=ejbca
 #externalra.source-2.password=ejbca
 
+# Hypersonic should never be used for anything other than development
 #externalra.source-3.jdbc-url=jdbc:hsqldb:hsql://localhost:1701
 #externalra.source-3.username=sa
 #externalra.source-3.password=
