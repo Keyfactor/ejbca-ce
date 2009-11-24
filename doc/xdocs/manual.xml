@@ -2699,9 +2699,9 @@ isn't specified by the worker.
 </subsubsection>
 </subsection>
 
-<subsection name="Currently Available Workers">
+<subsection name="Currently Available Services">
 
-<p><b>CRL Update Worker</b></p>
+<p><b>CRL Update Service</b></p>
 <p>
 The CRL Updater have the same functionality as the current JBoss Service and will in 
 the future replace the old variant. I checks if any of the CA:s need a new CRL 
@@ -2720,7 +2720,7 @@ the service is already running on another node and not start running.
 </p><p>
 In practice what this leads to is that a service will always run on a single node, the same node every time.  
 </p>
-<p><b>Certificate Expiration Check Worker</b></p>
+<p><b>Certificate Expiration Check Service</b></p>
 <p>
 A worker that checks if a CA have certificates about to expire and sends an email 
 notification the the end user and/or administrator. 
@@ -2760,13 +2760,15 @@ substitution variables be used defined in the 'Email Notifications' section.
 </li>
 </ul>
 </p>
-
+<p>Note: you may configure <i>multiple</i> certificate expiration services set with different
+<i>Time before notification is sent</i> values in order to further alert the user or administrator
+that a certificate is about to expire.</p>
 <p><b>User Password Expire Service</b></p>
 <p>
 A worker that checks if a user has not enrolled for a new certificate within a specified amount of time
 after the user was last edited. If the user has not enrolled within this time, the user's status is set to 
 Generated and the user will not be able to enroll. 
-The worker have the same basic setting as the 'Certificate Expiration Check Worker', except for 
+The worker have the same basic setting as the 'Certificate Expiration Check Service', except for 
 'Time before notification is sent' which is replaced by:
 <ul>
 <li>
@@ -2787,7 +2789,7 @@ are valid only short periods of time. The specific settings are:
 For CAs using soft keystores and not using the default password, auto-activation is required. 
 </p>
 
-<p><b>Publisher queue process service</b></p>
+<p><b>Publisher Queue Process Service</b></p>
 <p>
 The publisher queue process service processes the publisher queue. In the publisher queue, entries where publishing failed is collected. 
 This service will try to re-publish entries from this queue. The specific settings are:
