@@ -118,6 +118,7 @@
                 <expandproperties/>
             </filterchain>
         </copy>
+		<mkdir dir="dist/datasources"/>
 		<chmod dir="dist/datasources" includes="*.xml" perm="600" failonerror="false"/>
         <copy todir="${jboss.farm.dir}" overwrite="true" failonerror="false">
             <fileset dir="dist/datasources" includes="**"/>
