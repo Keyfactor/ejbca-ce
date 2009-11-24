@@ -86,7 +86,7 @@
     <!-- =================================================================== -->
     <!-- Compile ocsp resonder java sources                                  -->
     <!-- =================================================================== -->
-    <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-run-xdoc">
+    <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-run-xdoc, ejbca-ws-common">
         <javac destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
@@ -101,7 +101,8 @@
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
             <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
             <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
-            <src path="${mainsrc}/jaxws/gen-java/client" />
+            <src path="modules/ejbca-ws-cli/src-gen" />
+            <src path="modules/ejbca-ws/src" />
             <src path="${ocsp-src.gen}" />
             <src path="${src.java}" />
         </javac>
