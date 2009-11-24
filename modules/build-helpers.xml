@@ -16,6 +16,7 @@
 		<fail message="ejbca-ejb-cli.jar was never built">
 			<condition><not><available file="${mod.ejbca-ejb-cli.lib}"/></not></condition>
 		</fail>
+		<echo message="Executing EJBCA CLI with arguments: ${ejbca-cli.arg}"/>
 		<java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true">
 			<arg line="${ejbca-cli.arg}"/>
 		</java>

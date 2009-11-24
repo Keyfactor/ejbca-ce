@@ -90,7 +90,7 @@
 
     <target name="test:externalra-scep" description="run JUnit stand-alone SCEP External RA tests">
     	<echo message="Hint: use the ant-target 'test:externalra-scep.setuptest' to setup a proper testing environment for this test."/>
-    	<ant antfile="build.xml" dir="modules/externalra-scep" target="setuptest" />
+    	<ant antfile="build.xml" dir="modules/externalra-scep" target="test" />
     </target>
 
     <target name="test:externalra-scep.setuptest" description="setup some a basic environment for the stand-alone SCEP External RA tests">
