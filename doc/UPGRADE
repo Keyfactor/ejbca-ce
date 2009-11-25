@@ -66,7 +66,8 @@ The External RA module is now a part of the main EJBCA bundle and uses JPA for p
 used by the workers are configured in conf/externalra.properties. Properties for each worker are configured
 under Services in the Admin GUI. Also the external SCEP RA application is now built from the main bundle
 and is configured in conf/scep.properties. The documentation is available as a part of the generated doc.
-The API as such has not changed and old client should still work.
+The API as such has not changed and old client should still work, but External RA workers in EJBCA have to
+be reconfigured.
 
 From EJBCA 3.9.x to EJBCA 3.9.x
 -------------------------------
