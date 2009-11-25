@@ -212,23 +212,23 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 
             	// Go through them and create a CRL, at the same time archive expired certificates
             	Date now = new Date();
-            	now.setTime(now.getTime() - crlperiod);
+            	Date check = new Date(now.getTime() - crlperiod);
             	Iterator iter = revcerts.iterator();
             	while (iter.hasNext()) {
             		RevokedCertInfo data = (RevokedCertInfo)iter.next();
             		// We want to include certificates that was revoked after the last CRL was issued, but before this one
             		// so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
-            		if ( data.getExpireDate().before(now) ) {
+            		if ( data.getExpireDate().before(check) ) {
             			// Certificate has expired, set status to archived in the database 
             			setArchivedStatus(data.getCertificateFingerprint());
             		} else {
                 		Date revDate = data.getRevocationDate();
             			if (revDate == null) {
-            				data.setRevocationDate(new Date());
+            				data.setRevocationDate(now);
             				CertificateDataPK pk = new CertificateDataPK(data.getCertificateFingerprint());
             				CertificateDataLocal certdata = certHome.findByPrimaryKey(pk);
             				// Set revocation date in the database
-            				certdata.setRevocationDate(new Date());
+            				certdata.setRevocationDate(now);
             			}
             		}
             	}
