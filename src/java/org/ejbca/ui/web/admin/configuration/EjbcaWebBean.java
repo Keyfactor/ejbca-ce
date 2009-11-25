@@ -644,12 +644,11 @@ public class EjbcaWebBean implements java.io.Serializable {
     }
 
     /**
-     * Detect if "Unlimited Strength" Policy files hase bean properly installed.
+     * Detect if "Unlimited Strength" Policy files has bean properly installed.
      * 
      * @return true if key strength is limited
      */
-    public boolean isUsingExportableCryptography()
-    {
+    public boolean isUsingExportableCryptography() {
     	return KeyTools.isUsingExportableCryptography();
     }
     
