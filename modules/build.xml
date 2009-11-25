@@ -27,6 +27,7 @@
 		<ant antfile="${mod.ejbca-xkms.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-xkms-cli.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
