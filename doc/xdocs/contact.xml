@@ -8,7 +8,7 @@
 <section name="Support">
 <p>
 If you need commercial support or professional services contact the project admins below, or go directly to <a href="http://www.primekey.se/">PrimeKey</a>. 
-We have ready-made support programs available.
+We have ready-made <a href="http://www.primekey.se/Services/Support/">support</a> programs available.
 </p>
 </section>
 
@@ -53,13 +53,6 @@ discussions of a more technical nature. Almost anything regarding EJBCA can be p
  There is an IRC channel, #ejbca, on irc.freenode.net where support questions can be asked.
  We are usually there during European office hours, and some other times as well.
  A nice free-of-charge web-based IRC client is available <a href="http://www.mibbit.com/chat/">here</a>. 
-</p>
-</section>
-
-<section name="Project admins">
-<p>
-You can always reach the project administrators by email through <a href="http://sourceforge.net/projects/ejbca/">Sourceforge</a>,
-or through ejbca(at)primekey.se.
 </p>
 </section>
 
