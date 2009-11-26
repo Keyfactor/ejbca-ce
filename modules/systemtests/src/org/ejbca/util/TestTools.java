@@ -365,7 +365,7 @@ public class TestTools {
 	public static boolean createTestCA(String caName, int keyStrength) {
         log.trace(">createTestCA");
     	try {
-			getAuthorizationSession().initialize(admin, ("CN="+getTestCAName()).hashCode());
+			getAuthorizationSession().initialize(admin, ("CN="+caName).hashCode());
 		} catch (RemoteException e) {
 			log.error("",e);
 		} catch (AdminGroupExistsException e) {
@@ -452,17 +452,17 @@ public class TestTools {
 		}
         CAInfo info;
 		try {
-			info = getCAAdminSession().getCAInfo(admin, getTestCAName());
+			info = getCAAdminSession().getCAInfo(admin, caName);
 		} catch (RemoteException e) {
 			log.error("", e);
 			return false;
 		}
         X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-        if (!cert.getSubjectDN().toString().equals("CN="+getTestCAName())) {
+        if (!cert.getSubjectDN().toString().equals("CN="+caName)) {
         	log.error("Error in created CA certificate!");
 			return false;
         }
-        if (!info.getSubjectDN().equals("CN="+getTestCAName())) {
+        if (!info.getSubjectDN().equals("CN="+caName)) {
         	log.error("Creating CA failed!");
 			return false;
         }
