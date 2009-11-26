@@ -249,7 +249,7 @@
     <path id="xdoclet.classpath">
         <fileset dir="lib" includes="*.jar" />
         <fileset dir="lib/ext" includes="*.jar" />
-        <fileset dir="lib/xdoclet/lib" includes="*.jar" />    
+        <fileset dir="lib/xdoclet/lib" includes="*.jar" excludes="commons-logging.jar log4j.jar"/>    
         <path refid="j2ee.classpath" />
     	<fileset dir="dist" includes="ejbca-util.jar"/>
     </path>

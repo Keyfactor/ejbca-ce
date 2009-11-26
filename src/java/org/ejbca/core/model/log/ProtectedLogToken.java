@@ -38,13 +38,8 @@ import org.ejbca.util.keystore.KeyTools;
  * Represents the token used for protect-operations of the log events.
  * @version $Id$
  */
-public class ProtectedLogToken {
+public class ProtectedLogToken implements IProtectedLogToken {
 
-	public static final int TYPE_CA				= 1;
-	public static final int TYPE_SYM_KEY		= 2;
-	public static final int TYPE_ASYM_KEY	= 3;
-	public static final int TYPE_NONE			= 4;
-	
 	private static final Logger log = Logger.getLogger(ProtectedLogToken.class);
 
 	private SecretKey protectionSecretKey = null;
@@ -91,18 +86,30 @@ public class ProtectedLogToken {
 		this.tokenType = TYPE_NONE;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ejbca.core.model.log.IProtectedLogToken#getProtectionAlgorithm()
+	 */
 	public String getProtectionAlgorithm() {
 		return protectionAlgorithm;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ejbca.core.model.log.IProtectedLogToken#getType()
+	 */
 	public int getType() {
 		return tokenType;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ejbca.core.model.log.IProtectedLogToken#getTokenCertificate()
+	 */
 	public Certificate getTokenCertificate() {
 		return protectedLogTokenCertificate;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ejbca.core.model.log.IProtectedLogToken#getTokenProtectionKey()
+	 */
 	public Key getTokenProtectionKey() {
 		switch (getType()) {
 		case TYPE_ASYM_KEY:
@@ -113,12 +120,15 @@ public class ProtectedLogToken {
 		return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ejbca.core.model.log.IProtectedLogToken#getCAId()
+	 */
 	public int getCAId() {
 		return caId;
 	}
 	
-	/**
-	 * @return an unique identifier for this ProtectedLogToken. Based on hashing the Key.
+	/* (non-Javadoc)
+	 * @see org.ejbca.core.model.log.IProtectedLogToken#getIdentifier()
 	 */
 	public int getIdentifier() {
 		if (tokenIdentifier == null) {
@@ -150,8 +160,8 @@ public class ProtectedLogToken {
 		return tokenIdentifier;
 	}
 	
-	/**
-	 *  Creates a signature based on the tokens properties.
+	/* (non-Javadoc)
+	 * @see org.ejbca.core.model.log.IProtectedLogToken#protect(byte[])
 	 */
 	public byte[] protect(byte[] data) {
 		byte[] signature = null;
@@ -184,9 +194,8 @@ public class ProtectedLogToken {
 		return signature;
 	}
 	
-	/**
-	 *  Verifies a signature based on the tokens properties.
-	 *  @return true if the signture matches
+	/* (non-Javadoc)
+	 * @see org.ejbca.core.model.log.IProtectedLogToken#verify(byte[], byte[])
 	 */
 	public boolean verify(byte[] data, byte[] signature) {
 		boolean verified = false;

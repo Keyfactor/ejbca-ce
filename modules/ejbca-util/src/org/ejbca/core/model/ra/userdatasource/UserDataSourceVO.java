@@ -18,7 +18,6 @@ import java.util.Set;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.dn.DNFieldExtractor;
 
-
 /**
  * UserDataSourceVO is a value object returned from the fetch method
  * of a user data source.
@@ -30,7 +29,6 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * @author Philip Vendil
  * @version $Id$
  */
-
 public class UserDataSourceVO implements Serializable {    
 
 	/**

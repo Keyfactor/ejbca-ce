@@ -77,7 +77,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	private long lastTime;
 	private long protectionIntensity;
 	private String nodeIP;
-	private ProtectedLogToken protectedLogToken;
+	private IProtectedLogToken protectedLogToken;
 	private String protectionHashAlgorithm;
 	private boolean isFirstLogEvent;
 	private ProtectedLogActions protectedLogActions;
@@ -210,7 +210,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	private ProtectedLogToken getProtectedLogToken() {
+	private IProtectedLogToken getProtectedLogToken() {
 		if (protectedLogToken == null) {
 			protectedLogToken = getProtectedLogSession().getProtectedLogToken();
 		}
@@ -297,7 +297,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 						protectedLogEventIdentifiersToRemove.add(protectedLogEventIdentifier);
 						continue;
 					}
-					ProtectedLogToken protectedLogToken = getProtectedLogSession().getToken(protectedLogEventRow.getProtectionKeyIdentifier());
+					IProtectedLogToken protectedLogToken = getProtectedLogSession().getToken(protectedLogEventRow.getProtectionKeyIdentifier());
 					if (protectedLogToken == null ) {
 				    	log.error(intres.getLocalizedMessage("protectedlog.error.tokenmissing", protectedLogEventRow.getProtectionKeyIdentifier()));
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_TOKEN);
@@ -449,7 +449,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	 * The admin has to manually "accept" these log-events on another node or when the server is back up using the CLI.
 	 */
 	private void logInternalOnShutDown(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
-		ProtectedLogToken protectedLogToken = new ProtectedLogToken();
+		IProtectedLogToken protectedLogToken = new ProtectedLogToken();
 		String certificateSerialNumber = null;
 		String certificateIssuerDN = null; 
 		if (certificate != null) {

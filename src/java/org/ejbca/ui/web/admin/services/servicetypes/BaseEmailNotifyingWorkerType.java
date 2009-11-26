@@ -21,7 +21,7 @@ import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
-import org.ejbca.core.model.services.workers.EmailSendingWorker;
+import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
@@ -76,23 +76,23 @@ public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 		retval.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, timeValue);
 		
 		if(useEndUserNotifications){
-			retval.setProperty(EmailSendingWorker.PROP_SENDTOENDUSERS, "TRUE");
-			retval.setProperty(EmailSendingWorker.PROP_USERSUBJECT,endUserSubject);
-			retval.setProperty(EmailSendingWorker.PROP_USERMESSAGE,endUserMessage);
+			retval.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "TRUE");
+			retval.setProperty(EmailSendingWorkerConstants.PROP_USERSUBJECT,endUserSubject);
+			retval.setProperty(EmailSendingWorkerConstants.PROP_USERMESSAGE,endUserMessage);
 		}else{
-			retval.setProperty(EmailSendingWorker.PROP_SENDTOENDUSERS, "FALSE");
-			retval.setProperty(EmailSendingWorker.PROP_USERSUBJECT,"");
-			retval.setProperty(EmailSendingWorker.PROP_USERMESSAGE,"");
+			retval.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "FALSE");
+			retval.setProperty(EmailSendingWorkerConstants.PROP_USERSUBJECT,"");
+			retval.setProperty(EmailSendingWorkerConstants.PROP_USERMESSAGE,"");
 		}
 		
 		if(useAdminNotifications){
-			retval.setProperty(EmailSendingWorker.PROP_SENDTOADMINS, "TRUE");
-			retval.setProperty(EmailSendingWorker.PROP_ADMINSUBJECT,adminSubject);
-			retval.setProperty(EmailSendingWorker.PROP_ADMINMESSAGE,adminMessage);
+			retval.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "TRUE");
+			retval.setProperty(EmailSendingWorkerConstants.PROP_ADMINSUBJECT,adminSubject);
+			retval.setProperty(EmailSendingWorkerConstants.PROP_ADMINMESSAGE,adminMessage);
 		}else{
-			retval.setProperty(EmailSendingWorker.PROP_SENDTOADMINS, "FALSE");			
-			retval.setProperty(EmailSendingWorker.PROP_ADMINSUBJECT,"");
-			retval.setProperty(EmailSendingWorker.PROP_ADMINMESSAGE,"");
+			retval.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "FALSE");			
+			retval.setProperty(EmailSendingWorkerConstants.PROP_ADMINSUBJECT,"");
+			retval.setProperty(EmailSendingWorkerConstants.PROP_ADMINMESSAGE,"");
 		}
 		
 	
@@ -108,13 +108,13 @@ public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 		timeUnit = properties.getProperty(BaseWorker.PROP_TIMEUNIT,DEFAULT_TIMEUNIT);
 		timeValue = properties.getProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING,DEFAULT_TIMEVALUE);
 
-		useEndUserNotifications = properties.getProperty(EmailSendingWorker.PROP_SENDTOENDUSERS,"").equalsIgnoreCase("TRUE");
-		useAdminNotifications = properties.getProperty(EmailSendingWorker.PROP_SENDTOADMINS,"").equalsIgnoreCase("TRUE");
+		useEndUserNotifications = properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS,"").equalsIgnoreCase("TRUE");
+		useAdminNotifications = properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS,"").equalsIgnoreCase("TRUE");
 		
-       	endUserSubject = properties.getProperty(EmailSendingWorker.PROP_USERSUBJECT,"");
-		adminSubject = properties.getProperty(EmailSendingWorker.PROP_ADMINSUBJECT,"");
-		endUserMessage = properties.getProperty(EmailSendingWorker.PROP_USERMESSAGE,"");
-		adminMessage = properties.getProperty(EmailSendingWorker.PROP_ADMINMESSAGE,"");
+       	endUserSubject = properties.getProperty(EmailSendingWorkerConstants.PROP_USERSUBJECT,"");
+		adminSubject = properties.getProperty(EmailSendingWorkerConstants.PROP_ADMINSUBJECT,"");
+		endUserMessage = properties.getProperty(EmailSendingWorkerConstants.PROP_USERMESSAGE,"");
+		adminMessage = properties.getProperty(EmailSendingWorkerConstants.PROP_ADMINMESSAGE,"");
 
 	}
 	

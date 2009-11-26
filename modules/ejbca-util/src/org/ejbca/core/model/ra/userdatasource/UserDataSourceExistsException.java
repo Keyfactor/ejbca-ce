@@ -10,42 +10,30 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services;
-
-import org.ejbca.core.model.log.Admin;
+ 
+package org.ejbca.core.model.ra.userdatasource;
 
 /**
- * The worker interface of a service. It is the main class of a service.
- * A worker has one IInterval and one IAction.
- * 
- * The methods work() method is used to signal to this service that
- * it is time to work.
- * 
- * @author Philip Vendil 2006 sep 27
+ * An exception thrown when someone tries to add a Publisher that already exits
  *
+ * @author  Philip Vendil
  * @version $Id$
  */
-public interface IWorker {
-
-	/**
-	 * Method that configures this worker and also sets up it's action and interval.
-	 * 
-	 * @param serviceConfiguration
-	 * @param serviceName
-	 */
-	public void init(Admin admin, ServiceConfiguration serviceConfiguration, String serviceName);
-	
-	/**
-	 * The main method that is called by the TimeSessionBean each time
-	 * it is time to activate this service
-	 *
-	 */
-	public void work() throws ServiceExecutionFailedException;
-	
-	/**
-	 * 
-	 * @return the time in seconds to next execution.
-	 */
-	public long getNextInterval();
-	
+public class UserDataSourceExistsException extends java.lang.Exception {
+    
+    /**
+     * Creates a new instance of <code>PublisherExistsException</code> without detail message.
+     */
+    public UserDataSourceExistsException() {
+        super();
+    }
+    
+    
+    /**
+     * Constructs an instance of <code>PublisherExistsException</code> with the specified detail message.
+     * @param msg the detail message.
+     */
+    public UserDataSourceExistsException(String msg) {
+        super(msg);
+    }
 }
