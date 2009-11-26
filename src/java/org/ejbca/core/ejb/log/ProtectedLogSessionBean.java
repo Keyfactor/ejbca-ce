@@ -65,6 +65,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.IProtectedLogAction;
 import org.ejbca.core.model.log.IProtectedLogExportHandler;
+import org.ejbca.core.model.log.IProtectedLogToken;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.log.ProtectedLogActions;
@@ -200,7 +201,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	/** Cache of log tokens, so we don't have to load a CA token or keystore every time.
 	 * We can have this as static, because the protected log configuration is global for every CA node.
 	 */
-	private static ProtectedLogToken protectedLogTokenCache = null;
+	private static IProtectedLogToken protectedLogTokenCache = null;
 	private Certificate certificateCache = null;
 
 	public void ejbCreate() {
@@ -280,19 +281,19 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
-	public void addToken(ProtectedLogToken token) {
+	public void addToken(IProtectedLogToken token) {
 		log.trace(">addToken");
 		try {
 			int tokenType = token.getType();
 			switch (tokenType) {
-			case ProtectedLogToken.TYPE_CA:
+			case IProtectedLogToken.TYPE_CA:
 				getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId()));
 				break;
-			case ProtectedLogToken.TYPE_NONE:
+			case IProtectedLogToken.TYPE_NONE:
 				getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId()));
 				break;
-			case ProtectedLogToken.TYPE_ASYM_KEY:
-			case ProtectedLogToken.TYPE_SYM_KEY:
+			case IProtectedLogToken.TYPE_ASYM_KEY:
+			case IProtectedLogToken.TYPE_SYM_KEY:
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				ObjectOutputStream oos = new ObjectOutputStream(baos);
 				oos.writeObject(token.getTokenProtectionKey());
@@ -313,7 +314,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @return null if no token was found
 	 * @ejb.interface-method view-type="both"
 	 */
-	public ProtectedLogToken getToken(int tokenIdentifier) {
+	public IProtectedLogToken getToken(int tokenIdentifier) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getToken");
 		}
@@ -323,19 +324,19 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 			return protectedLogTokenCache;
 		}
-		ProtectedLogToken protectedLogToken = null;
+		IProtectedLogToken protectedLogToken = null;
 		try {
 			ProtectedLogTokenDataLocal protectedLogTokenDataLocal = getProtectedLogTokenData().findByTokenIdentifier(tokenIdentifier);
 			int tokenType = protectedLogTokenDataLocal.getTokenType();
 			switch (tokenType) {
-			case ProtectedLogToken.TYPE_CA:
+			case IProtectedLogToken.TYPE_CA:
 				protectedLogToken = new ProtectedLogToken(new Integer(Integer.parseInt(protectedLogTokenDataLocal.getTokenReference())).intValue(), protectedLogTokenDataLocal.getTokenCertificate());
 				break;
-			case ProtectedLogToken.TYPE_NONE:
+			case IProtectedLogToken.TYPE_NONE:
 				protectedLogToken = new ProtectedLogToken();
 				break;
-			case ProtectedLogToken.TYPE_ASYM_KEY:
-			case ProtectedLogToken.TYPE_SYM_KEY:
+			case IProtectedLogToken.TYPE_ASYM_KEY:
+			case IProtectedLogToken.TYPE_SYM_KEY:
 				byte[] rawKeyData = Base64.decode(protectedLogTokenDataLocal.getTokenReference().getBytes()); 
 				ByteArrayInputStream bais = new ByteArrayInputStream(decryptKeyData(rawKeyData, protectedLogTokenDataLocal.getTokenCertificate()));
 				ObjectInputStream ois = new ObjectInputStream(bais);
@@ -521,7 +522,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		try {
 			if (identifier != null) {
 				ProtectedLogDataLocal protectedLogDataLocal = getProtectedLogData().findByNodeGUIDandCounter(identifier.getNodeGUID(), identifier.getCounter());
-				protectedLogEventRow = new ProtectedLogEventRow(protectedLogDataLocal);
+				protectedLogEventRow = protectedLogDataLocal.toProtectedLogEventRow();
 			}
 		} catch (FinderException e) {
 			if (log.isDebugEnabled()) {
@@ -596,7 +597,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					protectedLogEventRowToRemove = null;
 				}
 				if (addProtectedLogEventRow) {
-					ProtectedLogEventRow newProtectedLogEventRow = new ProtectedLogEventRow(protectedLogDataLocal);
+					ProtectedLogEventRow newProtectedLogEventRow = protectedLogDataLocal.toProtectedLogEventRow();
 					protectedLogEventRowArrayList.add(newProtectedLogEventRow);
 				}
 				protectedLogEventRows = (ProtectedLogEventRow[]) protectedLogEventRowArrayList.toArray(new ProtectedLogEventRow[0]);
@@ -1110,7 +1111,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				exportEndTime = currentTime;
 			}
 			// Since this is now the newest event, we are going to use it's token or issuing CA-token. We want to know if it's has one..
-			ProtectedLogToken plt = getToken(newestProtectedLogEventRow.getProtectionKeyIdentifier());
+			IProtectedLogToken plt = getToken(newestProtectedLogEventRow.getProtectionKeyIdentifier());
 			if (plt == null) {
 	        	log.error(intres.getLocalizedMessage("protectedlog.error.notoken",
 	        			newestProtectedLogEventIdentifier.getNodeGUID(), newestProtectedLogEventIdentifier.getCounter()));
@@ -1118,13 +1119,13 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 			// ...and that the token is working as supposed to.
 			byte[] dummy = "testing if token is working".getBytes();
-			if (plt.getType() == ProtectedLogToken.TYPE_CA && plt.protect(dummy) == null) {
+			if (plt.getType() == IProtectedLogToken.TYPE_CA && plt.protect(dummy) == null) {
 	        	String iMsg = intres.getLocalizedMessage("protectedlog.error.tokennotworking",
 	        			newestProtectedLogEventRow.getProtectionKeyIdentifier());
 	        	log.error(iMsg);
 				throw new EJBException(iMsg);
 			}
-			if (plt.getType() != ProtectedLogToken.TYPE_CA) {
+			if (plt.getType() != IProtectedLogToken.TYPE_CA) {
 				// If it is a soft token we need to verify that is issuing CA is online.
 				Certificate cert = plt.getTokenCertificate();
 				int caId = CertTools.getIssuerDN(cert).hashCode();
@@ -1200,7 +1201,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						rs.getString(8), rs.getInt(9), rs.getString(10));
 				// Verify each result
 				String verified = TableVerifyResult.VERIFY_FAILED_MSG;
-				int result = verifyProtectedLogEventRow(new ProtectedLogEventRow(protectedLogData.findByPrimaryKey(rs.getString(1))), true);
+				int result = verifyProtectedLogEventRow(protectedLogData.findByPrimaryKey(rs.getString(1)).toProtectedLogEventRow(), true);
 				if (result == 1) {
 					verified = TableVerifyResult.VERIFY_SUCCESS_MSG;
 				} else if (result == 0) {
@@ -1254,7 +1255,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 			if (currentProtectedLogEventRow.getProtection() != null) {
 				// If signed the search ends here and the chains is ok if the signature is ok
-				ProtectedLogToken protectedLogToken = getToken(currentProtectedLogEventRow.getProtectionKeyIdentifier());
+				IProtectedLogToken protectedLogToken = getToken(currentProtectedLogEventRow.getProtectionKeyIdentifier());
 				try {
 					if (protectedLogToken.verify(currentProtectedLogEventRow.getAsByteArray(false), currentProtectedLogEventRow.getProtection())) {
 						cache.updateCache();
@@ -1365,7 +1366,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				Iterator i = protectedLogDataLocals.iterator();
 				while (i.hasNext()) {
 					ProtectedLogDataLocal protectedLogDataLocal = (ProtectedLogDataLocal) i.next();
-					if (verifyProtectedLogEventRow(new ProtectedLogEventRow(protectedLogDataLocal), false) == 1) {
+					if (verifyProtectedLogEventRow(protectedLogDataLocal.toProtectedLogEventRow(), false) == 1) {
 						lastExportProtectedLogIdentifier.add(new ProtectedLogEventIdentifier(protectedLogDataLocal.getNodeGUID(), protectedLogDataLocal.getCounter()));
 					}
 					if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
@@ -1445,7 +1446,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				ProtectedLogEventIdentifier nextProtectedLogEventIdentifier = nextProtectedLogEventRow.getEventIdentifier();
 				// Verify current signature if it is the newest one of this chain ( = if all hashes are correct up till this point the chain is ok, there is no need to every signature )
 				if (!isTopSignatureVerified) {
-					ProtectedLogToken currentToken = getToken(nextProtectedLogEventRow.getProtectionKeyIdentifier());
+					IProtectedLogToken currentToken = getToken(nextProtectedLogEventRow.getProtectionKeyIdentifier());
 					if (currentToken == null) {
 						protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_TOKEN);
 						return nextProtectedLogEventIdentifier;
@@ -1558,7 +1559,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						//log.debug("Current linked in GUID " + i.getNodeGUID() + " and counter " + i.getCounter());
 						if (!knownNodeGUID) {
 							log.debug("Found previously unknown node linked in: " + k.getNodeGUID());
-							ProtectedLogToken currentToken = getToken(currentProtectedLogEventRow.getProtectionKeyIdentifier());
+							IProtectedLogToken currentToken = getToken(currentProtectedLogEventRow.getProtectionKeyIdentifier());
 							if (!currentToken.verify(currentProtectedLogEventRow.getAsByteArray(false), currentProtectedLogEventRow.getProtection())) {
 								protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MODIFIED_LOGROW);
 								return currentProtectedLogEventRow.getEventIdentifier();
@@ -1566,7 +1567,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 							newestProtectedLogEventRows.add(currentProtectedLogEventRow);
 							knownNodeGUIDs.add(k.getNodeGUID());
 						} else if (toRemove != null) {
-							ProtectedLogToken currentToken = getToken(currentProtectedLogEventRow.getProtectionKeyIdentifier());
+							IProtectedLogToken currentToken = getToken(currentProtectedLogEventRow.getProtectionKeyIdentifier());
 							if (currentToken == null) {
 								protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_TOKEN);
 								return currentProtectedLogEventRow.getEventIdentifier();
@@ -1618,9 +1619,9 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
-	public ProtectedLogToken getProtectedLogToken() {
+	public IProtectedLogToken getProtectedLogToken() {
 		log.trace(">getProtectedLogToken");
-		ProtectedLogToken protectedLogToken = null;
+		IProtectedLogToken protectedLogToken = null;
 		try {
 			// Get ProtectedLogToken from configuration data
 			final int protectionTokenReferenceType = ProtectedLogConfiguration.getProtectionTokenReferenceType();

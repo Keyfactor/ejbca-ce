@@ -34,29 +34,6 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 	private static final Logger log = Logger.getLogger(BaseWorker.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-    
-	/** Should be a ';' separated string of CAIds. */
-	public static final String PROP_CAIDSTOCHECK     = "worker.caidstocheck";
-	
-	/** The time in 'timeunit' that a user is allowed to have status 'new' since last modification date */
-	public static final String PROP_TIMEBEFOREEXPIRING = "worker.timebeforeexpiring";
-	
-	/** Unit in days, hours or seconds */
-	public static final String PROP_TIMEUNIT           = "worker.timeunit";
-
-	public static final String UNIT_SECONDS = "SECONDS";
-	public static final String UNIT_MINUTES = "MINUTES";
-	public static final String UNIT_HOURS = "HOURS";
-	public static final String UNIT_DAYS = "DAYS";
-	
-	public static final int UNITVAL_SECONDS = 1;
-	public static final int UNITVAL_MINUTES = 60;
-	public static final int UNITVAL_HOURS = 3600;
-	public static final int UNITVAL_DAYS = 86400;
-
-	public static final String[] AVAILABLE_UNITS = {UNIT_SECONDS, UNIT_MINUTES, UNIT_HOURS, UNIT_DAYS};
-	public static final int[] AVAILABLE_UNITSVALUES = {UNITVAL_SECONDS, UNITVAL_MINUTES, UNITVAL_HOURS, UNITVAL_DAYS};
-	
 
     protected Properties properties = null;
     protected String serviceName = null;

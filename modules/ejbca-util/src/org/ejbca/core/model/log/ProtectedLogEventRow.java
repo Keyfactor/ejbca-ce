@@ -25,7 +25,6 @@ import java.util.Arrays;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.log.ProtectedLogDataLocal;
 import org.ejbca.util.Base64;
 
 /**
@@ -78,6 +77,7 @@ public class ProtectedLogEventRow {
 		this.protection = protection;
 	}
 	
+	/*  Dependency in the wrong direction..
 	public ProtectedLogEventRow(ProtectedLogDataLocal protectedLogDataLocal) {
 		this.adminType = protectedLogDataLocal.getAdminType();
 		this.admindata = protectedLogDataLocal.getAdminData();
@@ -98,7 +98,7 @@ public class ProtectedLogEventRow {
 		this.protectionKeyAlgorithm = protectedLogDataLocal.getProtectionKeyAlgorithm();
 		this.protection = protectedLogDataLocal.getProtection();
 	}
-
+	*/
 	
 	public ProtectedLogEventRow(ResultSet rs) throws SQLException {
 		// Ignore pk

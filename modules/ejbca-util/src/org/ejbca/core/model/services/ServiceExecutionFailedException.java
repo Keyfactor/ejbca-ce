@@ -10,35 +10,27 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-/*
- * PublisherExistsException.java
- *
- * Created on 26 november 2003, 21:29
- */
-
-package org.ejbca.core.model.ra.userdatasource;
+package org.ejbca.core.model.services;
 
 /**
- * An exception thrown when someone tries to add a Publisher that already exits
+ * Exception throws when a service work method fails for som reason
+ * It should contain a message used in logging.
+ * 
+ * @author Philip Vendil 2006 sep 28
  *
- * @author  Philip Vendil
+ * @version $Id$
  */
-public class UserDataSourceExistsException extends java.lang.Exception {
-    
-    /**
-     * Creates a new instance of <code>PublisherExistsException</code> without detail message.
-     */
-    public UserDataSourceExistsException() {
-        super();
-    }
-    
-    
-    /**
-     * Constructs an instance of <code>PublisherExistsException</code> with the specified detail message.
-     * @param msg the detail message.
-     */
-    public UserDataSourceExistsException(String msg) {
-        super(msg);
-    }
+public class ServiceExecutionFailedException extends Exception {
+
+	public ServiceExecutionFailedException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public ServiceExecutionFailedException(String message) {
+		super(message);
+	}
+
+	public ServiceExecutionFailedException(Throwable cause) {
+		super(cause);
+	}
 }

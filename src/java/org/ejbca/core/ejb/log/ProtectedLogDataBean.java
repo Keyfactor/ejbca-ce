@@ -17,6 +17,7 @@ import javax.ejb.CreateException;
 
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
+import org.ejbca.core.model.log.ProtectedLogEventRow;
 import org.ejbca.util.Base64;
 import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.StringTools;
@@ -347,4 +348,13 @@ public abstract class ProtectedLogDataBean extends BaseEntityBean {
         	setB64Protection(null);
     	}
     }
+    
+    /** @ejb.interface-method */
+    public ProtectedLogEventRow toProtectedLogEventRow() {
+    	return new ProtectedLogEventRow(getAdminType(), getAdminData(), getCaId(), getModule(), getEventTime(),
+    			getUsername(), getCertificateSerialNumber(), getCertificateIssuerDN(), getEventId(), getEventComment(),
+    			new ProtectedLogEventIdentifier(getNodeGUID(), getCounter()), getNodeIP(), getLinkedInEventIdentifiers(), getLinkedInEventsHash(),
+    			getCurrentHashAlgorithm(), getProtectionKeyIdentifier(), getProtectionKeyAlgorithm(), getProtection());
+    }
+    
 }

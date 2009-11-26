@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
-import org.ejbca.core.model.services.workers.EmailSendingWorker;
+import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.util.TestTools;
 
@@ -112,8 +112,8 @@ public class TestUserPasswordExpire extends TestCase {
 		config.setIntervalProperties(intervalprop);
 		config.setWorkerClassPath(UserPasswordExpireWorker.class.getName());
 		Properties workerprop = new Properties();
-		workerprop.setProperty(EmailSendingWorker.PROP_SENDTOADMINS, "FALSE");
-		workerprop.setProperty(EmailSendingWorker.PROP_SENDTOENDUSERS, "FALSE");
+		workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "FALSE");
+		workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "FALSE");
 		workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(caid));
 		workerprop.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, "5");
 		workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_HOURS);

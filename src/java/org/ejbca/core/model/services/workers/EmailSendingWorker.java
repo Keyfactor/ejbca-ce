@@ -1,5 +1,17 @@
-package org.ejbca.core.model.services.workers;
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 
+package org.ejbca.core.model.services.workers;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,29 +22,10 @@ import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
 
+/**
+ * @version $Id$
+ */
 public abstract class EmailSendingWorker extends BaseWorker {
-
-	/** Boolean indicating if a notification should be sent to the end user of the expiration */
-	public static final String PROP_SENDTOENDUSERS     = "worker.mail.sendtoendusers";
-	
-	/** Boolean indicating if a notification should be sent to the administrators */ 
-	public static final String PROP_SENDTOADMINS       = "worker.mail.sendtoadmins";
-	
-	/** The subject to use in the end user notification */
-	public static final String PROP_USERSUBJECT        = "worker.mail.usersubject";
-	
-	/** The message to use in the end user notification. Substitution variables are possible in
-	 * the same way as for regular notifications.*/
-	public static final String PROP_USERMESSAGE        = "worker.mail.usermessage";
-	
-	/** The subject to use in the admin notification */
-	public static final String PROP_ADMINSUBJECT       = "worker.mail.adminsubject";
-	
-	/** The message to use in the admin notification. Substitution variables are possible in
-	 * the same way as for regular notifications.*/
-	public static final String PROP_ADMINMESSAGE       = "worker.mail.adminmessage";		
-	
-	
 
 	private static final Logger log = Logger.getLogger(EmailSendingWorker.class);
 
@@ -90,14 +83,14 @@ public abstract class EmailSendingWorker extends BaseWorker {
 
 	protected String getAdminMessage() {
 		if(adminMessage == null){
-			adminMessage =  properties.getProperty(PROP_ADMINMESSAGE,"No Message Configured");
+			adminMessage =  properties.getProperty(EmailSendingWorkerConstants.PROP_ADMINMESSAGE,"No Message Configured");
 		}		
 		return adminMessage;
 	}
 
 	protected String getAdminSubject() {
 		if(adminSubject == null){
-			adminSubject =  properties.getProperty(PROP_ADMINSUBJECT,"No Subject Configured");
+			adminSubject =  properties.getProperty(EmailSendingWorkerConstants.PROP_ADMINSUBJECT,"No Subject Configured");
 		}
 		
 		return adminSubject;
@@ -105,7 +98,7 @@ public abstract class EmailSendingWorker extends BaseWorker {
 
 	protected String getEndUserMessage() {
 		if(endUserMessage == null){
-			endUserMessage =  properties.getProperty(PROP_USERMESSAGE,"No Message Configured");
+			endUserMessage =  properties.getProperty(EmailSendingWorkerConstants.PROP_USERMESSAGE,"No Message Configured");
 		}
 		
 		return endUserMessage;
@@ -113,18 +106,18 @@ public abstract class EmailSendingWorker extends BaseWorker {
 
 	protected String getEndUserSubject() {
 		if(endUserSubject == null){
-			endUserSubject =  properties.getProperty(PROP_USERSUBJECT,"No Subject Configured");
+			endUserSubject =  properties.getProperty(EmailSendingWorkerConstants.PROP_USERSUBJECT,"No Subject Configured");
 		}
 		
 		return endUserSubject;
 	}
 
 	protected boolean isSendToAdmins() {
-		return properties.getProperty(PROP_SENDTOADMINS,"FALSE").equalsIgnoreCase("TRUE");
+		return properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS,"FALSE").equalsIgnoreCase("TRUE");
 	}
 
 	protected boolean isSendToEndUsers() {
-		return properties.getProperty(PROP_SENDTOENDUSERS,"FALSE").equalsIgnoreCase("TRUE");
+		return properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS,"FALSE").equalsIgnoreCase("TRUE");
 	}
 
 }

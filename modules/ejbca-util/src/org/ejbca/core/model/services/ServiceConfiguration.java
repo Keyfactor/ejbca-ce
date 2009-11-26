@@ -21,7 +21,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.services.workers.EmailSendingWorker;
+import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 
 /**
  * Value class used for persist the worker, interval and action configurations
@@ -250,39 +250,39 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 					String adminmessage = prop.getProperty("worker.emailexpiration.adminmessage");
 					 
 					if (caids != null) {
-						prop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, caids);
+						prop.setProperty(IWorker.PROP_CAIDSTOCHECK, caids);
 						prop.remove("worker.emailexpiration.caidstocheck");
 					}
 					if (timebeforexpire != null) {
-						prop.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, timebeforexpire);
+						prop.setProperty(IWorker.PROP_TIMEBEFOREEXPIRING, timebeforexpire);
 						prop.remove("worker.emailexpiration.timebeforeexpiring");
 					}
 					if (timeunit != null) {
-						prop.setProperty(BaseWorker.PROP_TIMEUNIT, timeunit);
+						prop.setProperty(IWorker.PROP_TIMEUNIT, timeunit);
 						prop.remove("worker.emailexpiration.timeunit");
 					}
 					if (sendtousers != null) {
-						prop.setProperty(EmailSendingWorker.PROP_SENDTOENDUSERS, sendtousers);
+						prop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, sendtousers);
 						prop.remove("worker.emailexpiration.sendtoendusers");
 					}
 					if (sendtoadmins != null) {
-						prop.setProperty(EmailSendingWorker.PROP_SENDTOADMINS, sendtoadmins);
+						prop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, sendtoadmins);
 						prop.remove("worker.emailexpiration.sendtoadmins");
 					}
 					if (usersubject != null) {
-						prop.setProperty(EmailSendingWorker.PROP_USERSUBJECT, usersubject);
+						prop.setProperty(EmailSendingWorkerConstants.PROP_USERSUBJECT, usersubject);
 						prop.remove("worker.emailexpiration.usersubject");
 					}
 					if (usermessage != null) {
-						prop.setProperty(EmailSendingWorker.PROP_USERMESSAGE, usermessage);
+						prop.setProperty(EmailSendingWorkerConstants.PROP_USERMESSAGE, usermessage);
 						prop.remove("worker.emailexpiration.usermessage");
 					}
 					if (adminsubject != null) {
-						prop.setProperty(EmailSendingWorker.PROP_ADMINSUBJECT, adminsubject);
+						prop.setProperty(EmailSendingWorkerConstants.PROP_ADMINSUBJECT, adminsubject);
 						prop.remove("worker.emailexpiration.adminsubject");
 					}
 					if (adminmessage != null) {
-						prop.setProperty(EmailSendingWorker.PROP_ADMINMESSAGE, adminmessage);
+						prop.setProperty(EmailSendingWorkerConstants.PROP_ADMINMESSAGE, adminmessage);
 						prop.remove("worker.emailexpiration.adminmessage");
 					}
 					setWorkerProperties(prop);

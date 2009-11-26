@@ -200,7 +200,7 @@ public class ProtectedLogVerifier {
 			// We take no action here. We want to return null to show the caller that the event was not found.
 			return null;
 		}
-		ProtectedLogToken protectedLogToken = getProtectedLogSession().getToken(protectedLogEventRow.getProtectionKeyIdentifier());
+		IProtectedLogToken protectedLogToken = getProtectedLogSession().getToken(protectedLogEventRow.getProtectionKeyIdentifier());
 		if (protectedLogToken == null ) {
 	    	log.error(intres.getLocalizedMessage("protectedlog.error.tokenmissing"));
 			protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_TOKEN);
