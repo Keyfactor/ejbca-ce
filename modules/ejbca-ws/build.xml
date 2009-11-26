@@ -8,21 +8,25 @@
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-lib.dir" location="${this.dir}/build-lib"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-gen.dir" location="${this.dir}/src-gen"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
 	<path id="compile.classpath">
-		<pathelement location="${mod.ejbca-util.lib}" /> 
-		<pathelement location="${mod.ejbca-interface.lib}" /> 
 		<pathelement location="${mod.ejbca-ejb.lib}" /> 
-		<path refid="lib.bouncycastle.classpath"/>
-		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+		<path refid="compile-library.classpath"/>
+		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
-		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.jaxws.classpath" /> 
+	</path>
+
+	<path id="compile-library.classpath">
+		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 
 	<path id="generate.classpath">
@@ -63,19 +67,15 @@
         </war>
     </target>
 
-    <target name="build-jar" description="Build EJBCA WS common library" depends="compile">
+    <target name="build-jar" description="Build EJBCA WS common library" depends="compile-library">
     	<dirname file="${mod.ejbca-ws.lib}" property="mod.ejbca-ws.lib.dir"/>
     	<mkdir dir="${mod.ejbca-ws.lib.dir}" />
-    	<jar destfile="${mod.ejbca-ws.lib}">
-        	<fileset dir="${build.dir}">
-        	    <include name="org/ejbca/core/protocol/ws/common/*.class"/>
-        	    <include name="org/ejbca/core/protocol/ws/objects/*.class"/>
-        	</fileset>
-    	</jar>
+    	<jar destfile="${mod.ejbca-ws.lib}" basedir="${build-lib.dir}"/>
     </target>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
+		<delete dir="${build-lib.dir}" />
 		<delete file="${mod.ejbca-ws.war}" />
 		<delete file="${mod.ejbca-ws.lib}" />
 		<delete file="${mod.ejbca-ws.wsdl}" />
@@ -88,6 +88,17 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
         	<src path="${src-gen.dir}"/>
         	<src path="${src.dir}"/>
+    	</javac>
+    </target>
+
+    <target name="compile-library" depends="ejbca-util">
+    	<mkdir dir="${build-lib.dir}" />
+        <javac destdir="${build-lib.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-library.classpath">
+        	<src path="${src-gen.dir}"/>
+        	<src path="${src.dir}"/>
+    	    <include name="org/ejbca/core/protocol/ws/common/*.java"/>
+    	    <include name="org/ejbca/core/protocol/ws/objects/*.java"/>
     	</javac>
     </target>
 
