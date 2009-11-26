@@ -83,22 +83,64 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 				}
 			}
 
-			String checkDate = "expireDate <= " + ((new Date()).getTime() + getTimeBeforeExpire());			
-			String statuses = "status=" + SecConst.CERT_ACTIVE;
+/*
+ * Algorithm:
+ * 
+ * Inputs:
+ *    CertificateData.status Which either is ACTIVE or NOTIFIEDABOUTEXPIRATION in order to
+ *                           be candidates for notifications.
+ *
+ *    nextRunTimestamp       Tells when the next service run will be
+ *    
+ *    currRunTimestamp       Tells when the service should run (usually "now" but there may be delayed
+ *                           runs as well if the app-server has been down)
+ *                           
+ *    thresHold              The configured "threshold"
+ *    
+ *    We want to accomplish two things:
+ *    
+ *    1. Notify for expirations within the service window
+ *    2. Notify _once_ for expirations that occurred before the service window like flagging certificates
+ *       that have a shorter life-span than the threshold (pathologic test-case...)
+ *
+ *    The first is checked by:
+ *    
+ *    notify = currRunTimestamp + thresHold <= ExpireDate < nextRunTimestamp + thresHold AND
+ *             (status = ACTIVE OR status = NOTIFIEDABOUTEXPIRATION)
+ *             
+ *    The second can be checked by:
+ *    
+ *    notify = currRunTimestamp + thresHold > ExpireDate AND status = ACTIVE
+ *    
+ *    In both case status can be set to NOTIFIEDABOUTEXPIRATION
+ *    
+ *    As Tomas pointed out we do not need to flag certificates that have expired already
+ *    which is a separate test.      
+ *    
+ */
+
+			long thresHold = getTimeBeforeExpire();
+			long currRunTimestamp = serviceConfiguration.getOldRunTimestamp().getTime();
+			long nextRunTimestamp = serviceConfiguration.getNextRunTimestamp().getTime();
+			long now = new Date ().getTime();
 
 			// Execute Query
 			Connection con = null;
 			PreparedStatement ps = null;
 			ResultSet result = null;
 
-			try{		
+			try{
 				con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
 				// We can not select the base64 certificate data here, because it may be a LONG data type which we can't simply select
 				String sqlstr = "SELECT DISTINCT fingerprint, username"
 					+ " FROM CertificateData WHERE ("
-					+ cASelectString + ") AND (" 
-					+ checkDate + ") AND (" 
-					+ statuses + ")";
+					+ cASelectString + ") AND "
+					+ "(expireDate > " + now + ") AND"
+                    + "(expireDate < " + (nextRunTimestamp + thresHold) + ") AND "
+                    + "(status = " + SecConst.CERT_ACTIVE +" OR status = " + 
+                       SecConst.CERT_NOTIFIEDABOUTEXPIRATION + ") AND " 
+                    + "(expireDate >= " + (currRunTimestamp + thresHold) + " OR " +
+                       "status = " + SecConst.CERT_ACTIVE +	")";
 				log.debug("Executing search sql: "+sqlstr);
 				ps = con.prepareStatement(sqlstr);            
 				
@@ -147,6 +189,11 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 						String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
 						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
 						adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
+					}	
+					if(!isSendToEndUsers() && !isSendToAdmins()){
+						// a little bit of a kludge to make JUnit testing feasible...
+						log.debug("nobody to notify for cert with fp:" + fingerprint);
+						updateStatus(fingerprint, SecConst.CERT_NOTIFIEDABOUTEXPIRATION );
 					}	
 				}
 				if (count == 0) {
