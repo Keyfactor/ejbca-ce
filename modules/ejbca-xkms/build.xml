@@ -8,18 +8,23 @@
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-lib.dir" location="${this.dir}/build-lib"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 
 	<path id="compile.classpath">
-		<pathelement location="${mod.ejbca-util.lib}" /> 
-		<pathelement location="${mod.ejbca-interface.lib}" /> 
+		<path refid="compile-library.classpath"/>
 		<pathelement location="${mod.ejbca-ejb.lib}" /> 
-		<path refid="lib.bouncycastle.classpath"/>
-		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
-		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+	</path>
+
+	<path id="compile-library.classpath">
+		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.xmlsec.classpath"/>
 		<path refid="lib.jaxws.classpath" /> 
 	</path>
 
@@ -51,22 +56,23 @@
     	<delete dir="${this.dir}/temp"/>
     </target>
 
-    <target name="build-jar" description="Build EJBCA XKMS common library" depends="compile">
+    <target name="build-jar" description="Build EJBCA XKMS common library" depends="compile-library">
     	<dirname file="${mod.ejbca-xkms.lib}" property="mod.ejbca-xkms.lib.dir"/>
     	<mkdir dir="${mod.ejbca-xkms.lib.dir}" />
     	<jar destfile="${mod.ejbca-xkms.lib}">
-        	<fileset dir="${build.dir}">
+        	<fileset dir="${build-lib.dir}"/><!--
         	    <include name="org/ejbca/core/protocol/xkms/XKMSService.class"/>
         	    <include name="org/ejbca/core/protocol/xkms/common/*.class"/>
         	    <include name="org/w3/_2000/_09/xmldsig_/*.class"/>
         	    <include name="org/w3/_2001/_04/xmlenc_/*.class"/>
            	    <include name="org/w3/_2002/_03/xkms_/*.class"/>
-        	</fileset>
+        	</fileset>-->
     	</jar>
     </target>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
+		<delete dir="${build-lib.dir}" />
 		<delete file="${mod.ejbca-xkms.war}" />
 		<delete file="${mod.ejbca-xkms.lib}" />
     </target>
@@ -78,4 +84,18 @@
         	<src path="${src.dir}"/>
     	</javac>
     </target>
+	
+    <target name="compile-library" depends="ejbca-util">
+    	<mkdir dir="${build-lib.dir}" />
+        <javac destdir="${build-lib.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-library.classpath">
+        	<src path="${src.dir}"/>
+    	    <include name="org/ejbca/core/protocol/xkms/XKMSService.java"/>
+    	    <include name="org/ejbca/core/protocol/xkms/common/*.java"/>
+    	    <include name="org/w3/_2000/_09/xmldsig_/*.java"/>
+    	    <include name="org/w3/_2001/_04/xmlenc_/*.java"/>
+       	    <include name="org/w3/_2002/_03/xkms_/*.java"/>
+    	</javac>
+    </target>
+
 </project>

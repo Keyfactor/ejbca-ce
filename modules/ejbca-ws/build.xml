@@ -14,10 +14,10 @@
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
 	<path id="compile.classpath">
+		<path refid="compile-library.classpath"/>
 		<pathelement location="${mod.ejbca-ejb.lib}" /> 
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.servlet.classpath"/>
-		<path refid="compile-library.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
