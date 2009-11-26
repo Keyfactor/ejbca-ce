@@ -97,17 +97,18 @@
     <property name="mod.externalra-scep.path" location="${mod.path}/externalra-scep" />
     <property name="mod.externalra-scep.war" location="${ejbca.dist.path}/scepraserver.war" />
 	
-	<!-- Files of global interest -->
-    <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
-    <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
-    
     <!-- Variables of global interest -->
     <property name="java.target.version" value="1.5"/>	<!-- This should probably be defined in internal.properties -->
 	<property name="externalra.enabled" value="false"/>
+	<property name="ejbcaws.enabled" value="true" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
 	<condition property="xkms.enabled.true"><istrue value="${xkms.enabled}"/></condition>
 	<condition property="externalra.enabled.true"><istrue value="${externalra.enabled}"/></condition>
 
+	<!-- Files of global interest -->
+    <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
+    <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
+    
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc.jar"/></path>
 
