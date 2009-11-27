@@ -8,7 +8,7 @@
 <body>
   <section name="Howto documents">
     <p>
-    A number of HOWTO documents are available in the <strong>doc/howto</strong> directory in the source distribution.
+    A number of other, mostly outdated, HOWTO documents are available in the <strong>doc/howto</strong> directory in the source distribution.
     </p>
     </section>
   
@@ -398,6 +398,11 @@ Router#debug crypto pki validation
   </ul>
   When the users certificate is created, the certificate is published to the AM LDAP server and certificate authentication can be configured and used in AM.
   </p>
+  
+  <subsection name="EJBCA - OpenSSO Integration paper">
+  <p><a href="http://download.primekey.se/documents/ejbca-opensso-integration-techpaper.pdf">This paper</a> also describes easy integration between EJBCA and OpenSSO, where EJBCA is used as a single point of provisioning.
+  </p> 
+  </subsection>
   </section>
   
   <section name="Setting up an Apache Web Server as a proxy in front of EJBCA">
