@@ -148,7 +148,8 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 	public void test02CrmfOkUser() throws Exception {
 
 		// Create a new good user
-		createCmpUser();
+		userDN = "C=SE,O=PrimeKey,CN=cmptest";
+		createCmpUser("cmptest", userDN);
 
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -238,6 +239,51 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received CMP message with unknown protection alg: 1.2.840.113533.7.66.13.7.");
 	}
 
+	/**
+	 * Try a request with SubjectDN email and special characters.
+	 * 
+	 * @throws Exception
+	 */
+	public void test06DnEmail() throws Exception {
+		String subjectDN = "C=SE,CN=Göran Strömförare,E=adam@eva.se";
+		//createCmpUser("cmptest2", subjectDN);
+
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
+		
+        PKIMessage one = genCertReq(issuerDN, subjectDN, null, keys, cacert, nonce, transid, true, null, null, null);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+
+        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+		assertNotNull(req);
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DEROutputStream out = new DEROutputStream(bao);
+		out.writeObject(req);
+		byte[] ba = bao.toByteArray();
+		// Send request and receive response
+		byte[] resp = sendCmpTcp(ba, 5);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, true, false);
+		checkCmpCertRepMessage(subjectDN, cacert, resp, reqId);
+		
+		// Send a confirm message to the CA
+		String hash = "foo123";
+        PKIMessage confirm = genCertConfirm(subjectDN, cacert, nonce, transid, hash, reqId);
+		assertNotNull(confirm);
+		bao = new ByteArrayOutputStream();
+		out = new DEROutputStream(bao);
+		out.writeObject(confirm);
+		ba = bao.toByteArray();
+		// Send request and receive response
+		resp = sendCmpTcp(ba, 5);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, false);
+		checkCmpPKIConfirmMessage(subjectDN, cacert, resp);
+
+	}
+
 	public void testZZZCleanUp() throws Exception {
 		TestTools.getConfigurationSession().restoreConfiguration();
 	}
@@ -245,13 +291,13 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     //
     // Private helper methods
     //
-    private void createCmpUser() throws RemoteException, AuthorizationDeniedException, FinderException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
+    private void createCmpUser(String username, String userDN) throws RemoteException, AuthorizationDeniedException, FinderException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
         // Make user that we know...
         boolean userExists = false;
 		userDN = "C=SE,O=PrimeKey,CN=cmptest";
         try {
-        	TestTools.getUserAdminSession().addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
-            log.debug("created user: cmptest, foo123, "+userDN);
+        	TestTools.getUserAdminSession().addUser(admin,username,"foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            log.debug("created user: "+username+", foo123, "+userDN);
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -261,8 +307,8 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         }
 
         if (userExists) {
-            log.debug("User cmptest already exists.");
-            TestTools.getUserAdminSession().setUserStatus(admin,"cmptest",UserDataConstants.STATUS_NEW);
+            log.debug("User "+username+" already exists.");
+            TestTools.getUserAdminSession().setUserStatus(admin,username,UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
     }

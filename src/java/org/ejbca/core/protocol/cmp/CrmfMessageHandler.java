@@ -19,6 +19,7 @@ import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -63,6 +64,7 @@ import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -258,12 +260,18 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									} catch (FinderException e) {
 										// User can not be found, leave user as null
 									}
+									String email = null;
+									List emails = CertTools.getEmailFromDN(altNames);
+									emails.addAll(CertTools.getEmailFromDN(dnname.toString()));
+									if (!emails.isEmpty()) {
+										email = (String) emails.get(0);	// Use rfc822name or first SubjectDN email address as user email address if available
+									}
 									if (user == null) {
 										try {
 											if (log.isDebugEnabled()) {
 												log.debug("Creating new user with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
 											}
-											usersession.addUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
+											usersession.addUser(admin, username, pwd, dnname.toString(), altNames, email, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
 										} catch (CreateException e) {
 											// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
 											// This was veery strange, we didn't find it before, but now it exists?
@@ -271,7 +279,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 											String updateMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
 											log.info(updateMsg);
 											// If the user already exists, we will change him instead and go for that
-											usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
+											usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, email, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 										}
 									} else {
 										// If the user already exists, we will change him instead and go for that
@@ -279,7 +287,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 										if (log.isDebugEnabled()) {
 											log.debug("Changing user to eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
 										}
-										usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
+										usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, email, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 									}
 									addedUser = true;
 								} catch (NotFoundException e) {
