@@ -1,4 +1,0 @@
-Howto for windows smart card logon:
-
-Build the docs with 'ant doc' and go to the user's guide (or at ejbca.org) and look in 
-Documentation->Howto->Microsoft smart card logon.
