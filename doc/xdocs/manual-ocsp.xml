@@ -29,6 +29,24 @@ Activate like this:
 $TOOLBOX_HOME/ejbcaClientToolBox.sh OCSPActivate
 </source>
 </section>
+
+<section name="Chain validation">
+<p>
+When returning status of a certificate whose status is requested in an OCSP request, the status of the CA certificate of this certificate is also validated.
+</p>
+</section>
+
+<section name="Multiple responder and CA certificates">
+<p>
+The OCSP responder can have many responder certificates, each issued by one CA. This means that the responder can answer requests targeted at multiple CAs. 
+There is no built in limitation on the number of CAs that can be handled.
+</p>
+<p>
+There can exist multiple CA certificates with the same DN. The OCSP standard includes IssuerNameHash and IssuerKeyHash in the, meaning that
+the OCSP protocol, and the responder, can handle key rollover on the CA without issues. 
+</p>
+</section>
+
 <section name="Using the API">
 <p>
 The best way to learn the API is by looking at the source code, since it is included. The client API is in the class 
