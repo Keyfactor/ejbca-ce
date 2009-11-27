@@ -352,10 +352,7 @@ Router#debug crypto pki validation
   </section>
   
   <section name="Configure EJBCA with Sun Access Manager/OpenSSO">
-  <p>
-  A really good article and description about EJBCA and OpenSSO can be found in Bruno's <a href="http://developers.sun.com/identity/reference/techart/opensso_protect.html">article</a>.
-  </p>
-  <p>EJBCA can issue certificates to be used when protecting sites using OpenSOO (Sun's Access Manager). 
+  <p>EJBCA can issue certificates to be used when protecting sites using OpenSSO (Sun's Access Manager). 
   EJBCA will then be configured to publish issued certificates to the AM LDAP server.
   </p>
   <p>The configuration is really simple and after installing EJBCA consists of only these steps:
@@ -399,7 +396,10 @@ Router#debug crypto pki validation
   When the users certificate is created, the certificate is published to the AM LDAP server and certificate authentication can be configured and used in AM.
   </p>
   
-  <subsection name="EJBCA - OpenSSO Integration paper">
+  <subsection name="EJBCA - OpenSSO Integration articles">
+  <p>
+  A really good article and description about EJBCA and OpenSSO can be found in Bruno's <a href="http://developers.sun.com/identity/reference/techart/opensso_protect.html">article</a>.
+  </p>
   <p><a href="http://download.primekey.se/documents/ejbca-opensso-integration-techpaper.pdf">This paper</a> also describes easy integration between EJBCA and OpenSSO, where EJBCA is used as a single point of provisioning.
   </p> 
   </subsection>
