@@ -369,7 +369,6 @@ public class CertTools {
      * @param dn the DN
      *
 	 * @return ArrayList containing email or empty list if email is not present
-     * @return the found email address, or <code>null</code> if none is found
      */
     public static ArrayList getEmailFromDN(String dn) {
     	if (log.isTraceEnabled()) {
