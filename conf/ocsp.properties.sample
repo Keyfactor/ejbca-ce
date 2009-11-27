@@ -307,6 +307,9 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
 # Specifies if transaction logging should be performed from the OCSP responder and formats how that information should be logged yyyy-MM-dd:HH:mm:ss
 # Change below to true if you want transaction information to be logged
+#
+# See the OCSP installation guide for more details on the transaction and audit logging.
+#
 # Default: false
 #ocsp.trx-log = true
 
