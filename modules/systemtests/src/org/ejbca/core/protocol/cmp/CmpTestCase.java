@@ -121,6 +121,10 @@ public class CmpTestCase extends TestCase {
 	}
 
 	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, X509Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+		return genCertReq(issuerDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo, extensions, notBefore, notAfter);
+	}
+	
+	protected PKIMessage genCertReq(String issuerDN, String userDN, String altNames, KeyPair keys, X509Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
 		org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
 		if (notBefore != null) {
@@ -147,16 +151,18 @@ public class CmpTestCase extends TestCase {
         if (exts == null) {
         	// SubjectAltName
     		// Some altNames
-            GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com");
             ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
             DEROutputStream         dOut = new DEROutputStream(bOut);
-            dOut.writeObject(san);
-            byte[] value = bOut.toByteArray();
-        	X509Extension sanext = new X509Extension(false, new DEROctetString(value));
             Vector values = new Vector();
             Vector oids = new Vector();
-            values.add(sanext);
-            oids.add(X509Extensions.SubjectAlternativeName);
+        	if (altNames != null) {
+                GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
+                dOut.writeObject(san);
+                byte[] value = bOut.toByteArray();
+                X509Extension sanext = new X509Extension(false, new DEROctetString(value));
+                values.add(sanext);
+                oids.add(X509Extensions.SubjectAlternativeName);
+        	}
             // KeyUsage
             int bcku = 0;
             bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
@@ -164,7 +170,7 @@ public class CmpTestCase extends TestCase {
             bOut = new ByteArrayOutputStream();
             dOut = new DEROutputStream(bOut);
             dOut.writeObject(ku);
-            value = bOut.toByteArray();
+            byte[] value = bOut.toByteArray();
         	X509Extension kuext = new X509Extension(false, new DEROctetString(value));
             values.add(kuext);
             oids.add(X509Extensions.KeyUsage);            
