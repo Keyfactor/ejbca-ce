@@ -134,6 +134,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 
 	/**
 	 * @return the last value of the previous method.
+	 * @see setNextRunTimestap
 	 * 
 	 */
 	public Date getOldRunTimestamp() {
@@ -145,13 +146,15 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	}
 
 	/**
-	 * @param active the active to set
+	 * @param nextRunTimeStamp the active time to set
+	 * This method saves the previous value so that workers can access
+	 * when they are to be run in the future as well as when they
+	 * should have been run.
 	 */
 	public void setNextRunTimestamp(Date nextRunTimeStamp) {
 		data.put (OLDRUNTIMESTAMP, new Long(getNextRunTimestamp ().getTime()));
 		data.put(NEXTRUNTIMESTAMP, new Long(nextRunTimeStamp.getTime()));
 	}
-
 
 	/**
 	 * @return the description
