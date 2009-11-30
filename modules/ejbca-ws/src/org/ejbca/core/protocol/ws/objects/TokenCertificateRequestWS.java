@@ -14,7 +14,7 @@
 package org.ejbca.core.protocol.ws.objects;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.ejbca.core.protocol.ws.common.HardTokenConstants;
+import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 /**
  * Base class this is a ITokenCertificateRequest, either

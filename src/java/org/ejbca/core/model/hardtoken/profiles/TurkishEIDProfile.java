@@ -17,6 +17,7 @@ package org.ejbca.core.model.hardtoken.profiles;
 import java.util.ArrayList;
 
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 
 
@@ -28,7 +29,7 @@ import org.ejbca.core.model.SecConst;
 public class TurkishEIDProfile extends EIDProfile {
 		
 	// Public Constants
-	public static final int TYPE_TURKISHEID = 3;
+	public static final int TYPE_TURKISHEID = HardTokenConstants.TOKENTYPE_TURKISHEID;
 	
 	public static final float LATEST_VERSION = 1;
 

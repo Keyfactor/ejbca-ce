@@ -1,25 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ejbca-ejb" default="build">
     <description>
-            The EJBCA EJB component
+            The EJBCA EJB component.
+    	
+    		The EJBCA util library is also built from this source.
     </description>
 
 	<dirname property="this.dir" file="${ant.file.ejbca-ejb}"/>
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-util.dir" location="${this.dir}/build-util"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
 	<path id="compile.classpath">
-		<path location="${mod.ejbca-util.lib}" />
-		<path refid="lib.commons-collections.classpath"/>
+		<path refid="compile-util.classpath"/>
+	</path>
+	
+	<path id="compile-util.classpath">
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
-		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.jline.classpath"/>
+		<path refid="lib.ldap.classpath"/>
+		<path refid="lib.mail.classpath"/>
+		<path refid="lib.batik.classpath"/>
+		<path refid="lib.xmlsec.classpath"/>
 		<path refid="lib.jee.classpath"/>
 	</path>
 
@@ -33,14 +47,137 @@
     <target name="build" description="Build this module" depends="ejbca-ejb">
     </target>
 
+    <target name="build-util" description="Build the ejbca-util JAR" depends="compile-util">
+    	<dirname file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.dir"/>
+    	<mkdir dir="${mod.ejbca-util.lib.dir}" />
+    	<jar destfile="${mod.ejbca-util.lib}">
+   			<fileset dir="${build-util.dir}" includes="**/*.class"/>
+        	<fileset dir="${ejbca.home}/src/java">
+        	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
+        	</fileset>
+    	</jar>
+    </target>
+
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
+		<delete dir="${build-util.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-ejb.lib}" />
     </target>
 	
     <target name="compile">
     	<fail message="This component currently only holds the tests that depends on classes from the EJB component!"/>
+    </target>
+
+    <target name="compile-util">
+    	<mkdir dir="${build-util.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build-util.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile-util.classpath"/>
+        	</classpath>
+        	<!-- From EJBCA WS common lib -->
+           	<include name="org/ejbca/core/model/SecConst.java"/>
+        	<include name="org/ejbca/core/model/approval/ApprovalRequestExecutionException.java"/>
+        	<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>
+           	<include name="org/ejbca/core/model/approval/WaitingForApprovalException.java"/>
+           	<include name="org/ejbca/core/model/authorization/AuthorizationDeniedException.java"/>
+           	<include name="org/ejbca/core/model/ca/SignRequestException.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
+           	<include name="org/ejbca/core/model/ca/publisher/PublisherException.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/HardTokenDoesntExistsException.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/HardTokenExistsException.java"/>
+           	<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
+           	<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
+           	<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
+           	<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
+           	<include name="org/ejbca/core/model/ra/userdatasource/MultipleMatchException.java"/>
+           	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceException.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/HardTokenConstants.java"/>
+        	<include name="org/ejbca/util/CertTools.java"/>
+           	<include name="org/ejbca/util/query/IllegalQueryException.java"/>
+           	<include name="org/ejbca/util/query/BasicMatch.java"/>
+           	<include name="org/ejbca/util/query/UserMatch.java"/>
+        	<!-- From EJBCA WS CLI (including some of the classes above) -->
+           	<include name="org/ejbca/ui/cli/ErrorAdminCommandException.java"/>
+           	<include name="org/ejbca/ui/cli/IAdminCommand.java"/>
+           	<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
+           	<include name="org/ejbca/util/keystore/P11Slot.java"/>
+           	<include name="org/ejbca/util/provider/TLSProvider.java"/>
+           	<include name="org/ejbca/util/PerformanceTest.java"/>
+           	<include name="org/ejbca/util/RequestMessageUtils.java"/>
+        	<!-- From EJBCA XKMS CLI (including some of the classes above) -->
+           	<include name="org/ejbca/util/keystore/P12toPEM.java"/>
+        	<!-- From EJBCA EJB interfaces (including some of the classes above) -->
+           	<include name="org/ejbca/core/model/log/Admin.java"/>
+           	<include name="org/ejbca/core/model/approval/AdminAlreadyApprovedRequestException.java"/>
+           	<include name="org/ejbca/core/model/approval/ApprovalDataVO.java"/>
+           	<include name="org/ejbca/core/model/approval/Approval.java"/>
+           	<include name="org/ejbca/util/query/Query.java"/>
+           	<include name="org/ejbca/core/model/authorization/AdminGroupExistsException.java"/>
+           	<include name="org/ejbca/core/model/authorization/AuthenticationFailedException.java"/>
+           	<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
+           	<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/CAInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/IllegalKeyStoreException.java"/>
+           	<include name="org/ejbca/core/model/ca/publisher/PublisherQueueVolatileData.java"/>
+           	<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
+           	<include name="org/ejbca/core/model/ca/publisher/PublisherConnectionException.java"/>
+           	<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>
+           	<include name="org/ejbca/core/model/ca/publisher/PublisherExistsException.java"/>
+           	<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
+           	<include name="org/ejbca/core/model/ca/SignRequestSignatureException.java"/>
+           	<include name="org/ejbca/core/model/ca/extendedcaservices/ExtendedCAServiceRequest.java"/>
+           	<include name="org/ejbca/core/model/ca/extendedcaservices/ExtendedCAServiceResponse.java"/>
+           	<include name="org/ejbca/core/ejb/ca/store/CertificateStatus.java"/>
+           	<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/store/CRLInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/store/CertReqHistory.java"/>
+           	<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfileExistsException.java"/>
+           	<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfile.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/UnavailableTokenException.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfile.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/HardTokenProfileExistsException.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuer.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerData.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/types/HardToken.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/HardTokenData.java"/>
+           	<include name="org/ejbca/core/model/keyrecovery/KeyRecoveryData.java"/>
+           	<include name="org/ejbca/core/model/log/ILogExporter.java"/>
+           	<include name="org/ejbca/core/model/log/LogConfiguration.java"/>
+           	<include name="org/ejbca/core/model/log/ILogDevice.java"/>
+           	<include name="org/ejbca/core/model/log/IProtectedLogToken.java"/>
+           	<include name="org/ejbca/core/model/log/ProtectedLogExportRow.java"/>
+           	<include name="org/ejbca/core/model/log/ProtectedLogEventRow.java"/>
+           	<include name="org/ejbca/core/model/log/ProtectedLogEventIdentifier.java"/>
+           	<include name="org/ejbca/core/model/log/IProtectedLogExportHandler.java"/>
+           	<include name="org/ejbca/core/model/protect/TableVerifyResult.java"/>
+           	<include name="org/ejbca/core/model/ra/raadmin/AdminPreference.java"/>
+           	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileExistsException.java"/>
+           	<include name="org/ejbca/core/model/ra/userdatasource/BaseUserDataSource.java"/>
+           	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
+           	<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
+           	<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
+        	<!-- From EJBCA EJB CLI (including some of the classes above) -->
+           	<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
+           	<include name="org/ejbca/core/protocol/X509ResponseMessage.java"/>
+           	<include name="org/ejbca/util/PluginTool.java"/>
+           	<include name="org/ejbca/util/PrinterManager.java"/>
+           	<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
+           	<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+           	<include name="org/ejbca/util/CliTools.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/X509CAInfo.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
+           	<include name="org/ejbca/core/model/log/ProtectedLogConstants.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/profiles/IPINEnvelopeSettings.java"/>
+           	<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
+        	<!-- From EJBCA External SCEP RA (including some of the classes above) -->
+           	<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
+           	<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>
+    	</javac>
     </target>
 
     <target name="compile-tests" depends="build">
@@ -70,6 +207,12 @@
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build-test.dir}" includes="**/*.class">
 					<exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper*.class"/>
+					<exclude name="org/ejbca/core/model/InternalResourcesTestClass.class"/>
+					<exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper*.class"/>
+					<exclude name="org/ejbca/core/protocol/ocsp/CacheExceptionHandler.class"/>
+					<exclude name="org/ejbca/core/protocol/ocsp/CacheTester.class"/>
+					<exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups*.class"/>
+					<exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups*.class"/>
 				</fileset>
 			</batchtest>
 		</junit>

@@ -49,7 +49,7 @@
 	</target>
 
 	<target name="ejbca-util" description="Build EJBCA util library">
-		<ant antfile="${mod.ejbca-util.path}/build.xml" target="build" inheritall="false"/>
+		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-util" inheritall="false"/>
 	</target>
 
 	<target name="ejbca-ws" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">

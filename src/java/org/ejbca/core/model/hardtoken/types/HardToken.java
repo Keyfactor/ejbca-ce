@@ -16,6 +16,7 @@ package org.ejbca.core.model.hardtoken.types;
 import java.io.Serializable;
 
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 
 
@@ -31,9 +32,9 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     public static final float LATEST_VERSION = 0;
     public static final String TOKENTYPE = "TOKENTYPE";
     
-	public static final String LABEL_REGULARCARD   = "LABEL_REGULARCARD";
-	public static final String LABEL_TEMPORARYCARD = "LABEL_TEMPORARYCARD";
-	public static final String LABEL_PROJECTCARD   = "LABEL_PROJECTCARD";
+	public static final String LABEL_REGULARCARD   = HardTokenConstants.LABEL_REGULARCARD;	//"LABEL_REGULARCARD";
+	public static final String LABEL_TEMPORARYCARD = HardTokenConstants.LABEL_TEMPORARYCARD;	//"LABEL_TEMPORARYCARD";
+	public static final String LABEL_PROJECTCARD   = HardTokenConstants.LABEL_PROJECTCARD;	//"LABEL_PROJECTCARD";
 
     
     public static final String TOKENPROFILE = "TOKENPROFILE";
