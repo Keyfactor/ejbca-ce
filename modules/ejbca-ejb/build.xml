@@ -11,8 +11,10 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-util.dir" location="${this.dir}/build-util"/>
+	<property name="build-temp.dir" location="${this.dir}/build-temp"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
+	<property name="src-temp.dir" location="${this.dir}/src-temp"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
@@ -44,7 +46,8 @@
 		<path refid="lib.junit.classpath"/>
 	</path>
 
-    <target name="build" description="Build this module" depends="ejbca-ejb">
+    <target name="build" description="Build this module" depends="ejbca-ejb"> <!-- dependecy-check,  -->
+    	<!-- This module is still JARed in the old build system -->
     </target>
 
     <target name="build-util" description="Build the ejbca-util JAR" depends="compile-util">
@@ -62,12 +65,77 @@
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${build-util.dir}" />
+		<delete dir="${src-temp.dir}" />
+		<delete dir="${build-temp.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-ejb.lib}" />
+		<delete file="${mod.ejbca-util.lib}" />
     </target>
 	
     <target name="compile">
     	<fail message="This component currently only holds the tests that depends on classes from the EJB component!"/>
+    </target>
+
+    <target name="dependecy-check" depends="ejbca-ejb-interfaces-xdoclet" description="Perform a dependency check on the different EJBCA core components">
+    	<!--
+    		To enforce proper dependencies between different core components of the EJBCA core should be able to
+    		compile each component with only the current components dependecies in the classpath. To make sure
+    		this happens we need to isolate the source files first.
+    		
+    		The code below are mainly a temporary help to be able to devide the components into new packages
+    		more easily. Ideally each include should only be "org/ejbca/<component>/**/*.java".
+    	-->
+    	<mkdir dir="${src-temp.dir}"/>
+    	<mkdir dir="${build-temp.dir}"/>
+    	<!-- Basic configuration, utils and constants component -->
+    	<mkdir dir="${src-temp.dir}/common"/>
+    	<mkdir dir="${build-temp.dir}/common"/>
+    	<copy todir="${src-temp.dir}/common">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/PropertyEntityPK.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/config/ConfigurationHolder.java"/>
+    			<include name="org/ejbca/config/EjbcaConfiguration.java"/>
+    			<!--
+    			-->
+    			<include name="org/ejbca/util/GUIDGenerator.java"/>
+    			<include name="org/ejbca/util/JDBCUtil.java"/>
+    			<include name="org/ejbca/util/StringTools.java"/>
+    			<include name="org/ejbca/util/FileTools.java"/>
+    			<include name="org/ejbca/util/Base64.java"/>
+    			<include name="org/ejbca/util/keystore/KeyTools.java"/>
+				<include name="org/ejbca/util/CertTools.java"/>
+    			<include name="org/ejbca/core/ejb/*.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/common" destdir="${build-temp.dir}/common" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<pathelement location="${build-temp.dir}/config"/>
+        		<path refid="compile.classpath"/>
+        	</classpath>
+        </javac>
+    	<!-- Protect component -->
+    	<mkdir dir="${src-temp.dir}/protect"/>
+    	<mkdir dir="${build-temp.dir}/protect"/>
+    	<copy todir="${src-temp.dir}/protect">
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/protect/**/*.java"/>
+    			<include name="org/ejbca/core/model/protect/**/*.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/protect" destdir="${build-temp.dir}/protect" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/config"/>
+        	</classpath>
+        </javac>
+    	
+    	
+    	
     </target>
 
     <target name="compile-util">
@@ -190,6 +258,12 @@
         		<path refid="lib.junit.classpath"/>
         	</classpath>
     	</javac>
+        <copy file="${this.dir}/log4j.xml" todir="${build-test.dir}" failonerror="true"/>
+		<copy todir="${build-test.dir}" failonerror="true">
+			<fileset dir="${ejbca.home}/src">
+				<include name="intresources/**"/>
+			</fileset>
+		</copy>
     </target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
@@ -197,7 +271,6 @@
     	<property name="reports.dir" location="${reports.base.dir}/test"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
-        <copy file="${this.dir}/log4j.xml" todir="${build-test.dir}" failonerror="true"/>
 		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
