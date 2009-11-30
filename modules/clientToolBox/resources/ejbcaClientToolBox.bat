@@ -1,6 +1,6 @@
 @echo off
 rem Starting ctb using a Windows .BAT file
-set TOOLBOX_HOME=.
+set TOOLBOX_HOME=%~dp0
 
 rem Fixup arguments, we have to do this since windows normally only 
 rem supports %1-%9 as command line arguments
@@ -17,13 +17,10 @@ shift
 set j=%9
 rem echo %a% %b% %c% %d% %e% %f% %g% %h% %i% %j%
 
-if exist "%TOOLBOX_HOME%\clientToolBox.jar" goto exists
+if exist "%TOOLBOX_HOME%clientToolBox.jar" goto exists
 	echo You have to build the ClientToolBox before running this command.
 	goto end
 :exists
 
-@echo on
-java -Djava.endorsed.dirs="%TOOLBOX_HOME%\endorsed" -jar "%TOOLBOX_HOME%\clientToolBox.jar" %a% %b% %c% %d% %e% %f% %g% %h% %i% %j%
-
-:end
-=======
+rem @echo on
+java -Djava.endorsed.dirs="%TOOLBOX_HOME%endorsed" -jar "%TOOLBOX_HOME%clientToolBox.jar" %a% %b% %c% %d% %e% %f% %g% %h% %i% %j%
