@@ -1,7 +1,6 @@
 @echo off
 rem Starting ctb using a Windows .BAT file
-rem set TOOLBOX_HOME=.
-set TOOLBOX_HOME=%EJBCA_HOME%\clientToolBox-dist
+set TOOLBOX_HOME=.
 
 rem Fixup arguments, we have to do this since windows normally only 
 rem supports %1-%9 as command line arguments
