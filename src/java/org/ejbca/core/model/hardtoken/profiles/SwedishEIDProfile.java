@@ -13,12 +13,10 @@
  
 package org.ejbca.core.model.hardtoken.profiles;
 
-
 import java.util.ArrayList;
 
 import org.ejbca.core.model.SecConst;
-
-
+import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
@@ -28,7 +26,7 @@ import org.ejbca.core.model.SecConst;
 public class SwedishEIDProfile extends EIDProfile {
 		
 	// Public Constants
-	public static final int TYPE_SWEDISHEID = 1;
+	public static final int TYPE_SWEDISHEID = HardTokenConstants.TOKENTYPE_SWEDISHEID;
 	
 	public static final float LATEST_VERSION = 4;
 

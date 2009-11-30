@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.ws.objects;
 
-import org.ejbca.core.protocol.ws.common.HardTokenConstants;
+import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 /**
  * base class that this is a certificate response

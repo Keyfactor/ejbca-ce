@@ -12,7 +12,6 @@
     </target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases">
-    	<ant antfile="build.xml" dir="modules/ejbca-util" target="test" />
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" />
     </target>
 
@@ -23,7 +22,6 @@
     	    <path>
 				<fileset dir="${ejbca.home}" id="test.runone.fileset">
 					<include name="modules/ejbca-ejb/src-test/**/${test.runone}.java" />
-					<include name="modules/ejbca-util/src-test/**/${test.runone}.java" />
 					<include name="modules/systemtests/src/**/${test.runone}.java" />
 					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 				</fileset>
