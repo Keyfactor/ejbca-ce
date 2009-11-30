@@ -90,9 +90,9 @@
     	<copy todir="${mod.clientToolBox.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${lib.clientToolBox.classpath.property}"/>
     	</copy>
-    	<!-- Copy all the files in the clientToolBox.lib.classpath to mod.clientToolBox.dist/endorsed -->
+    	<!-- Copy all the files in the clientToolBox.endorsed.classpath to mod.clientToolBox.dist/endorsed -->
     	<pathconvert property="endorsed.clientToolBox.classpath.property" pathsep=" ">
-    	    <path refid="clientToolBox.lib.classpath" />
+    	    <path refid="clientToolBox.endorsed.classpath" />
     		<map from="${ejbca.home}/" to=""/>
     	</pathconvert>
     	<copy todir="${mod.clientToolBox.dist}/endorsed" flatten="true">
