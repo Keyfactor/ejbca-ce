@@ -17,7 +17,6 @@
     </target>
 
 	<target name="clean" description="Clean all modules">
-		<ant antfile="${mod.ejbca-util.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"/>
