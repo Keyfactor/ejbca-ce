@@ -162,7 +162,7 @@ function viewcert(row){
   <% } %>
 
   <% if(largeresult){ %>
-     <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + LogConstants.MAXIMUM_QUERY_ROWCOUNT
+     <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
                                              + " " + ejbcawebbean.getText("ROWSWILLBEDISPLAYED") %> </div> </H4>  
   <% } %>
   <% if(cmsnotactive){ %>

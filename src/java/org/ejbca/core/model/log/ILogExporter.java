@@ -23,30 +23,25 @@ import java.util.Collection;
  */
 public interface ILogExporter {
 
-	/** Sets the entries to be exported. Entries can also be set in the contructor if it is more suitable for 
+	/** Sets the entries to be exported. Entries can also be set in the constructor if it is more suitable for 
 	 * the implementing class.  
 	 * 
 	 * @param logentries a Collection of LogEntry
 	 */
 	public void setEntries(Collection logentries);
 	
-	/** Returns the number of log intries that are about to be exported
+	/** Returns the number of log entries that are about to be exported
 	 * 
 	 * @return positive integer or 0
 	 */
 	public int getNoOfEntries();
 
-	/** Gets a CA used to create a signed CMS message of the log export, can be null for plain export
-	 * 
-	 * @return signCA CA (caid in string format, 12345) used to create a signed CMS message of the log export, or null for plain export
-	 */
-	public String getSigningCA();
-	
 	/** Returns the exported data, determined by the exporting class. Can be binary or text data.
 	 * 
+	 * @throws Exception if an error occurs during export
 	 * @return byte data or null if no of exported entries are 0.
 	 */
-	public byte[] export();
+	public byte[] export(Admin admin) throws Exception;
 
 }
 

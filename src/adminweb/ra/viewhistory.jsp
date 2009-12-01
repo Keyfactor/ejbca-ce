@@ -211,7 +211,7 @@
 
      logentries = logdata.getEntries(record,size);
      if(logentries  != null)
-       if(logentries.length >= LogConstants.MAXIMUM_QUERY_ROWCOUNT) 
+       if(logentries.length >= LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
          largeresult = true; 
     }
   }  
@@ -279,7 +279,7 @@ function viewcert(row){
       <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWHIST") %></h4></div> 
     <% }else{ %>
     <%   if(largeresult){ %>
-         <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + LogConstants.MAXIMUM_QUERY_ROWCOUNT
+         <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
                                              + " " + ejbcawebbean.getText("ROWSWILLBEDISPLAYED") %> </div> </H4>  
     <%   } %>
   <p>

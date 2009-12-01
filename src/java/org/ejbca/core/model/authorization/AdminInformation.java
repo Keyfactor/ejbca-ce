@@ -41,18 +41,22 @@ public class AdminInformation implements java.io.Serializable {
 	  
     }
     
-	public AdminInformation(AdminGroup admingroup) {
-	  this.specialuser=0;      
-	  this.admingroup= admingroup;	  
-	}
+    private AdminInformation() { 
+  	  this.specialuser = 0;      
+  	}
 
+    public static AdminInformation getAdminInformationByGroupId(int adminGroupId) {
+    	AdminInformation adminInformation = new AdminInformation(); 
+    	adminInformation.adminGroupId = adminGroupId;
+    	return adminInformation;
+    }
 
     public boolean isSpecialUser() {
       return this.specialuser!=0;
     }
     
     public boolean isGroupUser() {
-      return this.admingroup != null;	
+      return this.adminGroupId != null;	
     }
 
     public Certificate getX509Certificate() {
@@ -64,11 +68,12 @@ public class AdminInformation implements java.io.Serializable {
     }
     
     public int getGroupId(){
-      return this.admingroup.getAdminGroupId();	
+      return this.adminGroupId;	
     }
 
     // Private fields
     private Certificate certificate;
     private int specialuser = 0;
-    private AdminGroup admingroup = null;
+    private Integer adminGroupId = null;
+    
 }

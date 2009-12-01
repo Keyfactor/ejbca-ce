@@ -32,20 +32,12 @@ import org.ejbca.config.OldLogConfiguration;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.log.LogConfigurationDataLocal;
 import org.ejbca.core.ejb.log.LogConfigurationDataLocalHome;
 import org.ejbca.core.ejb.log.LogEntryDataLocalHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
@@ -65,8 +57,6 @@ public class OldLogDevice implements ILogDevice, Serializable {
 
 	private static final Logger log = Logger.getLogger(OldLogDevice.class);
 	
-    /** The home interface of SignSession session bean */
-    private ISignSessionLocalHome signsessionhome;
     /** The come interface of the protection session bean */
     private TableProtectSessionLocalHome protecthome;
     /** The home interface of  LogEntryData entity bean */
@@ -110,7 +100,6 @@ public class OldLogDevice implements ILogDevice, Serializable {
 		deviceName = name;
         logconfigurationhome = (LogConfigurationDataLocalHome) ServiceLocator.getInstance().getLocalHome(LogConfigurationDataLocalHome.COMP_NAME);
         logentryhome = (LogEntryDataLocalHome) ServiceLocator.getInstance().getLocalHome(LogEntryDataLocalHome.COMP_NAME);
-        signsessionhome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
         if (logsigning) {
         	protecthome = (TableProtectSessionLocalHome) ServiceLocator.getInstance().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
         }
@@ -175,43 +164,17 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	}
 
 	/**
-	 * Method to export log records according to a customized query on the log db data. The parameter query should be a legal Query object.
-	 *
-	 * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
-	 * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
-	 * @param logexporter is the obbject that converts the result set into the desired log format 
-	 * @return an exported byte array. Maximum number of exported entries is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT, returns null if there is nothing to export
-	 * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
-	 * @throws ExtendedCAServiceNotActiveException 
-	 * @throws IllegalExtendedCAServiceRequestException 
-	 * @throws ExtendedCAServiceRequestException 
-	 * @throws CADoesntExistsException 
-	 * @see org.ejbca.util.query.Query
+	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+	public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter, int maxResults) throws IllegalQueryException, Exception {
 		byte[] ret = null;
 		if (query != null) {
-			Collection logentries = query(query, viewlogprivileges, capriviledges);
+			Collection logentries = query(query, viewlogprivileges, capriviledges, maxResults);
 			if (log.isDebugEnabled()) {
 				log.debug("Found "+logentries.size()+" entries when exporting");    		
 			}
 			logexporter.setEntries(logentries);
-			ret = logexporter.export();
-			String ca = logexporter.getSigningCA();
-			if (log.isDebugEnabled()) {
-				log.debug("Signing CA is '"+ca+"'");    		
-			}        	
-			if ( (ret != null) && StringUtils.isNotEmpty(ca) ) {
-				try {
-					int caid = Integer.parseInt(ca);
-					ISignSessionLocal sign = signsessionhome.create();
-					CmsCAServiceRequest request = new CmsCAServiceRequest(ret, CmsCAServiceRequest.MODE_SIGN);
-					CmsCAServiceResponse resp = (CmsCAServiceResponse)sign.extendedService(admin, caid, request);
-					ret = resp.getCmsDocument();
-				} catch (CreateException e) {
-					log.error("Can not create sign session", e);
-				}
-			}
+			ret = logexporter.export(admin);
 		}
 		return ret;
 	}
@@ -219,13 +182,14 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	/**
 	 * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
 	 *
-	 * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
-	 * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
-	 * @return a collection of LogEntry. Maximum size of Collection is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT
-	 * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
+	 * @param query a number of statements compiled by query class to a SQL 'WHERE'-clause statement.
+	 * @param viewlogprivileges is a SQL query string returned by a LogAuthorization object.
+	 * @param maxResults Maximum size of Collection
+	 * @return a collection of LogEntry.
+	 * @throws IllegalQueryException when query parameters internal rules isn't fulfilled.
 	 * @see org.ejbca.util.query.Query
 	 */
-	public Collection query(Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException {
+	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
 		log.trace(">query()");
 		if (capriviledges == null || capriviledges.length() == 0 || !query.isLegalQuery()) {
 			throw new IllegalQueryException();
@@ -254,12 +218,12 @@ public class OldLogDevice implements ILogDevice, Serializable {
 			}
 			ps = con.prepareStatement(sql);
 			//ps.setFetchDirection(ResultSet.FETCH_REVERSE);
-			ps.setFetchSize(LogConstants.MAXIMUM_QUERY_ROWCOUNT + 1);
+			ps.setFetchSize(maxResults + 1);
 			// Execute query.
 			rs = ps.executeQuery();
 			// Assemble result.
 			ArrayList returnval = new ArrayList();
-			while (rs.next() && returnval.size() <= LogConstants.MAXIMUM_QUERY_ROWCOUNT) {
+			while (rs.next() && returnval.size() <= maxResults) {
 				LogEntry data = new LogEntry(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getInt(4), rs.getInt(5), new Date(rs.getLong(6)), rs.getString(7), 
 						rs.getString(8), rs.getInt(9), rs.getString(10));
 				if (logsigning) {

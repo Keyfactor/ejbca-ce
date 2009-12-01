@@ -1180,7 +1180,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
-	public Collection performQuery(String sqlQuery) {
+	public Collection performQuery(String sqlQuery, int maxResults) {
 		log.trace(">performQuery");
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -1190,12 +1190,12 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
 			ps = con.prepareStatement(sqlQuery);
 			//ps.setFetchDirection(ResultSet.FETCH_REVERSE);
-			ps.setFetchSize(LogConstants.MAXIMUM_QUERY_ROWCOUNT + 1);
+			ps.setFetchSize(maxResults + 1);
 			// Execute query.
 			rs = ps.executeQuery();
 			// Assemble result.
 			ArrayList returnval = new ArrayList();
-			while (rs.next() && returnval.size() <= LogConstants.MAXIMUM_QUERY_ROWCOUNT) {
+			while (rs.next() && returnval.size() <= maxResults) {
 				// Use pk 0
 				LogEntry data = new LogEntry(0, rs.getInt(2), rs.getString(3), rs.getInt(4), rs.getInt(5), new Date(rs.getLong(6)), rs.getString(7), 
 						rs.getString(8), rs.getInt(9), rs.getString(10));

@@ -74,30 +74,27 @@ public class AuthorizationProxy implements Serializable {
 
       return returnval.booleanValue();
     }
-    
-    public boolean isGroupAuthorized(AdminInformation admin, 
-                                       int admingrouppk, String resource){
-		Boolean returnval = null;
-			  			  			  
-		int tmp = admingrouppk ^ resource.hashCode();
-		  // Check if name is in hashmap
-		returnval = (Boolean) groupstore.get(new Integer(tmp));
-      
-		if(returnval==null){          
-		  // Get authorization from access tree
-			try {
-				AdminInformation admgroup = new AdminInformation(admingrouphome.findByPrimaryKey(new Integer(admingrouppk)).getAdminGroupNames());				
-				returnval = new Boolean(accesstree.isAuthorized(admgroup, resource) || 
-				                        accesstree.isAuthorized(admgroup, "/super_administrator"));
-				                 				                                       			                       
-			} catch (FinderException e) {
-                returnval = Boolean.FALSE;
-			}
-			groupstore.put(new Integer(tmp),returnval);      
-		  }
 
-		return returnval.booleanValue();
-    	    	
+    /**
+     * Lookup in the cache if the AdminGroup is authorized to the specified resource
+     * @param adminGroupId The id of the AdminGroup
+     * @param resource The resource that we want check authorization for
+     * @return
+     */
+    public boolean isGroupAuthorized(int adminGroupId, String resource) {
+    	Boolean returnval = null;
+    	int hashMapKey = adminGroupId ^ resource.hashCode();
+    	// Check if the AdminGroup is present in the HashMap
+    	Object o = groupstore.get(new Integer(hashMapKey));
+    	if (returnval==null) {
+    		// Get authorization from access tree
+    		AdminInformation admgroup = AdminInformation.getAdminInformationByGroupId(adminGroupId);				
+    		returnval = new Boolean(accesstree.isAuthorized(admgroup, resource) || accesstree.isAuthorized(admgroup, "/super_administrator"));
+    		groupstore.put(new Integer(hashMapKey),returnval);
+    	} else {
+    		returnval = (Boolean) o;
+    	}
+    	return returnval.booleanValue();
     }
 
     /**

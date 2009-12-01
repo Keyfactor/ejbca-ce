@@ -32,8 +32,8 @@ public class AccessTreeNode implements Serializable{
     private static final Logger log = Logger.getLogger(AccessTreeNode.class);
 
     // Private fields.
-    private String  name;
-    private ArrayList  useraccesspairs;
+    private String name;
+    private ArrayList useraccesspairs;
     private HashMap leafs;
 
     // Private Constants

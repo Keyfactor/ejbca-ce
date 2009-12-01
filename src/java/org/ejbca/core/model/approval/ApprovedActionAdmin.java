@@ -11,18 +11,19 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.model.log;
+package org.ejbca.core.model.approval;
 
 
 import java.security.cert.Certificate;
 
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminInformation;
+import org.ejbca.core.model.log.Admin;
 
 /**
  * 
  * Special Admin type that should be used for approved actions.
- * Is a mix where the request admin is shown in the log but hte
+ * Is a mix where the request admin is shown in the log but the
  * authorization is done with the internal admin.
  * 
  * @author Philip Vendil 2007 jun 24

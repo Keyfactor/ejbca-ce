@@ -37,10 +37,6 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocal;
 import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -490,14 +486,14 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+	public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter, int maxResult) throws IllegalQueryException, Exception {
 		return null;
 	}
 
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public Collection query(Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException {
+	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
 		log.trace(">query()");
 		Collection ret = null;
 		if (capriviledges == null || capriviledges.length() == 0 || !query.isLegalQuery()) {
@@ -517,7 +513,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		if (log.isDebugEnabled()) {
 			log.debug("Query: "+sql);			
 		}
-		ret = getProtectedLogSession().performQuery(sql);
+		ret = getProtectedLogSession().performQuery(sql, maxResults);
 		log.trace("<query()");
 		return ret;
 	} // query

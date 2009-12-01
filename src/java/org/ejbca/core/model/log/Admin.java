@@ -19,7 +19,6 @@
 
 package org.ejbca.core.model.log;
 
-
 import java.io.Serializable;
 import java.security.cert.Certificate;
 
@@ -28,8 +27,8 @@ import org.ejbca.core.model.authorization.AdminInformation;
 import org.ejbca.util.CertTools;
 
 /**
- * This is a class containing information about the administrator or admin preforming the event.
- * Data contained in the class is preferbly
+ * This is a class containing information about the administrator or admin performing the event.
+ * Data contained in the class is preferably
  *
  * @author TomSelleck
  * @version $Id$
@@ -47,7 +46,9 @@ public class Admin implements Serializable {
      */
     private static final long serialVersionUID = -9221031402622809524L;
     
-    // Public Constants
+    /** Default CA Id for non-certificate administrators */
+    public static final int INTERNALCAID = 0;
+    
     // Indicates the type of administrator.
     /** An administrator authenticated with client certificate */
     public static final int TYPE_CLIENTCERT_USER = 0;
@@ -116,14 +117,14 @@ public class Admin implements Serializable {
      * Method that returns the caid of the CA, the admin belongs to.
      * Doesn't work properly for public web and special users so use with care.
      */
-
     public int getCaId() {
-        int returnval = LogConstants.INTERNALCAID;
+        int returnval = INTERNALCAID;
         if (type == TYPE_CLIENTCERT_USER) {
             returnval = CertTools.getIssuerDN(certificate).hashCode();
         }
         return returnval;
     }
+
     public String toString() {
     	String ret =  "UNKNOWN";
     	if ((type > -1) && (type < ADMINTYPETEXTS.length-1)) {

@@ -144,7 +144,7 @@ public class Authorizer extends Object implements java.io.Serializable {
         
         AdminInformation admininformation = admin.getAdminInformation();
         
-        if(!authorizationproxy.isGroupAuthorized(admininformation, pk, resource)){
+        if(!authorizationproxy.isGroupAuthorized(admininformation.getGroupId(), resource)){
         	try {
         		if(!admininformation.isSpecialUser()) {
         			logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
@@ -183,7 +183,7 @@ public class Authorizer extends Object implements java.io.Serializable {
         }
         
         // Check in accesstree.
-        if(!authorizationproxy.isGroupAuthorized(admin.getAdminInformation(), pk, resource)) {
+        if(!authorizationproxy.isGroupAuthorized(admin.getAdminInformation().getGroupId(), resource)) {
             throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
         }
         return true;
