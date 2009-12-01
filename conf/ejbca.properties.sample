@@ -157,6 +157,17 @@
 # English (United Kingdom)
 #ca.toolateexpiredate=19/1/2038 3:14:08 AM
 
+# ------------- Core language configuration -------------
+# The language that should be used internally for logging, exceptions and approval notifications.
+# The languagefile is stored in 'src/intresources/intresources.xx.properties'. 
+# Should be one of EN,FR,PT,PT_BR,SE
+# Default: EN
+#intresources.preferredlanguage=EN
+
+# The language used internally if a resource not found in the preferred language
+# Default: SE
+#intresources.secondarylanguage=SE
+
 # ------------- Approval configuration ------------------------
 # Settings working as default values in the approval functionality
 #

@@ -149,7 +149,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
     			if (logsigning) {
     				LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
     				TableProtectSessionLocal protect = protecthome.create();
-    				protect.protect(admin, le);
+    				protect.protect(le);
     			}
     			successfulLog = true;
     		} catch (Throwable e) {

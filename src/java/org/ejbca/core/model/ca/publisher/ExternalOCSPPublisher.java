@@ -252,7 +252,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     		TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
             try {
 				TableProtectSessionRemote remote = home.create();
-				remote.protectExternal(admin, entry, getDataSource());
+				remote.protectExternal(entry, getDataSource());
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage("protect.errorcreatesession");
 				log.error(msg, e);

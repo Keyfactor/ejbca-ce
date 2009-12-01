@@ -56,8 +56,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
-import javax.crypto.Cipher;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -77,6 +75,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 
 
@@ -738,22 +737,12 @@ public class KeyTools {
     }
 
     /**
-     * Detect if "Unlimited Strength" Policy files hase bean properly installed.
+     * Detect if "Unlimited Strength" Policy files has bean properly installed.
      * 
      * @return true if key strength is limited
      */
-    public static boolean isUsingExportableCryptography()
-    {
-    	boolean returnValue = true;
-    	try {
-    		int keylen = Cipher.getMaxAllowedKeyLength("DES");
-    		log.debug("MaxAllowedKeyLength for DES is: "+keylen);
-			if (  keylen == Integer.MAX_VALUE ) {
-				returnValue = false;
-			}
-		} catch (NoSuchAlgorithmException e) {
-		}
-		return returnValue;
+    public static boolean isUsingExportableCryptography() {
+    	return CryptoProviderTools.isUsingExportableCryptography();
     }
     
     /**

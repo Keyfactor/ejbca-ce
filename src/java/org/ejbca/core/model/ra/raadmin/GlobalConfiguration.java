@@ -17,6 +17,7 @@ package org.ejbca.core.model.ra.raadmin;
 
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
 
@@ -38,8 +39,8 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
      */
     public static final boolean HARDTOKEN_DIPLAYSENSITIVEINFO = WebConfiguration.getHardTokenDiplaySensitiveInfo();
     
-    public static final String PREFEREDINTERNALRESOURCES = WebConfiguration.getInternalResourcesPreferredLanguage();
-    public static final String SECONDARYINTERNALRESOURCES = WebConfiguration.getInternalResourcesSecondaryLanguage();
+    public static final String PREFEREDINTERNALRESOURCES = InternalResources.PREFEREDINTERNALRESOURCES;
+    public static final String SECONDARYINTERNALRESOURCES = InternalResources.SECONDARYINTERNALRESOURCES;
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};

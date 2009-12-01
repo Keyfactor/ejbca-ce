@@ -71,14 +71,8 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default: UTF-8
 #web.contentencoding=UTF-8
 
-# The language that should be used internally for logging, exceptions and approval notifications.
-# The languagefile is stored in src/intresources/intresources.xx.properties
-# and works in the same way as for web.available languages. is a global application setting 
-# Should be one of EN,FR,PT,PT_BR,SE
-#intresources.preferredlanguage=EN
-
-# The language used internally if a resource not found in the preferred language
-#intresources.secondarylanguage=SE
+# The language configuration that should be used internally for logging, exceptions and approval
+# notifications has been moved to ejbca.properties from EJBCA 3.10.
 
 # Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
 # be displayed for the administrators. If false only non-sensitive information is displayed.

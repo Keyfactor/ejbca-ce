@@ -32,10 +32,9 @@ import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.protect.Protectable;
 import org.ejbca.core.model.protect.TableVerifyResult;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
@@ -97,7 +96,7 @@ public class TableProtectSessionBean extends BaseSessionBean {
      */
     public void ejbCreate() {
         try {
-        	CertTools.installBCProvider();
+        	CryptoProviderTools.installBCProvider();
             protectentryhome = (TableProtectDataLocalHome) getLocator().getLocalHome(TableProtectDataLocalHome.COMP_NAME);
             if (keyType == ProtectConfiguration.PROTECTIONTYPE_ENC_SOFT_HMAC) {
             	key = StringTools.pbeDecryptStringWithSha256Aes192(ProtectConfiguration.getProtectionKey());
@@ -112,13 +111,12 @@ public class TableProtectSessionBean extends BaseSessionBean {
     /**
      * Store a protection entry in an external, remote database.
      *
-     * @param admin the administrator performing the event.
      * @param Protectable the object beeing protected
      *
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public void protectExternal(Admin admin, Protectable entry, String dataSource) {
+    public void protectExternal(Protectable entry, String dataSource) {
     	if (!ProtectConfiguration.getProtectionEnabled()) {
     		return;
     	}
@@ -174,7 +172,7 @@ public class TableProtectSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    public void protect(Admin admin, Protectable entry) {
+    public void protect(Protectable entry) {
     	if (!ProtectConfiguration.getProtectionEnabled()) {
         	if (log.isDebugEnabled()) {
             	debug("protect: not enabled");    		

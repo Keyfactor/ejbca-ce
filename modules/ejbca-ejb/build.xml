@@ -46,7 +46,7 @@
 		<path refid="lib.junit.classpath"/>
 	</path>
 
-    <target name="build" description="Build this module" depends="ejbca-ejb"> <!-- dependecy-check,  -->
+    <target name="build" description="Build this module" depends="dependecy-check, ejbca-ejb">
     	<!-- This module is still JARed in the old build system -->
     </target>
 
@@ -83,11 +83,13 @@
     		this happens we need to isolate the source files first.
     		
     		The code below are mainly a temporary help to be able to devide the components into new packages
-    		more easily. Ideally each include should only be "org/ejbca/<component>/**/*.java".
+    		more easily. Ideally each include should only be "org/ejbca/<component>/**/*.java" and each check
+    		could be placed in proper sub-targets.
     	-->
     	<mkdir dir="${src-temp.dir}"/>
     	<mkdir dir="${build-temp.dir}"/>
     	<!-- Basic configuration, utils and constants component -->
+    	<echo message=" ** Validating component: Basics **"/>
     	<mkdir dir="${src-temp.dir}/common"/>
     	<mkdir dir="${build-temp.dir}/common"/>
     	<copy todir="${src-temp.dir}/common">
@@ -98,15 +100,20 @@
     			<include name="org/ejbca/config/ConfigurationHolder.java"/>
     			<include name="org/ejbca/config/EjbcaConfiguration.java"/>
     			<!--
+				<include name="org/ejbca/util/CertTools.java"/>
+    			<include name="org/ejbca/util/dn/DnComponents.java"/>
+    			<include name="org/ejbca/util/keystore/KeyTools.java"/>
     			-->
+    			<include name="org/ejbca/util/CryptoProviderTools.java"/>
     			<include name="org/ejbca/util/GUIDGenerator.java"/>
     			<include name="org/ejbca/util/JDBCUtil.java"/>
     			<include name="org/ejbca/util/StringTools.java"/>
     			<include name="org/ejbca/util/FileTools.java"/>
     			<include name="org/ejbca/util/Base64.java"/>
-    			<include name="org/ejbca/util/keystore/KeyTools.java"/>
-				<include name="org/ejbca/util/CertTools.java"/>
     			<include name="org/ejbca/core/ejb/*.java"/>
+    			<!-- Dependecies from Protect that are pretty general.. --> 
+    			<include name="org/ejbca/core/model/InternalResources.java"/>
+    			
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/common" destdir="${build-temp.dir}/common" debug="on" includeantruntime="no"
@@ -117,12 +124,18 @@
         	</classpath>
         </javac>
     	<!-- Protect component -->
+    	<echo message=" ** Validating component: Protect **"/>
     	<mkdir dir="${src-temp.dir}/protect"/>
     	<mkdir dir="${build-temp.dir}/protect"/>
     	<copy todir="${src-temp.dir}/protect">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/protect/**/*DataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/protect/**/*DataLocal.java"/>
+    		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/protect/**/*.java"/>
     			<include name="org/ejbca/core/model/protect/**/*.java"/>
+    			<include name="org/ejbca/config/ProtectConfiguration.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/protect" destdir="${build-temp.dir}/protect" debug="on" includeantruntime="no"
