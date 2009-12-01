@@ -41,7 +41,6 @@ import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
@@ -367,7 +366,7 @@ public class StringTools {
     private static final char[] p = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf").toCharArray();
     private static final int iCount = 100;
     public static String pbeEncryptStringWithSha256Aes192(String in) throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
-    	if (KeyTools.isUsingExportableCryptography()) {
+    	if (CryptoProviderTools.isUsingExportableCryptography()) {
     		log.warn("Obfuscation not possible due to weak crypto policy.");
     		return in;
     	}
@@ -392,7 +391,7 @@ public class StringTools {
     }
     
     public static String pbeDecryptStringWithSha256Aes192(String in) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, UnsupportedEncodingException {
-    	if (KeyTools.isUsingExportableCryptography()) {
+    	if (CryptoProviderTools.isUsingExportableCryptography()) {
     		log.warn("De-obfuscation not possible due to weak crypto policy.");
     		return in;
     	}

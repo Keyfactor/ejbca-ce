@@ -332,7 +332,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         if (protect) {
         	CertificateInfo entry = new CertificateInfo(pk.fingerprint, cafp, data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), status, type, data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), username, tag, certificateProfileId, updateTime);
         	TableProtectSessionLocal protect = protecthome.create();
-        	protect.protect(admin, entry);            	
+        	protect.protect(entry);
         }
         log.trace("<storeCertificate()");
         return true;
@@ -1076,7 +1076,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		TableProtectSessionLocal protect;
     		try {
     			protect = protecthome.create();
-    			protect.protect(admin, entry);            	
+    			protect.protect(entry);
     		} catch (CreateException e) {
     			String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
     			error(msg, e);

@@ -80,6 +80,20 @@ public class EjbcaConfiguration {
 	}
 
 	/**
+	 * The language that should be used internally for logging, exceptions and approval notifications.
+	 */
+	public static String getInternalResourcesPreferredLanguage() {
+		return ConfigurationHolder.getExpandedString("intresources.preferredlanguage", "EN");
+	}
+	
+	/**
+	 * The language used internally if a resource not found in the preferred language
+	 */
+	public static String getInternalResourcesSecondaryLanguage() {
+		return ConfigurationHolder.getExpandedString("intresources.secondarylanguage", "SE");
+	}
+	
+	/**
 	 * How long an request should stay valid
 	 */
 	public static long getApprovalDefaultRequestValidity() {

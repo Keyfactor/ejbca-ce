@@ -20,13 +20,13 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * Class managing internal localization of texts such as notification messages
  * and log comments.
  * 
- * If fetched the resource files from the src/intlocalization directory and
+ * If fetched the resource files from the src/intresources directory and
  * is included in the file ejbca-ejb.jar
  *  
  * @author Philip Vendil 2006 sep 24
@@ -48,6 +48,9 @@ public class InternalResources implements Serializable {
      */
     private static final long serialVersionUID = -1001L;
 
+    public static final String PREFEREDINTERNALRESOURCES = EjbcaConfiguration.getInternalResourcesPreferredLanguage();
+    public static final String SECONDARYINTERNALRESOURCES = EjbcaConfiguration.getInternalResourcesSecondaryLanguage();
+
     protected static InternalResources instance = null;
 	
 	private static Properties primaryResource = new Properties();
@@ -63,8 +66,8 @@ public class InternalResources implements Serializable {
 	 * @throws IOException 
 	 */
 	protected InternalResources(boolean test) {		
-		String primaryLanguage = GlobalConfiguration.PREFEREDINTERNALRESOURCES.toLowerCase();
-		String secondaryLanguage = GlobalConfiguration.SECONDARYINTERNALRESOURCES.toLowerCase();
+		String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase();
+		String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase();
 		// The test flag is defined when called from test code (junit)		
 	    InputStream primaryStream = null;
 	    InputStream secondaryStream = null;

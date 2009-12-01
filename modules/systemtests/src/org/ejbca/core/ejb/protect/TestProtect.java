@@ -98,7 +98,7 @@ public class TestProtect extends TestCase {
         Iterator iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le = (LogEntry)iter.next();
-            tableProtectSession.protect(admin, le);        	
+            tableProtectSession.protect(le);        	
         }
         log.trace("<test01ProtectLogEntry()");
     }
@@ -182,13 +182,13 @@ public class TestProtect extends TestCase {
         }
         CertificateInfo entry = certificateStoreSession.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("1");
-        tableProtectSession.protect(admin, entry);        	        
+        tableProtectSession.protect(entry);        	        
         TableVerifyResult res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         entry.setStatus(RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE);
         res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
-        tableProtectSession.protect(admin, entry);        	        
+        tableProtectSession.protect(entry);        	        
         res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         entry.setRevocationDate(new Date());
@@ -218,13 +218,13 @@ public class TestProtect extends TestCase {
         }
         CertificateInfo entry = certificateStoreSession.getCertificateInfo(admin, endEntityFp);
         entry.setFingerprint("2");
-        tableProtectSession.protectExternal(admin, entry, dataSource);        	        
+        tableProtectSession.protectExternal(entry, dataSource);        	        
         TableVerifyResult res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         entry.setStatus(RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE);
         res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
-        tableProtectSession.protectExternal(admin, entry, dataSource);        	        
+        tableProtectSession.protectExternal(entry, dataSource);        	        
         res = tableProtectSession.verify(entry);
         assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         entry.setRevocationDate(new Date());
