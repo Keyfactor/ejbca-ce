@@ -91,7 +91,7 @@ public class TestLog extends TestCase {
         	}
         	Query query = new Query(Query.TYPE_LOGQUERY);
         	query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
-        	result = TestTools.getLogSession().query(logDeviceName, query, "", "caid=" + Integer.toString(TestTools.getTestCAId()));
+        	result = TestTools.getLogSession().query(logDeviceName, query, "", "caid=" + Integer.toString(TestTools.getTestCAId()), 500);
         	Iterator iter = result.iterator();
         	boolean found = false;
         	while (iter.hasNext()) {
@@ -104,7 +104,7 @@ public class TestLog extends TestCase {
         }
  	   ILogExporter exporter = new CsvLogExporter();
  	   exporter.setEntries(result);
-	   byte[] export = exporter.export();
+	   byte[] export = exporter.export(admin);
 	   assertNotNull(export);
 	   String str = new String(export);
 	   //assertEquals("foo", str);

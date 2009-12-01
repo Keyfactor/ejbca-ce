@@ -19,7 +19,19 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.CreateException;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 
 public class CsvLogExporter implements ILogExporter {
 	
@@ -46,6 +58,10 @@ public class CsvLogExporter implements ILogExporter {
 		return logentries.size();
 	}
 
+	/** Gets a CA used to create a signed CMS message of the log export, can be null for plain export
+	 * 
+	 * @return signCA CA (caid in string format, 12345) used to create a signed CMS message of the log export, or null for plain export
+	 */
 	public String getSigningCA() {
 		return signingCA;
 	}
@@ -57,7 +73,7 @@ public class CsvLogExporter implements ILogExporter {
 	/**
 	 * @see org.ejbca.core.model.log.ILogExporter
 	 */
-	public byte[] export() {
+	public byte[] export(Admin admin) throws Exception {
 		log.trace(">export");
 		byte[] ret = null;		
 		if (logentries != null) {
@@ -104,6 +120,30 @@ public class CsvLogExporter implements ILogExporter {
 			}
 		}
 		int no = getNoOfEntries();
+		// Sign the result if we have a signing CA
+		String ca = getSigningCA();
+		if (log.isDebugEnabled()) {
+			log.debug("Signing CA is '"+ca+"'");    		
+		}        	
+		if ( (ret != null) && StringUtils.isNotEmpty(ca) ) {
+			try {
+				int caid = Integer.parseInt(ca);
+				CmsCAServiceRequest request = new CmsCAServiceRequest(ret, CmsCAServiceRequest.MODE_SIGN);
+				ISignSessionLocal signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
+				CmsCAServiceResponse resp = (CmsCAServiceResponse)signSession.extendedService(admin, caid, request);
+				ret = resp.getCmsDocument();
+			} catch (CreateException e) {
+				log.error("Can not create sign session", e);
+			} catch (IllegalExtendedCAServiceRequestException e) {
+				log.error("Bad CA service", e);
+			} catch (CADoesntExistsException e) {
+				log.error("Bad CA", e);
+			} catch (ExtendedCAServiceRequestException e) {
+				log.error("", e);
+			} catch (ExtendedCAServiceNotActiveException e) {
+				throw e;
+			}
+		}
 		log.trace("<export: "+no+" entries");
 		return ret;
 	}

@@ -243,8 +243,14 @@
 			   out = pageContext.pushBody();
 			   return;		   
 		   }		   
-	   } catch (ExtendedCAServiceNotActiveException e) {
-		   cmsnotactive = true;
+	   } catch (Exception e) {
+		   if (e instanceof ExtendedCAServiceNotActiveException) {
+			   cmsnotactive = true;
+		   } else if (e instanceof IllegalQueryException) {
+			   illegalquery = true;
+		   } else {
+			   throw e;
+		   }
 	   }
    }
 
@@ -600,7 +606,7 @@
    }
 
    if(logentries  != null)
-     if(logbean.getResultSize() >= LogConstants.MAXIMUM_QUERY_ROWCOUNT) 
+     if(logbean.getResultSize() >= LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
         largeresult = true; 
 
 %>

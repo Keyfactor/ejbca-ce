@@ -503,11 +503,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public boolean isGroupAuthorized(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException {
+    public boolean isGroupAuthorized(Admin admin, int adminGroupId, String resource) throws AuthorizationDeniedException {
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
-        return getAuthorizer().isGroupAuthorized(admin, admingrouppk, resource);
+        return getAuthorizer().isGroupAuthorized(admin, adminGroupId, resource);
     }
 
     /**
@@ -517,11 +517,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public boolean isGroupAuthorizedNoLog(Admin admin, int admingrouppk, String resource) throws AuthorizationDeniedException {
+    public boolean isGroupAuthorizedNoLog(Admin admin, int adminGroupId, String resource) throws AuthorizationDeniedException {
         if (updateNeccessary()) {
         	updateAuthorizationTree();
         }
-        return getAuthorizer().isGroupAuthorizedNoLog(admin, admingrouppk, resource);
+        return getAuthorizer().isGroupAuthorizedNoLog(admin, adminGroupId, resource);
     }
 
     /**

@@ -22,15 +22,12 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
@@ -40,7 +37,6 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.query.BasicMatch;
-import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.LogMatch;
 import org.ejbca.util.query.Query;
 
@@ -51,6 +47,8 @@ import org.ejbca.util.query.Query;
  * @version $Id$
  */
 public class LogInterfaceBean implements java.io.Serializable {
+
+    public static final int MAXIMUM_QUERY_ROWCOUNT = WebConfiguration.getLogMaxQueryRowCount();
 
     /** Creates new LogInterfaceBean */
     public LogInterfaceBean(){  
@@ -100,7 +98,7 @@ public class LogInterfaceBean implements java.io.Serializable {
      */
 
     public LogEntryView[] filterByQuery(String deviceName, Query query, int index, int size) throws Exception {
-      Collection logentries = logsession.query(deviceName, query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+      Collection logentries = logsession.query(deviceName, query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
       logentriesview.setEntries(logentries);
       lastquery = query;
 
@@ -121,7 +119,7 @@ public class LogInterfaceBean implements java.io.Serializable {
       Query query = new Query(Query.TYPE_LOGQUERY);
       query.add(LogMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, user);
         
-      Collection logentries = logsession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+      Collection logentries = logsession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
       returnval.setEntries(logentries);
       lastquery = query;
 
@@ -142,7 +140,7 @@ public class LogInterfaceBean implements java.io.Serializable {
       
       query.add(starttime, new Date());
         
-      Collection logentries = logsession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+      Collection logentries = logsession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
       logentriesview.setEntries(logentries);
       lastquery = query;
 
@@ -267,15 +265,11 @@ public class LogInterfaceBean implements java.io.Serializable {
      * Method that exports log entries according to an exporter passed as argument.
      * @param exporter the export implementation to use, implements the ILogExporter interface
      * @return byte[] byte data or null if no of exported entries are 0.
-     * @throws IllegalQueryException 
-     * @throws ExtendedCAServiceNotActiveException 
-     * @throws IllegalExtendedCAServiceRequestException 
-     * @throws ExtendedCAServiceRequestException 
-     * @throws CADoesntExistsException 
+     * @throws Exception differs depending on the used ILogExporter 
      * @see org.ejbca.core.model.log.ILogExporter
      */
-    public byte[] exportLastQuery(String deviceName, ILogExporter exporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {    	
-    	byte[] ret = logsession.export(deviceName, admin, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), exporter);
+    public byte[] exportLastQuery(String deviceName, ILogExporter exporter) throws Exception {    	
+    	byte[] ret = logsession.export(deviceName, admin, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), exporter, MAXIMUM_QUERY_ROWCOUNT);
     	return ret;
     }
     

@@ -99,11 +99,6 @@
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/config/ConfigurationHolder.java"/>
     			<include name="org/ejbca/config/EjbcaConfiguration.java"/>
-    			<!--
-				<include name="org/ejbca/util/CertTools.java"/>
-    			<include name="org/ejbca/util/dn/DnComponents.java"/>
-    			<include name="org/ejbca/util/keystore/KeyTools.java"/>
-    			-->
     			<include name="org/ejbca/util/CryptoProviderTools.java"/>
     			<include name="org/ejbca/util/GUIDGenerator.java"/>
     			<include name="org/ejbca/util/JDBCUtil.java"/>
@@ -111,7 +106,7 @@
     			<include name="org/ejbca/util/FileTools.java"/>
     			<include name="org/ejbca/util/Base64.java"/>
     			<include name="org/ejbca/core/ejb/*.java"/>
-    			<!-- Dependecies from Protect that are pretty general.. --> 
+    			<!-- Dependecies from Protect that are pretty general.. -->
     			<include name="org/ejbca/core/model/InternalResources.java"/>
     			
     		</fileset>
@@ -131,6 +126,8 @@
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
     			<include name="org/ejbca/core/ejb/protect/**/*DataLocalHome.java"/>
     			<include name="org/ejbca/core/ejb/protect/**/*DataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionLocal.java"/>
+    			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionLocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/protect/**/*.java"/>
@@ -143,7 +140,64 @@
         	<classpath>
         		<path refid="compile.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
-        		<pathelement location="${build-temp.dir}/config"/>
+        	</classpath>
+        </javac>
+    	<!-- AdminObjects component -->
+    	<echo message=" ** Validating component: AdminObjects **"/>
+    	<mkdir dir="${src-temp.dir}/admins"/>
+    	<mkdir dir="${build-temp.dir}/admins"/>
+    	<copy todir="${src-temp.dir}/admins">
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/model/log/Admin.java"/>
+    			<include name="org/ejbca/core/model/authorization/AdminEntity.java"/>
+    			<include name="org/ejbca/core/model/authorization/AdminInformation.java"/>
+    			<include name="org/ejbca/util/dn/DNFieldExtractor.java"/>
+    			<include name="org/ejbca/util/dn/DnComponents.java"/>
+    			<include name="org/ejbca/util/CertTools.java"/>
+    			<include name="org/ejbca/core/model/ca/crl/RevokedCertInfo.java"/>
+    			<include name="org/ejbca/core/model/ca/catoken/CATokenConstants.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/admins" destdir="${build-temp.dir}/admins" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        	</classpath>
+        </javac>
+    	<!-- Logging component -->
+    	<echo message=" ** Validating component: Logging (except ProtectedLog, CvsExporter) **"/>
+    	<mkdir dir="${src-temp.dir}/logging"/>
+    	<mkdir dir="${build-temp.dir}/logging"/>
+    	<copy todir="${src-temp.dir}/logging">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocal.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/LogEntryDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/LogEntryDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/LogConfigurationDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/LogConfigurationDataLocal.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/log/**/*.java"/>
+    			<include name="org/ejbca/core/model/log/**/*.java"/>
+    			<include name="org/ejbca/config/LogConfiguration.java"/>
+    			<include name="org/ejbca/config/OldLogConfiguration.java"/>
+    			<include name="org/ejbca/util/query/**/*.java"/>
+    			<include name="org/ejbca/util/ObjectCache.java"/>
+    			<exclude name="org/ejbca/core/ejb/log/**/ProtectedLog*.java"/>
+    			<exclude name="org/ejbca/core/model/log/**/ProtectedLog*.java"/>
+    			<exclude name="org/ejbca/core/model/log/**/IProtectedLog*.java"/>
+    			<exclude name="org/ejbca/core/model/log/CsvLogExporter.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/logging" destdir="${build-temp.dir}/logging" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
         	</classpath>
         </javac>
     	
@@ -196,6 +250,7 @@
            	<include name="org/ejbca/core/model/approval/ApprovalDataVO.java"/>
            	<include name="org/ejbca/core/model/approval/Approval.java"/>
            	<include name="org/ejbca/util/query/Query.java"/>
+           	<include name="org/ejbca/core/model/authorization/AdminGroup.java"/>
            	<include name="org/ejbca/core/model/authorization/AdminGroupExistsException.java"/>
            	<include name="org/ejbca/core/model/authorization/AuthenticationFailedException.java"/>
            	<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>

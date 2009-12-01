@@ -28,15 +28,7 @@ import javax.ejb.FinderException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.ILogExporter;
@@ -46,7 +38,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.ObjectCache;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
-
 
 /**
  * Stores data used by web server clients.
@@ -105,15 +96,6 @@ import org.ejbca.util.query.Query;
  *   link="RSASignSession"
  *   
  * @ejb.ejb-external-ref
- *   description="The Authorization session bean"
- *   view-type="local"
- *   ref-name="ejb/AuthorizationSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *   link="AuthorizationSession"
- *   
- * @ejb.ejb-external-ref
  *   description="The CA Admin Session"
  *   view-type="local"
  *   ref-name="ejb/CAAdminSessionLocal"
@@ -159,8 +141,6 @@ public class LocalLogSessionBean extends BaseSessionBean {
      */
     private static final ObjectCache logConfCache = new ObjectCache();
 
-    /** The local interface of  authorization session bean */
-	private IAuthorizationSessionLocal authorizationsession;
     /** The home interface of  LogConfigurationData entity bean */
     private LogConfigurationDataLocalHome logconfigurationhome;
 
@@ -377,19 +357,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     	while (i.hasNext()) {
     		ILogDevice dev = (ILogDevice) i.next();
     		try {
-    			boolean authorized = true;
-    			if(event == LogConstants.EVENT_INFO_CUSTOMLOG || event == LogConstants.EVENT_ERROR_CUSTOMLOG){
-    				try{
-    					getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_LOG_CUSTOM_EVENTS);
-    				}catch(AuthorizationDeniedException e){
-    					String msg = intres.getLocalizedMessage("log.notauthtocustomlog");
-    					getLogSession().doSyncronizedLog(dev, admin,caid,LogConstants.MODULE_LOG,new Date(),username, null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,null);
-    					authorized = false;
-    				}
-    			}
-    			if (authorized) {
-    				getLogSession().doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
-    			}
+   				getLogSession().doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
     		} catch (Throwable e) {
             	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
             			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
@@ -421,23 +389,20 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @param logexporter is the obbject that converts the result set into the desired log format 
      * @return an exported byte array. Maximum number of exported entries is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT, returns null if there is nothing to export
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
-     * @throws ExtendedCAServiceNotActiveException 
-     * @throws IllegalExtendedCAServiceRequestException 
-     * @throws ExtendedCAServiceRequestException 
-     * @throws CADoesntExistsException 
+     * @throws Exception differs depending on the ILogExporter implementation
      * @see org.ejbca.util.query.Query
      *
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      *
      */
-    public byte[] export(String deviceName, Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+    public byte[] export(String deviceName, Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter, int maxResults) throws IllegalQueryException, Exception {
     	byte[] result = null;
     	Iterator i = logdevices.iterator();
         while (i.hasNext()) {
             ILogDevice dev = (ILogDevice) i.next();
             if (dev.getDeviceName().equalsIgnoreCase(deviceName)) {
-            	result = dev.export(admin, query, viewlogprivileges, capriviledges, logexporter);
+            	result = dev.export(admin, query, viewlogprivileges, capriviledges, logexporter, maxResults);
             	break;
             }
         }
@@ -456,14 +421,14 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public Collection query(String deviceName, Query query, String viewlogprivileges, String capriviledges) throws IllegalQueryException {
+    public Collection query(String deviceName, Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
         trace(">query()");
     	Collection result = null;
     	Iterator i = logdevices.iterator();
         while (i.hasNext()) {
             ILogDevice dev = (ILogDevice) i.next();
             if (dev.getDeviceName().equalsIgnoreCase(deviceName)) {
-                result = dev.query(query, viewlogprivileges, capriviledges);
+                result = dev.query(query, viewlogprivileges, capriviledges, maxResults);
                 break;
             }
         }
@@ -547,22 +512,4 @@ public class LocalLogSessionBean extends BaseSessionBean {
 				LogConstants.EVENT_INFO_UNKNOWN, "Test of rollback resistance of log-system.", null);
 		throw new EJBException("Test of rollback resistance of log-system.");
 	}
-
-    /**
-     * Gets connection to authorization session bean
-     *
-     * @return IAuthorizationSessionLocal
-     */
-    private IAuthorizationSessionLocal getAuthorizationSession() {
-        if (authorizationsession == null) {
-            try {
-                IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-                authorizationsession = authorizationsessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return authorizationsession;
-    } //getAuthorizationSession
-
-} // LocalLogSessionBean
+}

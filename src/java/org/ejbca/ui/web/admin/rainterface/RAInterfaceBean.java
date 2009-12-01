@@ -56,6 +56,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -66,8 +67,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.cert.CertificateNotBeforeComparator;
 import org.ejbca.util.query.Query;
-
-
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
@@ -80,7 +79,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     private static Logger log = Logger.getLogger(RAInterfaceBean.class);
     
     // Public constants.
-    public static final int MAXIMUM_QUERY_ROWCOUNT = SecConst.MAXIMUM_QUERY_ROWCOUNT;
+    public static final int MAXIMUM_QUERY_ROWCOUNT = UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT;
     
     public static final String[] tokentexts = SecConst.TOKENTEXTS;
     public static final int[]    tokenids   = SecConst.TOKENIDS;
@@ -426,7 +425,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       Collection usernames =certificatesession.findCertificatesByExpireTimeWithLimit(administrator, finddate);
       if(!usernames.isEmpty()){
         Iterator i = usernames.iterator();
-        while(i.hasNext() && userlist.size() <= MAXIMUM_QUERY_ROWCOUNT +1 ){
+        while(i.hasNext() && userlist.size() <= UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT +1 ){
            UserDataVO user = null;
            try{
              user = adminsession.findUser(administrator, (String) i.next());
