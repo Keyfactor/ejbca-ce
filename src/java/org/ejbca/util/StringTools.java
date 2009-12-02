@@ -273,7 +273,7 @@ public class StringTools {
     }
 
     /** Takes input and converts from Base64 if the string begins with B64:, i.e. is on format
-     * "B64:<base64 endoced string>".
+     * "B64:<base64 encoded string>".
      * 
      * @param s String to Base64 decode
      * @return Base64 decoded string, or original string if it was not base 64 encoded
@@ -284,7 +284,7 @@ public class StringTools {
         }
         String s1 = null;
         if (s.startsWith("B64:")) {
-            s1 = s.substring(4);
+            s1 = new String(s.substring(4));
             String n = null;
             try {
                 // Since we used getBytes(s, "UTF-8") in the method putBase64String, we must use UTF-8 when doing the reverse
