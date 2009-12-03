@@ -35,6 +35,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
@@ -114,10 +116,13 @@ public class RAInterfaceBean implements java.io.Serializable {
         certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         certificatesession = certificatesessionhome.create();
 
+        ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+        ICAAdminSessionLocal caadminsession = caadminsessionhome.create();
+
         IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
         authorizationsession = authorizationsessionhome.create();
 
-        this.profiles = new EndEntityProfileDataHandler(administrator,raadminsession,authorizationsession,informationmemory);
+        this.profiles = new EndEntityProfileDataHandler(administrator,raadminsession,authorizationsession,caadminsession,informationmemory);
         
         IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
         hardtokensession = hardtokensessionhome.create();

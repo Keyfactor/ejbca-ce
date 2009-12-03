@@ -31,6 +31,7 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -61,6 +62,7 @@ public class InformationMemory implements java.io.Serializable {
                              ICertificateStoreSessionLocal certificatestoresession,
                              IHardTokenSessionLocal hardtokensession,
 							 IPublisherSessionLocal publishersession,
+							 IUserDataSourceSessionLocal userdatasourcesession,
                              GlobalConfiguration globalconfiguration){
       this.caadminsession = caadminsession;                           
       this.administrator = administrator;
@@ -68,12 +70,13 @@ public class InformationMemory implements java.io.Serializable {
       this.authorizationsession = authorizationsession;
       this.certificatestoresession = certificatestoresession;
       this.publishersession = publishersession;
+      this.userdatasourcesession = userdatasourcesession;
       this.globalconfiguration = globalconfiguration;
       
-      this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession);
+      this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession, caadminsession);
       this.caauthorization = new CAAuthorization(administrator, caadminsession, certificatestoresession, authorizationsession);
-      this.logauthorization = new LogAuthorization(administrator, authorizationsession);
-      this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession);
+      this.logauthorization = new LogAuthorization(administrator, authorizationsession, caadminsession);
+      this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, caadminsession);
     }
     
     
@@ -362,7 +365,9 @@ public class InformationMemory implements java.io.Serializable {
 
     public HashSet getAuthorizedAccessRules(){
       if(authorizedaccessrules == null)
-	    authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator));
+	    authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator, caadminsession.getAvailableCAs(administrator),
+	    		globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(), globalconfiguration.getEnableKeyRecovery(),
+	    		raadminsession.getAuthorizedEndEntityProfileIds(administrator), userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true)));
 	    
 	   return authorizedaccessrules;
     }
@@ -410,7 +415,7 @@ public class InformationMemory implements java.io.Serializable {
     public TreeMap getAuthorizedAdminGroups(){
       if(authgroups == null){
         authgroups = new TreeMap();
-        Iterator iter = this.authorizationsession.getAuthorizedAdminGroupNames(administrator).iterator();
+        Iterator iter = this.authorizationsession.getAuthorizedAdminGroupNames(administrator, caadminsession.getAvailableCAs(administrator)).iterator();
         while(iter.hasNext()){
           AdminGroup admingroup = (AdminGroup) iter.next();	
           authgroups.put(admingroup.getAdminGroupName(),new Integer(admingroup.getAdminGroupId()));
@@ -536,6 +541,7 @@ public class InformationMemory implements java.io.Serializable {
     private IAuthorizationSessionLocal authorizationsession;
     private IPublisherSessionLocal publishersession;
     private ICertificateStoreSessionLocal certificatestoresession;
+    private IUserDataSourceSessionLocal userdatasourcesession = null;
     
     // Memory variables.
     LogAuthorization logauthorization = null;

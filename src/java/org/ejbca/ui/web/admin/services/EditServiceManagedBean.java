@@ -291,7 +291,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
 	/** Returns the list of available CAs
 	 * 
-	 * @param includeAllCAs if the returned list should include the constanr ALLCAs or only the actually avaialble CAs.
+	 * @param includeAllCAs if the returned list should include the constant ALLCAs or only the actually available CAs.
 	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
 	 */
 	private List getAvailableCAs(boolean includeAllCAs) {

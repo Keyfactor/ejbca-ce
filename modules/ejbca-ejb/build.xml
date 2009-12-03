@@ -173,6 +173,7 @@
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
     			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocal.java"/>
     			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocalHome.java"/>
     			<include name="org/ejbca/core/ejb/log/**/LogEntryDataLocalHome.java"/>
     			<include name="org/ejbca/core/ejb/log/**/LogEntryDataLocal.java"/>
     			<include name="org/ejbca/core/ejb/log/**/LogConfigurationDataLocalHome.java"/>
@@ -200,6 +201,65 @@
         		<pathelement location="${build-temp.dir}/admins"/>
         	</classpath>
         </javac>
+    	<!-- Authorization component -->
+    	<echo message=" ** Validating component: Authorization **"/>
+    	<mkdir dir="${src-temp.dir}/authorization"/>
+    	<mkdir dir="${build-temp.dir}/authorization"/>
+    	<copy todir="${src-temp.dir}/authorization">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/authorization/**/AdminEntityDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/AdminEntityDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/AccessRulesDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/AccessRulesDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/AdminGroupDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/AdminGroupDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/AuthorizationTreeUpdateDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/AuthorizationTreeUpdateDataLocalHome.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/authorization/**/*.java"/>
+    			<include name="org/ejbca/core/model/authorization/**/*.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        	</classpath>
+        </javac>
+    	<!-- Approval component -->
+		<!--
+    	<echo message=" ** Validating component: Approval **"/>
+    	<mkdir dir="${src-temp.dir}/approval"/>
+    	<mkdir dir="${build-temp.dir}/approval"/>
+    	<copy todir="${src-temp.dir}/approval">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocal.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/LogEntryDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/LogConfigurationDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/LogConfigurationDataLocal.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/approval/**/*.java"/>
+    			<include name="org/ejbca/core/model/approval/**/*.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/approval" destdir="${build-temp.dir}/approval" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        	</classpath>
+        </javac>
+    			-->
     	
     	
     	

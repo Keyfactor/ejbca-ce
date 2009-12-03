@@ -972,7 +972,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
-    public Collection getAvailableCAs(Admin admin){
+    public Collection getAvailableCAs(){
     	ArrayList al = new ArrayList();
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -994,6 +994,18 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	return al;
     }
 
+    /**
+     *  Method returning id's of all CA's available to the system that the administrator is authorized to
+     *  i.e. not having status "external" or "waiting for certificate response"
+     *
+     * @param admin The administrator
+     * @return a Collection<Integer> of available CA id's
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
+     */
+    public Collection getAvailableCAs(Admin admin) {
+    	return authorizationsession.getAuthorizedCAIds(admin, getAvailableCAs());
+    }
 
     /**
      *  Creates a certificate request that should be sent to External Root CA for processing.
@@ -2188,7 +2200,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 						+ "certificate chain in PKCS#12");
 			}
 		} else if (signatureCertChain.length > 1){
-			Collection cas = getAvailableCAs(admin);
+			Collection cas = getAvailableCAs();
 			Iterator iter = cas.iterator();
 			// Assuming certificate chain in forward direction (from target
 			// to most-trusted CA). Multiple CA chains can contains the
@@ -2444,11 +2456,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
-    public Collection getAllCACertificates(Admin admin){
+    public Collection getAllCACertificates(){
       ArrayList returnval = new ArrayList();
 
       try{
-          Collection caids = getAvailableCAs(admin);
+          Collection caids = getAvailableCAs();
           Iterator iter = caids.iterator();
           while(iter.hasNext()){
               Integer caid = (Integer)iter.next();

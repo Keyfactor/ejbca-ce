@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminGroup;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -37,7 +38,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 			if (args.length < 5) {
     			getLogger().info("Description: " + getDescription());
 				getLogger().info("Usage: " + getCommand() + " <name of group> <access rule> <rule> <recursive>");
-				Collection<AdminGroup> adminGroups = getAuthorizationSession().getAuthorizedAdminGroupNames(getAdmin());
+				Collection<AdminGroup> adminGroups = getAuthorizationSession().getAuthorizedAdminGroupNames(getAdmin(), getCAAdminSession().getAvailableCAs(getAdmin()));
 				Collections.sort((List<AdminGroup>) adminGroups);
 				String availableGroups = "";
 				for (AdminGroup adminGroup : adminGroups) {
@@ -45,7 +46,10 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 				}
 				getLogger().info("Available Admin groups: " + availableGroups);
 				getLogger().info("Available access rules:");
-				for (String current : (Collection<String>) getAuthorizationSession().getAuthorizedAvailableAccessRules(getAdmin())) {
+				GlobalConfiguration globalConfiguration = getRaAdminSession().loadGlobalConfiguration(getAdmin());
+				for (String current : (Collection<String>) getAuthorizationSession().getAuthorizedAvailableAccessRules(getAdmin(), getCAAdminSession().getAvailableCAs(getAdmin()),
+						globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
+						getRaAdminSession().getAuthorizedEndEntityProfileIds(getAdmin()), getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true))) {
 					getLogger().info(" " + getParsedAccessRule(current));
 				}
 				String availableRules = "";
@@ -62,7 +66,10 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
                 return;
             }
 			String accessRule = getOriginalAccessRule(args[2]);
-			if (!((Collection<String>) getAuthorizationSession().getAuthorizedAvailableAccessRules(getAdmin())).contains(accessRule)) {
+			GlobalConfiguration globalConfiguration = getRaAdminSession().loadGlobalConfiguration(getAdmin());
+			if (!((Collection<String>) getAuthorizationSession().getAuthorizedAvailableAccessRules(getAdmin(), getCAAdminSession().getAvailableCAs(getAdmin()),
+					globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
+					getRaAdminSession().getAuthorizedEndEntityProfileIds(getAdmin()), getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true))).contains(accessRule)) {
 				getLogger().error("Accessrule \"" + accessRule + "\" is not available.");
 				return;
 			}

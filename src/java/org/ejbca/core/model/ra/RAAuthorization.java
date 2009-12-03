@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.TreeMap;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -32,17 +33,24 @@ import org.ejbca.core.model.log.Admin;
  */
 public class RAAuthorization implements Serializable {
     
-  
+    private String authcastring = null;
+    private String authendentityprofilestring = null;
+    private TreeMap authprofilenames = null;
+    private TreeMap authcreateprofilenames = null;
+	private TreeMap authviewprofilenames = null;
+    private Admin admin;
+    private IAuthorizationSessionLocal authorizationsession;
+    private IRaAdminSessionLocal raadminsession;
+    private ICAAdminSessionLocal caAdminSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(Admin admin, IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession) {
-      this.admin=admin;
-      this.raadminsession=raadminsession;
-      this.authorizationsession=authorizationsession;
+    public RAAuthorization(Admin admin, IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caAdminSession) {
+    	this.admin = admin;
+    	this.raadminsession = raadminsession;
+    	this.authorizationsession = authorizationsession;
+    	this.caAdminSession = caAdminSession;
     }
 
-    
-    
     /**
      * Method that checks the administrators CA privileges and returns a string that should be used in where clause of userdata SQL queries.
      *
@@ -50,7 +58,7 @@ public class RAAuthorization implements Serializable {
      */
     public String getCAAuthorizationString() {      
       if(authcastring==null){
-        Iterator iter =  this.authorizationsession.getAuthorizedCAIds(admin).iterator();
+        Iterator iter =  caAdminSession.getAvailableCAs(admin).iterator();
          
         authcastring = "";
         
@@ -77,7 +85,7 @@ public class RAAuthorization implements Serializable {
      */
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
-      	Collection result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS);     	
+      	Collection result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, raadminsession.getEndEntityProfileIdToNameMap(admin).keySet());     	
       	result.retainAll(this.raadminsession.getAuthorizedEndEntityProfileIds(admin));
       	Iterator iter = result.iterator();
       	                    
@@ -169,18 +177,6 @@ public class RAAuthorization implements Serializable {
 
 	  return returnval;
 	}    
-
-    
-    // Private fields.
-    private String authcastring = null;
-    private String authendentityprofilestring = null;
-    private TreeMap authprofilenames = null;
-    private TreeMap authcreateprofilenames = null;
-	private TreeMap authviewprofilenames = null;
-    private Admin admin;
-    private IAuthorizationSessionLocal authorizationsession;
-    private IRaAdminSessionLocal raadminsession;
-
 }
 
 

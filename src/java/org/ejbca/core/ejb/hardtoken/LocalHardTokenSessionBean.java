@@ -42,6 +42,8 @@ import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
@@ -168,6 +170,14 @@ import org.ejbca.util.JDBCUtil;
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
  *   link="AuthorizationSession"
  *
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
@@ -235,6 +245,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     /** The local interface of certificate store session bean */
     private ICertificateStoreSessionLocal certificatestoresession = null;
     
+    private ICAAdminSessionLocal caAdminSession;
+    
     /**
      * The local interface of  raadmin session bean
      */
@@ -282,6 +294,23 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         }
         return logsession;
     } //getLogSession
+
+    /**
+     * Gets connection to caadmin session bean
+     *
+     * @return ICAAdminSessionLocal
+     */
+    private ICAAdminSessionLocal getCAAdminSession() {
+        if (caAdminSession == null) {
+            try {
+                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+                caAdminSession = caadminsessionhome.create();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return caAdminSession;
+    } //getCAAdminSession
 
     /** Gets connection to certificate store session bean
      * @return Connection
@@ -546,7 +575,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	  Collection result = null;
 
 	  HashSet authorizedcertprofiles = new HashSet(getCertificateStoreSession().getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN));
-      HashSet authorizedcaids = new HashSet(this.getAuthorizationSession().getAuthorizedCAIds(admin));
+      HashSet authorizedcaids = new HashSet(getCAAdminSession().getAvailableCAs(admin));
 	  
 	  try{
 		result = this.hardtokenprofilehome.findAll();

@@ -13,25 +13,18 @@
 
 package org.ejbca.core.model.authorization;
 
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.util.CertTools;
 
 /**
- * A java bean handling the authorization to ejbca.
+ * A JavaBean handling the authorization in EJBCA.
  *
  * The main methods are isAthorized and authenticate.
  *
@@ -45,24 +38,16 @@ public class Authorizer extends Object implements java.io.Serializable {
     private AccessTree            accesstree;
     private int                   module;
     
-    private ICertificateStoreSessionLocal  certificatesession;
     private ILogSessionLocal               logsession;
-    private IRaAdminSessionLocal           raadminsession;
-    private ICAAdminSessionLocal           caadminsession;
     private AuthorizationProxy             authorizationproxy;
 
     /** Creates new EjbcaAthorization */
-    public Authorizer(Collection admingroups, AdminGroupDataLocalHome  admingrouphome,
-            ILogSessionLocal logsession, ICertificateStoreSessionLocal certificatestoresession, 
-            IRaAdminSessionLocal raadminsession, ICAAdminSessionLocal caadminsession, int module) {
+    public Authorizer(Collection admingroups, AdminGroupDataLocalHome  admingrouphome, ILogSessionLocal logsession, int module) {
         accesstree = new AccessTree();
         authorizationproxy = new AuthorizationProxy(admingrouphome, accesstree);
         buildAccessTree(admingroups);
         this.logsession = logsession;
         this.module=module;
-        this.certificatesession = certificatestoresession;
-        this.raadminsession = raadminsession;
-        this.caadminsession = caadminsession;        
     }
     
     // Public methods.
@@ -189,48 +174,14 @@ public class Authorizer extends Object implements java.io.Serializable {
         return true;
     }
     
-    
-    
     /**
-     * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.
-     *
-     * @param certificate the certificate to be authenticated.
-     * @throws AuthenticationFailedException if authentication failed.
-     */
-    public void authenticate(X509Certificate certificate) throws AuthenticationFailedException {
-        
-        // Check Validity
-        try{
-            certificate.checkValidity();
-        }catch(Exception e){
-            throw new AuthenticationFailedException("Your certificate vality has expired.");
-        }
-        
-        if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-            // TODO
-            // Vertify Signature on cert?
-            // Check if certificate is revoked.
-            RevokedCertInfo revinfo = certificatesession.isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
-            if (revinfo == null) {
-                // Certificate missing
-                throw new AuthenticationFailedException("Your certificate cannot be found in database.");
-            } else if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
-                // Certificate revoked
-                throw new AuthenticationFailedException("Your certificate have been revoked.");
-            }
-        } else {
-        	// TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
-        }
-    }
-    
-    /**
-     * Method used to return an ArrayList of Integers indicating which CAids a administrator
+     * Method used to return an ArrayList of Integers indicating which CAids an administrator
      * is authorized to access.
      * @return Collection of Integer
      */
-    public Collection getAuthorizedCAIds(Admin admin){         
+    public Collection getAuthorizedCAIds(Admin admin, Collection availableCaIds) {         
         ArrayList returnval = new ArrayList();  
-        Iterator iter = caadminsession.getAvailableCAs(admin).iterator();      
+        Iterator iter = availableCaIds.iterator();
         
         while(iter.hasNext()){
             Integer caid = (Integer) iter.next();
@@ -251,12 +202,12 @@ public class Authorizer extends Object implements java.io.Serializable {
      * the administrator is authorized to view.
      *
      * @param admin, the administrator 
-     * @rapriviledge should be one of the end entity profile authorization constans defined in AvailableAccessRules.
+     * @param rapriviledge should be one of the end entity profile authorization constants defined in AvailableAccessRules.
+     * @param availableEndEntityProfileId a list of available EEP ids to test for authorization
      */ 
-    
-    public Collection getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge){
+    public Collection getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge, Collection availableEndEntityProfileId){
         ArrayList returnval = new ArrayList();  
-        Iterator iter = raadminsession.getEndEntityProfileIdToNameMap(admin).keySet().iterator();  
+        Iterator iter = availableEndEntityProfileId.iterator();
         
         while(iter.hasNext()){
             Integer profileid = (Integer) iter.next();

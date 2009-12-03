@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -32,16 +33,20 @@ import org.ejbca.core.model.log.LogConstants;
  */
 public class LogAuthorization implements Serializable {
     
-  
+    private String querystring = null;
+    private String caidstring = null;
+    private Collection authorizedmodules = null;
+    private IAuthorizationSessionLocal authorizationsession;
+    private ICAAdminSessionLocal caAdminSession;
+    private Admin administrator;
     
     /** Creates a new instance of LogAuthorization. */
-    public LogAuthorization(Admin administrator, IAuthorizationSessionLocal authorizationsession) {
+    public LogAuthorization(Admin administrator, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caAdminSession) {
        this.administrator = administrator;
        this.authorizationsession = authorizationsession;
+       this.caAdminSession = caAdminSession;
     }
 
-    
-    
     /**
      * Method that checks the administrators view log privileges to the different modules and returns a string that should be used in where clause of SQL queries.
      *
@@ -88,7 +93,7 @@ public class LogAuthorization implements Serializable {
       if(caidstring == null){
         caidstring = "";
         
-        Iterator iter = this.authorizationsession.getAuthorizedCAIds(administrator).iterator();
+        Iterator iter = caAdminSession.getAvailableCAs(administrator).iterator();
          
         try{ 
           this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
@@ -127,16 +132,6 @@ public class LogAuthorization implements Serializable {
       }    
        return authorizedmodules;
     }
- 
-    
-    
-    // Private fields.
-    private String querystring = null;
-    private String caidstring = null;
-    private Collection authorizedmodules = null;
-    private IAuthorizationSessionLocal authorizationsession;
-    private Admin administrator;
-
 }
 
 

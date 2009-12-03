@@ -36,10 +36,13 @@ import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
@@ -48,6 +51,7 @@ import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -132,6 +136,14 @@ import org.ejbca.util.StringTools;
  * business="org.ejbca.core.ejb.log.ILogSessionLocal"
  * link="LogSession"
  *
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *
  * @ejb.ejb-external-ref description="The Authorization session bean"
  * view-type="local"
  * ref-name="ejb/AuthorizationSessionLocal"
@@ -201,6 +213,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * The local interface of the log session bean
      */
     private ILogSessionLocal logsession = null;
+    private ICAAdminSessionLocal caAdminSession;
 
     /**
      * The local interface of the authorization session bean
@@ -240,6 +253,23 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
     }
+
+    /**
+     * Gets connection to caadmin session bean
+     *
+     * @return ICAAdminSessionLocal
+     */
+    private ICAAdminSessionLocal getCAAdminSession() {
+        if (caAdminSession == null) {
+            try {
+                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+                caAdminSession = caadminsessionhome.create();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return caAdminSession;
+    } //getCAAdminSession
 
     /**
      * Gets connection to log session bean
@@ -1294,6 +1324,36 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 		}
     	return revinfo;
     } //isRevoked
+    
+    /**
+     * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.
+     *
+     * @param certificate the certificate to be authenticated.
+     * @throws AuthenticationFailedException if authentication failed.
+     * @ejb.interface-method
+     */
+    public void authenticate(X509Certificate certificate) throws AuthenticationFailedException {
+        // Check Validity
+        try {
+            certificate.checkValidity();
+        } catch (Exception e) {
+            throw new AuthenticationFailedException("Your certificate validity has expired.");
+        }
+        if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+            // TODO: Verify Signature on cert?
+            // Check if certificate is revoked.
+            RevokedCertInfo revinfo = isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
+            if (revinfo == null) {
+                // Certificate missing
+                throw new AuthenticationFailedException("Your certificate cannot be found in database.");
+            } else if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
+                // Certificate revoked
+                throw new AuthenticationFailedException("Your certificate have been revoked.");
+            }
+        } else {
+        	// TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
+        }
+    }
 
     /**
      * Checks the table protection information for a certificate data row
@@ -1667,7 +1727,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             if (!issuperadministrator && certificateprofile.isApplicableToAnyCA()) {
                 // Not superadministrator, do not use ANYCA;
-                Collection authcas = getAuthorizationSession().getAuthorizedCAIds(admin);
+                Collection authcas = getCAAdminSession().getAvailableCAs(admin);
                 certificateprofile.setAvailableCAs(authcas);
             }
 
@@ -1776,7 +1836,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         ArrayList returnval = new ArrayList();
         Collection result = null;
 
-        HashSet authorizedcaids = new HashSet(getAuthorizationSession().getAuthorizedCAIds(admin));
+        HashSet authorizedcaids = new HashSet(getCAAdminSession().getAvailableCAs(admin));
 
         // Add fixed certificate profiles.
         if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ENDENTITY || certprofiletype == SecConst.CERTTYPE_HARDTOKEN){

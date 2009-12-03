@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.authorization;
 
-import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,23 +30,14 @@ import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
-import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
@@ -95,42 +85,6 @@ import org.ejbca.util.JDBCUtil;
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
- *
- * @ejb.ejb-external-ref
- *   description="The RA Session Bean"
- *   view-type="local"
- *   ref-name="ejb/RaAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *   link="RaAdminSession"
- *
- * @ejb.ejb-external-ref
- *   description="The CAAdmin Session Bean"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate Store Session bean"
- *   view-type="local"
- *   ref-name="ejb/CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *   
- * @ejb.ejb-external-ref
- *   description="The User Data Source Session bean"
- *   view-type="local"
- *   ref-name="ejb/UserDataSourceSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal"
- *   link="UserDataSourceSession"
  *
  * @ejb.ejb-external-ref
  *   description="Authorization Tree Update Bean"
@@ -200,26 +154,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     private ILogSessionLocal logsession = null;
 
-    /**
-     * The local interface of  raadmin session bean
-     */
-    private IRaAdminSessionLocal raadminsession = null;
-
-    /**
-     * The local interface of  ca admim session bean
-     */
-    private ICAAdminSessionLocal caadminsession = null;
-
-    /**
-     * The local interface of certificate store session bean
-     */
-    private ICertificateStoreSessionLocal certificatestoresession = null;
-
-    /**
-     * The local interface of user data source session bean
-     */
-    private IUserDataSourceSessionLocal userdatasourcesession = null;
-    
     private Authorizer authorizer = null;
 
     private String[] customaccessrules = null;
@@ -244,16 +178,10 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     }
     
     private Authorizer getAuthorizer() {
-        try {
-        	if (authorizer == null) {
-                authorizer = new Authorizer(getAdminGroups(), admingrouphome,
-                        getLogSession(), getCertificateStoreSession(), getRaAdminSession(), getCAAdminSession(), LogConstants.MODULE_AUTHORIZATION);
-        	}
-        	return authorizer;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-    	
+    	if (authorizer == null) {
+            authorizer = new Authorizer(getAdminGroups(), admingrouphome, getLogSession(), LogConstants.MODULE_AUTHORIZATION);
+    	}
+    	return authorizer;
     }
 
 
@@ -273,80 +201,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         }
         return logsession;
     } //getLogSession
-
-
-    /**
-     * Gets connection to ra admin session bean
-     *
-     * @return Connection
-     */
-    private IRaAdminSessionLocal getRaAdminSession() {
-        if (raadminsession == null) {
-            try {
-                IRaAdminSessionLocalHome home = (IRaAdminSessionLocalHome) ServiceLocator.getInstance()
-                        .getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-                raadminsession = home.create();
-            } catch (Exception e) {
-                throw new EJBException(e);
-            }
-        }
-        return raadminsession;
-    } //getRaAdminSession
-
-    /**
-     * Gets connection to certificate store session bean
-     *
-     * @return ICertificateStoreSessionLocal
-     */
-    private ICertificateStoreSessionLocal getCertificateStoreSession() {
-        if (certificatestoresession == null) {
-            try {
-                ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) ServiceLocator.getInstance()
-                        .getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-                certificatestoresession = home.create();
-            } catch (Exception e) {
-                throw new EJBException(e);
-            }
-        }
-        return certificatestoresession;
-    } //getCertificateStoreSession
-    
-    /**
-     * Gets connection to user data source session bean
-     *
-     * @return IUserDataSourceSessionLocal
-     */
-    private IUserDataSourceSessionLocal getUserDataSourceSession() {
-        if (userdatasourcesession == null) {
-            try {
-                IUserDataSourceSessionLocalHome home = (IUserDataSourceSessionLocalHome) ServiceLocator.getInstance()
-                        .getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
-                userdatasourcesession = home.create();
-            } catch (Exception e) {
-                throw new EJBException(e);
-            }
-        }
-        return userdatasourcesession;
-    } //getUserDataSourceSession
-
-
-    /**
-     * Gets connection to ca admin session bean
-     *
-     * @return ICAAdminSessionLocal
-     */
-    private ICAAdminSessionLocal getCAAdminSession() {
-        if (caadminsession == null) {
-            try {
-                ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome) ServiceLocator.getInstance()
-                        .getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-                caadminsession = home.create();
-            } catch (Exception e) {
-                throw new EJBException(e);
-            }
-        }
-        return caadminsession;
-    }
 
     // Methods used with AdminGroupData Entity Beans
 
@@ -549,19 +403,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         return returnval;
     }
 
-
-    /**
-     * Method to validate and check revokation status of a users certificate.
-     *
-     * @param certificate the users X509Certificate.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
-     */
-
-    public void authenticate(X509Certificate certificate) throws AuthenticationFailedException {
-        getAuthorizer().authenticate(certificate);
-    }
-
     /**
      * Method to add an admingroup.
      *
@@ -716,17 +557,18 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     /**
      * Returns a Collection of AdminGroup the administrator is authorized to.
      * <p/>
-     * SuperAdmin is autorized to all groups
-     * Other admins are only authorized to the groups cointaining a subset of authorized CA that the admin
+     * SuperAdmin is authorized to all groups
+     * Other admins are only authorized to the groups containing a subset of authorized CA that the admin
      * himself is authorized to.
      * <p/>
      * The AdminGroup objects only contains only name and caid and no accessdata
      *
+     * @param admin The current administrator
+     * @param availableCaIds A Collection<Integer> of all CA Ids
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-
-    public Collection getAuthorizedAdminGroupNames(Admin admin) {
+    public Collection getAuthorizedAdminGroupNames(Admin admin, Collection availableCaIds) {
         ArrayList returnval = new ArrayList();
 
 
@@ -738,8 +580,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         HashSet authorizedcaids = new HashSet();
         HashSet allcaids = new HashSet();
         if (!issuperadmin) {
-            authorizedcaids.addAll(getAuthorizer().getAuthorizedCAIds(admin));
-            allcaids.addAll(getCAAdminSession().getAvailableCAs(admin));
+            authorizedcaids.addAll(getAuthorizer().getAuthorizedCAIds(admin, availableCaIds));
+            allcaids.addAll(availableCaIds);
         }
 
         try {
@@ -944,46 +786,49 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * he himself is authorized to.
      *
      * @param admin is the administrator calling the method.
+     * @param availableCaIds A Collection<Integer> of all CA Ids
+     * @param enableendentityprofilelimitations Include End Entity Profile access rules
+     * @param usehardtokenissuing Include Hard Token access rules
+     * @param usekeyrecovery Include Key Recovery access rules
+     * @param authorizedEndEntityProfileIds A Collection<Integer> of all auhtorized End Entity Profile ids
+     * @param authorizedUserDataSourceIds A Collection<Integer> of all auhtorized user data sources ids
      * @return a Collection of String containing available accessrules.
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
 
-    public Collection getAuthorizedAvailableAccessRules(Admin admin) {
-        AvailableAccessRules aar = null;
-        try {
-            aar = new AvailableAccessRules(admin, getAuthorizer(), getRaAdminSession(),getUserDataSourceSession(), customaccessrules);
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-
-        return aar.getAvailableAccessRules(admin);
+    public Collection getAuthorizedAvailableAccessRules(Admin admin, Collection availableCaIds, boolean enableendentityprofilelimitations,
+    		boolean usehardtokenissuing, boolean usekeyrecovery, Collection authorizedEndEntityProfileIds, Collection authorizedUserDataSourceIds) {
+        AvailableAccessRules availableAccessRules = new AvailableAccessRules(admin, getAuthorizer(), customaccessrules, availableCaIds, enableendentityprofilelimitations, usehardtokenissuing, usekeyrecovery);
+        return availableAccessRules.getAvailableAccessRules(admin,authorizedEndEntityProfileIds, authorizedUserDataSourceIds);
     }
 
     /**
      * Method used to return an Collection of Integers indicating which CAids a administrator
      * is authorized to access.
+     * @param admin The current administrator
+     * @param availableCaIds A Collection<Integer> of all CA Ids
      * @return Collection of Integer
      *
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public Collection getAuthorizedCAIds(Admin admin) {
-        return getAuthorizer().getAuthorizedCAIds(admin);
+    public Collection getAuthorizedCAIds(Admin admin, Collection availableCaIds) {
+        return getAuthorizer().getAuthorizedCAIds(admin, availableCaIds);
     }
-
 
     /**
      * Method used to return an Collection of Integers indicating which end entity profiles
      * the administrator is authorized to view.
      *
-     * @param admin        the administrator
+     * @param admin the administrator
      * @param rapriviledge should be one of the end entity profile authorization constans defined in AccessRulesConstants.
+     * @param authorizedEndEntityProfileIds A Collection<Integer> of all auhtorized EEP ids
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public Collection getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge) {
-        return getAuthorizer().getAuthorizedEndEntityProfileIds(admin, rapriviledge);
+    public Collection getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge, Collection availableEndEntityProfileId) {
+        return getAuthorizer().getAuthorizedEndEntityProfileIds(admin, rapriviledge, availableEndEntityProfileId);
     }
 
     /**
