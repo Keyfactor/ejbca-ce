@@ -220,6 +220,16 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * The remote interface of  log session bean
      */
     private transient ILogSessionLocal logsession = null;
+
+    /**
+     * The remote interface of service session bean
+     */
+    private transient IServiceSessionLocal servicesession = null;
+
+    /**
+     * The remote interface of service timer session bean
+     */
+    IServiceTimerSessionLocal servicetimersession = null;
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -574,15 +584,15 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * @return Connection
      */
     private IServiceSessionLocal getServiceSession() {
-    	IServiceSessionLocal servicesession = null;
-    	try {
-    		IServiceSessionLocalHome servicesessionhome = (IServiceSessionLocalHome) getLocator().getLocalHome(IServiceSessionLocalHome.COMP_NAME);
-    		servicesession = servicesessionhome.create();
-    	} catch (CreateException e) {
-    		throw new EJBException(e);
+    	if (servicesession == null) {
+    		try {
+    			IServiceSessionLocalHome servicesessionhome = (IServiceSessionLocalHome) getLocator().getLocalHome(IServiceSessionLocalHome.COMP_NAME);
+    			servicesession = servicesessionhome.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}
     	}
-
-        return servicesession ;
+        return servicesession;
     } //getServiceSession 
 
     /**
@@ -591,18 +601,15 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * @return Connection
      */
     private IServiceTimerSessionLocal getServiceTimerSession() {
-    	IServiceTimerSessionLocal servicesession = null;
-    	try {
-    		IServiceTimerSessionLocalHome servicesessionhome = (IServiceTimerSessionLocalHome) getLocator().getLocalHome(IServiceTimerSessionLocalHome.COMP_NAME);
-    		servicesession = servicesessionhome.create();
-    	} catch (CreateException e) {
-    		throw new EJBException(e);
+    	if (servicetimersession == null) {
+    		try {
+    			IServiceTimerSessionLocalHome servicesessionhome = (IServiceTimerSessionLocalHome) getLocator().getLocalHome(IServiceTimerSessionLocalHome.COMP_NAME);
+    			servicetimersession = servicesessionhome.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}
     	}
-
-        return servicesession ;
-    } //getServiceTimerSession 
-
-
-
+        return servicetimersession;
+    } //getServiceTimerSession
 
 } // LocalServiceSessionBean
