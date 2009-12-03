@@ -212,7 +212,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
     public abstract void setCaFingerprint(String caFingerprint);
 
     /**
-     * status of certificate, ex CertificateData.CERT_ACTIVE
+     * status of certificate, ex SecConst.CERT_ACTIVE
      *
      * @return status
      * @ejb.persistence column-name="status"
@@ -221,7 +221,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
     public abstract int getStatus();
 
     /**
-     * status of certificate, ex CertificateData.CERT_ACTIVE
+     * status of certificate, ex SecConst.CERT_ACTIVE
      *
      * @param status status
      * @ejb.interface-method
