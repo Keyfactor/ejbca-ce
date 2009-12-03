@@ -45,6 +45,8 @@ import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
@@ -223,6 +225,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      */
     private ILogSessionLocal logsession = null;
 
+    private ICAAdminSessionLocal caAdminSession;
 
     /** The local interface of the certificate store session bean */
     private ICertificateStoreSessionLocal certificatestoresession;
@@ -308,6 +311,23 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         }
         return certificatestoresession;
     } //getCertificateStoreSession    
+
+    /**
+     * Gets connection to caadmin session bean
+     *
+     * @return ICAAdminSessionLocal
+     */
+    private ICAAdminSessionLocal getCAAdminSession() {
+        if (caAdminSession == null) {
+            try {
+                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+                caAdminSession = caadminsessionhome.create();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return caAdminSession;
+    } //getCAAdminSession
 
     /**
      * Gets connection to authorization session bean
@@ -847,7 +867,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             sqlquery = sqlquery + query.getQueryString();
         }
         
-        raauthorization = new RAAuthorization(admin, getRAAdminSession(), getAuthorizationSession());
+        raauthorization = new RAAuthorization(admin, getRAAdminSession(), getAuthorizationSession(), getCAAdminSession());
         String caauthstring = raauthorization.getCAAuthorizationString();
         String endentityauth = "";
         if (globalconfiguration.getEnableEndEntityProfileLimitations()){

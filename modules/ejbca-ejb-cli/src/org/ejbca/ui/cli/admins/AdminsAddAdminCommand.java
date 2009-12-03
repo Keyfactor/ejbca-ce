@@ -42,7 +42,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
 			if (args.length < 6) {
     			getLogger().info("Description: " + getDescription());
 				getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-				Collection<AdminGroup> adminGroups = getAuthorizationSession().getAuthorizedAdminGroupNames(getAdmin());
+				Collection<AdminGroup> adminGroups = getAuthorizationSession().getAuthorizedAdminGroupNames(getAdmin(), getCAAdminSession().getAvailableCAs(getAdmin()));
 				Collections.sort((List<AdminGroup>) adminGroups);
 				String availableGroups = "";
 				for (AdminGroup adminGroup : adminGroups) {

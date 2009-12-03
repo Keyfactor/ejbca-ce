@@ -34,9 +34,19 @@ import org.ejbca.core.model.log.Admin;
  * @version $Id$
  */
 public class CAAuthorization implements Serializable {
-    
-  
-    
+
+    private Collection authcas = null;
+    private TreeMap profilenamesendentity = null;
+    private TreeMap profilenamessubca = null;
+    private TreeMap profilenamesrootca = null;
+    private TreeMap canames = null;
+	private TreeMap allcanames = null;
+    private TreeMap allprofilenames = null;
+    private Admin admin;
+    private ICAAdminSessionLocal caadminsession;
+    private IAuthorizationSessionLocal authorizationsession;
+    private ICertificateStoreSessionLocal certificatestoresession;
+
     /** Creates a new instance of CAAuthorization. */
     public CAAuthorization(Admin admin,  
                            ICAAdminSessionLocal caadminsession,
@@ -55,11 +65,10 @@ public class CAAuthorization implements Serializable {
      *
      */
     public Collection getAuthorizedCAIds() {         
-      if(authcas ==null || authcas.size() == 0){
-        authcas = this.authorizationsession.getAuthorizedCAIds(admin);                  
-      }
-      
-      return authcas;
+    	if(authcas == null || authcas.size() == 0){
+    		authcas = caadminsession.getAvailableCAs(admin);
+    	}
+    	return authcas;
     } 
     
     
@@ -183,20 +192,4 @@ public class CAAuthorization implements Serializable {
       canames=null;
       allcanames=null;
     }    
-    
-    // Private fields.
-    private Collection authcas = null;
-    private TreeMap profilenamesendentity = null;
-    private TreeMap profilenamessubca = null;
-    private TreeMap profilenamesrootca = null;
-    private TreeMap canames = null;
-	private TreeMap allcanames = null;
-    private TreeMap allprofilenames = null;
-    private Admin admin;
-    private ICAAdminSessionLocal caadminsession;
-    private IAuthorizationSessionLocal authorizationsession;
-    private ICertificateStoreSessionLocal certificatestoresession;
-
 }
-
-

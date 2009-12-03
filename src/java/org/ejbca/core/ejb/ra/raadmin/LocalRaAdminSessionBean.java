@@ -28,6 +28,8 @@ import javax.ejb.FinderException;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
@@ -112,6 +114,14 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *   business="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationDataLocal"
  *   link="GlobalConfigurationData"
  *
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
@@ -136,6 +146,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     /** The local interface of  log session bean */
     private ILogSessionLocal logsession = null;
+    private ICAAdminSessionLocal caAdminSession;
 
     /** the local inteface of authorization session */
     private IAuthorizationSessionLocal authorizationsession = null;
@@ -196,8 +207,22 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         return authorizationsession;
     } //getAuthorizationSession
 
-
-
+    /**
+     * Gets connection to caadmin session bean
+     *
+     * @return ICAAdminSessionLocal
+     */
+    private ICAAdminSessionLocal getCAAdminSession() {
+        if (caAdminSession == null) {
+            try {
+                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+                caAdminSession = caadminsessionhome.create();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return caAdminSession;
+    } //getCAAdminSession
 
      /**
      * Finds the admin preference belonging to a certificate serialnumber. Returns null if admin doesn't exists.
@@ -533,7 +558,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       ArrayList returnval = new ArrayList();
       Collection result = null;
 
-      HashSet authorizedcaids = new HashSet(getAuthorizationSession().getAuthorizedCAIds(admin));
+      HashSet authorizedcaids = new HashSet(getCAAdminSession().getAvailableCAs(admin));
       //debug("Admin authorized to "+authorizedcaids.size()+" CAs.");
       try{
           if(getAuthorizationSession().isAuthorizedNoLog(admin, "/super_administrator")) {

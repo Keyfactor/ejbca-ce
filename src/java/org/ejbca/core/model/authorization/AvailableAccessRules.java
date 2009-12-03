@@ -18,11 +18,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
  * 
@@ -30,19 +26,24 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * @version $Id$
  */
 public class AvailableAccessRules {
-                                                        
+
+    private Authorizer authorizer;
+    //private IUserDataSourceSessionLocal userDataSourceSession;
+    private boolean issuperadministrator;
+    private boolean enableendentityprofilelimitations;
+    private boolean usehardtokenissuing;
+    private boolean usekeyrecovery;
+    private HashSet authorizedcaids;
+    private String[] customaccessrules;
+
     /** Creates a new instance of AvailableAccessRules */
-    public AvailableAccessRules(Admin admin, Authorizer authorizer, IRaAdminSessionLocal raadminsession, IUserDataSourceSessionLocal userDataSourceSession, String[] customaccessrules) {   
+    public AvailableAccessRules(Admin admin, Authorizer authorizer, String[] customaccessrules, Collection availableCaIds,
+    		boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery) {   
       // Initialize
-      this.raadminsession = raadminsession;  
       this.authorizer = authorizer;
-      this.userDataSourceSession = userDataSourceSession;
-      
-      // Get Global Configuration
-      GlobalConfiguration globalconfiguration = raadminsession.loadGlobalConfiguration(admin);
-      enableendentityprofilelimitations = globalconfiguration.getEnableEndEntityProfileLimitations();
-      usehardtokenissuing = globalconfiguration.getIssueHardwareTokens();
-      usekeyrecovery = globalconfiguration.getEnableKeyRecovery();        
+      this.enableendentityprofilelimitations = enableendentityprofilelimitations;
+      this.usehardtokenissuing = usehardtokenissuing;
+      this.usekeyrecovery = usekeyrecovery;        
       
       // Is Admin SuperAdministrator.
       try{
@@ -53,35 +54,24 @@ public class AvailableAccessRules {
       
       // Get CA:s
       authorizedcaids = new HashSet();
-      authorizedcaids.addAll(authorizer.getAuthorizedCAIds(admin));
+      authorizedcaids.addAll(authorizer.getAuthorizedCAIds(admin, availableCaIds));
       
       this.customaccessrules= customaccessrules;
     }
     
     // Public methods 
     /** Returns all the accessrules and subaccessrules from the given subresource */
-    public Collection getAvailableAccessRules(Admin admin){
-      ArrayList accessrules = new ArrayList();
-      
-      
-      insertAvailableRoleAccessRules(accessrules);
-      
-      insertAvailableRegularAccessRules(admin, accessrules);
-      
-      if(enableendentityprofilelimitations) { 
-        insertAvailableEndEntityProfileAccessRules(admin, accessrules);
-      }
-
-      insertUserDataSourceAccessRules(admin, accessrules);
-      
-      insertAvailableCAAccessRules(admin, accessrules);
-      
-      insertCustomAccessRules(admin, accessrules);
-      
-      
-      
-      
-      return accessrules;
+    public Collection getAvailableAccessRules(Admin admin, Collection authorizedEndEntityProfileIds, Collection authorizedUserDataSourceIds){
+    	ArrayList accessrules = new ArrayList();
+    	insertAvailableRoleAccessRules(accessrules);
+    	insertAvailableRegularAccessRules(admin, accessrules);
+    	if (enableendentityprofilelimitations) { 
+    		insertAvailableEndEntityProfileAccessRules(admin, accessrules, authorizedEndEntityProfileIds);
+    	}
+    	insertUserDataSourceAccessRules(admin, accessrules, authorizedUserDataSourceIds);
+    	insertAvailableCAAccessRules(admin, accessrules);
+    	insertCustomAccessRules(admin, accessrules);
+    	return accessrules;
     }
    
     // Private methods
@@ -128,38 +118,29 @@ public class AvailableAccessRules {
     
     
     /**
-     * Method that adds all authorized access rules conserning end entity profiles.
+     * Method that adds all authorized access rules concerning end entity profiles.
      */
-    private void insertAvailableEndEntityProfileAccessRules(Admin admin, ArrayList accessrules){
-        
-        // Add most basic rule if authorized to it.
-		try{
-		  authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEBASE);  
-		  accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
-		}catch(AuthorizationDeniedException e){
-          //  Add it to superadministrator anyway
-				 if(issuperadministrator) {
-				   accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
-				 }
-		}
-		
-        
-        // Add all authorized End Entity Profiles                    
-        Iterator iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();
-        while(iter.hasNext()){
-            
-            int profileid = ((Integer) iter.next()).intValue();
-            
-            // Do not add empty profile, since only superadministrator should have access to it.
-            if(profileid != SecConst.EMPTY_ENDENTITYPROFILE){
-              // Administrator is authorized to this End Entity Profile, add it.
-                try{
-                  authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid);  
-                  addEndEntityProfile( profileid, accessrules);
-                }catch(AuthorizationDeniedException e){}
-            }
-            
-        }
+    private void insertAvailableEndEntityProfileAccessRules(Admin admin, ArrayList accessrules, Collection authorizedEndEntityProfileIds) {
+    	// Add most basic rule if authorized to it.
+    	try {
+    		authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEBASE);  
+    		accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
+    	} catch(AuthorizationDeniedException e) {
+    		//  Add it to SuperAdministrator anyway
+    		if (issuperadministrator) {
+    			accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
+    		}
+    	}
+    	// Add all authorized End Entity Profiles                    
+    	Iterator iter = authorizedEndEntityProfileIds.iterator();
+    	while (iter.hasNext()) {
+    		int profileid = ((Integer) iter.next()).intValue();
+    		// Administrator is authorized to this End Entity Profile, add it.
+    		try {
+    			authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid);  
+    			addEndEntityProfile( profileid, accessrules);
+    		} catch (AuthorizationDeniedException e) {}
+    	}
     }
     
     /** 
@@ -183,18 +164,17 @@ public class AvailableAccessRules {
      * Method that adds all authorized CA access rules.
      */
     private void insertAvailableCAAccessRules(Admin admin, ArrayList accessrules){
-      // Add All Authorized CAs
-      //if(issuperadministrator)
+    	// Add All Authorized CAs
     	try {
-			if (authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.CABASE)) {
-			    accessrules.add(AccessRulesConstants.CABASE);
-			}
-		} catch (AuthorizationDeniedException e) {
-		}
-		Iterator iter = authorizedcaids.iterator();
-		while(iter.hasNext()){
-			accessrules.add(AccessRulesConstants.CAPREFIX + ((Integer) iter.next()).intValue());  
-		}
+    		if (authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.CABASE)) {
+    			accessrules.add(AccessRulesConstants.CABASE);
+    		}
+    	} catch (AuthorizationDeniedException e) {
+    	}
+    	Iterator iter = authorizedcaids.iterator();
+    	while (iter.hasNext()) {
+    		accessrules.add(AccessRulesConstants.CAPREFIX + ((Integer) iter.next()).intValue());  
+    	}
     }
     
     /**
@@ -211,15 +191,14 @@ public class AvailableAccessRules {
     /**
      * Method that adds the user data source access rules
      */
-    private void insertUserDataSourceAccessRules(Admin admin, ArrayList accessrules){
-       addAuthorizedAccessRule(admin, AccessRulesConstants.USERDATASOURCEBASE, accessrules);
-       
-       Iterator iter = userDataSourceSession.getAuthorizedUserDataSourceIds(admin, true).iterator();
-       while(iter.hasNext()){
-    	   int id = ((Integer) iter.next()).intValue();
-    	   addAuthorizedAccessRule(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS,accessrules);
-    	   addAuthorizedAccessRule(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS,accessrules);    	   
-       }       
+    private void insertUserDataSourceAccessRules(Admin admin, ArrayList accessrules, Collection authorizedUserDataSourceIds){
+    	addAuthorizedAccessRule(admin, AccessRulesConstants.USERDATASOURCEBASE, accessrules);
+    	Iterator iter = authorizedUserDataSourceIds.iterator();
+    	while (iter.hasNext()) {
+    		int id = ((Integer) iter.next()).intValue();
+    		addAuthorizedAccessRule(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS,accessrules);
+    		addAuthorizedAccessRule(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS,accessrules);    	   
+    	}       
     }
     
     /**
@@ -232,18 +211,4 @@ public class AvailableAccessRules {
       }catch(AuthorizationDeniedException e){
       }
     }
-    
-   
-    // Private fields
-    private Authorizer authorizer;
-    private IRaAdminSessionLocal raadminsession;
-    private IUserDataSourceSessionLocal userDataSourceSession;
-    private boolean issuperadministrator;
-    private boolean enableendentityprofilelimitations;
-    private boolean usehardtokenissuing;
-    private boolean usekeyrecovery;
-    private HashSet authorizedcaids;
-    private String[] customaccessrules;
-    
-   
 }

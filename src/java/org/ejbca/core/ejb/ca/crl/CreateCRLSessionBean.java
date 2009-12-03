@@ -398,7 +398,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			iter = caids.iterator();
     		} 
     		if ( (iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS))) ) {
-        		iter = caadmin.getAvailableCAs(admin).iterator();
+        		iter = caadmin.getAvailableCAs().iterator();
     		}
     		while(iter.hasNext()){
     			int caid = ((Integer) iter.next()).intValue();
@@ -531,7 +531,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			iter = caids.iterator();
     		}
     		if ( (iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS))) ) {
-        		iter = caadmin.getAvailableCAs(admin).iterator();
+        		iter = caadmin.getAvailableCAs().iterator();
     		}
     		while (iter.hasNext()) {
     			int caid = ((Integer) iter.next()).intValue();

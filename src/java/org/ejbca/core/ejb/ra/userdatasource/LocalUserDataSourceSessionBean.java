@@ -28,6 +28,8 @@ import javax.ejb.FinderException;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
@@ -89,6 +91,14 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
  *
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *
  * @ejb.home extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
  *   local-class="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome"
@@ -115,6 +125,8 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * The local interface of authorization session bean
      */
     private IAuthorizationSessionLocal authorizationsession = null;
+
+    private ICAAdminSessionLocal caAdminSession;
 
     /**
      * The remote interface of  log session bean
@@ -167,9 +179,22 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         return authorizationsession;
     } //getAuthorizationSession
 
-
-
-    
+    /**
+     * Gets connection to caadmin session bean
+     *
+     * @return ICAAdminSessionLocal
+     */
+    private ICAAdminSessionLocal getCAAdminSession() {
+        if (caAdminSession == null) {
+            try {
+                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+                caAdminSession = caadminsessionhome.create();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return caAdminSession;
+    } //getCAAdminSession
 
     /**
      * Main method used to fetch userdata from the given user data sources
@@ -542,7 +567,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         	}catch (AuthorizationDeniedException e1) {
               	log.debug("AuthorizationDeniedException: ", e1);
             }
-            Collection authorizedcas = this.getAuthorizationSession().getAuthorizedCAIds(admin);
+            Collection authorizedcas = getCAAdminSession().getAvailableCAs(admin);
             result = this.userdatasourcehome.findAll();
             Iterator i = result.iterator();
             while (i.hasNext()) {
@@ -729,7 +754,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
     			if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
     				return true;
     			}
-    			Collection authorizedcas = getAuthorizationSession().getAuthorizedCAIds(admin);
+    			Collection authorizedcas = getCAAdminSession().getAvailableCAs(admin);
     			if(authorizedcas.containsAll(userdatasource.getApplicableCAs())){
     				return true;
     			}
@@ -780,7 +805,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
     			if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
     				return false;
     			}
-    			Collection authorizedcas = getAuthorizationSession().getAuthorizedCAIds(admin);
+    			Collection authorizedcas = getCAAdminSession().getAvailableCAs(admin);
     			if(authorizedcas.containsAll(userdatasource.getApplicableCAs())){
     				return true;
     			}

@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionLocal;
@@ -82,14 +84,17 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
 		ICertificateStoreSessionLocalHome certificatestorehome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
 		ICertificateStoreSessionLocal certificatesession = certificatestorehome.create();
 
-        IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) locator.getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
+		ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+		ICAAdminSessionLocal caadminsession = caadminsessionhome.create();
+
+		IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) locator.getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
         keyrecoverysession = keyrecoverysessionhome.create();
 		
         initialized=true;
         
         this.informationmemory = ejbcawebbean.getInformationMemory();
                       
-        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificatesession, authorizationsession , useradminsession, informationmemory);
+        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificatesession, authorizationsession , useradminsession, caadminsession, informationmemory);
 		
       }
     }

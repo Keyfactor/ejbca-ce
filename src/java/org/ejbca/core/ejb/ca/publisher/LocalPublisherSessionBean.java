@@ -622,7 +622,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
 
         // If CA-admin return publishers he is authorized to 
         if (!superadmin) {
-            Iterator authorizedcas = this.getAuthorizationSession().getAuthorizedCAIds(admin).iterator();
+            Iterator authorizedcas = getCAAdminSession().getAvailableCAs(admin).iterator();
             while (authorizedcas.hasNext()) {
                 returnval.addAll(this.getCAAdminSession().getCAInfo(admin, ((Integer) authorizedcas.next()).intValue()).getCRLPublishers());
             }

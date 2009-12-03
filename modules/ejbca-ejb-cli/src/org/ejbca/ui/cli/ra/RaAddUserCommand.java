@@ -75,7 +75,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 Collection endentityprofileids =  getRaAdminSession().getAuthorizedEndEntityProfileIds(getAdmin());
                 HashMap endentityprofileidtonamemap = getRaAdminSession().getEndEntityProfileIdToNameMap(getAdmin());
                 
-                Collection caids = getAuthorizationSession().getAuthorizedCAIds(getAdmin());
+                Collection caids = getCAAdminSession().getAvailableCAs(getAdmin());
                 HashMap caidtonamemap = getCAAdminSession().getCAIdToNameMap(getAdmin());
                 
                 if( usehardtokens) {

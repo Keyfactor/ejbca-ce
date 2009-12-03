@@ -31,7 +31,7 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-        	Collection<AdminGroup> adminGroups = getAuthorizationSession().getAuthorizedAdminGroupNames(getAdmin());
+        	Collection<AdminGroup> adminGroups = getAuthorizationSession().getAuthorizedAdminGroupNames(getAdmin(), getCAAdminSession().getAvailableCAs(getAdmin()));
         	Collections.sort((List<AdminGroup>) adminGroups);
         	for (AdminGroup adminGroupRep : adminGroups) {
         		AdminGroup adminGroup = getAuthorizationSession().getAdminGroup(getAdmin(), adminGroupRep.getAdminGroupName());

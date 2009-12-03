@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
@@ -38,15 +39,22 @@ import org.ejbca.util.Base64PutHashMap;
  */
 public class HardTokenProfileDataHandler implements Serializable {
 
-    
+    private IHardTokenSessionLocal         hardtokensession; 
+    private Admin                          administrator;
+    private IAuthorizationSessionLocal     authorizationsession;
+    private ICertificateStoreSessionLocal  certificatesession;
+    private IUserAdminSessionLocal         useradminsession;
+    private ICAAdminSessionLocal           caadminsession; 
+    private InformationMemory              info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
     public HardTokenProfileDataHandler(Admin administrator, IHardTokenSessionLocal hardtokensession, ICertificateStoreSessionLocal certificatesession, IAuthorizationSessionLocal authorizationsession, 
-                                       IUserAdminSessionLocal useradminsession, InformationMemory info) {
+                                       IUserAdminSessionLocal useradminsession, ICAAdminSessionLocal caadminsession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
        this.certificatesession = certificatesession;
        this.useradminsession = useradminsession;
+       this.caadminsession = caadminsession;
        this.administrator = administrator;          
        this.info = info;       
     }
@@ -186,7 +194,7 @@ public class HardTokenProfileDataHandler implements Serializable {
         if(editcheck)        
           authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
   	      HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_HARDTOKEN));
-  	      HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator));
+  	      HashSet authorizedcaids = new HashSet(caadminsession.getAvailableCAs(administrator));
 		  if(profile instanceof EIDProfile){		  	
 		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds()) &&
 		  	   authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())){
@@ -231,11 +239,4 @@ public class HardTokenProfileDataHandler implements Serializable {
 
 		return success;
 	}
-    
-    private IHardTokenSessionLocal         hardtokensession; 
-    private Admin                          administrator;
-    private IAuthorizationSessionLocal     authorizationsession;
-    private ICertificateStoreSessionLocal  certificatesession;
-    private IUserAdminSessionLocal         useradminsession;
-    private InformationMemory              info;
 }

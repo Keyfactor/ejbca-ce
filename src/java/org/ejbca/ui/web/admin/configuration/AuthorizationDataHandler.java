@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -34,10 +35,13 @@ import org.ejbca.core.model.log.Admin;
  * @version $Id$
  */
 public class AuthorizationDataHandler implements java.io.Serializable {
+	
+	private ICAAdminSessionLocal caAdminSession;
 
     /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, IAuthorizationSessionLocal authorizationsession){       
+    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caAdminSession) {       
        this.authorizationsession = authorizationsession;
+       this.caAdminSession = caAdminSession;
               
        this.administrator = administrator;
        this.informationmemory = informationmemory;
@@ -65,17 +69,6 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException{
       return authorizationsession.isAuthorizedNoLog(admin, resource);
-    }
-
-    /**
-     * Method that authenticates a certificate by checking validity and lookup if certificate is revoked.
-     * 
-     * @param certificate the certificate to be authenticated.
-     *
-     * @throws AuthenticationFailedException if authentication failed.
-     */
-    public void authenticate(X509Certificate certificate) throws AuthenticationFailedException {
-      authorizationsession.authenticate(certificate);
     }
 
     // Methods used with admingroup data
@@ -108,10 +101,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * Method returning a Collection of authorized AdminGroups.
      * Only the fields admingroup name and CA id is filled in these objects.
      */
-   
     public Collection getAdminGroupNames(){ 
       if(this.authorizedadmingroups==null)
-        this.authorizedadmingroups= authorizationsession.getAuthorizedAdminGroupNames(administrator);    
+        this.authorizedadmingroups = authorizationsession.getAuthorizedAdminGroupNames(administrator, caAdminSession.getAvailableCAs(administrator));    
         
       return this.authorizedadmingroups;
     }

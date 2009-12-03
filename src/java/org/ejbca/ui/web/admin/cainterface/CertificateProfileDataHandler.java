@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -33,12 +34,19 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  * @version $Id$
  */
 public class CertificateProfileDataHandler implements Serializable {
+	   
+    private ICertificateStoreSessionLocal  certificatestoresession; 
+    private Admin                          administrator;
+    private IAuthorizationSessionLocal     authorizationsession;
+    private InformationMemory              info;
+    private ICAAdminSessionLocal           caadminsession;
 
     public static final int FIXED_CERTIFICATEPROFILE_BOUNDRY        = SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY;
     /** Creates a new instance of CertificateProfileDataHandler */
-    public CertificateProfileDataHandler(Admin administrator, ICertificateStoreSessionLocal certificatesession, IAuthorizationSessionLocal authorizationsession, InformationMemory info) {
+    public CertificateProfileDataHandler(Admin administrator, ICertificateStoreSessionLocal certificatesession, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caadminsession, InformationMemory info) {
        this.certificatestoresession = certificatesession;           
        this.authorizationsession = authorizationsession;
+       this.caadminsession = caadminsession;
        this.administrator = administrator;          
        this.info = info;       
     }
@@ -147,7 +155,7 @@ public class CertificateProfileDataHandler implements Serializable {
     	  if (editcheck) {        
     		  authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
     	  }
-    	  HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator));
+    	  HashSet authorizedcaids = new HashSet(caadminsession.getAvailableCAs(administrator));
 
     	  if(profile != null){       
     		  if(!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY) {
@@ -170,9 +178,4 @@ public class CertificateProfileDataHandler implements Serializable {
          
       return returnval;  
     }    
-   
-    private ICertificateStoreSessionLocal  certificatestoresession; 
-    private Admin                          administrator;
-    private IAuthorizationSessionLocal     authorizationsession;
-    private InformationMemory              info;
 }
