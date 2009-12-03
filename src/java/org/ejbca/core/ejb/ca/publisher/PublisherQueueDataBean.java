@@ -190,34 +190,31 @@ public abstract class PublisherQueueDataBean extends BaseEntityBean {
     public abstract void setVolatileData(String queueData);
 
     /**
-     * Method that returns the PublisherQueueData data and updates it if necessary.
+     * Method that returns the PublisherQueueVolatileData data and updates it if necessary.
      *
      * @ejb.interface-method view-type="local"
      */
     public PublisherQueueVolatileData getPublisherQueueVolatileData() {
-    	// qd is optional in publisher queue data
+    	// VolatileData is optional in publisher queue data
     	PublisherQueueVolatileData ret = null;
-    	byte[] databytes = null;
     	try {
     		String vd = getVolatileData();
-    		if (vd != null) {
-        		databytes = vd.getBytes("UTF8");    			
+    		if ( (vd != null) && (vd.length() > 0) ) {
+    			byte[] databytes = vd.getBytes("UTF8");    			
+    			java.beans.XMLDecoder decoder;
+    			decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(databytes));
+    			HashMap h = (HashMap) decoder.readObject();
+    			decoder.close();
+    			// Handle Base64 encoded string values
+    			HashMap data = new Base64GetHashMap(h);
+    			ret = new PublisherQueueVolatileData();
+    			ret.loadData(data);
+    			if (ret.isUpgraded()) {
+    				setPublisherQueueVolatileData(ret);
+    			}    		
     		}
     	} catch (UnsupportedEncodingException e) {
     		throw new EJBException(e);
-    	}
-    	if (databytes != null) {
-    		java.beans.XMLDecoder decoder;
-    		decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(databytes));
-    		HashMap h = (HashMap) decoder.readObject();
-    		decoder.close();
-    		// Handle Base64 encoded string values
-    		HashMap data = new Base64GetHashMap(h);
-    		ret = new PublisherQueueVolatileData();
-    		ret.loadData(data);
-    		if (ret.isUpgraded()) {
-    			setPublisherQueueVolatileData(ret);
-    		}    		
     	}
     	return ret;
     }
