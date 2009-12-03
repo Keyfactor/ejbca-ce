@@ -111,6 +111,7 @@ public class CAInfo implements Serializable {
     public String getName() {return this.name;}
     public int getStatus() {return status;}
     public void setStatus(int status) {this.status = status;}
+    /** CAInfo.CATYPE_X509 or CAInfo.CATYPE_CVC */
     public int getCAType() {return catype;}
     public int getSignedBy() {return signedby;}
     public void setSignedBy(int signedby) {this.signedby = signedby;}
