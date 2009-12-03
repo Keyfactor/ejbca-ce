@@ -16,7 +16,7 @@
 
 <frameset rows="100,*" cols="*" frameborder="NO" border="0" framespacing="0"> 
   <frame name="<%= globalconfiguration.HEADERFRAME %>" scrolling="NO" noresize src="<%= globalconfiguration.getHeadBanner() %>" >
-  <frameset cols="217,*" frameborder="NO" border="0" framespacing="0" rows="*"> 
+  <frameset cols="250,*" frameborder="NO" border="0" framespacing="0" rows="*"> 
     <frame name="<%= globalconfiguration.MENUFRAME %>" noresize scrolling="NO" src="<%= globalconfiguration.getAdminWebPath() +
                                                                                         globalconfiguration.getMenuFilename() %>">
     <frame name="<%= globalconfiguration.MAINFRAME %>" src="<%= globalconfiguration.getAdminWebPath() + globalconfiguration.getMainFilename() %>">
