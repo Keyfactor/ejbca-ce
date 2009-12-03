@@ -149,8 +149,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
     public Integer getAndIncrementRowCount() {
         int returnval = getLogEntryRowNumber();
         setLogEntryRowNumber(returnval + 1);
-
-        return new Integer(returnval);
+        return Integer.valueOf(returnval);
     }
 
     //
