@@ -215,6 +215,8 @@
     			<include name="org/ejbca/core/ejb/authorization/**/AdminGroupDataLocalHome.java"/>
     			<include name="org/ejbca/core/ejb/authorization/**/AuthorizationTreeUpdateDataLocal.java"/>
     			<include name="org/ejbca/core/ejb/authorization/**/AuthorizationTreeUpdateDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/IAuthorizationSessionLocal.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/**/IAuthorizationSessionLocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/authorization/**/*.java"/>
@@ -231,6 +233,29 @@
         		<pathelement location="${build-temp.dir}/logging"/>
         	</classpath>
         </javac>
+    	<!-- Notification component -->
+    	<echo message=" ** Validating component: Notification (FAKE.. This isn't really a proper component yet..) **"/>
+    	<mkdir dir="${src-temp.dir}/notification"/>
+    	<mkdir dir="${build-temp.dir}/notification"/>
+    	<copy todir="${src-temp.dir}/notification">
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/config/MailConfiguration.java"/>
+    			<include name="org/ejbca/util/mail/*.java"/>
+    			<!--
+    			<include name="org/ejbca/util/NotificationParamGen.java"/>
+    			-->
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/notification" destdir="${build-temp.dir}/notification" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        	</classpath>
+        </javac>
     	<!-- Approval component -->
 		<!--
     	<echo message=" ** Validating component: Approval **"/>
@@ -238,11 +263,7 @@
     	<mkdir dir="${build-temp.dir}/approval"/>
     	<copy todir="${src-temp.dir}/approval">
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocal.java"/>
-    			<include name="org/ejbca/core/ejb/log/**/ILogSessionLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/log/**/LogEntryDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/log/**/LogConfigurationDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/log/**/LogConfigurationDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/approval/**/ApprovalDataLocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/approval/**/*.java"/>
@@ -257,12 +278,11 @@
         		<pathelement location="${build-temp.dir}/protect"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
         	</classpath>
         </javac>
     			-->
-    	
-    	
-    	
     </target>
 
     <target name="compile-util">
