@@ -236,6 +236,13 @@ Usage : cvcprint &lt;filename&gt; [verifycert]
   
   <subsection name="CLI examples"> 
   <p>
+  The command line interface is part of the client tool box. First you have to build the client tool box (that can be used from any remote computer):
+  </p>
+  <source>
+ant clientToolBox
+cd clientToolBox-dist  
+  </source>  
+  <p>
   <strong>1.</strong><br/>
   Example command to receive a request from a foreign DV could look like:
   </p>
