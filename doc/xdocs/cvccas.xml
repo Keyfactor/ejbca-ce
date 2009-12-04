@@ -209,17 +209,17 @@
   Type the command on the command line to get usage information. 
   </p>
   <source>
-  ejbca> cd dist/ejbcawscli
-  ejbca/dist/ejbcawscli> ./cvcwscli.sh
-  Usage: cvcrequest cvcprint
+ejbca> cd clientToolBox-dist
+ejbca/clientToolBox-dist> ./ejbcaClientToolBox.sh CvcWsRaCli
+Usage: cvcrequest cvcgetchain cvcprint cvcpem
   
-  ejbca/dist/ejbcawscli> ./cvcwscli.sh cvcrequest
-  Usage : cvcrequest &lt;username&gt; &lt;password&gt; &lt;subjectdn&gt; &lt;sequence&gt; &lt;caname&gt; &lt;signatureAlg&gt; ...
-  ...
+ejbca/dist/ejbcawscli> ./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest
+Usage : cvcrequest &lt;username&gt; &lt;password&gt; &lt;subjectdn&gt; &lt;sequence&gt; &lt;caname&gt; &lt;signatureAlg&gt; ...
+...
   
-  ejbca/dist/ejbcawscli> ./cvcwscli.sh cvcprint
-  Usage : cvcprint &lt;filename&gt; [verifycert]
-  ...
+ejbca/dist/ejbcawscli> ./ejbcaClientToolBox.sh CvcWsRaCli
+Usage : cvcprint &lt;filename&gt; [verifycert]
+...
   </source>
   
   <subsection name="CLI authentication and privileges"> 
@@ -240,10 +240,10 @@
   Example command to receive a request from a foreign DV could look like:
   </p>
   <source>
-./ejbcawsracli.sh edituser dv-de foo123 false "CN=dvca,C=DE" NULL NULL CVCAPK 1 USERGENERATED NEW DV DV  
+./ejbcaClientToolBox.sh EjbcaWsRaCli edituser dv-de foo123 false "CN=dvca,C=DE" NULL NULL CVCAPK 1 USERGENERATED NEW DV DV  
   </source>  
   <source>
-./cvcwscli.sh cvcrequest dv-de foo123 "CN=dvca,C=DE" SE001 SHA256WithRSA 2048 false dedv
+./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest dv-de foo123 "CN=dvca,C=DE" SE001 SHA256WithRSA 2048 false dedv
   </source>
   <p>
   Where your CVCA is called CVCAPK in EJBCA and uses algorithm SHA256WithRSA with 2048 bit keys.<br/>
@@ -262,14 +262,14 @@
   An example command to generate keys and a request for an IS using SHA224WithECDSA and brainpoolp224r1 curve:
   </p>
   <source>
-./ejbcawsracli.sh edituser isbrainpool foo123 false "CN=ISBPOOL,C=SE" NULL NULL DV-BrainPool 1 USERGENERATED NEW IS IS
+./ejbcaClientToolBox.sh EjbcaWsRaCli edituser isbrainpool foo123 false "CN=ISBPOOL,C=SE" NULL NULL DV-BrainPool 1 USERGENERATED NEW IS IS
   </source>
   <p>This command adds the IS as end end entity in EJBCA. It only has to be done the first time, or if the IS previous certificates expire.
   When using authenticated requests these are used instead of the one-time password, but if the previous certificate expires, a new one-time password is
   needed to authenticate the request.
   </p> 
   <source>
-./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpool
+./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpool
   </source>
   <p>
   Where your DV is called DV-BrainPool in EJBCA and uses algorithm SHA224WithECDSA with brainpoolp224r1 curve.
@@ -285,7 +285,7 @@
   To create an authenticated request for this user you can issue the following command, which authenticates the new request with the old key and certificate. 
   </p>  
   <source>
-./cvcwscli.sh cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpoolnew isbrainpool.pkcs8 isbrainpool.cvcert
+./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpoolnew isbrainpool.pkcs8 isbrainpool.cvcert
   </source>
   <p>
   The request will be automatically granted (the password passed will be ignored) and the new certificate will be written to 'isbrainpoolnew.cvcert'.
