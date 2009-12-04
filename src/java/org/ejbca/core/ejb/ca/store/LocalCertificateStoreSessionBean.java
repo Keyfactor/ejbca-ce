@@ -621,10 +621,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             Collection coll = certHome.findByExpireDate(expireTime.getTime());
             Collection ret = new ArrayList();
-
             if (coll != null) {
+            	if (log.isDebugEnabled()) {
+                	log.debug("Found "+coll.size()+" certificates that expire before "+expireTime);            		
+            	}
                 Iterator iter = coll.iterator();
-
                 while (iter.hasNext()) {
                     ret.add(((CertificateDataLocal) iter.next()).getCertificate());
                 }
