@@ -95,8 +95,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR);
 			}
 
-			RevokedCertInfo revokeResult =  getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
-			if(revokeResult == null || revokeResult.getReason() != RevokedCertInfo.NOT_REVOKED){
+			boolean isRevoked = getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
+			if (isRevoked) {
 				throw new AuthorizationDeniedException("Error administrator certificate doesn't exist or is revoked.");
 			}
 		} catch (RemoteException e) {
@@ -449,8 +449,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
      while(iter.hasNext()){
     	 java.security.cert.Certificate next = iter.next();
   	   
-  	   RevokedCertInfo info = getCertStoreSession().isRevoked(admin,CertTools.getIssuerDN(next),CertTools.getSerialNumber(next));
-  	   if ( (info != null) && (info.getReason() == RevokedCertInfo.NOT_REVOKED) ) {
+  	   boolean isrevoked = getCertStoreSession().isRevoked(admin,CertTools.getIssuerDN(next),CertTools.getSerialNumber(next));
+  	   if (!isrevoked) {
   		   try{
   			   CertTools.checkValidity(next, new Date());
   			   retval.add(next);

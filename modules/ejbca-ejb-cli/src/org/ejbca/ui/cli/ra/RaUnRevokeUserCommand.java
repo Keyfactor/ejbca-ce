@@ -56,8 +56,8 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             	Iterator i = getCertificateStoreSession().findCertificatesByUsername(getAdmin(), username).iterator();
             	while (i.hasNext()) {
             		X509Certificate cert = (X509Certificate) i.next();
-            		if (getCertificateStoreSession().isRevoked(getAdmin(), cert.getIssuerDN().toString(),
-            				cert.getSerialNumber()).getReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) {
+            		if (getCertificateStoreSession().getStatus(getAdmin(), cert.getIssuerDN().toString(),
+            				cert.getSerialNumber()).revocationReason == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) {
             			foundCertificateOnHold = true;
             			try {
                 			getUserAdminSession().unRevokeCert(getAdmin(), cert.getSerialNumber(), cert.getIssuerDN().toString(), username);

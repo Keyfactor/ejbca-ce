@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -145,8 +146,9 @@ public class TestRevocationApproval extends TestCase {
 	    	X509Certificate cert = (X509Certificate) i.next();
 	        String issuerDN = cert.getIssuerDN().toString();
 	        BigInteger serialNumber = cert.getSerialNumber();
-		    if ( (reason != RevokedCertInfo.NOT_REVOKED && !certificateStoreSession.isRevoked(internalAdmin, issuerDN, serialNumber).isRevoked() )
-		    		|| (reason == RevokedCertInfo.NOT_REVOKED && certificateStoreSession.isRevoked(internalAdmin, issuerDN, serialNumber).isRevoked()) )  {
+	        boolean isRevoked = certificateStoreSession.isRevoked(internalAdmin, issuerDN, serialNumber);
+		    if ( (reason != RevokedCertInfo.NOT_REVOKED && !isRevoked )
+		    		|| (reason == RevokedCertInfo.NOT_REVOKED && isRevoked) )  {
 				int approvalID;
 				if (approvalType == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
 					approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuerDN);
@@ -159,8 +161,9 @@ public class TestRevocationApproval extends TestCase {
 				Approval approval = new Approval("Approved during testing.");
 				approvalSession.approve(approvingAdmin, approvalID, approval);
 				approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
-				assertTrue( approvalData.getStatus() == ApprovalDataVO.STATUS_EXECUTED );
-				assertTrue(certificateStoreSession.isRevoked(internalAdmin, issuerDN, serialNumber).getReason() == reason);
+				assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
+		        CertificateStatus status = certificateStoreSession.getStatus(internalAdmin, issuerDN, serialNumber);
+				assertEquals(status.revocationReason, reason);
 				approvalSession.removeApprovalRequest(internalAdmin, approvalData.getId());
 		        approvedRevocations++;
 		    }

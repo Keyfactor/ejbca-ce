@@ -26,7 +26,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -387,9 +386,7 @@ public class TestCertificateRetrival extends TestCase {
         Iterator iter = sernos.iterator();
         while (iter.hasNext()) {
         	BigInteger bi = (BigInteger)iter.next();
-            RevokedCertInfo rev = certificateStoreSession.isRevoked(admin
-                    , CertTools.getSubjectDN(rootcacert)
-                    , bi);
+            CertificateStatus rev = certificateStoreSession.getStatus(admin, CertTools.getSubjectDN(rootcacert), bi);
             revstats.add(rev);
         }
 
@@ -398,11 +395,10 @@ public class TestCertificateRetrival extends TestCase {
 
         iter = revstats.iterator();
         while (iter.hasNext()) {
-            RevokedCertInfo rci = (RevokedCertInfo) iter.next();
+        	CertificateStatus rci = (CertificateStatus) iter.next();
             log.debug("Certificate revocation information:\n"
-                    + "   Serialnumber      : " + rci.getUserCertificate().toString() + "\n"
-                    + "   Revocation date   : " + rci.getRevocationDate().toString() + "\n"
-                    + "   Revocation reason : " + rci.getReason() + "\n");
+                    + "   Revocation date   : " + rci.revocationDate.toString() + "\n"
+                    + "   Revocation reason : " + rci.revocationReason + "\n");
         }
         log.trace("<test08LoadRevocationInfo()");
     }

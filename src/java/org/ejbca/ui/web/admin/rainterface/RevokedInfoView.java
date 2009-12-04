@@ -23,15 +23,15 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 
 
 
-/**
- * DOCUMENT ME!
+/** View of certificate revocation status
  *
- * @author Philip Vendil
+ * @version $Id$
  */
 public class RevokedInfoView implements Serializable {
     // Public constants.
@@ -41,13 +41,14 @@ public class RevokedInfoView implements Serializable {
      *
      * @param revokedcertinfo DOCUMENT ME!
      */
-    public RevokedInfoView(RevokedCertInfo revokedcertinfo) {
+    public RevokedInfoView(CertificateStatus revokedcertinfo, BigInteger certSerno) {
         this.revokedcertinfo = revokedcertinfo;
+        this.certserno = certSerno;
     }
 
     // Public methods.
     public String getCertificateSerialNumberAsString() {
-        return this.revokedcertinfo.getUserCertificate().toString(16);
+        return this.certserno.toString(16);
     }
 
     /**
@@ -56,7 +57,7 @@ public class RevokedInfoView implements Serializable {
      * @return DOCUMENT ME!
      */
     public BigInteger getCertificateSerialNumber() {
-        return this.revokedcertinfo.getUserCertificate();
+        return this.certserno;
     }
 
     /**
@@ -65,7 +66,7 @@ public class RevokedInfoView implements Serializable {
      * @return DOCUMENT ME!
      */
     public Date getRevocationDate() {
-        return this.revokedcertinfo.getRevocationDate();
+        return this.revokedcertinfo.revocationDate;
     }
 
     /**
@@ -76,7 +77,7 @@ public class RevokedInfoView implements Serializable {
     public String[] getRevokationReasons() {
         String[] dummy = { "" };
         ArrayList reasons = new ArrayList();
-        int reason = this.revokedcertinfo.getReason();
+        int reason = this.revokedcertinfo.revocationReason;
 
         if ((reason >= 0) && (reason < HIGN_REASON_BOUNDRARY)) {
             // Add this reason.
@@ -87,7 +88,7 @@ public class RevokedInfoView implements Serializable {
     }
 
     public boolean isRevoked(){
-    	return this.revokedcertinfo.getReason() != RevokedCertInfo.NOT_REVOKED;
+    	return this.revokedcertinfo.revocationReason != RevokedCertInfo.NOT_REVOKED;
     }
 
     // Private constants.
@@ -99,5 +100,6 @@ public class RevokedInfoView implements Serializable {
     public static final int HIGN_REASON_BOUNDRARY = 11;
 
     // Private fields.
-    private RevokedCertInfo revokedcertinfo;
+    private CertificateStatus revokedcertinfo;
+    private BigInteger certserno;
 }

@@ -14,6 +14,7 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.util.Date;
 
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /**
@@ -58,6 +59,13 @@ public class RevokeStatus {
 		this.issuerDN = issuerDN;
 		revocationDate = info.getRevocationDate();
 		reason = info.getReason();		
+	}
+
+	public RevokeStatus(CertificateStatus info, String issuerDN, String serno){
+		certificateSN = serno;
+		this.issuerDN = issuerDN;
+		revocationDate = info.revocationDate;
+		reason = info.revocationReason;		
 	}
 
 	/**

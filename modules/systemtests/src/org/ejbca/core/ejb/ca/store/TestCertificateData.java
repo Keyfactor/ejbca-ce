@@ -332,12 +332,12 @@ public class TestCertificateData extends TestCase {
         assertEquals("wrong reason", data3.getRevocationReason(), RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 
         log.debug("Checking if cert is revoked DN:'" + CertTools.getIssuerDN(cert) + "', serno:'" + cert.getSerialNumber().toString() + "'.");
-        RevokedCertInfo revinfo = certificateStoreSession.isRevoked(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(cert), cert.getSerialNumber());
+        CertificateStatus revinfo = certificateStoreSession.getStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(cert), cert.getSerialNumber());
         assertNotNull("Certificate not found, it should be!", revinfo);
-        int reason = revinfo.getReason();
+        int reason = revinfo.revocationReason;
         assertEquals("Certificate not revoked, it should be!", RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, reason);
-        assertTrue("Wrong revocationDate!", revinfo.getRevocationDate().compareTo(data3.getRevocationDate()) == 0);
-        assertTrue("Wrong reason!", revinfo.getReason() == data3.getRevocationReason());
+        assertTrue("Wrong revocationDate!", revinfo.revocationDate.compareTo(data3.getRevocationDate()) == 0);
+        assertEquals("Wrong reason!", revinfo.revocationReason, data3.getRevocationReason());
         log.debug("Removed it!");
         log.trace("<test08IsRevoked()");
     }

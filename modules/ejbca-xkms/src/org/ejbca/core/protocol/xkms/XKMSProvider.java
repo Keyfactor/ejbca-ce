@@ -69,7 +69,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceResponse;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
@@ -365,8 +364,8 @@ public class XKMSProvider implements Provider<Source> {
 							cpv.validate(cp, param); 
 
 							// Check revocation status
-							RevokedCertInfo revCertInfo = getCertStoreSession().isRevoked(intAdmin, CertTools.getIssuerDN(verCert), verCert.getSerialNumber());
-							if(revCertInfo.getReason() != RevokedCertInfo.NOT_REVOKED){
+							boolean revoked = getCertStoreSession().isRevoked(intAdmin, CertTools.getIssuerDN(verCert), verCert.getSerialNumber());
+							if (revoked) {
 								return false;
 							}
 						}else{

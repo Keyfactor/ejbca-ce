@@ -34,7 +34,6 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -45,7 +44,7 @@ import org.ejbca.util.CertTools;
  * Servlet used for requesting browser certificate renewals.
  * 
  * @author Markus Kilås
- * @version $Id:$
+ * @version $Id$
  */
 public class RenewServlet extends HttpServlet {
     
@@ -95,8 +94,8 @@ public class RenewServlet extends HttpServlet {
     	}
     	X509Certificate certificate = ((X509Certificate[]) o)[0];
     	request.setAttribute("certificate", certificate);
-    	RevokedCertInfo rci = certificateStoreSession.isRevoked(admin, certificate.getIssuerDN().getName(), certificate.getSerialNumber());
-    	if (rci == null || rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
+    	boolean isrevoked = certificateStoreSession.isRevoked(admin, certificate.getIssuerDN().getName(), certificate.getSerialNumber());
+    	if (isrevoked) {
     		request.setAttribute("errorMessage", "User certificate with serial number "+certificate.getSerialNumber() + " from issuer \'"+certificate.getIssuerX500Principal()+"\' is revoked.");
     	} else {
 	    	String username = certificateStoreSession.findUsernameByCertSerno(admin, certificate.getSerialNumber(), certificate.getIssuerX500Principal().toString());

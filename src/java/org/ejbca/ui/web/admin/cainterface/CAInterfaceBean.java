@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
@@ -139,9 +140,9 @@ public class CAInterfaceBean implements java.io.Serializable {
       while(iter.hasNext()){
         Certificate next = (Certificate) iter.next();  
         RevokedInfoView revokedinfo = null;
-        RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
-        if(revinfo != null && revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
-          revokedinfo = new RevokedInfoView(revinfo);
+        CertificateStatus revinfo = certificatesession.getStatus(administrator, CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
+        if(revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
+          revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(next));
         }
         returnval[i] = new CertificateView(next, revokedinfo,null);
         i++;

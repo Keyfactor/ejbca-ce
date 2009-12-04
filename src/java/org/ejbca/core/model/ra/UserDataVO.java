@@ -255,22 +255,18 @@ public class UserDataVO implements Serializable {
     public static ExtendedInformation getExtendedInformation(String extendedinfostring) {
         ExtendedInformation returnval = null;
         if ( (extendedinfostring != null) && (extendedinfostring.length() > 0) ) {
-            java.beans.XMLDecoder decoder;
             try {
-            	decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));
-            	
+            	java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));            	
             	HashMap h = (HashMap) decoder.readObject();
             	decoder.close();
                 // Handle Base64 encoded string values
                 HashMap data = new Base64GetHashMap(h);
-                
             	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
             	switch(type){
             	  case ExtendedInformation.TYPE_BASIC :
               		returnval = new ExtendedInformation();            	
               		returnval.loadData(data);
               		break;
-
             	}            	
             }catch (Exception e) {
             	throw new RuntimeException("Problems generating extended information from String",e);
@@ -285,7 +281,6 @@ public class UserDataVO implements Serializable {
             // We must base64 encode string for UTF safety
             HashMap a = new Base64PutHashMap();
             a.putAll((HashMap)extendedinformation.saveData());
-
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
     		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
     		encoder.writeObject(a);
