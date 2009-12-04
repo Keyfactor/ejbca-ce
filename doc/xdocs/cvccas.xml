@@ -292,7 +292,7 @@ cd clientToolBox-dist
   To create an authenticated request for this user you can issue the following command, which authenticates the new request with the old key and certificate. 
   </p>  
   <source>
-./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest issecp foo123 "C=SE,CN=ISSECP" 00005 SHA256WithECDSA secp256r1 true issecpnew issecp.pkcs8 isbrainpool.cvcert
+./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest issecp foo123 "C=SE,CN=ISSECP" 00006 SHA256WithECDSA secp256r1 true issecpnew issecp.pkcs8 issecp.cvcert
   </source>
   <p>
   The request will be automatically granted (the password passed will be ignored) and the new certificate will be written to 'issecpnew.cvcert'.
