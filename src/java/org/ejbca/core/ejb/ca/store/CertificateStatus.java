@@ -32,6 +32,7 @@ public class CertificateStatus implements Serializable {
 
     private final String name;
     public final Date revocationDate;
+    /** RevokedCertInfo.NOT_REVOKED etc */
     public final int revocationReason;
     public final int certificateProfileId;
     
