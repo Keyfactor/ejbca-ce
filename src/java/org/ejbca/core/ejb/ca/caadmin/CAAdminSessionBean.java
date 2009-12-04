@@ -1008,7 +1008,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection getAvailableCAs(Admin admin) {
-    	return authorizationsession.getAuthorizedCAIds(admin, getAvailableCAs());
+    	return getAuthorizationSession().getAuthorizedCAIds(admin, getAvailableCAs());
     }
 
     /**
