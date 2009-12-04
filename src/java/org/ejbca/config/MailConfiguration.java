@@ -22,4 +22,11 @@ public class MailConfiguration {
 		return ConfigurationHolder.getExpandedString("mail.jndi-name", "java:/EjbcaMail");
 	}
 
+	/**
+	 * Content encoding for the email message body.
+	 */
+	public static String getMailMimeType() {
+		return "text/plain;charset=" + ConfigurationHolder.getExpandedString("mail.contentencoding", "UTF-8");
+	}
+
 }

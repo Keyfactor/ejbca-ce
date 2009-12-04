@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,15 +32,9 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
-import javax.mail.Message;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.config.MailConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
@@ -75,7 +70,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.NotificationParamGen;
-import org.ejbca.util.TemplateMimeMessage;
+import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -1025,26 +1020,18 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             	  approvalAdminDN = CertTools.getSubjectDN(approvalCert);
             	  approveComment = approval.getComment();
               }
-              String mailJndi = MailConfiguration.getMailJndiName();
-              Session mailSession = getLocator().getMailSession(mailJndi);
               Integer numAppr =  new Integer(numberOfApprovalsLeft);
               NotificationParamGen paramGen = new NotificationParamGen(requestDate,id,approvalTypeText,numAppr,
             		                                                   approvalURL, approveComment, requestAdminUsername,
             		                                                   requestAdminDN,approvalAdminUsername,approvalAdminDN);
               HashMap params = paramGen.getParams();
-
-              Message msg = new TemplateMimeMessage(params, mailSession);
-              msg.setFrom(new InternetAddress(fromAddress));
-              msg.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(approvalAdminsEmail, false));
+              String subject = NotificationParamGen.interpolate(params, notificationSubject);
+              String message = NotificationParamGen.interpolate(params, notificationMsg);
+              List toList = Arrays.asList(approvalAdminsEmail);
               if(requestAdminEmail != null){
-            	  msg.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(requestAdminEmail, false));
+            	  toList.add(requestAdminEmail);
               }
-              msg.setSubject(notificationSubject);
-              msg.setContent(notificationMsg, WebConfiguration.getMailMimeType());
-              msg.setHeader("X-Mailer", "JavaMailer");
-              msg.setSentDate(new Date());
-              Transport.send(msg);
-
+              MailSender.sendMailOrThrow(fromAddress, toList, MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
               getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), requestAdminUsername, null, LogConstants.EVENT_INFO_NOTIFICATION, "Approval notification with id " + id + " was sent successfully.");
             }
         } catch (Exception e) {

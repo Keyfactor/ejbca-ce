@@ -113,7 +113,7 @@ public class NotificationParamGen {
   }
   
   /**
-   * Method used to retrieve the populated parameter hashmap with the notification text.
+   * Method used to retrieve the populated parameter HashMap with the notification text.
    * @return
    */
   public HashMap getParams(){
@@ -130,33 +130,36 @@ public class NotificationParamGen {
       String date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
       paramPut("DATE", date);
 
-      paramPut("USERNAME", user.getUsername());
-      paramPut("user.USERNAME", user.getUsername());
+      if (user != null) {
+          paramPut("USERNAME", user.getUsername());
+          paramPut("user.USERNAME", user.getUsername());
 
-      paramPut("PASSWORD", user.getPassword());
-      paramPut("user.PASSWORD", user.getPassword());
+          paramPut("PASSWORD", user.getPassword());
+          paramPut("user.PASSWORD", user.getPassword());
 
-	  DNFieldExtractor dnfields = new DNFieldExtractor(user.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
-	  paramPut("CN", dnfields.getField(DNFieldExtractor.CN, 0));
-	  paramPut("user.CN", dnfields.getField(DNFieldExtractor.CN, 0));
-	  paramPut("SN", dnfields.getField(DNFieldExtractor.SN, 0));
-	  paramPut("user.SN", dnfields.getField(DNFieldExtractor.SN, 0));
-	  paramPut("O", dnfields.getField(DNFieldExtractor.O, 0));
-	  paramPut("user.O", dnfields.getField(DNFieldExtractor.O, 0));
-	  paramPut("OU", dnfields.getField(DNFieldExtractor.OU, 0));
-	  paramPut("user.OU", dnfields.getField(DNFieldExtractor.OU, 0));
-	  paramPut("C", dnfields.getField(DNFieldExtractor.C, 0));
-	  paramPut("user.E", dnfields.getField(DNFieldExtractor.E, 0));
-	  String time = "(time not available)";
-	  if (user.getTimeCreated() != null) {
-		  time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeCreated());
-	  }
-	  paramPut("user.TIMECREATED", time);		  
-	  time = "(time not available)";
-	  if (user.getTimeModified() != null) {
-		  time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeModified());
-	  }
-	  paramPut("user.TIMEMODIFIED", time);	  
+    	  DNFieldExtractor dnfields = new DNFieldExtractor(user.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
+    	  paramPut("CN", dnfields.getField(DNFieldExtractor.CN, 0));
+    	  paramPut("user.CN", dnfields.getField(DNFieldExtractor.CN, 0));
+    	  paramPut("SN", dnfields.getField(DNFieldExtractor.SN, 0));
+    	  paramPut("user.SN", dnfields.getField(DNFieldExtractor.SN, 0));
+    	  paramPut("O", dnfields.getField(DNFieldExtractor.O, 0));
+    	  paramPut("user.O", dnfields.getField(DNFieldExtractor.O, 0));
+    	  paramPut("OU", dnfields.getField(DNFieldExtractor.OU, 0));
+    	  paramPut("user.OU", dnfields.getField(DNFieldExtractor.OU, 0));
+    	  paramPut("C", dnfields.getField(DNFieldExtractor.C, 0));
+    	  paramPut("user.E", dnfields.getField(DNFieldExtractor.E, 0));
+
+    	  String time = "(time not available)";
+    	  if (user.getTimeCreated() != null) {
+    		  time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeCreated());
+    	  }
+    	  paramPut("user.TIMECREATED", time);
+    	  time = "(time not available)";
+    	  if (user.getTimeModified() != null) {
+    		  time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(user.getTimeModified());
+    	  }
+    	  paramPut("user.TIMEMODIFIED", time);
+      }
 	  
 	  if(approvalRequestDate != null){
 		  String requestDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(approvalRequestDate);
@@ -180,7 +183,7 @@ public class NotificationParamGen {
 	  if(requestAdminDN != null){
 		  requestAdminDN = "";
 	  }
-	  dnfields = new DNFieldExtractor(requestAdminDN, DNFieldExtractor.TYPE_SUBJECTDN);	      
+	  DNFieldExtractor dnfields = new DNFieldExtractor(requestAdminDN, DNFieldExtractor.TYPE_SUBJECTDN);	      
 	  paramPut("requestAdmin.CN", dnfields.getField(DNFieldExtractor.CN, 0));	      
 	  paramPut("requestAdmin.SN", dnfields.getField(DNFieldExtractor.SN, 0));
 	  paramPut("requestAdmin.O", dnfields.getField(DNFieldExtractor.O, 0));

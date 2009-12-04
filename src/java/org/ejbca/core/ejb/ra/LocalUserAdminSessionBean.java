@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,14 +33,9 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
-import javax.mail.Message;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
 import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.config.MailConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
@@ -95,9 +91,9 @@ import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.NotificationParamGen;
 import org.ejbca.util.PrinterManager;
 import org.ejbca.util.StringTools;
-import org.ejbca.util.TemplateMimeMessage;
 import org.ejbca.util.dn.DistinguishedName;
 import org.ejbca.util.dn.DnComponents;
+import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -2294,9 +2290,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     		String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", data.getUsername());
                             throw new Exception(msg);
                         }
-
-                        String mailJndi = MailConfiguration.getMailJndiName();
-                        Session mailSession = getLocator().getMailSession(mailJndi);
                         // Get the administrators DN from the admin certificate, if one exists
                         // When approvals is used, this will be the DN of the admin that approves the request
                         Certificate adminCert = admin.getAdminInformation().getX509Certificate();
@@ -2305,22 +2298,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                         NotificationParamGen paramGen = new NotificationParamGen(data, approvalAdminDN);
                         HashMap params = paramGen.getParams();
                         /* substitute any $ fields in the receipient and from fields */
-                        String fromemail = not.getNotificationSender();
                         rcptemail = NotificationParamGen.interpolate(params, rcptemail);
-                        fromemail = NotificationParamGen.interpolate(params, fromemail);
-                        
-                        Message msg = new TemplateMimeMessage(params, mailSession);
-                        msg.setFrom(new InternetAddress(fromemail));
-                        msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(rcptemail, false));
-                        /* Note - substitution already happening in TemplateMimeMessage() */ 
-                        msg.setSubject(not.getNotificationSubject());
-                        msg.setContent(not.getNotificationMessage(), WebConfiguration.getMailMimeType());
-                        
-                        msg.setHeader("X-Mailer", "JavaMailer");
-                        msg.setSentDate(new Date());
-                        //log.debug("Content: "+msg.getContent().toString());
-                        Transport.send(msg);
-
+                        String fromemail = NotificationParamGen.interpolate(params, not.getNotificationSender());
+                        String subject = NotificationParamGen.interpolate(params, not.getNotificationSubject());
+                        String message = NotificationParamGen.interpolate(params, not.getNotificationMessage());
+                        MailSender.sendMailOrThrow(fromemail, Arrays.asList(rcptemail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
                         String logmsg = intres.getLocalizedMessage("ra.sentnotification", data.getUsername(), rcptemail);
                         logsession.log(admin, data.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
                     } catch (Exception e) {

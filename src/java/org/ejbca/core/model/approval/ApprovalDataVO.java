@@ -39,7 +39,7 @@ public class ApprovalDataVO implements Serializable {
 	public static final int STATUS_APPROVED           = 0;
 	public static final int STATUS_REJECTED           = -2;
 	public static final int STATUS_EXPIRED            = -3;
-	public static final int STATUS_EXPIREDANDNOTIFIED = -4; // Used to mark that the requestor havebee notified that the request havebeen expired.
+	public static final int STATUS_EXPIREDANDNOTIFIED = -4; // Used to mark that the requester has been notified that the request has expired.
 	public static final int STATUS_EXECUTED           = -5;
 	public static final int STATUS_EXECUTIONFAILED    = -6;
 	public static final int STATUS_EXECUTIONDENIED    = -7;
@@ -71,7 +71,7 @@ public class ApprovalDataVO implements Serializable {
 	public static final int ANY_CA = SecConst.ALLCAS;
 	
 	/**
-	 * Used to indicate that the approcal is applicable to any end entity profile.
+	 * Used to indicate that the approval is applicable to any end entity profile.
 	 */
 	public static final int ANY_ENDENTITYPROFILE = SecConst.PROFILE_NO_PROFILE;
 	

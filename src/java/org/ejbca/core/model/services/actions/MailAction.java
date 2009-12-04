@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.services.actions;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.ejb.EJBException;
@@ -23,13 +24,13 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.MailConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.ActionInfo;
 import org.ejbca.core.model.services.BaseAction;
+import org.ejbca.util.mail.MailSender;
 
 /**
  * Class managing the sending of emails from a service.
@@ -52,7 +53,7 @@ public class MailAction extends BaseAction {
 	/**
 	 * Sends the mail
 	 * 
-	 * Only supports the MailActionInfo othervise is ActionException thrown.
+	 * Only supports the MailActionInfo otherwise is ActionException thrown.
 	 * 
 	 * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
 	 */
@@ -73,22 +74,11 @@ public class MailAction extends BaseAction {
 		}
 		        
         try {
-              String mailJndi = MailConfiguration.getMailJndiName();
-              Session mailSession = getLocator().getMailSession(mailJndi);              
-
-              Message msg = new MimeMessage(mailSession);
-              msg.setFrom(new InternetAddress(senderAddress));
-              msg.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(reciverAddress, false));
-              msg.setSubject(mailActionInfo.getSubject());
-              msg.setContent(mailActionInfo.getMessage(), WebConfiguration.getMailMimeType());
-              msg.setHeader("X-Mailer", "JavaMailer");
-              msg.setSentDate(new Date());
-              Transport.send(msg);
-
-              if (mailActionInfo.isLoggingEnabled()) {
-                  String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
-                  getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
-              }
+        	MailSender.sendMailOrThrow(senderAddress, Arrays.asList(reciverAddress), MailSender.NO_CC, mailActionInfo.getSubject(), mailActionInfo.getMessage(), MailSender.NO_ATTACHMENTS);
+        	if (mailActionInfo.isLoggingEnabled()) {
+        		String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
+        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
+        	}
         } catch (Exception e) {
 			String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
             log.error(msg, e);

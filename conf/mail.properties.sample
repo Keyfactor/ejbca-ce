@@ -41,3 +41,7 @@
 # JavaMail debug info.
 # Default: false
 #mail.debug=false
+
+# Content encoding for the email message body.
+# Default: UTF-8
+#web.contentencoding=UTF-8
