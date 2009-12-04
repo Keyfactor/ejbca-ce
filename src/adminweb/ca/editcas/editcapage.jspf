@@ -702,6 +702,7 @@ function checkallfields(){
          <% } %>   
       </td>
     </tr> 
+    <!--  external CAs does not have any settings at all basically, we just import the certificate -->
     <% if(!isexternal){ %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -734,6 +735,8 @@ function checkallfields(){
                  out.write("CHECKED");%>>         
       </td>
     </tr>
+    <!--  external CAs does not have any settings at all basically, we just import the certificate -->
+    <!--  if we are processing a request we are issuing certificate to an external CA and we can not set CRL stuff for that CA -->
    <% if(!processrequest && !isexternal){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -930,9 +933,7 @@ function checkallfields(){
          <% } %>
       </td>
     </tr>    
-    <% }        
-     } 
-   if(!processrequest && !isexternal){ %>
+    <% } %>
    <tr  id="Row<%=row++%2%>"> 
      <td width="50%" align="right"> 
        <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
@@ -1016,14 +1017,11 @@ function checkallfields(){
      </td>
    </tr>
    <%
-      } // if(catype == CAInfo.CATYPE_X509){
-   %>
-
-   <% if(catype == CAInfo.CATYPE_CVC){ 
-	     CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
-      } // if(catype == CAInfo.CATYPE_CVC){
-   %>
-    
+     } // if(!processrequest && !isexternal)
+   } // if(catype == CAInfo.CATYPE_X509){ %>
+   
+   <% if(!processrequest && !isexternal) { %>
+   <!-- this last part with approvals and finishuser is not user for external CAs -->
 
     <tr id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
