@@ -222,6 +222,10 @@ import org.ejbca.util.keystore.KeyTools;
  * @jboss.method-attributes
  *   pattern = "get*"
  *   read-only = "true"
+ *   
+ * @jboss.method-attributes
+ *   pattern = "verify*"
+ *   read-only = "true"
  *
  */
 public class CAAdminSessionBean extends BaseSessionBean {

@@ -32,6 +32,7 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -181,14 +182,14 @@ public class CertificateFinderBean {
 		}
 		try {
 			BigInteger serialBignum = new BigInteger(Hex.decode(StringUtils.trimToEmpty(serialNumber)));			
-			RevokedCertInfo info = mStoreSession.isRevoked(mAdmin, StringUtils.trimToEmpty(issuerDN), serialBignum);
+			CertificateStatus info = mStoreSession.getStatus(mAdmin, StringUtils.trimToEmpty(issuerDN), serialBignum);
 			if (info == null) {
 				result.setRevocationDate(null);
 				result.setUserCertificate(null);
 			} else {
-				result.setReason(info.getReason());
-				result.setRevocationDate(info.getRevocationDate());
-				result.setUserCertificate(info.getUserCertificate());
+				result.setReason(info.revocationReason);
+				result.setRevocationDate(info.revocationDate);
+				result.setUserCertificate(serialBignum);
 			}
 		} catch (StringIndexOutOfBoundsException e) {
 			log.error("Invalid serial number entered: "+serialNumber);

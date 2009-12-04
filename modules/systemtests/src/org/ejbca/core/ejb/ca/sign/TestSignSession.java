@@ -30,7 +30,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+
 import javax.ejb.DuplicateKeyException;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -48,6 +50,7 @@ import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
@@ -1598,8 +1601,8 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create cert", cert);
 
         // Check that it is active
-        RevokedCertInfo rev = TestTools.getCertificateStoreSession().isRevoked(admin, CertTools.getFingerprintAsString(cert));
-        assertEquals(RevokedCertInfo.NOT_REVOKED, rev.getReason());
+        boolean isRevoked = TestTools.getCertificateStoreSession().isRevoked(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertFalse(isRevoked);
         
         // Now add extended information with the revocation reason
         ExtendedInformation ei = new ExtendedInformation();
@@ -1612,8 +1615,8 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create cert", cert);
 
         // Check that it is revoked
-        rev = TestTools.getCertificateStoreSession().isRevoked(admin, CertTools.getFingerprintAsString(cert));
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, rev.getReason());
+        CertificateStatus rev = TestTools.getCertificateStoreSession().getStatus(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
         log.trace("<test27IssuanceRevocationReason()");
     }
 

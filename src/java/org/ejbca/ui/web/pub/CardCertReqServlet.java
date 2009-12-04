@@ -159,9 +159,8 @@ public class CardCertReqServlet extends HttpServlet {
                 else {
                     throw new AuthLoginException("No authenicating certificate");
                 }
-                RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, certs[0].getIssuerDN().getName(),
-                                                                      certs[0].getSerialNumber());
-                if ( rci==null || rci.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
+                boolean isRevoked = certificatestoresession.isRevoked(administrator, certs[0].getIssuerDN().getName(),certs[0].getSerialNumber());
+                if (isRevoked) {
                     throw new UserCertificateRevokedException(certs[0]);
                 }
                 username = certificatestoresession.findUsernameByCertSerno(administrator, certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
@@ -181,8 +180,8 @@ public class CardCertReqServlet extends HttpServlet {
                     Object o = i.next();
                     if ( o instanceof X509Certificate ) {
                         X509Certificate cert = (X509Certificate)o;
-                        RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, cert.getIssuerDN().getName(), cert.getSerialNumber());
-                        if ( rci!=null && rci.getReason()==RevokedCertInfo.NOT_REVOKED ) {
+                        boolean isRevoked = certificatestoresession.isRevoked(administrator, cert.getIssuerDN().getName(), cert.getSerialNumber());
+                        if (!isRevoked) {
                             set.add(cert);
                         }
                     }

@@ -122,6 +122,18 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *   link="CAAdminSession"
  *
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *
+ * @jboss.method-attributes
+ *   pattern = "is*"
+ *   read-only = "true"
+ *   
+ * @jboss.method-attributes
+ *   pattern = "exists*"
+ *   read-only = "true"
+ *
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 

@@ -37,6 +37,7 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
@@ -54,7 +55,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -605,9 +605,9 @@ public class RAInterfaceBean implements java.io.Serializable {
     		for(int i=0; i< certificates.length; i++){
     			RevokedInfoView revokedinfo = null;
     			Certificate cert = (Certificate) j.next();
-    			RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getFingerprintAsString(cert));
+    			CertificateStatus revinfo = certificatesession.getStatus(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
     			if(revinfo != null) {
-    				revokedinfo = new RevokedInfoView(revinfo);
+    				revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(cert));
     			}
     			certificates[i] = new CertificateView(cert, revokedinfo, username);
     		}
@@ -662,8 +662,8 @@ public class RAInterfaceBean implements java.io.Serializable {
         Iterator j = certs.iterator();
         while(j.hasNext()){
           Certificate cert = (Certificate)j.next();        
-          RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));          
-          if(revinfo == null || revinfo.getReason()== RevokedCertInfo.NOT_REVOKED) {
+          boolean isrevoked = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));          
+          if (!isrevoked) {
             allrevoked = false;
           }
         }
@@ -687,9 +687,9 @@ public class RAInterfaceBean implements java.io.Serializable {
 				  int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
 				  this.endEntityAuthorization(administrator,endentityprofileid,AccessRulesConstants.VIEW_RIGHTS,true);
 			  }
-			  RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+			  CertificateStatus revinfo = certificatesession.getStatus(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
 			  if(revinfo != null) {
-				  revokedinfo = new RevokedInfoView(revinfo);
+				  revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(cert));
 			  }
 			  certificates = new CertificateView[1];
 			  certificates[0] = new CertificateView(cert, revokedinfo, username);

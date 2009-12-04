@@ -67,6 +67,7 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -1328,9 +1329,9 @@ public class EjbcaWS implements IEjbcaWS {
 		  ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 		  
-		  RevokedCertInfo certinfo = ejbhelper.getCertStoreSession().isRevoked(admin,issuerDN,new BigInteger(certificateSN,16));
+		  CertificateStatus certinfo = ejbhelper.getCertStoreSession().getStatus(admin, issuerDN, new BigInteger(certificateSN,16));
 		  if(certinfo != null){
-		    return new RevokeStatus(certinfo,issuerDN);
+		    return new RevokeStatus(certinfo, issuerDN, certificateSN);
 		  }
 		  return null;
 		}catch(AuthorizationDeniedException ade){

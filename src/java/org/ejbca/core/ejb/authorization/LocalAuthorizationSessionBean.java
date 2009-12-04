@@ -118,6 +118,19 @@ import org.ejbca.util.JDBCUtil;
  *
  * @jonas.bean
  *   ejb-name="AuthorizationSession"
+ *   
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *
+ * @jboss.method-attributes
+ *   pattern = "is*"
+ *   read-only = "true"
+ *   
+ * @jboss.method-attributes
+ *   pattern = "exists*"
+ *   read-only = "true"
+ *   
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean {
 

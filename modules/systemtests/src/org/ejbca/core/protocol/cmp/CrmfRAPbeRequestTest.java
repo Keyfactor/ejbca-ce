@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.TestRevocationApproval;
@@ -440,8 +441,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
     private int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
     	int ret = RevokedCertInfo.NOT_REVOKED;
-    	RevokedCertInfo info = TestTools.getCertificateStoreSession().isRevoked(admin, issuerDN, serno);
-    	ret = info.getReason();
+    	CertificateStatus info = TestTools.getCertificateStoreSession().getStatus(admin, issuerDN, serno);
+    	ret = info.revocationReason;
     	return ret;
     }
 

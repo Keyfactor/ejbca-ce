@@ -55,7 +55,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -443,20 +442,16 @@ public class KRSSResponseGenerator extends
 				Collection caCertChain = cAInfo.getCertificateChain();
 				Iterator iter = caCertChain.iterator();
 				
-				boolean revoked = false;
-				
-				RevokedCertInfo certInfo = getCertStoreSession().isRevoked(pubAdmin, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-				if(certInfo.getReason() != RevokedCertInfo.NOT_REVOKED){
+				boolean revoked = false;				
+				if (getCertStoreSession().isRevoked(pubAdmin, CertTools.getIssuerDN(cert), cert.getSerialNumber())) {
 					revoked = true;
 				}
 				
 				while(iter.hasNext()){
 					X509Certificate cACert = (X509Certificate) iter.next();
-					RevokedCertInfo caCertInfo = getCertStoreSession().isRevoked(pubAdmin, CertTools.getIssuerDN(cACert), cACert.getSerialNumber());
-					if(caCertInfo.getReason() != RevokedCertInfo.NOT_REVOKED){
+					if (getCertStoreSession().isRevoked(pubAdmin, CertTools.getIssuerDN(cACert), cACert.getSerialNumber())) {
 						revoked = true;
 					}
-					
 				}
 				
 				if(!revoked){

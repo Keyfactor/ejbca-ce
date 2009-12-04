@@ -38,6 +38,7 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -479,18 +480,18 @@ public class CertDistServlet extends HttpServlet {
             log.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
                 ICertificateStoreSessionLocal store = getStoreSession();
-                RevokedCertInfo revinfo = store.isRevoked(administrator, dn, new BigInteger(serno));
+                CertificateStatus revinfo = store.getStatus(administrator, dn, new BigInteger(serno));
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
                 res.setContentType("text/html");
                 printHtmlHeader("Check revocation", pout);
                 if (revinfo != null) {
-                    if (revinfo.getReason() == RevokedCertInfo.NOT_REVOKED) {
+                    if (revinfo.revocationReason == RevokedCertInfo.NOT_REVOKED) {
                         pout.println("<h1>NOT REVOKED</h1>");
                         pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' is NOT revoked.");
                     } else {
                         pout.println("<h1>REVOKED</h1>");
                         pout.println("Certificate with issuer '"+dn+"' and serial number '"+serno+"' is revoked.");
-                        pout.println("RevocationDate is '"+revinfo.getRevocationDate()+"' and reason '"+revinfo.getReason()+"'.");
+                        pout.println("RevocationDate is '"+revinfo.revocationDate+"' and reason '"+revinfo.revocationReason+"'.");
                     }
                 } else {
                     pout.println("<h1>CERTIFICATE DOES NOT EXIST</h1>");

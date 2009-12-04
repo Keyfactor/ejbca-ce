@@ -180,6 +180,26 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
+ * @jboss.method-attributes
+ *   pattern = "get*"
+ *   read-only = "true"
+ *
+ * @jboss.method-attributes
+ *   pattern = "find*"
+ *   read-only = "true"
+ *   
+ * @jboss.method-attributes
+ *   pattern = "list*"
+ *   read-only = "true"
+ *   
+ * @jboss.method-attributes
+ *   pattern = "is*"
+ *   read-only = "true"
+ *   
+ * @jboss.method-attributes
+ *   pattern = "exists*"
+ *   read-only = "true"
+ * 
  * @version $Id$
  * 
  */
@@ -1241,49 +1261,51 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param admin    Administrator performing the operation
      * @param issuerDN the DN of the issuer.
      * @param serno    the serialnumber of the certificate that will be checked
-     * @return RevokedCertInfo with revocation information, with reason RevokedCertInfo.NOT_REVOKED if NOT revoked. Returns null if certificate is not found.
+     * @return true if the certificate is revoked or can not be found in the database, false if it exists and is not revoked.
      * @ejb.interface-method
      */
-    public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
+    public boolean isRevoked(Admin admin, String issuerDN, BigInteger serno) {
         if (adapter.getLogger().isTraceEnabled()) {
             adapter.getLogger().trace(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
 
+        boolean ret = false;
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
-            if (coll != null) {
+            if ( (coll != null) && (coll.size() > 0) ) {
                 if (coll.size() > 1) {
                     String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));             
                     //adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
                     adapter.error(msg);
                 }
                 Iterator iter = coll.iterator();
-                if (iter.hasNext()) {
-                    RevokedCertInfo revinfo = null;
+                while (iter.hasNext()) {
                     CertificateDataLocal data = (CertificateDataLocal) iter.next();
                     if (protecthome != null) {
                         CertificateDataUtil.verifyProtection(data, protecthome, adapter);
                     }
-                    revinfo = new RevokedCertInfo(data.getFingerprint(), serno, new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
-                    // Make sure we have it as NOT revoked if it isn't
-                    if (data.getStatus() != SecConst.CERT_REVOKED) {
-                        revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
+                    // if any of the certificates with this serno is revoked, return true
+                    if (data.getStatus() == SecConst.CERT_REVOKED) {
+                    	ret = true;
+                    	break;
                     }
-                    if (adapter.getLogger().isTraceEnabled()) {
-                        adapter.getLogger().trace("<isRevoked() returned " + ((data.getStatus() == SecConst.CERT_REVOKED) ? "yes" : "no"));
-                    }
-                    return revinfo;
                 }
-            }
-            if (adapter.getLogger().isTraceEnabled()) {
-                adapter.getLogger().trace("<isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
+            } else {
+                // If there are no certificates with this serial number, return true (=revoked). Better safe than sorry!
+            	ret = true;
+            	if (adapter.getLogger().isTraceEnabled()) {
+            		adapter.getLogger().trace("isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
+            	}
             }
         } catch (Exception e) {
             throw new EJBException(e);
         }
-        return null;
+        if (adapter.getLogger().isTraceEnabled()) {
+            adapter.getLogger().trace("<isRevoked() returned " + ret);
+        }
+        return ret;
     } //isRevoked
 
     /**
@@ -1300,33 +1322,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     }
 
     /**
-     * Checks if a certificate is revoked.
-     *
-     * @param admin    Administrator performing the operation
-     * @param fingerprint SHA1 fingerprint of the certificate.
-     * @return RevokedCertInfo with revocation information, with reason RevokedCertInfo.NOT_REVOKED if NOT revoked. Returns null if certificate is not found.
-     * @ejb.interface-method
-     */
-    public RevokedCertInfo isRevoked(Admin admin, String fingerprint) {
-        RevokedCertInfo revinfo = null;
-		try {
-			log.debug("Checking revocation for certificate with fp: "+fingerprint);
-			CertificateDataLocal data = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
-	        Certificate cert = data.getCertificate();
-	        revinfo = new RevokedCertInfo(data.getFingerprint(), CertTools.getSerialNumber(cert), new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
-	        log.debug("isRevoked: "+revinfo.isRevoked());
-	    	// Make sure we have it as NOT revoked if it isn't
-	    	if (data.getStatus() != SecConst.CERT_REVOKED) {
-	    		revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
-	    	}
-		} catch (FinderException e) {
-			log.debug("Certificate does not exists with fp: "+fingerprint);
-		}
-    	return revinfo;
-    } //isRevoked
-    
-    /**
-     * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.
+     * Method that authenticates a certificate by checking validity and lookup if certificate is revoked.
      *
      * @param certificate the certificate to be authenticated.
      * @throws AuthenticationFailedException if authentication failed.
@@ -1337,18 +1333,17 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             certificate.checkValidity();
         } catch (Exception e) {
-            throw new AuthenticationFailedException("Your certificate validity has expired.");
+        	String msg = intres.getLocalizedMessage("authentication.certexpired", CertTools.getNotAfter(certificate).toString());            	
+            throw new AuthenticationFailedException(msg);
         }
         if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-            // TODO: Verify Signature on cert?
+            // TODO: Verify Signature on cert? Not really needed since it's one of ou certs in the database.
             // Check if certificate is revoked.
-            RevokedCertInfo revinfo = isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
-            if (revinfo == null) {
-                // Certificate missing
-                throw new AuthenticationFailedException("Your certificate cannot be found in database.");
-            } else if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
-                // Certificate revoked
-                throw new AuthenticationFailedException("Your certificate have been revoked.");
+            boolean isRevoked = isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
+            if (isRevoked) {
+                // Certificate revoked or missing in the database
+            	String msg = intres.getLocalizedMessage("authentication.revokedormissing");            	
+                throw new AuthenticationFailedException(msg);
             }
         } else {
         	// TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status

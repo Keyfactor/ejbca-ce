@@ -53,6 +53,7 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceSessionLocal;
@@ -1043,10 +1044,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Verify that the certificate is valid
 			CertTools.checkValidity(certificate, new Date(timeOfUse));
 			// Verify that the cert wasn't revoked
-			RevokedCertInfo revinfo = getCertificateStoreSession().isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+			CertificateStatus revinfo = getCertificateStoreSession().getStatus(new Admin(certificate), CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
 			if (revinfo == null) {
 				return false;	// Certificate missing
-			} else if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED && revinfo.getRevocationDate().getTime() <= timeOfUse) {
+			} else if (revinfo.revocationReason  != RevokedCertInfo.NOT_REVOKED && revinfo.revocationDate.getTime() <= timeOfUse) {
 				return false;	// Certificate was revoked
 			}
 			verified = true;

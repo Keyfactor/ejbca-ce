@@ -49,6 +49,7 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
@@ -215,6 +216,14 @@ import org.ejbca.util.query.UserMatch;
  * @weblogic.resource-description
  *   res-ref-name="mail/DefaultMail"
  *   jndi-name="EjbcaMail"
+ * 
+ * @jboss.method-attributes
+ *   pattern = "find*"
+ *   read-only = "true"
+ *   
+ * @jboss.method-attributes
+ *   pattern = "check*"
+ *   read-only = "true"
  *   
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean {
@@ -1496,7 +1505,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 throw new AuthorizationDeniedException(msg);
             }
         }
-        RevokedCertInfo revinfo = certificatesession.isRevoked(admin, issuerdn, certserno);
+        Certificate cert = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, certserno);
+        if ( cert == null ) {
+            String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));            	
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
+        	throw new FinderException(msg);
+        }
+        CertificateStatus revinfo = certificatesession.getStatus(admin, issuerdn, certserno);
         if ( revinfo == null ) {
             String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));            	
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
@@ -1504,13 +1519,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (reason == RevokedCertInfo.NOT_REVOKED) {
-            if ( revinfo.getReason() != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ) {
+            if ( revinfo.revocationReason != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ) {
                 String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));            	
                 logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
                 throw new AlreadyRevokedException(msg);
             }            
         } else {
-            if ( revinfo.getReason() != RevokedCertInfo.NOT_REVOKED ) {
+            if ( revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED ) {
                 String msg = intres.getLocalizedMessage("ra.errorrevocationexists");            	
                 logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
                 throw new AlreadyRevokedException(msg);
@@ -1527,21 +1542,21 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         // Perform revokation, first we try to find the certificate profile the certificate was issued under
         // Get it first from the certificate itself. This should be the correct one
-        CertificateInfo info = this.certificatesession.getCertificateInfo(admin, revinfo.getCertificateFingerprint());
+        CertificateInfo info = certificatesession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
         int certificateProfileId = 0;
         if (info != null) {
         	certificateProfileId = info.getCertificateProfileId();
         }
         // If for some reason the certificate profile id was not set in the certificate data, try to get it from the certreq history
         if (certificateProfileId == 0) {
-            CertReqHistory certReqHistory = this.certificatesession.getCertReqHistory(admin, certserno, issuerdn);
+            CertReqHistory certReqHistory = certificatesession.getCertReqHistory(admin, certserno, issuerdn);
             if (certReqHistory != null) {
             	certificateProfileId = certReqHistory.getUserDataVO().getCertificateProfileId();
             }
         }
         // Finally find the publishers for the certificate profileId that we found
         Collection publishers = new ArrayList();        
-        CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, certificateProfileId);
+        CertificateProfile prof = certificatesession.getCertificateProfile(admin, certificateProfileId);
         if (prof != null) {
         	publishers = prof.getPublisherList();
         }
