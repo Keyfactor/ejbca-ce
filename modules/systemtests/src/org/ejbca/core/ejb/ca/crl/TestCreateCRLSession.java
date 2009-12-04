@@ -56,6 +56,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.cert.CrlExtensions;
 import org.ejbca.util.keystore.KeyTools;
@@ -86,14 +87,20 @@ public class TestCreateCRLSession extends TestCase {
 
 	protected void setUp() throws Exception {
 		log.trace(">setUp()");
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProviderIfNotAvailable();
 
 		Collection caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
 		Iterator iter = caids.iterator();
 		if (iter.hasNext()) {
-			caid = ((Integer) iter.next()).intValue();
-			CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
-			cadn = cainfo.getSubjectDN();
+			while (iter.hasNext()) {
+				caid = ((Integer) iter.next()).intValue();
+				CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
+				cadn = cainfo.getSubjectDN();
+				if (cainfo.getCAType() == CAInfo.CATYPE_X509) {
+					// Don't try to run CRL tests on a CVC CA
+					break;
+				}
+			}
 		} else {
 			assertTrue("No active CA! Must have at least one active CA to run tests!", false);
 		}
