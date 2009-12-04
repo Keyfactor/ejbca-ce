@@ -266,24 +266,24 @@ cd clientToolBox-dist
   </p>
   <p>
   <strong>2.</strong><br/>
-  An example command to generate keys and a request for an IS using SHA224WithECDSA and brainpoolp224r1 curve:
+  An example command to generate keys and a request for an IS using SHA256WithECDSA and secp256r1 curve:
   </p>
   <source>
-./ejbcaClientToolBox.sh EjbcaWsRaCli edituser isbrainpool foo123 false "CN=ISBPOOL,C=SE" NULL NULL DV-BrainPool 1 USERGENERATED NEW IS IS
+./ejbcaClientToolBox.sh EjbcaWsRaCli edituser issecp foo123 false "CN=ISSECP,C=SE" NULL NULL DVCA 1 USERGENERATED NEW IS IS
   </source>
   <p>This command adds the IS as end end entity in EJBCA. It only has to be done the first time, or if the IS previous certificates expire.
   When using authenticated requests these are used instead of the one-time password, but if the previous certificate expires, a new one-time password is
   needed to authenticate the request.
   </p> 
   <source>
-./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpool
+./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest issecp foo123 "C=SE,CN=ISSECP" 00005 SHA256WithECDSA secp256r1 true issecp
   </source>
   <p>
-  Where your DV is called DV-BrainPool in EJBCA and uses algorithm SHA224WithECDSA with brainpoolp224r1 curve.
+  Where your DV is called DVCA in EJBCA and uses algorithm SHA256WithECDSA with secp256r1 curve.
   Where an End entity profile, IS, is created with CN and C as required DN fields, and IS as available certificate profiles.<br/>
   Where a Certificate profile, IS, is created of type EndEntity.<br/>
-  Where the generated request is stored in a file 'isbrainpool.cvreq', the generated private key in 'isbrainpool.pkcs8'.<br/>
-  The issued IS certificate is stored in file 'isbrainpool.cvcert'.
+  Where the generated request is stored in a file 'issecp.cvreq', the generated private key in 'issecp.pkcs8'.<br/>
+  The issued IS certificate is stored in file 'issecp.cvcert'.
   </p> 
   <p>
   If the request is an authenticated request signed by a CVCA and that CVCA has been imported in EJBCA, the request will be verified and granted. 
@@ -292,10 +292,10 @@ cd clientToolBox-dist
   To create an authenticated request for this user you can issue the following command, which authenticates the new request with the old key and certificate. 
   </p>  
   <source>
-./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest isbrainpool foo123 "C=SE,CN=ISBPOOL" 00005 SHA224WithECDSA brainpoolp224r1 true isbrainpoolnew isbrainpool.pkcs8 isbrainpool.cvcert
+./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest issecp foo123 "C=SE,CN=ISSECP" 00005 SHA256WithECDSA secp256r1 true issecpnew issecp.pkcs8 isbrainpool.cvcert
   </source>
   <p>
-  The request will be automatically granted (the password passed will be ignored) and the new certificate will be written to 'isbrainpoolnew.cvcert'.
+  The request will be automatically granted (the password passed will be ignored) and the new certificate will be written to 'issecpnew.cvcert'.
   </p>  
   </subsection>
   
