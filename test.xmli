@@ -31,13 +31,13 @@
     	<condition property="module" value="modules/ejbca-ejb">
     		<matches string="${test-fullname}" pattern="^modules/ejbca-ejb/.*$"/>
     	</condition>
-    	<condition property="module" value="modules/ejbca-util">
-    		<matches string="${test-fullname}" pattern="^modules/ejbca-util/.*$"/>
+    	<condition property="module" value="modules/externalra">
+    		<matches string="${test-fullname}" pattern="^modules/externalra/.*$"/>
     	</condition>
     	<condition property="module" value="modules/systemtests">
     		<matches string="${test-fullname}" pattern="^modules/systemtests/.*$"/>
     	</condition>
-        <fail message="The requested test was not found." unless="module"/>
+        <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="build.xml" dir="${module}" target="runone" />
     </target>
 
