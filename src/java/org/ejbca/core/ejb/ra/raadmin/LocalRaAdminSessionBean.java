@@ -24,6 +24,7 @@ import java.util.Random;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -823,13 +824,17 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
                     globalconfiguration = gcdata.getGlobalConfiguration();
                     lastupdatetime = new Date().getTime();
                 }
+            }catch (ObjectNotFoundException t) {
+                log.debug("No default GlobalConfiguration exists. Trying to create a new one.");
+                saveGlobalConfiguration(admin, new GlobalConfiguration());
+                lastupdatetime = new Date().getTime();
             }catch (Throwable t) {
-                log.debug("Failed to load global configuration", t);
-            }
+                log.error("Failed to load global configuration", t);
+			}
             if ( globalconfiguration!=null ) {
                 return globalconfiguration;
             }
-            return new GlobalConfiguration();
+            return new GlobalConfiguration();	// Fallback to create a new unsaved config
         } finally {
             trace("<loadGlobalConfiguration()");
         }

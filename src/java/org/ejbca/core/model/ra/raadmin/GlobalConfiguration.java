@@ -92,7 +92,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public static final  String DOCWINDOW           = "_ejbcaDocWindow"; // Name of browser window used to display help
 
 
-    /** Creates a new instance of Globaldatauration */
+    /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
 
