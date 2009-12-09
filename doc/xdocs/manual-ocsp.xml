@@ -18,7 +18,7 @@ $TOOLBOX_HOME/ejbcaClientToolBox.sh OCSP
 </source>
 </p>
 </section>
-<section name="Activation">
+<section name="Signature token activation">
 <p>
 If passwords are not configured for the tokens of the keys then you got to activate your responder.
 When activating you are prompted for a password. This password will then be used for all token password not configured.
@@ -161,6 +161,35 @@ use indexes such as
 <source>create index certificatedata_idx7 on CertificateData(certificateProfileId);</source>
   <p>
 for your both the CA database and each OCSP responder.
+  </p>
+  </section>
+  
+  <section name="Populating the OCSP responder database">
+  <p>
+  When running the OCSP responder answering queries from CAs in an EJBCA installation, populating the database is easy. Simply use the 'External OCSP Publisher'. 
+  Documentation how to configure this is located in the 'OCSP Installation' guide. 
+  </p>
+  <p>
+  When using other CA software than EJBCA you can populate the database based on data from that system. the only thing needed is to insert data in the CertificateData table on the external OCSP responder.
+  </p>
+  <p>
+  The values used by the OCSP responder are:
+  <ul>
+  <li>issuerDN</li>
+  <li>serialNumber</li>
+  <li>status</li>
+  <li>revocationDate</li>
+  <li>revocationReason</li>
+  <li>certificateProfileId</li>
+  </ul>
+  </p>
+  <p>Specification of the fields:
+  <ul>
+  <li>issuerDN must be of "EJBCA normalized" form, as returned by org.ejbca.util.CertTools.getIssuerDN(cert).</li>
+  <li>serialNumber is BigInteger.toString().</li>
+  <li>Status is from CertificateDataBean.CERT_REVOKED etc.</li>
+  <li>certificateProfileId can be basically anything and is used if you configure things like 'ocsp.999.untilNextUpdate' in ocsp.properties.</li>
+  </ul>
   </p>
   </section>
 </body>
