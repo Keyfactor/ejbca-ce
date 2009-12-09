@@ -1004,7 +1004,7 @@ public class TestXKMSKRSS extends TestCase {
 	    try {
 	    	caID = TestRevocationApproval.createApprovalCA(administrator, caname, CAInfo.REQ_APPROVAL_REVOCATION, TestTools.getCAAdminSession());
 			X509Certificate adminCert = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(administrator, APPROVINGADMINNAME).iterator().next();
-	    	Admin approvingAdmin = new Admin(adminCert);
+	    	Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
 	    	try {
 	    		// Create new user
 	    		UserDataVO userdata = new UserDataVO(username,"CN="+username,caID,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
@@ -1065,7 +1065,7 @@ public class TestXKMSKRSS extends TestCase {
 	            assertTrue(ERRORNOTSENTFORAPPROVAL, revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));	
 				// Approve revocation and verify success
 	            TestRevocationApproval.approveRevocation(administrator, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED,
-	            		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, TestTools.getCertificateStoreSession(), TestTools.getApprovalSession());
+	            		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, TestTools.getCertificateStoreSession(), TestTools.getApprovalSession(), caID);
 		        // Try to reactivate user
 	    	} finally {
 		    	TestTools.getUserAdminSession().deleteUser(administrator, username);

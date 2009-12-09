@@ -103,8 +103,8 @@ public class TestRevocationApproval extends TestCase {
 		authorizationSession.forceRuleUpdate(internalAdmin);
 		X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, adminUsername).iterator().next();
 		X509Certificate reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, requestingAdminUsername).iterator().next();
-		approvingAdmin = new Admin(admincert);
-		reuestingAdmin = new Admin(reqadmincert);
+		approvingAdmin = new Admin(admincert, adminUsername, null);
+		reuestingAdmin = new Admin(reqadmincert, requestingAdminUsername, null);
 		// Create new CA using approvals
         String caname = TestRevocationApproval.class.getSimpleName();
 		approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession);
@@ -138,7 +138,7 @@ public class TestRevocationApproval extends TestCase {
 	 *	Find all certificates for a user and approve any outstanding revocation. 
 	 */
 	static public int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
-			ICertificateStoreSessionRemote certificateStoreSession, IApprovalSessionRemote approvalSession) throws Exception {
+			ICertificateStoreSessionRemote certificateStoreSession, IApprovalSessionRemote approvalSession, int approvalCAID) throws Exception {
 	    Collection userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
 	    Iterator i = userCerts.iterator();
 	    int approvedRevocations = 0;
@@ -146,7 +146,7 @@ public class TestRevocationApproval extends TestCase {
 	    	X509Certificate cert = (X509Certificate) i.next();
 	        String issuerDN = cert.getIssuerDN().toString();
 	        BigInteger serialNumber = cert.getSerialNumber();
-	        boolean isRevoked = certificateStoreSession.isRevoked(internalAdmin, issuerDN, serialNumber);
+	        boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);
 		    if ( (reason != RevokedCertInfo.NOT_REVOKED && !isRevoked )
 		    		|| (reason == RevokedCertInfo.NOT_REVOKED && isRevoked) )  {
 				int approvalID;
@@ -157,12 +157,12 @@ public class TestRevocationApproval extends TestCase {
 				}
 				Query q = new Query(Query.TYPE_APPROVALQUERY);
 				q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
-				ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1).get(0));
+				ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
 				Approval approval = new Approval("Approved during testing.");
-				approvalSession.approve(approvingAdmin, approvalID, approval);
+				approvalSession.approve(approvingAdmin, approvalID, approval, TestTools.getRaAdminSession().loadGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
 				approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
 				assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
-		        CertificateStatus status = certificateStoreSession.getStatus(internalAdmin, issuerDN, serialNumber);
+		        CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
 				assertEquals(status.revocationReason, reason);
 				approvalSession.removeApprovalRequest(internalAdmin, approvalData.getId());
 		        approvedRevocations++;
@@ -233,7 +233,7 @@ public class TestRevocationApproval extends TestCase {
 				assertTrue("Allowing addition of identical approval requests.",false);
 			}
 			approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED,
-					ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSession);
+					ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSession, approvalCAID);
 			// Make sure userstatus changed to revoked
 			UserDataVO userdata = userAdminSession.findUser(internalAdmin, username);
 			assertTrue("User was not revoked when last cert was.", userdata.getStatus() == UserDataConstants.STATUS_REVOKED); 
@@ -261,7 +261,7 @@ public class TestRevocationApproval extends TestCase {
 				assertTrue("Allowing addition of identical approval requests.",false);
 			}
 			approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED,
-					ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY, certificateStoreSession, approvalSession);
+					ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY, certificateStoreSession, approvalSession, approvalCAID);
 		} finally {
 			try {
 				userAdminSession.deleteUser(internalAdmin, username);
@@ -294,7 +294,7 @@ public class TestRevocationApproval extends TestCase {
 				assertTrue(ERRORALLOWMORETHANONE, false);
 			}
 			approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
-					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession);
+					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalCAID);
 			// Unrevoke
 			try {
 		    	userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), username, RevokedCertInfo.NOT_REVOKED);
@@ -311,7 +311,7 @@ public class TestRevocationApproval extends TestCase {
 				assertTrue(ERRORALLOWMORETHANONE, false);
 			}
 			approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.NOT_REVOKED,
-					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession);
+					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalCAID);
 		} finally {
 			userAdminSession.deleteUser(internalAdmin, username);
 		}

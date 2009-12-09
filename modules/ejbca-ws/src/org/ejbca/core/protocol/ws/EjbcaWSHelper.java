@@ -88,14 +88,14 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				throw new AuthorizationDeniedException("Error no client certificate recieved used for authentication.");
 			}
 
-			admin = new Admin(certificates[0]);
+			admin = getUserAdminSession().getAdmin(certificates[0]);
 			// Check that user have the administrator flag set.
 			if(!allowNonAdmins){
 				getUserAdminSession().checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
 				getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR);
 			}
 
-			boolean isRevoked = getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
+			boolean isRevoked = getCertStoreSession().isRevoked(CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
 			if (isRevoked) {
 				throw new AuthorizationDeniedException("Error administrator certificate doesn't exist or is revoked.");
 			}
@@ -128,8 +128,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
                 "Error no client certificate recieved used for authentication.");
 		}
 
-		Admin admin = new Admin(certificates[0]);
 		try{
+			Admin admin = getUserAdminSession().getAdmin(certificates[0]);
 			getUserAdminSession().checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
 			getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR);
 			retval = true;
@@ -449,7 +449,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
      while(iter.hasNext()){
     	 java.security.cert.Certificate next = iter.next();
   	   
-  	   boolean isrevoked = getCertStoreSession().isRevoked(admin,CertTools.getIssuerDN(next),CertTools.getSerialNumber(next));
+  	   boolean isrevoked = getCertStoreSession().isRevoked(CertTools.getIssuerDN(next),CertTools.getSerialNumber(next));
   	   if (!isrevoked) {
   		   try{
   			   CertTools.checkValidity(next, new Date());

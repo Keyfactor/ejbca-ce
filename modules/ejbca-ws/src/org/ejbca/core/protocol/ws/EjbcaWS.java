@@ -1329,7 +1329,7 @@ public class EjbcaWS implements IEjbcaWS {
 		  ejbhelper.getCAAdminSession().verifyExistenceOfCA(caid);
 		  ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 		  
-		  CertificateStatus certinfo = ejbhelper.getCertStoreSession().getStatus(admin, issuerDN, new BigInteger(certificateSN,16));
+		  CertificateStatus certinfo = ejbhelper.getCertStoreSession().getStatus(issuerDN, new BigInteger(certificateSN,16));
 		  if(certinfo != null){
 		    return new RevokeStatus(certinfo, issuerDN, certificateSN);
 		  }
@@ -1388,7 +1388,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 		if(WebServiceConfiguration.getNoAuthorizationOnFetchUserData()){
 			final Admin tmp = ejbhelper.getAdmin(true, wsContext);
-			admin = new ApprovedActionAdmin(tmp.getAdminInformation().getX509Certificate());
+			admin = new ApprovedActionAdmin(tmp.getAdminInformation().getX509Certificate(), tmp.getUsername(), tmp.getEmail());
 		}else{
 			admin = ejbhelper.getAdmin(wsContext);
 		}
@@ -1526,7 +1526,7 @@ public class EjbcaWS implements IEjbcaWS {
 						  throw new ApprovalException("");
 					  }
 					}catch(ApprovalException e){
-						ejbhelper.getApprovalSession().addApprovalRequest(admin, ar);
+						ejbhelper.getApprovalSession().addApprovalRequest(admin, ar, ejbhelper.getRAAdminSession().loadGlobalConfiguration(admin));
 						throw new WaitingForApprovalException("Approval request with id " + ar.generateApprovalId() + " have been added for approval.",ar.generateApprovalId());
 					}
 				}else{
@@ -1543,7 +1543,7 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		
 		if(ar != null){
-			admin = new ApprovedActionAdmin(admin.getAdminInformation().getX509Certificate());
+			admin = new ApprovedActionAdmin(admin.getAdminInformation().getX509Certificate(), admin.getUsername(), admin.getEmail());
 		}
 		
 			hardTokenExists = ejbhelper.getHardTokenSession().existsHardToken(admin, hardTokenDataWS.getHardTokenSN());
@@ -1878,7 +1878,7 @@ public class EjbcaWS implements IEjbcaWS {
 						if(genNewRequest){
                             //	Add approval Request
 							try{
-								ejbhelper.getApprovalSession().addApprovalRequest(admin, ar);
+								ejbhelper.getApprovalSession().addApprovalRequest(admin, ar, ejbhelper.getRAAdminSession().loadGlobalConfiguration(admin));
 							  throw new WaitingForApprovalException("Adding approval to view hard token data with id " + ar.generateApprovalId(), ar.generateApprovalId());
 							}catch(ApprovalException e4){
 								throw getEjbcaException(e4, logger, null);

@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.admin.loginterface;
 
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -62,7 +61,7 @@ public class LogInterfaceBean implements java.io.Serializable {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
 
       if(!initialized){
-        admin           = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+        admin = ejbcawebbean.getAdminObject();
         
         final ServiceLocator locator = ServiceLocator.getInstance();
         ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) locator.getLocalHome(ILogSessionLocalHome.COMP_NAME);

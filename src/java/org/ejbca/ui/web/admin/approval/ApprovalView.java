@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.approval;
 
 import java.io.UnsupportedEncodingException;
+import java.security.cert.Certificate;
 import java.text.DateFormat;
 
 import javax.ejb.EJBException;
@@ -21,6 +22,7 @@ import javax.ejb.EJBException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
+import org.ejbca.util.CertTools;
 
 /**
  * Class used to represent the view of an approval
@@ -47,7 +49,7 @@ public class ApprovalView {
 	}
 	
 	public String getApprovalAdmin(){
-		return approval.getUsername();
+		return approval.getAdmin().getUsername();
 	}
 	
 	public String getAdminAction(){
@@ -62,8 +64,11 @@ public class ApprovalView {
 	public String getViewApproverCertLink(){
 		String link;
 		try {
+			Certificate adminCertificate = approval.getAdmin().getAdminInformation().getX509Certificate();
+			String certificateSerialNumber = CertTools.getSerialNumberAsString(adminCertificate);
+			String adminIssuerDN = CertTools.getIssuerDN(adminCertificate);
 			link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
-			            + "viewcertificate.jsp?certsernoparameter=" + java.net.URLEncoder.encode(approval.getAdminCertSerialNumber().toString(16) + "," + approval.getAdminCertIssuerDN(),"UTF-8");
+			            + "viewcertificate.jsp?certsernoparameter=" + java.net.URLEncoder.encode(certificateSerialNumber + "," + adminIssuerDN,"UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new EJBException(e);
 		}

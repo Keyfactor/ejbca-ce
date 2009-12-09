@@ -69,6 +69,10 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -112,6 +116,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -219,6 +224,24 @@ import org.ejbca.util.keystore.KeyTools;
  *   business="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
  *   link="CreateCRLSession"
  *   
+ * @ejb.ejb-external-ref
+ *   description="The Ra Admin session bean"
+ *   view-type="local"
+ *   ref-name="ejb/RaAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
+ *   link="RaAdminSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The User Admin session bean"
+ *   view-type="local"
+ *   ref-name="ejb/UserAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
+ *   link="UserAdminSession"
+ *
  * @jboss.method-attributes
  *   pattern = "get*"
  *   read-only = "true"
@@ -247,7 +270,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /** The local interface of the job runner session bean used to create crls.*/
     private ICreateCRLSessionLocal crlsession;
-    
+
+    private IRaAdminSessionLocal raAdminSession;
+    private IUserAdminSessionLocal userAdminSession;
+
     /**
      * The local interface of the approval session bean
      */
@@ -257,16 +283,40 @@ public class CAAdminSessionBean extends BaseSessionBean {
     private static final InternalResources intres = InternalResources.getInstance();
 
     private IApprovalSessionLocal getApprovalSession(){
-        if(approvalsession == null){
-            try {
-              IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
-  			approvalsession = approvalsessionhome.create();
-  		} catch (CreateException e) {
-  			throw new EJBException(e);
-  		}  
-        }
-        return approvalsession;
-      }
+    	if(approvalsession == null){
+    		try {
+    			IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
+    			approvalsession = approvalsessionhome.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}  
+    	}
+    	return approvalsession;
+    }
+    
+    private IRaAdminSessionLocal getRaAdminSession() {
+    	if(raAdminSession == null){
+    		try {
+    			IRaAdminSessionLocalHome home = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
+    			raAdminSession = home.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}  
+    	}
+    	return raAdminSession;
+    }
+    
+    private IUserAdminSessionLocal getUserAdminSession() {
+    	if(userAdminSession == null){
+    		try {
+    			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+    			userAdminSession = home.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}  
+    	}
+    	return userAdminSession;
+    }
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -2559,10 +2609,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		log.info(msg);
     		return;
         }
-        int numOfApprovalsRequired = ApprovalExecutorUtil.getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ACTIVATECATOKEN, cainfo, getCertificateStoreSession().getCertificateProfile(admin,cainfo.getCertificateProfileId()));
+        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ACTIVATECATOKEN, cainfo.getCAId(), cainfo.getCertificateProfileId());
         ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(),authorizationcode,admin,numOfApprovalsRequired,caid,ApprovalDataVO.ANY_ENDENTITYPROFILE);
-        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {       		    		
-        	getApprovalSession().addApprovalRequest(admin, ar);
+        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
+        	GlobalConfiguration gc = getRaAdminSession().loadGlobalConfiguration(admin);
+        	getApprovalSession().addApprovalRequest(admin, ar, gc);
             String msg = intres.getLocalizedMessage("ra.approvalcaactivation");            	
         	throw new WaitingForApprovalException(msg);
         }
@@ -2753,6 +2804,33 @@ public class CAAdminSessionBean extends BaseSessionBean {
         
       return returnval;
     } // exitsPublisherInCAs
+    
+	/**
+     * Help method that checks the CA data config and the certificate profile if the specified action 
+     * requires approvals and how many
+     * @param is the administrator requesting this operation
+     * @param action one of CAInfo.REQ_APPROVAL_ constants
+     * @param caid of the ca to check
+     * @param certprofile of the ca to check
+     * @return 0 if no approvals is required otherwise the number of approvals
+     * 
+     * @ejb.interface-method
+     */
+    public int getNumOfApprovalRequired(Admin admin, int action, int caid, int certProfileId) {
+    	int retval = 0;
+    	CAInfo cainfo = getCAInfo(admin, caid);
+    	if (cainfo != null) {
+        	if(cainfo.isApprovalRequired(action)){
+        		retval = cainfo.getNumOfReqApprovals();
+        	}
+        	CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, certProfileId);
+        	if(certprofile != null && certprofile.isApprovalRequired(action)) {
+        		retval = Math.max(retval, certprofile.getNumOfReqApprovals());
+        	}
+    	}
+    	return retval;
+    }
+    
 
     private boolean authorizedToCA(Admin admin, int caid){
       boolean returnval = false;

@@ -17,10 +17,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
-import java.security.cert.Certificate;
 import java.util.Date;
 
-import org.ejbca.util.CertTools;
+import org.ejbca.core.model.log.Admin;
 
 
 
@@ -43,16 +42,15 @@ public class Approval implements Comparable, Externalizable {
 	
 	private static final long serialVersionUID = -1L;
 	
-	private static final int LATEST_VERSION = 1;
+	private static final int LATEST_VERSION = 2;
 
+	private Admin admin = null;
     private String adminCertIssuerDN = null;
     private String adminCertSerialNumber = null;
     private boolean approved = false;
     private Date approvalDate = null;
     private String comment = null;
     private String approvalSignature = null; 
-    private String username = null;
-    
     
 	/**
 	 * @param approved
@@ -66,22 +64,26 @@ public class Approval implements Comparable, Externalizable {
 	}
 	
 	/**
-	 * Constuctor used in externaliziation only
+	 * Constructor used in externalization only
 	 */
 	public Approval(){}
 
 	/**
 	 * @return Returns the adminCertIssuerDN.
+	 * @deprecated Use the information from the Admin object instead
 	 */
 	public String getAdminCertIssuerDN() {
 		return adminCertIssuerDN;
 	}
 	
-	
 	/**
 	 * @return Returns the adminCertSerialNumber.
+	 * @deprecated Use the information from the Admin object instead
 	 */
 	public BigInteger getAdminCertSerialNumber() {
+		if (adminCertSerialNumber == null) {
+			return null;
+		}
 		return new BigInteger(adminCertSerialNumber,16);
 	}
 	
@@ -110,25 +112,20 @@ public class Approval implements Comparable, Externalizable {
 	}		
 	
 	/**
-	 * @return Returns the username of the approving administrator
+	 * @return the Admin that approved this Approval
 	 */
-	public String getUsername() {
-		return username;
-	}
+	public Admin getAdmin() { return admin; }
 
 	/**
-	 * The cert and username of the approving administrator. Should only be set
-	 * by the ApprovalSessionBean
-	 * 
-	 * 
+	 * Used specify rejection or approval
+	 * @param approved true for approved, flase for rejected
+	 * @param admin is the Admin that approved or rejected the current Approval
 	 */
-	public void setApprovalCertificateAndUsername(boolean approved, Certificate approvalAdminCert, String username) {
+	public void setApprovalAdmin(boolean approved, Admin admin) {
 		this.approved = approved;
-		this.adminCertSerialNumber = CertTools.getSerialNumberAsString(approvalAdminCert);
-		this.adminCertIssuerDN = CertTools.getIssuerDN(approvalAdminCert);
-		this.username = username;
+		this.admin = admin;
 	}
-
+	
     /**
      * Sort by approval date
      */
@@ -138,17 +135,14 @@ public class Approval implements Comparable, Externalizable {
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(LATEST_VERSION);
-		out.writeObject(this.adminCertIssuerDN);
-		out.writeObject(this.adminCertSerialNumber);
+		out.writeObject(this.admin);
 		out.writeBoolean(this.approved);
 		out.writeObject(this.approvalDate);
 		out.writeObject(this.comment);	
 		out.writeObject(this.approvalSignature);
-		out.writeObject(this.username);
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        
 		int version = in.readInt();
 		if(version == 1){
 			this.adminCertIssuerDN = (String) in.readObject();
@@ -157,12 +151,13 @@ public class Approval implements Comparable, Externalizable {
 			this.approvalDate = (Date) in.readObject();
 			this.comment = (String) in.readObject();
 			this.approvalSignature = (String) in.readObject();
-			this.username = (String) in.readObject();
+			//this.username = (String) in.readObject(); This information is now available through the Admin object
+		} else if (version == 2) {
+			this.admin = (Admin) in.readObject();
+			this.approved = in.readBoolean();
+			this.approvalDate = (Date) in.readObject();
+			this.comment = (String) in.readObject();
+			this.approvalSignature = (String) in.readObject();
 		}
-		
 	}
-
-
-
-
 }

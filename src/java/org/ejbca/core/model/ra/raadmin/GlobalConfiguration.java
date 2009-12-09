@@ -33,12 +33,6 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
-    /**
-     * Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
-     * be displayed for the administrators. If false only non-sensitive information is displayed.
-     */
-    public static final boolean HARDTOKEN_DIPLAYSENSITIVEINFO = WebConfiguration.getHardTokenDiplaySensitiveInfo();
-    
     public static final String PREFEREDINTERNALRESOURCES = InternalResources.PREFEREDINTERNALRESOURCES;
     public static final String SECONDARYINTERNALRESOURCES = InternalResources.SECONDARYINTERNALRESOURCES;
 

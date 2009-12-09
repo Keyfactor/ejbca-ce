@@ -82,10 +82,9 @@ public class CAInterfaceBean implements java.io.Serializable {
     }
 
     // Public methods
-    public void initialize(Admin administrator, EjbcaWebBean ejbcawebbean) throws  Exception{
+    public void initialize(EjbcaWebBean ejbcawebbean) throws  Exception{
 
         if(!initialized){
-        	this.administrator = administrator;
           ServiceLocator locator = ServiceLocator.getInstance();
           ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
           certificatesession = certificatesessionhome.create();
@@ -115,6 +114,7 @@ public class CAInterfaceBean implements java.io.Serializable {
   	    publisherqueuesession = publisherqueuesessionhome.create();
   	      	    
           this.informationmemory = ejbcawebbean.getInformationMemory();
+          this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);
           cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, ejbcawebbean);
@@ -125,8 +125,7 @@ public class CAInterfaceBean implements java.io.Serializable {
       }
     
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
-    	Admin tempadmin = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
-    	initialize(tempadmin, ejbcawebbean);
+    	initialize(ejbcawebbean);
     }
 
     public CertificateView[] getCACertificates(int caid) {
@@ -140,7 +139,7 @@ public class CAInterfaceBean implements java.io.Serializable {
       while(iter.hasNext()){
         Certificate next = (Certificate) iter.next();  
         RevokedInfoView revokedinfo = null;
-        CertificateStatus revinfo = certificatesession.getStatus(administrator, CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
+        CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
         if(revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
           revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(next));
         }

@@ -280,7 +280,7 @@ public class CACertServlet extends HttpServlet {
             // Root CA is level 0, next below root level 1 etc etc
             try {
                 ISignSessionLocal ss = getSignSession();
-                Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+                Admin admin = ejbcawebbean.getAdminObject();
                 Certificate[] chain = (Certificate[]) ss.getCertificateChain(admin, issuerdn.hashCode()).toArray(new Certificate[0]);
                                                             
                 // chain.length-1 is last cert in chain (root CA)

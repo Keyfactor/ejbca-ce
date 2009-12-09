@@ -338,7 +338,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     		Iterator i = certs.iterator();
     		while (i.hasNext()) {
     			X509Certificate cert = (X509Certificate)i.next();
-    			CertificateStatus cs = getCertificateStoreOnlyDataSession().getStatus(admin, issuerDN, CertTools.getSerialNumber(cert)); 
+    			CertificateStatus cs = getCertificateStoreOnlyDataSession().getStatus(issuerDN, CertTools.getSerialNumber(cert)); 
     			if (isRevoked == cs.equals(CertificateStatus.REVOKED)) {
     				return cert;
     			}

@@ -390,9 +390,9 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
 			// Approve revocation and verify success
 			Admin approvingAdmin = new Admin((X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(
-					admin, APPROVINGADMINNAME).iterator().next());
+					admin, APPROVINGADMINNAME).iterator().next(), APPROVINGADMINNAME, null);
 			TestRevocationApproval.approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION,
-					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, TestTools.getCertificateStoreSession(), TestTools.getApprovalSession());
+					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, TestTools.getCertificateStoreSession(), TestTools.getApprovalSession(), cainfo.getCAId());
 			// try to revoke the now revoked cert via CMP and verify error
 			nonce = CmpMessageHelper.createSenderNonce();
 			transid = CmpMessageHelper.createSenderNonce();
@@ -441,7 +441,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
     private int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
     	int ret = RevokedCertInfo.NOT_REVOKED;
-    	CertificateStatus info = TestTools.getCertificateStoreSession().getStatus(admin, issuerDN, serno);
+    	CertificateStatus info = TestTools.getCertificateStoreSession().getStatus(issuerDN, serno);
     	ret = info.revocationReason;
     	return ret;
     }

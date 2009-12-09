@@ -1044,7 +1044,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Verify that the certificate is valid
 			CertTools.checkValidity(certificate, new Date(timeOfUse));
 			// Verify that the cert wasn't revoked
-			CertificateStatus revinfo = getCertificateStoreSession().getStatus(new Admin(certificate), CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+			CertificateStatus revinfo = getCertificateStoreSession().getStatus(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
 			if (revinfo == null) {
 				return false;	// Certificate missing
 			} else if (revinfo.revocationReason  != RevokedCertInfo.NOT_REVOKED && revinfo.revocationDate.getTime() <= timeOfUse) {

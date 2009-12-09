@@ -191,7 +191,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 
 	abstract OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
 
-    abstract CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber);
+    abstract CertificateStatus getStatus(String name, BigInteger serialNumber);
 
 	/** returns a CertificateCache of appropriate type */
 	abstract CertificateCache createCertificateCache();
@@ -635,7 +635,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(IPatternLogger.REPLY_TIME, ITransactionLogger.REPLY_TIME);
 					if (OcspConfiguration.getEnforceRequestSigning()) {
 						// If it verifies OK, check if it is revoked
-						final CertificateStatus status = getStatus(m_adm, CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
+						final CertificateStatus status = getStatus(CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
 						// If rci == null it means the certificate does not exist in database, we then treat it as ok,
 						// because it may be so that only revoked certificates is in the (external) OCSP database.
 						if ( status.equals(CertificateStatus.REVOKED) ) {
@@ -764,10 +764,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					final org.bouncycastle.ocsp.CertificateStatus certStatus;
 					transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); // it seems to be correct
                     // Check if the cacert (or the default responderid) is revoked
-                    final CertificateStatus cacertStatus = getStatus(m_adm, CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
+                    final CertificateStatus cacertStatus = getStatus(CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
 					if ( !cacertStatus.equals(CertificateStatus.REVOKED) ) {
 						// Check if cert is revoked
-						final CertificateStatus status = getStatus(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
+						final CertificateStatus status = getStatus(cacert.getSubjectDN().getName(), certId.getSerialNumber());
 						// If we have different maxAge and untilNextUpdate for different certificate profiles, we have to fetch these
 						// values now that we have fetched the certificate status, that includes certificate profile.
                         nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);

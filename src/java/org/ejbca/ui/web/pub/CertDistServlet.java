@@ -480,7 +480,7 @@ public class CertDistServlet extends HttpServlet {
             log.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
                 ICertificateStoreSessionLocal store = getStoreSession();
-                CertificateStatus revinfo = store.getStatus(administrator, dn, new BigInteger(serno));
+                CertificateStatus revinfo = store.getStatus(dn, new BigInteger(serno));
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
                 res.setContentType("text/html");
                 printHtmlHeader("Check revocation", pout);

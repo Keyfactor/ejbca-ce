@@ -38,6 +38,8 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
@@ -54,6 +56,7 @@ import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 
 
@@ -151,6 +154,15 @@ import org.ejbca.util.CertTools;
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
  *
+ * @ejb.ejb-external-ref
+ *   description="The Ra Admin session bean"
+ *   view-type="local"
+ *   ref-name="ejb/RaAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
+ *   link="RaAdminSession"
+ *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -198,6 +210,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     /** The local interface of  authorization session bean */
 	private IAuthorizationSessionLocal authorizationsession;
 	
+    private IRaAdminSessionLocal raAdminSession;
 	
 	/**
 	 * Method checking the following authorizations:
@@ -242,8 +255,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @return 0 of no approvals is required othervise the number of approvals
      */
     private int getNumOfApprovalRequired(Admin admin,int action, int caid, int certprofileid) {
-    	CAInfo cainfo = caadminsession.getCAInfo(admin, caid);
-    	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo, certificatestoresession.getCertificateProfile(admin,certprofileid));    	
+    	return caadminsession.getNumOfApprovalRequired(admin, action, caid, certprofileid);
 	}
     
     private IUserAdminSessionLocal getUserAdminSession(){
@@ -258,6 +270,18 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     	return useradminsession;
     }
     
+    private IRaAdminSessionLocal getRaAdminSession() {
+    	if(raAdminSession == null){
+    		try {
+    			IRaAdminSessionLocalHome approvalsessionhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
+    			raAdminSession = approvalsessionhome.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}  
+    	}
+    	return raAdminSession;
+    }
+
     /**
      * Help method to check if approval of key recovery is required
      * @param admin 
@@ -277,8 +301,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         if (numOfApprovalsRequired > 0){    
 
 			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,endEntityProfileId);
-			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){       		    		
-				approvalsession.addApprovalRequest(admin, ar);
+			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){
+				GlobalConfiguration gc = getRaAdminSession().loadGlobalConfiguration(admin);
+				approvalsession.addApprovalRequest(admin, ar, gc);
 	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	
 				throw new WaitingForApprovalException(msg);
 			}

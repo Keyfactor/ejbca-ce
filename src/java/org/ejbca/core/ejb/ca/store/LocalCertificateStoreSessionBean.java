@@ -1259,13 +1259,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * Checks if a certificate is revoked.
      *
-     * @param admin    Administrator performing the operation
      * @param issuerDN the DN of the issuer.
      * @param serno    the serialnumber of the certificate that will be checked
      * @return true if the certificate is revoked or can not be found in the database, false if it exists and is not revoked.
      * @ejb.interface-method
      */
-    public boolean isRevoked(Admin admin, String issuerDN, BigInteger serno) {
+    public boolean isRevoked(String issuerDN, BigInteger serno) {
         if (adapter.getLogger().isTraceEnabled()) {
             adapter.getLogger().trace(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
@@ -1312,14 +1311,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * Get status fast.
      * 
-     * @param admin
      * @param issuerDN
      * @param serno
      * @return the status of the certificate
      * @ejb.interface-method
      */
-    public CertificateStatus getStatus(Admin admin, String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(admin, issuerDN, serno, certHome, protecthome, adapter);
+    public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
+        return CertificateDataUtil.getStatus(issuerDN, serno, certHome, protecthome, adapter);
     }
 
     /**
@@ -1340,7 +1338,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
             // TODO: Verify Signature on cert? Not really needed since it's one of ou certs in the database.
             // Check if certificate is revoked.
-            boolean isRevoked = isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
+            boolean isRevoked = isRevoked(CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
             if (isRevoked) {
                 // Certificate revoked or missing in the database
             	String msg = intres.getLocalizedMessage("authentication.revokedormissing");            	

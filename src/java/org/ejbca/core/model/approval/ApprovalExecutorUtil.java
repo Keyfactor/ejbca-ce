@@ -17,8 +17,6 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 
 /**
  * Util class with methods to get information about calling classes
@@ -150,24 +148,4 @@ public class ApprovalExecutorUtil {
 		
 		return retval;
 	}	
-    
-	/**
-     * Help method that checks the CA data config and the certificate profile if the specified action 
-     * requires approvals and how many
-     * @param action one of CAInfo.REQ_APPROVAL_ constants
-     * @param caid of the ca to check
-     * @param certprofile of the ca to check
-     * @return 0 if no approvals is required otherwise the number of approvals
-     */
-    public static int getNumOfApprovalRequired(int action, CAInfo cainfo, CertificateProfile certprofile) {
-    	int retval = 0;
-    	if(cainfo.isApprovalRequired(action)){
-    		retval = cainfo.getNumOfReqApprovals();
-    	}
-    	if(certprofile != null && certprofile.isApprovalRequired(action)) {
-    		retval = Math.max(retval, certprofile.getNumOfReqApprovals());
-    	}
-    	
-    	return retval;
-    }
 }

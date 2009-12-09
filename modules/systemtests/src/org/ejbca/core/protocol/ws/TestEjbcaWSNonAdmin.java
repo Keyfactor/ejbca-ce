@@ -25,12 +25,14 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 
 public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
 
@@ -38,13 +40,15 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
     private static X509Certificate admincert1 = null;        
     private static Admin admin1 = null;
     private static int caid;
+	private static GlobalConfiguration gc = null;
 
     private ArrayList adminentities;
 	private Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
 	private Admin reqadmin;
 	
-	public void test00SetupAccessRights() throws Exception{
+	public void test00SetupAccessRights() throws Exception {
 		super.test00SetupAccessRights();
+		gc = TestTools.getRaAdminSession().loadGlobalConfiguration(new Admin(Admin.INTERNALCAID));
 	}
     
     public void test01checkNonAuthorizatied() throws Exception{	
@@ -147,7 +151,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
       	Approval approval1 = new Approval("ap1test");
       	
       	ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true,reqadmin,null,1,0,0);      	
-      	getApprovalSession().approve(admin1, ar.generateApprovalId(), approval1);
+      	getApprovalSession().approve(admin1, ar.generateApprovalId(), approval1, gc);
       	
       	test14getHardTokenData(false, true);
       	
@@ -156,7 +160,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
       		assertTrue(false);
       	}catch(WaitingForApprovalException_Exception e){}
       	
-      	getApprovalSession().reject(admin1, ar.generateApprovalId(), approval1);
+      	getApprovalSession().reject(admin1, ar.generateApprovalId(), approval1, gc);
       	
       	try{
       		test14getHardTokenData(false, true);
@@ -196,7 +200,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
       	Approval approval1 = new Approval("ap1test");
       	
       	ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1",  HardToken.LABEL_PROJECTCARD,reqadmin,null,1,0,0);      	
-      	getApprovalSession().approve(admin1, ar.generateApprovalId(), approval1);
+      	getApprovalSession().approve(admin1, ar.generateApprovalId(), approval1, gc);
       	
       	
       	test12genTokenCertificates(false,true);
@@ -211,7 +215,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
     	 assertTrue(false);
        }catch(WaitingForApprovalException_Exception e){}
        
-       getApprovalSession().reject(admin1, ar.generateApprovalId(), approval1);
+       getApprovalSession().reject(admin1, ar.generateApprovalId(), approval1, gc);
       	
       	try{
       		test12genTokenCertificates(false, true);
@@ -293,8 +297,8 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
 			}
 		}
 
-		admin1 = new Admin(admincert1);
-		reqadmin = new Admin(reqadmincert);
+		admin1 = new Admin(admincert1, adminusername1, null);
+		reqadmin = TestTools.getUserAdminSession().getAdmin(reqadmincert);
     }
 
     private String genRandomUserName() throws Exception {

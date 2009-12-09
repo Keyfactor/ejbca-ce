@@ -1,6 +1,5 @@
 package org.ejbca.ui.web.admin.configuration;
 
-import java.security.cert.X509Certificate;
 import java.util.Map;
 
 import javax.ejb.CreateException;
@@ -16,6 +15,8 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
@@ -57,12 +58,10 @@ public class EjbcaJSFHelper  {
 	private IServiceSessionLocal servicesession;
 	private IUserDataSourceSessionLocal userdatasourcesession;
 	private IPublisherSessionLocal publishersession;
+	private IAuthorizationSessionLocal authorizationsession;
 	
 	private FacesContext ctx = FacesContext.getCurrentInstance();
 	  
-	private Admin admin = null;
-
-	
 	public EjbcaJSFHelper(){}
 	
     public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean){
@@ -70,7 +69,6 @@ public class EjbcaJSFHelper  {
     		this.ejbcawebbean = ejbcawebbean;
     		text = new EjbcaJSFLanguageResource(ejbcawebbean);
     		image = new EjbcaJSFImageResource(ejbcawebbean);
-    		admin = getAdmin();
     		initialized = true;
     	}
     }
@@ -182,11 +180,7 @@ public class EjbcaJSFHelper  {
     }
  
 	public Admin getAdmin() {
-		  if(admin == null){
-			  X509Certificate[] certificates = (X509Certificate[]) ((HttpServletRequest )ctx.getExternalContext().getRequest()).getAttribute( "javax.servlet.request.X509Certificate" );
-		      admin = new Admin(certificates[0]);
-		  }
-		  return admin;
+		return getEjbcaWebBean().getAdminObject();
 	  }
     
     public static EjbcaJSFHelper getBean(){    
@@ -277,4 +271,16 @@ public class EjbcaJSFHelper  {
     	return publishersession;
     }
 
+    public IAuthorizationSessionLocal getAuthorizationSession(){
+		if(authorizationsession  == null){ 
+    		ServiceLocator locator = ServiceLocator.getInstance();
+    		IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+    		try {
+    			authorizationsession = authorizationsessionhome.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}
+    	}
+    	return authorizationsession;
+    }
 }

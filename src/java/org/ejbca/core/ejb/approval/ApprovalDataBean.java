@@ -320,17 +320,22 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     public abstract void setRemainingApprovals(int remainingapprovals);
     
     
-    
-    private Collection getApprovals() {   
+    /**
+     * NOTE: This method should never be used publicly except from UpgradeSessionBean 
+     * @return Collection<Approval>
+     * @ejb.interface-method view-type="local"
+     */
+    public Collection getApprovals() {   
     	return ApprovalDataUtil.getApprovals(getApprovalData());
     }
     
     /**
-     * Collection of Approval
-     * @param approvals cannot be null.
+     * NOTE: This method should never be used publicly except from UpgradeSessionBean 
+     * 
+     * @param approvals Collection<Approval>, cannot be null.
      * @throws IOException
      */
-    private void setApprovals(Collection approvals){
+    public void setApprovals(Collection approvals){
     	try{
     		ByteArrayOutputStream baos = new ByteArrayOutputStream();
     		ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -351,11 +356,20 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	}
     }
     
-    private ApprovalRequest getApprovalRequest() {
+    /**
+     * NOTE: This method should never be used publicly except from UpgradeSessionBean 
+     * @return ApprovalRequest
+     * @ejb.interface-method view-type="local"
+     */
+    public ApprovalRequest getApprovalRequest() {
     	return ApprovalDataUtil.getApprovalRequest(getRequestData());
     }
     
-    private void setApprovalRequest(ApprovalRequest approvalRequest){
+    /**
+     * NOTE: This method should never be used publicly except from UpgradeSessionBean 
+     * @ejb.interface-method view-type="local"
+     */
+    public void setApprovalRequest(ApprovalRequest approvalRequest){
     	try{
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -409,7 +423,14 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	
     }
     
-    
+    /**
+     * Method that returns the approval data. This method currently extracts the ApprovalRequest object.
+     *
+     * @ejb.interface-method view-type="local"
+     */
+    public String getRequestAdminUsername() {
+    	return getApprovalRequest().getRequestAdmin().getUsername();
+    }
     
     /**
      * Method that returns the approval data.

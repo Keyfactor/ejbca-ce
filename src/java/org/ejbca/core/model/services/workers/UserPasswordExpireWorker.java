@@ -27,10 +27,10 @@ import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
 import org.ejbca.util.JDBCUtil;
-import org.ejbca.util.NotificationParamGen;
 
 /**
  * Worker expiring users password after a configured amount of time.
@@ -119,21 +119,19 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 				// Create notification emails, if they are configured to be sent
 				if(userData != null){
 					if(isSendToEndUsers()){
-						NotificationParamGen paramGen = new NotificationParamGen(userData, (String)null);
 						if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
 							String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
 							log.info(msg);
 						}else{
 							// Populate end user message            	    	        		    
-							String message = NotificationParamGen.interpolate(paramGen.getParams(), getEndUserMessage());
+							String message = new UserNotificationParamGen(userData).interpolate(getEndUserMessage());
 							MailActionInfo mailActionInfo = new MailActionInfo(userData.getEmail(),getEndUserSubject(), message);
 							userEmailQueue.add(new EmailCertData(username,mailActionInfo));
 						}					  
 					}
 					if(isSendToAdmins()){
 						// Populate admin message        		    
-						NotificationParamGen paramGen = new NotificationParamGen(userData, (String)null);
-						String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
+						String message = new UserNotificationParamGen(userData).interpolate(getAdminMessage());
 						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
 						adminEmailQueue.add(new EmailCertData(username,mailActionInfo));
 					}	

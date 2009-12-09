@@ -84,7 +84,7 @@
     		
     		The code below are mainly a temporary help to be able to devide the components into new packages
     		more easily. Ideally each include should only be "org/ejbca/<component>/**/*.java" and each check
-    		could be placed in proper sub-targets.
+    		could be placed in proper reusable sub-targets.
     	-->
     	<mkdir dir="${src-temp.dir}"/>
     	<mkdir dir="${build-temp.dir}"/>
@@ -234,16 +234,16 @@
         	</classpath>
         </javac>
     	<!-- Notification component -->
-    	<echo message=" ** Validating component: Notification (FAKE.. This isn't really a proper component yet..) **"/>
+    	<echo message=" ** Validating component: Notification Base 	**"/>
     	<mkdir dir="${src-temp.dir}/notification"/>
     	<mkdir dir="${build-temp.dir}/notification"/>
     	<copy todir="${src-temp.dir}/notification">
     		<fileset dir="${src.dir}">
+    			<!-- Include the Mail utility and configuration as a subcomponent of Notification -->
     			<include name="org/ejbca/config/MailConfiguration.java"/>
     			<include name="org/ejbca/util/mail/*.java"/>
-    			<!--
-    			<include name="org/ejbca/util/NotificationParamGen.java"/>
-    			-->
+    			<!-- Include the approval components -->
+				<include name="org/ejbca/util/NotificationParamGen.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/notification" destdir="${build-temp.dir}/notification" debug="on" includeantruntime="no"
@@ -257,17 +257,36 @@
         	</classpath>
         </javac>
     	<!-- Approval component -->
-		<!--
-    	<echo message=" ** Validating component: Approval **"/>
+    	<echo message=" ** Validating component: Approval Base (still includes GlobalConfiguration..) **"/>
     	<mkdir dir="${src-temp.dir}/approval"/>
     	<mkdir dir="${build-temp.dir}/approval"/>
     	<copy todir="${src-temp.dir}/approval">
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
     			<include name="org/ejbca/core/ejb/approval/**/ApprovalDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/approval/**/ApprovalDataLocal.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ErrorCode.java"/>
     			<include name="org/ejbca/core/ejb/approval/**/*.java"/>
     			<include name="org/ejbca/core/model/approval/**/*.java"/>
+    	    	<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of in a good way right now.. -->
+    			<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
+    			<include name="org/ejbca/config/InternalConfiguration.java"/>
+    			<include name="org/ejbca/config/WebConfiguration.java"/>
+    			<include name="org/ejbca/core/model/UpgradeableDataHashMap.java"/>
+    			<include name="org/ejbca/core/model/IUpgradeableData.java"/>
+    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
+    			<include name="org/ejbca/core/model/SecConst.java"/>
+    	    	<!-- RA approval requests -->
+    			<exclude name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
+    			<exclude name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
+    			<exclude name="org/ejbca/core/model/approval/ApprovalRequestHelper.java"/>
+    			<exclude name="org/ejbca/core/model/approval/approvalrequests/ChangeStatusEndEntityApprovalRequest.java"/>
+    			<exclude name="org/ejbca/core/model/approval/approvalrequests/RevocationApprovalRequest.java"/>
+    	    	<!-- CA approval requests -->
+    			<exclude name="org/ejbca/core/model/approval/approvalrequests/ActivateCATokenApprovalRequest.java"/>
+    	    	<!-- Key Recovery approval requests -->
+    			<exclude name="org/ejbca/core/model/approval/approvalrequests/KeyRecoveryApprovalRequest.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/approval" destdir="${build-temp.dir}/approval" debug="on" includeantruntime="no"
@@ -275,13 +294,14 @@
         	<classpath>
         		<path refid="compile.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
-        		<pathelement location="${build-temp.dir}/protect"/>
+        		<!--<pathelement location="${build-temp.dir}/protect"/> "Legal" dependency, but not really used -->
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/logging"/>
         		<pathelement location="${build-temp.dir}/authorization"/>
         		<pathelement location="${build-temp.dir}/notification"/>
         	</classpath>
         </javac>
+		<!--
     			-->
     </target>
 

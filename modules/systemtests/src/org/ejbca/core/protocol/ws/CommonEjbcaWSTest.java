@@ -1144,7 +1144,7 @@ public class CommonEjbcaWSTest extends TestCase {
 	    try {
 	    	caID = TestRevocationApproval.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, getCAAdminSession());
 			X509Certificate adminCert = (X509Certificate) getCertStore().findCertificatesByUsername(intAdmin, APPROVINGADMINNAME).iterator().next();
-	    	Admin approvingAdmin = new Admin(adminCert);
+	    	Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
 	    	try {
 	    		X509Certificate cert = createUserAndCert(username,caID);
 		        String issuerdn = cert.getIssuerDN().toString();
@@ -1165,7 +1165,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		        assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
 				// Approve revocation and verify success
 		        TestRevocationApproval.approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
-		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession());
+		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession(), caID);
 		        // Try to unrevoke certificate
 		        try {
 		        	ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.NOT_REVOKED);
@@ -1179,7 +1179,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		        }
 				// Approve revocation and verify success
 		        TestRevocationApproval.approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.NOT_REVOKED,
-		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession());
+		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession(), caID);
 		        // Revoke user
 		        try {
 		        	ejbcaraws.revokeUser(username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, false);
@@ -1193,7 +1193,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		        }
 				// Approve revocation and verify success
 		        TestRevocationApproval.approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
-		        		ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, getCertStore(), getApprovalSession());
+		        		ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, getCertStore(), getApprovalSession(), caID);
 		        // Try to reactivate user
 		        try {
 		        	ejbcaraws.revokeUser(username, RevokedCertInfo.NOT_REVOKED, false);
@@ -1220,7 +1220,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		        }
 		        // Approve actions and verify success
 		        TestRevocationApproval.approveRevocation(intAdmin, approvingAdmin, TOKENUSERNAME, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
-		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession());
+		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession(), caID);
 	        } finally {
 		        getHardTokenSession().removeHardToken(intAdmin, TOKENSERIALNUMBER);
 	        }

@@ -66,7 +66,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
 
       if(!initialized){
-        admin = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+        admin = ejbcawebbean.getAdminObject();
             
         final ServiceLocator locator = ServiceLocator.getInstance();
         IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);

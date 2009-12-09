@@ -49,7 +49,7 @@ public class TestApprovalRequest extends TestCase {
 	
 	public void testWriteExternal() throws Exception {
 		Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
-		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert),null,1,2, false);
+		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert, null, null),null,1,2, false);
 		
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -71,7 +71,7 @@ public class TestApprovalRequest extends TestCase {
 
 	public void testGenerateApprovalId() throws Exception {
 		Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
-		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert),null,1,2, false);
+		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert, null, null),null,1,2, false);
 		
     	int id1 = ar.generateApprovalId();
     	int id2 = ar.generateApprovalId();

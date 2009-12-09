@@ -53,6 +53,7 @@ import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
@@ -90,7 +91,8 @@ public class EjbcaWebBean implements java.io.Serializable {
 
     // Private Fields.
     private ILogSessionLocal               logsession;
-    private ICertificateStoreSessionLocal  certificateStoreSession; 
+    private ICertificateStoreSessionLocal  certificateStoreSession;
+    private IUserAdminSessionLocal         userAdminSession; 
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;
     private GlobalConfiguration            globalconfiguration;
@@ -126,6 +128,9 @@ public class EjbcaWebBean implements java.io.Serializable {
     	IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
     	IRaAdminSessionLocal raadminsession = raadminsessionhome.create();
 
+    	IUserAdminSessionLocalHome useradminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+    	userAdminSession = useradminsessionhome.create();
+
     	ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) locator.getLocalHome(ILogSessionLocalHome.COMP_NAME);
     	logsession = logsessionhome.create();
 
@@ -146,7 +151,9 @@ public class EjbcaWebBean implements java.io.Serializable {
     	
         IUserDataSourceSessionLocalHome userdatasourcesessionhome = (IUserDataSourceSessionLocalHome) locator.getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
     	IUserDataSourceSessionLocal userdatasourcesession = userdatasourcesessionhome.create();
-    	
+
+		administrator = userAdminSession.getAdmin(certificates[0]);
+
     	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
@@ -170,13 +177,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     	if(!initialized){
     		requestServerName = getRequestServerName(request);
     		
-    		administrator = new Admin(certificates[0]) ;
-    		
     		commonInit();
-            ServiceLocator locator = ServiceLocator.getInstance();
-    		IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-    		IUserAdminSessionLocal  adminsession = adminsessionhome.create();
-    		
     		adminspreferences = new AdminPreferenceDataHandler(administrator);
     		
     		// Check if user certificate is revoked
@@ -188,7 +189,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     		// Check if certificate and user is an RA Admin
     		userdn = CertTools.getSubjectDN(certificates[0]);
     		log.debug("Verifying authorization of '"+userdn);    		
-    		adminsession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));        
+    		userAdminSession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));        
     		logsession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
     	}
 
@@ -383,13 +384,14 @@ public class EjbcaWebBean implements java.io.Serializable {
     }
 
 
-    /* A more optimezed authorization verison to check if the admin have authorization to view the url without performing any logging.
-     * AUTHORIZED_RA.. contants should be used.*/
+    /* A more optimized authorization version to check if the admin have authorization to view the url without performing any logging.
+     * AUTHORIZED_RA.. constants should be used.*/
     public boolean isAuthorizedNoLog(int resource) throws AuthorizationDeniedException {
       boolean returnval=false;
       if(certificates != null){
         if(raauthorized[resource] == null) {
-        	raauthorized[resource] = Boolean.valueOf(authorizedatahandler.isAuthorizedNoLog(new Admin(certificates[0]),AUTHORIZED_RA_RESOURCES[resource]));
+        	// We don't bother to lookup the admin's username and email for this check..
+        	raauthorized[resource] = Boolean.valueOf(authorizedatahandler.isAuthorizedNoLog(new Admin(certificates[0], null, null),AUTHORIZED_RA_RESOURCES[resource]));
         }
         returnval = raauthorized[resource].booleanValue();
       } else{

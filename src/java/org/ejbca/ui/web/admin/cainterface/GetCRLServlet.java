@@ -127,7 +127,7 @@ public class GetCRLServlet extends HttpServlet {
         }
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
-                Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+                Admin admin = ejbcawebbean.getAdminObject();
                 ICertificateStoreSessionLocal store = getStoreHome().create();
                 byte[] crl = store.getLastCRL(admin, issuerdn, false);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -150,7 +150,7 @@ public class GetCRLServlet extends HttpServlet {
         }
         if (command.equalsIgnoreCase(COMMAND_DELTACRL) && issuerdn != null) {
         	try {
-        		Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+        		Admin admin = ejbcawebbean.getAdminObject();
         		ICertificateStoreSessionLocal store = getStoreHome().create();
         		byte[] crl = store.getLastCRL(admin, issuerdn, true);
         		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);

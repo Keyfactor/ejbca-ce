@@ -81,6 +81,7 @@ import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataFiller;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
@@ -88,7 +89,6 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
-import org.ejbca.util.NotificationParamGen;
 import org.ejbca.util.PrinterManager;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DistinguishedName;
@@ -505,7 +505,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId(), userdata.getCertificateProfileId());
         AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(userdata,clearpwd,admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {       		    		
-        	getApprovalSession().addApprovalRequest(admin, ar);
+        	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
             String msg = intres.getLocalizedMessage("ra.approvalad");            	
         	throw new WaitingForApprovalException(msg);
         }
@@ -574,12 +574,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @return 0 of no approvals is required or no such CA exists, othervise the number of approvals
      */
     private int getNumOfApprovalRequired(Admin admin,int action, int caid, int certprofileid) {
-    	CAInfo cainfo = caadminsession.getCAInfo(admin, caid);
-    	if (cainfo == null) {
-    		log.error("No CA info exists for CA id: "+caid);
-    		return 0;
-    	}
-    	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo, getCertificateStoreSession().getCertificateProfile(admin, certprofileid));
+    	return caadminsession.getNumOfApprovalRequired(admin, action, caid, certprofileid);
 	}
     
     /** Gets connection to certificate store session bean
@@ -778,7 +773,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 			}        	        	
 			EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userdata, clearpwd, orguserdata, admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)){       		    		
-				getApprovalSession().addApprovalRequest(admin, ar);
+				getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
 	            String msg = intres.getLocalizedMessage("ra.approvaledit");            	
 				throw new WaitingForApprovalException(msg);
 			}
@@ -1152,7 +1147,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, data1.getCertificateProfileId());
             ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status ,  admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)){       		    		
-            	getApprovalSession().addApprovalRequest(admin, ar);
+            	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
 	            String msg = intres.getLocalizedMessage("ra.approvaledit");            	
             	throw new WaitingForApprovalException(msg);
             }  
@@ -1367,7 +1362,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 		        RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin,
 		        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
 		        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
-		        	getApprovalSession().addApprovalRequest(admin, ar);
+		        	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
 		            String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
 		        	throw new WaitingForApprovalException(msg);
 		        }
@@ -1427,7 +1422,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin,
         		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
-        	getApprovalSession().addApprovalRequest(admin, ar);
+        	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
         	throw new WaitingForApprovalException(msg);
         }
@@ -1507,7 +1502,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
         	throw new FinderException(msg);
         }
-        CertificateStatus revinfo = certificatesession.getStatus(admin, issuerdn, certserno);
+        CertificateStatus revinfo = certificatesession.getStatus(issuerdn, certserno);
         if ( revinfo == null ) {
             String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));            	
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
@@ -1532,7 +1527,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin,
         		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
-        	getApprovalSession().addApprovalRequest(admin, ar);
+        	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
         	throw new WaitingForApprovalException(msg);
         }
@@ -1583,6 +1578,41 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         log.trace(">unrevokeCert()");
         revokeCert(admin, certserno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
         log.trace("<unrevokeCert()");
+    }
+
+    /**
+     * Method that looks up the username and email address for a administrator and returns the populated Admin object.
+     * @param certificate is the administrators certificate
+     *
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public Admin getAdmin(Certificate certificate) {
+		String adminUsername = getCertificateStoreSession().findUsernameByCertSerno(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getSerialNumber(certificate),CertTools.getIssuerDN(certificate));
+		String adminEmail = null;
+		if (adminUsername != null) {
+			Connection con = null;
+			PreparedStatement ps = null;
+			ResultSet rs = null;
+			try {
+				con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+				String sql="SELECT subjectEmail FROM UserData WHERE username=?";
+				ps = con.prepareStatement(sql);
+				ps.setString(1, adminUsername);
+				ps.setFetchSize(1);
+				ps.setMaxRows(1);
+				rs = ps.executeQuery();
+				if (rs.next()) {
+					adminEmail = rs.getString(1);
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				throw new EJBException(e);
+			} finally {
+				JDBCUtil.close(con, ps, rs);
+			}
+		}
+		return new Admin(certificate, adminUsername, adminEmail);
     }
 
     /**
@@ -2295,13 +2325,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                         Certificate adminCert = admin.getAdminInformation().getX509Certificate();
                         String approvalAdminDN = CertTools.getSubjectDN(adminCert);
                         log.debug("approvalAdminDN: "+approvalAdminDN);
-                        NotificationParamGen paramGen = new NotificationParamGen(data, approvalAdminDN);
-                        HashMap params = paramGen.getParams();
+                        UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN);
                         /* substitute any $ fields in the receipient and from fields */
-                        rcptemail = NotificationParamGen.interpolate(params, rcptemail);
-                        String fromemail = NotificationParamGen.interpolate(params, not.getNotificationSender());
-                        String subject = NotificationParamGen.interpolate(params, not.getNotificationSubject());
-                        String message = NotificationParamGen.interpolate(params, not.getNotificationMessage());
+                        rcptemail = paramGen.interpolate(rcptemail);
+                        String fromemail = paramGen.interpolate(not.getNotificationSender());
+                        String subject = paramGen.interpolate(not.getNotificationSubject());
+                        String message = paramGen.interpolate(not.getNotificationMessage());
                         MailSender.sendMailOrThrow(fromemail, Arrays.asList(rcptemail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
                         String logmsg = intres.getLocalizedMessage("ra.sentnotification", data.getUsername(), rcptemail);
                         logsession.log(admin, data.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);

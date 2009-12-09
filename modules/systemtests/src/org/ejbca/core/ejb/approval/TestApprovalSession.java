@@ -23,6 +23,7 @@ import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.TestTools;
@@ -48,6 +49,7 @@ public class TestApprovalSession extends TestCase {
     
     private static int caid = TestTools.getTestCAId();
     private static ArrayList adminentities;
+	private static GlobalConfiguration gc = null;
     
     private static final Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
     
@@ -97,9 +99,11 @@ public class TestApprovalSession extends TestCase {
 			admincert2 = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(intadmin, adminusername2).iterator().next();
 			reqadmincert = (X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(intadmin, reqadminusername).iterator().next();
 			
-			admin1 = new Admin(admincert1);
-			admin2 = new Admin(admincert2);
-			reqadmin = new Admin(reqadmincert);
+			admin1 = new Admin(admincert1, adminusername1, null);
+			admin2 = new Admin(admincert2, adminusername2, null);
+			reqadmin = new Admin(reqadmincert, reqadminusername, null);
+			
+			gc = TestTools.getRaAdminSession().loadGlobalConfiguration(new Admin(Admin.INTERNALCAID));
 		}
 	}
 
@@ -127,8 +131,7 @@ public class TestApprovalSession extends TestCase {
         //		 Test that the approvalrequest doesn't exists.
 		Collection result = TestTools.getApprovalSession().findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
 		assertTrue(result.size() == 0);
-				
-		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest, gc);
 		
 		
 		// Test that the approvalRequest exists now
@@ -159,9 +162,9 @@ public class TestApprovalSession extends TestCase {
 		TestTools.getApprovalSession().removeApprovalRequest(admin1, next.getId());
 		
 		// Test to add the same action twice
-		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest, gc);
 		try{
-		  TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest);
+		  TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest, gc);
 		  fail("It shouldn't be possible to add two identical requests.");
 		}catch(ApprovalException e){}  
 		
@@ -170,7 +173,7 @@ public class TestApprovalSession extends TestCase {
 		result = TestTools.getApprovalSession().findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
 		ApprovalDataVO expired = (ApprovalDataVO) result.iterator().next();
 		
-		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest, gc);
 		
 		TestTools.getApprovalSession().removeApprovalRequest(admin1, expired.getId());
 		
@@ -182,10 +185,10 @@ public class TestApprovalSession extends TestCase {
 
 	public void testApprove() throws Exception {
 		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
-		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest, gc);
 		
 		Approval approval1 = new Approval("ap1test");
-		TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
+		TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, gc);
 		
 		Collection result = TestTools.getApprovalSession().findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
 		assertTrue(result.size() == 1);			
@@ -196,12 +199,12 @@ public class TestApprovalSession extends TestCase {
 		
 		Approval approvalAgain = new Approval("apAgaintest");
 		try{
-		  TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approvalAgain);
+		  TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approvalAgain, gc);
 		  fail("The same admin shouln'tt be able to approve a request twice");
 		}catch(AdminAlreadyApprovedRequestException e){}
 		
 		Approval approval2 = new Approval("ap2test");
-		TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
+		TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval2, gc);
 		
 		result = TestTools.getApprovalSession().findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
 		assertTrue(result.size() == 1);	
@@ -223,10 +226,10 @@ public class TestApprovalSession extends TestCase {
 		
 		// Test using an executable Dummy, different behaviour
 		DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,true);
-		TestTools.getApprovalSession().addApprovalRequest(admin1, executableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, executableRequest, gc);
 										
-		TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
-		TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
+		TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, gc);
+		TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval2, gc);
 		
 		result = TestTools.getApprovalSession().findApprovalDataVO(admin1, executableRequest.generateApprovalId());
 		assertTrue(result.size() == 1);	
@@ -246,10 +249,10 @@ public class TestApprovalSession extends TestCase {
 		
 		// Test to request and to approve with the same admin
 		nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
-		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest, gc);
 		Approval approvalUsingReqAdmin = new Approval("approvalUsingReqAdmin");
 		try{
-		  TestTools.getApprovalSession().approve(reqadmin, nonExecutableRequest.generateApprovalId(), approvalUsingReqAdmin);
+		  TestTools.getApprovalSession().approve(reqadmin, nonExecutableRequest.generateApprovalId(), approvalUsingReqAdmin, gc);
 		  fail("Request admin shouln't be able to approve their own request");
 		}catch(AdminAlreadyApprovedRequestException e){}
 		result = TestTools.getApprovalSession().findApprovalDataVO(admin1, executableRequest.generateApprovalId());
@@ -263,10 +266,10 @@ public class TestApprovalSession extends TestCase {
 	
 	public void testReject() throws Exception {
 		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
-		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest, gc);
 		
 		Approval approval1 = new Approval("ap1test");
-		TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
+		TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, gc);
 		
 		Collection result = TestTools.getApprovalSession().findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());			
 		ApprovalDataVO next = (ApprovalDataVO) result.iterator().next();
@@ -274,7 +277,7 @@ public class TestApprovalSession extends TestCase {
 		assertTrue(next.getRemainingApprovals() == 1);
 		
 		Approval rejection = new Approval("rejectiontest");
-		TestTools.getApprovalSession().reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
+		TestTools.getApprovalSession().reject(admin2, nonExecutableRequest.generateApprovalId(), rejection, gc);
 		result = TestTools.getApprovalSession().findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());			
 		next = (ApprovalDataVO) result.iterator().next();
 		assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
@@ -283,11 +286,11 @@ public class TestApprovalSession extends TestCase {
 		TestTools.getApprovalSession().removeApprovalRequest(admin1, next.getId());
 		
 		nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
-		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest, gc);
 		
 		
 		rejection = new Approval("rejectiontest2");
-		TestTools.getApprovalSession().reject(admin1, nonExecutableRequest.generateApprovalId(), rejection);
+		TestTools.getApprovalSession().reject(admin1, nonExecutableRequest.generateApprovalId(), rejection, gc);
 		result = TestTools.getApprovalSession().findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());			
 		next = (ApprovalDataVO) result.iterator().next();
 		assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_REJECTED);
@@ -295,7 +298,7 @@ public class TestApprovalSession extends TestCase {
 		
 		// Try to approve a rejected request
 		try{
-		  TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval1);
+		  TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval1, gc);
 		  fail("It shouldn't be possible to approve a rejected request");
 		}catch(ApprovalException e){}
 		
@@ -309,7 +312,7 @@ public class TestApprovalSession extends TestCase {
 		
 		// Try to reject an expired request
 		try{
-		  TestTools.getApprovalSession().reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
+		  TestTools.getApprovalSession().reject(admin2, nonExecutableRequest.generateApprovalId(), rejection, gc);
 		  fail("It shouln't be possible to reject and expired request");
 		}catch(ApprovalException e){}
 		
@@ -320,20 +323,20 @@ public class TestApprovalSession extends TestCase {
  
 	public void testIsApproved() throws Exception {
 		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
-		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest);		
+		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest, gc);		
 		
 		int status = TestTools.getApprovalSession().isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
 		assertTrue(status == 2);
 		
 		Approval approval1 = new Approval("ap1test");
-		TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
+		TestTools.getApprovalSession().approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, gc);
 		
 
 		status = TestTools.getApprovalSession().isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
 		assertTrue(status == 1);
 		
 		Approval approval2 = new Approval("ap2test");
-		TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
+		TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval2, gc);
 		
 
 		status = TestTools.getApprovalSession().isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
@@ -360,21 +363,21 @@ public class TestApprovalSession extends TestCase {
 	
 	public void testIsApprovedWithSteps() throws Exception {
 		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,3,false);
-		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest);		
+		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest, gc);		
 		
 		int status = TestTools.getApprovalSession().isApproved(reqadmin, nonExecutableRequest.generateApprovalId(),0);
 		assertTrue(status == 2);
 				
 		int approvalId = nonExecutableRequest.generateApprovalId();
 		Approval approval1 = new Approval("ap1test");
-		TestTools.getApprovalSession().approve(admin1, approvalId, approval1);
+		TestTools.getApprovalSession().approve(admin1, approvalId, approval1, gc);
 		
 
 		status = TestTools.getApprovalSession().isApproved(reqadmin, nonExecutableRequest.generateApprovalId(),0);
 		assertTrue(status == 1);
 		
 		Approval approval2 = new Approval("ap2test");
-		TestTools.getApprovalSession().approve(admin2, approvalId, approval2);
+		TestTools.getApprovalSession().approve(admin2, approvalId, approval2, gc);
 		
 
 		status = TestTools.getApprovalSession().isApproved(reqadmin, approvalId,0);
@@ -425,12 +428,12 @@ public class TestApprovalSession extends TestCase {
 	public void testFindNonExpiredApprovalRequest() throws Exception {
 		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		
-		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest, gc);
 		
 		// Then after one of them have expired
 		Thread.sleep(5000);
 		
-		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, nonExecutableRequest, gc);
 		
 		ApprovalDataVO result = TestTools.getApprovalSession().findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
 		assertNotNull(result);
@@ -454,28 +457,28 @@ public class TestApprovalSession extends TestCase {
 		DummyApprovalRequest req2 = new DummyApprovalRequest(admin1,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		DummyApprovalRequest req3 = new DummyApprovalRequest(admin2,null,3,2,false);
 		
-		TestTools.getApprovalSession().addApprovalRequest(admin1, req1);
-		TestTools.getApprovalSession().addApprovalRequest(admin1, req2);
-		TestTools.getApprovalSession().addApprovalRequest(admin1, req3);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, req1, gc);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, req2, gc);
+		TestTools.getApprovalSession().addApprovalRequest(admin1, req3, gc);
 		
 		// Make som queries
 		Query q1 = new Query(Query.TYPE_APPROVALQUERY);
 		q1.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE,BasicMatch.MATCH_TYPE_EQUALS,""+req1.getApprovalType());
 		
-		List result = TestTools.getApprovalSession().query(admin1, q1, 0, 3);
+		List result = TestTools.getApprovalSession().query(admin1, q1, 0, 3, "cAId="+caid, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")");
 		assertTrue("Result size " + result.size(), result.size() >= 2 && result.size() <= 3);
 		
-		result = TestTools.getApprovalSession().query(admin1, q1, 1, 3);
+		result = TestTools.getApprovalSession().query(admin1, q1, 1, 3, "cAId="+caid, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")");
 		assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);
 		
-		result = TestTools.getApprovalSession().query(admin1, q1, 0, 1);
+		result = TestTools.getApprovalSession().query(admin1, q1, 0, 1, "cAId="+caid, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")");
 		assertTrue("Result size " + result.size(), result.size() == 1);
 		
 		Query q2 = new Query(Query.TYPE_APPROVALQUERY);
 		q2.add(ApprovalMatch.MATCH_WITH_STATUS,BasicMatch.MATCH_TYPE_EQUALS,""+ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,Query.CONNECTOR_AND);
 		q2.add(ApprovalMatch.MATCH_WITH_REQUESTADMINCERTSERIALNUMBER,BasicMatch.MATCH_TYPE_EQUALS,reqadmincert.getSerialNumber().toString(16));		
 		
-		result = TestTools.getApprovalSession().query(admin1, q1, 1, 3);
+		result = TestTools.getApprovalSession().query(admin1, q1, 1, 3, "cAId="+caid, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")");
 		assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);
 		
 		// Remove the requests

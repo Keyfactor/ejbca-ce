@@ -176,7 +176,7 @@ public class ApprovalDataVOView  implements Serializable{
 	public ApprovalDataVO getApproveActionDataVO() {
 	    if(!initialized){
 			  try {
-				return new ApprovalDataVO(1,1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0,0,"","",ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,new ArrayList(),new DummyApprovalRequest(new Admin(CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert)),null,ApprovalDataVO.ANY_ENDENTITYPROFILE,ApprovalDataVO.ANY_CA,false),new Date(),new Date(),2);
+				return new ApprovalDataVO(1,1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0,0,"","",ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,new ArrayList(),new DummyApprovalRequest(new Admin(CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert), null, null),null,ApprovalDataVO.ANY_ENDENTITYPROFILE,ApprovalDataVO.ANY_CA,false),new Date(),new Date(),2);
 			} catch (CertificateException e) {
 				log.error(e);
 			}
@@ -193,7 +193,7 @@ public class ApprovalDataVOView  implements Serializable{
 	
 	
 	/**
-	 * Constructs javazcript that opens up a new window and opens up actionview there
+	 * Constructs JavaScript that opens up a new window and opens up actionview there
 	 * @return
 	 */
 	public String getApproveActionWindowLink(){

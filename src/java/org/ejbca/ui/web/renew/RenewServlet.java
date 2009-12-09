@@ -94,7 +94,7 @@ public class RenewServlet extends HttpServlet {
     	}
     	X509Certificate certificate = ((X509Certificate[]) o)[0];
     	request.setAttribute("certificate", certificate);
-    	boolean isrevoked = certificateStoreSession.isRevoked(admin, certificate.getIssuerDN().getName(), certificate.getSerialNumber());
+    	boolean isrevoked = certificateStoreSession.isRevoked(certificate.getIssuerDN().getName(), certificate.getSerialNumber());
     	if (isrevoked) {
     		request.setAttribute("errorMessage", "User certificate with serial number "+certificate.getSerialNumber() + " from issuer \'"+certificate.getIssuerX500Principal()+"\' is revoked.");
     	} else {
