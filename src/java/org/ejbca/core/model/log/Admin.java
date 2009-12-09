@@ -74,11 +74,15 @@ public class Admin implements Serializable {
     protected int type = -1;
     protected String data;
     protected Certificate certificate;
+    protected String username = null;
+    protected String email = null;
 
     // Public Constructors
-    public Admin(Certificate certificate) {
+    public Admin(Certificate certificate, String username, String email) {
         this(TYPE_CLIENTCERT_USER, CertTools.getSerialNumberAsString(certificate) + ", " + CertTools.getIssuerDN(certificate));
         this.certificate = certificate;
+        this.username = username;
+        this.email = email;
     }
 
     public Admin(int type, String ip) {
@@ -132,5 +136,18 @@ public class Admin implements Serializable {
     	}
     	return ret;
     }
+    
+    /**
+     * @return this administrator's email address or null if none is available
+     */
+    public String getEmail() {
+    	return email;
+    }
 
+    /**
+     * @return this administrator's username or null if none is available
+     */
+    public String getUsername() {
+    	return username;
+    }
 }

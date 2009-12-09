@@ -22,9 +22,11 @@ import java.util.TreeMap;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
@@ -77,7 +79,44 @@ public class RAAuthorization implements Serializable {
       
       return authcastring;
     } 
-    
+
+    /**
+     * @return a string of end entity profile privileges that should be used in the where clause of SQL queries.
+     * @throws AuthorizationDeniedException if the current requester isn't authorized to query for approvals
+     */
+    public String getEndEntityProfileAuthorizationString() throws AuthorizationDeniedException {
+        boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
+        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
+        try {
+			authorizedToApproveCAActions = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
+		} catch (AuthorizationDeniedException e1) {}
+        try {
+			authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+		} catch (AuthorizationDeniedException e1) {
+		}
+		if(!authorizedToApproveCAActions && !authorizedToApproveRAActions){
+			throw new AuthorizationDeniedException("Not authorized to query apporvals");
+		}
+
+    	String endentityauth = "";
+        GlobalConfiguration globalconfiguration = raadminsession.loadGlobalConfiguration(admin);
+        if (globalconfiguration.getEnableEndEntityProfileLimitations()){
+        	endentityauth = getEndEntityProfileAuthorizationString(true);
+        	if(authorizedToApproveCAActions && authorizedToApproveRAActions){
+        		endentityauth = getEndEntityProfileAuthorizationString(true);
+        		if(endentityauth != null){
+        		  endentityauth = "(" + getEndEntityProfileAuthorizationString(false) + " OR endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE + " ) ";
+        		}
+        	}else if (authorizedToApproveCAActions) {
+        		endentityauth = " endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE;
+			}else if (authorizedToApproveRAActions) {
+				endentityauth = getEndEntityProfileAuthorizationString(true);
+			}        	
+        	
+        }
+        return endentityauth.trim();
+    }
+
     /**
      * Method that checks the administrators end entity profile privileges and returns a string that should be used in where clause of userdata SQL queries.
      *

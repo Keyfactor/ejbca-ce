@@ -13,7 +13,6 @@
 
 package org.ejbca.core.model.approval;
 
-
 import java.security.cert.Certificate;
 
 import org.ejbca.core.model.authorization.AdminEntity;
@@ -30,23 +29,14 @@ import org.ejbca.core.model.log.Admin;
  *
  * @version $Id$
  */
-
 public class ApprovedActionAdmin extends Admin {
 	
-	public ApprovedActionAdmin(Certificate certificate){
-		super(certificate);
+	public ApprovedActionAdmin(Certificate certificate, String username, String email) {
+		super(certificate, username, email);
 		this.type = TYPE_CLIENTCERT_USER;
 	}
 
-	
 	public AdminInformation getAdminInformation() {		
 		return  new AdminInformation(AdminEntity.SPECIALADMIN_INTERNALUSER);
 	}
-
-
-	
-	
-	
-	
-
 }

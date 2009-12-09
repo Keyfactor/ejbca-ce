@@ -50,6 +50,10 @@ has been dropped. This also means a small database change where the unused colum
 is dropped. To see which database structural changes are made you can find the SQL commands for your
 database in src/upgrade/39_310/39_310-upgrade-<<database name>>.sql.
 
+Approvals that are pending during the upgrade process will be upgraded automatically. These are Java
+Objects and cannot be upgraded manually using custom SQL. If you need to perform a manual SQL update
+all pending approvals should be taken care of before the upgrade.
+
 The database upgrade is normally done automatically for you when you run 'ant upgrade'. 
 Some application servers will not let you deploy unless the database is in sync though, so you may have
 to run the SQL commands manually.

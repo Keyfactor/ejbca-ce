@@ -119,8 +119,8 @@ public class OCSPServlet extends OCSPServletBase {
         return (OCSPCAServiceResponse)getSignSession().extendedService(adm, caid, request);
     }
 
-    protected CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber) {
-        return getStoreSession().getStatus(adm, name, serialNumber);
+    protected CertificateStatus getStatus(String name, BigInteger serialNumber) {
+        return getStoreSession().getStatus(name, serialNumber);
     }
 
     protected CertificateCache createCertificateCache() {

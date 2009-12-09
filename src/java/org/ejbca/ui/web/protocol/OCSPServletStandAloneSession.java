@@ -1342,7 +1342,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         private List<X509Certificate> getCertificateChain(X509Certificate cert, Admin adm) {
             String issuerDN = CertTools.getIssuerDN(cert);
-            final CertificateStatus status = OCSPServletStandAloneSession.this.servlet.getStatus(adm, issuerDN, CertTools.getSerialNumber(cert));
+            final CertificateStatus status = OCSPServletStandAloneSession.this.servlet.getStatus(issuerDN, CertTools.getSerialNumber(cert));
             if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
                 m_log.warn(intres.getLocalizedMessage("ocsp.signcertnotindb", CertTools.getSerialNumberAsString(cert), issuerDN));
                 return null;

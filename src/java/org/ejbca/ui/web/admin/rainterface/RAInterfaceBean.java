@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.rainterface;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
@@ -62,7 +62,6 @@ import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.CertTools;
@@ -97,7 +96,7 @@ public class RAInterfaceBean implements java.io.Serializable {
 
       if(!initialized){
         if(request.getAttribute( "javax.servlet.request.X509Certificate" ) != null) {
-          administrator = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+          administrator = ejbcawebbean.getAdminObject();
         }
         else { 
           administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
@@ -605,7 +604,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     		for(int i=0; i< certificates.length; i++){
     			RevokedInfoView revokedinfo = null;
     			Certificate cert = (Certificate) j.next();
-    			CertificateStatus revinfo = certificatesession.getStatus(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+    			CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
     			if(revinfo != null) {
     				revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(cert));
     			}
@@ -662,7 +661,7 @@ public class RAInterfaceBean implements java.io.Serializable {
         Iterator j = certs.iterator();
         while(j.hasNext()){
           Certificate cert = (Certificate)j.next();        
-          boolean isrevoked = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));          
+          boolean isrevoked = certificatesession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));          
           if (!isrevoked) {
             allrevoked = false;
           }
@@ -687,7 +686,7 @@ public class RAInterfaceBean implements java.io.Serializable {
 				  int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
 				  this.endEntityAuthorization(administrator,endentityprofileid,AccessRulesConstants.VIEW_RIGHTS,true);
 			  }
-			  CertificateStatus revinfo = certificatesession.getStatus(administrator, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+			  CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
 			  if(revinfo != null) {
 				  revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(cert));
 			  }
@@ -732,7 +731,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       if(!endEntityAuthorization(administrator, profileid, AccessRulesConstants.HARDTOKEN_RIGHTS, false)){
     	  throw new AuthorizationDeniedException();
       }
-      if(!GlobalConfiguration.HARDTOKEN_DIPLAYSENSITIVEINFO){
+      if(!WebConfiguration.getHardTokenDiplaySensitiveInfo()){
     	  return false;
       }
       

@@ -66,7 +66,7 @@ public class WebConfiguration {
 	
 	/**
 	 * Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
-	 * be displayed for the administrators. 
+	 * be displayed for the administrators. If false only non-sensitive information is displayed. 
 	 */
 	public static boolean getHardTokenDiplaySensitiveInfo() {
 		String value = ConfigurationHolder.getString("hardtoken.diplaysensitiveinfo", "true");

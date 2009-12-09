@@ -13,9 +13,7 @@
 
 package org.ejbca.core.ejb.approval;
 
-import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -40,22 +37,15 @@ import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataUtil;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
@@ -64,12 +54,9 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.ra.RAAuthorization;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
-import org.ejbca.util.NotificationParamGen;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -106,14 +93,6 @@ import org.ejbca.util.query.Query;
  *   business="org.ejbca.core.ejb.approval.ApprovalDataLocal"
  *   link="ApprovalData"
  *   
- * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
- *   view-type="local"
- *   ref-name="ejb/CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *
  * @ejb.ejb-external-ref description="The Authorization Session Bean"
  *   view-type="local"
  *   ref-name="ejb/AuthorizationSessionLocal"
@@ -121,50 +100,6 @@ import org.ejbca.util.query.Query;
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
  *   link="AuthorizationSession"
- *   
- * @ejb.ejb-external-ref
- *   description="The Ra Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/RaAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *   link="RaAdminSession"
- *   
- * @ejb.ejb-external-ref
- *   description="The User Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/UserAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *   link="UserAdminSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Hard token session bean"
- *   view-type="local"
- *   ref-name="ejb/HardTokenSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
- *   link="HardTokenSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Key Recovery session bean"
- *   view-type="local"
- *   ref-name="ejb/KeyRecoverySessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
- *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
- *   link="KeyRecoverySession"
- *
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
  *   
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
@@ -199,17 +134,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      */
     private ApprovalDataLocalHome approvalHome = null;
 
-
-    /**
-     * The local interface of RaAdmin Session Bean.
-     */
-    private IRaAdminSessionLocal raadminsession;
-
-    /**
-     * The local interface of User Admin Session Bean.
-     */
-    private IUserAdminSessionLocal useradminsession;
-    
     /**
      * The local interface of authorization session bean
      */
@@ -220,11 +144,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      */
     private ILogSessionLocal logsession = null;
 
-    private ICAAdminSessionLocal caAdminSession;
-
-    /** The local interface of the certificate store session bean */
-    private ICertificateStoreSessionLocal certificatestoresession;
-    
     /**
      * Columns in the database used in select
      */
@@ -259,72 +178,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     } //getLogSession
     
     /**
-     * Gets connection to ra admin session bean
-     *
-     * @return Connection
-     */
-    private IRaAdminSessionLocal getRAAdminSession() {
-        if (raadminsession == null) {
-            try {
-            	IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-                raadminsession = raadminsessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return raadminsession;
-    } //getRAAdminSession
-
-    /**
-     * Gets connection to user admin session bean
-     *
-     * @return Connection
-     */
-    private IUserAdminSessionLocal getUserAdminSession() {
-        if (useradminsession == null) {
-            try {
-            	IUserAdminSessionLocalHome useradminsessionhome = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-            	useradminsession = useradminsessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return useradminsession;
-    } //getUserAdminSession
-
-    /** Gets connection to certificate store session bean
-     * @return Connection
-     */
-    private ICertificateStoreSessionLocal getCertificateStoreSession() {
-        if(certificatestoresession == null){
-            try{
-                ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-                certificatestoresession = home.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return certificatestoresession;
-    } //getCertificateStoreSession    
-
-    /**
-     * Gets connection to caadmin session bean
-     *
-     * @return ICAAdminSessionLocal
-     */
-    private ICAAdminSessionLocal getCAAdminSession() {
-        if (caAdminSession == null) {
-            try {
-                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-                caAdminSession = caadminsessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return caAdminSession;
-    } //getCAAdminSession
-
-    /**
      * Gets connection to authorization session bean
      *
      * @return IAuthorizationSessionLocal
@@ -357,7 +210,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     *   
     * @ejb.interface-method view-type="both"
     */
-    public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest) throws ApprovalException{
+    public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException{
     	log.trace(">addApprovalRequest");
     	int approvalId = approvalRequest.generateApprovalId();
     	
@@ -371,9 +224,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			try {
 				Integer freeId = this.findFreeApprovalId();
 				approvalHome.create(freeId,approvalRequest);
-				GlobalConfiguration gc = getRAAdminSession().loadGlobalConfiguration(admin);
 				if(gc.getUseApprovalNotifications()){
-					sendApprovalNotification(admin, gc,
+					sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + freeId,
 							                 intres.getLocalizedMessage("notification.newrequest.subject"),
 							                 intres.getLocalizedMessage("notification.newrequest.msg"),
 							                 freeId, approvalRequest.getNumOfRequiredApprovals(), new Date(), approvalRequest,null);
@@ -382,7 +234,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			} catch (CreateException e1) {
 				getLogSession().log(admin,approvalRequest.getCAId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREQUESTED,"Approval with id : " +approvalId +" couldn't be created");
 				log.error("Error creating approval request",e1);
-				
 			}
 		}
 		log.trace("<addApprovalRequest");
@@ -400,8 +251,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      */
      public void removeApprovalRequest(Admin admin, int id) throws ApprovalException{
      	log.trace(">removeApprovalRequest");
-     	
-     	
      	try {
 			ApprovalDataLocal adl = approvalHome.findByPrimaryKey(new Integer(id));
 			adl.remove();
@@ -417,7 +266,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			getLogSession().log(admin,admin.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id);
 		    log.error("Error removing approval request",e);
 		}
-
  		log.trace("<removeApprovalRequest");
      }
     
@@ -441,6 +289,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @param admin
      * @param approvalId
      * @param approval
+     * @param gc is the GlobalConfiguration used for notification info
      * @throws ApprovalRequestExpiredException 
      * @throws ApprovalRequestExecutionException 
      * @throws AuthorizationDeniedException 
@@ -451,7 +300,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     *   
     * @ejb.interface-method view-type="both"
      */
-    public void approve(Admin admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, 
+    public void approve(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, 
                                                                                AuthorizationDeniedException,  ApprovalException, AdminAlreadyApprovedRequestException{
     	log.trace(">approve");
     	ApprovalDataLocal adl;
@@ -463,13 +312,12 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		} 
 		
 		// Check that the approvers username doesn't exists among the existing usernames.
-    	Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
     	ApprovalDataVO data = adl.getApprovalDataVO();
-		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,CertTools.getSerialNumber(approvingCert),CertTools.getIssuerDN(approvingCert));
+		String username = admin.getUsername();
 		
         // Check that the approver isn't the same as requested the action.
 		if(data.getReqadmincertissuerdn() != null){
-			String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
+			String requsername = adl.getRequestAdminUsername();
 			if(username.equals(requsername)){
 				getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved, rejected or requested current request, approveId " + approvalId);
 				throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
@@ -479,12 +327,12 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			Iterator iter = data.getApprovals().iterator();
 			while(iter.hasNext()){
 				Approval next = (Approval) iter.next();
-				if(next.getUsername().equals(username)){
+				if(next.getAdmin().getUsername().equals(username)){
 					getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved or rejected current request, approveId " + approvalId);
 					throw new AdminAlreadyApprovedRequestException("Error administrator have already approved or rejected current request, approveId : " + approvalId);					
 				}
 			}
-			approval.setApprovalCertificateAndUsername(true, approvingCert,username);
+			approval.setApprovalAdmin(true, admin);
 		}else{
 			getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
 			throw new ApprovalException(ErrorCode.USER_NOT_FOUND,
@@ -494,17 +342,16 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	
     	try {
 			adl.approve(approval);
-			GlobalConfiguration gc = getRAAdminSession().loadGlobalConfiguration(admin);
 			if(gc.getUseApprovalNotifications()){
 			  if(adl.getApprovalDataVO().getRemainingApprovals() != 0){
-			    sendApprovalNotification(admin, gc,
+			    sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + adl.getId(),
 						               intres.getLocalizedMessage("notification.requestconcured.subject"),
 						               intres.getLocalizedMessage("notification.requestconcured.msg"),
 						               adl.getId(), adl.getApprovalDataVO().getRemainingApprovals(),  adl.getApprovalDataVO().getRequestDate(),
 						               adl.getApprovalDataVO().getApprovalRequest(), 
 						               approval);
 			  }else{
-				 sendApprovalNotification(admin, gc,
+				 sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + adl.getId(),
 				               intres.getLocalizedMessage("notification.requestapproved.subject"),
 				               intres.getLocalizedMessage("notification.requestapproved.msg"),
 				               adl.getId(), adl.getApprovalDataVO().getRemainingApprovals(),  adl.getApprovalDataVO().getRequestDate(),
@@ -543,6 +390,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @param admin
      * @param approvalId
      * @param approval
+     * @param gc is the GlobalConfiguration used for notification info
      * @throws ApprovalRequestExpiredException 
      * @throws AuthorizationDeniedException 
      * @throws ApprovalRequestDoesntExistException 
@@ -552,7 +400,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      *   
      * @ejb.interface-method view-type="both"
      */
-    public void reject(Admin admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,  
+    public void reject(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,  
                                                                                AuthorizationDeniedException,  ApprovalException, AdminAlreadyApprovedRequestException{
     	log.trace(">reject");
     	ApprovalDataLocal adl;
@@ -564,13 +412,12 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		} 
 		
 		// Check that the approvers username doesn't exists among the existing usernames.
-    	Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
-		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,CertTools.getSerialNumber(approvingCert),CertTools.getIssuerDN(approvingCert));
+		String username = admin.getUsername();
 		ApprovalDataVO data = adl.getApprovalDataVO();
 		
 		if(data.getReqadmincertissuerdn() != null){
 			// Check that the approver isn't the same as requested the action.
-			String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
+			String requsername = adl.getRequestAdminUsername();
 			if(username.equals(requsername)){
 				getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved, rejected or requested current request, approveId ");
 				throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
@@ -580,24 +427,21 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			Iterator iter = data.getApprovals().iterator();
 			while(iter.hasNext()){
 				Approval next = (Approval) iter.next();
-				if(next.getUsername().equals(username)){
+				if(next.getAdmin().getUsername().equals(username)){
 					getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved or rejected current request, approveId ");
 					throw new AdminAlreadyApprovedRequestException("Error administrator have already approved or rejected current request, approveId : " + approvalId);					
 				}
 			}
-			approval.setApprovalCertificateAndUsername(false, approvingCert,username);
+			approval.setApprovalAdmin(false, admin);
 		}else{
 			getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
 			throw new ApprovalException(ErrorCode.USER_NOT_FOUND,
                 "Error no username exists for the given approver or requestor certificate");
 		}
-				
-    	
     	try {
 			adl.reject(approval);
-			GlobalConfiguration gc = getRAAdminSession().loadGlobalConfiguration(admin);
 			if(gc.getUseApprovalNotifications()){				
-			  sendApprovalNotification(admin, gc,
+			  sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + adl.getId(),
 						               intres.getLocalizedMessage("notification.requestrejected.subject"),
 						               intres.getLocalizedMessage("notification.requestrejected.msg"),
 						               adl.getId(), adl.getApprovalDataVO().getRemainingApprovals(), adl.getApprovalDataVO().getRequestDate(),
@@ -631,8 +475,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     		if(retval.getCaId() != ApprovalDataVO.ANY_CA){
     			getAuthorizationSession().isAuthorized(admin,AccessRulesConstants.CAPREFIX + retval.getCaId());
     		}
-
-
 		} else {
 			throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST,
                 "Suitable approval with id : " + approvalId + " doesn't exist");
@@ -820,7 +662,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * 
      * @param admin
      * @param query should be a Query object containing ApprovalMatch and TimeMatch
-     * @param index where the resultset should start. 
+     * @param index where the resultset should start.
+     * @param caAuthorizationString a list of auhtorized CA Ids in the form 'cAId=... OR cAId=...'
+     * @param endEntityProfileAuthorizationString a list of authorized end entity profile ids in the form '(endEntityProfileId=... OR endEntityProfileId=...)
      * objects only
      * @return a List of ApprovalDataVO, never null
      * @throws AuthorizationDeniedException 
@@ -829,68 +673,28 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     
-    public List query(Admin admin, Query query, int index, int numberofrows) throws IllegalQueryException, AuthorizationDeniedException {
+    public List query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString) throws IllegalQueryException, AuthorizationDeniedException {
         trace(">query()");
-        
-        boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
-        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
-        
-        try {
-			authorizedToApproveCAActions = getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
-		} catch (AuthorizationDeniedException e1) {}
-        try {
-			authorizedToApproveRAActions = getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-		} catch (AuthorizationDeniedException e1) {
-		}
-
-		if(!authorizedToApproveCAActions && !authorizedToApproveRAActions){
-			throw new AuthorizationDeniedException("Not authorized to query apporvals");
-		}
-		
         ArrayList returnData = new ArrayList();
-        GlobalConfiguration globalconfiguration = getRAAdminSession().loadGlobalConfiguration(admin);
-        RAAuthorization raauthorization = null;
         String sqlquery = "select " + APPROVALDATA_COL + " from ApprovalData where ";
-
-
         // Check if query is legal.
         if (query != null && !query.isLegalQuery()) {
             throw new IllegalQueryException();
         }
 
         if (query != null) {
-            sqlquery = sqlquery + query.getQueryString();
+            sqlquery += query.getQueryString();
         }
-        
-        raauthorization = new RAAuthorization(admin, getRAAdminSession(), getAuthorizationSession(), getCAAdminSession());
-        String caauthstring = raauthorization.getCAAuthorizationString();
-        String endentityauth = "";
-        if (globalconfiguration.getEnableEndEntityProfileLimitations()){
-        	endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
-        	if(authorizedToApproveCAActions && authorizedToApproveRAActions){
-        		endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
-        		if(endentityauth != null){
-        		  endentityauth = "(" + raauthorization.getEndEntityProfileAuthorizationString(false) + " OR endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE + " ) ";
-        		}
-        	}else if (authorizedToApproveCAActions) {
-        		endentityauth = " endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE;
-			}else if (authorizedToApproveRAActions) {
-				endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
-			}        	
-        	
-        }
-
-        if (!caauthstring.trim().equals("") && query != null){
-          sqlquery = sqlquery + " AND " + caauthstring;
+        if (!caAuthorizationString.equals("") && query != null){
+          sqlquery += " AND " + caAuthorizationString;
         }else{
-          sqlquery = sqlquery + caauthstring;
+          sqlquery += caAuthorizationString;
         }
-
-        if (StringUtils.isNotEmpty(endentityauth)) {
-          if (caauthstring.trim().equals("") && query == null){
-        	sqlquery = sqlquery + endentityauth;
+        if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
+          if (caAuthorizationString.equals("") && query == null){
+        	sqlquery += endEntityProfileAuthorizationString;
           }else{
-          	sqlquery = sqlquery + " AND " + endentityauth;
+          	sqlquery += " AND " + endEntityProfileAuthorizationString;
           }
         }
 
@@ -964,74 +768,83 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-    } // query 
+    } // query
+    
+    /**
+     * Get a list of all pending approvals ids. This was written for the upgrade to EJBCA 3.10.
+     * @return a List<Integer> with all pending approval ids, never null
+     * 
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method view-type="both"
+     */
+    public List getAllPendingApprovalIds() {
+    	List ids = new ArrayList();
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+            ps = con.prepareStatement("SELECT approvalId FROM ApprovalData WHERE status=?");
+            ps.setInt(1, ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+            	ids.add(new Integer(rs.getInt(1)));
+            }
+        } catch (Exception e) {
+        	throw new EJBException(e);
+        } finally {
+            JDBCUtil.close(con, ps, rs);
+        }
 
- 
-     
-    private void sendApprovalNotification(Admin admin, GlobalConfiguration gc, String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest, Approval approval) {
+    	return ids;
+    }
+
+    private void sendApprovalNotification(Admin admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL, String notificationSubject, String notificationMsg,
+    		Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest, Approval approval) {
     	if (log.isTraceEnabled()) {
             log.trace(">sendNotification approval notification: id="+id);
     	}
         try {
         	Admin sendAdmin = admin;
         	if(admin.getAdminType() == Admin.TYPE_CLIENTCERT_USER){
-        		sendAdmin = new ApprovedActionAdmin(admin.getAdminInformation().getX509Certificate());
+        		sendAdmin = new ApprovedActionAdmin(admin.getAdminInformation().getX509Certificate(), admin.getUsername(), admin.getEmail());
         	}
-        	
-        	String requestAdminEmail = null;
-        	String approvalAdminsEmail = null;
-            String fromAddress = null;
-        	// Find the email address of the requesting administrator.
         	Certificate requestAdminCert = approvalRequest.getRequestAdminCert();
         	String requestAdminDN = null;
         	String requestAdminUsername = null;
         	if(requestAdminCert != null){
         	  requestAdminDN = CertTools.getSubjectDN(requestAdminCert);
-        	  requestAdminUsername = getCertificateStoreSession().findUsernameByCertSerno(sendAdmin,CertTools.getSerialNumber(requestAdminCert),CertTools.getIssuerDN(requestAdminCert));
-              UserDataVO requestAdminData = getUserAdminSession().findUser(sendAdmin, requestAdminUsername);        	
-              if (requestAdminData == null || requestAdminData.getEmail() == null || requestAdminData.getEmail().equals("")) {
-               	getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogConstants.EVENT_ERROR_NOTIFICATION, "Error sending notification to administrator requesting approval. Set a correct email to the administrator");
-              }else{
-               	requestAdminEmail = requestAdminData.getEmail();
-              }
+        	  requestAdminUsername = sendAdmin.getUsername();
         	}else{
         		requestAdminUsername = intres.getLocalizedMessage("CLITOOL");
         		requestAdminDN = "CN=" + requestAdminUsername;
         	}
- 
-            
-            // Find the email address of the approving administrators
-            approvalAdminsEmail = gc.getApprovalAdminEmailAddress();            
-            // Find the email address that should be used in the from field
-            fromAddress = gc.getApprovalNotificationFromAddress();                        
-            
-            if(approvalAdminsEmail.equals("") || fromAddress.equals("")){
+            if(approvalAdminsEmail.equals("") || approvalNotificationFromAddress.equals("")){
             	getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogConstants.EVENT_ERROR_NOTIFICATION, "Error sending approval notification. The email-addresses, either to approval administrators or from-address isn't configured properly");
             }else{
-              String approvalURL =  gc.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + id;
               String approvalTypeText = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
             	
               String approvalAdminUsername = null;
               String approvalAdminDN = null;
               String approveComment = null;
               if(approval != null){
-            	  approvalAdminUsername = approval.getUsername();
-            	  X509Certificate approvalCert =  (X509Certificate) getCertificateStoreSession().findCertificateByIssuerAndSerno(sendAdmin, approval.getAdminCertIssuerDN(), approval.getAdminCertSerialNumber());
-            	  approvalAdminDN = CertTools.getSubjectDN(approvalCert);
+            	  approvalAdminUsername = approval.getAdmin().getUsername();
+            	  approvalAdminDN = CertTools.getSubjectDN(approval.getAdmin().getAdminInformation().getX509Certificate());
             	  approveComment = approval.getComment();
               }
               Integer numAppr =  new Integer(numberOfApprovalsLeft);
-              NotificationParamGen paramGen = new NotificationParamGen(requestDate,id,approvalTypeText,numAppr,
+              ApprovalNotificationParamGen paramGen = new ApprovalNotificationParamGen(requestDate,id,approvalTypeText,numAppr,
             		                                                   approvalURL, approveComment, requestAdminUsername,
             		                                                   requestAdminDN,approvalAdminUsername,approvalAdminDN);
-              HashMap params = paramGen.getParams();
-              String subject = NotificationParamGen.interpolate(params, notificationSubject);
-              String message = NotificationParamGen.interpolate(params, notificationMsg);
+              String subject = paramGen.interpolate(notificationSubject);
+              String message = paramGen.interpolate(notificationMsg);
               List toList = Arrays.asList(approvalAdminsEmail);
-              if(requestAdminEmail != null){
-            	  toList.add(requestAdminEmail);
+        	  if (sendAdmin.getEmail() == null || sendAdmin.getEmail().length() == 0) {
+                 	getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogConstants.EVENT_ERROR_NOTIFICATION, "Error sending notification to administrator requesting approval. Set a correct email to the administrator");
+        	  } else {
+            	  toList = Arrays.asList(approvalAdminsEmail, sendAdmin.getEmail());
               }
-              MailSender.sendMailOrThrow(fromAddress, toList, MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
+              MailSender.sendMailOrThrow(approvalNotificationFromAddress, toList, MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
               getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), requestAdminUsername, null, LogConstants.EVENT_INFO_NOTIFICATION, "Approval notification with id " + id + " was sent successfully.");
             }
         } catch (Exception e) {

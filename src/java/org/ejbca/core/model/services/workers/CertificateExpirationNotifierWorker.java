@@ -31,10 +31,10 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
 import org.ejbca.util.JDBCUtil;
-import org.ejbca.util.NotificationParamGen;
 
 /**
  * Makes queries about which certificates that is about to expire in a given number of days
@@ -162,14 +162,13 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 					UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
 					if(userData != null){
 						if(isSendToEndUsers()){
-							NotificationParamGen paramGen = new NotificationParamGen(userData,cert);
 							if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
 								String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
 								log.info(msg);
 							}else{
 								// Populate end user message            	    	        		    
 								log.debug("Adding to email queue for user: "+ userData.getEmail());
-								String message = NotificationParamGen.interpolate(paramGen.getParams(), getEndUserMessage());
+								String message = new UserNotificationParamGen(userData,cert).interpolate(getEndUserMessage());
 								MailActionInfo mailActionInfo = new MailActionInfo(userData.getEmail(),getEndUserSubject(), message);
 								userEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
 							}					  
@@ -185,8 +184,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 						}
 						// Populate admin message        		    
 						log.debug("Adding to email queue for admin");
-						NotificationParamGen paramGen = new NotificationParamGen(userData,cert);
-						String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
+						String message = new UserNotificationParamGen(userData,cert).interpolate(getAdminMessage());
 						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
 						adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
 					}	

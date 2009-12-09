@@ -1601,7 +1601,7 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create cert", cert);
 
         // Check that it is active
-        boolean isRevoked = TestTools.getCertificateStoreSession().isRevoked(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        boolean isRevoked = TestTools.getCertificateStoreSession().isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertFalse(isRevoked);
         
         // Now add extended information with the revocation reason
@@ -1615,7 +1615,7 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create cert", cert);
 
         // Check that it is revoked
-        CertificateStatus rev = TestTools.getCertificateStoreSession().getStatus(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        CertificateStatus rev = TestTools.getCertificateStoreSession().getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
         log.trace("<test27IssuanceRevocationReason()");
     }

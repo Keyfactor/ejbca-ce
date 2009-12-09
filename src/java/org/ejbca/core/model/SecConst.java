@@ -75,7 +75,7 @@ public class SecConst extends Object {
     public static final int TOKEN_HARD_DEFAULT = 101;
 
     /** Constant indicating a eid hard token.  
-     *   OBSERVE This class should only be used for backward compability with EJBCA 2.0
+     *   OBSERVE This class should only be used for backward compatibility with EJBCA 2.0
      */
     public static final int TOKEN_EID = 102;
     

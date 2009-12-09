@@ -33,6 +33,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -135,6 +137,7 @@ public class AdminCertReqServlet extends HttpServlet {
     private final static int NL_LENGTH = NL.length;
     
     private ISignSessionLocal signsession = null;
+    private IUserAdminSessionLocal userAdminSession = null;
 
     private synchronized ISignSessionLocal getSignSession(){
     	if(signsession == null){	
@@ -146,6 +149,18 @@ public class AdminCertReqServlet extends HttpServlet {
     		}
     	}
     	return signsession;
+    }
+
+    private synchronized IUserAdminSessionLocal getUserAdminSession() {
+    	if (userAdminSession == null) {	
+    		try {
+    			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+    			userAdminSession = home.create();
+    		} catch(Exception e) {
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return userAdminSession;
     }
 
     public void init(ServletConfig config)
@@ -199,7 +214,7 @@ public class AdminCertReqServlet extends HttpServlet {
             throw new ServletException("This servlet requires certificate authentication!");
         }
         
-        Admin admin = new Admin(certs[0]);
+        Admin admin = getUserAdminSession().getAdmin(certs[0]);
         
         RequestHelper.setDefaultCharacterEncoding(request);
 

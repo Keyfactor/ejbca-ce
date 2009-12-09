@@ -16,11 +16,14 @@ package org.ejbca.core.ejb.upgrade;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -30,11 +33,21 @@ import javax.ejb.RemoveException;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.approval.ApprovalDataLocal;
+import org.ejbca.core.ejb.approval.ApprovalDataLocalHome;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.authorization.AdminEntityDataLocal;
 import org.ejbca.core.ejb.authorization.AdminGroupDataLocal;
 import org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
+import org.ejbca.core.model.approval.Approval;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.JDBCUtil;
@@ -100,14 +113,47 @@ import org.ejbca.util.SqlExecutor;
  *   business="org.ejbca.core.ejb.authorization.AdminGroupDataLocal"
  *   link="AdminGroupData"
  *
+ * @ejb.ejb-external-ref description="The Approval Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/ApprovalSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
+ *   business="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
+ *   link="ApprovalSession"
+ *   
+ * @ejb.ejb-external-ref description="The Approval entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/ApprovalDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.approval.ApprovalDataLocalHome"
+ *   business="org.ejbca.core.ejb.approval.ApprovalDataLocal"
+ *   link="ApprovalData"
+ *   
+ * @ejb.ejb-external-ref
+ *   description="The User Admin session bean"
+ *   view-type="local"
+ *   ref-name="ejb/UserAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
+ *   link="UserAdminSession"
+ *
+ * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
+ *   view-type="local"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
-    /** Var holding JNDI name of datasource */
-    private String dataSource = "";
-
     /** The local interface of the CA Admin session bean */
     private ICAAdminSessionLocal caadminsession = null;
+	private IApprovalSessionLocal approvalSession;
+	private IUserAdminSessionLocal userAdminSession;
+	private ICertificateStoreSessionLocal certificateStoreSession;
     private Admin administrator = null;
     
     /**
@@ -115,8 +161,42 @@ public class UpgradeSessionBean extends BaseSessionBean {
      *
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate() throws CreateException {
-        dataSource = getLocator().getString(JNDINames.DATASOURCE);
+    public void ejbCreate() throws CreateException { }
+
+    private IApprovalSessionLocal getApprovalSession() {
+    	if (approvalSession == null) {
+    		try {
+    			IApprovalSessionLocalHome home = (IApprovalSessionLocalHome)getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
+    			approvalSession = home.create();
+    		} catch(Exception e) {
+    			throw new EJBException(e);
+    		}
+    	}
+    	return approvalSession;
+    }
+
+    private IUserAdminSessionLocal getUserAdminSession() {
+		if (userAdminSession == null) {
+    		try {
+    			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome)getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+    			userAdminSession = home.create();
+    		} catch(Exception e) {
+    			throw new EJBException(e);
+    		}
+    	}
+    	return userAdminSession;
+    }
+
+    private ICertificateStoreSessionLocal getCertificateStoreSession() {
+		if (certificateStoreSession == null) {
+    		try {
+    			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome)getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+    			certificateStoreSession = home.create();
+    		} catch(Exception e) {
+    			throw new EJBException(e);
+    		}
+    	}
+    	return certificateStoreSession;
     }
 
     /** 
@@ -344,13 +424,56 @@ public class UpgradeSessionBean extends BaseSessionBean {
         return ret;
 	}
 
-    /** 
+    /**
+     * We need to update all pending ApprovalsRequests since the Admin objects' now have username and email.
+     * We need to update all pending Approvals since the it now stores an Admin object instead of pure information on the admin certificate.
+     *  
      * @ejb.interface-method
      * @jboss.method-attributes transaction-timeout="3600"
      */
 	public boolean migrateDatabase310(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.9.x to ejbca 3.10.x");
 		boolean ret = migradeDatabase("/39_310/39_310-upgrade-"+dbtype+".sql");
+		if (ret) {
+			List approvalIds = getApprovalSession().getAllPendingApprovalIds();
+			ApprovalDataLocalHome approvalHome = (ApprovalDataLocalHome) getLocator().getLocalHome(ApprovalDataLocalHome.COMP_NAME);
+			for (int i=0; i<approvalIds.size(); i++) {
+				Integer approvalId = (Integer)approvalIds.get(i);
+				try {
+					Collection approvalDataLocals = approvalHome.findByApprovalId(approvalId.intValue());
+					if (approvalDataLocals.size() < 1 || approvalDataLocals.size() > 1) {
+						warn("There is an error in the database. You have " + approvalDataLocals.size() + " entries w approvalId " + approvalId.intValue());
+					}
+					Iterator iterator = approvalDataLocals.iterator();
+					while (iterator.hasNext()) {
+						ApprovalDataLocal approvalDataLocal = (ApprovalDataLocal) iterator.next();
+						// Upgrade the request admin
+						Admin updatedAdmin = getUserAdminSession().getAdmin(approvalDataLocal.getApprovalRequest().getRequestAdmin().getAdminInformation().getX509Certificate());
+						ApprovalRequest approvalRequest = approvalDataLocal.getApprovalRequest();
+						approvalRequest.setRequestAdmin(updatedAdmin);
+						approvalDataLocal.setApprovalRequest(approvalRequest);
+						Collection approvals = approvalDataLocal.getApprovals();
+						Iterator iterator2 = approvals.iterator();
+						while (iterator2.hasNext()) {
+							Approval approval = (Approval) iterator2.next();
+							// Lookup admin certificate
+							String issuerDN = approval.getAdminCertIssuerDN();
+							BigInteger serialNumber = approval.getAdminCertSerialNumber();
+							if (issuerDN != null && serialNumber != null) {
+								Certificate certificate = getCertificateStoreSession().findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), issuerDN, serialNumber);
+								// Create a new Admin object from the certificate
+								approval.setApprovalAdmin(approval.isApproved(), getUserAdminSession().getAdmin(certificate));
+							} else {
+								error("Approval in ApprovalData w approvalId " + approvalId + " lacks issuerDN or serialNumber");
+							}
+						}
+					}
+				} catch (FinderException e) {
+			        error("Could not fetch pending approval with id " + ((Integer)approvalIds.get(i)).intValue());
+			        return false;
+				}
+			}
+		}
         error("(this is not an error) Finished migrating database.");
         return ret;
 	}

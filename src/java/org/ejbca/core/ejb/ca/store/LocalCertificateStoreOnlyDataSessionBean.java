@@ -97,14 +97,13 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
     /**
      * Get status fast
      * 
-     * @param admin
      * @param issuerDN
      * @param serno
      * @return the status of the certificate
      * @ejb.interface-method
      */
-    public CertificateStatus getStatus(Admin admin, String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(admin, issuerDN, serno, certHome, protecthome, adapter);
+    public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
+        return CertificateDataUtil.getStatus(issuerDN, serno, certHome, protecthome, adapter);
     }
 
     /**

@@ -81,7 +81,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		new ViewCAInfoJSPHelper();
 		caBean = new CAInterfaceBean();
 		try {
-			caBean.initialize(webBean.getAdminObject(), webBean);
+			caBean.initialize(webBean);
 		} catch (Exception e) {
 			log.error("Error initializing bean: ", e);
 		}

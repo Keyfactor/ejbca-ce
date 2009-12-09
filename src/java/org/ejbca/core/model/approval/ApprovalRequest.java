@@ -261,8 +261,10 @@ public abstract class ApprovalRequest implements  Externalizable {
 		return endEntityProfileId;
 	}
 
-
-	private void setRequestAdmin(Admin requestAdmin) {				
+    /**
+     * NOTE: This method should never be used publicly except from UpgradeSessionBean 
+     */
+	public void setRequestAdmin(Admin requestAdmin) {				
 		this.requestAdmin = requestAdmin; 				
 	}
 	
@@ -330,7 +332,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 		      } catch (CertificateException e) {
 		    	  log.error(e);
 		      }
-		    this.requestAdmin = new Admin(x509cert); 
+		    this.requestAdmin = new Admin(x509cert, null, null); 
 			
 			this.requestSignature = (String) in.readObject();
 			this.approvalRequestType = in.readInt();

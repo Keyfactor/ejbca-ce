@@ -17,6 +17,8 @@ import javax.ejb.CreateException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -66,6 +68,15 @@ public class EjbLocalHelper {
     			authsession = cahome.create();
     	}
     	return authsession;
+    }
+
+	private IAuthorizationSessionLocal authorizationSession = null;
+    public IAuthorizationSessionLocal getAuthorizationSession() throws CreateException {
+    	if(authorizationSession == null){	
+    			IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+    			authorizationSession = home.create();
+    	}
+    	return authorizationSession;
     }
 
     private IKeyRecoverySessionLocal keyrecoverysession = null;

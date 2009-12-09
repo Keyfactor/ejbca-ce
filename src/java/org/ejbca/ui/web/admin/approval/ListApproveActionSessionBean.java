@@ -23,6 +23,7 @@ import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.util.query.ApprovalMatch;
@@ -116,7 +117,8 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 		
         List result = new ArrayList();
 		try {
-			result = EjbcaJSFHelper.getBean().getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS);
+	        RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), EjbcaJSFHelper.getBean().getRaAdminSession(), EjbcaJSFHelper.getBean().getAuthorizationSession(), EjbcaJSFHelper.getBean().getCAAdminSession());
+			result = EjbcaJSFHelper.getBean().getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
 			if(result.size() == QUERY_MAX_NUM_ROWS){
 				String messagestring = getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS1", true) + " " + QUERY_MAX_NUM_ROWS + " " + getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS2", true);
 				FacesContext ctx = FacesContext.getCurrentInstance();

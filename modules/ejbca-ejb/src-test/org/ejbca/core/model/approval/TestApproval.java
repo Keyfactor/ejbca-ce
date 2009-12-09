@@ -10,6 +10,7 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -50,7 +51,7 @@ public class TestApproval extends TestCase {
 		
 		Approval ap = new Approval("test");
 		Date apDate = ap.getApprovalDate();
-		ap.setApprovalCertificateAndUsername(true,testcert, "USERNAME");
+		ap.setApprovalAdmin(true, new Admin(testcert, "USERNAME", null));
 		approvals.add(ap);
 		
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -66,14 +67,13 @@ public class TestApproval extends TestCase {
 		oos.flush();
     	String result = new String(Base64.encode(baos.toByteArray(),false));
 
-    	
     	Collection readapprovals = ApprovalDataUtil.getApprovals(result);
     	assertTrue(readapprovals.size() == 1);
     	
     	Approval rap = (Approval) readapprovals.iterator().next();
-    	assertTrue(rap.getAdminCertIssuerDN().equals(CertTools.getIssuerDN(testcert)));
-    	assertTrue(rap.getAdminCertSerialNumber().equals(CertTools.getSerialNumber(testcert)));
-    	assertTrue(rap.getUsername().equals("USERNAME"));
+    	assertTrue(CertTools.getIssuerDN(rap.getAdmin().getAdminInformation().getX509Certificate()).equals(CertTools.getIssuerDN(testcert)));
+    	assertTrue(CertTools.getSerialNumber(rap.getAdmin().getAdminInformation().getX509Certificate()).equals(CertTools.getSerialNumber(testcert)));
+    	assertTrue(rap.getAdmin().getUsername().equals("USERNAME"));
     	assertTrue(rap.isApproved());
     	assertTrue(rap.getComment().equals("test"));
     	assertTrue(rap.getApprovalDate().equals(apDate));

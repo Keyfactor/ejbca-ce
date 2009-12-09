@@ -27,6 +27,8 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -37,7 +39,7 @@ import org.ejbca.util.query.Query;
 
 
 /**
- * Seesion scoped bean for displaying information about an approval request.
+ * Session scoped bean for displaying information about an approval request.
  * 
  * @author Philip Vendil
  * @version $Id$
@@ -128,7 +130,8 @@ public List getApprovalViews(){
    public String approve(){
 	   Approval approval = new Approval(comment);
 	   try {		   
-		   EjbcaJSFHelper.getBean().getApprovalSession().approve(EjbcaJSFHelper.getBean().getAdmin(), approveRequestData.getApprovalId(), approval);
+		   Admin admin = EjbcaJSFHelper.getBean().getAdmin();
+		   EjbcaJSFHelper.getBean().getApprovalSession().approve(admin, approveRequestData.getApprovalId(), approval, EjbcaJSFHelper.getBean().getRaAdminSession().loadGlobalConfiguration(admin));
 		   updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
 	   } catch (ApprovalRequestExpiredException e) {
 		   addErrorMessage("APPROVALREQUESTEXPIRED");
@@ -147,9 +150,9 @@ public List getApprovalViews(){
    
    public String reject(){
 	   Approval approval = new Approval(comment);
-
 		try {
-			EjbcaJSFHelper.getBean().getApprovalSession().reject(EjbcaJSFHelper.getBean().getAdmin(),  approveRequestData.getApprovalId(), approval);
+			Admin admin = EjbcaJSFHelper.getBean().getAdmin();
+			EjbcaJSFHelper.getBean().getApprovalSession().reject(admin,  approveRequestData.getApprovalId(), approval, EjbcaJSFHelper.getBean().getRaAdminSession().loadGlobalConfiguration(admin));
 			updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
 		} catch (ApprovalRequestExpiredException e) {
 			addErrorMessage("APPROVALREQUESTEXPIRED");
@@ -175,7 +178,8 @@ public void updateApprovalRequestData(int id){
 	
 	List result;
 	try {
-		result = EjbcaJSFHelper.getBean().getApprovalSession().query( EjbcaJSFHelper.getBean().getAdmin(), query, 0, 1);
+        RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), EjbcaJSFHelper.getBean().getRaAdminSession(), EjbcaJSFHelper.getBean().getAuthorizationSession(), EjbcaJSFHelper.getBean().getCAAdminSession());
+		result = EjbcaJSFHelper.getBean().getApprovalSession().query( EjbcaJSFHelper.getBean().getAdmin(), query, 0, 1, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
 		if(result.size() > 0){
 			this.approveRequestData = new ApprovalDataVOView((ApprovalDataVO) result.get(0));
 		}

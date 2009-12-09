@@ -386,7 +386,7 @@ public class TestCertificateRetrival extends TestCase {
         Iterator iter = sernos.iterator();
         while (iter.hasNext()) {
         	BigInteger bi = (BigInteger)iter.next();
-            CertificateStatus rev = certificateStoreSession.getStatus(admin, CertTools.getSubjectDN(rootcacert), bi);
+            CertificateStatus rev = certificateStoreSession.getStatus(CertTools.getSubjectDN(rootcacert), bi);
             revstats.add(rev);
         }
 

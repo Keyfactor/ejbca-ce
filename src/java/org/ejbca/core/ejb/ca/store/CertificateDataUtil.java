@@ -221,7 +221,7 @@ public class CertificateDataUtil {
     } // findCertificatesByUsername
 
 
-    static public CertificateStatus getStatus(Admin admin, String issuerDN, BigInteger serno,
+    static public CertificateStatus getStatus(String issuerDN, BigInteger serno,
                                               CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
         if (adapter.getLogger().isTraceEnabled()) {
             adapter.getLogger().trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));

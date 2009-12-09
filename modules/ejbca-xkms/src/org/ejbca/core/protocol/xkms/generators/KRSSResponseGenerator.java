@@ -443,13 +443,13 @@ public class KRSSResponseGenerator extends
 				Iterator iter = caCertChain.iterator();
 				
 				boolean revoked = false;				
-				if (getCertStoreSession().isRevoked(pubAdmin, CertTools.getIssuerDN(cert), cert.getSerialNumber())) {
+				if (getCertStoreSession().isRevoked(CertTools.getIssuerDN(cert), cert.getSerialNumber())) {
 					revoked = true;
 				}
 				
 				while(iter.hasNext()){
 					X509Certificate cACert = (X509Certificate) iter.next();
-					if (getCertStoreSession().isRevoked(pubAdmin, CertTools.getIssuerDN(cACert), cACert.getSerialNumber())) {
+					if (getCertStoreSession().isRevoked(CertTools.getIssuerDN(cACert), cACert.getSerialNumber())) {
 						revoked = true;
 					}
 				}

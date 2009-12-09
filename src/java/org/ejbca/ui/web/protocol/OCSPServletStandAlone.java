@@ -126,8 +126,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#getStatus(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
      */
-    CertificateStatus getStatus(Admin adm, String name, BigInteger serialNumber) {
-        return getStoreSessionOnlyData().getStatus(adm, name, serialNumber);
+    CertificateStatus getStatus(String name, BigInteger serialNumber) {
+        return getStoreSessionOnlyData().getStatus(name, serialNumber);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#createCertificateCache()
