@@ -191,6 +191,8 @@ for your both the CA database and each OCSP responder.
   <li>certificateProfileId can be basically anything and is used if you configure things like 'ocsp.999.untilNextUpdate' in ocsp.properties.</li>
   </ul>
   </p>
+  <p>CA certificates and OCSP signer certificates must also be in the database. For these certificates the fingerprint, subjectDN and base64Cert fields must also be included.
+  </p>
   </section>
 </body>
 </document>
