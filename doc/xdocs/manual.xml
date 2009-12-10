@@ -2951,12 +2951,16 @@ Besides the keys previously described the property field of the administration G
 <li>slot                - the slot of the CA.</li>
 <li>slotListIndex	- the index number in the slot list for the slot of the CA</li>
 <li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
-<li>attributesFile - a file specifying PKCS#11 attributes (used mainly for key generation).</li>
-<li>keyspec          - optional key specification used when generating new HSM keys from within the admin GUI. Keyspec that is used as first choice when generating new keys in the GUI of form "1024" for RSA keys, "DSA1024" for DSA keys and secp256r1 for EC keys.
-If keyspec is not given EJBCA tries to generate a key with the same specification as the current cert signing key.</li>
 </ul>
 </p><p>
 But only one of 'slot' or 'slotListIndex' should exist.
+</p>
+<p>Optionally a few extra properties fields can be used:
+<ul>
+<li>attributesFile - a file specifying PKCS#11 attributes (used mainly for key generation).</li>
+<li>keyspec        - key specification used when generating new HSM keys from within the admin GUI. Keyspec that is used as first choice when generating new keys in the GUI of form "1024" for RSA keys, "DSA1024" for DSA keys and secp256r1 for EC keys.
+If keyspec is not given EJBCA tries to generate a key with the same specification as the current cert signing key.</li>
+</ul>
 </p><p>
 Attributes file is in the format specified in the "JavaTM PKCS#11 Reference Guide". See http://java.sun.com/javase/6/docs/technotes/guides/security/p11guide.html 
 and the examples further down in this file. An attributes file for nCipher typically looks like this:
