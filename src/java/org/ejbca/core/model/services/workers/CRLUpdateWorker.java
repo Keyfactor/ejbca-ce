@@ -56,6 +56,8 @@ public class CRLUpdateWorker extends BaseWorker {
 			    long polltime = getNextInterval();
 			    ICreateCRLSessionLocal session = getCreateCRLSession();
 			    if (session != null) {
+			    	// Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
+			    	// selecting CAs did not exist, no CA = Any CA.
 				    Collection caids = getCAIdsToCheck(true); 
 			    	session.createCRLs(getAdmin(), caids, polltime*1000);
 			    	session.createDeltaCRLs(getAdmin(), caids, polltime*1000);
