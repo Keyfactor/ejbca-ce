@@ -179,7 +179,7 @@ function getPasswordAndSubmit(formname) {
         <br>
         
         <!-- Full CRLs --> 
-        <% CRLInfo crlinfo = cabean.getLastCRLInfo(subjectdn, false);
+        <% CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), false);
            if(crlinfo == null){ 
              out.write(ejbcawebbean.getText("NOCRLHAVEBEENGENERATED"));
            }else{
@@ -197,7 +197,7 @@ function getPasswordAndSubmit(formname) {
 <%        } %>
 
 <% // Delta CRLs 
- 	       CRLInfo deltacrlinfo = cabean.getLastCRLInfo(subjectdn, true);
+ 	       CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), true);
 	       if(deltacrlinfo == null){ 
      	       if (cainfo.getCAInfo().getDeltaCRLPeriod() > 0) {
     	           out.write(ejbcawebbean.getText("NODELTACRLHAVEBEENGENERATED"));

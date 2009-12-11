@@ -58,6 +58,8 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
     private static final String USERNAME = "username";
     /** Password if sent to publisher. */
     private static final String PASSWORD = "password";
+    /** DN from UserData */
+    private static final String USERDN = "userdn";
     /** ExtendedInformation from UserData */
     private static final String EXTENDEDINFORMATION = "extendedinformation";
         
@@ -95,6 +97,19 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
     	}
     }
     
+    public String getUserDN(){ 
+    	String ret = (String) data.get(USERDN);
+    	if (ret == null) {
+    		ret = "";
+    	}
+    	return ret;
+    }
+	public void setUserDN(String userDN) {
+    	if (userDN != null) {
+    		data.put(USERDN,userDN);
+    	}
+	}
+
     public ExtendedInformation getExtendedInformation() {
     	String str = (String)data.get(EXTENDEDINFORMATION);
     	ExtendedInformation ret = new ExtendedInformation();

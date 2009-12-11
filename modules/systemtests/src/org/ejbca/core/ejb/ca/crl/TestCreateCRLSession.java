@@ -181,8 +181,9 @@ public class TestCreateCRLSession extends TestCase {
 
         // Make user that we know...
         boolean userExists = false;
+        final String userDN = "C=SE,O=AnaTom,CN=foo";
         try {
-        	TestTools.getUserAdminSession().addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+        	TestTools.getUserAdminSession().addUser(admin,"foo","foo123", userDN, null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
         	userExists = true;
@@ -191,7 +192,7 @@ public class TestCreateCRLSession extends TestCase {
         }
         if (userExists) {
             log.info("User foo already exists, resetting status.");
-            UserDataVO userdata = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", caid, null, "foo@anatom.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+            UserDataVO userdata = new UserDataVO("foo", userDN, caid, null, "foo@anatom.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
             userdata.setStatus(UserDataConstants.STATUS_NEW);
             userdata.setPassword("foo123");
             TestTools.getUserAdminSession().changeUser(admin, userdata, false);
@@ -219,7 +220,7 @@ public class TestCreateCRLSession extends TestCase {
             }            
         } // If no revoked certificates exist at all, this test passed...
 
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, userDN);
         // Create a new CRL again...
         TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate IS present in a new CRL
@@ -240,7 +241,7 @@ public class TestCreateCRLSession extends TestCase {
         assertTrue("Certificate with serial "+cert.getSerialNumber().toString(16)+" not revoked", found);
         
         // Unrevoke the certificate that we just revoked
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED, userDN);
         // Create a new CRL again...
         TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate IS NOT present in the new CRL.
@@ -260,7 +261,7 @@ public class TestCreateCRLSession extends TestCase {
         	assertFalse(found);
         } // If no revoked certificates exist at all, this test passed...
 
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, userDN);
         // Create a new CRL again...
         TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate IS present in a new CRL
@@ -279,7 +280,7 @@ public class TestCreateCRLSession extends TestCase {
         }
         assertTrue(found);
 
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED, userDN);
         // Create a new CRL again...
         TestTools.getCreateCRLSession().run(admin, cadn);
         // Check that our newly signed certificate is present in the new CRL, because the revocation reason
@@ -313,6 +314,7 @@ public class TestCreateCRLSession extends TestCase {
 		try {
 			// Create a user that Should be revoked
 			boolean userExists = false;
+			final String userDN = "CN="+TESTUSERNAME;
 			try {
 				int certprofileid = 0;
 				// add a Certificate Profile with overridable validity
@@ -343,7 +345,7 @@ public class TestCreateCRLSession extends TestCase {
 				ExtendedInformation ei = new ExtendedInformation();
 				ei.setCustomData(EndEntityProfile.STARTTIME, "0:00:00");
 				ei.setCustomData(EndEntityProfile.ENDTIME, "0:00:50");
-				UserDataVO userdata = new UserDataVO(TESTUSERNAME, "CN="+TESTUSERNAME, caid, "","foo@bar.se",  UserDataConstants.STATUS_NEW, 
+				UserDataVO userdata = new UserDataVO(TESTUSERNAME, userDN, caid, "","foo@bar.se",  UserDataConstants.STATUS_NEW, 
 						SecConst.USER_ENDUSER, TestTools.getRaAdminSession().getEndEntityProfileId(admin, TESTPROFILE), 
 						certprofileid, new Date(), new Date() , SecConst.TOKEN_SOFT_PEM , 0, ei);
 				userdata.setPassword("foo123");
@@ -370,7 +372,7 @@ public class TestCreateCRLSession extends TestCase {
 			assertNotNull("Failed to create certificate", cert);
 			log.debug("Cert=" + cert.toString());
 			// Revoke the user
-			TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+			TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, userDN);
 			// Change CRLPeriod
 			cainfo.setCRLPeriod(Long.MAX_VALUE);
 			TestTools.getCAAdminSession().editCA(admin, cainfo);

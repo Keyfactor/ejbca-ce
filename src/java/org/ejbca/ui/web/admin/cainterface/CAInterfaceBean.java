@@ -254,15 +254,21 @@ public class CAInterfaceBean implements java.io.Serializable {
     public int getLastCRLNumber(String  issuerdn) {
       return certificatesession.getLastCRLNumber(administrator, issuerdn, false);      
     }
-    
+
     /**
-     * @param issuerdn
+     * @param caInfo of the CA that has issued the CRL.
      * @param deltaCRL false for complete CRL info, true for delta CRLInfo
      * @return CRLInfo of last CRL by CA or null if no CRL exists.
      */
-    public CRLInfo getLastCRLInfo(String issuerdn, boolean deltaCRL) {
-      return certificatesession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
-    }
+	public CRLInfo getLastCRLInfo(CAInfo caInfo, boolean deltaCRL) {
+		final String issuerdn;// use issuer DN from CA certificate. Might differ from DN in CAInfo.
+		{
+			final Collection certs = caInfo.getCertificateChain();
+			final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
+			issuerdn = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
+		}
+		return certificatesession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
+	}
 
     /* Returns certificate profiles as a CertificateProfiles object */
     public CertificateProfileDataHandler getCertificateProfileDataHandler(){
@@ -353,7 +359,7 @@ public class CAInterfaceBean implements java.io.Serializable {
 	  if(certprofile != null){
 	    CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificatedata.getCertificate()));
 	    if(certprofile.getPublisherList().size() > 0){
-	    	if(publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
+	    	if(publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(), certreqhist.getUserDataVO().getDN(),
 	    			certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), certreqhist.getUserDataVO().getExtendedinformation())){
 	    		returnval = "CERTREPUBLISHEDSUCCESS";
 	    	}

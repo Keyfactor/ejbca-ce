@@ -70,10 +70,10 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
                     String username = getCertificateStoreSession().findUsernameByCertSerno(getAdmin(), cacert.getSerialNumber(), cacert.getIssuerDN().getName());
         		    CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(getAdmin(), fingerprint);
-        		    getPublisherSession().storeCertificate(getAdmin(), capublishers, cacert, username, null, fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);                                
+        		    getPublisherSession().storeCertificate(getAdmin(), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);                                
         		    getLogger().info("Certificate published for "+caname);
                     if ( (crlbytes != null) && (crlbytes.length > 0) && (crlNumber > 0) ) {
-                        getPublisherSession().storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, crlNumber);                        
+                        getPublisherSession().storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
                         getLogger().info("CRL published for "+caname);
                     } else {
                     	getLogger().info("CRL not published, no CRL createed for CA?");
@@ -147,7 +147,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
 		try {
 		    String fingerprint = CertTools.getFingerprintAsString(cert);
 		    CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(getAdmin(), fingerprint);
-		    getPublisherSession().storeCertificate(getAdmin(), certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);                                
+		    final String userDataDN = data.getDN();
+		    getPublisherSession().storeCertificate(getAdmin(), certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN, fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);                                
 		} catch (Exception e) {
 		    // catch failure to publish one user and continue with the rest
 			getLogger().error("Failed to publish certificate for user "+data.getUsername()+", continuing with next user.");

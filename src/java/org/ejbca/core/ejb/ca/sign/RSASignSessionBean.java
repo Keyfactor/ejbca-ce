@@ -1014,7 +1014,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!)
-            byte[] crl = certificateStore.getLastCRL(admin, ca.getSubjectDN(), false);
+            final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
+            byte[] crl = certificateStore.getLastCRL(admin, certSubjectDN, false);
             if (crl != null) {
                 ret.setCrl(CertTools.getCRLfromByteArray(crl));
                 ret.setStatus(ResponseStatus.SUCCESS);
@@ -1170,7 +1171,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new EJBException(fe);
             }
 
-            CA ca = null;
+            final CA ca;
             try {
                 ca = cadata.getCA();
             } catch (java.io.UnsupportedEncodingException uee) {
@@ -1200,10 +1201,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             ICertificateStoreSessionLocal certificateStore = storeHome.create();
             // Get highest number of last CRL (full or delta) and increase by 1, both full CRLs and deltaCRLs share the same 
             // series of CRL Number
-            int fullnumber = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN(), false);
-            int deltanumber = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN(), true);
+            final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
+            int fullnumber = certificateStore.getLastCRLNumber(admin, certSubjectDN, false);
+            int deltanumber = certificateStore.getLastCRLNumber(admin, certSubjectDN, true);
             int number = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
-            X509CRL crl = null;
+            final X509CRL crl;
             boolean deltaCRL = (basecrlnumber > -1);
             if (deltaCRL) {
             	// Workaround if transaction handling fails so that crlNumber for deltaCRL would happen to be the same
@@ -1226,7 +1228,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // Store crl in ca CRL publishers.
                 log.debug("Storing CRL in publishers");
                 IPublisherSessionLocal pub = publishHome.create();
-                pub.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, number);
+                pub.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, number, ca.getSubjectDN());
             }
         } catch (CATokenOfflineException ctoe) {
             String cadn = null;
@@ -1252,9 +1254,10 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param admin            Information about the administrator or admin preforming the event.
      * @param certificatechain certchain of certificate to publish
      * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
+     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
      * @ejb.interface-method view-type="both"
      */
-    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers) {
+    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, String caDataDN) {
         try {
             ICertificateStoreSessionLocal certificateStore = storeHome.create();
 
@@ -1310,7 +1313,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (usedpublishers != null) {
-                    pub.storeCertificate(admin, usedpublishers, cert, cafp, null, fingerprint, SecConst.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);                	
+                    pub.storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint, SecConst.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);
                 }
             }
         } catch (javax.ejb.CreateException ce) {
@@ -1571,13 +1574,13 @@ public class RSASignSessionBean extends BaseSessionBean {
                 IPublisherSessionLocal pub = publishHome.create();
                 Collection publishers = certProfile.getPublisherList();
                 if (publishers != null) {
-                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
+                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), data.getDN(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
                 }
                 
                 // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance 
                 int revreason = getIssuanceRevocationReason(data);
                 if (revreason != RevokedCertInfo.NOT_REVOKED) {
-                	certificateStore.revokeCertificate(admin, cert, publishers, revreason);
+                	certificateStore.revokeCertificate(admin, cert, publishers, revreason, data.getDN());
                 }                
 
                 trace("<createCertificate(pk, ku, notAfter)");

@@ -282,7 +282,7 @@ public class CADataHandler implements Serializable {
  	// (which there is probably not) 
  	Collection publishers = cainfo.getCRLPublishers();
  	publishers.addAll(certprofile.getPublisherList());
- 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers);
+ 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
 
  	// Publish ExtendedCAServices certificates as well
 	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
@@ -293,19 +293,19 @@ public class CADataHandler implements Serializable {
 			if(next instanceof OCSPCAServiceInfo){
 				List ocspcert = ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath();
 				if (ocspcert != null) {
-					signsession.publishCACertificate(administrator, ocspcert, publishers);
+					signsession.publishCACertificate(administrator, ocspcert, publishers, cainfo.getSubjectDN());
 				}
 			}
 			if(next instanceof XKMSCAServiceInfo){
 				List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
 				if (xkmscert != null) {
-					signsession.publishCACertificate(administrator, xkmscert, publishers);				
+					signsession.publishCACertificate(administrator, xkmscert, publishers, cainfo.getSubjectDN());
 				}
 			}
 			if(next instanceof CmsCAServiceInfo){
 				List cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
 				if (cmscert != null) {
-					signsession.publishCACertificate(administrator, cmscert, publishers);
+					signsession.publishCACertificate(administrator, cmscert, publishers, cainfo.getSubjectDN());
 				}
 			}
 		}
@@ -319,7 +319,7 @@ public class CADataHandler implements Serializable {
 	  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 	  if(next instanceof OCSPCAServiceInfo){
 	  	X509Certificate ocspcert = (X509Certificate)((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);
-		certificatesession.revokeCertificate(administrator,ocspcert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
+		certificatesession.revokeCertificate(administrator,ocspcert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 	  }
 	}  
  }
@@ -331,7 +331,7 @@ public class CADataHandler implements Serializable {
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof XKMSCAServiceInfo){
 		  	X509Certificate xkmscert = (X509Certificate)((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath().get(0);
-			certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
+			certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 		  }
 		}  
 	 }
@@ -343,7 +343,7 @@ public class CADataHandler implements Serializable {
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof CmsCAServiceInfo){
 		  	X509Certificate cmscert = (X509Certificate)((CmsCAServiceInfo) next).getCertificatePath().get(0);
-			certificatesession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
+			certificatesession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 		  }
 		}  
 	 }

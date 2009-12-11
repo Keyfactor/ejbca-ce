@@ -137,7 +137,7 @@ public class TestDeltaCRL extends TestCase {
         
         // Do some revoke
         X509Certificate cert = createUserAndCert();
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);        
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, null);        
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new CRL again...
@@ -174,7 +174,7 @@ public class TestDeltaCRL extends TestCase {
             }            
         } // If no revoked certificates exist at all, this test passed...
 
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, null);
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new delta CRL again...
@@ -197,7 +197,7 @@ public class TestDeltaCRL extends TestCase {
         assertTrue(found);
         
         // Unrevoke the certificate that we just revoked
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED, null);
         // Create a new Delta CRL again...
         TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new CRL.
@@ -219,7 +219,7 @@ public class TestDeltaCRL extends TestCase {
 
         // Check that when we revoke a certificate it will be present on the delta CRL
         // When we create a new full CRL it will be present there, and not on the next delta CRL
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, null);
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new delta CRL again...

@@ -203,11 +203,17 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             if (cainfo == null) {
                 throw new CADoesntExistsException("CA not found: "+issuerdn);
             }
+            final String caCertSubjectDN; // DN from the CA issuing the CRL to be used when searching for the CRL in the database.
+            {
+            	final Collection certs = cainfo.getCertificateChain();
+            	final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
+            	caCertSubjectDN = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
+            }
             // We can not create a CRL for a CA that is waiting for certificate response
-            if (cainfo.getStatus() == SecConst.CA_ACTIVE)  {
+            if ( caCertSubjectDN!=null && cainfo.getStatus()==SecConst.CA_ACTIVE )  {
             	long crlperiod = cainfo.getCRLPeriod();
             	// Find all revoked certificates for a complete CRL
-            	Collection revcerts = store.listRevokedCertInfo(admin, issuerdn, -1);
+            	Collection revcerts = store.listRevokedCertInfo(admin, caCertSubjectDN, -1);
             	debug("Found "+revcerts.size()+" revoked certificates.");
 
             	// Go through them and create a CRL, at the same time archive expired certificates
@@ -298,22 +304,27 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         	log.trace(">runDeltaCRL: "+issuerdn);
     	}
     	byte[] crlBytes = null;
-    	int caid = issuerdn.hashCode();
+    	final int caid = issuerdn.hashCode();
     	try {
-    		ICAAdminSessionLocal caadmin = caadminHome.create();
-    		ICertificateStoreSessionLocal store = storeHome.create();
-    		CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+    		final ICAAdminSessionLocal caadmin = caadminHome.create();
+    		final ICertificateStoreSessionLocal store = storeHome.create();
+    		final CAInfo cainfo = caadmin.getCAInfo(admin, caid);
     		if (cainfo == null) {
     			throw new CADoesntExistsException("CA not found: "+issuerdn);
     		}
-    		if (cainfo instanceof X509CAInfo) { // Only create CRLs for X509 CAs
+    		final String caCertSubjectDN; {
+    		    final Collection certs = cainfo.getCertificateChain();
+    		    final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
+                caCertSubjectDN = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
+            }
+    		if (caCertSubjectDN!=null && cainfo instanceof X509CAInfo) { // Only create CRLs for X509 CAs
     			if ( (baseCrlNumber == -1) && (baseCrlCreateTime == -1) ) {
-        			CRLInfo basecrlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(), false);
+        			CRLInfo basecrlinfo = store.getLastCRLInfo(admin, caCertSubjectDN, false);
         			baseCrlCreateTime = basecrlinfo.getCreateDate().getTime();
         			baseCrlNumber = basecrlinfo.getLastCRLNumber();    				
     			}
     			// Find all revoked certificates
-    			Collection revcertinfos = store.listRevokedCertInfo(admin, issuerdn, baseCrlCreateTime);
+    			Collection revcertinfos = store.listRevokedCertInfo(admin, caCertSubjectDN, baseCrlCreateTime);
     			debug("Found "+revcertinfos.size()+" revoked certificates.");
     			// Go through them and create a CRL, at the same time archive expired certificates
     			ArrayList certs = new ArrayList();
@@ -412,10 +423,12 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			   } else {
         			   if (cainfo instanceof X509CAInfo) {
         				   Collection certs = cainfo.getCertificateChain();
-        				   Certificate cacert = null;
+        				   final Certificate cacert;
         				   if (!certs.isEmpty()) {
         					   cacert = (Certificate)certs.iterator().next();   
-        				   } 
+        				   } else {
+        				       cacert = null;
+        				   }
         				   // Don't create CRLs if the CA has expired
         				   if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
             			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
@@ -427,7 +440,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             			        	   if (log.isDebugEnabled()) {
             			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
             			        	   }
-            			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN(),false);
+            			               final String certSubjectDN = CertTools.getSubjectDN(cacert);
+            			               CRLInfo crlinfo = store.getLastCRLInfo(admin,certSubjectDN,false);
             			               if (log.isDebugEnabled()) {
                 			               if (crlinfo == null) {
                 			            	   log.debug("Crlinfo was null");
@@ -545,10 +559,12 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     				} else {
         				if (cainfo instanceof X509CAInfo) {
         					Collection certs = cainfo.getCertificateChain();
-        					Certificate cacert = null;
+        					final Certificate cacert;
         					if (!certs.isEmpty()) {
         						cacert = (Certificate)certs.iterator().next();   
-        					} 
+        					} else {
+        					    cacert = null;
+        					}
         					// Don't create CRLs if the CA has expired
         					if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
             					if(cainfo.getDeltaCRLPeriod() > 0) {
@@ -560,7 +576,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             							if (log.isDebugEnabled()) {
             								log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
             							}
-            							CRLInfo deltacrlinfo = store.getLastCRLInfo(admin, cainfo.getSubjectDN(), true);
+            							final String certSubjectDN = CertTools.getSubjectDN(cacert);
+            							CRLInfo deltacrlinfo = store.getLastCRLInfo(admin, certSubjectDN, true);
             							if (log.isDebugEnabled()) {
             								if (deltacrlinfo == null) {
             									log.debug("DeltaCrlinfo was null");

@@ -1018,20 +1018,22 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Set the status of certificate with  given serno to revoked.
      *
      * @param admin      Administrator performing the operation
+     * @param issuerdn   Issuer of certificate to be removed.
      * @param serno      the serno of certificate to revoke.
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
      * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @param userDataDN if an DN object is not found in the certificate, the object could be taken from user data instead.
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
-    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) {
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason, String userDataDN) {
     	if (log.isTraceEnabled()) {
         	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
     	}
         Certificate certificate = null;
         try {
             certificate = (Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
-	        setRevokeStatus(admin, certificate, publishers, reason);
+	        setRevokeStatus(admin, certificate, publishers, reason, userDataDN);
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("store.errorfindcertserno", serno.toString(16));            	
             getLogSession().log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg);
@@ -1049,9 +1051,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param certificate the certificate to revoke or activate.
      * @param publishers and array of publiserids (Integer) of publishers to revoke/re-publish the certificate in.
      * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      * @throws FinderException 
      */
-    private void setRevokeStatus(Admin admin, Certificate certificate, Collection publishers, int reason) throws FinderException {
+    private void setRevokeStatus(Admin admin, Certificate certificate, Collection publishers, int reason, String userDataDN) throws FinderException {
     	if (certificate == null) {
     		return;
     	}
@@ -1076,7 +1079,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		getLogSession().log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
     		if (publishers != null) {
-    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
+    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
     		}            	  
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
@@ -1106,7 +1109,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     			if(certprofile.getPublisherList().size() <= 0){
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no publishers defined.");
     			}
-    			boolean published = publishersession.storeCertificate(admin, certprofile.getPublisherList(), certificate, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
+    			boolean published = publishersession.storeCertificate(admin, certprofile.getPublisherList(), certificate, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(), certreqhist.getUserDataVO().getDN(),
     					cafp, status, type, revocationDate, revocationReason, rev.getTag(), rev.getCertificateProfileId(), now.getTime(), certreqhist.getUserDataVO().getExtendedinformation());
     			if ( !published ) {
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
@@ -1146,9 +1149,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
-    public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason) {
+    public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason, String userDataDN) {
         if (cert instanceof X509Certificate) {
-            setRevokeStatus(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert), publishers, reason);
+            setRevokeStatus(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert), publishers, reason, userDataDN);
         }
     } //revokeCertificate
 
