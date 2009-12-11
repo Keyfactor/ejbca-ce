@@ -8,7 +8,7 @@
 <body>
   <section name="Latest Release">
     <note>
-    If you have problems with any of the download links below, try to download through the Sourceforge <a href="https://sourceforge.net/project/platformdownload.php?group_id=39716">download page</a>.
+    If you have problems with any of the download links below, try to download through the Sourceforge <a href="http://sourceforge.net/projects/ejbca/files/">download page</a>.
     <br/><br/>
     EJBCA 3.9.2 is now available for <a
     href="http://downloads.sourceforge.net/ejbca/ejbca_3_9_2.zip">download</a>.
@@ -28,7 +28,7 @@
   </section>
   <section name="Main source packages">
     <p>
-    Download any of the source packages from <a href="https://sourceforge.net/project/platformdownload.php?group_id=39716">Sourceforge</a>.
+    Download any of the source packages from <a href="http://sourceforge.net/projects/ejbca/files/">Sourceforge</a>.
     </p>
   </section>
 
