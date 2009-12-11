@@ -236,8 +236,8 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) {
-    	return storeCertificate(admin, LogConstants.EVENT_INFO_STORECERTIFICATE, LogConstants.EVENT_ERROR_STORECERTIFICATE, publisherids, incert, username, password, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
+    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) {
+    	return storeCertificate(admin, LogConstants.EVENT_INFO_STORECERTIFICATE, LogConstants.EVENT_ERROR_STORECERTIFICATE, publisherids, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
     }
 
     /**
@@ -248,8 +248,8 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
-    	storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, cafp, SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
+    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason, long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
+    	storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, userDN, cafp, SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
     }
 
 
@@ -262,15 +262,19 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @param cert
      * @param username
      * @param password
+     * @param userDN
      * @param cafp
      * @param status
      * @param type
      * @param revocationDate
      * @param revocationReason
+     * @param tag
+     * @param certificateProfileId
+     * @param lastUpdate
      * @param extendedinformation
      * @return true if publishing was successful for all publishers, false if not or if was enqued for any of the publishers
      */
-    private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection publisherids, Certificate cert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) {
+    private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection publisherids, Certificate cert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) {
         Iterator iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
@@ -282,7 +286,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             	// If it should be published directly
             	if (!pdl.getPublisher().getOnlyUseQueue()) {
 	            	try {
-	            		if (pdl.getPublisher().storeCertificate(admin, cert, username, password, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+	            		if (pdl.getPublisher().storeCertificate(admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
 	            			publishStatus = PublisherQueueData.STATUS_SUCCESS;
 	            		}
 	            		String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());            	
@@ -300,11 +304,12 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                 	log.debug("UseQueueForCertificates: "+pdl.getPublisher().getUseQueueForCertificates());            		
             	}
             	if ( (publishStatus != PublisherQueueData.STATUS_SUCCESS || pdl.getPublisher().getKeepPublishedInQueue()) && pdl.getPublisher().getUseQueueForCertificates()) {
-                	// Write to the publisher queue either for audit reasons or to be able try agian
+                	// Write to the publisher queue either for audit reasons or to be able try again
                 	PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
                 	pqvd.setUsername(username);
                 	pqvd.setPassword(password);
                 	pqvd.setExtendedInformation(extendedinformation);
+                	pqvd.setUserDN(userDN);
                 	String fp = CertTools.getFingerprintAsString(cert); 
                 	try {
                    		getPublisherQueueSession().addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CERT, fp, pqvd, publishStatus);
@@ -333,7 +338,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCRL(Admin admin, Collection publisherids, byte[] incrl, String cafp, int number) {
+    public boolean storeCRL(Admin admin, Collection publisherids, byte[] incrl, String cafp, int number, String userDN) {
     	log.trace(">storeCRL");
         Iterator iter = publisherids.iterator();
         boolean returnval = true;
@@ -345,7 +350,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             	// If it should be published directly
                 if (!pdl.getPublisher().getOnlyUseQueue()) {
                 	try {
-	            		if (pdl.getPublisher().storeCRL(admin, incrl, cafp, number)) {
+	            		if (pdl.getPublisher().storeCRL(admin, incrl, cafp, number, userDN)) {
 	            			publishStatus = PublisherQueueData.STATUS_SUCCESS;
 	            		}
                 		String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());            	
@@ -363,9 +368,12 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                 	log.debug("UseQueueForCRLs: "+pdl.getPublisher().getUseQueueForCRLs());            		
             	}
             	if ( (publishStatus != PublisherQueueData.STATUS_SUCCESS || pdl.getPublisher().getKeepPublishedInQueue()) && pdl.getPublisher().getUseQueueForCRLs()) {
+                	// Write to the publisher queue either for audit reasons or to be able try again
+                	final PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
+                	pqvd.setUserDN(userDN);
             		String fp = CertTools.getFingerprintAsString(incrl); 
             		try {
-            			getPublisherQueueSession().addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CRL, fp, null, PublisherQueueData.STATUS_PENDING);
+            			getPublisherQueueSession().addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CRL, fp, pqvd, PublisherQueueData.STATUS_PENDING);
                 		String msg = intres.getLocalizedMessage("publisher.storequeue", pdl.getName(), fp, "CRL");            	
                 		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
             		} catch (CreateException e) {

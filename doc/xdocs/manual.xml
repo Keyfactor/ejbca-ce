@@ -4505,6 +4505,17 @@ CN=Configuration,DC=somemachine,DC=primekey,DC=se?certificateRevocationList?base
 </source>
 </subsubsection>
 
+<subsubsection name="Constructing the DN for an entity to be published">
+<p>
+The DN to be published is constructed from the certificate DN of the entity to be published.
+But if the publisher requires a DN object that is not a part of the certificate DN then the DN defined for entity might be used instead.
+</p><p>
+The DN of the entity (user or CA) could have more objects than the certificate if "Use a Subset of Subject DN" is defined in the used certificate profile.
+</p><p>
+The "LDAP Publisher" and the "LDAP Search Publisher" tries the DN of the entity when the certificate DN is missing an object needed in the publishing DN
+</p>
+</subsubsection>
+
 <subsubsection name="What EJBCA stores/creates/modifies">
 <p>
 Apart from the DN in the entry a number of attributes are also stored, some

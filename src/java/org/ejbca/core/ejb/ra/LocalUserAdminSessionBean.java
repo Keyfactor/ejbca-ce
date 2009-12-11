@@ -1553,7 +1553,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         
         // Revoke certificate in database and all publishers
-        certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
+        certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason, data.getSubjectDN());
         // Reset the revocation code identifier used in XKMS
         ExtendedInformation inf = data.getExtendedInformation();
         if (inf != null) {

@@ -10,40 +10,41 @@
 		<jsp:useBean id="ca_id" type="java.lang.Integer" />
 		<% finder.setCurrentCA(ca_id); %>
 
-		<c:set var="ca" value="${finder.CAInfo}" />
+		<c:set var="caName" value="${finder.CAInfo.name}" />
+		<c:set var="caDN" value="${finder.CADN}" />
 
 		<c:url var="der" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="crl" />
-			<c:param name="issuer" value="${ca.subjectDN}" />
+			<c:param name="issuer" value="${caDN}" />
 		</c:url>
 		<c:url var="pem" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="crl" />
 			<c:param name="format" value="PEM" />
-			<c:param name="issuer" value="${ca.subjectDN}" />
+			<c:param name="issuer" value="${caDN}" />
 		</c:url>
 		<c:url var="moz" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="crl" />
-			<c:param name="issuer" value="${ca.subjectDN}" />
+			<c:param name="issuer" value="${caDN}" />
 			<c:param name="moz" value="y" />
 		</c:url>
 		
 		<c:url var="derdelta" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="deltacrl" />
-			<c:param name="issuer" value="${ca.subjectDN}" />
+			<c:param name="issuer" value="${caDN}" />
 		</c:url>
 		<c:url var="pemdelta" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="deltacrl" />
 			<c:param name="format" value="PEM" />
-			<c:param name="issuer" value="${ca.subjectDN}" />
+			<c:param name="issuer" value="${caDN}" />
 		</c:url>
 		<c:url var="mozdelta" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="deltacrl" />
-			<c:param name="issuer" value="${ca.subjectDN}" />
+			<c:param name="issuer" value="${caDN}" />
 			<c:param name="moz" value="y" />
 		</c:url>
 
 		<hr />
-		<h2>CA: ${ca.name}</h2>
+		<h2>CA: ${caName}</h2>
 		<p>The Certificate Revocation List is available in three ways:
 		<table>
 		<thead><tr><td>CRL</td><td>Delta CRL</td></tr></thead>

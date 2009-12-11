@@ -167,32 +167,38 @@ public class LdapPublisher extends BasePublisher {
 
 
 
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, java.lang.String, int, int, long, int, java.lang.String, int, long, org.ejbca.core.model.ra.ExtendedInformation)
+     */
+    protected boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
+		throw new Error("This method should never be called since the method with 'userDN' is implemented.");
+    }
 	/**
 	 * Publishes certificate in LDAP, if the certificate is not revoked. If the certificate is revoked, nothing is done
 	 * and the publishing is counted as successful (i.e. returns true).
 	 * 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCertificate(username="+username+")");
 		}
 
 		if ( (status == SecConst.CERT_REVOKED) || (status == SecConst.CERT_TEMP_REVOKED) ) {
         	// Call separate script for revocation
-        	revokeCertificate(admin, incert, username, revocationReason);
+        	revokeCertificate(admin, incert, username, revocationReason, userDN);
         } else if (status == SecConst.CERT_ACTIVE) {
             // Don't publish non-active certificates
     		int ldapVersion = LDAPConnection.LDAP_V3;
     		LDAPConnection lc = createLdapConnection();
 
-    		String dn = null;
-    		String certdn = null;
+    		final String dn;
+    		final String certdn;
     		try {
     			// Extract the users DN from the cert.
     			certdn = CertTools.getSubjectDN(incert);
     			log.debug( "Constructing DN for: " + username);
-    			dn = constructLDAPDN(certdn);
+    			dn = constructLDAPDN(certdn, userDN);
     			log.debug("LDAP DN for user " +username +" is '" + dn+"'");
     		} catch (Exception e) {
     			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
@@ -207,7 +213,7 @@ public class LdapPublisher extends BasePublisher {
     		// To work well with the LdapSearchPublisher we need to pass the full certificate DN to the 
     		// search function, and not only the LDAP DN. The regular publisher should only use the LDAP DN though, 
     		// but the searchOldEntity function will take care of that.
-    		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, email);
+    		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email);
 
     		// PART 2: Create LDAP entry
     		LDAPEntry newEntry = null;
@@ -426,24 +432,25 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException{
+	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
     	log.trace(">storeCRL");
 		int ldapVersion = LDAPConnection.LDAP_V3;
 
-		X509CRL crl = null;
-		String dn = null;
-		String crldn = null;
-		boolean isDeltaCRL = false;
+		final String dn;
+		final String crldn;
+		final boolean isDeltaCRL;
 		try {
 			// Extract the users DN from the crl. Use the least number of encodings...
-			crl = CertTools.getCRLfromByteArray(incrl);
+			final X509CRL crl = CertTools.getCRLfromByteArray(incrl);
 			crldn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 			// Is it a delta CRL?
 			if (crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId()) != null) {
 				isDeltaCRL = true;
+			} else {
+				isDeltaCRL = false;
 			}
 			// Construct the DN used for the LDAP object entry
-			dn = constructLDAPDN(crldn);
+			dn = constructLDAPDN(crldn, userDN);
 		} catch (Exception e) {
 			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "CRL");
 			log.error(msg, e);        	
@@ -453,7 +460,7 @@ public class LdapPublisher extends BasePublisher {
 		LDAPConnection lc = createLdapConnection();
 
 		// Check if the entry is already present, we will update it with the new CRL.
-		LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, dn, null);
+		LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, crldn, userDN, null);
 
 		LDAPEntry newEntry = null;
 		ArrayList modSet = new ArrayList();
@@ -538,11 +545,14 @@ public class LdapPublisher extends BasePublisher {
     	log.trace("<storeCRL");
 		return true;
 	}
+	protected boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
+		throw new Error("This method should never be called since the method with 'userDN' is implemented.");
+	}
 
 	/**
 	 * Revokes a certificate, which means for LDAP that we may remove the certificate or the whole user entry.
 	 */    
-	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException{
+	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason, String userDN) throws PublisherException{
 		log.trace(">revokeCertificate()");
 
 		// Check first if we should do anything then revoking
@@ -562,12 +572,12 @@ public class LdapPublisher extends BasePublisher {
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
 
-		String dn = null;
-		String certdn = null;
+		final String dn;
+		final String certdn;
 		try {
 			// Extract the users DN from the cert.
 			certdn = CertTools.getSubjectDN(cert);
-			dn = constructLDAPDN(certdn);
+			dn = constructLDAPDN(certdn, userDN);
 		} catch (Exception e) {
 			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
 			log.error(msg, e);            
@@ -578,7 +588,7 @@ public class LdapPublisher extends BasePublisher {
 		String email = CertTools.getEMailAddress(cert);
 
 		// Check if the entry is already present, we will update it with the new certificate.
-		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn, email);
+		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email);
 
 		ArrayList modSet = null;
 
@@ -676,16 +686,16 @@ public class LdapPublisher extends BasePublisher {
 	 *  
 	 *  @param dn the DN from the certificate, can be used to extract search information or a LDAP DN
 	 */
-	protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
+	protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String certDN, String userDN, String email) throws PublisherException {
 		LDAPEntry oldEntry = null; // return value
 		// Try all the listed servers
-		Iterator servers = getHostnameList().iterator();
+		final Iterator servers = getHostnameList().iterator();
 		boolean connectionFailed;
 		do {
 			connectionFailed = false;
-			String currentServer = (String) servers.next();
+			final String currentServer = (String) servers.next();
 			log.debug("Current server is: "+currentServer);
-			String ldapdn = constructLDAPDN(dn);
+			final String ldapdn = constructLDAPDN(certDN, userDN);
 			try {
 				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
@@ -1474,19 +1484,33 @@ public class LdapPublisher extends BasePublisher {
 		return modSet;
 	} // getModificationSet
 
-	protected String constructLDAPDN(String dn){
+	/**
+	 * Constructs the LDAP DN for a certificate to be published. Only DN objects defined by the publisher is used.
+	 * For each DN object to be published:
+	 *  First the certificate DN is search for this object.
+	 *  If no such certificate object then the userdata DN is searched.
+	 *  If no such userdata object either the object will not be a part of the LDAP DN.
+	 * @param certDN certificate DN
+	 * @param userDataDN user data DN
+	 * @return LDAP DN to be used.
+	 */
+	protected String constructLDAPDN(String certDN, String userDataDN){
+		log.debug("DN in certificate '"+certDN+"'. DN in user data '"+userDataDN+"'.");
 		String retval = "";
-		DNFieldExtractor extractor = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTDN); 
+		final DNFieldExtractor certExtractor = new DNFieldExtractor(certDN, DNFieldExtractor.TYPE_SUBJECTDN);
+		final DNFieldExtractor userDataExtractor = userDataDN!=null ? new DNFieldExtractor(userDataDN, DNFieldExtractor.TYPE_SUBJECTDN) : null;
 
 		Collection usefields = getUseFieldInLdapDN();
 		if(usefields instanceof List){
 			Collections.sort((List) usefields);
 		}
 		Iterator iter = usefields.iterator(); 
-		String dnField = null;
 		while(iter.hasNext()){
 			Integer next = (Integer) iter.next();
-			dnField = extractor.getFieldString(next.intValue());
+			String dnField = certExtractor.getFieldString(next.intValue());
+			if ( StringUtils.isEmpty(dnField) && userDataExtractor!=null ) {
+				dnField = userDataExtractor.getFieldString(next.intValue());
+			}
 			if (StringUtils.isNotEmpty(dnField)) {
 				if (dnField.startsWith("SN")) {
 					// This is SN in Bouncycastle, but it should be serialNumber in LDAP

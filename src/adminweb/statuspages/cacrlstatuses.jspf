@@ -22,8 +22,8 @@
 						CAInfoView cainfo = cabean.getCAInfo(id);
 						if (cainfo != null) {
 							String name = cainfo.getCAInfo().getName();
-							CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), false);
-							CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo().getSubjectDN(), true);
+							CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), false);
+							CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), true);
 							int castatus = cainfo.getCAInfo().getStatus();
 							int catokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
 							String caimg = ejbcawebbean.getImagefileInfix("true.png");

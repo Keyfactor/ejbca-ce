@@ -205,7 +205,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     public void test03OcspRevoked() throws Exception {
         log.trace(">test03OcspRevoked()");
         // Now revoke the certificate and try again
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, null);
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));

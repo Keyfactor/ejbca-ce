@@ -41,6 +41,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.rainterface.CertificateView;
+import org.ejbca.util.CertTools;
 
 /**
  * This bean performs a number of certificate searches for the public web.
@@ -133,7 +134,16 @@ public class CertificateFinderBean {
 		}
 		return ret;
 	}
-	
+
+	public String getCADN() throws RemoteException {
+		final Collection certs = this.mSignSession.getCertificateChain(this.mAdmin, this.mCurrentCA);
+		if ( certs==null || certs.isEmpty() ) {
+			return "";
+		}
+		final Certificate cert = (Certificate)certs.iterator().next();
+		return CertTools.getSubjectDN(cert);
+	}
+
 	public Collection getCACertificateChainReversed() throws RemoteException {
 		Collection ret = getCACertificateChain();
 		if (ret != null) {

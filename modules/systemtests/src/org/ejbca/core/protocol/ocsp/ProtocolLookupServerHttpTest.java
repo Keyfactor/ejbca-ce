@@ -179,7 +179,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
      * @throws Exception error
      */
     public void test02OcspBadWithFnr() throws Exception {
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        TestTools.getCertificateStoreSession().revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, null);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();

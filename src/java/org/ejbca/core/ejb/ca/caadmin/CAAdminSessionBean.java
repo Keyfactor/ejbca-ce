@@ -549,7 +549,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
         //	Publish CA certificates.
-        getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers());
+        getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
         
         if(castatus ==SecConst.CA_ACTIVE){
         	// activate External CA Services
@@ -592,7 +592,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         		}
         		// Publish the extended service certificate, but only for active services
         		if ( (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!certificate.isEmpty()) ) {
-        			getSignSession().publishCACertificate(admin, certificate, ca.getCRLPublishers());        			
+        			getSignSession().publishCACertificate(admin, certificate, ca.getCRLPublishers(), ca.getSubjectDN());        			
         		}
         	}
         }
@@ -700,7 +700,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                          .getOCSPSignerCertificatePath().get(0);
 			  ArrayList ocspcertificate = new ArrayList();
               ocspcertificate.add(ocspcert);
-              getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers());
+              getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), ca.getSubjectDN());
             }
             if(xkmsrenewcert){
                 Certificate xkmscert = (Certificate) ((XKMSCAServiceInfo)
@@ -708,7 +708,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                            .getXKMSSignerCertificatePath().get(0);
   			  ArrayList xkmscertificate = new ArrayList();
   			  xkmscertificate.add(xkmscert);
-              getSignSession().publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers());
+              getSignSession().publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
             }
             if(cmsrenewcert){
                 Certificate cmscert = (Certificate) ((CmsCAServiceInfo)
@@ -716,7 +716,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                            .getCertificatePath().get(0);
   			  ArrayList cmscertificate = new ArrayList();
   			  cmscertificate.add(cmscert);
-              getSignSession().publishCACertificate(admin, cmscertificate, ca.getCRLPublishers());
+              getSignSession().publishCACertificate(admin, cmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
             }
             // Log Action
     		String msg = intres.getLocalizedMessage("caadmin.editedca", cainfo.getName());            	
@@ -1280,7 +1280,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				// Publish CA Cert
     		        ArrayList cacertcol = new ArrayList();
     		        cacertcol.add(cacert);
-    				getSignSession().publishCACertificate(admin, cacertcol, ca.getCRLPublishers());
+    				getSignSession().publishCACertificate(admin, cacertcol, ca.getCRLPublishers(), ca.getSubjectDN());
 
     				// Set status to active, so we can sign certificates for the external services below.
     				cadata.setStatus(SecConst.CA_ACTIVE);
@@ -1302,7 +1302,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				        if(type == ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE){
     				        	extcacertificate.add(((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE)).getCertificatePath().get(0));
     				        }
-    				        getSignSession().publishCACertificate(admin, extcacertificate, ca.getCRLPublishers());
+    				        getSignSession().publishCACertificate(admin, extcacertificate, ca.getCRLPublishers(), ca.getSubjectDN());
     				    }catch(CATokenOfflineException e){
             	    		String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", new Integer(caid));            	
     				        getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,msg,e);
@@ -1381,7 +1381,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      */
     public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage)
     throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException, CATokenOfflineException {
-    	CA ca = null;
+    	final CA ca;
     	Collection certchain = null;
     	IResponseMessage returnval = null;
     	// check authorization
@@ -1481,13 +1481,14 @@ public class CAAdminSessionBean extends BaseSessionBean {
         				if(cainfo instanceof X509CAInfo){
         					log.info("Creating a X509 CA (process request)");
         					ca = new X509CA((X509CAInfo) cainfo);
-        				}
-        				if(cainfo instanceof CVCCAInfo){
+        				} else if(cainfo instanceof CVCCAInfo){
         					// CVC CA is a special type of CA for EAC electronic passports
         					log.info("Creating a CVC CA (process request)");
         					CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
         					// Create CVCCA
         					ca = new CVCCA(cvccainfo);
+        				} else {
+        					ca = null;
         				}
     					ca.setCertificateChain(certchain);
     					CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo(), cainfo.getCAId());
@@ -1495,10 +1496,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
         				// set status to active
         				cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					
+    				} else {
+    					ca = null;
     				}
 
     				// Publish CA certificates.
-    			    getSignSession().publishCACertificate(admin, certchain, signca.getCRLPublishers());
+    			    getSignSession().publishCACertificate(admin, certchain, signca.getCRLPublishers(), ca!=null ? ca.getSubjectDN() : null);
 
     			}catch(CATokenOfflineException e){
     	    		String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());            	
@@ -1628,7 +1631,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	// set status to active
     	cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					
 		// Publish CA certificates.
-	    getSignSession().publishCACertificate(admin, certificates, null);
+	    getSignSession().publishCACertificate(admin, certificates, null, ca.getSubjectDN());
     }
 
     /**
@@ -1762,7 +1765,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			// Publish the new CA certificate
     			ArrayList cacert = new ArrayList();
     			cacert.add(ca.getCACertificate());
-    			getSignSession().publishCACertificate(admin, cacert, ca.getCRLPublishers());
+    			getSignSession().publishCACertificate(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
     		}catch(CATokenOfflineException e){
 	    		String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));            	
     			getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
@@ -1829,7 +1832,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			CA cadata = ca.getCA();
 
 			// Revoke CA certificate
-			getCertificateStoreSession().revokeCertificate(admin, cadata.getCACertificate(), cadata.getCRLPublishers(), reason);
+			getCertificateStoreSession().revokeCertificate(admin, cadata.getCACertificate(), cadata.getCRLPublishers(), reason, ca.getSubjectDN());
              // Revoke all certificates generated by CA
 			if(cadata.getStatus() != SecConst.CA_EXTERNAL){
 		      getCertificateStoreSession().revokeAllCertByCA(admin, issuerdn, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);		    
@@ -2364,7 +2367,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		ca.setCertificateChain(certificatechain);
 		log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + ca.getCAToken().getCATokenInfo().getEncryptionAlgorithm());
 		//  Publish CA certificates.
-		getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers());
+		getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
 		// activate External CA Services
 		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 		while(iter.hasNext()){
@@ -2374,7 +2377,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		            ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
 		            ArrayList ocspcertificate = new ArrayList();
 		            ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE)).getOCSPSignerCertificatePath().get(0));
-		            getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers());
+		            getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), ca.getSubjectDN());
 		        }catch(Exception fe){
 		            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
 		            throw new EJBException(fe);
@@ -2385,7 +2388,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		            ca.initExternalService(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE, ca);
 		            ArrayList xkmscertificate = new ArrayList();
 		            xkmscertificate.add(((XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE)).getXKMSSignerCertificatePath().get(0));
-		            getSignSession().publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers());
+		            getSignSession().publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
 		        }catch(Exception fe){
 		            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
 		            throw new EJBException(fe);
@@ -2396,7 +2399,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		            ca.initExternalService(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE, ca);
 		            ArrayList cmscertificate = new ArrayList();
 		            cmscertificate.add(((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE)).getCertificatePath().get(0));
-		            getSignSession().publishCACertificate(admin, cmscertificate, ca.getCRLPublishers());
+		            getSignSession().publishCACertificate(admin, cmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
 		        }catch(Exception fe){
 		            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
 		            throw new EJBException(fe);

@@ -42,12 +42,19 @@ public class LdapSearchPublisher extends LdapPublisher {
 	// Public Methods
 	
 
+	private static String getPartFromDN(String certDN, String userDN, String dnpart) {
+		final String certResult = CertTools.getPartFromDN(certDN, dnpart);
+		if ( certResult!=null ) {
+			return certResult;
+		}
+		return CertTools.getPartFromDN(userDN, dnpart);
+	}
     /** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
      *  Apart from how they find existing users, the publishing works the same.
      *  
-	 *  @param dn the DN from the certificate, can be used to extract search information or a LDAP DN
+     *  @param certDN the DN from the certificate, can be used to extract search information or a LDAP DN
      */
-    protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
+    protected LDAPEntry searchOldEntity(final String username, final int ldapVersion, final LDAPConnection lc, final String certDN, final String userDN, final String email) throws PublisherException {
         LDAPEntry oldEntry = null; // return value
 
 		// Try all the listed servers
@@ -70,7 +77,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 				//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
 				String searchFilter = getSearchFilter();
 				if (log.isDebugEnabled()) {
-					log.debug("Compiling search filter: " +searchFilter+", from dn: "+dn);
+					log.debug("Compiling search filter: " +searchFilter+", from certDN '"+certDN+"' and userDN '"+userDN+"'.");
 				}
 				if (username != null) {
 					Pattern USER = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
@@ -80,25 +87,25 @@ public class LdapSearchPublisher extends LdapPublisher {
 					Pattern EMAIL = Pattern.compile("\\$EMAIL", Pattern.CASE_INSENSITIVE);
 					searchFilter = EMAIL.matcher(searchFilter).replaceAll(email);
 				}
-				if (CertTools.getPartFromDN(dn, "CN") != null) {
+				if (getPartFromDN(certDN, userDN, "CN") != null) {
 					Pattern CN = Pattern.compile("\\$CN", Pattern.CASE_INSENSITIVE);
-					searchFilter = CN.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "CN"));
+					searchFilter = CN.matcher(searchFilter).replaceAll(getPartFromDN(certDN, userDN, "CN"));
 				}
-				if (CertTools.getPartFromDN(dn, "O") != null) {
+				if (getPartFromDN(certDN, userDN, "O") != null) {
 					Pattern O = Pattern.compile("\\$O", Pattern.CASE_INSENSITIVE);
-					searchFilter = O.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "O"));
+					searchFilter = O.matcher(searchFilter).replaceAll(getPartFromDN(certDN, userDN, "O"));
 				}
-				if (CertTools.getPartFromDN(dn, "OU") != null) {
+				if (getPartFromDN(certDN, userDN, "OU") != null) {
 					Pattern OU = Pattern.compile("\\$OU", Pattern.CASE_INSENSITIVE);
-					searchFilter = OU.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "OU"));
+					searchFilter = OU.matcher(searchFilter).replaceAll(getPartFromDN(certDN, userDN, "OU"));
 				}
-				if (CertTools.getPartFromDN(dn, "C") != null) {
+				if (getPartFromDN(certDN, userDN, "C") != null) {
 					Pattern C = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
-					searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "C"));
+					searchFilter = C.matcher(searchFilter).replaceAll(getPartFromDN(certDN, userDN, "C"));
 				}
-				if (CertTools.getPartFromDN(dn, "UID") != null) {
+				if (getPartFromDN(certDN, userDN, "UID") != null) {
 					Pattern C = Pattern.compile("\\$UID", Pattern.CASE_INSENSITIVE);
-					searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "UID"));
+					searchFilter = C.matcher(searchFilter).replaceAll(getPartFromDN(certDN, userDN, "UID"));
 				}
 				log.debug("Resulting search filter '" + searchFilter+"'.");
 				log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + searchFilter+"'.");
@@ -116,9 +123,10 @@ public class LdapSearchPublisher extends LdapPublisher {
 				if (log.isDebugEnabled()) {
 					log.debug("serachResults contains entries: "+searchResults.hasMore());
 				}
+				final String ldapDN;
 				if (searchResults.hasMore()) {
 					oldEntry = searchResults.next();
-					dn = oldEntry.getDN();
+					ldapDN = oldEntry.getDN();
 					if (searchResults.hasMore()) {
 						log.debug("Found more than one matches with filter '" + searchFilter +
 								"'. Using the first match with LDAP entry with DN: " +oldEntry.getDN());
@@ -126,23 +134,24 @@ public class LdapSearchPublisher extends LdapPublisher {
 						log.debug("Found one match with filter: '"+searchFilter+"', match with DN: " + oldEntry.getDN());
 					}
 				} else {
-					log.debug("No matches found using filter: '" +searchFilter + "'. Using DN: " + dn);
+					ldapDN = constructLDAPDN(certDN, userDN);
+					log.debug("No matches found using filter: '" +searchFilter + "'. Using DN: " + ldapDN);
 				}
 				// try to read the old object
 				try {
-					oldEntry = lc.read(dn, ldapSearchConstraints);
+					oldEntry = lc.read(ldapDN, ldapSearchConstraints);
 				} catch (LDAPException e) {
 					if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-						String msg = intres.getLocalizedMessage("publisher.noentry", dn);
+						String msg = intres.getLocalizedMessage("publisher.noentry", ldapDN);
 						log.info(msg);
 					} else {
-						String msg = intres.getLocalizedMessage("publisher.infoexists", dn);
+						String msg = intres.getLocalizedMessage("publisher.infoexists", ldapDN);
 						log.info(msg);
 					}
 				}
 			} catch (LDAPException e) {
 				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-					String msg = intres.getLocalizedMessage("publisher.noentry", dn);
+					String msg = intres.getLocalizedMessage("publisher.noentry", certDN +", "+userDN);
 					log.info(msg);
 				} else {
 					connectionFailed = true;

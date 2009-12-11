@@ -190,10 +190,12 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 			String username = null;
 			String password = null;
 			ExtendedInformation ei = null;
+			String userDataDN = null;
 			if (voldata != null) {
 				username = voldata.getUsername();
 				password = voldata.getPassword();
 				ei = voldata.getExtendedInformation();
+				userDataDN = voldata.getUserDN();
 			}
 			boolean published = false;
 			
@@ -206,7 +208,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 						// Read the actual certificate and try to publish it again
 						CertificateInfo info = getCertificateSession().getCertificateInfo(getAdmin(), fingerprint);
 						CertificateDataLocal certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(fingerprint));
-						published = publisher.storeCertificate(getAdmin(), certlocal.getCertificate(), username, password, info.getCAFingerprint(), info.getStatus(), info.getType(), info.getRevocationDate().getTime(), info.getRevocationReason(), info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), ei);
+						published = publisher.storeCertificate(getAdmin(), certlocal.getCertificate(), username, password, userDataDN, info.getCAFingerprint(), info.getStatus(), info.getType(), info.getRevocationDate().getTime(), info.getRevocationReason(), info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), ei);
 					} else {
 						String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);            	
 						log.info(msg);
@@ -216,7 +218,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 						log.debug("Publishing CRL");
 					}
 					CRLDataLocal crllocal = getCRLDataHome().findByPrimaryKey(new CRLDataPK(fingerprint));
-					published = publisher.storeCRL(getAdmin(), crllocal.getCRLBytes(), crllocal.getCaFingerprint(), crllocal.getCrlNumber());
+					published = publisher.storeCRL(getAdmin(), crllocal.getCRLBytes(), crllocal.getCaFingerprint(), crllocal.getCrlNumber(), userDataDN);
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);            	
 					log.error(msg);					
