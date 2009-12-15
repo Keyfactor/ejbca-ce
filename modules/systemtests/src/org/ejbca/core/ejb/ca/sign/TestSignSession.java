@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.ca.sign;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
@@ -1742,9 +1741,9 @@ public class TestSignSession extends TestCase {
         dOut.writeObject(req);
         dOut.close();
         byte[] p10bytes = bOut.toByteArray();
-        FileOutputStream fos = new FileOutputStream("/tmp/foo.der");
-        fos.write(p10bytes);
-        fos.close();
+//        FileOutputStream fos = new FileOutputStream("/tmp/foo.der");
+//        fos.write(p10bytes);
+//        fos.close();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);    	
         p10.setUsername("foo");
         p10.setPassword("foo123");
@@ -1801,6 +1800,62 @@ public class TestSignSession extends TestCase {
         inforsa.setStatus(SecConst.CA_ACTIVE);
         TestTools.getCAAdminSession().editCA(admin, inforsa);
     }
+    
+    public void test31TestProfileSignatureAlgorithm() throws Exception {
+        // Create a good certificate profile (good enough), using QC statement
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTSIGALG");
+        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        // Default profile uses "inherit from CA"
+        TestTools.getCertificateStoreSession().addCertificateProfile(admin, "TESTSIGALG", certprof);
+        int cprofile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"TESTSIGALG");
+
+        // Create a good end entity profile (good enough)
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTSIGALG");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTSIGALG", profile);
+        int eeprofile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTSIGALG");
+    	UserDataVO user = new UserDataVO("foo", "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+    	user.setPassword("foo123");
+    	user.setStatus(UserDataConstants.STATUS_NEW);
+    	// Change a user that we know...
+    	TestTools.getUserAdminSession().changeUser(admin, user, false);
+
+    	// Create a P10
+        // Create PKCS#10 certificate request    	
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+                new X509Name("C=SE,CN=testsigalg"), rsakeys.getPublic(), null, rsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+        byte[] p10bytes = bOut.toByteArray();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);    	
+        p10.setUsername("foo");
+        p10.setPassword("foo123");
+        // See if the request message works...
+        X509Extensions p10exts = p10.getRequestExtensions();
+        IResponseMessage resp = TestTools.getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
+        assertEquals(CATokenConstants.SIGALG_SHA1_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
+
+        // Change so that we can override signature algorithm
+        CertificateProfile prof = TestTools.getCertificateStoreSession().getCertificateProfile(admin,cprofile);
+        prof.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_RSA);
+        TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTSIGALG", prof);
+
+    	TestTools.getUserAdminSession().changeUser(admin, user, false);
+        resp = TestTools.getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
+        assertEquals(CATokenConstants.SIGALG_SHA256_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
+    } // test31TestProfileSignatureAlgorithm
     
     /**
      * creates new user

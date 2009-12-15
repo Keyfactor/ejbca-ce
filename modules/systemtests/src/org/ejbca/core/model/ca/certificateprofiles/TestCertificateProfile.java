@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.TestTools;
@@ -234,6 +235,10 @@ public class TestCertificateProfile extends TestCase {
         assertEquals("", cp.getQCSemanticsId());
         cp.setQCSemanticsId("1.1.1.2");
         assertEquals("1.1.1.2", cp.getQCSemanticsId());
+        
+        assertNull(cp.getSignatureAlgorithm()); // default value null = inherit from CA
+        cp.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_ECDSA);
+        assertEquals(CATokenConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
     } // test08CertificateProfileValues
 
     public void test09CertificateExtensions() throws Exception{
