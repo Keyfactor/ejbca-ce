@@ -15,6 +15,8 @@
   static final String ACTION_EDIT_CERTIFICATEPROFILES     = "editcertificateprofiles";
   static final String ACTION_EDIT_CERTIFICATEPROFILE      = "editcertificateprofile";
 
+  static final String INHERITFROMCA = "inheritfromca";
+
   static final String CHECKBOX_VALUE           = CertificateProfile.TRUE;
 
 //  Used in profiles.jsp
@@ -110,6 +112,7 @@
   static final String SELECT_AVAILABLECAS                         = "selectavailablecas";
   static final String SELECT_AVAILABLEPUBLISHERS                  = "selectavailablepublishers";
   static final String SELECT_MSTEMPLATE                           = "selectmstemplate";
+  static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
   static final String SELECT_SUBJECTDNSUBSET                      = "selectsubjectdnsubset";
   static final String SELECT_SUBJECTALTNAMESUBSET                 = "selectsubjectaltnamesubset";
   static final String SELECT_USEDCERTIFICATEEXTENSIONS            = "selectusedcertificateextensions";
@@ -478,7 +481,15 @@
                 certificateprofiledata.setAvailableBitLengths(abl);
               }
 
-
+              value = request.getParameter(SELECT_SIGNATUREALGORITHM);
+              value = value.trim();
+              if(value != null) {
+                  if(value.equals(INHERITFROMCA)) {
+                      certificateprofiledata.setSignatureAlgorithm(null);
+                  } else {
+                      certificateprofiledata.setSignatureAlgorithm(value);
+                  }
+              }
 
               values = request.getParameterValues(SELECT_KEYUSAGE);
               boolean[] ku = new boolean[ keyusagetexts.length]; 
