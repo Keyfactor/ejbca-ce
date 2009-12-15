@@ -1,4 +1,4 @@
-<%@ page import="org.ejbca.core.ejb.ca.store.CertificateDataBean"%>
+<%@ page import="org.ejbca.core.ejb.ca.store.CertificateDataBean, org.ejbca.core.model.ca.catoken.CATokenConstants"%>
 <%
   CertificateProfile certprofiledata = cabean.getTempCertificateProfile();
   if(certprofiledata == null) {
@@ -1325,6 +1325,20 @@ function checkallfields(){
               <%= defaultavailablebitlengths[i] + " " + ejbcawebbean.getText("BITS") %>         
            </option>  
               <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("SIGNATUREALGORITHM") %> <br>&nbsp;
+      </td>
+      <td width="50%">
+        <% String signAlg = certificateprofiledata.getSignatureAlgorithm(); %>
+        <select name="<%=SELECT_SIGNATUREALGORITHM%>" size="1">
+             <option style="font-style:italic" value="<%= INHERITFROMCA %>" <% if(signAlg == null) { %>selected="selected"<% } %>><%= ejbcawebbean.getText("INHERITFROMCA") %></option>
+           <% for(int i = 0; i < CATokenConstants.AVAILABLE_SIGALGS.length; i++) { %>
+             <option value="<%= CATokenConstants.AVAILABLE_SIGALGS[i] %>" <% if((signAlg != null) && signAlg.equals(CATokenConstants.AVAILABLE_SIGALGS[i])) { %>selected="selected"<% } %>><%= CATokenConstants.AVAILABLE_SIGALGS[i] %></option>
+           <% } %>
         </select>
       </td>
     </tr>

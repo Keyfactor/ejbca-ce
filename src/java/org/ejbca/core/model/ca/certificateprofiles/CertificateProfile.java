@@ -47,7 +47,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 33.0;
+    public static final float LATEST_VERSION = (float) 34.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -108,7 +108,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** Constant indicating that any CA can be used with this certificate profile.*/
     public static final int ANYCA = -1;
 
-    /** Contant holding the default available bit lengths for certificate profiles */
+    /** Constant holding the default available bit lengths for certificate profiles */
     public static final int[] DEFAULTBITLENGTHS= {0,192,239,256,384,512,1024,2048,4096};
     
     // Profile fields
@@ -133,6 +133,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEDCERTIFICATEEXTENSIONS      = "usedcertificateextensions";
     protected static final String APPROVALSETTINGS				 = "approvalsettings";
     protected static final String NUMOFREQAPPROVALS				 = "numofreqapprovals";
+    protected static final String SIGNATUREALGORITHM             = "signaturealgorithm";
     //
     // CRL extensions
     protected static final String USECRLNUMBER                   = "usecrlnumber";
@@ -581,6 +582,35 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public int getMinimumAvailableBitLength(){return ((Integer) data.get(MINIMUMAVAILABLEBITLENGTH)).intValue();}
     public int getMaximumAvailableBitLength(){return ((Integer) data.get(MAXIMUMAVAILABLEBITLENGTH)).intValue();}
+
+    /**
+     * Returns the chosen algorithm to be used for signing the certificates or
+     * null if it is to be inherited from the CA (i.e., it is the same as the
+     * algorithm used to sign the CA certificate).
+     *
+     * @see org.ejbca.core.model.ca.catoken.CATokenConstants.AVAILABLE_SIGALGS
+     * @return JCE identifier for the signature algorithm or null if it is to
+     * be inherited from the CA (i.e., it is the same as the algorithm used to
+     * sign the CA certificate).
+     */
+    public String getSignatureAlgorithm(){
+        // If it's null, it is inherited from issuing CA.
+        return (String) data.get(SIGNATUREALGORITHM);
+    }
+
+    /**
+     * Sets the algorithm to be used for signing the certificates. A null value
+     * means that the signature algorithm is to be inherited from the CA (i.e.,
+     * it is the same as the algorithm used to sign the CA certificate).
+     *
+     * @param signAlg JCE identifier for the signature algorithm or null if it
+     * is to be inherited from the CA (i.e., it is the same as the algorithm
+     * used to sign the CA certificate).
+     * @see org.ejbca.core.model.ca.catoken.CATokenConstants.AVAILABLE_SIGALGS
+     */
+    public void setSignatureAlgorithm(String signAlg){
+        data.put(SIGNATUREALGORITHM, signAlg);
+    }
 
     public boolean[] getKeyUsage(){
       ArrayList keyusage = (ArrayList) data.get(KEYUSAGE);
@@ -1384,6 +1414,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if (data.get(APPROVALSETTINGS) == null) { // v 33
             	setApprovalSettings(Collections.EMPTY_LIST);
+            }
+
+            if (data.get(SIGNATUREALGORITHM) == null) { // v 34
+                setSignatureAlgorithm(null);
             }
 
             data.put(VERSION, new Float(LATEST_VERSION));

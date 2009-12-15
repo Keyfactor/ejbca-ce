@@ -436,7 +436,12 @@ public class X509CA extends CA implements Serializable {
         	throw new CAOfflineException(msg);
         }
 
-        final String sigAlg = getCAInfo().getCATokenInfo().getSignatureAlgorithm();
+        final String sigAlg;
+        if(certProfile.getSignatureAlgorithm() == null) {
+            sigAlg = getCAInfo().getCATokenInfo().getSignatureAlgorithm();
+        } else {
+            sigAlg = certProfile.getSignatureAlgorithm();
+        }
         X509Certificate cacert = (X509Certificate)getCACertificate();
         String dn = subject.getDN();        
         // Check if this is a root CA we are creating
