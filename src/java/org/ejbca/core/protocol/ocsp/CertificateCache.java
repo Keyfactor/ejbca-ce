@@ -123,7 +123,7 @@ public class CertificateCache {
 			if (ret != null) {
 				log.debug("Found certificate from subjectDN in cache. SubjectDN='"+CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret));					
 			} else {
-				log.debug("No certificate found in cache for subjectDN='subjectDN"+"'.");
+				log.debug("No certificate found in cache for subjectDN='"+subjectDN+"'.");
 			}
 		}
 
