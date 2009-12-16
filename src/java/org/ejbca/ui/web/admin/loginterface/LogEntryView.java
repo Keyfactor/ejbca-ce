@@ -94,25 +94,26 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        this.time = logentry.getTime();
       
        logentrydata[ADMINTYPE] = Integer.toString(logentry.getAdminType());
-       if(logentry.getAdminType() == Admin.TYPE_CLIENTCERT_USER){
+       if (logentry.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
           String dnstring = dnproxy.getSubjectDN(logentry.getAdminData());
-          if(dnstring !=null){
+          if (dnstring !=null) {
             DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN);           
             logentrydata[ADMINCERTSERNO] = logentry.getAdminData();
             logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.CN,0) + ", " + dn.getField(DNFieldExtractor.O,0);
           }  
-       }else{
-          if(logentry.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER){
-            if(logentry.getAdminData() != null)           
-              logentrydata[ADMINDATA] = "IP : " + logentry.getAdminData(); 
-            if(logentrydata[ADMINDATA] == null)
-             logentrydata[ADMINDATA] = "";              
-          }else{    
-            if(logentry.getAdminData() != null)           
-              logentrydata[ADMINDATA] = logentry.getAdminData(); 
-            if(logentrydata[ADMINDATA] == null)
-             logentrydata[ADMINDATA] = "";
+       } else {
+          if (logentry.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER) {
+            if (logentry.getAdminData() != null) {           
+              logentrydata[ADMINDATA] = "IP : " + logentry.getAdminData();
+            }
+          } else {    
+            if (logentry.getAdminData() != null) {           
+              logentrydata[ADMINDATA] = logentry.getAdminData();
+            }
           }  
+          if(logentrydata[ADMINDATA] == null) {
+        	  logentrydata[ADMINDATA] = "";
+          }
        }
        
               
@@ -121,17 +122,17 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        logentrydata[MODULE] = localmodulenames[logentry.getModule()];
          
        logentrydata[USERNAME] = logentry.getUsername();
-       if(logentrydata[USERNAME] != null && logentrydata[USERNAME].trim().equals(""))
-         logentrydata[USERNAME] = null;  
-
-       logentrydata[CERTIFICATESERNO] = logentry.getCertificateSNR();
-       if(logentry.getCertificateSNR() != null) 
-         if(logentry.getCertificateSNR().trim().equals(""))
+       if (logentrydata[USERNAME] != null && logentrydata[USERNAME].trim().equals("")) {
+         logentrydata[USERNAME] = null;
+       }
+       
+       if ( (logentry.getCertificateSNR() != null) && (logentry.getCertificateSNR().trim().equals("")) ) {
             logentrydata[CERTIFICATESERNO] = null;
-         else   
-            logentrydata[CERTIFICATESERNO] = logentry.getCertificateSNR();
+       } else {
+    	   logentrydata[CERTIFICATESERNO] = logentry.getCertificateSNR();
+       }
          
-       if(logentrydata[CERTIFICATESERNO] != null){
+       if (logentrydata[CERTIFICATESERNO] != null) {
           String dnstring = dnproxy.getSubjectDN(logentry.getCertificateSNR()); 
           if(dnstring != null){
             DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN); 
@@ -185,9 +186,9 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
           default:
             returnvalue = time.compareTo(((LogEntryView) obj).getTime());              
       }
-      if(this.sortby.getSortOrder() == SortBy.DECENDING)
+      if (this.sortby.getSortOrder() == SortBy.DECENDING) {
         returnvalue = 0-returnvalue;   
-          
+      }
       return returnvalue;  
     }
     
