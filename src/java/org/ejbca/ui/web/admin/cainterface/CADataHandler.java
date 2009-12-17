@@ -349,7 +349,7 @@ public class CADataHandler implements Serializable {
 	 }
  
  public void activateCAToken(int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException {
-   caadminsession.activateCAToken(administrator,caid,authorizationcode);	
+   caadminsession.activateCAToken(administrator,caid,authorizationcode, raadminsession.loadGlobalConfiguration(administrator));	
  }
  
  public void deactivateCAToken(int caid) throws AuthorizationDeniedException, EjbcaException{

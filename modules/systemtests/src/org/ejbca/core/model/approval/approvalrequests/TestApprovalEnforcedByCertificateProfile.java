@@ -48,7 +48,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -93,8 +93,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-			
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 	}
     
 	public void test00SetupDatabase() throws Exception {
@@ -205,14 +204,14 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 		
 		try {
 			TestTools.getCAAdminSession().deactivateCAToken(admin1, anotherCAID1);
-			TestTools.getCAAdminSession().activateCAToken(admin1, anotherCAID1, "foo123");
+			TestTools.getCAAdminSession().activateCAToken(admin1, anotherCAID1, "foo123", TestTools.getRaAdminSession().loadGlobalConfiguration(admin1));
 		} catch(WaitingForApprovalException ex) {
 			fail("This profile should not require approvals");
 		}
 		
 		try {
 			TestTools.getCAAdminSession().deactivateCAToken(admin1, anotherCAID2);
-			TestTools.getCAAdminSession().activateCAToken(admin1, anotherCAID2, "foo123");
+			TestTools.getCAAdminSession().activateCAToken(admin1, anotherCAID2, "foo123", TestTools.getRaAdminSession().loadGlobalConfiguration(admin1));
 			fail("This should have caused an approval request");
 		} catch(WaitingForApprovalException ex) {
 			// OK

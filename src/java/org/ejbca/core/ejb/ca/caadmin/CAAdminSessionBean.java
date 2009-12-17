@@ -69,10 +69,6 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -225,15 +221,6 @@ import org.ejbca.util.keystore.KeyTools;
  *   link="CreateCRLSession"
  *   
  * @ejb.ejb-external-ref
- *   description="The Ra Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/RaAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *   link="RaAdminSession"
- *
- * @ejb.ejb-external-ref
  *   description="The User Admin session bean"
  *   view-type="local"
  *   ref-name="ejb/UserAdminSessionLocal"
@@ -271,9 +258,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /** The local interface of the job runner session bean used to create crls.*/
     private ICreateCRLSessionLocal crlsession;
 
-    private IRaAdminSessionLocal raAdminSession;
-    private IUserAdminSessionLocal userAdminSession;
-
     /**
      * The local interface of the approval session bean
      */
@@ -292,30 +276,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		}  
     	}
     	return approvalsession;
-    }
-    
-    private IRaAdminSessionLocal getRaAdminSession() {
-    	if(raAdminSession == null){
-    		try {
-    			IRaAdminSessionLocalHome home = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-    			raAdminSession = home.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}  
-    	}
-    	return raAdminSession;
-    }
-    
-    private IUserAdminSessionLocal getUserAdminSession() {
-    	if(userAdminSession == null){
-    		try {
-    			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-    			userAdminSession = home.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}  
-    	}
-    	return userAdminSession;
     }
     
     /**
@@ -2580,7 +2540,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * 
      *  @param admin the adomistrator calling the method
      *  @param caid the is of the ca to activate
-     *  @param the authorizationcode used to unlock the CA tokens private keys. 
+     *  @param the authorizationcode used to unlock the CA tokens private keys.
+     *  @param gc is the GlobalConfiguration used to extract approval information 
      * 
      *  @throws AuthorizationDeniedException it the administrator isn't authorized to activate the CA.
      *  @throws CATokenAuthenticationFailedException if the current status of the ca or authenticationcode is wrong.
@@ -2590,7 +2551,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      *  
      * @ejb.interface-method
      */
-    public void activateCAToken(Admin admin, int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException{
+    public void activateCAToken(Admin admin, int caid, String authorizationcode, GlobalConfiguration gc) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException{
        // Authorize
         try{
             getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_ACTIVATECA);
@@ -2615,7 +2576,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ACTIVATECATOKEN, cainfo.getCAId(), cainfo.getCertificateProfileId());
         ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(),authorizationcode,admin,numOfApprovalsRequired,caid,ApprovalDataVO.ANY_ENDENTITYPROFILE);
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
-        	GlobalConfiguration gc = getRaAdminSession().loadGlobalConfiguration(admin);
         	getApprovalSession().addApprovalRequest(admin, ar, gc);
             String msg = intres.getLocalizedMessage("ra.approvalcaactivation");            	
         	throw new WaitingForApprovalException(msg);

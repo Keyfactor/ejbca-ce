@@ -62,7 +62,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             if ( (cainfo.getStatus() == SecConst.CA_OFFLINE) || 
             		(cainfo.getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE) ) {
             	try {
-                	getCAAdminSession().activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode);            		
+                	getCAAdminSession().activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode, getRaAdminSession().loadGlobalConfiguration(getAdmin()));            		
             	} catch (UnmarshalException e) {
             		// If we get a classnotfound we are probably getting an error back from the token, 
             		// with a class we don't have here at the CLI. It is probably invalid PIN

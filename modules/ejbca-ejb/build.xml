@@ -333,6 +333,35 @@
         	</classpath>
         </javac>
         -->
+    	<!-- User Data Source component... - Depends on the CA component -->
+    	<!--
+    	<echo message=" ** Validating component: User Data Source **"/>
+    	<mkdir dir="${src-temp.dir}/userdatasource"/>
+    	<mkdir dir="${build-temp.dir}/userdatasource"/>
+    	<copy todir="${src-temp.dir}/userdatasource">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ra/userdatasource/UserDataSourceDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ra/userdatasource/UserDataSourceDataLocal.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ra/userdatasource/**/*.java"/>
+    			<include name="org/ejbca/core/model/ra/userdatasource/**/*.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/userdatasource" destdir="${build-temp.dir}/userdatasource" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        	</classpath>
+        </javac>
+        -->
     </target>
 
     <target name="compile-util">
