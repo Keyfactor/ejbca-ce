@@ -160,7 +160,7 @@ public class HardTokenAuthorization implements Serializable {
         while(iter.hasNext()){
           AdminGroup next = (AdminGroup) iter.next();	
           try {          	
-			if(authorizationsession.isGroupAuthorizedNoLog(admin, next.getAdminGroupId() ,"/hardtoken_functionality/issue_hardtokens")) {
+			if(authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId() ,"/hardtoken_functionality/issue_hardtokens")) {
 			  authissueingadmgrps.add(next);
 			}
 		  } catch (AuthorizationDeniedException e) {}	          

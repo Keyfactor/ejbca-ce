@@ -672,7 +672,7 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test12SimpleRecover() throws Exception{
-    	TestTools.getKeyRecoverySession().markAsRecoverable(administrator, cert2, endEntityProfileId);    	
+    	TestTools.getUserAdminSession().prepareForKeyRecovery(administrator, username2, endEntityProfileId, cert2);
     	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("700");       	
@@ -733,7 +733,7 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test13RecoverWrongPassword() throws Exception{
-    	TestTools.getKeyRecoverySession().markAsRecoverable(administrator, cert2, endEntityProfileId);    	
+    	TestTools.getUserAdminSession().prepareForKeyRecovery(administrator, username2, endEntityProfileId, cert2);
     	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("701");       	

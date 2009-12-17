@@ -268,7 +268,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 	        TestTools.getKeyRecoverySession().addKeyRecoveryData(admin1, cert, username1, keypair);
 	        
 			assertTrue("Couldn't mark user for recovery in database", !TestTools.getKeyRecoverySession().isUserMarked(admin1, username1));
-	        TestTools.getKeyRecoverySession().markAsRecoverable(admin1, cert, endEntityProfileId);
+			TestTools.getUserAdminSession().prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
 	        assertTrue("Couldn't mark user for recovery in database", TestTools.getKeyRecoverySession().isUserMarked(admin1, username1));
 	        KeyRecoveryData data = TestTools.getKeyRecoverySession().keyRecovery(admin1, username1, SecConst.EMPTY_ENDENTITYPROFILE);
 	        assertTrue("Couldn't recover keys from database", Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
@@ -286,7 +286,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 		    TestTools.getKeyRecoverySession().addKeyRecoveryData(admin1, cert, username1, keypair);
 		    		    
 			assertTrue("Couldn't mark user for recovery in database", !TestTools.getKeyRecoverySession().isUserMarked(admin1, username1));
-	        TestTools.getKeyRecoverySession().markAsRecoverable(admin1, cert, endEntityProfileId);
+			TestTools.getUserAdminSession().prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
 	        fail("This should have caused an approval request");
 	    } catch(WaitingForApprovalException ex) {
 	    	// OK

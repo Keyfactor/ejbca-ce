@@ -242,7 +242,7 @@
     			<!-- Include the Mail utility and configuration as a subcomponent of Notification -->
     			<include name="org/ejbca/config/MailConfiguration.java"/>
     			<include name="org/ejbca/util/mail/*.java"/>
-    			<!-- Include the approval components -->
+    			<!-- Include the notification base components -->
 				<include name="org/ejbca/util/NotificationParamGen.java"/>
     		</fileset>
     	</copy>
@@ -262,14 +262,16 @@
     	<mkdir dir="${build-temp.dir}/approval"/>
     	<copy todir="${src-temp.dir}/approval">
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/approval/**/ApprovalDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/approval/**/ApprovalDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/approval/ApprovalDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/approval/ApprovalDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/approval/IApprovalSessionLocal.java"/>
+    			<include name="org/ejbca/core/ejb/approval/IApprovalSessionLocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ErrorCode.java"/>
     			<include name="org/ejbca/core/ejb/approval/**/*.java"/>
     			<include name="org/ejbca/core/model/approval/**/*.java"/>
-    	    	<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of in a good way right now.. -->
+    	    	<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
     			<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
     			<include name="org/ejbca/config/InternalConfiguration.java"/>
     			<include name="org/ejbca/config/WebConfiguration.java"/>
@@ -301,8 +303,36 @@
         		<pathelement location="${build-temp.dir}/notification"/>
         	</classpath>
         </javac>
-		<!--
-    			-->
+    	<!-- Key Recovery component - Is still dependend on the CA component... -->
+    	<!--
+    	<echo message=" ** Validating component: Key Recovery **"/>
+    	<mkdir dir="${src-temp.dir}/keyrecovery"/>
+    	<mkdir dir="${build-temp.dir}/keyrecovery"/>
+    	<copy todir="${src-temp.dir}/keyrecovery">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataPK.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/keyrecovery/**/*.java"/>
+    			<include name="org/ejbca/core/model/keyrecovery/**/*.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/keyrecovery" destdir="${build-temp.dir}/keyrecovery" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        	</classpath>
+        </javac>
+        -->
     </target>
 
     <target name="compile-util">

@@ -384,11 +384,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public boolean isGroupAuthorizedNoLog(Admin admin, int adminGroupId, String resource) throws AuthorizationDeniedException {
+    public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) throws AuthorizationDeniedException {
         if (updateNeccessary()) {
         	updateAuthorizationTree();
         }
-        return getAuthorizer().isGroupAuthorizedNoLog(admin, adminGroupId, resource);
+        return getAuthorizer().isGroupAuthorizedNoLog(adminGroupId, resource);
     }
 
     /**

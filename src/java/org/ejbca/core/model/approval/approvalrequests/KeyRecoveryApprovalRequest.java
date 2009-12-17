@@ -28,6 +28,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -83,13 +85,13 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		log.debug("Executing mark for recovery for user:" + username);
 		try{
 			ServiceLocator locator = ServiceLocator.getInstance();
-			IKeyRecoverySessionLocalHome keyrechome = (IKeyRecoverySessionLocalHome) locator.getLocalHome(IKeyRecoverySessionLocalHome.JNDI_NAME);	
-			IKeyRecoverySessionLocal keyrecsession = keyrechome.create();	
+			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.JNDI_NAME);	
+			IUserAdminSessionLocal userAdminSession = home.create();	
 
 			if(recoverNewestCert){
-				keyrecsession.markNewestAsRecoverable(getRequestAdmin(), username, getEndEntityProfileId());
+				userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), null);
 			}else{
-				keyrecsession.markAsRecoverable(getRequestAdmin(), cert, getEndEntityProfileId());
+				userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), cert);
 			}
  
 		    
@@ -106,7 +108,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	}
 
     /**
-     * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
+     * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {		
 		return new String(getApprovalType() + ";" + username).hashCode();
