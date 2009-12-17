@@ -225,7 +225,7 @@ public class TestAuthenticationSession extends TestCase {
     	
     	// First mark the user for recovery
     	TestTools.getKeyRecoverySession().addKeyRecoveryData(admin, cert, username1, keys);
-		TestTools.getKeyRecoverySession().markNewestAsRecoverable(admin,username1,SecConst.EMPTY_ENDENTITYPROFILE);
+    	TestTools.getUserAdminSession().prepareForKeyRecovery(admin, username1, SecConst.EMPTY_ENDENTITYPROFILE, null);
     	
 		assertTrue("Failure the users keyrecovery session should have been marked", TestTools.getKeyRecoverySession().isUserMarked(admin,username1));
 		

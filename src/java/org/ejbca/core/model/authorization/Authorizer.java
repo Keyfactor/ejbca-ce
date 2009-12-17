@@ -157,18 +157,14 @@ public class Authorizer extends Object implements java.io.Serializable {
     /**
      * Method to check if a group is authorized to a resource without performing any logging
      *
-     * @param AdminInformation information about the user to be authorized.
+     * @param adminGroupId to groupId to check authorization for
      * @param resource the resource to look up.
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isGroupAuthorizedNoLog(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
-        if(admin == null) {
-            throw  new AuthorizationDeniedException("Administrator is null, and therefore group not authorized to resource : " + resource);
-        }
-        
+    public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) throws AuthorizationDeniedException {
         // Check in accesstree.
-        if(!authorizationproxy.isGroupAuthorized(admin.getAdminInformation().getGroupId(), resource)) {
+        if(!authorizationproxy.isGroupAuthorized(adminGroupId, resource)) {
             throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
         }
         return true;

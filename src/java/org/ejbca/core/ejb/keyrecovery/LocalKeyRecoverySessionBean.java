@@ -36,10 +36,6 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
@@ -55,7 +51,6 @@ import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 
@@ -119,15 +114,6 @@ import org.ejbca.util.CertTools;
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *   link="CAAdminSession"
  *   
- * @ejb.ejb-external-ref
- *   description="The User Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/UserAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *   link="UserAdminSession"
- *
  * @ejb.ejb-external-ref description="The Approval Session Bean"
  *   view-type="local"
  *   ref-name="ejb/ApprovalSessionLocal"
@@ -153,15 +139,6 @@ import org.ejbca.util.CertTools;
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Ra Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/RaAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *   link="RaAdminSession"
  *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
@@ -199,18 +176,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     /** The local interface of the approval session bean*/
     private IApprovalSessionLocal approvalsession = null;
     
-    /** The local interface of the useradmin session bean*/
-    private IUserAdminSessionLocal useradminsession = null;
-    
-    
-
     /** The local interface of  log session bean */
     private ILogSessionLocal logsession = null;
 
     /** The local interface of  authorization session bean */
 	private IAuthorizationSessionLocal authorizationsession;
-	
-    private IRaAdminSessionLocal raAdminSession;
 	
 	/**
 	 * Method checking the following authorizations:
@@ -248,61 +218,26 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     }
 
     /**
-     * Help method that checks the CA data config if specified action 
-     * requires approvals and how many
-     * @param action one of CAInfo.REQ_APPROVAL_ constants
-     * @param caid of the ca to check
-     * @return 0 of no approvals is required othervise the number of approvals
-     */
-    private int getNumOfApprovalRequired(Admin admin,int action, int caid, int certprofileid) {
-    	return caadminsession.getNumOfApprovalRequired(admin, action, caid, certprofileid);
-	}
-    
-    private IUserAdminSessionLocal getUserAdminSession(){
-    	if(useradminsession == null){
-    	  try {
-    	    IUserAdminSessionLocalHome  useradminhome = (IUserAdminSessionLocalHome)	 getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);    	  
-			useradminsession = useradminhome.create();
-		  } catch (CreateException e) {
-			throw new EJBException(e);		
-    	  }
-    	}	
-    	return useradminsession;
-    }
-    
-    private IRaAdminSessionLocal getRaAdminSession() {
-    	if(raAdminSession == null){
-    		try {
-    			IRaAdminSessionLocalHome approvalsessionhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-    			raAdminSession = approvalsessionhome.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}  
-    	}
-    	return raAdminSession;
-    }
-
-    /**
      * Help method to check if approval of key recovery is required
      * @param admin 
      * @param certificate 
      * @param username 
      * @param userdata 
      * @param checkNewest 
+     * @param gc The GlobalConfiguration used to extract approval information
      * @throws ApprovalException 
      * @throws WaitingForApprovalException 
      */
-    private void checkIfApprovalRequired(Admin admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) throws ApprovalException, WaitingForApprovalException{    	
+    private void checkIfApprovalRequired(Admin admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest, GlobalConfiguration gc) throws ApprovalException, WaitingForApprovalException{    	
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
 		final CertificateInfo certinfo = certificatestoresession.getCertificateInfo(admin, CertTools.getFingerprintAsString(certificate));
         
         // Check if approvals is required.
-        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certinfo.getCertificateProfileId());
+        int numOfApprovalsRequired = caadminsession.getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_KEYRECOVER, caid, certinfo.getCertificateProfileId());
         if (numOfApprovalsRequired > 0){    
 
 			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,endEntityProfileId);
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){
-				GlobalConfiguration gc = getRaAdminSession().loadGlobalConfiguration(admin);
 				approvalsession.addApprovalRequest(admin, ar, gc);
 	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	
 				throw new WaitingForApprovalException(msg);
@@ -584,6 +519,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @param admin the administrator calling the function
      * @param username or the user.
      * @param the end entity profile of the user, used for access control
+     * @param gc The GlobalConfiguration used to extract approval information
      *
      * @return true if operation went successful or false if no certificates could be found for
      *         user, or user already marked.
@@ -595,7 +531,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public boolean markNewestAsRecoverable(Admin admin, String username, int endEntityProfileId) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
+    public boolean markNewestAsRecoverable(Admin admin, String username, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
     	if (log.isTraceEnabled()) {
             log.trace(">markNewestAsRecoverable(user: " + username + ")");
     	}
@@ -633,9 +569,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                     // Check that the administrator is authorized to keyrecover
                     authorizedToKeyRecover(admin, endEntityProfileId);        	        	
                     // Check if approvals is required.            
-                    checkIfApprovalRequired(admin,newestcertificate,username,endEntityProfileId,true); 
+                    checkIfApprovalRequired(admin,newestcertificate,username,endEntityProfileId,true, gc); 
                     newest.setMarkedAsRecoverable(true);
-                    getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_KEYRECOVERY);
                     returnval = true;
                 }
 
@@ -658,6 +593,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      *
      * @param admin the administrator calling the function
      * @param certificate the certificate used with the keys about to be removed.
+     * @param gc The GlobalConfiguration used to extract approval information
      *
      * @return true if operation went successful or false if  certificate couldn't be found.
      * @throws AuthorizationDeniedException 
@@ -668,7 +604,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
+    public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);        
     	if (log.isTraceEnabled()) {
@@ -683,9 +619,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             // Check that the administrator is authorized to keyrecover
             authorizedToKeyRecover(admin, endEntityProfileId);        	        	
             // Check if approvals is required.            
-            checkIfApprovalRequired(admin,certificate,username,endEntityProfileId,false); 
+            checkIfApprovalRequired(admin,certificate,username,endEntityProfileId,false, gc); 
             krd.setMarkedAsRecoverable(true);
-            getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_KEYRECOVERY);
             String msg = intres.getLocalizedMessage("keyrecovery.markedcert", hexSerial, dn);            	
             logsession.log(admin, certificate, LogConstants.MODULE_KEYRECOVERY, new java.util.Date(), username,
                     certificate, LogConstants.EVENT_INFO_KEYRECOVERY, msg);

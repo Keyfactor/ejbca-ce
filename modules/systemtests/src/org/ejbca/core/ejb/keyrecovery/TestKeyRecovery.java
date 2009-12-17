@@ -95,7 +95,7 @@ public class TestKeyRecovery extends TestCase {
         log.trace(">test02MarkAndRecoverKeyPair()");
         CertTools.installBCProvider();
         assertTrue("Couldn't mark user for recovery in database", !TestTools.getKeyRecoverySession().isUserMarked(admin, user));
-        TestTools.getKeyRecoverySession().markAsRecoverable(admin, cert,SecConst.EMPTY_ENDENTITYPROFILE);
+        TestTools.getUserAdminSession().prepareForKeyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
         assertTrue("Couldn't mark user for recovery in database", TestTools.getKeyRecoverySession().isUserMarked(admin, user));
         KeyRecoveryData data = TestTools.getKeyRecoverySession().keyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
 

@@ -1179,8 +1179,7 @@ public class EjbcaWS implements IEjbcaWS {
 			ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);						
 
 			// Do the work, mark user for key recovery
-			ejbhelper.getKeyRecoverySession().markNewestAsRecoverable(admin, username, userdata.getEndEntityProfileId());
-
+			ejbhelper.getUserAdminSession().prepareForKeyRecovery(admin, userdata.getUsername(), userdata.getEndEntityProfileId(), null);
 		}  catch (FinderException e) {
 			throw new NotFoundException(e.getMessage(), e);
 		} catch (EJBException e) {

@@ -2374,6 +2374,37 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         return returnval;
     }
 
+    /**
+     * Ḿark a user's certificate for key recovery and set the user status to UserDataConstants.STATUS_KEYRECOVERY.
+     *
+     * @param admin used to authorize this action
+     * @param username is the user to key recover a certificate for
+     * @param certificate is the certificate to recover the keys for. Use 'null' to recovery the certificate with latest not before date.
+     * @return true if the operation was succesful
+     * @throws WaitingForApprovalException 
+     * @throws ApprovalException 
+     * @throws AuthorizationDeniedException 
+     * 
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public boolean prepareForKeyRecovery(Admin admin, String username, int endEntityProfileId, Certificate certificate) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
+    	boolean ret;
+    	GlobalConfiguration gc = raadminsession.loadGlobalConfiguration(admin);
+    	if (certificate == null) {
+    		ret = getKeyRecoverySession().markNewestAsRecoverable(admin, username, endEntityProfileId, gc);
+    	} else {
+    		ret = getKeyRecoverySession().markAsRecoverable(admin, certificate, endEntityProfileId, gc);
+    	}
+        try {
+			setUserStatus(admin, username, UserDataConstants.STATUS_KEYRECOVERY);
+		} catch (FinderException e) {
+			ret = false;
+			log.info("prepareForKeyRecovery: No such user: " + username);
+		}
+    	return ret;
+    }
+
     //
     // Private helper methods
     //

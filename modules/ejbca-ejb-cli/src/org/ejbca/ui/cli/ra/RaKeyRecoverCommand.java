@@ -64,8 +64,11 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             	getLogger().error("The user doesn't exist.");
             	return;
             }
-            getKeyRecoverySession().markAsRecoverable(getAdmin(), cert, userdata.getEndEntityProfileId());
-            getLogger().info("Keys corresponding to given certificate has been marked for recovery.");                           
+            if (getUserAdminSession().prepareForKeyRecovery(getAdmin(), userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
+                getLogger().info("Keys corresponding to given certificate has been marked for recovery.");                           
+            } else {
+                getLogger().info("Failed to mark keys corresponding to given certificate for recovery.");                           
+            }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

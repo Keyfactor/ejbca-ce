@@ -782,13 +782,13 @@ public class RAInterfaceBean implements java.io.Serializable {
 
     public void markForRecovery(String username, Certificate cert) throws Exception{
       boolean authorized = true;
-      int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
+      int endEntityProfileId = adminsession.findUser(administrator, username).getEndEntityProfileId();
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
-        authorized = endEntityAuthorization(administrator, profileid, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);
+        authorized = endEntityAuthorization(administrator, endEntityProfileId, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);
       }
 
       if(authorized){
-        keyrecoverysession.markAsRecoverable(administrator, cert, profileid);        
+    	  adminsession.prepareForKeyRecovery(administrator, username, endEntityProfileId, cert);
       }
     }
 

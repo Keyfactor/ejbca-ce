@@ -49,8 +49,11 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     			getLogger().error("The user doesn't exist.");
     			return;
     		}
-    		getKeyRecoverySession().markNewestAsRecoverable(getAdmin(), username,userdata.getEndEntityProfileId());
-    		getLogger().info("Key corresponding to users newest certificate has been marked for recovery.");             
+    		if (getUserAdminSession().prepareForKeyRecovery(getAdmin(), userdata.getUsername(), userdata.getEndEntityProfileId(), null)) {
+        		getLogger().info("Key corresponding to users newest certificate has been marked for recovery.");             
+    		} else {
+        		getLogger().info("Failed to mark key corresponding to users newest certificate for recovery.");             
+    		}
     	} catch (Exception e) {
     		throw new ErrorAdminCommandException(e);
     	}
