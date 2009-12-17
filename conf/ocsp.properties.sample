@@ -4,6 +4,9 @@
 # responder which will generate responses when no real CA can be found from the request. 
 # This is used to generate 'unknown' responses when a request is received for a certificate 
 # that is not signed by any CA on this server. Recommended to use same as ca.dn.
+#
+# For the internal OCSP responder this is the subject DN of the CA to use for signing
+# For an external OCSP responder this is the issuer DN of the OCSP responders certificate to use for signing, i.e. the CAs subject DN.
 ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 
 # If set to true the OCSP responses will be signed directly by the CAs certificate instead 
