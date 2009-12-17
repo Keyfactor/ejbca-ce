@@ -28,7 +28,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 
 /**
@@ -48,7 +48,7 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
     
     public TestCAKeystoreExportRemoveRestore(String name) {
         super(name);
-        CertTools.installBCProviderIfNotAvailable();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
     }
     
     /**
@@ -423,7 +423,7 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 		assertEquals("offline token", ICAToken.STATUS_OFFLINE, info.getCATokenInfo().getCATokenStatus());
 		
 		// Should not be possible to activate
-		caadminsession.activateCAToken(admin, cainfo.getCAId(), capassword);	
+		caadminsession.activateCAToken(admin, cainfo.getCAId(), capassword, TestTools.getRaAdminSession().loadGlobalConfiguration(admin));	
 		info = caadminsession.getCAInfo(admin, caname);
 		assertEquals("offline token", ICAToken.STATUS_OFFLINE, info.getCATokenInfo().getCATokenStatus());
 		

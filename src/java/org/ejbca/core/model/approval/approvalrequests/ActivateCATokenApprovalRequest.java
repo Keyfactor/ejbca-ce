@@ -101,9 +101,8 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 		    		ICAAdminSessionHome.class);
 			ICAAdminSessionRemote caadminsession = caadminsessionhome.create();
 			
-			caadminsession.activateCAToken(getRequestAdmin(), getCAId(), authenticationCode);
-			
-			
+			// Use 'null' for GlobalConfiguration here since it's only used to extract approval information in the underlying code..
+			caadminsession.activateCAToken(getRequestAdmin(), getCAId(), authenticationCode, null);
 		} catch (CATokenAuthenticationFailedException e) {
 			throw new ApprovalRequestExecutionException("CA Token Authentication Failed :" + e.getMessage(), e);
 		} catch (AuthorizationDeniedException e) {
