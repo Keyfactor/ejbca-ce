@@ -117,7 +117,7 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	private String checkPublishers(){
 		log.debug("Checking publishers.");
 		String retval = "";
-		Iterator iter = getPublisherSession().getAuthorizedPublisherIds(admin).iterator();
+		Iterator iter = getCAAdminSession().getAuthorizedPublisherIds(admin).iterator();
 		while(iter.hasNext()){
 			Integer publisherId = (Integer) iter.next();
 			try {

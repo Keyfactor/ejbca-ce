@@ -604,39 +604,30 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
     } // renameHardTokenProfile
 
     /**
-     * Retrives a Collection of id:s (Integer) to authorized publishers.
+     * Retrives a Collection of id:s (Integer) for all authorized publishers if the Admin has the SUPERADMIN role.
+     * 
+     * Use CAAdminSession.getAuthorizedPublisherIds to get the list for any administrator.
      *
+     * @param admin Should be an Admin with superadmin credentials
      * @return Collection of id:s (Integer)
+     * @throws AuthorizationDeniedException if the admin does not have superadmin credentials
      * @ejb.interface-method view-type="both"
      */
-    public Collection getAuthorizedPublisherIds(Admin admin) {
+    public Collection getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
         HashSet returnval = new HashSet();
-        Collection result = null;
-        boolean superadmin = false;
-        // If superadmin return all available publishers
         try {
-            superadmin = getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
-            result = this.publisherhome.findAll();
-            Iterator i = result.iterator();
+            getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+            Collection allPublishers = this.publisherhome.findAll();
+            Iterator i = allPublishers.iterator();
             while (i.hasNext()) {
                 PublisherDataLocal next = (PublisherDataLocal) i.next();
                 returnval.add(next.getId());
             }
-        } catch (AuthorizationDeniedException e1) {
-        	log.debug("AuthorizationDeniedException: ", e1);
         } catch (FinderException fe) {
         	log.error("FinderException looking for all publishers: ", fe);
         }
-
-        // If CA-admin return publishers he is authorized to 
-        if (!superadmin) {
-            Iterator authorizedcas = getCAAdminSession().getAvailableCAs(admin).iterator();
-            while (authorizedcas.hasNext()) {
-                returnval.addAll(this.getCAAdminSession().getCAInfo(admin, ((Integer) authorizedcas.next()).intValue()).getCRLPublishers());
-            }
-        }
         return returnval;
-    } // getAuthorizedPublisherIds
+    }
 
     /**
      * Method creating a hashmap mapping publisher id (Integer) to publisher name (String).

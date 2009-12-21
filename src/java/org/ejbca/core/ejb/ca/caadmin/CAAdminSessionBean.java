@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
@@ -63,6 +64,8 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
@@ -229,6 +232,15 @@ import org.ejbca.util.keystore.KeyTools;
  *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
  *   link="UserAdminSession"
  *
+ * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places
+ * from the main database. Publishers runs as local beans"
+ *   view-type="local"
+ *   ref-name="ejb/PublisherSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
+ *   link="PublisherSession"
+ *
  * @jboss.method-attributes
  *   pattern = "get*"
  *   read-only = "true"
@@ -258,6 +270,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /** The local interface of the job runner session bean used to create crls.*/
     private ICreateCRLSessionLocal crlsession;
 
+    private IPublisherSessionLocal publisherSession;
+
     /**
      * The local interface of the approval session bean
      */
@@ -278,6 +292,18 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	return approvalsession;
     }
     
+    private IPublisherSessionLocal getPublisherSession(){
+    	if(publisherSession == null){
+    		try {
+    			IPublisherSessionLocalHome home = (IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
+    			publisherSession = home.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}  
+    	}
+    	return publisherSession;
+    }
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -2933,5 +2959,26 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		throw new EJBException(cve);
     	}
     }
-
+    
+    /**
+     * Retrives a Collection of id:s (Integer) to authorized publishers.
+     *
+     * @param admin
+     * @return Collection of id:s (Integer)
+     * @ejb.interface-method view-type="both"
+     */
+    public Collection getAuthorizedPublisherIds(Admin admin) {
+        HashSet returnval = new HashSet();
+        try {
+            // If superadmin return all available publishers
+            returnval.addAll(getPublisherSession().getAllPublisherIds(admin));
+        } catch (AuthorizationDeniedException e1) {
+            // If regular CA-admin return publishers he is authorized to 
+            Iterator authorizedcas = getAvailableCAs(admin).iterator();
+            while (authorizedcas.hasNext()) {
+                returnval.addAll(getCAInfo(admin, ((Integer) authorizedcas.next()).intValue()).getCRLPublishers());
+            }
+        }
+        return returnval;
+    }
 } //CAAdminSessionBean
