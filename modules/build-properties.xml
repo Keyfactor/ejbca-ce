@@ -168,6 +168,7 @@
 			<!-- jboss -->
 			<include name="client/jbossall-client.jar" />
 			<include name="client/jboss-j2ee.jar" />
+			<include name="client/jnp-client.jar" />
 			<!-- glassfish -->
 			<include name="lib/javaee.jar"/>
 			<include name="lib/appserv-rt.jar"/>
