@@ -20,5 +20,9 @@
         <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
         <jndi-name>CAAdminSession</jndi-name>
     </ejb-ref>
+    <ejb-ref>
+        <ejb-ref-name>ejb/CreateCRLSessionLocal</ejb-ref-name>
+        <jndi-name>CreateCRLSession</jndi-name>
+    </ejb-ref>
 
 </sun-web-app>

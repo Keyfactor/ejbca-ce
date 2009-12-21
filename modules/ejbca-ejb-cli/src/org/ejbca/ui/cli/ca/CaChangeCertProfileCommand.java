@@ -72,9 +72,10 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		getLogger().info("Description: " + getDescription());
 		getLogger().info("Usage: " + getCommand() + " <caname> <certificateprofile>");
 		String existingCasInfo = " Existing CAs: ";
+		Collection<Integer> cas = null;
 		try {
 			// Print available CAs
-			Collection<Integer> cas = getCAAdminSession().getAvailableCAs(getAdmin());
+			cas = getCAAdminSession().getAvailableCAs(getAdmin());
 			boolean first = true;
 			for (Integer caid : cas) {
 				if (first) {
@@ -91,8 +92,8 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		getLogger().info(existingCasInfo);
 		try {
 			// Print available Root CA and Sub CA profiles
-			Collection<Integer> cpssub = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_SUBCA);
-			Collection<Integer> cpsroot = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ROOTCA);
+			Collection<Integer> cpssub = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_SUBCA, cas);
+			Collection<Integer> cpsroot = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ROOTCA, cas);
 			HashMap<String,Collection<Integer>> cps = new HashMap<String,Collection<Integer>>();
 			cps.put("Root CA profiles: ", cpsroot);
 			cps.put("Sub CA profiles: ", cpssub);

@@ -36,6 +36,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
@@ -98,6 +100,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String FORMAT_PROPERTY = "format";
 
     private ICertificateStoreSessionLocal storesession = null;
+	private ICreateCRLSessionLocal createCRLSession = null;
     private ISignSessionLocal signsession = null;
     private ICAAdminSessionLocal casession = null;
 
@@ -133,6 +136,17 @@ public class CertDistServlet extends HttpServlet {
     		}
     	}
     	return casession;
+    }
+    private synchronized ICreateCRLSessionLocal getCreateCRLSession(){
+		if(createCRLSession == null){	
+    		try {
+    			ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
+    			createCRLSession = home.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return createCRLSession;
     }
     /**
      * init servlet
@@ -196,12 +210,11 @@ public class CertDistServlet extends HttpServlet {
             command = "";
         if ((command.equalsIgnoreCase(COMMAND_CRL) || command.equalsIgnoreCase(COMMAND_DELTACRL)) && issuerdn != null) {
             try {
-                ICertificateStoreSessionLocal store = getStoreSession();
                 byte[] crl = null;
                 if (command.equalsIgnoreCase(COMMAND_CRL)) {
-                	crl = store.getLastCRL(administrator, issuerdn, false); // CRL
+                	crl = getCreateCRLSession().getLastCRL(administrator, issuerdn, false); // CRL
                 } else {
-                	crl = store.getLastCRL(administrator, issuerdn, true); // deltaCRL
+                	crl = getCreateCRLSession().getLastCRL(administrator, issuerdn, true); // deltaCRL
                 } 
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);

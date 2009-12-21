@@ -590,7 +590,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         		String fp = this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
         		// If we count not create a full CRL (for example CVC CAs does not even support CRLs), don't try to create a delta CRL.
         		if (fp != null) {
-            		CRLInfo crlInfo = this.certificatestoresession.getCRLInfo(admin, fp);
+            		CRLInfo crlInfo = getCRLCreateSession().getCRLInfo(admin, fp);
             		if(cainfo.getDeltaCRLPeriod() > 0) {
             			this.getCRLCreateSession().runDeltaCRL(admin, cainfo.getSubjectDN(), crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
             		}        			

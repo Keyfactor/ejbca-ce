@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -25,8 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.RequestHelper;
@@ -47,7 +45,7 @@ import org.ejbca.util.CertTools;
  * 
  * @web.servlet name = "GetCRL"
  *              display-name = "GetCRLServlet"
- *              description="Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI"
+ *              description="Used to retrieve CA certificate request and Processed CA Certificates from AdminWeb GUI"
  *              load-on-startup = "99"
  *
  * @web.servlet-mapping url-pattern = "/ca/getcrl/getcrl"
@@ -64,17 +62,17 @@ public class GetCRLServlet extends HttpServlet {
     private static final String COMMAND_DELTACRL = "deltacrl";
     private static final String ISSUER_PROPERTY = "issuer";
 
-    private ICertificateStoreSessionLocalHome storehome = null;
+    private ICreateCRLSessionLocalHome createCRLSessionHome = null;
 
-    private synchronized ICertificateStoreSessionLocalHome getStoreHome() throws IOException {
+    private synchronized ICreateCRLSessionLocalHome getCreateCRLSessionHome() throws IOException {
         try{
-            if(storehome == null){
-              storehome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+            if(createCRLSessionHome == null){
+              createCRLSessionHome = (ICreateCRLSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
             }
           } catch(Exception e){
              throw new java.io.IOException("Authorization Denied");
           }
-          return storehome;
+          return createCRLSessionHome;
     }
       
 
@@ -128,8 +126,7 @@ public class GetCRLServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
                 Admin admin = ejbcawebbean.getAdminObject();
-                ICertificateStoreSessionLocal store = getStoreHome().create();
-                byte[] crl = store.getLastCRL(admin, issuerdn, false);
+                byte[] crl = getCreateCRLSessionHome().create().getLastCRL(admin, issuerdn, false);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
@@ -151,8 +148,7 @@ public class GetCRLServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_DELTACRL) && issuerdn != null) {
         	try {
         		Admin admin = ejbcawebbean.getAdminObject();
-        		ICertificateStoreSessionLocal store = getStoreHome().create();
-        		byte[] crl = store.getLastCRL(admin, issuerdn, true);
+        		byte[] crl = getCreateCRLSessionHome().create().getLastCRL(admin, issuerdn, true);
         		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         		String dn = CertTools.getIssuerDN(x509crl);
         		String filename = "delta_" + CertTools.getPartFromDN(dn,"CN")+".crl";
@@ -169,9 +165,5 @@ public class GetCRLServlet extends HttpServlet {
         		return;
         	}
         }
-
-
-
     } // doGet
-
 }

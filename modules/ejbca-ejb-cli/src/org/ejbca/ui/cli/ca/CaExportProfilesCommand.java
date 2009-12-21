@@ -47,7 +47,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	getLogger().error("Error: '"+outpath+"' is not a directory.");
                 return;
             }
-            Collection certprofids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(),0);                                               
+            Collection certprofids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(),0, getCAAdminSession().getAvailableCAs(getAdmin()));                                               
 			Collection endentityprofids = getRaAdminSession().getAuthorizedEndEntityProfileIds(getAdmin());
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");

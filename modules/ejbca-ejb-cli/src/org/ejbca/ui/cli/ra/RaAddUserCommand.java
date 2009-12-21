@@ -69,14 +69,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if ( (args.length < 9) || (args.length > 12) ) {
     			getLogger().info("Description: " + getDescription());
-                Collection certprofileids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY);
+                Collection caids = getCAAdminSession().getAvailableCAs(getAdmin());
+                HashMap caidtonamemap = getCAAdminSession().getCAIdToNameMap(getAdmin());
+                
+                Collection certprofileids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, caids);
                 HashMap certificateprofileidtonamemap = getCertificateStoreSession().getCertificateProfileIdToNameMap(getAdmin());
                 
                 Collection endentityprofileids =  getRaAdminSession().getAuthorizedEndEntityProfileIds(getAdmin());
                 HashMap endentityprofileidtonamemap = getRaAdminSession().getEndEntityProfileIdToNameMap(getAdmin());
-                
-                Collection caids = getCAAdminSession().getAvailableCAs(getAdmin());
-                HashMap caidtonamemap = getCAAdminSession().getCAIdToNameMap(getAdmin());
                 
                 if( usehardtokens) {
                     getLogger().info("Usage: " + getCommand() + " <username> <password> <dn>" + 

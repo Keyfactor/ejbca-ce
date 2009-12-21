@@ -41,5 +41,8 @@
   <ejbRefBindings xmi:id="EJBLocalRefBinding_13" jndiName="AuthenticationSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_13"/>
   </ejbRefBindings>
+  <ejbRefBindings xmi:id="EJBLocalRefBinding_14" jndiName="CreateCRLSession">
+    <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_14"/>
+  </ejbRefBindings>
 
 </webappbnd:WebAppBinding>

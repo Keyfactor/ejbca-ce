@@ -15,6 +15,9 @@ package org.ejbca.core.ejb.ca.crl;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -25,10 +28,14 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CRLDataLocal;
+import org.ejbca.core.ejb.ca.store.CRLDataLocalHome;
+import org.ejbca.core.ejb.ca.store.CRLDataPK;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocal;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataPK;
@@ -47,12 +54,13 @@ import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.JDBCUtil;
 
 
 /**
- * Generates a new CRL by looking in the database for revoked certificates and
- * generating a CRL.
- *
+ * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs.
+ * CRLs are signed using RSASignSessionBean.
+ * 
  * @version $Id$
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
@@ -83,6 +91,19 @@ import org.ejbca.util.CertTools;
  *   local-class="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
  *   remote-class="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote"
  *   
+ * @ejb.ejb-external-ref description="The CRL entity bean used to store and fetch CRLs"
+ *   view-type="local"
+ *   ref-name="ejb/CRLDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.ca.store.CRLDataLocalHome"
+ *   business="org.ejbca.core.ejb.ca.store.CRLDataLocal"
+ *   link="CRLData"
+ *
+ * @ejb.env-entry description="JDBC datasource to be used"
+ *   name="DataSource"
+ *   type="java.lang.String"
+ *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
+ *
  * @ejb.ejb-external-ref
  *   description="The log session bean"
  *   view-type="local"
@@ -134,6 +155,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
+    /** The home interface of CRL entity bean */
+    private CRLDataLocalHome crlDataHome = null;
+
     /** The local home interface of Certificate store */
     private ICertificateStoreSessionLocalHome storeHome = null;
 
@@ -155,6 +179,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate () throws CreateException {
+        crlDataHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
         caadminHome = (ICAAdminSessionLocalHome)getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
         storeHome = (ICertificateStoreSessionLocalHome)getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         certHome = (CertificateDataLocalHome)getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
@@ -319,7 +344,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             }
     		if (caCertSubjectDN!=null && cainfo instanceof X509CAInfo) { // Only create CRLs for X509 CAs
     			if ( (baseCrlNumber == -1) && (baseCrlCreateTime == -1) ) {
-        			CRLInfo basecrlinfo = store.getLastCRLInfo(admin, caCertSubjectDN, false);
+        			CRLInfo basecrlinfo = getLastCRLInfo(admin, caCertSubjectDN, false);
         			baseCrlCreateTime = basecrlinfo.getCreateDate().getTime();
         			baseCrlNumber = basecrlinfo.getLastCRLNumber();    				
     			}
@@ -441,7 +466,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
             			        	   }
             			               final String certSubjectDN = CertTools.getSubjectDN(cacert);
-            			               CRLInfo crlinfo = store.getLastCRLInfo(admin,certSubjectDN,false);
+            			               CRLInfo crlinfo = getLastCRLInfo(admin,certSubjectDN,false);
             			               if (log.isDebugEnabled()) {
                 			               if (crlinfo == null) {
                 			            	   log.debug("Crlinfo was null");
@@ -577,7 +602,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             								log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
             							}
             							final String certSubjectDN = CertTools.getSubjectDN(cacert);
-            							CRLInfo deltacrlinfo = store.getLastCRLInfo(admin, certSubjectDN, true);
+            							CRLInfo deltacrlinfo = getLastCRLInfo(admin, certSubjectDN, true);
             							if (log.isDebugEnabled()) {
             								if (deltacrlinfo == null) {
             									log.debug("DeltaCrlinfo was null");
@@ -620,6 +645,202 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 
     	return createddeltacrls;
     }
+
+    /**
+     * Stores a CRL
+     *
+     * @param incrl  The DER coded CRL to be stored.
+     * @param cafp   Fingerprint (hex) of the CAs certificate.
+     * @param number CRL number.
+     * @param issuerDN the issuer of the CRL
+     * @param thisUpdate when this CRL was created
+     * @param nextUpdate when this CRL expires
+     * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
+     * @return true if storage was successful.
+     * @ejb.transaction type="Required"
+     * @ejb.interface-method
+     */
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
+    	if (log.isTraceEnabled()) {
+        	log.trace(">storeCRL(" + cafp + ", " + number + ")");
+    	}
+        try {
+        	boolean deltaCRL = deltaCRLIndicator > 0;
+        	int lastNo = getLastCRLNumber(admin, issuerDN, deltaCRL);
+        	if (number <= lastNo) {
+        		// There is already a CRL with this number, or a later one stored. Don't create duplicates
+            	String msg = intres.getLocalizedMessage("store.storecrlwrongnumber", number, lastNo);            	
+            	logsession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);        		
+        	}
+            crlDataHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
+        	String msg = intres.getLocalizedMessage("store.storecrl", new Integer(number), null);            	
+        	logsession.log(admin, issuerDN.toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
+        } catch (Exception e) {
+        	String msg = intres.getLocalizedMessage("store.storecrl");            	
+            logsession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
+            throw new EJBException(e);
+        }
+        log.trace("<storeCRL()");
+        return true;
+    } // storeCRL
+
+    /**
+     * Retrieves the latest CRL issued by this CA.
+     *
+     * @param admin Administrator performing the operation
+     * @param issuerdn the CRL issuers DN (CAs subject DN)
+     * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
+     * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getLastCRL(" + issuerdn + ", "+deltaCRL+")");
+    	}
+        try {
+            int maxnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
+            X509CRL crl = null;
+            try {
+                CRLDataLocal data = crlDataHome.findByIssuerDNAndCRLNumber(issuerdn, maxnumber);
+                crl = data.getCRL();
+            } catch (FinderException e) {
+                crl = null;
+            }
+            trace("<getLastCRL()");
+            if (crl == null) {
+            	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, maxnumber);            	
+                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
+                return null;
+            }
+        	String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, new Integer(maxnumber));            	
+            logsession.log(admin, crl.getIssuerDN().toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_GETLASTCRL, msg);
+            return crl.getEncoded();
+        } catch (Exception e) {
+        	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn);            	
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
+            throw new EJBException(e);
+        }
+    } //getLastCRL
+
+    /**
+     * Retrieves the information about the lastest CRL issued by this CA. Retreives less information than getLastCRL, i.e. not the actual CRL data.
+     *
+     * @param admin Administrator performing the operation
+     * @param issuerdn the CRL issuers DN (CAs subject DN)
+     * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
+     * @return CRLInfo of last CRL by CA or null if no CRL exists.
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getLastCRLInfo(" + issuerdn + ", "+deltaCRL+")");
+    	}
+        int crlnumber = 0;
+        try {
+            crlnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
+            CRLInfo crlinfo = null;
+            try {
+                CRLDataLocal data = crlDataHome.findByIssuerDNAndCRLNumber(issuerdn, crlnumber);
+                crlinfo = new CRLInfo(data.getIssuerDN(), crlnumber, data.getThisUpdate(), data.getNextUpdate());
+            } catch (FinderException e) {
+            	if (deltaCRL && (crlnumber == 0)) {
+            		log.debug("No delta CRL exists for CA with dn '"+issuerdn+"'");
+            	} else if (crlnumber == 0) {
+            		log.debug("No CRL exists for CA with dn '"+issuerdn+"'");
+            	} else {
+                	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
+                    log.error(msg, e);            		
+            	}
+                crlinfo = null;
+            }
+            trace("<getLastCRLInfo()");
+            return crlinfo;
+        } catch (Exception e) {
+        	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", issuerdn);            	
+            logsession.log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
+            throw new EJBException(e);
+        }
+    } //getLastCRLInfo
+
+    /**
+     * Retrieves the information about the specified CRL. Retreives less information than getLastCRL, i.e. not the actual CRL data.
+     *
+     * @param admin Administrator performing the operation
+     * @param fingerprint fingerprint of the CRL
+     * @return CRLInfo of CRL or null if no CRL exists.
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getCRLInfo(" + fingerprint+")");
+    	}
+        try {
+            CRLInfo crlinfo = null;
+            try {
+                CRLDataLocal data = crlDataHome.findByPrimaryKey(new CRLDataPK(fingerprint));
+                crlinfo = new CRLInfo(data.getIssuerDN(), data.getCrlNumber(), data.getThisUpdate(), data.getNextUpdate());
+            } catch (FinderException e) {
+            	log.debug("No CRL exists with fingerprint '"+fingerprint+"'");
+            	String msg = intres.getLocalizedMessage("store.errorgetcrl", fingerprint, 0);            	
+            	log.error(msg, e);            		
+                crlinfo = null;
+            }
+            trace("<getCRLInfo()");
+            return crlinfo;
+        } catch (Exception e) {
+        	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", fingerprint);            	
+            logsession.log(admin, fingerprint.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
+            throw new EJBException(e);
+        }
+    } //getCRLInfo
+
+    /**
+     * Retrieves the highest CRLNumber issued by the CA.
+     *
+     * @param admin    Administrator performing the operation
+     * @param issuerdn the subjectDN of a CA certificate
+     * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
+    	if (log.isTraceEnabled()) {
+        	log.trace(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
+    	}
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet result = null;
+        try {
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+            String sql = "select MAX(cRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator=?";
+            String deltaCRLSql = "select MAX(cRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator>?";
+            int deltaCRLIndicator = -1;
+            if (deltaCRL) {
+            	sql = deltaCRLSql;
+            	deltaCRLIndicator = 0;
+            }
+            ps = con.prepareStatement(sql);
+            ps.setString(1, issuerdn);
+            ps.setInt(2, deltaCRLIndicator);            	
+            result = ps.executeQuery();
+
+            int maxnumber = 0;
+            if (result.next()) {
+                maxnumber = result.getInt(1);
+            }
+        	if (log.isTraceEnabled()) {
+                log.trace("<getLastCRLNumber(" + maxnumber + ")");
+        	}
+            return maxnumber;
+        } catch (Exception e) {
+            throw new EJBException(e);
+        } finally {
+            JDBCUtil.close(con, ps, result);
+        }
+    } //getLastCRLNumber
 
 
 }

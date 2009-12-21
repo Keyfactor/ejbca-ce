@@ -299,7 +299,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CRL)){
    			byte[] crl = null;
    			try {
-   				crl = getCertStoreSession().getLastCRL(pubAdmin, CertTools.getIssuerDN(cert), false);
+   				crl = getCreateCRLSession().getLastCRL(pubAdmin, CertTools.getIssuerDN(cert), false);
    			} catch (Exception e) {
    				log.error(intres.getLocalizedMessage("xkms.errorfetchinglastcrl"),e);
    				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
