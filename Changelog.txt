@@ -1,3 +1,56 @@
+3.9.3, 2009-12-21
+---
+New Feature
+    * [ECA-1389] - Make it possible to add several notifications for expiring certificates.
+    * [ECA-1439] - End date for certificate profile and CA.
+    * [ECA-1480] - Possible to generate EC certificate requests with explicit parameters
+    * [ECA-1492] - Add configuration of allowed signing algorithms to certificate profiles
+
+Task
+    * [ECA-1312] - Test browser enrollment with Windows 7
+    * [ECA-1483] - Update database schema at ejbca.org
+
+Improvement
+    * [ECA-1386] - Generate new keys on HSM in Admin GUI does not support ECC
+    * [ECA-1400] - New navigation menu GUI
+    * [ECA-1401] - GUI improvement with IE fixes CSS
+    * [ECA-1417] - name CV certificates .cvcert instead of .crt when downloading from public web
+    * [ECA-1440] - Configureable error output on admin gui error page.
+    * [ECA-1449] - Rename "Download to Internet Explorer" to "Download binary/to IE"
+    * [ECA-1451] - Display EC public key in view certificate pop-up
+    * [ECA-1453] - WS command to get length of queue for an issuer.
+    * [ECA-1455] - Possibility to change DN of superadmin user created by 'ant install'
+    * [ECA-1456] - clientToolBox createCertReq should handle ECC keys as well
+    * [ECA-1493] - Possibility to use part of user data in LDAP DN but not in certificate DN when publishing certificate to LDAP
+
+Bug
+
+    * [ECA-1429] - Renewing keys on a CA in admin GUI forces reload of all CAs
+    * [ECA-1436] - Export CA keystore, download issues with IE
+    * [ECA-1442] - Mail Expiration Checker cannot send mail for user SYSTEMCERT
+    * [ECA-1444] - CertificateExpirationWorker does not work with CV certificates
+    * [ECA-1445] - Java 5's XMLEncoder breaks when using Collections.EMPTY_LIST
+    * [ECA-1447] - InvalidKeyException för HSM during deploy or startup under load
+    * [ECA-1448] - When issuing certificates, sometimes it is not checked if CA is off-line, only CA token
+    * [ECA-1450] - NullpointerException making CA offline if CAToken can not be created
+    * [ECA-1454] - p11slot keeps adding numerous tokens
+    * [ECA-1457] - ECC brainpool curves does not work due to Sun certificate provider
+    * [ECA-1458] - Can not import exported ECC CVCA
+    * [ECA-1460] - Approval and finishuser settings missing from CVC CA configuration
+    * [ECA-1461] - Exception on import CA keystore
+    * [ECA-1463] - ca info cli command does not work for cvc CAs
+    * [ECA-1464] - Having a trailing '\' at the end of a field (e.g. username) gives a StringIndexOutOfBoundsException on search
+    * [ECA-1471] - Don't publish certificates for inactive services
+    * [ECA-1473] - CAFingerprint in database not set correctly for SubCAs
+    * [ECA-1475] - OutOfMemory when failing to publish large CRLs with connection closed error
+    * [ECA-1481] - Not possible to get PUK from issued card of the type "turkish profile" with WS
+    * [ECA-1485] - Remove StdErr logging when editing approvals in certificate profiles
+    * [ECA-1496] - End Entity Profile check fails for CMP requests with E in subject DN
+    * [ECA-1502] - Remove ocsp from bin/ejbca.sh
+    * [ECA-1504] - clientToolBox.bat does not work with space in path
+    * [ECA-1509] - cert-cvc: ECPoint can be wrongly encoded in 1 out of 2^16 keys
+    * [ECA-1517] - Notification status interferes with "Search/edit end entities"
+
 3.9.2, 2009-10-21
 ---
 New Feature
