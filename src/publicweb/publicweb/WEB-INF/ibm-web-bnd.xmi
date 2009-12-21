@@ -21,4 +21,7 @@
   <ejbRefBindings xmi:id="EJBLocalRefBinding_5" jndiName="RaAdminSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_5"/>
   </ejbRefBindings>
+  <ejbRefBindings xmi:id="EJBLocalRefBinding_6" jndiName="CreateCRLSession">
+    <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_6"/>
+  </ejbRefBindings>
 </webappbnd:WebAppBinding>

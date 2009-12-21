@@ -742,4 +742,11 @@
       <local>org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal</local>
       <ejb-link>PublisherQueueSession</ejb-link>
    </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_17">
+      <ejb-ref-name>ejb/CreateCRLSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal</local>
+      <ejb-link>CreateCRLSessionLocal</ejb-link>
+   </ejb-local-ref>
 </web-app>

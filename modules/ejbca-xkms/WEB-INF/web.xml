@@ -130,4 +130,11 @@
       <local>org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal</local>
       <ejb-link>AuthenticationSession</ejb-link>
    </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_14">
+      <ejb-ref-name>ejb/CreateCRLSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal</local>
+      <ejb-link>CreateCRLSessionLocal</ejb-link>
+   </ejb-local-ref>
 </web-app>

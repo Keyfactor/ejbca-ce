@@ -110,11 +110,11 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
             if(issuerdn != null){
             	if (!deltaCRL) {
             		getCreateCRLSession().run(getAdmin(), issuerdn);
-                    int number = getCertificateStoreSession().getLastCRLNumber(getAdmin(), issuerdn, false);
+                    int number = getCreateCRLSession().getLastCRLNumber(getAdmin(), issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");            		
             	} else {
             		getCreateCRLSession().runDeltaCRL(getAdmin(), issuerdn, -1, -1);
-                    int number = getCertificateStoreSession().getLastCRLNumber(getAdmin(), issuerdn, true);
+                    int number = getCreateCRLSession().getLastCRLNumber(getAdmin(), issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
             	}
             }else{

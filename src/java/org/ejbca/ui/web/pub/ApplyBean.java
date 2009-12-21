@@ -11,15 +11,8 @@
  *                                                                       *
  *************************************************************************/
  
-/*
- * ApplyBean.java
- *
- * Created on den 3 nov 2002, 12:06
- */
 package org.ejbca.ui.web.pub;
 
-
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -42,13 +35,10 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
-
-
-
 /**
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
- * @author Philip Vendil
+ * @author Philip Vendil, Created 2002-11-03 12:06
  * @version $Id$
  */
 public class ApplyBean implements java.io.Serializable {

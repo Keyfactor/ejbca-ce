@@ -26,6 +26,8 @@ import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
@@ -95,6 +97,16 @@ public abstract class BaseResponseGenerator {
 					ICertificateStoreSessionLocalHome.COMP_NAME), ICertificateStoreSessionLocalHome.class)).create();    	           	           	        
 		}
 		return certificatestoresession;
+	}
+	
+	private ICreateCRLSessionLocal createCRLSession = null;
+	protected ICreateCRLSessionLocal getCreateCRLSession() throws ClassCastException, CreateException, NamingException{
+		if(createCRLSession == null){
+			Context context = new InitialContext();
+			createCRLSession = ((ICreateCRLSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+					ICreateCRLSessionLocalHome.COMP_NAME), ICreateCRLSessionLocalHome.class)).create();    	           	           	        
+		}
+		return createCRLSession;
 	}
 	
 	private ISignSessionLocal signsession = null;

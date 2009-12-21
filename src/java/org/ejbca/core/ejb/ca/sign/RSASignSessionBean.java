@@ -53,6 +53,8 @@ import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.CADataLocal;
 import org.ejbca.core.ejb.ca.caadmin.CADataLocalHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
@@ -122,6 +124,14 @@ import org.ejbca.util.keystore.KeyTools;
  *   business="org.ejbca.core.ejb.ca.caadmin.CADataLocal"
  *   link="CAData"
  *
+ * @ejb.ejb-external-ref description="The CRL Create bean"
+ *   view-type="local"
+ *   ref-name="ejb/CreateCRLSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
+ *   link="CreateCRLSession"
+ *   
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
  *   ref-name="ejb/LogSessionLocal"
@@ -194,6 +204,9 @@ public class RSASignSessionBean extends BaseSessionBean {
     /* Home interface to Publisher session */
     private IPublisherSessionLocalHome publishHome = null;
 
+    /** The local interface of the job runner session bean used to create crls.*/
+    private ICreateCRLSessionLocal crlSession;
+
     /**
      * The local interface of the log session bean
      */
@@ -256,6 +269,17 @@ public class RSASignSessionBean extends BaseSessionBean {
         return logsession;
     } //getLogSession
 
+    private ICreateCRLSessionLocal getCRLCreateSession() {
+    	if(crlSession == null){
+    		try{
+    			ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) getLocator().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
+    			crlSession = home.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);
+    		}
+    	}
+    	return crlSession;
+    }
 
     /**
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
@@ -1015,7 +1039,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!)
             final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-            byte[] crl = certificateStore.getLastCRL(admin, certSubjectDN, false);
+            byte[] crl = getCRLCreateSession().getLastCRL(admin, certSubjectDN, false);
             if (crl != null) {
                 ret.setCrl(CertTools.getCRLfromByteArray(crl));
                 ret.setStatus(ResponseStatus.SUCCESS);
@@ -1202,8 +1226,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Get highest number of last CRL (full or delta) and increase by 1, both full CRLs and deltaCRLs share the same 
             // series of CRL Number
             final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-            int fullnumber = certificateStore.getLastCRLNumber(admin, certSubjectDN, false);
-            int deltanumber = certificateStore.getLastCRLNumber(admin, certSubjectDN, true);
+            int fullnumber = getCRLCreateSession().getLastCRLNumber(admin, certSubjectDN, false);
+            int deltanumber = getCRLCreateSession().getLastCRLNumber(admin, certSubjectDN, true);
             int number = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
             final X509CRL crl;
             boolean deltaCRL = (basecrlnumber > -1);
@@ -1224,7 +1248,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 String fingerprint = CertTools.getFingerprintAsString(cacert);
                 crlBytes = crl.getEncoded();            	
                 log.debug("Storing CRL in certificate store.");
-                certificateStore.storeCRL(admin, crlBytes, fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
+                getCRLCreateSession().storeCRL(admin, crlBytes, fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
                 // Store crl in ca CRL publishers.
                 log.debug("Storing CRL in publishers");
                 IPublisherSessionLocal pub = publishHome.create();

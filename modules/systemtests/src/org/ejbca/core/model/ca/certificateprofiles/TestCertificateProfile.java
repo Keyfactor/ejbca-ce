@@ -104,7 +104,7 @@ public class TestCertificateProfile extends TestCase {
         log.trace(">test03CloneCertificateProfile()");
         boolean ret = false;
         try {
-            certificateStoreSession.cloneCertificateProfile(admin, "TEST2", "TEST");
+            certificateStoreSession.cloneCertificateProfile(admin, "TEST2", "TEST", TestTools.getCAAdminSession().getAvailableCAs(admin));
             ret = true;
         } catch (CertificateProfileExistsException pee) {
         }

@@ -194,8 +194,9 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				+ "<certificate file> <endentityprofile> [<certificateprofile>]");
 		getLogger().info(" Email can be set to null to try to use the value from the certificate.");
 		String existingCas = "";
+		Collection cas = null;
 		try {
-			Collection cas = getCAAdminSession().getAvailableCAs(getAdmin());
+			cas = getCAAdminSession().getAvailableCAs(getAdmin());
 			Iterator iter = cas.iterator();
 			while (iter.hasNext()) {
 				int caid = ((Integer)iter.next()).intValue();
@@ -223,7 +224,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getLogger().info(" End entity profiles: " + endEntityProfiles);
 		String certificateProfiles = "";
 		try {
-			Collection cps = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY);
+			Collection cps = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, cas);
 			boolean first = true;
 			Iterator iter = cps.iterator();
 			while (iter.hasNext()) {

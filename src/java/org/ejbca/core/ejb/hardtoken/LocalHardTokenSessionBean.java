@@ -574,7 +574,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	  ArrayList returnval = new ArrayList();
 	  Collection result = null;
 
-	  HashSet authorizedcertprofiles = new HashSet(getCertificateStoreSession().getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN));
+	  HashSet authorizedcertprofiles = new HashSet(getCertificateStoreSession().getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN, getCAAdminSession().getAvailableCAs(admin)));
       HashSet authorizedcaids = new HashSet(getCAAdminSession().getAvailableCAs(admin));
 	  
 	  try{

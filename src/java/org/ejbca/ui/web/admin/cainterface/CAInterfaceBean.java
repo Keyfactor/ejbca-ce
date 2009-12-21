@@ -35,6 +35,8 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
@@ -88,6 +90,9 @@ public class CAInterfaceBean implements java.io.Serializable {
           ServiceLocator locator = ServiceLocator.getInstance();
           ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
           certificatesession = certificatesessionhome.create();
+          
+          ICreateCRLSessionLocalHome createCRLSessionHome = (ICreateCRLSessionLocalHome) locator.getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
+          createCRLSession = createCRLSessionHome.create();
           
           ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
           caadminsession = caadminsessionhome.create();
@@ -252,7 +257,7 @@ public class CAInterfaceBean implements java.io.Serializable {
     }
 
     public int getLastCRLNumber(String  issuerdn) {
-      return certificatesession.getLastCRLNumber(administrator, issuerdn, false);      
+      return createCRLSession.getLastCRLNumber(administrator, issuerdn, false);      
     }
 
     /**
@@ -267,7 +272,7 @@ public class CAInterfaceBean implements java.io.Serializable {
 			final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
 			issuerdn = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
 		}
-		return certificatesession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
+		return createCRLSession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
 	}
 
     /* Returns certificate profiles as a CertificateProfiles object */
@@ -414,6 +419,7 @@ public class CAInterfaceBean implements java.io.Serializable {
     // Private fields
     private ICertificateStoreSessionLocal      certificatesession;
     private ICAAdminSessionLocal               caadminsession;
+    private ICreateCRLSessionLocal             createCRLSession;
     private IAuthorizationSessionLocal         authorizationsession;
     private IUserAdminSessionLocal             adminsession;
     private IRaAdminSessionLocal               raadminsession;

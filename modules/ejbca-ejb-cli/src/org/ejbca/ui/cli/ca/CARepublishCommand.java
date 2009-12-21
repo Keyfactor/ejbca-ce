@@ -57,13 +57,13 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             	getLogger().info("CA with name '" + caname + "' does not exist.");
             	return;
             }
-            // Publish the CAns certificate and CRL
+            // Publish the CAs certificate and CRL
             Collection cachain = cainfo.getCertificateChain();
             Iterator caiter = cachain.iterator();
             if (caiter.hasNext()) {
                 X509Certificate cacert = (X509Certificate)caiter.next();
-                int crlNumber = getCertificateStoreSession().getLastCRLNumber(getAdmin(), cainfo.getSubjectDN(), false);
-                byte[] crlbytes = getCertificateStoreSession().getLastCRL(getAdmin(), cainfo.getSubjectDN(), false);
+                int crlNumber = getCreateCRLSession().getLastCRLNumber(getAdmin(), cainfo.getSubjectDN(), false);
+                byte[] crlbytes = getCreateCRLSession().getLastCRL(getAdmin(), cainfo.getSubjectDN(), false);
                 Collection capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
                 if(capublishers != null) {

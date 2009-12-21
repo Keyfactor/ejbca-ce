@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.store;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -41,8 +40,6 @@ import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
@@ -65,7 +62,6 @@ import org.ejbca.core.model.ca.certificateprofiles.OCSPSignerCertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.ServerCertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
@@ -103,14 +99,6 @@ import org.ejbca.util.StringTools;
  * home="org.ejbca.core.ejb.ca.store.CertificateDataLocalHome"
  * business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
  * link="CertificateData"
- *
- * @ejb.ejb-external-ref description="The CRL entity bean used to store and fetch CRLs"
- * view-type="local"
- * ref-name="ejb/CRLDataLocal"
- * type="Entity"
- * home="org.ejbca.core.ejb.ca.store.CRLDataLocalHome"
- * business="org.ejbca.core.ejb.ca.store.CRLDataLocal"
- * link="CRLData"
  *
  * @ejb.ejb-external-ref description="The CertReqHistoryData Entity bean"
  * view-type="local"
@@ -217,23 +205,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * The home interface of Certificate Type entity bean
      */
     private CertificateProfileDataLocalHome certprofilehome = null;
-
-    /**
-     * The home interface of CRL entity bean
-     */
-    private CRLDataLocalHome crlHome = null;
     
     /**
      * The home interface of CertReqHistory entity bean
      */
     private CertReqHistoryDataLocalHome certReqHistoryHome = null;
-    
 
     /**
      * The local interface of the log session bean
      */
     private ILogSessionLocal logsession = null;
-    private ICAAdminSessionLocal caAdminSession;
 
     /**
      * The local interface of the authorization session bean
@@ -264,7 +245,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        crlHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
         certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
         certReqHistoryHome = (CertReqHistoryDataLocalHome) getLocator().getLocalHome(CertReqHistoryDataLocalHome.COMP_NAME);
         certprofilehome = (CertificateProfileDataLocalHome) getLocator().getLocalHome(CertificateProfileDataLocalHome.COMP_NAME);
@@ -273,23 +253,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
     }
-
-    /**
-     * Gets connection to caadmin session bean
-     *
-     * @return ICAAdminSessionLocal
-     */
-    private ICAAdminSessionLocal getCAAdminSession() {
-        if (caAdminSession == null) {
-            try {
-                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-                caAdminSession = caadminsessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return caAdminSession;
-    } //getCAAdminSession
 
     /**
      * Gets connection to log session bean
@@ -387,44 +350,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         log.trace("<storeCertificate()");
         return true;
     } // storeCertificate
-
-    /**
-     * Stores a CRL
-     *
-     * @param incrl  The DER coded CRL to be stored.
-     * @param cafp   Fingerprint (hex) of the CAs certificate.
-     * @param number CRL number.
-     * @param issuerDN the issuer of the CRL
-     * @param thisUpdate when this CRL was created
-     * @param nextUpdate when this CRL expires
-     * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
-     * @return true if storage was successful.
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
-     */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
-    	if (log.isTraceEnabled()) {
-        	log.trace(">storeCRL(" + cafp + ", " + number + ")");
-    	}
-        try {
-        	boolean deltaCRL = deltaCRLIndicator > 0;
-        	int lastNo = getLastCRLNumber(admin, issuerDN, deltaCRL);
-        	if (number <= lastNo) {
-        		// There is already a CRL with this number, or a later one stored. Don't create duplicates
-            	String msg = intres.getLocalizedMessage("store.storecrlwrongnumber", number, lastNo);            	
-                getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);        		
-        	}
-            crlHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
-        	String msg = intres.getLocalizedMessage("store.storecrl", new Integer(number), null);            	
-            getLogSession().log(admin, issuerDN.toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
-        } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("store.storecrl");            	
-            getLogSession().log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
-            throw new EJBException(e);
-        }
-        log.trace("<storeCRL()");
-        return true;
-    } // storeCRL
 
     /**
      * Lists fingerprint (primary key) of ALL certificates in the database.
@@ -1372,160 +1297,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     }
 
     /**
-     * Retrieves the latest CRL issued by this CA.
-     *
-     * @param admin Administrator performing the operation
-     * @param issuerdn the CRL issuers DN (CAs subject DN)
-     * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
-     * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
-     * @ejb.interface-method
-     */
-    public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
-    	if (log.isTraceEnabled()) {
-        	log.trace(">getLastCRL(" + issuerdn + ", "+deltaCRL+")");
-    	}
-        try {
-            int maxnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
-            X509CRL crl = null;
-            try {
-                CRLDataLocal data = crlHome.findByIssuerDNAndCRLNumber(issuerdn, maxnumber);
-                crl = data.getCRL();
-            } catch (FinderException e) {
-                crl = null;
-            }
-            trace("<getLastCRL()");
-            if (crl == null) {
-            	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, maxnumber);            	
-                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
-                return null;
-            }
-        	String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, new Integer(maxnumber));            	
-            getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_GETLASTCRL, msg);
-            return crl.getEncoded();
-        } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
-            throw new EJBException(e);
-        }
-    } //getLastCRL
-
-    /**
-     * Retrieves the information about the lastest CRL issued by this CA. Retreives less information than getLastCRL, i.e. not the actual CRL data.
-     *
-     * @param admin Administrator performing the operation
-     * @param issuerdn the CRL issuers DN (CAs subject DN)
-     * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
-     * @return CRLInfo of last CRL by CA or null if no CRL exists.
-     * @ejb.interface-method
-     */
-    public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
-    	if (log.isTraceEnabled()) {
-        	log.trace(">getLastCRLInfo(" + issuerdn + ", "+deltaCRL+")");
-    	}
-        int crlnumber = 0;
-        try {
-            crlnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
-            CRLInfo crlinfo = null;
-            try {
-                CRLDataLocal data = crlHome.findByIssuerDNAndCRLNumber(issuerdn, crlnumber);
-                crlinfo = new CRLInfo(data.getIssuerDN(), crlnumber, data.getThisUpdate(), data.getNextUpdate());
-            } catch (FinderException e) {
-            	if (deltaCRL && (crlnumber == 0)) {
-            		log.debug("No delta CRL exists for CA with dn '"+issuerdn+"'");
-            	} else if (crlnumber == 0) {
-            		log.debug("No CRL exists for CA with dn '"+issuerdn+"'");
-            	} else {
-                	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
-                    log.error(msg, e);            		
-            	}
-                crlinfo = null;
-            }
-            trace("<getLastCRLInfo()");
-            return crlinfo;
-        } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", issuerdn);            	
-            getLogSession().log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
-            throw new EJBException(e);
-        }
-    } //getLastCRLInfo
-
-    /**
-     * Retrieves the information about the specified CRL. Retreives less information than getLastCRL, i.e. not the actual CRL data.
-     *
-     * @param admin Administrator performing the operation
-     * @param fingerprint fingerprint of the CRL
-     * @return CRLInfo of CRL or null if no CRL exists.
-     * @ejb.interface-method
-     */
-    public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
-    	if (log.isTraceEnabled()) {
-        	log.trace(">getCRLInfo(" + fingerprint+")");
-    	}
-        try {
-            CRLInfo crlinfo = null;
-            try {
-                CRLDataLocal data = crlHome.findByPrimaryKey(new CRLDataPK(fingerprint));
-                crlinfo = new CRLInfo(data.getIssuerDN(), data.getCrlNumber(), data.getThisUpdate(), data.getNextUpdate());
-            } catch (FinderException e) {
-            	log.debug("No CRL exists with fingerprint '"+fingerprint+"'");
-            	String msg = intres.getLocalizedMessage("store.errorgetcrl", fingerprint, 0);            	
-            	log.error(msg, e);            		
-                crlinfo = null;
-            }
-            trace("<getCRLInfo()");
-            return crlinfo;
-        } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", fingerprint);            	
-            getLogSession().log(admin, fingerprint.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
-            throw new EJBException(e);
-        }
-    } //getCRLInfo
-
-    /**
-     * Retrieves the highest CRLNumber issued by the CA.
-     *
-     * @param admin    Administrator performing the operation
-     * @param issuerdn the subjectDN of a CA certificate
-     * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
-     * @ejb.interface-method
-     */
-    public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
-    	if (log.isTraceEnabled()) {
-        	log.trace(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
-    	}
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        try {
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            String sql = "select MAX(cRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator=?";
-            String deltaCRLSql = "select MAX(cRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator>?";
-            int deltaCRLIndicator = -1;
-            if (deltaCRL) {
-            	sql = deltaCRLSql;
-            	deltaCRLIndicator = 0;
-            }
-            ps = con.prepareStatement(sql);
-            ps.setString(1, issuerdn);
-            ps.setInt(2, deltaCRLIndicator);            	
-            result = ps.executeQuery();
-
-            int maxnumber = 0;
-            if (result.next()) {
-                maxnumber = result.getInt(1);
-            }
-        	if (log.isTraceEnabled()) {
-                log.trace("<getLastCRLNumber(" + maxnumber + ")");
-        	}
-            return maxnumber;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
-    } //getLastCRLNumber
-
-    /**
      * Method used to add a CertReqHistory to database
      * 
      * @param admin calling the methods
@@ -1711,7 +1482,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
-    public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException {
+    public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename, Collection authorizedCaIds) throws CertificateProfileExistsException {
         CertificateProfile certificateprofile = null;
 
         if (isCertificateProfileNameFixed(newcertificateprofilename)) {
@@ -1731,8 +1502,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             if (!issuperadministrator && certificateprofile.isApplicableToAnyCA()) {
                 // Not superadministrator, do not use ANYCA;
-                Collection authcas = getCAAdminSession().getAvailableCAs(admin);
-                certificateprofile.setAvailableCAs(authcas);
+                certificateprofile.setAvailableCAs(authorizedCaIds);
             }
 
             try {
@@ -1833,14 +1603,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param certprofiletype should be either CertificateDataBean.CERTTYPE_ENDENTITY, CertificateDataBean.CERTTYPE_SUBCA, CertificateDataBean.CERTTYPE_ROOTCA,
      *                        CertificateDataBean.CERTTYPE_HARDTOKEN (i.e EndEntity certificates and Hardtoken fixed profiles) or 0 for all.
      *                        Retrives certificate profile names sorted.
+     * @param authorizedCaIds Collection<Integer> of authorized CA Ids for the specified Admin
      * @return Collection of id:s (Integer)
      * @ejb.interface-method
      */
-    public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype) {
+    public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype, Collection authorizedCaIds) {
         ArrayList returnval = new ArrayList();
         Collection result = null;
 
-        HashSet authorizedcaids = new HashSet(getCAAdminSession().getAvailableCAs(admin));
+        HashSet authorizedcaids = new HashSet(authorizedCaIds);
 
         // Add fixed certificate profiles.
         if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ENDENTITY || certprofiletype == SecConst.CERTTYPE_HARDTOKEN){
