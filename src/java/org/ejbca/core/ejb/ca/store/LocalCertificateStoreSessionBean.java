@@ -643,12 +643,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
     /**
      * Finds usernames of users having certificate(s) expiring within a specified time and that has
-     * status active.
+     * status "active" or "notifiedaboutexpiration".
+     * @see org.ejbca.core.model.SecConst#CERT_ACTIVE
+     * @see org.ejbca.core.model.SecConst#CERT_NOTIFIEDABOUTEXPIRATION
      *
      * @ejb.interface-method
      */
     public Collection findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) {
-    	trace(">findCertificatesByExpireTimeWithLimit");
+    	if (log.isTraceEnabled()) {
+        	trace(">findCertificatesByExpireTimeWithLimit: "+expiretime);    		
+    	}
 
         Connection con = null;
         PreparedStatement ps = null;
@@ -658,17 +662,20 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         try {
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("SELECT DISTINCT username FROM CertificateData WHERE expireDate>=? AND expireDate<? AND status=?");
+            ps = con.prepareStatement("SELECT DISTINCT username FROM CertificateData WHERE expireDate>=? AND expireDate<? AND (status=? OR status=?)");
             ps.setLong(1, currentdate);
             ps.setLong(2, expiretime.getTime());
             ps.setInt(3, SecConst.CERT_ACTIVE);
+            ps.setInt(3, SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
             result = ps.executeQuery();
             while (result.next() && returnval.size() <= SecConst.MAXIMUM_QUERY_ROWCOUNT + 1) {
                 if (result.getString(1) != null && !result.getString(1).equals("")) {
                     returnval.add(result.getString(1));
                 }
             }
-            trace("<findCertificatesByExpireTimeWithLimit()");
+        	if (log.isTraceEnabled()) {
+        		trace("<findCertificatesByExpireTimeWithLimit()");
+        	}
             return returnval;
         } catch (Exception e) {
             throw new EJBException(e);
