@@ -81,14 +81,6 @@ import org.ejbca.util.CertTools;
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
  *   link="AuthorizationSession"
  *
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
  *   ref-name="ejb/LogSessionLocal"
@@ -126,11 +118,6 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * The local home interface of publisher entity bean.
      */
     private PublisherDataLocalHome publisherhome = null;
-
-    /**
-     * The local interface of ca admin session bean
-     */
-    private ICAAdminSessionLocal caadminsession = null;
 
     /**
      * The local interface of authorization session bean
@@ -192,23 +179,6 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         }
         return authorizationsession;
     } //getAuthorizationSession
-
-    /**
-     * Gets connection to caadmin session bean
-     *
-     * @return ICAAdminSessionLocal
-     */
-    private ICAAdminSessionLocal getCAAdminSession() {
-        if (caadminsession == null) {
-            try {
-                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-                caadminsession = caadminsessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return caadminsession;
-    } //getCAAdminSession
 
     /**
      * Gets connection to publisher queue session bean
