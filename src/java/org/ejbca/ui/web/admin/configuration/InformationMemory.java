@@ -282,7 +282,7 @@ public class InformationMemory implements java.io.Serializable {
     public TreeMap getAuthorizedPublisherNames(){
     	if(publishernames==null){
     		publishernames = new TreeMap();  
-    		Iterator iter = publishersession.getAuthorizedPublisherIds(administrator).iterator();      
+    		Iterator iter = caadminsession.getAuthorizedPublisherIds(administrator).iterator();      
     		HashMap idtonamemap = getPublisherIdToNameMap();
     		while(iter.hasNext()){
     			Integer id = (Integer) iter.next();

@@ -311,7 +311,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
 	public List getAvailablePublishers(){
 		List availablePublisherNames = new ArrayList();
-		Collection publisherIds = EjbcaJSFHelper.getBean().getPublisherSession().getAuthorizedPublisherIds(getAdmin());
+		Collection publisherIds = EjbcaJSFHelper.getBean().getCAAdminSession().getAuthorizedPublisherIds(getAdmin());
 		Iterator iter = publisherIds.iterator();
 		while(iter.hasNext()){
 			int next = ((Integer) iter.next()).intValue();
