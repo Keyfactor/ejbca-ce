@@ -277,13 +277,7 @@ public class CADataHandler implements Serializable {
    */  
  public void publishCA(int caid){
  	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
- 	CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator, cainfo.getCertificateProfileId());
- 	// A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
- 	// (which there is probably not) 
  	Collection publishers = cainfo.getCRLPublishers();
- 	publishers.addAll(certprofile.getPublisherList());
- 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
-
  	// Publish ExtendedCAServices certificates as well
 	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	while(iter.hasNext()){
@@ -310,6 +304,12 @@ public class CADataHandler implements Serializable {
 			}
 		}
 	}  
+    CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator, cainfo.getCertificateProfileId());
+    // A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
+    // (which there is probably not) 
+    publishers.addAll(certprofile.getPublisherList());
+    signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
+
  }
  
  public void revokeOCSPCertificate(int caid){
