@@ -1340,14 +1340,14 @@ public class RSASignSessionBean extends BaseSessionBean {
                     pub.storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint, SecConst.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);
                     if ( type != SecConst.CERTTYPE_ENDENTITY ) {
                         final String issuerDN = CertTools.getSubjectDN(cert);
-                        final byte crl[] = certificateStore.getLastCRL(admin, issuerDN, false);
+                        final byte crl[] = getCRLCreateSession().getLastCRL(admin, issuerDN, false);
                         if ( crl!=null ) {
-                            final int nr = certificateStore.getLastCRLNumber(admin, issuerDN, false);
+                            final int nr = getCRLCreateSession().getLastCRLNumber(admin, issuerDN, false);
                             pub.storeCRL(admin, usedpublishers, crl, cafp, nr, caDataDN);
                         }
-                        final byte deltaCrl[] = certificateStore.getLastCRL(admin, issuerDN, true);
+                        final byte deltaCrl[] = getCRLCreateSession().getLastCRL(admin, issuerDN, true);
                         if ( deltaCrl!=null ) {
-                            final int nr = certificateStore.getLastCRLNumber(admin, issuerDN, true);
+                            final int nr = getCRLCreateSession().getLastCRLNumber(admin, issuerDN, true);
                             pub.storeCRL(admin, usedpublishers, deltaCrl, cafp, nr, caDataDN);
                         }
                     }
