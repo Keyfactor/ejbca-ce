@@ -122,7 +122,7 @@ public class KeyTools {
         KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
         if (StringUtils.equals(keyAlg, CATokenConstants.KEYALGORITHM_ECDSA)) {
         	AlgorithmParameterSpec ecSpec = null;
-        	if (keySpec != null) {
+        	if ( (keySpec != null) && !StringUtils.equals(keySpec,"implicitlyCA") ) {
         		log.debug("Generating named curve ECDSA key pair: "+keySpec);
             	// We have EC keys
             	ecSpec = ECNamedCurveTable.getParameterSpec(keySpec); 
