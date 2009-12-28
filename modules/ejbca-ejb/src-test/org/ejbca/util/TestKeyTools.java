@@ -17,17 +17,23 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.ECParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.ECNamedCurveTable;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -141,11 +147,8 @@ public class TestKeyTools extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        log.trace(">setUp()");
         // Install BouncyCastle provider
-        CertTools.installBCProvider();
-        log.trace("<setUp()");
-
+        CryptoProviderTools.installBCProvider();
     }
 
     protected void tearDown() throws Exception {
@@ -233,7 +236,7 @@ public class TestKeyTools extends TestCase {
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
-        log.info(b64cert);
+        //log.info(b64cert);
         log.trace("<test04GenKeysECDSANist()");
     }
     
@@ -249,7 +252,7 @@ public class TestKeyTools extends TestCase {
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
-        log.info(b64cert);
+        //log.info(b64cert);
         log.trace("<test05GenKeysECDSAImplicitlyCA()");
     }
     
@@ -267,4 +270,35 @@ public class TestKeyTools extends TestCase {
         //log.debug(b64cert);
         log.trace("<test06GenKeysDSA()");
     }
+    
+    public void test07GenKeysECDSAAlgorithmSpec() throws Exception {
+        log.trace(">test07GenKeysECDSAAlgorithmSpec()");
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("EC", "BC");
+        AlgorithmParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256r1");
+    	keygen.initialize(ecSpec);
+    	KeyPair keys = keygen.generateKeyPair();
+    	assertEquals("EC", keys.getPublic().getAlgorithm());
+    	String spec = AlgorithmTools.getKeySpecification(keys.getPublic());
+    	assertEquals("secp256r1", spec);
+		AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(keys.getPublic());					
+
+        KeyPair keys2 = KeyTools.genKeys(null, paramspec, CATokenConstants.KEYALGORITHM_ECDSA);
+    	assertEquals("ECDSA", keys2.getPublic().getAlgorithm());
+    	ECPublicKey pk1 = (ECPublicKey)keys.getPublic();
+    	ECPublicKey pk2 = (ECPublicKey)keys2.getPublic();
+    	// Verify that it's the same key size
+    	int len1 = KeyTools.getKeyLength(pk1);
+    	int len2 = KeyTools.getKeyLength(pk2);
+    	assertEquals(len1, len2);
+    	// Verify that the domain parameters are the same
+    	ECParameterSpec ecs1 = pk1.getParams();
+    	ECParameterSpec ecs2 = pk2.getParams();
+    	assertEquals(ecs1.getCofactor(), ecs2.getCofactor());
+    	assertEquals(ecs1.getOrder(), ecs2.getOrder());
+    	assertEquals(ecs1.getCurve(), ecs2.getCurve());
+    	// Verify that it is not the same key though
+    	assertFalse(pk1.getW().equals(pk2.getW()));
+        log.trace("<test07GenKeysECDSAAlgorithmSpec()");
+    }
+
 }
