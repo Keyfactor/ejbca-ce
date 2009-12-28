@@ -45,7 +45,10 @@ public class AlgorithmTools {
 	
 	/** Log4j instance */
 	private static final Logger log = Logger.getLogger(AlgorithmTools.class);
-	
+
+	/** String used for an unkown keyspec in CA token properties */
+	public static final String KEYSPEC_UNKNOWN = "unknown";
+
 	/** Signature algorithms supported by RSA keys */
 	private static final Collection SIG_ALGS_RSA;
 	
@@ -145,7 +148,7 @@ public class AlgorithmTools {
 			if ( ((ECPublicKey) publicKey).getParams() instanceof ECNamedCurveSpec ) {
 				keyspec = ((ECNamedCurveSpec) ((ECPublicKey) publicKey).getParams()).getName();
 			} else {
-				keyspec = "unknown";
+				keyspec = AlgorithmTools.KEYSPEC_UNKNOWN;
 			}
 		}
 		log.debug("KeySpecification: "+keyspec);

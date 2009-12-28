@@ -100,7 +100,8 @@ public class KeyTools {
     /**
      * Generates a keypair
      *
-     * @param keyspec specification of keys to generate, typical value is 1024 for RSA or DSA keys, or prime192v1 for ECDSA keys
+     * @param keyspec string specification of keys to generate, typical value is 1024 for RSA or DSA keys, or prime192v1 for ECDSA keys or null of algspec is to be used.
+     * @param algspec AlgorithmParameterSpec of keys to generate, typically an EXParameterSpec for EC keys, or null if keySpec is to be used.
      * @param keyalg algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see org.ejbca.core.model.ca.catoken.CATokenConstants.KEYALGORITHM_XX
      * 
      * @see org.ejbca.core.model.ca.catoken.CATokenConstants
@@ -112,7 +113,7 @@ public class KeyTools {
      * @throws InvalidAlgorithmParameterException 
      * @see org.ejbca.core.model.ca.catoken.CATokenConstants#KEYALGORITHM_RSA
      */
-    public static KeyPair genKeys(String keySpec, String keyAlg)
+    public static KeyPair genKeys(String keySpec, AlgorithmParameterSpec algSpec, String keyAlg)
         throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
     	if (log.isTraceEnabled()) {
             log.trace(">genKeys("+keySpec+", "+keyAlg+")");    		
@@ -120,19 +121,24 @@ public class KeyTools {
 
         KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
         if (StringUtils.equals(keyAlg, CATokenConstants.KEYALGORITHM_ECDSA)) {
-        	org.bouncycastle.jce.spec.ECParameterSpec ecSpec = null;
-        	if ( (keySpec == null) || StringUtils.equals(keySpec,"implicitlyCA") ) {
-        		log.debug("Generating implicitlyCA encoded ECDSA key pair");
-            	// If the keySpec is null, we have "implicitlyCA" defined EC parameters
-        		// The parameters were already installed when we installed the provider
-        		// We just make sure that ecSpec == null here
-        	} else {
+        	AlgorithmParameterSpec ecSpec = null;
+        	if (keySpec != null) {
         		log.debug("Generating named curve ECDSA key pair: "+keySpec);
             	// We have EC keys
             	ecSpec = ECNamedCurveTable.getParameterSpec(keySpec); 
             	if (ecSpec == null) {
             		throw new InvalidAlgorithmParameterException("keySpec "+keySpec+" is invalid for ECDSA.");
             	}
+        	} else if (algSpec != null) {
+				log.debug("Generating ECDSA key pair from AlgorithmParameterSpec: "+algSpec);
+        		ecSpec = algSpec;
+        	} else if (StringUtils.equals(keySpec,"implicitlyCA")) {
+        		log.debug("Generating implicitlyCA encoded ECDSA key pair");
+            	// If the keySpec is null, we have "implicitlyCA" defined EC parameters
+        		// The parameters were already installed when we installed the provider
+        		// We just make sure that ecSpec == null here
+        	} else {
+        		throw new InvalidAlgorithmParameterException("No keySpec no algSpec and no implicitlyCA specified");
         	}
         	keygen.initialize(ecSpec, new SecureRandom());
         } else {
@@ -151,6 +157,13 @@ public class KeyTools {
 		log.trace("<genKeys()");
         return keys;
     } // genKeys
+
+    /** 
+     * @see KeyTools#genKeys(String,AlgorithmParameterSpec,String)
+     */
+    public static KeyPair genKeys(String keySpec, String keyAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    	return genKeys(keySpec, null, keyAlg);
+    }
 
     /** An ECDSA key can be stripped of the curve parameters so it only contains the public point, and this is not enough to 
      * use the key for verification. However, if we know the curve name we can fill in the curve parameters and get a usable EC public key 
@@ -250,9 +263,12 @@ public class KeyTools {
     /**
      * Gets the key AlgorithmParameterSpec of supported keys. Can be used to initialize a KeyPairGenerator to generate a key of equal type and size.
      * @param pk PublicKey used to derive the AlgorithmParameterSpec
-     * @return null if key is unsupported, otherwise a AlgorithmParameterSpec.
+     * @return null if key is unsupported or pk is null, otherwise a AlgorithmParameterSpec.
      */
 	public static AlgorithmParameterSpec getKeyGenSpec(PublicKey pk) {
+		if (pk == null) {
+			return null;
+		}
 		AlgorithmParameterSpec ret = null;
 		if (pk instanceof RSAPublicKey) {
 			log.debug("getKeyGenSpec: RSA");

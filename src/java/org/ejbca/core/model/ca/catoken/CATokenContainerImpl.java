@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.util.AlgorithmTools;
+import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -359,24 +360,14 @@ public class CATokenContainerImpl extends CATokenContainer {
 		
 		// Then we can move on to actually generating the keys
 		if (catokeninfo instanceof SoftCATokenInfo) {
-			// Currently only RSA keys are supported
 			SoftCATokenInfo info = (SoftCATokenInfo) catokeninfo;       
-			KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-			keystore.load(null, null);
 
-			// Generate signature keys.
-			KeyPair newsignkeys = KeyTools.genKeys(info.getSignKeySpec(), info.getSignKeyAlgorithm());
-			// generate dummy certificate
-			Certificate[] certchain = new Certificate[1];
-			certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, newsignkeys.getPrivate(), newsignkeys.getPublic(), info.getSignatureAlgorithm(), true);
-
-			keystore.setKeyEntry(SoftCAToken.PRIVATESIGNKEYALIAS,newsignkeys.getPrivate(),null, certchain);             
+			Properties properties = getProperties();
 
 			PublicKey pubEnc = null;
 			PrivateKey privEnc = null;
 			PublicKey previousPubSign = null;
-			PrivateKey previousPrivSign = null;
-			
+			PrivateKey previousPrivSign = null;			
 			if (!renew) {
 				log.debug("We are generating initial keys.");
 				// Generate encryption keys.  
@@ -393,10 +384,37 @@ public class CATokenContainerImpl extends CATokenContainer {
 				previousPubSign = token.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
 				previousPrivSign = token.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
 			}
+            // As first choice we check if the used have specified which type of key should be generated, this can be different from the currently used key
+            // If the user did not specify this, we try to generate a key with the same specification as the currently used key.
+			String keyspec = info.getSignKeySpec(); // can be "unknown"
+			if (StringUtils.equals(keyspec, AlgorithmTools.KEYSPEC_UNKNOWN)) {
+				keyspec = null;
+			}
+			AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(previousPubSign);					
+			if (log.isDebugEnabled()) {
+				if (keyspec != null) {
+					log.debug("Generating new Soft key with specified spec "+keyspec+" with label "+SoftCAToken.PRIVATESIGNKEYALIAS);						
+				} else {
+					int keySize = KeyTools.getKeyLength(previousPubSign);
+					String alg = previousPubSign.getAlgorithm();
+					log.debug("Generating new Soft "+alg+" key with spec "+paramspec+" (size="+keySize+") with label "+SoftCAToken.PRIVATESIGNKEYALIAS);
+				}
+			}
+			// Generate signature keys.
+			KeyPair newsignkeys = KeyTools.genKeys(keyspec, paramspec, info.getSignKeyAlgorithm());
+
+			// generate dummy certificate
+			Certificate[] certchain = new Certificate[1];
+			certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, newsignkeys.getPrivate(), newsignkeys.getPublic(), info.getSignatureAlgorithm(), true);
+
+			// Create the new keystore
+			KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+			keystore.load(null, null);
+			keystore.setKeyEntry(SoftCAToken.PRIVATESIGNKEYALIAS,newsignkeys.getPrivate(),null, certchain);             
+
 			// generate dummy certificate
 			certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, privEnc, pubEnc, info.getEncryptionAlgorithm(), true);
 			keystore.setKeyEntry(SoftCAToken.PRIVATEDECKEYALIAS, privEnc, null, certchain);	
-			Properties properties = getProperties();
 			if (previousPrivSign != null) {
 				log.debug("Setting previousprivatesignkeyalias in soft CA token.");
 				// If we have an old key (i.e. generating new keys, we will store the old one as "previous"
