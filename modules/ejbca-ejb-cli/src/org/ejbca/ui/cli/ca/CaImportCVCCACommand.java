@@ -56,7 +56,8 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
     		getLogger().info("Usage 1: " + getCommand() + " <CA name> <pkcs8 RSA private key file> <certificate file>");
     		getLogger().info(" Imports a private key and a self signed CVCA certificate and creates a CVCA.");
     		getLogger().info("Usage 2: " + getCommand() + " <CA name> <pkcs8 private key file> <certificate file> <DN of form C=country,CN=mnemonic,SERIALNUMBER=sequence> <signatureAlgorithm> <validity days>");
-    		getLogger().info(" Imports a private key and generates a new self signed CVCA certificate with the given DN and creates a CVCA. Signature algorithm can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1);");
+    		getLogger().info(" Imports a private key and generates a new self signed CVCA certificate with the given DN and creates a CVCA."); 
+    		getLogger().info(" Signature algorithm can be SHA1WithRSA, SHA256WithRSA, SHA1WithECDSA, SHA224WithECDSA, SHA256WithECDSA, etc.");
     		getLogger().info(" SERIALNUMBER will not be a part of the CAs DN, it is only used to set a specified sequence (should be of form 00001). Can be left out, and a random sequence is then generated.");
     		return;
         }
