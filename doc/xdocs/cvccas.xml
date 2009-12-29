@@ -82,11 +82,16 @@
   You create domestic DVs as simply as creating a SubCA to your CVCA, using a SubCA certificate profile.
   </p>
   <p>
-  You can sign foreign DVs by receiving and processing a CV certificate request. In the 'Edit Certificate Authorities' page enter a name for the 
-  foreign DV and click 'Process Certificate Request'.
-  <br/>
-  You can also treat your DVs as regular End Entities by simply creating and choosing a SubCA certificate profiles when adding the End Entities.
-  A benefit of handling foreign DVs as end entities is that you can process and renew them using the same WS-API as you can use for inspection systems. 
+  You can sign foreign DVs by treating them as regular End Entities. Simply create an end entity and choose a SubCA certificate profiles when adding the end entity.
+  You can then process the certificate requests received by the foreign DV as a regular end entity certificate request: 
+  </p>
+  <ul>
+  <li>Using the public web GUI</li>
+  <li>Using the WS cli, clientToolBox CvcWsRaCli</li>
+  <li>Using the WS-API cvcRequest method from your own client</li>
+  </ul>
+  <p>
+  You can also create foreign DVs as external SubCAs, but a benefit of handling foreign DVs as end entities is that you can process and renew them using the same WS-API as you can use for inspection systems. 
   </p>
   <p>You can create a DV to be signed by a foreign CVCA by creating a new CA and selecting 'Signed By=External CA'.
   You need the CVCA certificate of the foreign CVCA to create the request to be sent.
@@ -103,7 +108,7 @@
   You only have to (or can) import one issued certificate to make your DV operational.
   <br/>
   By filling in the CA tokens password and checking the box 'Renew Keys' the DV will generate new keys.
-  This is working for soft CA tokens and PKCS#11 CA tokens. The renewal CRS is not signed with the old keys. 
+  This works for both soft CA tokens and PKCS#11 CA tokens. The renewal CSR is not signed with the old keys, but that can be done manually. 
   </p>
   <p>DVs have short validity periods, and it may be good to have them automatically renewed. There is a service 'Renew CA Service' to 
   automatically renew CAs. The User's Guide contain more information about this service.
