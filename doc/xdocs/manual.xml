@@ -551,7 +551,7 @@ not appear, no limit is imposed.
 In a certificate the order of the CN components can be put in different order depending on wich standard you abide to.
 <br/>
 <ul>
-<li>Ldap DN order: CN=Common Name, O=Organization, C=Country</li>
+<li>Ldap DN order (rfc 2253): CN=Common Name, O=Organization, C=Country</li>
 <li>X.500 DN order: C=Country, O=Organization, CN=Common name</li>
 </ul>
 In theory the order of the DN should not matter, because comparisons between DNs should be done on the RDN level. 
