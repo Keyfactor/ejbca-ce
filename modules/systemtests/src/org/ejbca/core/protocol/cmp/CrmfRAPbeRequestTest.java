@@ -56,7 +56,9 @@ import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
-/**
+/** These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
+ * and these requests are handled by EJBCA without further authentication, end entities are created automatically in EJBCA.
+ * 
  * You need a CMP TCP listener configured on port 5587 to run this test.
  * (cmp.tcp.enabled=true, cmp.tcp.portno=5587)
  * 
