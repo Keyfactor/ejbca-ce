@@ -273,7 +273,15 @@
         <copy todir="${adminweb.build}">
             <fileset dir="${adminweb.src}" />
         </copy>
-    	<delete file="${adminweb.build}/languages/languagefile.zh.properties"/>
+		<delete>
+			<fileset dir="${adminweb.build}/languages/" includes="languagefile.*.properties"/>
+		</delete>
+    	<native2ascii encoding="UTF-8"
+    		src="${adminweb.src}/languages"
+    		dest="${adminweb.build}/languages"
+    		includes="languagefile.*.properties" 
+    		excludes="languagefile.zh.properties" 
+    	/>
     	<native2ascii encoding="GBK" 
     		src="${adminweb.src}/languages" 
     		dest="${adminweb.build}/languages"
