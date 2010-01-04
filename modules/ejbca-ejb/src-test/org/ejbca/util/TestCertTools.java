@@ -1389,4 +1389,10 @@ public class TestCertTools extends TestCase {
 		String bcdn1 = CertTools.stringToBCDNString(dn1);
 		assertEquals("Pseudonym=Shredder,TelephoneNumber=555-666,PostalAddress=footown,PostalCode=11122,CN=Tomas Gustavsson,Name=Kalle,OU=Tech,O=Prime,C=SE", bcdn1);		
 	}
+
+	public void testEscapedCharacters() throws Exception {
+        String dn = CertTools.stringToBCDNString("O=\\<fff\\>\\\",CN=oid,SN=12345,NAME=name,C=se");
+        assertEquals("CN=oid,Name=name,SN=12345,O=\\<fff\\>\\\",C=se", dn);
+	}
+
 }
