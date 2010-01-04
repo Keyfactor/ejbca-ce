@@ -747,6 +747,6 @@
       <ejb-ref-type>Session</ejb-ref-type>
       <local-home>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome</local-home>
       <local>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal</local>
-      <ejb-link>CreateCRLSessionLocal</ejb-link>
+      <ejb-link>CreateCRLSession</ejb-link>
    </ejb-local-ref>
 </web-app>

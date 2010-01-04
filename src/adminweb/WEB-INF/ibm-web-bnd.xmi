@@ -54,7 +54,7 @@
   <ejbRefBindings xmi:id="EJBLocalRefBinding_16" jndiName="PublisherQueueSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_16"/>
   </ejbRefBindings>
-  <ejbRefBindings xmi:id="EJBLocalRefBinding_17" jndiName="CreateCRLSessionLocal">
+  <ejbRefBindings xmi:id="EJBLocalRefBinding_17" jndiName="CreateCRLSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_17"/>
   </ejbRefBindings>
 </webappbnd:WebAppBinding>

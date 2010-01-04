@@ -193,6 +193,13 @@ import org.ejbca.util.CertTools;
  *  home="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome"
  *  local="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal"
  *  
+ * @web.ejb-local-ref
+ *  name="ejb/CreateCRLSessionLocal"
+ *  type="Session"
+ *  link="CreateCRLSession"
+ *  home="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
+ *  local="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
+ *  
  * @web.resource-ref
  *  name="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *  type="javax.sql.DataSource"
