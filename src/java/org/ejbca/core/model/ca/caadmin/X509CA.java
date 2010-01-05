@@ -430,7 +430,8 @@ public class X509CA extends CA implements Serializable {
         getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
 
         // Also, we must only allow signing to take place if the CA itself if on line, even if the token is on-line.
-        if ((getStatus() != SecConst.CA_ACTIVE)) {
+        // We have to allow expired as well though, so we can renew expired CAs
+        if ((getStatus() != SecConst.CA_ACTIVE) && ((getStatus() != SecConst.CA_EXPIRED))) {
         	String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
 			log.debug(msg); // This is something we handle so no need to log with higher priority
         	throw new CAOfflineException(msg);
