@@ -391,7 +391,7 @@ ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /slot1.cfg secp256r1 signKey
 
   <subsubsection name="Using Brainpool ECC curves">
   <p>Using the <a href="http://www.ecc-brainpool.org/download/Domain-parameters.pdf">Brainpool</a> family of elliptic curves requires a bit of special handling in Java, at least with the Sun PKCS#11 provider.
-  <br/>Here we provide a guide for using Brainpool curves with the SafeNet ProtectServer Gold HSM.
+  <br/>Here we provide a guide for using Brainpool curves with the SafeNet ProtectServer Gold HSM. These steps were contributed by DGBK, Netherlands.
   <br/>Using the brainpool curves have one disadvantage, at least when using the Sun PKCS#11 provider, and that is that you can not use the EJBCA tools to generate keys, but have to use the HSM vendors tools.
   </p>
   <p>
@@ -399,20 +399,7 @@ ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /slot1.cfg secp256r1 signKey
   </p>
   <ul>
   <li>Download the JDK source code and locate the file sun/security/ec/ECParameters.java.</li>
-  <li>Starting at line 210 there is code for handling of non named curve EC parameters. Remove the Exception thrown in line 208 and enable the code that is commented.</li>
-  <li>Hard code the cofactor to 1, this works because all Brainpool curves use cofactor 1. This means that the code:</li>
-  </ul>
-<source>
-int cofactor = 0;
-if (in.available() != 0) {
-cofactor = in.getInteger();
-}
-</source>   
-  <p>should be replaced by:</p>
-<source>
-int cofactor = 1;
-</source>
-  <ul>
+  <li>Starting at line 210 there is code for handling of non named curve EC parameters. Remove the Exception thrown in line 208 and enable the code that is commented out.</li>
   <li>Compile the class by running 'javac *.java' in the directory where the file is located.</li>
   <li>Replace the existing sun/security/ec/ECParameters.class file in jre/lib/rt.jar with your patched and compiled version.</li>
   </ul>
@@ -421,28 +408,29 @@ int cofactor = 1;
   These are the commands for <i>ProtectServer Gold software version 3.33, firmware version 2.07</i>.
   </p>
 <p>
-<b>1.</b>Create domain parameters file brainpoolP160r1.txt from
-ptk_c_administration_manual_rev-c.pdf, Appendix G, Sample EC Domain Parameter Files. Note that you should not use cofactor in the parameters file, cofactor is hardcoded in ECParameters.java.
-</p><p><b>2.</b>
-We have to configure the HSM to accept custom domain parameters (E flag):
+<b>1.</b> Create domain parameters file brainpoolP160r1.txt from
+ptk_c_administration_manual_rev-c.pdf, Appendix G, Sample EC Domain Parameter Files. 
+<br/>Note that you must add "cofactor=01" last in the parameters file, the cofactor is always one (in the spec document) for brainpool curves (cofactor=1 does  not work, it has to be 01).
+</p><p>
+<b>2.</b> We have to configure the HSM to accept custom domain parameters (E flag):
 </p>
 <source>
 ./ctconf -fcE
 </source>
 <p> 
-<b>3.</b>Import the domain parameters to the HSM:
+<b>3.</b> Import the domain parameters to the HSM:
 </p>
 <source>
 ./ctkmu idp -s 1 -t ec -n brainpoolP160r1 brainpoolP160r1.txt
 </source>
 <p> 
-<b>4.</b>Generate keys and a (dummy) certificate. Dummy certificate is needed for the java PKCS#11 provider.
+<b>4.</b> Generate keys and a (dummy) certificate. The dummy certificate is needed for the java PKCS#11 provider.
 </p>
 <source>
 ./ctcert c -k -l bpkey -tec -s1 -CbrainpoolP160r1 -d30y
 </source>
 <p> 
-<b>5.</b>Start EJBCA and create a new CVCA with CAToken Properties:
+<b>5.</b> Start EJBCA and create a new CVCA with CAToken Properties:
 </p>
 <source>
 sharedLibrary=/opt/PTK/lib/libcryptoki.so
