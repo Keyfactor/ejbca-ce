@@ -50,6 +50,7 @@ import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
@@ -86,7 +87,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
 	public CrmfRAPbeRequestTest(String arg0) throws RemoteException, CertificateException {
 		super(arg0);
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
