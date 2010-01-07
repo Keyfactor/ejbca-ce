@@ -49,6 +49,7 @@ The algorithm is:
 <li>If status is CERT_ARCHIVED and reason is REMOVEFROMCRL or NOT_REVOKED the certificate is NOT revoked.</li>
 <li>If status is neither CERT_REVOKED or CERT_ARCHIVED the certificate is NOT revoked.</li>
 </ul>
+<p>The archive cutoff extension as defined in RFC2560 is not used.</p>
 </section>
 
 <section name="Multiple responder and CA certificates">
