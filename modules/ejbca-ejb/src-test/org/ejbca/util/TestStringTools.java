@@ -76,10 +76,16 @@ public class TestStringTools extends TestCase {
     }
     public void test04Strip() throws Exception {
         log.trace(">test04Strip()");
-        String strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/<>bar";
+        String strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/\\<\\>bar";
         String stripped = StringTools.strip(strip1);
         assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
-        assertEquals("String not stripped correctly!", stripped, "CN=foo, O=Acme\\, Inc, OU=/\\///bar");
+        assertEquals("String not stripped correctly!", stripped, "CN=foo, O=Acme\\, Inc, OU=/\\/\\<\\>bar");
+
+        strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/<>\"bar";
+        stripped = StringTools.strip(strip1);
+        assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertEquals("String not stripped correctly!", stripped, "CN=foo, O=Acme\\, Inc, OU=/\\/<>\"bar");
+
         log.trace("<test04Strip()");
     }
     public void testBase64() throws Exception {
@@ -99,7 +105,7 @@ public class TestStringTools extends TestCase {
         assertEquals("foo123", deobf);
     }
     public void testPbe() throws Exception {
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         String enc = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
         String dec = StringTools.pbeDecryptStringWithSha256Aes192(enc);
         assertEquals("foo123", dec);

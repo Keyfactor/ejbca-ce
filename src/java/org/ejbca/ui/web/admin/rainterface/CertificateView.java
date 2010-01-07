@@ -36,6 +36,7 @@ import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.HTMLTools;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
 import org.ejbca.util.dn.DNFieldExtractor;
@@ -99,19 +100,19 @@ public class CertificateView implements java.io.Serializable {
     }
 
     public String getIssuerDN() {
-      return CertTools.getIssuerDN(certificate);
+      return HTMLTools.htmlescape(CertTools.getIssuerDN(certificate));
     }
 
     public String getIssuerDNField(int field, int number) {
-      return issuerdnfieldextractor.getField(field, number);
+      return HTMLTools.htmlescape(issuerdnfieldextractor.getField(field, number));
     }
 
     public String getSubjectDN() {
-      return CertTools.getSubjectDN(certificate);
+      return HTMLTools.htmlescape(CertTools.getSubjectDN(certificate));
     }
 
     public String getSubjectDNField(int field, int number) {
-      return subjectdnfieldextractor.getField(field, number);
+      return HTMLTools.htmlescape(subjectdnfieldextractor.getField(field, number));
     }
 
     public Date getValidFrom() {

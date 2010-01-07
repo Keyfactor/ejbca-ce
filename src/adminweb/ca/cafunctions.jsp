@@ -130,7 +130,7 @@ function getPasswordAndSubmit(formname) {
               <%= ejbcawebbean.getText("ROOTCA") + " : "%> 
             </td>
             <td>
-               <% out.write(CertTools.getSubjectDN(certificatechain[j])); %>                  
+               <% out.write(HTMLTools.htmlescape(CertTools.getSubjectDN(certificatechain[j]))); %>                  
             </td>
           </tr>
           <tr id="Row<%=row%2%>">
@@ -154,7 +154,7 @@ function getPasswordAndSubmit(formname) {
               <%= ejbcawebbean.getText("SUBORDINATECA") + " " + (chainsize-j-1) + " : "%>  
            </td>  
            <td>
-               <% out.write(CertTools.getSubjectDN(certificatechain[j])); %>                  
+               <% out.write(HTMLTools.htmlescape(CertTools.getSubjectDN(certificatechain[j]))); %>                  
            </td> 
           </tr>
           <tr id="Row<%=row%2%>">
