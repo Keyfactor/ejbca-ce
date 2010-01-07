@@ -583,11 +583,11 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         	// the id does not exist.
         	// If we don't re-throw here it will be treated as the service id does not exist
         	// and the service will not be rescheduled to run.
-        	if (e.getCause().getClass().getName().contains("SQLException")) {
+        	if ((e.getCause() != null) && e.getCause().getClass().getName().contains("SQLException")) {
         		log.debug("Rethrowing EJBException 1.");
         		throw new EJBException("Find failed: ", (Exception)e.getCause());
         	}
-        	if (e.getMessage().contains("Find failed")) {
+        	if ((e.getMessage() != null) && e.getMessage().contains("Find failed")) {
         		log.debug("Rethrowing EJBException 2.");
         		throw new EJBException("Find failed: ", (Exception)e.getCause());
         	}
