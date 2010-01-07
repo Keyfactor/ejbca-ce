@@ -36,6 +36,21 @@ When returning status of a certificate whose status is requested in an OCSP requ
 </p>
 </section>
 
+<section name="Expired certificates">
+<p>
+EJBCA keeps the status of expired certificates in the database, so the responder will answer queries also for expired certificates unless you remove them from the database.
+In the internal EJBCA database the status of expired certificates are set to ARCHIVED in the database (CertificateData table) by the CRL creation job. 
+This ARCHIVED status does not (from EJBCA 3.9.4) affect the response sent by the OCSP responder. 
+The algorithm is:
+</p>
+<ul>
+<li>If status is CERT_REVOKED the certificate is revoked and reason and date is picked up.</li>
+<li>If status is CERT_ARCHIVED and reason is _NOT_ REMOVEFROMCRL or NOT_REVOKED the certificate is revoked and reason and date is picked up.</li>
+<li>If status is CERT_ARCHIVED and reason is REMOVEFROMCRL or NOT_REVOKED the certificate is NOT revoked.</li>
+<li>If status is neither CERT_REVOKED or CERT_ARCHIVED the certificate is NOT revoked.</li>
+</ul>
+</section>
+
 <section name="Multiple responder and CA certificates">
 <p>
 The OCSP responder can have many responder certificates, each issued by one CA. This means that the responder can answer requests targeted at multiple CAs. 
