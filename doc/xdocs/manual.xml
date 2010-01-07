@@ -423,6 +423,31 @@ web.reqcertindb=false in conf/web.properties.</li>
 </ol>
 </p>
 </subsection>
+<subsection name="Renewing Superadmin">
+<p>
+Renewing the superadmin certificate is done in the same way as for any client certificate. You can use both the GUI or the CLI to renew the superadmin.
+The superadmin certificate is normally issued as a PKCS#12 keystore (if not issued as a browser certificate for smart card enrollment). 
+</p>
+<p>Using the admin GUI:</p>
+<ul>
+<li>Go to Search/Edit End Entities.</li>
+<li>Search for user 'superadmin'.</li>
+<li>Click Edit End Entity.</li>
+<li>Set a new password and set status to NEW, click Save.</li>
+<li>Go to Public Web and then Create Keystore.</li>
+<li>Enter superadmin username, and the password you gave.</li>
+<li>In the next screen, select key length 2048 and click OK.</li>
+<li>Your new superadmin keystore is downloaded. You can install it in your browser.</li>
+</ul>
+<p>Using the CLI:</p>
+<source>
+bin/ejbca.sh ra setuserstatus superadmin 10
+bin/ejbca.sh ra setclearpwd superadmin password
+bin/ejbca.sh batch
+</source>
+<p>Your new superadmin keystore is generated and stored in sudirectory p12. The password is password, as given to the setclearpwd command.
+</p> 
+</subsection>
 </section>
 
 <section name="Admin GUI overview page">
