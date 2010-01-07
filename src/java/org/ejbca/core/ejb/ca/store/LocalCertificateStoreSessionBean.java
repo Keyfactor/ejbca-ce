@@ -946,6 +946,32 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, certHome, adapter);
     } // findCertificatesByType
 
+    /** Method that sets status CertificateDataBean.CERT_ARCHIVED on the certificate data, only used for testing.
+     * Can only be performed by an Admin.TYPE_INTERNALUSER. 
+     * Normally ARCHIVED is set by the CRL creation job, after a certificate has expired and been added to a CRL 
+     * (expired certificates that are revoked must be present on at least one CRL).
+     * @ejb.transaction type="Required"
+     * @ejb.interface-method
+     */
+    public void setArchivedStatus(Admin admin, String fingerprint) throws AuthorizationDeniedException {
+    	if (admin.getAdminType() != Admin.TYPE_INTERNALUSER) {
+    		throw new AuthorizationDeniedException("Unauthorized");
+    	}
+    	try {
+    		CertificateDataPK revpk = new CertificateDataPK();
+    		revpk.fingerprint = fingerprint;
+    		CertificateDataLocal rev = certHome.findByPrimaryKey(revpk); 
+    		rev.setStatus(SecConst.CERT_ARCHIVED);
+    		if (log.isDebugEnabled()) {
+    			log.debug("Set status ARCHIVED for certificate with fp: "+fingerprint+", revocation reason is: "+rev.getRevocationReason());
+    		}
+    	} catch (FinderException e) {
+    		String msg = intres.getLocalizedMessage("store.errorcertinfo", fingerprint);            	
+    		getLogSession().log(admin, 0, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, msg);
+    		throw new EJBException(e);
+    	}
+    }
+    
     /**
      * Set the status of certificate with  given serno to revoked.
      *
