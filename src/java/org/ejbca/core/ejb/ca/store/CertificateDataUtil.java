@@ -34,6 +34,7 @@ import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -259,7 +260,16 @@ public class CertificateDataUtil {
         return CertificateStatus.NOT_AVAILABLE;
     } //isRevoked
     
-    public final static CertificateStatus getIt( CertificateDataLocal data) {
+    /** Algorithm:
+     * if status is CERT_REVOKED the certificate is revoked and reason and date is picked up
+     * if status is CERT_ARCHIVED and reason is _NOT_ REMOVEFROMCRL or NOT_REVOKED the certificate is revoked and reason and date is picked up
+     * if status is CERT_ARCHIVED and reason is REMOVEFROMCRL or NOT_REVOKED the certificate is NOT revoked
+     * if status is neither CERT_REVOKED or CERT_ARCHIVED the certificate is NOT revoked
+     * 
+     * @param data
+     * @return CertificateStatus, can be compared (==) with CertificateStatus.OK, CertificateStatus.REVOKED and CertificateStatus.NOT_AVAILABLE
+     */
+    private final static CertificateStatus getIt( CertificateDataLocal data) {
         if ( data == null ) {
             return CertificateStatus.NOT_AVAILABLE;
         }
@@ -267,10 +277,16 @@ public class CertificateDataUtil {
         if (pId == null) {
         	pId = Integer.valueOf(SecConst.CERTPROFILE_NO_PROFILE);
         }
-        if ( data.getStatus() != SecConst.CERT_REVOKED ) {
-            return new CertificateStatus(CertificateStatus.OK.toString(), pId.intValue());
+        final int revReason = data.getRevocationReason();
+        final int status = data.getStatus();
+        if ( status != SecConst.CERT_REVOKED ) {
+        	// If the certificate have status ARCHIVED, BUT revocationReason is REMOVEFROMCRL or NOTREVOKED, the certificate is OK
+        	// Otherwise it is a revoked certificate that has been archived and we must return REVOKED
+        	if ( (status != SecConst.CERT_ARCHIVED) || ((revReason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) || (revReason == RevokedCertInfo.NOT_REVOKED)) ) {
+                return new CertificateStatus(CertificateStatus.OK.toString(), pId.intValue());        		
+        	}
         }
-        return new CertificateStatus(data.getRevocationDate(), data.getRevocationReason(), pId.intValue());
+        return new CertificateStatus(data.getRevocationDate(), revReason, pId.intValue());
     }
 
     static public void verifyProtection(Admin admin, String issuerDN, BigInteger serno,
