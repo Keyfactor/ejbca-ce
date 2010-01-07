@@ -1,3 +1,19 @@
+EJBCA 3.9.4
+-----------
+This is a minor release with only a few minor fixes. 
+
+Noteworthy changes:
+- Fixed a bug where OCSP responder would not return correct status for archived (expired) certificates.
+- Fixed a regression for the (deprecated) SafeNet JCE CA token.
+- Fixed a regression where you could not renew expired CAs
+- It's not possible to renew soft ECC CA keys in the admin GUI
+- All language files are now encoded in UTF-8
+- Fixed corner cases where bogus CRLs and certs could be published to LDAP
+
+Read the full changelog for details.
+
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.9.3
 -----------
 This is a minor release but packed with new minor features and fixes, 41 issues have been resolved. 

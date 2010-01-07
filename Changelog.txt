@@ -1,3 +1,22 @@
+3.9.4, 2010-01-07
+---
+Improvement
+    * [ECA-1518] - Language files encoded in UTF-8
+
+Task
+    * [ECA-1521] - Document how to use of Brainpool curves for EAC
+
+Bug
+    * [ECA-1441] - Old CA cert published to LDAP after CA renewal.
+    * [ECA-1443] - Bogus CRL published to LDAP at some occations.
+    * [ECA-1471] - Don't publish certificates for inactive CA services
+    * [ECA-1514] - CMP requests with DN characters requiring escaping fails
+    * [ECA-1519] - Not possible to renew soft CA ECC CA keys
+    * [ECA-1524] - Unable to renew expired CAs (regression)
+    * [ECA-1525] - SafeNetLunaCAToken (old class) does not work
+    * [ECA-1526] - SecConst.CERT_EXPIRED, should not be used, Import cert cli uses EXPIRED instead of ARCHIVED.
+    * [ECA-1527] - OCSP responder returns good for expired and archived certificates
+
 3.9.3, 2009-12-21
 ---
 New Feature
