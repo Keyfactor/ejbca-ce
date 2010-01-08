@@ -96,6 +96,7 @@ modules/{module name}/resources   Holds the module's meta-data and templates
         	<classpath>
         	...
     	</javac>
+        <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
     </target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
