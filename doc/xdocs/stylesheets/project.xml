@@ -26,14 +26,16 @@
 
             <menu name="EJBCA PKI Docs">
                 <item name="Architecture"	  href="/architecture.html"/>
-                <item name="Installation"		  href="/installation.html"/>
-                <item name="User Guide"		  href="/manual.html"/>
+                <item name="Installation"	  href="/installation.html"/>
+                <item name="Concepts"	  	  href="/concepts.html"/>
+                <item name="Admin Guide"	  href="/adminguide.html"/>
+                <item name="User Guide"		  href="/userguide.html"/>
             </menu>
 
             <menu name="EJBCA OCSP Docs">
                 <item name="OCSP Architecture"	  href="/architecture-ocsp.html"/>
-                <item name="OCSP Installation"		  href="/installation-ocsp.html"/>
-                <item name="OCSP User Guide"		  href="/manual-ocsp.html"/>
+                <item name="OCSP Installation"	  href="/installation-ocsp.html"/>
+                <item name="OCSP User Guide"	  href="/userguide-ocsp.html"/>
             </menu>
 
             <menu name="Other documentation">

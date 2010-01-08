@@ -1467,7 +1467,7 @@ Windows Registry Editor Version 5.00
    <li>Configure the conf/externalra.properties to deploy a new DataSouce for the message database
    and re-deploy EJBCA</li>
    <li>Configure a new worker for this new DataSource as described in the
-   <a href="manual.html#External RA API">User Guide</a></li>
+   <a href="adminguide.html#External RA API">Admin Guide</a></li>
    <li>Issue a PKCS#12 keystore for the SCEP RA Server from the SCEP CA and configure it
    in EJBCA_HOME/conf/scep.properties. The SCEP CA is this issuer of all SCEP requests.</li>
    <li>Create an End Entity Profile and Certificate Profile to issue SCEP requests from and configure it
@@ -1510,7 +1510,7 @@ Windows Registry Editor Version 5.00
   continue to poll the RA until the request is approved, then a certificate is returned, or the request is
   rejected, then a failure message is returned.
   </p><p>
-  Activation of approvals are described in the <a href="manual.html#Approving Actions">User Guide</a>.
+  Activation of approvals are described in the <a href="adminguide.html#Approving Actions">Admin Guide</a>.
   </p><p>
   If an approval request is rejected, because the router administrator mistyped something for
   example, you will have to wait 30 minutes before a new request can be done, because the RA will

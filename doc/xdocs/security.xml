@@ -16,12 +16,26 @@ After realizing this, please read on and take a pragmatic approach to security
  suitable for your policy, application and environment.
 </p></section>
 
+<section name="Firewall ports">
+<p>To have a functional EJBCA installation there are only two ports that need to be open to the outside:
+<ul>
+<li>8080 - the public HTTP port of you application server, used for clients to access the public web for enrollment.</li>
+<li>8443 - the SSL protected HTTPS port used to access the admin GUI of EJBCA. This port requires client certificate for access.</li>
+</ul>
+Additional ports that you may need to open are SSH, outgoing SMTP, outgoing LDAP etc. Which additional ports that needs to be open depends on your specific setup and which 
+services you use. You do not need outgoing SMTP if you don't use email notification for example.
+</p>
+<p>
+Locally on the host a number of ports are used in order for your application server to function.
+</p>
+</section>
+
 <section name="Securing JBoss">
 <p>
 JBoss has description how to secure a default installation of JBoss. You should read this document before putting
 your application in production.
 </p><p>
-Check out: <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=SecureJBoss">SecureJBoss</a>
+Check out: <a href="http://community.jboss.org/wiki/SecureJBoss">SecureJBoss</a>
 </p>
 <p>You should at least disable the public admin console by removing jmx-console.war, management/console-mgr.sar and 
 jbossweb-tomcat55.sar/ROOT.war from deploy.
@@ -159,7 +173,7 @@ is describing what could be done:
 <p>
 Some of the passwords are used directly by EJBCA code.
 All these passwords may be configured encrypted in the same way as
-<a href="manual.html#Auto-activation of CA tokens">PINs used for auto activation could be encrypted</a>.
+<a href="adminguide.html#Auto-activation of CA tokens">PINs used for auto activation could be encrypted</a>.
 </p>
 <p>
 List of these passwords in ejbca.properites :

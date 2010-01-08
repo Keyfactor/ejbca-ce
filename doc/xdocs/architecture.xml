@@ -6,25 +6,6 @@
   </properties>
 
 <body>
-  <section name="Internal architecture">
-    <p>
-    	The following diagram is a very rough schema of the current architecture of EJBCA.
-    </p>
-    <p>
-    <img src="images/architecture.gif" alt="EJBCA architecture" />
-    </p>
-    <p>
-    	A more developer centric deployment diagram is given below. It displays the internal three layer architecture of EJBCA. The application is packages in an ear file. 
-    	In this ear file various web applications (war files) handles the interfaces with the surrounding world, mostly through various web interfaces. 
-    	The web applications uses ejb session beans to perform the business operations. The session beans in turn uses a persistence layer (data entities) to persist data in the database.    
-    </p>
-    <p> 
-        You can add your own components by for example deploying another web application (external.war) in the application server, making use of the session bean API of EJBCA.
-    </p>
-    <p>
-    <img src="images/DeploymentDiagram.png" alt="EJBCA deployment diagram" />
-    </p>
-  </section>
   <section name="Sample setup architecture">
     <p>
     	The following diagram shows a good example setup of a secured CA with external OCSP responders
@@ -58,7 +39,7 @@ From EJBCA 3.10 the External RA API is bundled as a part of EJBCA and can be ena
     </p>
 <subsection name="External RA Service Workers">
 <p>
-External RA Service Workers are configured in the Admin GUI (described in the <a href="manual.html#External RA API">User Guide</a>).
+External RA Service Workers are configured in the Admin GUI (described in the <a href="adminguide.html#External RA API">Admin Guide</a>).
 Each worker will poll a DataSource in the application server.
 The DataSource should point to a database outside the CA's network security zone.
 Currently only soft PKCS#12 keystore for decryption and signing responses are supported.
@@ -93,6 +74,26 @@ The client is also responsible for polling the database for responses from the E
 </p>
 
 </subsection>
+  </section>
+
+  <section name="Internal architecture">
+    <p>
+    	The following diagram is a very rough schema of the current architecture of EJBCA.
+    </p>
+    <p>
+    <img src="images/architecture.gif" alt="EJBCA architecture" />
+    </p>
+    <p>
+    	A more developer centric deployment diagram is given below. It displays the internal three layer architecture of EJBCA. The application is packages in an ear file. 
+    	In this ear file various web applications (war files) handles the interfaces with the surrounding world, mostly through various web interfaces. 
+    	The web applications uses ejb session beans to perform the business operations. The session beans in turn uses a persistence layer (data entities) to persist data in the database.    
+    </p>
+    <p> 
+        You can add your own components by for example deploying another web application (external.war) in the application server, making use of the session bean API of EJBCA.
+    </p>
+    <p>
+    <img src="images/DeploymentDiagram.png" alt="EJBCA deployment diagram" />
+    </p>
   </section>
 
 </body>

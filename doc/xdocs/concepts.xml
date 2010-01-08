@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+  <properties>
+    <title>Concepts</title>
+  </properties>
+
+  <body>
+
+<section name="Introduction">
+<p>This is a brief explanation of all the the concepts in EJBCA like end entity profile, certificate profile and so on and how they relate to one and another.
+</p><p>
+EJBCA implements the CA part of a PKI according to standards such as X.509 and IETF-PKIX. As such it follows the general PKI concepts closely. The administration of the PKI has some EJBCA-specific concepts in order to implement unique flexibility.
+</p>
+</section>
+
+<section name="Terminology">
+<table>
+<tr><td>EJBCA</td><td>Enterprise Java Beans Certificate Authority</td></tr>
+<tr><td>CA</td><td>Certificate Authority</td></tr>
+<tr><td>RA</td><td>Registration Authority</td></tr>
+<tr><td>DN</td><td>Distinguished Name</td></tr>
+<tr><td>HSM</td><td>Hardware Security Module</td></tr>
+<tr><td>CRL</td><td>Certificate Revocation List</td></tr>
+<tr><td>OCSP</td><td>Online Certificate Status Protocol, RFC2560</td></tr>
+<tr><td>CMP</td><td>Certificate Management Protocol, RFC4210</td></tr>
+<tr><td>SCEP</td><td>Simple Certificate Enrollment Protocol</td></tr>
+</table>
+</section>
+
+<section name="General concepts">
+<subsection name="Certification Authority (CA)">
+<p>
+A CA issues certificates to, and vouches for the authenticity of entities. The level of trust you can assign to a CA is individual, per CA, and depends on the CAs policy and practices statement.
+</p>
+</subsection>
+<subsection name="RootCA">
+<p>
+A RootCA has a self-signed certificate and is also called Trusted Root. Verification of other certificates in the PKI ends with the RootCAs self-signed certificate. Since the RootCAs certificate is self-signed it must somehow be configured as a trusted root with all clients in the PKI.</p>
+</subsection>
+<subsection name="SubCA">
+<p>
+A subordinate CA, or SubCA for short, is a CA whose certificate is signed by another CA, that can be another SubCA or a RootCA. Since the SubCAs certificate is signed by another CA, it does not have to be configured as a trusted root. It is part of a certificate chain that ends in the RootCA.</p>
+</subsection>
+<subsection name="Registration Authority (RA)">
+<p>
+An RA is an administrative function that registers entities in the PKI. The RA is trusted to identify and authenticate entities according to the CAs policy. There can be one or more RAs connected to each CA in the PKI.</p>
+</subsection>
+<subsection name="End-entity">
+<p>
+An end-entity is a user, such as an e-mail client, a web server, a web browser or a VPN-gateway. End-entities are not allowed to issue certificates to other entities, they make up the leaf nodes in the PKI.</p>
+</subsection>
+</section>
+
+<section name="EJBCA specific concepts">
+<subsection name="Certificate Profile">
+<p>
+A certificate profile determines non uses specific content and behaviour of certificates. The largest part is extensions and here you decide if a specific extension is present and wether it is critical or not. Some extensions are populated with a value, where it is the same value for all certificates such as CRLDistributionPoint. For other extensions only the presence is determined, where the value is user- or cert-specific such as SubjectAlternativeName. Here is also determined if these certificates will be published and with which publisher.
+</p>
+</subsection>
+<subsection name="End Entity Profile">
+<p>
+End Entity Profiles determine what data can or must be present for users connected with this profile. Some values can also be pre-determined such as the organization, o in the dn.
+<br/>
+When adding a user in the pki, the user must be conneted with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
+</p>
+</subsection>
+<subsection name="CA Token">
+<p>
+A CA Token is the token used by a CA to store it's keys. The CA Token's most important key are the CA signature keys. The token can also contain other keys used for encryption of sensitive data in the database.
+<br/>
+CA Tokens are configured per CA and can be in different forms:
+<ul>
+<li>Soft tokens, PKCS#12 files protected by a password.</li>
+<li>Hardware tokens, usually a Hardware Security Module accessed using the PKCS#11 API.</li>
+</ul>
+</p>
+</subsection>
+<subsection name="Publishers">
+<p>
+A publisher stores issued certificates to a central location. EJBCA have implemented support for LDAP and Active Directory but it's also possible to create customized plug-ins.
+</p>
+</subsection>
+<subsection name="External RA">
+<p>
+In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA periodically fetch and process information from external trusted data sources. For this reason there is an add-on pack to EJBCA called extra, which is short for External RA API.
+</p>
+</subsection>
+
+</section>
+
+  </body>
+</document>

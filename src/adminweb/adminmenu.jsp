@@ -348,7 +348,7 @@
 
 
 <% if (ejbcawebbean.isHelpEnabled()) { %>
-		<li id="cat9"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/manual.html" target="<%= GlobalConfiguration.DOCWINDOW %>"
+		<li id="cat9"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/concepts.html" target="<%= GlobalConfiguration.DOCWINDOW %>"
 			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></a>
 		</li>
 <% } %>
