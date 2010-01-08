@@ -485,7 +485,7 @@
         		<path refid="lib.junit.classpath"/>
         	</classpath>
     	</javac>
-        <copy file="${this.dir}/log4j.xml" todir="${build-test.dir}" failonerror="true"/>
+        <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy todir="${build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src">
 				<include name="intresources/**"/>

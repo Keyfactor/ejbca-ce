@@ -10,7 +10,7 @@
 		</layout> 
 	</appender> 
 
-	<!-- Use DEBUG for all EJBCA classes -->
+	<!-- Use full DEBUG for all EJBCA classes -->
 	<category name="org.ejbca" additivity="false">
 		<priority value="TRACE"/>
 		<appender-ref ref="console"/>
@@ -18,8 +18,6 @@
 
 	<root> 
 		<!-- Set basic limit for console -->
-		<!--
-		 --> 
 		<priority value="INFO" />
 		<appender-ref ref="console"/>
 	</root> 
