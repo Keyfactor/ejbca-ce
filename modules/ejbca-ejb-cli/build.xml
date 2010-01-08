@@ -80,8 +80,8 @@
     		<fileset dir="${ejbca.home}/src/java" includes="jndi.properties"/>
     		<fileset dir="${ejbca.home}/src" includes="intresources/intresources.*.properties"/>
     		<fileset dir="${ejbca.home}/bin" includes="batchtool.properties"/>
-    		<fileset file="${this.dir}/log4j.xml"/>
     	</copy>
+        <copy file="${log4j.cli.file}" tofile="${mod.ejbca-ejb-cli.dist}/log4j.xml" failonerror="true"/>
     </target>
 
 </project>
