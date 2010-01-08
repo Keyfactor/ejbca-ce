@@ -78,6 +78,7 @@
     	<copy todir="${mod.ejbca-xkms-cli.dist}" flatten="true">
     		<fileset dir="${this.dir}/resources" includes="**"/>
     	</copy>
+        <copy file="${log4j.cli.file}" tofile="${mod.ejbca-xkms-cli.dist}/log4j.xml" failonerror="true"/>
         <chmod file="${mod.ejbca-xkms-cli.dist}/*.sh" perm="a+rx"/>
     </target>
 </project>
