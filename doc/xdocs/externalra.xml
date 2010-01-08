@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>The External Registration Authority</title>
+  </properties>
+<body>
+
+<section name="Introduction">
+<p>
+In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA installation and instead let EJBCA periodically 
+fetch and process information from external trusted data sources. For an overview of the solution see the illustration below.
+</p><p>
+The External Registration Authority (RA) API contains the most basic functions like:
+<ul>
+ <li>Generate Certificate from PKCS10</li>
+ <li>Generate PKCS12 for the end user</li>
+ <li>KeyRecovery of the users key (if requested using PKCS12)</li>
+ <li>Edit users</li>
+ <li>Revoke Certificates</li>
+</ul>
+From EJBCA 3.10 the External RA API is bundled as a part of EJBCA and can be enabled in conf/externalra.properties. 
+</p><p>
+<img src="images/extra-architecture.jpg" alt="EJBCA with External RA" />
+</p>
+</section>
+
+<section name="External RA Service Workers">
+<p>
+External RA Service Workers are configured in the Admin GUI.
+Each worker will poll a DataSource in the application server.
+The DataSource should point to a database outside the CA's network security zone.
+Currently only soft PKCS#12 keystores for decryption and signing responses are supported.
+</p><p>
+A message in the database can contain one or more submessages.
+If a worker find a new requests message it changes the status of the message to 'in process' and
+extracts all sub-messages. For each submessage the worker will:
+<ol>
+    <li>decrypt the submessage with a keystore (or reject it if encryption is required)</li>
+    <li>verify and validate the signature of the submessage (or reject it if signing is required)</li>
+    <li>process the request in the submessage with the signers admin privileges (or with full privileges if no signature is present)</li>
+    <li>sign the response submessage (if signatures are required by the Service Worker)</li>
+    <li>encrypts the response submessage (if encryption is required by the Service Worker)</li>
+</ol>
+and finally write all the response submessages as single message with status 'processed' back to the DataSource.
+Encryption in submessages are done using CMS/PKCS#7 envelopes. 
+</p>
+<subsection name="Enabling">
+<p>
+To use External RA Service Workers in EJBCA:
+<ol>
+ <li>Enable the service in EJBCA_HOME/conf/externalra.properties</li>
+ <li>Configure DataSources in EJBCA_HOME/conf/externalra.properties</li>
+ <li>(Install the JDBC connector JARs in the application server for databases used in EJBCA_HOME/conf/externalra.properties)</li>
+ <li>Re-deploy EJBCA</li>
+</ol>
+</p><p>
+It is recommended to use the following indexes on the external massage database:
+</p>
+<source>
+create index message_idx1 on message (status);
+create index message_idx2 on message (messageId);
+</source>
+</subsection>
+<subsection name="Configuring">
+<p>
+In the EJBCA Admin GUI, go to Services and create a new Custom Worker that runs at short intervals.
+The shorter the interval the more often the worker will poll the DataSource for new messages.
+<ul>
+ <li>Select Worker: Custom Worker</li>
+ <li>Custom Worker Class Path: org.ejbca.extra.caservice.ExtRACAServiceWorker</li>
+ <li>Custom Worker Properties: shown below</li>
+ <li>Select Interval: Periodical Interval</li>
+ <li>Period: 10 seconds (or any interval you like but not below 5 seconds)</li>
+ <li>Select Action: No Action</li>
+ <li>Active: Checked</li>
+</ul>
+The available worker properties are:
+<ul>
+ <li>externalra-caservice.persistenceunit: A reference to the RA database configured in externalra.properties (Default: RAMessage1DS)</li>
+ <li>externalra-caservice.encryption.required: Only accept encrypted messages in the RA database (Default: false)</li>
+ <li>externalra-caservice.signature.required: Only accept signed messages in the RA database (Default: false)</li>
+ <li>externalra-caservice.keystore.path: Full pathname to the PKCS#12 keystore used to decrypt and sign messages. This
+ file must be available on all EJBCA nodes. Only required if encryption or signing is used.
+ (Default for historic reasons: keystore/extrakeystore.p12)</li>
+ <li>externalra-caservice.keystore.pwd: Password for the keystore defined by externalra-caservice.keystore.path.
+ (Default: foo123)</li>
+ <li>externalra-caservice.raissuer: CA Name of the CA issuing RA Certificates, used to check the validity of RA signatures.
+ (Default: AdminCA1)</li>
+</ul>
+</p><p>
+Both the worker's keystore and the one used on the RA server must be issued by 'externalra-caservice.raissuer'.
+The RA server also needs the certificate of the worker's keystore to be able to encrypt request messages.
+Signing required Key Usage 'Digital Signature' and encryption requires Key Usage 'Key Encipherment'.   
+</p>
+</subsection>
+</section>
+
+<section name="External RA API Clients">
+<p>
+External RA API clients creates a message from several submessages, where each submessage
+<ol>
+    <li>contains a request</li>
+    <li>is signed with the RA keystore (optional if not required by Service Worker)</li>
+    <li>is encrypted with the Service Worker's keystore certificate (optional if not required by Service Worker)</li>
+</ol>
+The message is then written to the database polled by a External RA Service Worker.
+After a while (depending on how often the Service Worker runs and if the CA is online) the client
+can fetch the response message.
+</p><p>
+The client is also responsible for polling the database for responses from the External RA Service Worker.
+</p><p>
+Running <code>ant externalra-client</code> will build a sample client with all
+dependencies under EJBCA_HOME/dist/extrernalra-cli. This simple client JAR could be used directly as a library and
+is a good starting point for client development. See EJBCA_HOME/modules/externalra/src/org/ejbca/extra/ra/ExtRATestClient.java
+and EJBCA_HOME/modules/externalra/src-test/ for more details on how the use the API.
+</p><p>
+New submessages require a new org.ejbca.extra.db.MyRequest and org.ejbca.extra.caservice.processor.MyRequestProcessor
+class where 'My' is your name of choice. Dispatching of messages to a processing class is done using Java reflection
+to automatically instantiate the correct processor, so it is important that the class names are correct.
+</p><p>
+See also the more advanced External RA client "SCEP RA Server" described below. 
+</p>
+</section>
+
+<section name="Security">
+<p>
+It is strongly recommended to at least use signing of messages sent between RA and CA. If the
+messages are signed will the RAs certificate be used for authorization internally. This makes it
+possible to trace which RA that approved the information certified and possible to control which
+kind of information that the RA can approve, by defining End Entity Profiles. If signing is not
+used the service run as an 'internal user' where anything goes (Super Administrator).
+</p><p>
+If message signing is used, the RA servers certificate (used to sign the message) must be an
+administrator i EJBCA ant at least have the following rights:
+<ul>
+ <li>The RA administrator role</li>
+ <li>View/Create/Edit/Key Recovery/Revocation Rights</li>
+ <li>Access to the End Entity Profiles used by the RA</li>
+ <li>Access to the CAs used by the RA</li>
+</ul>
+</p><p>
+For signing and encryption the client that uses the API on the RA must support these options. The
+ScepRA does not support signing and encryption.
+</p><p>
+For signing is the SHA-256 digest algorithm used and for encryption is AES256 used.
+</p>
+</section>
+
+<section name="Using the SCEP RA Server">
+<p>
+The SCEP RA Server is an External RA API client built from the EJBCA bundle.  
+</p><p>
+The SCEP RA Server supports the SCEP 'polling' RA model. A SCEP client can send a request
+to the SCEP RA Server, and then wait, polling the RA for updates. When the request is processed
+by the CA, which fetches the pkcs10 request using the External RA API, the certificate is sent
+back to the SCEP RA Server. When the certificate reaches the SCEP RA Server, it sends back
+the SCEP certificate response the next time the SCEP client polls the SCEP RA Server. This
+feature is very useful to securely insulate the CA from the SCEP clients throughout the network.
+</p>
+<subsection name="Configuring the SCEP RA Server on the external RA host">
+<p>
+The SCEP RA Server is the module installed on the external RA server. This module receives SCEP
+requests from SCEP clients and uses the External RA API to get the CA to process the SCEP requests.
+</p><p>
+<ol>
+ <li>Setup a message database on the external RA server</li>
+ <li>Configure the conf/externalra.properties to deploy a new DataSouce for the message database
+ and re-deploy EJBCA</li>
+ <li>Configure a new worker for this new DataSource (as described in previous sections)</li>
+ <li>Issue a PKCS#12 keystore for the SCEP RA Server from the SCEP CA and configure it
+ in EJBCA_HOME/conf/scep.properties. The SCEP CA is this issuer of all SCEP requests.</li>
+ <li>Create an End Entity Profile and Certificate Profile to issue SCEP requests from and configure it
+ in EJBCA_HOME/conf/scep.properties.</li>
+ <li>Configure the DataSouce in EJBCA_HOME/conf/scep.properties</li>
+ <li>Optional: Configure scep.ra.authPwd in EJBCA_HOME/conf/scep.properties if you want to authenticate
+ SCEP messages based on a password in the request.</li>
+ <li>Make sure a database JDBC connector JAR is installed in the application server for your database.</li>
+ <li>Run 'ant externalra-scep-deploy' to deploy the DataSource and SCEP RA Server</li>
+</ol>
+</p>
+</subsection>
+<subsection name="Accessing the Scep RA Server on the external RA host">
+<p>
+You can access the Scep RA server on the external RA host by pointing your client (vpn router etc)
+to the URL http://scepraserver.hostname:8080/scepraserver/scep/pkiclient.exe.
+</p><p>
+Using this URL will include the certificate chain in the SCEP responses. Depending on your client
+you may instead use the URL http://scepraserver.hostname:8080/scepraserver/scep/noca/pkiclient.exe.
+Using this URL will return only the client certificate on the SCEP response.
+</p>
+</subsection>
+<subsection name="Security options">
+<p>
+Using the External RA, the CA trusts all messages that comes from the RA. This means that if a
+SCEP client sends a request to the RA, the CA will create the user and issue a certificate as soon as
+it picks up the message from the RA.
+</p><p>
+To make a more secure setup, one of the two following ways are recommended:
+<ul>
+ <li>Each SCEP request can contain a password. Set authPwd in conf/scep.properties to another
+ value then none. This will require a correct password to be sent in the SCEP request.</li>
+ <li>Configure Approvals on the CA(s) issuing SCEP certificates.</li>
+</ul>
+The two ways can also be combined and both used.
+</p><p>
+When approvals are activated, a SCEP request will result in an approval request being created in
+the CA. The approval request will be for adding or editing a user. An administrator can then view
+the approval request and approve or reject the new request from the SCEP client. The SCEP client will
+continue to poll the RA until the request is approved, then a certificate is returned, or the request is
+rejected, then a failure message is returned.
+</p><p>
+Activation of approvals are described in the <a href="adminguide.html#Approving Actions">Admin Guide</a>.
+</p><p>
+If an approval request is rejected, because the router administrator mistyped something for
+example, you will have to wait 30 minutes before a new request can be done, because the RA will
+remember the rejection for 30 minutes.
+</p><p>
+An approval request will be valid for one hour. After one hour a new request will be created.
+</p><p>
+The normal work-flow using approvals will be the following:
+<ol>
+ <li>A router admin creates a SCEP request to the RA</li>
+ <li>The router admin calls up a EJBCA admin and asks to get approval of the request.</li>
+ <li>The EJBCA admin approves the request and the router gets the certificate, or the EJBCA admin
+ rejects the request and the router gets a failure message.</li>
+</ol>
+</p>
+</subsection>
+</section>
+
+</body>
+</document>

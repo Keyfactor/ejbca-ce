@@ -625,7 +625,7 @@ EJBCA implements features from (at least) draft 11 of the SCEP spec. This means 
 <li>GetCACertChain</li>
 <li>GetCACaps</li>
 </ul>
-Using the External RA API the following SCEP message is also supported for polling mode:
+Using the <a href="externalra.html">External RA</a> API the following SCEP message is also supported for polling mode:
 <ul>
 <li>GetCertInitial</li>
 </ul>
@@ -651,12 +651,11 @@ The most common errors should be wrong username/password or wrong status (not NE
 </subsubsection>
 <subsubsection name="RA mode (ExtRA API 3.4.2)">
 <p>
-EJBCA supports the SCEP 'polling' RA model using the External RA API.
+EJBCA supports the SCEP 'polling' RA model using the <a href="externalra.html">External RA API</a>.
 Using this a SCEP client can send a request to the External RA, and then wait, polling the RA for updates. 
 When the request is processed by the CA, which fetches the pkcs10 request from the External RA, the certificate is sent back to the External RA. 
 When the certificate is complete on the External RA, the RA sends back the SCEP certificate response the next time the SCEP client
 polls the RA. This feature is very useful to securely insulate the CA from the SCEP clients throughout the network.
-The <a href="howto.html#Using the SCEP RA Server">howto</a> has more information.
 </p>
 </subsubsection>
 <p>
@@ -1677,107 +1676,11 @@ To automatic test the XKMS Service do the following:
 </p>
 </subsection>
 </section>
+
 <section name="External RA API">
 <p>
-<i>This service has currently only been tested with JBoss AS.</i>
-</p><p>
-In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA 
-periodically fetch and process information from external trusted data sources.
-An overview of how the External RA API works can be found <a href="architecture.html#External RA">here</a>. 
-</p><p>
-The ExtRA API contains the most basic functions like:
-<ul>
- <li>Generate Certificate from PKCS10</li>
- <li>Generate PKCS12 for the end user</li>
- <li>KeyRecovery of the users key (if requested using PKCS12)</li>
- <li>Edit users</li>
- <li>Revoke Certificates</li>
-</ul>
+Information on how to use the External RA API is available <a href="externalra.html">here</a>.
 </p>
-<subsection name="Enabling">
-<p>
-To use External RA Service Workers in EJBCA:
-<ol>
- <li>Enable the service in EJBCA_HOME/conf/externalra.properties</li>
- <li>Configure DataSources in EJBCA_HOME/conf/externalra.properties</li>
- <li>(Install the JDBC connector JARs in the application server for databases used in EJBCA_HOME/conf/externalra.properties)</li>
- <li>Re-deploy EJBCA</li>
-</ol>
-</p><p>
-It is recommended to use the following indexes on the external massage database:
-</p>
-<source>
-create index message_idx1 on message (status);
-create index message_idx2 on message (messageId);
-</source>
-</subsection>
-<subsection name="Setting up workers">
-<p>
-In the EJBCA Admin GUI, go to Services and create a new Custom Worker that runs at short intervals.
-The shorter the interval the more often the worker will poll the DataSource for new messages.
-<ul>
- <li>Select Worker: Custom Worker</li>
- <li>Custom Worker Class Path: org.ejbca.extra.caservice.ExtRACAServiceWorker</li>
- <li>Custom Worker Properties: shown below</li>
- <li>Select Interval: Periodical Interval</li>
- <li>Period: 10 seconds (or any interval you like but not below 5 seconds)</li>
- <li>Select Action: No Action</li>
- <li>Active: Checked</li>
-</ul>
-The available worker properties are:
-<ul>
- <li>externalra-caservice.persistenceunit: A reference to the RA database configured in externalra.properties (Default: RAMessage1DS)</li>
- <li>externalra-caservice.encryption.required: Only accept encrypted messages in the RA database (Default: false)</li>
- <li>externalra-caservice.signature.required: Only accept signed messages in the RA database (Default: false)</li>
- <li>externalra-caservice.keystore.path: Full pathname to the PKCS#12 keystore used to decrypt and sign messages. This
- file must be available on all EJBCA nodes. Only required if encryption or signing is used.
- (Default for historic reasons: keystore/extrakeystore.p12)</li>
- <li>externalra-caservice.keystore.pwd: Password for the keystore defined by externalra-caservice.keystore.path.
- (Default: foo123)</li>
- <li>externalra-caservice.raissuer: CA Name of the CA issuing RA Certificates, used to check the validity of RA signatures.
- (Default: AdminCA1)</li>
-</ul>
-</p><p>
-Both the worker's keystore and the one used on the RA server must be issued by 'externalra-caservice.raissuer'.
-The RA server also needs the certificate of the worker's keystore to be able to encrypt request messages.
-Signing required Key Usage 'Digital Signature' and encryption requires Key Usage 'Key Encipherment'.   
-</p>
-</subsection>
-<subsection name="Security">
-<p>
-It is strongly recommended to at least use signing of messages sent between RA and CA. If the
-messages are signed will the RAs certificate be used for authorization internally. This makes it
-possible to trace which RA that approved the information certified and possible to control which
-kind of information that the RA can approve, by defining End Entity Profiles. If signing is not
-used the service run as an 'internal user' where anything goes (Super Administrator).
-</p><p>
-If message signing is used, the RA servers certificate (used to sign the message) must be an
-administrator i EJBCA ant at least have the following rights:
-<ul>
- <li>The RA administrator role</li>
- <li>View/Create/Edit/Key Recovery/Revocation Rights</li>
- <li>Access to the End Entity Profiles used by the RA</li>
- <li>Access to the CAs used by the RA</li>
-</ul>
-</p><p>
-For signing and encryption the client that uses the API on the RA must support these options. The
-ScepRA does not support signing and encryption.
-</p><p>
-For signing is the SHA-256 digest algorithm used and for encryption is AES256 used.
-</p>
-</subsection>
-<subsection name="Developing new clients">
-<p>
-Running <code>EJBCA_HOME/modules$ ant externalra-client</code> will build a sample client with all
-dependencies under EJBCA_HOME/dist/extrernalra-cli. This simple client JAR could be used directly as a library and
-is a good starting point for client development. See EJBCA_HOME/modules/externalra/src/org/ejbca/extra/ra/ExtRATestClient.java
-and EJBCA_HOME/modules/externalra/src-test/ for more details on how the use the API.
-</p><p>
-New submessages require a new org.ejbca.extra.db.MyRequest and org.ejbca.extra.caservice.processor.MyRequestProcessor
-class where 'My' is your name of choice. Dispatching of messages to a processing class is done using Java reflection
-to automatically instantiate the correct processor, so it is important that the class names are correct.
-</p>
-</subsection>
 </section>
 
 <section name="Key recovery">

@@ -10,70 +10,12 @@
     <p>
     	The following diagram shows a good example setup of a secured CA with external OCSP responders
     	and an external RA server that receives certificate requests. The request are periodically 
-    	pulled by the CA and responses returned to the external RA. 
+    	pulled by the CA and responses returned to the <a href="externalra.html">External RA</a>. 
     	No network traffic flows from the right the left across FW2.
     </p>
     <p>
     <img src="images/sample-full-setup.jpg" alt="EJBCA sample setup" />
     </p>
-  </section>
-
-  <section name="External RA">
-    <p>
-In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA periodically 
-fetch and process information from external trusted data sources. 
-For an overview of the solution see the illustration below.
-</p><p>
-The ExtRA API contains the most basic functions like:
-<ul>
-    <li>Generate Certificate from PKCS10</li>
-    <li>Generate PKCS12 for the end user</li>
-    <li>KeyRecovery of the users key (if requested using PKCS12)</li>
-    <li>Edit users</li>
-    <li>Revoke Certificates</li>
-</ul>
-From EJBCA 3.10 the External RA API is bundled as a part of EJBCA and can be enabled in conf/externalra.properties. 
-</p>
-    <p>
-    <img src="images/extra-architecture.jpg" alt="EJBCA with External RA" />
-    </p>
-<subsection name="External RA Service Workers">
-<p>
-External RA Service Workers are configured in the Admin GUI (described in the <a href="adminguide.html#External RA API">Admin Guide</a>).
-Each worker will poll a DataSource in the application server.
-The DataSource should point to a database outside the CA's network security zone.
-Currently only soft PKCS#12 keystore for decryption and signing responses are supported.
-</p><p>
-A message in the database can contain one or more submessages.
-If a worker find a new requests message it changes the status of the message to 'in process' and
-extracts all sub-messages. For each submessage the worker will:
-<ol>
-    <li>decrypt the submessage with a keystore (or reject it if encryption is required)</li>
-    <li>verify and validate the signature of the submessage (or reject it if signing is required)</li>
-    <li>process the request in the submessage with the signers admin privileges (or with full privileges if no signature is present)</li>
-    <li>sign the response submessage (if signatures are required by the Service Worker)</li>
-    <li>encrypts the response submessage (if encryption is required by the Service Worker)</li>
-</ol>
-and finally write all the response submessages as single message with status 'processed' back to the DataSource.
-Encryption in submessages are done using CMS/PKCS#7 envelopes. 
-</p>
-</subsection>
-<subsection name="External RA API clients">
-<p>
-External RA API clients creates a message from several submessages, where each submessage
-<ol>
-    <li>contains a request</li>
-    <li>is signed with the RA keystore (optional if not required by Service Worker)</li>
-    <li>is encrypted with the Service Worker's keystore certificate (optional if not required by Service Worker)</li>
-</ol>
-The message is then written to the database polled by a External RA Service Worker.
-After a while (depending on how often the Service Worker runs and if the CA is online) the client
-can fetch the response message.
-</p><p>
-The client is also responsible for polling the database for responses from the External RA Service Worker.
-</p>
-
-</subsection>
   </section>
 
   <section name="Internal architecture">
