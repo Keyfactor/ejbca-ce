@@ -82,7 +82,7 @@ A publisher stores issued certificates to a central location. EJBCA have impleme
 </subsection>
 <subsection name="External RA">
 <p>
-In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA periodically fetch and process information from external trusted data sources. For this reason there is an add-on pack to EJBCA called extra, which is short for External RA API.
+In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA periodically fetch and process information from external trusted data sources. For this reason there is an add-on pack to EJBCA called extra, which is short for <a href="externalra.html">External RA API</a>.
 </p>
 </subsection>
 
