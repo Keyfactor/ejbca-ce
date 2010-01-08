@@ -455,7 +455,7 @@ function checkallfields(){
       <% } %>
       <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
-          <%= ejbcawebbean.getText("TYPEOFCA") %> <%= ejbcawebbean.getHelpReference("/manual.html#Type%20of%20CA") %>
+          <%= ejbcawebbean.getText("TYPEOFCA") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Type%20of%20CA") %>
         </td>
         <td width="50%" valign="top">
             <% if (!editca) { %> 
@@ -527,7 +527,7 @@ function checkallfields(){
 <%}  %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("KEYSEQUENCE") %> <%= ejbcawebbean.getHelpReference("/manual.html#Key%20sequence") %>
+        <%= ejbcawebbean.getText("KEYSEQUENCE") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20sequence") %>
       </td>
       <td width="50%"> 
         <% String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
@@ -629,7 +629,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#Validity") %> <br>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Validity") %> <br>
       </td>
       <td width="50%"> 
         <% if(isexternal || (editca && cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA)){
@@ -814,7 +814,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTCRLDISTPOINT") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20Distribution%20Points") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#CRL%20Distribution%20Points") %>
         <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
       <td width="50%">
@@ -829,7 +829,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTCRLISSUER") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#CRL%20Issuer") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#CRL%20Issuer") %>
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -844,7 +844,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CADEFINEDFRESHESTCRL") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#Delta%20CRLs") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Delta%20CRLs") %>
         <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
       <td width="50%">
@@ -860,7 +860,7 @@ function checkallfields(){
      <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTOCSPLOCATOR") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#Ocsp") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Ocsp") %>
         <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
       <td width="50%">
@@ -1003,7 +1003,7 @@ function checkallfields(){
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
        <%= ejbcawebbean.getText("DELTACRLPERIOD") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %>
-       <%= ejbcawebbean.getHelpReference("/manual.html#Delta%20CRLs") %><br/>
+       <%= ejbcawebbean.getHelpReference("/adminguide.html#Delta%20CRLs") %><br/>
        <%= ejbcawebbean.getText("NODELTACRLTIP") %>
      </td>
      <td width="50%">

@@ -477,7 +477,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="25%"  align="right"> 
 		<%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %> 
-		<%= ejbcawebbean.getHelpReference("/manual.html#Maximum%20number%20of%20failed%20login%20attempts") %><br>&nbsp;
+		<%= ejbcawebbean.getHelpReference("/adminguide.html#Maximum%20number%20of%20failed%20login%20attempts") %><br>&nbsp;
       </td>
       <td width="70%"> 
         <%	
@@ -584,7 +584,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="25%"  align="right"> 
         <%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %> 
-        <%= ejbcawebbean.getHelpReference("/manual.html#Subject%20Alternative%20Names") %> <br>&nbsp;
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Subject%20Alternative%20Names") %> <br>&nbsp;
       </td>
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTALTNAME %>" size="1" >
@@ -670,7 +670,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         &nbsp
       </td>
       <td width="25%"  align="right"> 
-            <%= ejbcawebbean.getText("REVERSEFIELDCHECKS") %> <%= ejbcawebbean.getHelpReference("/manual.html#Reverse%20Subject%20DN%20Alt%20Name%20Checks") %>
+            <%= ejbcawebbean.getText("REVERSEFIELDCHECKS") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Reverse%20Subject%20DN%20Alt%20Name%20Checks") %>
       </td>
       <td width="70%">                   
         <input type="checkbox" name="<%=CHECKBOX_REVERSEFIELDCHECKS %>" value="<%=CHECKBOX_VALUE %>"   <% if(profiledata.getReverseFieldChecks()) out.write("CHECKED"); %>>          
@@ -775,7 +775,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="25%"  align="right"> 
-		<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/manual.html#Certificate%20Validity") %> <br />
+		<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Validity") %> <br />
 		(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
 		ejbcawebbean.getLocale()).format(new Date()) %> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
 		%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
@@ -813,7 +813,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="25%"  align="right"> 
-		<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/manual.html#Certificate%20Validity") %> <br />
+		<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Validity") %> <br />
 		(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
 		ejbcawebbean.getLocale()).format(new Date()) %> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
 		%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
@@ -852,7 +852,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="25%" align="right"> 
-        <%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON",true) %> <%= ejbcawebbean.getHelpReference("/manual.html#Revocation%20reason%20to%20set%20after%20certificate%20issuance") %><br>&nbsp;
+        <%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON",true) %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Revocation%20reason%20to%20set%20after%20certificate%20issuance") %><br>&nbsp;
       </td>
       <td width="70%"> 
         <% used = profiledata.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0); %>
@@ -1205,7 +1205,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="25%"  align="right"> 
          <%= ejbcawebbean.getText("ALLOWMERGEDNWEBSERVICES") %> 
-         <%= ejbcawebbean.getHelpReference("/manual.html#Configuring%20Web%20Services%20behavior") %>
+         <%= ejbcawebbean.getHelpReference("/adminguide.html#Configuring%20Web%20Services%20behavior") %>
       </td>
       <td width="70%">         
       	<input type="checkbox" name="<%=CHECKBOX_ALLOW_MERGEDN_WEBSERVICES %>" value="<%=CHECKBOX_VALUE %>"                
@@ -1218,7 +1218,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="25%" align="right"> 
         <%= ejbcawebbean.getText("CARDNUMBER") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#Cardnumber") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Cardnumber") %>
         <br />&nbsp;
       </td>
       <td width="70%"> 
@@ -1241,7 +1241,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="25%" align="right"> 
         <%= ejbcawebbean.getText("SENDNOTIFICATION") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#Email%20notifications") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Email%20notifications") %>
         <br />&nbsp;
       </td>
       <td width="70%"> 
@@ -1404,7 +1404,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="25%" align="right"> 
         <%= ejbcawebbean.getText("NOTIFICATIONSUBJECT") %>
-        <%= ejbcawebbean.getHelpReference("/manual.html#Dynamic%20Substitution%20Variables") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Dynamic%20Substitution%20Variables") %>
       </td>
       <td width="70%">
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT%>" size="40" maxlength="1024" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%>/><br/>
@@ -1416,7 +1416,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="25%" align="right"> 
         <%= ejbcawebbean.getText("NOTIFICATIONMESSAGE") %> 
-        <%= ejbcawebbean.getHelpReference("/manual.html#Dynamic%20Substitution%20Variables") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Dynamic%20Substitution%20Variables") %>
 		<br />&nbsp; <br />&nbsp;
       </td>
       <td width="70%">

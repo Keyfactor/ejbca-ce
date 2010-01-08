@@ -43,7 +43,7 @@
 
 <h:panelGrid width="100%" columns="2" rowClasses="jsfrow1, jsfrow2">
 	<h:panelGroup>
-		<h:outputText value="#{web.text.SELECTWORKER}"/><h:outputText><%= ejbcawebbean.getHelpReference("/manual.html#Currently%20Available%20Workers") %></h:outputText>
+		<h:outputText value="#{web.text.SELECTWORKER}"/><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Currently%20Available%20Workers") %></h:outputText>
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}" valueChangeListener="#{editService.changeWorker}"

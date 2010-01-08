@@ -9,7 +9,7 @@
 %>
 
 <div class="h4" id="publishqueuestatus" >
-		<h4><%=ejbcawebbean.getText("PUBLISHERQUEUESTATUS")%> <%= ejbcawebbean.getHelpReference("/manual.html#Publish%20queue%20status") %></h4>
+		<h4><%=ejbcawebbean.getText("PUBLISHERQUEUESTATUS")%> <%= ejbcawebbean.getHelpReference("/adminguide.html#Publish%20queue%20status") %></h4>
 		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
 		<%	if(ejbcawebbean.getAdminPreference().getFrontpagePublisherQueueStatus()) { %>
 			<tr>

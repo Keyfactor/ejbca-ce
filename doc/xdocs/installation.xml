@@ -32,9 +32,9 @@ Please take a minute to thoroughly consider the security
 implications and make sure you know what you are doing when you are setting
 up a CA.
 </p><p>
-If running on Linux, you should consider using the sample
-firewall script provided in 'ejbcafirewall.sh'. If running on Windows, a
-similar approach should be taken with firewall software/hardware.
+Whether running running on Linux or Windows, you should consider using multiple levels of firewalls.
+The first level of firewall could be a host based firewall such as IPTables in Linux or a similar approach on windows.
+See the Security document for information about ports that are used.
 </p>
 <p>
 Don't forget to configure your application server for security! See
@@ -99,12 +99,69 @@ JBoss's root is
 </subsection>
 
 <subsection name="Configure">
-<p>
+<note>
 If you are only testing EJBCA at this stage and is not setting up a production environment, you can skip this step.
-</p><p>
-Now when everything is prepared, there are a few things to
-configure before starting JBOSS and running everything in a production environment.
+There are default configuration options, that should work in a test environment, for everything.
+</note>
 
+<subsubsection name="Configuration files">
+<p>The configuration of EJBCA that can not be configured in the admin GUI is located in properties files in the <i>conf</i> directory.
+All properties are documented in sample files and to configure an option you copy the sample file, for example copy <i>conf/ejbca.properties.sample</i> to <i>conf/ejbca.properties</i>
+and configure <i>conf/ejbca.properties</i>. You should at least familiarize your self with the options in <i>conf/ejbca.properties</i>.
+Most options, except those related to the AdminCA can be changed after installation.
+</p> 
+</subsubsection>
+
+<subsubsection name="EJBCA configuration">
+<p>
+1) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
+The default values works fine for a test installation. 
+</p><p>
+<ul>
+<li>Customize the CA properties if you need to do so.
+For production use you need to do this, don't forget to edit
+passwords to be secure and secret. Keep conf/ejbca.properties as secret as possible.
+DO NOT forget the passwords, if you need to re-install the software sometime.</li>
+<li>To use a hard ca token from start change ca.tokentype, ca.tokenpassword and ca.tokenproperties. You also need to add the appropriate values to the ca.tokenproperties file for the HSM. Read the HSM documentation for the right values.</li>
+<li>
+To put the initial superadmin certificate on a smartcard, set superadmin.batch=false in
+web.properties. Enroll from public web after the installation is complete, as you would
+with any other smartcard user. Username is &quot;superadmin&quot; and password is superadmin.password
+from web.properties.
+</li>
+<li>If you are deploying on JBoss EAP you probably want to look at the property 'jboss.config' as well, since 'production' is the default server to start on JBoss EAP.</li>
+</ul>
+Do the same with other configuration files that you might want to customize. The default values often works fine and is a safe bet if you are unsure.
+Most options are well documented in the sample files.
+<ul>
+<li>Customize the database in conf/database.properties if needed. 
+But easiest thing is to keep the default as it is,
+it will use the JBoss embedded HSQLDB and everything will be easier for you.
+For production use you should use a real database instead of the embedded one.</li>
+</ul>
+</p>
+</subsubsection>
+
+<subsubsection name="Memory configuration">
+<p>
+The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
+a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
+configuration of java memory arguments to set them to
+at least '-Xms128m -Xmx512m'. 
+For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
+</p>
+<source>
+JAVA_OPTS="-server -Xms128m -Xmx512m"
+</source>
+<p>
+can be changed.
+</p>
+</subsubsection>
+
+<subsubsection name="Considerations">
+<p>
+When everything is prepared, there are a few things to
+configure before starting your applications and running everything in a production environment.
 </p><p>
 In a production environment you should use something like the following structure:
 <ol>
@@ -128,21 +185,6 @@ upgrades much much harder.</li>
 </p><p>
 For information about installing JDBC drivers for other databases, see the document <i>'doc/howto/HOWTO-database.txt'</i>
 in the distribution.
-</p>
-
-<subsubsection name="Memory configuration">
-<p>
-The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
-a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
-configuration of java memory arguments to set them to
-at least '-Xms128m -Xmx512m'. 
-For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
-</p>
-<source>
-JAVA_OPTS="-server -Xms128m -Xmx512m"
-</source>
-<p>
-can be changed.
 </p>
 </subsubsection>
 
@@ -169,49 +211,19 @@ ANT_OPTS=-Xmx512m
 JBoss 5.x have a bug causing issues with the BC JCE provider. To work around this you can copy the files EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
 Remember this when it's time for upgrades!
 </note>
-
 <p>
-2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
-The default values works fine for a test installation. 
-</p><p>
-<ul>
-<li>Customize the CA properties if you need to do so.
-For production use you need to do this, don't forget to edit
-passwords to be secure and secret. Keep conf/ejbca.properties as secret as possible.
-DO NOT forget the passwords, if you need to re-install the software sometime.</li>
-<li>To use a hard ca token from start change ca.tokentype, ca.tokenpassword and ca.tokenproperties. You also need to add the appropriate values to the ca.tokenproperties file for the HSM. Read the HSM documentation for the right values.</li>
-<li>
-To put the initial superadmin certificate on a smartcard, set superadmin.batch=false in
-web.properties. Enroll from public web after the installation is complete, as you would
-with any other smartcard user. Username is &quot;superadmin&quot; and password is superadmin.password
-from web.properties.
-</li>
-<li>If you are deploying on JBoss EAP you probably want to look at the property 'jboss.config' as well, since 'production' is the default server to start on JBoss EAP.</li>
-<li>Small note, in the ca.dn you can not use DC components for the initial CA, 
-you can create CAs using DC components later on once the admin GUI is up and running.</li>
-</ul>
-Do the same with other configuration files that you might want to customize. The default values often works fine and is a safe bet if you are unsure.
-Most options are well documented in the sample files.
-<ul>
-<li>Customize the database in conf/database.properties if needed. 
-But easiest thing is to keep the default as it is,
-it will use the JBoss embedded HSQLDB and everything will be easier for you.
-For production use you should use a real database instead of the embedded one.</li>
-</ul>
-</p><p>
-3) Open a console and type:
+2) Open a console and type:
 </p>
 <source>
 ant bootstrap
 </source>
 <p>it will compile, jar, war, ear everything and deploy it to JBoss.
 </p><p>
-4) Open a console (terminal) and start JBoss.
-You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
-or the normal command 'run.sh/cmd' from APPSRV_HOME/bin. You should see JBoss
+3) Open a console (terminal) and start JBoss.
+You can start JBoss with the normal command 'run.sh/cmd' from APPSRV_HOME/bin. You should see JBoss
 picking up everything and deploying the ear without errors.
 </p><p>
-5) Type:
+4) Type:
 </p>
 <source>
 ant install
@@ -226,24 +238,22 @@ and can not be run again (it will give an error if you try).
 <li>superadmin.p12 should be imported in your browser, that's your administration certificate.</li>
 </ul>
 </p><p>
-6) Stop JBoss (ctrl+c or whatever)
+5) Stop JBoss (ctrl+c or whatever)
 </p><p>
-7) Type:
+6) Type:
 </p>
 <source>
 ant deploy
 </source>
 <p>this will deploy everything again and configure the servlet
 container with the keystore file (this is why we needed to stop the container).
-If you want to use jboss specific service for automatic creation of the CRL:s you should enable this option in ejbca.properties,
- see the chapter about 'CRL generation'.
 </p><p>
-8) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
+7) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
 This is the super administrators certificate used to access the admin GUI. 
 Other administrators with specific privileges can be created later on.
 The default password for superadmin.p12 is ejbca, and is configured in ejbca.properties.
 </p><p>
-9) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
+8) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
 or http://localhost:8080/ejbca for the public pages.
 </p><p>
 If you create other CAs that you want to add as acceptable CAs in the SSL server configuration, 
@@ -276,22 +286,144 @@ In the directory doc/howto in the distribution there are additional howtos for s
 </p>
 </subsection>
 
-<subsection name="Running optional tests">
-<p>
-If you want to run a thorough test of your new CA, run the automated tests with 'ant test:run'.
-To run the tests you must copy the file lib/ext/junit-1.5.8 to ANT_HOME/lib.
-</p><p>
-NOTE: After running tests with 'ant test:run', you might
-consider deleting the database since some leftovers are left in the database.
-The tests will create and revoke some test certificates, so afterwards your CRLs will be populated with a few entries.
-'ant test:run' should not be run on a production system, only
-to test the installation.
-</p></subsection>
 </section>
 
 <section name="Application servers">
 <p>EJBCA can currently be run on JBoss (covered above), Glassfish (Sun AS), Weblogic, OC4J (Oracle AS) and Websphere.
+<br/><i>(Websphere is not really supported, it's only one old version of EJBCA on one version of Websphere)</i>.
 </p>
+
+<subsection name="Glassfish">
+<p>
+Currently EJBCA works both with Glassfish v1 and v2 with the Derby/JavaDB database.
+</p>
+<p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
+<subsubsection name="Configure EJBCA">
+<p>
+<ol>
+<li>Set the environment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
+  The variable must be available when working with EJBCA.</li> 
+<li>Edit conf/ejbca.properties, you should at least set appserver.type, appserver.home and logging.log4j.config.</li>
+<li>Edit conf/database.properties, you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database. Derby is supported for Glassfish, and default options for Derby should work.</li>
+<li>Edit conf/web.properties, you should set desired values and also the http/s ports (default 8080 and 8181) for your installation.</li>
+<li>Configuration of ejbcaws and xkms only have to be done in Glassfish v1.<br/>
+     On Glassfish v2 it deploys nicely, even though the functionality does not work completely.<br/>
+     See https://jira.primekey.se/browse/ECA-607 for details.<br/>
+     (Tips how to solve these probles are welcome.)
+     <ul>
+     <li>Edit conf/jaxws.properties and set 'ejbcaws.enabled=false'.</li>
+     <li>Edit conf/xkms.properties and set 'xkms.enabled=false'. (Default from EJBCA 3.10.)</li>
+     </ul>
+     </li>
+</ol>
+    
+Build ejbca with 'ant'.<br/>
+Do 'ant clean' first if you have tried with different appservers, or database settings.
+</p>
+</subsubsection>    
+
+<subsubsection name="Configure Glassfish">
+<p>
+<ol>
+<li>Do yourself a favor and configure this in the JVM settings of Glassfish v1 (default in v2):<br/>
+    <pre>-XX:MaxPermSize=192m</pre>
+    Restart Glassfish</li>
+<li>Derby:
+<ol>
+<li>Start the database: asadmin start-database.</li>
+<li>Create a database and a database user with privileges.
+<pre>
+  > cd /home/sun/glassfish/bin
+  > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/bin/ij   
+   (For glassfish v1 use this command instead: 
+    > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/frameworks/NetworkServer/bin/ij.ksh)
+
+  ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
+  ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';
+  ij> quit;
+</pre></li></ol></li>
+<li>Start the application server: asadmin start-domain<br/>
+  The default user/password for the web console is admin/adminadmin.<br/>
+  Access the Glassfish admin console at http://127.0.0.1:4848/.</li>
+<li>Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.<br/>
+    When adding a Derby Pool use values: Name=EjbcaPool, Type=javax.sql.DataSource, Vendor=JavaDB.<br/>
+    Properties: user=APP, password=APP, DatabaseName=ejbca</li>    
+<li>Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.<br/>
+    Use the connection pool you just created.</li>
+</ol>
+</p>
+</subsubsection>
+
+<subsubsection name="Deploy and setup">
+<p>
+<ol>
+<li>Deploy ejbca.ear using:<br/> 
+    ./asadmin deploy ../../ejbca/dist/ejbca.ear<br/>
+    The relative path to ejbca.ear depends on where you installed ejbca and glassfish.
+    You can check that everything was ok in domains/domain1/logs/server.log.</li>
+    
+<li>Install ejbca:<br/>
+    ant install</li>
+    
+<li>Configure SSL in Glassfish<br/>
+    Configuration->HTTP Service->HTTP Listeners->http-listener-2, SSL tab
+    <ul>
+       <li>Client Authentication: Enabled</li>
+       <li>Certificate Nickname: s1as (get alias name by running 'keytool -list -v -keystore $APPSRV_HOME/domains/domain1/config/keystore.jks', password changeit)</li>
+       <li>SSL3: Enabled</li>
+       <li>Ciphers Suite: All</li>
+    </ul>
+    Add CA certificate to cacerts file:
+    <ul>
+       <li>cd $EJBCA_HOME</li>
+       <li>bin/ejbca.sh ca getrootcert AdminCA1 ca.der -der</li>
+    </ul>
+    Install the CA certificate in the application servers truststore.<br/>
+    On Glassfish open source:
+    <ul>
+    <li>keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file $EJBCA_HOME/ca.der</li>
+    <li>password is 'changeit'</li>
+    </ul>
+    On Glassfish Enterprise:
+    <ul>
+    <li>cd $APPSRV_HOME/domains/domain1/config</li>
+    <li>/usr/sfw/bin/certutil -A -n adminca1 -t "p,p,p" -i $EJBCA_HOME/ca.der -d .</li>
+    <li>verify that adminca1 has been added to the store with '/usr/sfw/bin/certutil -L -d .'.</li>
+    </ul>
+    Restart server<br/>
+    (you would probably want to install your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
+     default Glassfish cert, to do this you must edit both the http-listener and the IIOP-listeners.
+     You can also generate a new $APPSRV_HOME/domains/domain1/config/keystore.jks with key alias s1as.)</li>
+    
+<li>Access protected EJBCA pages<br/>
+    Import $EJBCA_HOME/p12/superadmin.p12 in your browser and go to url:<br/>
+      https://127.0.0.1:8181/ejbca/<br/>
+    You can now click "Administration" to get to the admin-GUI.</li>
+</ol>
+</p>    
+</subsubsection>
+
+<subsubsection name="Glassfish Ubuntu package">
+<p>
+The above instructions are tested on the official release from Glassfish's homepage. 
+We had this report from a user of the glassfish package on ubuntu.
+</p>
+<p> 
+I had to modify the following to make it work with the Ubuntu 9.04
+glassfish package.
+<pre>
+1. Modify /usr/bin/asadmin
+   #GF_DOMAIN_DIR=$HOME/glassfishv2
+   GF_DOMAIN_DIR=/var/lib/glassfishv2/domains
+2. Set APPSRV_HOME to /usr/share/glassfishv2
+</pre>
+The Ubuntu package has the domains and binaries separated.  When
+following the install instructions, when you do anything with the
+domain you have to point to /var/lib/glassfishv2/[directory] instead
+of $APPSRV_HOME/[directory].
+</p>
+</subsubsection>
+</subsection>
 
 <subsection name="Weblogic">
 <p>
@@ -471,138 +603,6 @@ To configure the transaction timeout to a larger value in weblogic:
 </p>
 </subsubsection>
 
-</subsection>
-
-<subsection name="Glassfish">
-<p>
-Currently EJBCA works both with Glassfish v1 and v2 with the Derby/JavaDB database.
-</p>
-<p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
-<subsubsection name="Configure EJBCA">
-<p>
-<ol>
-<li>Set the environment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
-  The variable must be available when working with EJBCA.</li> 
-<li>Edit conf/ejbca.properties, you should at least set appserver.type, appserver.home and logging.log4j.config.</li>
-<li>Edit conf/database.properties, you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database. Derby is supported for Glassfish, and default options for Derby should work.</li>
-<li>Edit conf/web.properties, you should set desired values and also the http/s ports (default 8080 and 8181) for your installation.</li>
-<li>Configuration of ejbcaws and xkms only have to be done in Glassfish v1.<br/>
-     On Glassfish v2 it deploys nicely, even though the functionality does not work completely.<br/>
-     See https://jira.primekey.se/browse/ECA-607 for details.<br/>
-     (Tips how to solve these probles are welcome.)
-     <ul>
-     <li>Edit conf/jaxws.properties and set 'ejbcaws.enabled=false'.</li>
-     <li>Edit conf/xkms.properties and set 'xkms.enabled=false'. (Default from EJBCA 3.10.)</li>
-     </ul>
-     </li>
-</ol>
-    
-Build ejbca with 'ant'.<br/>
-Do 'ant clean' first if you have tried with different appservers, or database settings.
-</p>
-</subsubsection>    
-
-<subsubsection name="Configure Glassfish">
-<p>
-<ol>
-<li>Do yourself a favor and configure this in the JVM settings of Glassfish v1 (default in v2):<br/>
-    <pre>-XX:MaxPermSize=192m</pre>
-    Restart Glassfish</li>
-<li>Derby:
-<ol>
-<li>Start the database: asadmin start-database.</li>
-<li>Create a database and a database user with privileges.
-<pre>
-  > cd /home/sun/glassfish/bin
-  > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/bin/ij   
-   (For glassfish v1 use this command instead: 
-    > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/frameworks/NetworkServer/bin/ij.ksh)
-
-  ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
-  ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';
-  ij> quit;
-</pre></li></ol></li>
-<li>Start the application server: asadmin start-domain<br/>
-  The default user/password for the web console is admin/adminadmin.<br/>
-  Access the Glassfish admin console at http://127.0.0.1:4848/.</li>
-<li>Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.<br/>
-    When adding a Derby Pool use values: Name=EjbcaPool, Type=javax.sql.DataSource, Vendor=JavaDB.<br/>
-    Properties: user=APP, password=APP, DatabaseName=ejbca</li>    
-<li>Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.<br/>
-    Use the connection pool you just created.</li>
-</ol>
-</p>
-</subsubsection>
-
-<subsubsection name="Deploy and setup">
-<p>
-<ol>
-<li>Deploy ejbca.ear using:<br/> 
-    ./asadmin deploy ../../ejbca/dist/ejbca.ear<br/>
-    The relative path to ejbca.ear depends on where you installed ejbca and glassfish.
-    You can check that everything was ok in domains/domain1/logs/server.log.</li>
-    
-<li>Install ejbca:<br/>
-    ant install</li>
-    
-<li>Configure SSL in Glassfish<br/>
-    Configuration->HTTP Service->HTTP Listeners->http-listener-2, SSL tab
-    <ul>
-       <li>Client Authentication: Enabled</li>
-       <li>Certificate Nickname: s1as (get alias name by running 'keytool -list -v -keystore $APPSRV_HOME/domains/domain1/config/keystore.jks', password changeit)</li>
-       <li>SSL3: Enabled</li>
-       <li>Ciphers Suite: All</li>
-    </ul>
-    Add CA certificate to cacerts file:
-    <ul>
-       <li>cd $EJBCA_HOME</li>
-       <li>bin/ejbca.sh ca getrootcert AdminCA1 ca.der -der</li>
-    </ul>
-    Install the CA certificate in the application servers truststore.<br/>
-    On Glassfish open source:
-    <ul>
-    <li>keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file $EJBCA_HOME/ca.der</li>
-    <li>password is 'changeit'</li>
-    </ul>
-    On Glassfish Enterprise:
-    <ul>
-    <li>cd $APPSRV_HOME/domains/domain1/config</li>
-    <li>/usr/sfw/bin/certutil -A -n adminca1 -t "p,p,p" -i $EJBCA_HOME/ca.der -d .</li>
-    <li>verify that adminca1 has been added to the store with '/usr/sfw/bin/certutil -L -d .'.</li>
-    </ul>
-    Restart server<br/>
-    (you would probably want to install your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
-     default Glassfish cert, to do this you must edit both the http-listener and the IIOP-listeners.
-     You can also generate a new $APPSRV_HOME/domains/domain1/config/keystore.jks with key alias s1as.)</li>
-    
-<li>Access protected EJBCA pages<br/>
-    Import $EJBCA_HOME/p12/superadmin.p12 in your browser and go to url:<br/>
-      https://127.0.0.1:8181/ejbca/<br/>
-    You can now click "Administration" to get to the admin-GUI.</li>
-</ol>
-</p>    
-</subsubsection>
-
-<subsubsection name="Glassfish Ubuntu package">
-<p>
-The above instructions are tested on the official release from Glassfish's homepage. 
-We had this report from a user of the glassfish package on ubuntu.
-</p>
-<p> 
-I had to modify the following to make it work with the Ubuntu 9.04
-glassfish package.
-<pre>
-1. Modify /usr/bin/asadmin
-   #GF_DOMAIN_DIR=$HOME/glassfishv2
-   GF_DOMAIN_DIR=/var/lib/glassfishv2/domains
-2. Set APPSRV_HOME to /usr/share/glassfishv2
-</pre>
-The Ubuntu package has the domains and binaries separated.  When
-following the install instructions, when you do anything with the
-domain you have to point to /var/lib/glassfishv2/[directory] instead
-of $APPSRV_HOME/[directory].
-</p>
-</subsubsection>
 </subsection>
 
 <subsection name="OC4J (EJBCA >=3.6)">

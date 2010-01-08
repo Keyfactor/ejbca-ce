@@ -45,23 +45,21 @@
 # Default: false
 #allow.external-dynamic.configuration=false
 
-# ------------ Basic CA configuration ---------------------
-# When upgrading, the important options are:
-# - ca.keystorepass
-# - ca.ocspkeystorepass
-
+# ------------ Administrative CA configuration ---------------------
 # This installation will create a first administrative CA. This CA will be used to create the first
 # superadministrator and for the SSL server certificate of administrative web server.
 # When the administrative web server have been setup you can create other CA:s and administrators.
 # This is only used for administrative purposes,
-# Enter a short name for the CA.
+# Enter a short name for the administrative CA.
 #ca.name=AdminCA1
 
-# The Distinguished Name of the CA. 
+# The Distinguished Name of the administrative CA. 
 # This is used in the CA certificate to distinguish the CA.
+# Note, you can not use DC components for the initial CA, you can create CAs 
+# using DC components later on once the admin GUI is up and running.
 #ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
 
-# The token type the CA will use.
+# The token type the administrative CA will use.
 # Use soft for software generated keys (default) or enter a class path for the HSM class.
 # Normally the HSM class should be the PKCS11CAToken. 
 # Other specific classes like NFastCAToken of SafeNetLunaCAToken are for JCE providers, which was used before PKCS#11 and is not recommended now.
@@ -77,34 +75,40 @@
 # Default: soft
 #ca.tokentype=soft
 
-# Password for the CA token.
+# Password for the administrative CA token.
 # With soft token, use password null.
 # If no password should be used (for example nCipher module protected), use password ''.
 #ca.tokenpassword=null
 
-# Configuration file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui.
+# Configuration file were you define key name, password and key alias for the HSM used 
+# by the administrative CA. Same as the Hard CA Token Properties in Admin gui.
 # Remove everything in the file and add your own configuration.
 #ca.tokenproperties=conf/catoken.properties
 
-# The keyspec for the CAs key. 
+# The keyspec for the administrative CAs key. 
 # Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096).
 # Keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.
 #ca.keyspec=2048
 
-# The keytype, can be RSA or ECDSA
+# The keytype for the administrative CA, can be RSA, ECDSA or DSA
 #ca.keytype=RSA
 
-# Default signing algorithm.
+# Default signing algorithm for the administrative CA.
 # Available algorithms are:
 # SHA1WithRSA, SHA1WithECDSA, SHA256WithRSA, SHA256WithECDSA.
 #ca.signaturealgorithm=SHA1WithRSA
 
-# The validity in days for the CA, only digits.
+# The validity in days for the administrative CA, only digits.
 #ca.validity=3650
 
-# The policy id of the CA. Policy id determines which PKI policy the CA uses.
+# The policy id of the administrative CA. Policy id determines which PKI policy the CA uses.
 # Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc3280) or 'null' for no policy at all.
 #ca.policy=null
+
+# ------------ Basic CA configuration ---------------------
+# When upgrading, the important options are:
+# - ca.keystorepass
+# - ca.ocspkeystorepass
 
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible

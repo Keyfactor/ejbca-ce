@@ -17,7 +17,7 @@
       <td width="50%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("LDAPSETTINGS") %>:
-          <%= ejbcawebbean.getHelpReference("/manual.html#Configure%20LDAP%20publishers") %>
+          <%= ejbcawebbean.getHelpReference("/adminguide.html#Configure%20LDAP%20publishers") %>
         </div>
       </td>
       <td width="50%" valign="top"> 

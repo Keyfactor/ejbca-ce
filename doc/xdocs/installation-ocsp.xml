@@ -151,8 +151,8 @@ ejbcaClientToolBox.sh PKCS11HSMKeyTool installcert /opt/nfast/toolkits/pkcs11/li
 </source>
 <p>
 You must then define all ocsp.p11.* properties on the responder.
-Please read <a href="manual.html#Generic%20PKCS#11%20provider%20(EJBCA%203.5)">Generic PKCS#11 provider (EJBCA 3.5)</a> for information on the configuration file for the generate command.
-Do also try to find your HSM in <a href="manual.html#Hardware%20Security%20Modules%20(HSM)">Hardware Security Modules (HSM)</a>. 
+Please read <a href="adminguide.html#Generic%20PKCS#11%20provider">Generic PKCS#11 provider</a> for information on the configuration file for the generate command.
+Do also try to find your HSM in <a href="adminguide.html#Hardware%20Security%20Modules%20(HSM)">Hardware Security Modules (HSM)</a>. 
 Please note the only PKCS#11 HSMs are supported.
 </p>
 </subsubsection>
@@ -229,7 +229,7 @@ $APPSRV_HOME/server/default/lib/jboss-saaj.jar
 </source>
 <p>
 For java5 you also got to add client WS jars since java5 got no WS support. These files should be added in $APPSRV_HOME/lib/endorsed if you are running jboss-4.2.3.GA.
-If you compile <a href="manual.html#EJBCA%20client%20toolbox">EJBCA ClientToolBox</a> you got all needed files in the created 'clientToolBox-dist/endorsed' directory. Just copy or soft link them to the target.
+If you compile <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA ClientToolBox</a> you got all needed files in the created 'clientToolBox-dist/endorsed' directory. Just copy or soft link them to the target.
 </p>
 </subsection>
 <subsection name="No password in memory">

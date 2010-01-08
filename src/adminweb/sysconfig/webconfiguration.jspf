@@ -120,7 +120,7 @@ function checkuseautoenroll(){
     <tr id="Row0"> 
       <td width="49%" valign="top"> 
         <h3><%= ejbcawebbean.getText("ENABLEKEYRECOVERY")%>
-        <%= ejbcawebbean.getHelpReference("/manual.html#Key%20recovery") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20recovery") %>
         </h3>
         <h5>&nbsp; </h5>          
       </td>

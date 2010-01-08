@@ -10,7 +10,7 @@
 <section name="Control tool">
 <p>
 All control of a running responder is done with the EJBCA client toolbox.
-See <a href="manual.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> for instructions how to build and use the client toolbox.
+See <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> for instructions how to build and use the client toolbox.
 </p><p>
 To get all available OCSP commands please type:
 <source>
@@ -67,7 +67,7 @@ the OCSP protocol, and the responder, can handle key rollover on the CA without 
 <p>
 The best way to learn the API is by looking at the source code, since it is included. The client API is in the class 
 org.ejbca.core.protocol.ocsp.OCSPUnidClient.
-The <a href="manual.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> can serve as a good sample for using the API and it is in the class
+The <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> can serve as a good sample for using the API and it is in the class
 org.ejbca.ui.cli.Ocsp.
 </p>
 </section>
@@ -133,7 +133,7 @@ If no specific certificateProfileId is specified the default values from ocsp.ma
 
   <section name="OCSP stress testing">
   <p>
-    Using the <a href="manual.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> you can easily stress test your CAs and OCSP responders.
+    Using the <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> you can easily stress test your CAs and OCSP responders.
   </p>
   <p>To stress test you can first issue a large number of certificates from the CA using the webservice stress test, and after this
   stress test the OCSP responder with a random selection of all the certificates issued.
@@ -146,7 +146,7 @@ $TOOLBOX_HOME/ejbcaClientToolBox.sh OCSP stress ...
 
   <section name="Monitoring OCSP databases">
   <p>
-<a href="manual.html#EJBCA%20client%20toolbox">EJBCA ClientToolBox</a> contains a tool for monitoring
+<a href="userguide.html#EJBCA%20client%20toolbox">EJBCA ClientToolBox</a> contains a tool for monitoring
 OCSP databases. This tool is stand-alone and based on Java SE JPA that can be configured in
   </p>
 <source>clientToolBox-dist/properties/META-INF/persistence.xml.</source>
