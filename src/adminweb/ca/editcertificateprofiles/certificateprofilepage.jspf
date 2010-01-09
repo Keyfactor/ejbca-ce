@@ -449,7 +449,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Validity") %> <br>&nbsp;
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br>&nbsp;
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="20" maxlength="255" 
@@ -459,7 +459,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("ALLOWVALIDITYOVERRIDE") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Validity") %>
+        <%= ejbcawebbean.getText("ALLOWVALIDITYOVERRIDE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_ALLOWVALIDITYOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
@@ -470,7 +470,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("ALLOWEXTENSIONOVERRIDE") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Allow%20extension%20override") %>
+        <%= ejbcawebbean.getText("ALLOWEXTENSIONOVERRIDE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20extension%20override") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_ALLOWEXTENSIONOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
@@ -481,7 +481,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("ALLOWDNOVERRIDE") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Allow%20subject%20DN%20override") %>
+        <%= ejbcawebbean.getText("ALLOWDNOVERRIDE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20subject%20DN%20override") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_ALLOWDNOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
@@ -512,7 +512,7 @@ function checkallfields(){
     </tr>  
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEPATHLENGTHCONSTRAINT") %>&nbsp;<%= ejbcawebbean.getHelpReference("/adminguide.html#Path%20Length%20Constraints") %> <br>
+        <%= ejbcawebbean.getText("USEPATHLENGTHCONSTRAINT") %>&nbsp;<%= ejbcawebbean.getHelpReference("/userguide.html#Path%20Length%20Constraints") %> <br>
          <%= ejbcawebbean.getText("PATHLENGTHCONSTRAINT") %>
       </td>
       <td width="50%">
@@ -632,11 +632,11 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRLDISTPOINT") %>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#CRL%20Distribution%20Points") %> <br>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %> <br>
         <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br>
         <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br>
         <%= ejbcawebbean.getText("CRLDISTPOINTURI") %> <br>
-        <%= ejbcawebbean.getText("CRLISSUER") %>
+        <%= ejbcawebbean.getText("CRLISSUER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINT %>" onClick="checkusecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
@@ -687,7 +687,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEFRESHESTCRL") %>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Delta%20CRLs") %> <br>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %> <br>
         <%= ejbcawebbean.getText("USECADEFINEDFRESHESTCRL") %> <br>
         <%= ejbcawebbean.getText("FRESHESTCRLURI") %>
        </td>
@@ -742,7 +742,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %>
+        <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %> <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
       </td>
       <%-- ocsp service locator part of authority information access (aia) extension --%>
       <td width="50%">
@@ -1084,7 +1084,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %><%= ejbcawebbean.getHelpReference("/adminguide.html#Extended%20Key%20Usage") %>
+        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %>
         <br><%= ejbcawebbean.getText("EXTENDEDKEYUSAGECRITICAL") %>
       </td>
       <td width="50%">
@@ -1100,7 +1100,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Extended%20Key%20Usage") %>
+        <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %>
       </td>
       <td width="50%"> 
         <% List allekuoids = CertificateProfile.getAllExtendedKeyUsageOIDStrings();
@@ -1152,7 +1152,7 @@ function checkallfields(){
     </tr>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USELDAPDNORDER") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Use%20LDAP%20DN%20order") %>
+        <%= ejbcawebbean.getText("USELDAPDNORDER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20LDAP%20DN%20order") %>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USELDAPDNORDER %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1191,7 +1191,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USECARDNUMBER") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Cardnumber") %>
+        <%= ejbcawebbean.getText("USECARDNUMBER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Cardnumber") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECARDNUMBER %>"  value="<%=CHECKBOX_VALUE %>" 

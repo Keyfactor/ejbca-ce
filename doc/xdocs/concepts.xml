@@ -60,6 +60,7 @@ A certificate profile determines non uses specific content and behaviour of cert
 <subsection name="End Entity Profile">
 <p>
 End Entity Profiles determine what data can or must be present for users connected with this profile. Some values can also be pre-determined such as the organization, o in the dn.
+It contains all information, that is specific to each individual end entity, for issuance of certificates.
 <br/>
 When adding a user in the pki, the user must be conneted with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
 </p>

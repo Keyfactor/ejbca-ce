@@ -9,7 +9,7 @@
 <%@page import="org.ejbca.core.model.SecConst"%>
 <%@page import="org.ejbca.core.model.ca.catoken.ICAToken"%>
 <div class="h4" id="crlstatus" >
-        <h4><%=ejbcawebbean.getText("CASTATUS")%> <%= ejbcawebbean.getHelpReference("/adminguide.html#CA%20Status") %></h4>
+        <h4><%=ejbcawebbean.getText("CASTATUS")%> <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Status") %></h4>
 		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
 			<%	if(ejbcawebbean.getAdminPreference().getFrontpageCaStatus()) { %>
 			<tr>
