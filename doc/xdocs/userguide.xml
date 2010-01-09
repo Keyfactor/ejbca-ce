@@ -264,6 +264,24 @@ After importing CAs you can also import users and certificates. See the section 
 CertificateProfiles define different types of certificates, with 
 regards to DN-contents, extensions etc. 
 </p>
+<subsection name="Create a Certificate Profile for SSL servers">
+<p>This section will show you how to create a certificate profile suitable for SSL/TLS servers, such as web servers.
+</p>
+<ul>
+<li>Under "CA Functions", press "Edit Certificate Profiles".</li>
+<li>Enter a name for your end entity certificate profile e.g. "SSLServerCertificateProfile", and press "Add".</li>
+<li>Select "SSLServerCertificateProfile" and press "Edit Certificate Profile".</li>
+<li>Under "Validity" enter 365d (1 year validity).</li>
+<li>Under "Key usage", choose "Digital Signature" and "Key encipherment (ctrl-click to select multiple).</li>
+<li>Un-check "Allow Key Usage Override".</li>
+<li>Check "Use Extended Key Usage".</li>
+<li>Under "Extended Key Usage", choose "Server Authentication".</li>
+<li>Under "Available bit lengths", "1024 bit", "2048 bit" and "4096 bit".</li>
+<li>Under "Available CAs", choose your CA "AdminCA1" (the CA you use to issue server certificates).</li>
+<li>Under "Type", select "End Entity".</li>
+<li>Press "Save"</li>
+</ul> 
+</subsection>
 <subsection name="Certificate Profile fields">
 <subsubsection name="Validity">
 <p>
@@ -489,6 +507,29 @@ An EndEntityProfile can be connected to specific CertificateProfiles
 so users belonging to a specific EndEntityProfile can only get 
 certificates from the specified CertificateProfile.
 </p>
+<subsection name="Create an End Entity Profile for SSL servers">
+<p>This section will show you how to create an end entity profile suitable for SSL/TLS servers, such as web servers.
+You should previously have created the certificate profile for SSL servers. 
+</p>
+<ul>
+<li>Under "RA Functions", press "Edit End Entity Profiles".</li>
+<li>Enter a name for your end entity profile e.g. "SSLServerEndEntityProfile", and press "Add".</li>
+<li>Select "SSLServerEndEntityProfile" and press "Edit End Entity Profile".</li>
+<li>Under the "Subject DN Fields" select "O, Organization" and press "Add".</li>
+<li>At "O, Organization" enter "EJBCA Edu" in the textbox, check the "required" checkbox and uncheck the "modifiable" checkbox.</li>
+<li>Under the "Subject DN Fields" select "C, Country" and press "Add".</li>
+<li>At "C, Country" enter "SE" in the textbox, check the "required" checkbox and uncheck the "modifiable" checkbox.</li>
+<li>Under the "Subject Alternative Fields" select "DNS Name" and press "Add".</li>
+<li>Uncheck "Use" at "Email Domain".</li>
+<li>Under "Default Certificate Profile", choose "SSLServerCertificateProfile" (created earlier).</li>
+<li>Under "Available Certificate Profiles", choose "SSLServerEndEntityCertificateProfile".</li>
+<li>Under "Default CA", choose "AdminCA1" (the CA you use to issue server certificates).</li>
+<li>Under "Available CAs", choose "AdminCA1" (same as above).</li>
+<li>Under "Default Token", choose "P12".</li>
+<li>Under "Available Tokens", choose "P12", "JKS" and "PEM" (ctrl-click to select multiple).</li>
+<li>Press "Save".</li> 
+</ul>
+</subsection>
 <subsection name="End Entity Profile fields">
 <subsubsection name="Subject Alternative Names">
 <p>Subject alternative names (altNames) are extra naming items that are not fit to have in the Distinguished Name, such as email, dns, ip address etc.
@@ -573,6 +614,31 @@ Users are added in the admin-GUI, 'Add End Entity' or with the cli
 The users DN is normally entered in the cli as "C=SE,O=MyOrg,OU=MyOrgUnit,CN=MyName".
 If a ',' is needed in the DN the comma must be escaped using '\,'.
 </p></subsection>
+
+<subsection name="Issue a new end entity certificate for an SSL server">
+<p>This section will show you how to issue a certificates suitable for SSL/TLS servers, such as web servers.
+You should previously have created the certificate profile and end entity profile for SSL servers. 
+</p>
+<ul>
+<li>Goto "RA Functions" -> "Add End Entity".</li>
+<li>Choose the end entity profile "SSLServerEndEntityProfile".</li>
+<li>At "Username" enter "testsrv.domain.com".</li>
+<li>At Password enter a password.</li>
+<li>Under "CN, Common Name" enter "testsrv.domain.com".</li>
+<li>And at "DNS Name" enter "testsrv.domain.com".</li>
+<li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile".</li>
+<li>Under "CA" you should not be able to choose anything but the default "AdminCA1".</li>
+<li>Under "Token", choose "P12".</li>
+<li>Press "Add End Entity".</li>
+<li>Goto "Public Web" and then  "Create Keystore".</li>
+<li>Enter the username, testsrv.domain.com, and password for the user you created, and press "OK".</li>
+<li>Choose "Key length" "1024".</li> 
+<li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile" .</li> 
+<li>Press "OK".</li>
+<li>A new certificate will be generated and downloaded to your desktop.</li>
+<li>If you like you can import the P12 file (double-click it on windows) to look at the certificate inside.</li>
+</ul> 
+</subsection>
 
 <subsection name="Create User certificates">
 <p>
