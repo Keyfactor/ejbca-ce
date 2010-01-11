@@ -13,7 +13,7 @@
 		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
 		<%	if(ejbcawebbean.getAdminPreference().getFrontpagePublisherQueueStatus()) { %>
 			<tr>
-				<th><%=ejbcawebbean.getText("PUBLISHER")%></th>
+				<th style="text-align:left;"><%=ejbcawebbean.getText("PUBLISHER")%></th>
 				<th><%=ejbcawebbean.getText("QUEUELENGTH")%></th>
 			</tr>
 		<%  if(!iter.hasNext()) { %>
@@ -27,13 +27,13 @@
 			%>
 				<tr class="a">	
 					<td><%=name %></td>
-					<td><%=queueLength %></td>
+					<td style="text-align:center;"><%=queueLength %></td>
 				</tr>
 			<% }
 			} 
 			} else { %>
 				<tr class="a">	
-					<td colspan="3"><%=ejbcawebbean.getText("CANBEENABLED") %></td>
+					<td colspan="2"><%=ejbcawebbean.getText("CANBEENABLED") %></td>
 				</tr>
 		<%  } %>
 		</table>
