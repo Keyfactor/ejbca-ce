@@ -25,7 +25,7 @@
 <li>Internal log messages are localizable for different languages.</li>
 <li>Command line administration for scripts etc.</li>
 <li>Web service (WS) interface for remote administration and integration.</li>
-<li>Modular API for HSMs. Built in support for nCipher, PrimeCardHSM, Eracom (now SafeNet), SafeNet Luna, Utimaco CryptoServer, AEP Keyper, ARX CoSign and other HSMs with a good PKCS#11 library.</li>
+<li>Modular API for HSMs. Built in support for nCipher, PrimeCardHSM, SafeNet ProtectServer, SafeNet Luna, Utimaco CryptoServer, AEP Keyper, ARX CoSign and other HSMs with a good PKCS#11 library.</li>
 <li>Supports different architectures; all-in-one, clustered, external RA, external OCSP, etc.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
@@ -40,7 +40,7 @@
 <li>Configurable certificate profiles for different types and contents of certificates.</li>
 <li>Configurable entity profiles for different types of users.</li>
 <li>Supports the Simple Certificate Enrollment Protocol (SCEP).</li>
-<li>Follows X509 and PKIX (RFC3280) standards where applicable.</li>
+<li>Follows X509 and PKIX (RFC5280) standards where applicable.</li>
 <li>Qualified Certificate Statement (RFC3739) for issuing EU/ETSI qualified certificates.</li>
 <li>Supports the Online Certificate Status Protocol (OCSP - RFC2560 and RFC5019), including AIA-extension.</li>
 <li>OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
@@ -49,7 +49,7 @@
 <li>Supports a subset of CMP (RFC4210 and RFC4211).</li>
 <li>Supports synchronous XKMS version 2 requests.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
-<li>CRL creation and URL-based CRLDistribution Points according to RFC3280.</li> 
+<li>CRL creation and URL-based CRLDistribution Points according to RFC5280.</li> 
 <li>Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
 <li>Optional multiple publishers for publishing certificates and CRLs in LDAP or legacy databases. Several flexible standard publishers exist to meet different demands.</li>
 <li>Supports authentication and publishing of certificates to Microsoft Active Directory.</li>
