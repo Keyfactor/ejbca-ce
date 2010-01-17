@@ -25,6 +25,8 @@ import org.ejbca.core.model.InternalResources;
  * The implementation was done by AdNovum Informatik AG and contributed by Philipp Faerber, philipp.faerber(at)adnovum.ch
  * The Eracom HSM is special in such way as the provider is ERACOM.<slot id>.
  * 
+ * @deprecated Use the PKCS11CAToken instead. This class might be removed in EJBCA 4.0.
+ * 
  * @author AdNovum Informatik AG
  * @version $Id$
  */
