@@ -76,7 +76,9 @@ public class EracomCAToken extends BaseCAToken {
      * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.util.HashMap, java.lang.String, int)
      */
     public void init(Properties properties, HashMap data, String signaturealgorithm, int caid) throws Exception {
-        setProviders(PROVIDER_NAME_PREFIX+sSlotLabel+PROVIDER_NAME_SUFIX, null);
+    	// We have to set the providers first, because init() may try to autoactivate the token
+    	String slotLabel = BaseCAToken.getSlotLabel("slot", properties);
+        setProviders(PROVIDER_NAME_PREFIX+slotLabel+PROVIDER_NAME_SUFIX, null);
         init("slot", properties, signaturealgorithm, true);
     }
 

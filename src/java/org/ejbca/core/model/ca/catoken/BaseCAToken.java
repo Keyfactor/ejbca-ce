@@ -206,15 +206,28 @@ public abstract class BaseCAToken implements ICAToken {
     		}
     	}
         this.keyStrings = new KeyStrings(properties);
-        if (sSlotLabelKey != null && properties!=null) {
-            this.sSlotLabel = properties.getProperty(sSlotLabelKey);        	
-        }
-        this.sSlotLabel = this.sSlotLabel!=null ? this.sSlotLabel.trim() : null;
+        this.sSlotLabel = getSlotLabel(sSlotLabelKey, properties);
         this.mAuthCode = BaseCAToken.getAutoActivatePin(properties);
         if ( doAutoActivate ) {
             autoActivate();        	
         }
     }
+    /** Extracts the slotLabel that is used for many tokens in construction of the provider 
+     * 
+     * @param sSlotLabelKey which key in the properties that gives us the label
+     * @param properties CA token properties
+     * @return String with the slot label, trimmed from whitespace
+     */
+	protected static String getSlotLabel(String sSlotLabelKey, Properties properties) {
+		String ret = null;
+		if (sSlotLabelKey != null && properties!=null) {
+            ret = properties.getProperty(sSlotLabelKey);
+            if (ret != null) {
+            	ret = ret.trim();
+            }
+        }
+        return ret;
+	}
     
     protected static String getAutoActivatePin(Properties properties) {
         final String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
