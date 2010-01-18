@@ -156,7 +156,7 @@ public class CertificateCache {
 
         if (ret != null) {
         	if (log.isDebugEnabled()) {
-        		log.debug("Found certificate from CertificateID in cache. SubjectDN='"+ CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret) + ", IssuerKeyHash = " + certId.getIssuerKeyHash());
+        		log.debug("Found certificate from CertificateID in cache. SubjectDN='"+ CertTools.getSubjectDN(ret)+"', serno="+CertTools.getSerialNumberAsString(ret) + ", IssuerKeyHash=" + new String(Hex.encode(certId.getIssuerKeyHash())));
         	}        		
         } else {
         	// If we did not find it in the cache, lets look for it the hard way.
