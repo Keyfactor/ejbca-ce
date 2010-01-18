@@ -1,11 +1,9 @@
 package org.ejbca.core.protocol.ws.client;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.security.AuthProvider;
@@ -22,7 +20,8 @@ import javax.xml.namespace.QName;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
-import org.ejbca.util.CertTools;
+import org.ejbca.ui.cli.util.ConsolePasswordReader;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.provider.TLSProvider;
 
@@ -78,7 +77,7 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
                 // Try in parent directory
                 props.load(new FileInputStream("../ejbcawsracli.properties"));
             }
-            CertTools.installBCProvider();
+            CryptoProviderTools.installBCProvider();
             final String sharedLibraryPath = props.getProperty("ejbcawsracli.p11.sharedlibrary");
             final String trustStorePath = props.getProperty("ejbcawsracli.truststore.path");
             if ( trustStorePath!=null  ) {
@@ -88,9 +87,9 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
             final String password; {
                 final String tmpPassword = props.getProperty("ejbcawsracli.keystore.password");
                 if ( tmpPassword==null ) {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-                    System.out.print("Enter keystore password :");
-                    password = reader.readLine();
+                	ConsolePasswordReader pwdreader = new ConsolePasswordReader();
+                    System.out.print("Enter keystore password: ");
+                    password = new String(pwdreader.readPassword());
                 }else{
                     password = tmpPassword;
                 }
@@ -132,8 +131,17 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
                 final String keyStorePath = props.getProperty("ejbcawsracli.keystore.path", "keystore.jks");
                 checkIfFileExists(keyStorePath);
                 System.setProperty("javax.net.ssl.keyStore", keyStorePath);
+                if (keyStorePath.endsWith(".p12")) {
+                	System.setProperty("javax.net.ssl.keyStoreType", "pkcs12");
+                }
                 if ( trustStorePath==null  ) {
-                    System.setProperty("javax.net.ssl.trustStore", keyStorePath);
+                    if (keyStorePath.endsWith(".p12")) {
+                        final Provider tlsProvider = new TLSProvider();
+                        Security.addProvider(tlsProvider);
+                        Security.setProperty("ssl.TrustManagerFactory.algorithm", "AcceptAll");
+                    } else {
+                        System.setProperty("javax.net.ssl.trustStore", keyStorePath);
+                    }
                 }
                 System.setProperty("javax.net.ssl.keyStorePassword", password);
             }

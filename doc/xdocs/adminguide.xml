@@ -914,22 +914,22 @@ See the sample file for details of how to configure the Web Service interface.
 
 <subsection name="Using the Web Services CLI">
 <p>
-When building EJBCA, a Web Service CLI tool is also generated. The tool is placed
-in the directory dist/ejbcacli and consists of the all the necessary files needed to run the cli.
+Included in the <a href="userguide.html#EJBCA client toolbox">EJBCA Client Tool Box</a> is a Web Service CLI tool. 
 </p><p>
 To use the client do the following, copy the directory with all included files to
-the computer you want to remote administrate from. Then create a JKS file with
+the computer you want to remote administrate from. Then create a JKS or P12 file with
 the appropriate access rights (See the Using API section for details) and 
 finally configure the file ejbcawsracli.properties. In this file you should specify
-the hostname of the CA server, the name of the JKS keystore and the password to unlock it.
+the hostname of the CA server, the name of the keystore and the password to unlock it. 
+Documentation for each setting is in the file ejbcacsracli.properties.
 </p><p>
-Use 'ejbcaraws.sh/cmd' for a list of each subcommand and 'ejbcaraws.sh/cmd "subcommand"'
+Use 'ejbcaClientToolBox.sh EjbcaWsRaCli' for a list of each subcommand and 'ejbcaClientToolBox.sh EjbcaWsRaCli "subcommand"'
 for detailed help how to use the cli.
 </p><p>
 Example usage:
-ejbcawsracli.cmd pkcs12req testuser2 foo123 2048 NONE tmp
+ejbcaClientToolBox.sh EjbcaWsRaCli pkcs12req testuser2 foo123 2048 NONE tmp
 </p><p>
-ejbcawsracli.cmd revokeuser testuser2 false
+ejbcaClientToolBox.sh EjbcaWsRaCli revokeuser testuser2 SUPERSEDED false
 </p>
 </subsection>
 <subsection name="Using the Web Service API for Integration">
