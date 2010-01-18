@@ -958,11 +958,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 */
 	private void addRfc5019CacheHeaders(HttpServletRequest request, HttpServletResponse response, OCSPResp ocspresp, long maxAge) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, OCSPException {
 		if (maxAge <= 0) {
-			m_log.debug("Will not add RFC 5019 caches headers: RFC 5019 6.2: max-age should be 'later than thisUpdate but earlier than nextUpdate'.");
+			m_log.debug("Will not add RFC 5019 cache headers: RFC 5019 6.2: max-age should be 'later than thisUpdate but earlier than nextUpdate'.");
 			return;
 		}
 		if (!"GET".equalsIgnoreCase(request.getMethod())) {
-			m_log.debug("Will not add RFC 5019 caches headers: \"clients MUST use the GET method (to enable OCSP response caching)\"");
+			m_log.debug("Will not add RFC 5019 cache headers: \"clients MUST use the GET method (to enable OCSP response caching)\"");
 			return;
 		}
 		if (ocspresp.getResponseObject() == null) {
@@ -971,15 +971,15 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 		SingleResp[] singleRespones = ((BasicOCSPResp) ocspresp.getResponseObject()).getResponses();
 		if (singleRespones.length != 1) {
-			m_log.debug("Will not add RFC 5019 caches headers: reponse contains multiple embedded responses.");
+			m_log.debug("Will not add RFC 5019 cache headers: reponse contains multiple embedded responses.");
 			return;
 		}
 		if (singleRespones[0].getNextUpdate() == null) {
-			m_log.debug("Will not add RFC 5019 caches headers: nextUpdate isn't set.");
+			m_log.debug("Will not add RFC 5019 cache headers: nextUpdate isn't set.");
 			return;
 		}
 		if (singleRespones[0].getSingleExtensions() != null && singleRespones[0].getSingleExtensions().getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) == null) {
-			m_log.debug("Will not add RFC 5019 caches headers: response contains a nonce.");
+			m_log.debug("Will not add RFC 5019 cache headers: response contains a nonce.");
 			return;
 		}
 		long now = new Date().getTime();

@@ -285,7 +285,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      */
     private boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
         final String sigAlgName = "SHA1withRSA";
-        final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
+        final byte signInput[] = "Lillan gick on roaden ut.".getBytes();
         final byte signBA[];
         final boolean result;{
             Signature signature = Signature.getInstance(sigAlgName, providerName);
@@ -298,10 +298,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             signature.initVerify(publicKey);
             signature.update(signInput);
             result = signature.verify(signBA);
-            m_log.debug("Signature test of key "+alias+
+            if (m_log.isDebugEnabled()) {
+                m_log.debug("Signature test of key "+alias+
                         ": signature length " + signBA.length +
                         "; first byte " + Integer.toHexString(0xff&signBA[0]) +
-                        "; verifying " + result);
+                        "; verifying " + result);            	
+            }
         }
         return result;
     }
@@ -348,7 +350,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             m_log.error("Key not working. "+errMsg);
                             continue;
                         }
-                        m_log.debug("Test of \""+errMsg+" \"OK!");
+                        if (m_log.isDebugEnabled()) {
+                            m_log.debug("Test of \""+errMsg+"\" OK!");                        	
+                        }
                     } finally {
                         signingEntity.keyContainer.releaseKey();
                     }
@@ -615,7 +619,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             return;
                         }
                         final long timeToRenew = PrivateKeyContainerKeyStore.this.certificate.getNotAfter().getTime()-new Date().getTime()-1000*(long)OCSPServletStandAloneSession.this.mRenewTimeBeforeCertExpiresInSeconds;
-                        m_log.debug("time to renew signing key for CA \'"+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+"\' : "+timeToRenew );
+                        if (m_log.isDebugEnabled()) {
+                            m_log.debug("time to renew signing key for CA \'"+PrivateKeyContainerKeyStore.this.certificate.getIssuerDN()+"\' : "+timeToRenew );
+                        }
                         try {
                             wait(Math.max(timeToRenew, 15000)); // set to 15 seconds if long time to renew before expire 
                         } catch (InterruptedException e) {
@@ -1082,7 +1088,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 this.mutex.releaseMutex();
             }
             try {
-                m_log.trace(">loadPrivateKeys2");
+            	if (m_log.isTraceEnabled()) {
+                    m_log.trace(">loadPrivateKeys2");
+            	}
                 this.updating  = true; // stops new action on token
                 loadPrivateKeys2(adm, password);
             } finally {
@@ -1091,7 +1099,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     this.updating = false;
                     this.notifyAll();
                 }
-                m_log.trace("<loadPrivateKeys2");
+            	if (m_log.isTraceEnabled()) {
+                    m_log.trace("<loadPrivateKeys2");
+            	}
             }
         }
         /**
@@ -1394,7 +1404,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 final X509Certificate otherChainForSameCA[] = entityForSameCA!=null ? entityForSameCA.getCertificateChain() : null;
                 if ( otherChainForSameCA!=null && otherChainForSameCA[0].getNotBefore().after(cert.getNotBefore())) {
                     m_log.debug("CA with ID "+caid+" has duplicated keys. Certificate for older key that is not used has serial number: "+cert.getSerialNumber().toString(0x10));
-                    return true; // the entity allready in the map is newer.
+                    return true; // the entity already in the map is newer.
                 }
             }
             newSignEntitys.put( caid, new SigningEntity(chain, keyContainer, providerHandler) );
