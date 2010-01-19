@@ -88,7 +88,7 @@
 		<ant antfile="${mod.externalra.path}/build.xml" target="build-service" inheritall="false"/>
 	</target>
 
-	<target name="externalra-client" if="externalra.enabled.true" description="Build the EJBCA External RA Service CLI">
+	<target name="externalra-client" description="Build the EJBCA External RA Service CLI">
 		<ant antfile="${mod.externalra.path}/build.xml" target="build-client" inheritall="false"/>
 	</target>
 
