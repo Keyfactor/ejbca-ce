@@ -161,10 +161,12 @@ public class PerformanceTest {
                         }
                         final Command command = this.commands[i];
                         final JobRunner jobRunner = new JobRunner(command);
+                        long now = System.currentTimeMillis();
                         if ( !jobRunner.execute() ) {
                             failingCommand = command;
                         }
                         this.statistic.addTime(command.getJobTimeDescription(), jobRunner.getTimeConsumed());
+                        this.statistic.addMinMaxTime(jobRunner.getTimeConsumed(), now);
                     }
                     String sResult = "Test in thread "+this.nr+" completed ";
                     if ( failingCommand==null ) {
@@ -213,6 +215,10 @@ public class PerformanceTest {
         private int nrOfSuccessesLastTime = 0;
         private int nrOfFailures = 0;
         private long startTime;
+        private long minTime = Long.MAX_VALUE;
+        private long maxTime = Long.MIN_VALUE;
+        private long minTimeAt;
+        private long maxTimeAt;
         private final PrintStream printStream;
         Statistic(int _nr, PrintStream _printStream) {
             this.nr = _nr;
@@ -237,12 +243,29 @@ public class PerformanceTest {
             }
             this.mTimes.put(timeName, new Long(lastTime+duration));
         }
+        void addMinMaxTime(long time, long thisdate) {
+        	if (time < minTime) {
+        		minTime = time;
+        		minTimeAt = thisdate;
+        	}
+        	if (time > maxTime) {
+        		maxTime = time;
+        		maxTimeAt = thisdate;
+        	}
+        }
         private void printLine(String description, Object value) {
+        	printLine(description, value, null);
+        }
+        private void printLine(String description, Object value, Object value2) {
             String padding = new String();
             for ( int i=description.length(); i<50; i++ ) {
                 padding += ' ';
             }
-            this.printStream.println(description+": "+padding+value);
+            if (value2 == null) {
+                this.printStream.println(description+": "+padding+value);
+            } else {            	
+                this.printStream.println(description+": "+padding+value+" ("+value2+")");
+            }
         }
         private void printStatistics() {
             final long time = (int)(new Date().getTime()-this.startTime);
@@ -250,7 +273,8 @@ public class PerformanceTest {
             final Float testsPerSecond = new Float((float)this.nrOfSuccesses*1000/time);
             final Float testsPerSecondInLastPeriod = new Float((float)(this.nrOfSuccesses - this.nrOfSuccessesLastTime)/PerformanceTest.this.STATISTIC_UPDATE_PERIOD_IN_SECONDS);
             this.nrOfSuccessesLastTime = this.nrOfSuccesses;
-            final float relativeWork; {
+            final float relativeWork; 
+            {
                 long tmp = 0;
                 Iterator<Long> i=this.mTimes.values().iterator();
                 while (i.hasNext() ) {
@@ -271,7 +295,9 @@ public class PerformanceTest {
                 printLine(entry.getKey(), new Float((float)entry.getValue().longValue() / allThreadsTime));
             }
             printLine("Relative time spent with test client work", new Float(relativeWork));
-            this.printStream.print(CSI+(6+this.mTimes.size())+"A"); // move up.
+            printLine("Min time per job (ms)", new Float(minTime), new Date(minTimeAt));
+            printLine("Max time per job (ms)", new Float(maxTime), new Date(maxTimeAt));
+            this.printStream.print(CSI+(8+this.mTimes.size())+"A"); // move up.
             this.printStream.flush();
         }
         public void run() {
