@@ -415,25 +415,25 @@ public class CertificateData implements Serializable {
 		return equals((CertificateData) obj);
 	}
 
-	public boolean equals(CertificateData certificateData, boolean mode) {
+	public boolean equals(CertificateData certificateData, boolean mode, boolean strictStatus) {
 		if (mode) {
-			return equalsNonSensitive(certificateData);
+			return equalsNonSensitive(certificateData, strictStatus);
 		}
-		return equals(certificateData);
+		return equals(certificateData, strictStatus);
 	}
 
-	public boolean equals(CertificateData certificateData) {
-		if (!equalsNonSensitive(certificateData)) { return false; }
+	public boolean equals(CertificateData certificateData, boolean strictStatus) {
+		if (!equalsNonSensitive(certificateData, strictStatus)) { return false; }
 		if (!base64Cert.equals(certificateData.base64Cert)) { return false; }
 		return true;
 	}
 	
-	public boolean equalsNonSensitive(CertificateData certificateData) {
+	public boolean equalsNonSensitive(CertificateData certificateData, boolean strictStatus) {
 		if (!issuerDN.equals(certificateData.issuerDN)) { return false; }
 		if (!subjectDN.equals(certificateData.subjectDN)) { return false; }
 		if (!fingerprint.equals(certificateData.fingerprint)) { return false; }
 		if (!cAFingerprint.equals(certificateData.cAFingerprint)) { return false; }
-		if (status!=certificateData.status) { return false; }
+		if (!equalsStatus(certificateData, strictStatus)) { return false; }
 		if (type!=certificateData.type) { return false; }
 		if (!serialNumber.equals(certificateData.serialNumber)) { return false; }
 		if (expireDate!=certificateData.expireDate) { return false; }
@@ -447,7 +447,27 @@ public class CertificateData implements Serializable {
 		if (updateTime!=certificateData.updateTime) { return false; }
 		return true;
 	}
-	
+
+	/**
+	 * Compare the status field of this and another CertificateData object.
+	 * @param strict will treat NOTIFIED as ACTIVE and ARCHIVED as REVOKED if set to false
+	 */
+	public boolean equalsStatus(CertificateData certificateData, boolean strict) {
+		if (strict) {
+			return status==certificateData.status;
+		}
+		if (status==certificateData.status) { return true; }
+		if ((status==SecConst.CERT_ACTIVE || status==SecConst.CERT_NOTIFIEDABOUTEXPIRATION) &&
+				(certificateData.status==SecConst.CERT_ACTIVE || certificateData.status==SecConst.CERT_NOTIFIEDABOUTEXPIRATION)) {
+			return true;
+		}
+		if ((status==SecConst.CERT_REVOKED || status==SecConst.CERT_ARCHIVED) &&
+				(certificateData.status==SecConst.CERT_REVOKED || certificateData.status==SecConst.CERT_ARCHIVED)) {
+			return true;
+		}
+		return false;
+	}
+
 	public void updateWith(CertificateData certificateData, boolean inclusionMode) {
 		issuerDN = certificateData.issuerDN;
 		subjectDN = certificateData.subjectDN;
