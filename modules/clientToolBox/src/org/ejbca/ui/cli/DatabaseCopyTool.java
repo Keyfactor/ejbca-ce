@@ -29,7 +29,7 @@ import org.ejbca.core.ejb.ca.store.CertificateData;
  * The main reason for creating this tool was to test OcspMonitoringTool working
  * on two different database types at the same time.
  * 
- * @version $Id: $
+ * @version $Id$
  */
 public class DatabaseCopyTool extends ClientToolBox {
 

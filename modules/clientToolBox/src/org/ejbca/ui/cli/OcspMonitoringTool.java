@@ -23,6 +23,7 @@ import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.CertificateData;
+import org.ejbca.util.CliTools;
 
 /**
  * Used to synchronize OCSP databases from the CA database. 
@@ -43,10 +44,11 @@ public class OcspMonitoringTool extends ClientToolBox {
 	private final int ERRORREPORT_LISTLIMIT = 32;
 
 	final String usage = "\n"
-		+ getName() + " <inclusion-mode> <batchSize> <timeToConfirmError> <certificateProfileId1> [<certificateProfileId2>] ... - <CA db name> <OCSP1 db name> [<OCSP2 db name>] ...\n"
+		+ getName() + " [-ns] <inclusion-mode> <batchSize> <timeToConfirmError> <certificateProfileId1> [<certificateProfileId2>] ... - <CA db name> <OCSP1 db name> [<OCSP2 db name>] ...\n"
 		+ " Compares different OCSP databases with the CA's database and reports discrepancies.\n"
 		+ " This commands relies on a JPA properties/META-INF/persistence.xml being present and configured for your environment and that the systems time is correct.\n"
 		+ " JDBC drivers used in persistence.xml also has to present in lib/.\n\n"
+		+ " -ns                    Non-strict status comparision: Active == Notified and Revoked == Archived.\n"
 		+ " inclusion-mode:        all=include actual certificate, nocert=dont include certificate in comparisons\n"
 		+ " batchSize              Number of certificates to read at the time. Larger batch means faster runs, but uses up more memory.\n"
 		+ " timeToConfirmError:    The number of seconds to wait before we concider a discrepancy in the OCSP as an error.\n"
@@ -96,6 +98,9 @@ public class OcspMonitoringTool extends ClientToolBox {
     	log.info("Monitoring tool started.");
     	long startTime = new Date().getTime();
     	// Parse arguments and setup entityManagers
+		List<String> argsList = CliTools.getAsModifyableList(args);
+		boolean strictStatus = !argsList.remove("-ns");
+		args = argsList.toArray(new String[0]);
     	if (args.length<7) {
     		log.info(usage);
     		return -1;
@@ -195,7 +200,7 @@ public class OcspMonitoringTool extends ClientToolBox {
 						// Compare one row from CA database with one row from the current OCSP responder
 						CertificateData certificateData = certificateDataList.get(caRowIndex);
 						CertificateData ocspCertificateData = ocspCertificateDataList.get(ocspRowIndex);
-						if (!certificateData.equals(ocspCertificateData, inclusionMode)) {
+						if (!certificateData.equals(ocspCertificateData, inclusionMode, strictStatus)) {
 							int test = certificateData.getFingerprint().compareTo(ocspCertificateData.getFingerprint());
 					    	if (log.isDebugEnabled()) {
 								log.debug("cd.fp=" + certificateData.getFingerprint() +" ocd.fp=" + ocspCertificateData.getFingerprint());
@@ -255,7 +260,7 @@ public class OcspMonitoringTool extends ClientToolBox {
 					}
 				}
 				currentFingerprint = certificateDataList.get(certificateDataList.size()-1).getFingerprint();
-				recheckList = processRecheckList(recheckList, caEntityManager, ocspEntityManagers, ocspEntityManagerNames, inclusionMode, errorList, timeToConfirmError);
+				recheckList = processRecheckList(recheckList, caEntityManager, ocspEntityManagers, ocspEntityManagerNames, inclusionMode, strictStatus, errorList, timeToConfirmError);
 	    	}
 	    	// Make sure we don't have any unhandled CertificateData at any of the OCSP responders left
 			for (int i=0; i<ocspEntityManagers.size(); i++) {
@@ -278,7 +283,7 @@ public class OcspMonitoringTool extends ClientToolBox {
 			}
 			// Process the re-check list until it's empty
 			while (!recheckList.isEmpty()) {
-				recheckList = processRecheckList(recheckList, caEntityManager, ocspEntityManagers, ocspEntityManagerNames, inclusionMode, errorList, timeToConfirmError);
+				recheckList = processRecheckList(recheckList, caEntityManager, ocspEntityManagers, ocspEntityManagerNames, inclusionMode, strictStatus, errorList, timeToConfirmError);
 				if (!recheckList.isEmpty()) {
 					// Save the environment if there is nothing important to do.. =)
 					try {
@@ -319,7 +324,7 @@ public class OcspMonitoringTool extends ClientToolBox {
      * @param errorList
      * @return
      */
-	private List<RecheckEntry> processRecheckList(List<RecheckEntry> recheckList, EntityManager caEntityManager, List<EntityManager> ocspEntityManagers, List<String> ocspEntityManagerNames, boolean inclusionMode, List<String> errorList, long timeToConfirmError) {
+	private List<RecheckEntry> processRecheckList(List<RecheckEntry> recheckList, EntityManager caEntityManager, List<EntityManager> ocspEntityManagers, List<String> ocspEntityManagerNames, boolean inclusionMode, boolean strictStatus, List<String> errorList, long timeToConfirmError) {
 		List<RecheckEntry> toKeep = new ArrayList<RecheckEntry>();
 		for (RecheckEntry re : recheckList) {
 			long now = new Date().getTime();
@@ -356,7 +361,7 @@ public class OcspMonitoringTool extends ClientToolBox {
 									,ERROR_TAMPERED);
 						}
 					} else {
-						if (certificateData.equals(ocspCertificateData, inclusionMode) ) {
+						if (certificateData.equals(ocspCertificateData, inclusionMode, strictStatus) ) {
 					    	if (log.isDebugEnabled()) {
 								log.debug("A CertificateData with fingerprint "+certificateData.getFingerprint()+" was found ok in OCSP database " + ocspEntityManagerNames.get(re.ocspEntityManagerIndex) + " after rechecking.");
 					    	}
