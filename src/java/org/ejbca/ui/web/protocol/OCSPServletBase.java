@@ -465,28 +465,18 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			if (StringUtils.equals(method, "POST")) {
 		        ServletInputStream in = request.getInputStream();
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				try {
-					// This works for small requests, and OCSP requests are small
-					int b = in.read();
-					while ( (b != -1) && (baos.size() <= MAX_OCSP_REQUEST_SIZE) ) {
-						baos.write(b);
-						b = in.read();
-					}
-					// Double-check so the actual data also is smaller than the allowed length, not just the Content-Length header.
-					if (baos.size() > MAX_OCSP_REQUEST_SIZE) {
-						String msg = intres.getLocalizedMessage("ocsp.toolarge", MAX_OCSP_REQUEST_SIZE, baos.size());
-						m_log.info(msg);
-						throw new MalformedRequestException(msg);
-					} else {
-						// All seems good, we got the request bytes
-						baos.flush();
-						in.close();
-						ret = baos.toByteArray();				
-					}
-				} finally {
-					in.close();
-					baos.close();
-				}				
+				// This works for small requests, and OCSP requests are small
+				int b = in.read();
+				while ( (b != -1) && (baos.size() <= MAX_OCSP_REQUEST_SIZE) ) {
+					baos.write(b);
+					b = in.read();
+				}
+				// All seems good, we got the request bytes
+				// No need to double check that we did not get more than MAX_OCSP_REQUEST_SIZE, the above reading loop can impossibly read more than that.
+				// close() should not be called on the ServletInputStream, that is handled by the container.
+				// close() does not have to be called on the ByteArrayOutputStream, it does nothing.
+				baos.flush();
+				ret = baos.toByteArray();
 			} else if (StringUtils.equals(method, "GET")) {
 				// GET request
 				final StringBuffer url = request.getRequestURL();
