@@ -157,16 +157,16 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Default: ./keys
 #ocsp.keys.dir=./keys
 
+# The password to all soft keystores.
+# Default: null
+#ocsp.keys.storePassword=foo123
+
 # The password for the all the soft keys of the OCSP responder. All keys must have the same password.
 # Note that the key password must be specified even if the activation feature is used.
 # If the keystore is created by EJBCA then this password is equal to ocsp.keys.storePassword.
 # If it is equal you may leave it empty if ocsp.keys.storePassword is defined.
 # Default: same as ocsp.keys.storePassword if not null otherwise empty.
 #ocsp.keys.keyPassword=foo123
-
-# The password to all soft keystores.
-# Default: null
-#ocsp.keys.storePassword=foo123
 
 
 #------------------- PKCS#11 keys used by external OCSP responder------------------------------
