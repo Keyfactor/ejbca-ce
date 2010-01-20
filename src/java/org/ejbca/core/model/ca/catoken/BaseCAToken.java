@@ -188,8 +188,26 @@ public abstract class BaseCAToken implements ICAToken {
 
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoActivate) {
     	if (log.isDebugEnabled()) {
+    		log.debug(">init: sSlotLabelKey="+sSlotLabelKey+", Signaturealg="+signaturealgorithm);
+    	}
+    	// Set basic properties that are of dynamic nature
+    	updateProperties(properties);
+    	// Set properties that can not change dynamically
+        this.sSlotLabel = getSlotLabel(sSlotLabelKey, properties);
+        if ( doAutoActivate ) {
+            autoActivate();        	
+        }
+    	if (log.isDebugEnabled()) {
+    		log.debug("<init: sSlotLabelKey="+sSlotLabelKey+", Signaturealg="+signaturealgorithm);
+    	}
+    } // init
+    
+    /** @see ICAToken#updateProperties(Properties)
+     */
+    public void updateProperties(Properties properties) {
+    	if (log.isDebugEnabled()) {
     		// This is only a sections for debug logging. If we have enabled debug logging we don't want to display any password in the log.
-    		// These properties may contain autiactivation PIN codes and we will, only when debug logging, replace this with "hidden".
+    		// These properties may contain autoactivation PIN codes and we will, only when debug logging, replace this with "hidden".
     		if ( properties.containsKey(ICAToken.AUTOACTIVATE_PIN_PROPERTY) || properties.containsKey("PIN") ) {
     			Properties prop = new Properties();
     			prop.putAll(properties);
@@ -199,19 +217,16 @@ public abstract class BaseCAToken implements ICAToken {
     			if (properties.containsKey("PIN")) {
         			prop.setProperty("PIN", "hidden");    				
     			}
-        		log.debug("Prop: "+(prop!=null ? prop.toString() : "null")+". Signaturealg: "+signaturealgorithm);
+        		log.debug("Prop: "+(prop!=null ? prop.toString() : "null"));
     		} else {
     			// If no autoactivation PIN codes exists we can debug log everything as original.
-        		log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);    			
+        		log.debug("Properties: "+(properties!=null ? properties.toString() : "null"));    			
     		}
     	}
         this.keyStrings = new KeyStrings(properties);
-        this.sSlotLabel = getSlotLabel(sSlotLabelKey, properties);
         this.mAuthCode = BaseCAToken.getAutoActivatePin(properties);
-        if ( doAutoActivate ) {
-            autoActivate();        	
-        }
-    }
+    } // updateProperties
+    
     /** Extracts the slotLabel that is used for many tokens in construction of the provider 
      * 
      * @param sSlotLabelKey which key in the properties that gives us the label
