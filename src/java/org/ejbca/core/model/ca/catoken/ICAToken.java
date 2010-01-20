@@ -112,4 +112,12 @@ public interface ICAToken {
      * Resets token. Might cure HW failures. It is up to each implementation to implement this or not.
      */
     void reset();
+    
+    /** Updates the Properties for the CA token. Call this method when a new key string, autoactivation PIN has been set
+     *  and the init method on the catoken is not called. 
+     *  Does not update properties that is only used when token is created, for example P11 slot, this is only updated on recreation of the token.
+     * @param properties Properties containing the new key properties or other properties, such as activation PIN
+     */
+    void updateProperties(Properties properties);
+
 }
