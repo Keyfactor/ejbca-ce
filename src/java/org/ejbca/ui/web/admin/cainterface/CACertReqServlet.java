@@ -29,6 +29,12 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.cvc.CVCAuthenticatedRequest;
+import org.ejbca.cvc.CVCObject;
+import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CertificateParser;
+import org.ejbca.cvc.HolderReferenceField;
+import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -145,9 +151,32 @@ public class CACertReqServlet extends HttpServlet {
         }
         if (command.equalsIgnoreCase(COMMAND_CERTREQ)) {
             try {
-                
             	byte[] request = cabean.getRequestData();
-                String filename = "certificaterequest.req";
+                String filename = null;
+                CVCertificate cvccert = null;
+                try {
+                    CVCObject parsedObject = CertificateParser.parseCVCObject(request);
+                    // We will handle both the case if the request is an
+                    // authenticated request, i.e. with an outer signature
+                    // and when the request is missing the (optional) outer
+                    // signature.
+                    if (parsedObject instanceof CVCAuthenticatedRequest) {
+                        CVCAuthenticatedRequest cvcreq = (CVCAuthenticatedRequest) parsedObject;
+                        cvccert = cvcreq.getRequest();
+                    } else {
+                        cvccert = (CVCertificate) parsedObject;
+                    }
+                    HolderReferenceField chrf = cvccert.getCertificateBody().getHolderReference();
+                    if (chrf != null) {
+                    	filename = chrf.getConcatenated();
+                    }
+                } catch (ParseException ex) {
+                    // Apparently it wasn't a CVC request, Ignore
+                }
+
+                if (filename == null) {
+                    filename = "certificaterequest";
+                }
                 int length = request.length;
                 byte[] outbytes = request;
             	if (!StringUtils.equals(format, "binary")) {
@@ -156,9 +185,14 @@ public class CACertReqServlet extends HttpServlet {
     				out += new String(b64certreq);
     				out += "\n-----END CERTIFICATE REQUEST-----\n";
     				length = out.length();
-                    filename = "certificaterequest.pem";
+                    filename += ".pem";
                     outbytes = out.getBytes();
-            	}
+                } else if (cvccert != null) {
+                    filename += ".cvreq";
+                } else {
+                    filename += ".req";
+                }
+            	
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
