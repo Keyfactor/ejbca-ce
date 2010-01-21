@@ -71,6 +71,10 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
+import org.ejbca.cvc.CAReferenceField;
+import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CertificateParser;
+import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -358,10 +362,29 @@ public class CertReqServlet extends HttpServlet {
                       if ((reqBytes != null) && (reqBytes.length>0)) {
                           log.debug("Received CVC request: "+new String(reqBytes));
                           byte[] b64cert=helper.cvcCertRequest(signsession, reqBytes, username, password);
+                          CVCertificate cvccert = (CVCertificate) CertificateParser.parseCVCObject(Base64.decode(b64cert));
+                          String filename = "";
+                          CAReferenceField carf = cvccert.getCertificateBody().getAuthorityReference();
+                          if (carf != null) {
+                              String car = carf.getConcatenated();
+                        	  filename += car;
+                          }
+                          HolderReferenceField chrf = cvccert.getCertificateBody().getHolderReference();
+                          if (chrf != null) {
+                              String chr = chrf.getConcatenated();
+                              if (filename.length() > 0) {
+                            	  filename += "_";
+                              }
+                              filename +=chr;
+                          }
+                          if (filename.length() == 0) {
+                        	  filename = username;
+                          }
+                          log.debug("Filename: "+filename);
                           if(resulttype == RequestHelper.BINARY_CERTIFICATE)  
-                            RequestHelper.sendBinaryBytes(Base64.decode(b64cert), response, "application/octet-stream", username+".cvcert");
+                            RequestHelper.sendBinaryBytes(Base64.decode(b64cert), response, "application/octet-stream", filename+".cvcert");
                           if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
-                            RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+                            RequestHelper.sendNewB64File(b64cert, response, filename+".pem", RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
                       } else {
                     	  throw new SignRequestException("No request bytes received.");
                       }

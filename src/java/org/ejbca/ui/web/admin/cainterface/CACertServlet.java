@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -301,16 +302,25 @@ public class CACertServlet extends HttpServlet {
                 byte[] enccert = cacert.getEncoded();
                 // Se if we can name the file as the CAs CN, if that does not exist try serialnumber, and if that does not exist, use the full O
                 // and if that does not exist, use the fixed string CertificateAuthority. 
-                String dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
-                if (dnpart == null) {
-                	dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "SN");
+                String dnpart = null;
+                if (StringUtils.equals(cacert.getType(), "CVC")) {
+                    CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cacert;
+                    String car = cvccert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated();
+                    String chr = cvccert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated();
+                    dnpart = car + "_" + chr;
+                } else {
+                    dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
+                    if (dnpart == null) {
+                        dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "SN");
+                    }
+                    if (dnpart == null) {
+                        dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+                    }
                 }
                 if (dnpart == null) {
-                	dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+                    dnpart = "CertificateAuthority";
                 }
-                if (dnpart == null) {
-                	dnpart = "CertificateAuthority";
-                }
+                log.debug("dnpart: "+dnpart);
                 // Strip whitespace though
             	String strippedCACN = dnpart.replaceAll("\\W", "");
                 // We must remove cache headers for IE
