@@ -4102,12 +4102,14 @@ the last field in profilemappings.properties, i.e. the LanguageConstant.
 EJBCA will by default put unknown OIDs in the end so the DN will probably be displayed as: CN=MyCommonName,C=SE,1.1.1.1=MyCustomOid 
 (if looking at the asn1 coding, different application display in a different order regardless of the asn1 coding).
 <br/>
-If you need a particular order of DN components, you can add a file 'dncomponents.properties' in the directory ejbca/src. 
+If you need a particular order of DN components, you can add a file 'dncomponents.properties' in the directory ejbca/src/java. 
 There is a file called dncomponents.properties.sample in the distribution as a starting point (it shows the default ordering in EJBCA). 
 You custom oid must be placed in the right place in that file, and all components from the sample file should be included, or you will get 
 strange behaviour.
 <br/>
 Using the dncomponents.properties file is only needed if you need to control the asn1 ordering of DN elements.
+<br/>
+After updating dncomponents.properties you need to run 'ant clean' before re-deploying EJBCA.
 </p>
 <p>
 A word of caution:
