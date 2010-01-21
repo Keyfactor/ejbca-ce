@@ -21,81 +21,82 @@ administrator, who can be found on the sourceforge project page.
 
 <!--  email obfuscation tool http://www.seowebsitepromotion.com/obfuscate_email.asp -->
 <ul>
-<li>Tomas Gustavsson, &#x74;&#x6F;&#x6D;&#97;&#115;&#x40;&#112;&#x72;&#x69;&#x6D;&#101;&#107;&#x65;&#x79;&#46;&#x73;&#x65;, Project founder.</li>
-<li>Philip Vendil, &#x70;&#x68;&#x69;&#108;&#105;&#x70;&#64;&#x70;&#x72;&#x69;&#109;&#101;&#x6B;&#x65;&#121;&#x2E;&#x73;&#101;, Core developer, project admin.</li>
-<li>Anna Diruba Christensen, &#x64;&#x69;&#x6C;&#110;&#101;&#x74;&#64;&#x68;&#x6F;&#x74;&#109;&#97;&#x69;&#x6C;&#46;&#x63;&#x6F;&#109;, First project homepage design.</li>
-<li>Nathan Phelps, &#x6E;&#x70;&#x68;&#101;&#108;&#x70;&#115;&#x40;&#x73;&#x6F;&#108;&#97;&#x72;&#x63;&#46;&#x63;&#x6F;&#109;, Testing, bugfinding and suggestions.</li>
-<li>Leo Tai, &#x68;&#x6B;&#x6C;&#101;&#111;&#x40;&#117;&#x73;&#x65;&#x72;&#115;&#46;&#x73;&#x6F;&#117;&#x72;&#x63;&#101;&#x66;&#111;&#x72;&#x67;&#101;&#x2E;&#110;&#101;&#x74;, Oracle database configuration.</li>
-<li>Timothy Fisher, &#x74;&#x69;&#x6D;&#111;&#116;&#x68;&#121;&#x66;&#x40;&#x75;&#115;&#101;&#x72;&#x73;&#46;&#x73;&#x6F;&#117;&#x72;&#99;&#x65;&#x66;&#111;&#x72;&#103;&#101;&#x2E;&#x6E;&#101;&#116;, Architecture overview.</li>
-<li>Karl-König Königsson, &#x6B;&#x61;&#x72;&#108;&#107;&#x6F;&#101;&#x6E;&#x69;&#x67;&#64;&#117;&#x73;&#x65;&#114;&#x73;&#x2E;&#115;&#x6F;&#117;&#x72;&#x63;&#101;&#x66;&#111;&#114;&#x67;&#x65;&#46;&#110;&#x65;&#x74;, Better deployment scripts for EJBCA 2.x.</li>
-<li>Thomas Karlsson, &#x74;&#x68;&#x6F;&#109;&#97;&#x73;&#46;&#x6B;&#x61;&#x72;&#108;&#115;&#x73;&#x6F;&#110;&#x40;&#x70;&#108;&#x61;&#110;&#x65;&#x74;&#46;&#x65;&#117;&#46;&#x6F;&#x72;&#103;, Firewall script, swedish translation.</li>
-<li>Magnus Broqvist, &#x6D;&#x61;&#x67;&#110;&#117;&#x73;&#64;&#x68;&#x61;&#x6E;&#46;&#112;&#x70;&#x2E;&#115;&#x65;, Initial P12toPEM implementation.</li>
-<li>Slava Sklarewski, &#x73;&#x6C;&#x61;&#118;&#97;&#x2E;&#115;&#x6B;&#x6C;&#x61;&#114;&#101;&#x77;&#x73;&#107;&#x69;&#x40;&#100;&#x65;&#46;&#x67;&#x69;&#45;&#x64;&#101;&#46;&#x63;&#x6F;&#109;, Data flow diagram.</li>
-<li>Leonardo Souza Mario Bueno, &#x69;&#x73;&#x62;&#117;&#101;&#x6E;&#111;&#x40;&#x75;&#x73;&#101;&#114;&#x73;&#x2E;&#115;&#x6F;&#x75;&#114;&#x63;&#101;&#x66;&#x6F;&#114;&#x67;&#101;&#46;&#x6E;&#x65;&#116;, Patch for request template path.</li>
-<li>Jean Ye, &#x7A;&#x68;&#x6A;&#101;&#97;&#x6E;&#121;&#x65;&#x40;&#x70;&#117;&#98;&#x2E;&#x7A;&#104;&#x75;&#x68;&#97;&#x69;&#46;&#x67;&#x64;&#46;&#x63;&#110;, Support for Sybase, intial support for Active Directory, EJBCA 3.1 on Weblogic 8.1, port of EJBCA 2 to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA. Improved internationalization support. Chinese translation.</li>
-<li>Lars Silven, &#x6C;&#x61;&#x72;&#115;&#64;&#x70;&#114;&#x69;&#x6D;&#x65;&#107;&#101;&#x79;&#x2E;&#115;&#x65;, Core developer.</li>
-<li>Gösta Bäckström, &#x67;&#x6F;&#x73;&#116;&#97;&#x2E;&#98;&#x61;&#x63;&#x6B;&#115;&#116;&#x72;&#x6F;&#109;&#x40;&#x67;&#111;&#x79;&#97;&#x64;&#x61;&#46;&#x63;&#111;&#109;, Initial PKCS7 to browsers.</li>
-<li>Ville Skyttä, &#x76;&#x69;&#x6C;&#108;&#101;&#x2E;&#115;&#x6B;&#x79;&#x74;&#116;&#97;&#x40;&#x73;&#101;&#x63;&#x67;&#111;&#x2E;&#99;&#x6F;&#x6D;, AdminCertReqServlet, Various patches, LDAP publisher advice</li>
-<li>Koen Serry, &#x6B;&#x6F;&#x65;&#110;&#64;&#x73;&#101;&#x72;&#x72;&#x79;&#46;&#111;&#x72;&#x67;, Many small improvements.</li>
-<li>Dickon Field, &#x64;&#x69;&#x63;&#107;&#111;&#x6E;&#46;&#x66;&#x69;&#x65;&#108;&#100;&#x40;&#x63;&#111;&#x6E;&#x63;&#105;&#x73;&#101;&#x2E;&#x63;&#111;&#x2E;&#117;&#107;, EJBCA 3.0.x on Weblogic 7.1.</li>
-<li>Justin Wood, &#x6A;&#x75;&#x73;&#116;&#105;&#x6E;&#64;&#x62;&#x72;&#x61;&#105;&#100;&#x71;&#x75;&#101;&#x73;&#x74;&#46;&#x63;&#111;&#x6D;, PKI Tools subproject.</li>
-<li>Thomas Meckel, &#x6D;&#x65;&#x63;&#107;&#101;&#x6C;&#64;&#x6F;&#x70;&#x68;&#105;&#111;&#x73;&#x2E;&#99;&#x6F;&#x6D;, Initial OCSP implementation.</li>
-<li>Jon Barber, &#x6A;&#x6F;&#x6E;&#46;&#98;&#x61;&#114;&#x62;&#x65;&#x72;&#64;&#97;&#x63;&#x6D;&#46;&#x6F;&#x72;&#103;, Early SCEP testing and fixes.</li>
-<li>&#x73;&#x75;&#x72;&#100;&#48;&#x30;&#48;&#x37;&#x40;&#x79;&#97;&#104;&#x6F;&#x6F;&#46;&#x63;&#x6F;&#109;&#x2E;&#99;&#x6E;, Initial install guide.</li>
-<li>Mike Jackson, &#x6D;&#x6A;&#x40;&#115;&#99;&#x69;&#46;&#x66;&#x69;, Proper LDAP schema. Device certificate schemas.</li>
-<li>Stephane Bailliez, &#x73;&#x74;&#x65;&#112;&#104;&#x61;&#110;&#x65;&#x40;&#x62;&#101;&#97;&#x72;&#x61;&#119;&#x61;&#x79;&#46;&#x6F;&#114;&#x67;, Patches all over, XDoclet, new install, configure and cli for 3.1, web.</li>
-<li>Yannick Quenec'hdu, &#x79;&#x71;&#x75;&#101;&#110;&#x65;&#99;&#x68;&#x64;&#x75;&#64;&#108;&#x69;&#x6E;&#97;&#x67;&#x6F;&#114;&#x61;&#46;&#x63;&#x6F;&#109;, French translation, help with SafeNet HSM and some other patches, new EJBCA pki logo.</li>
-<li>James A. Rome, &#x6A;&#x61;&#x72;&#64;&#111;&#x72;&#110;&#x6C;&#x2E;&#x67;&#111;&#118;, Additional 'Use fields in DN' for publisher, JKStoPEM, lots of testing and input, change_p12_pwd.</li>
-<li>Manuel Ruiz, &#x6D;&#x72;&#x75;&#105;&#122;&#x40;&#115;&#x61;&#x66;&#x61;&#46;&#101;&#x73;, Make admin commands flexible and usable from within java-code.</li>
-<li>Risto Laanoja, &#x72;&#x69;&#x73;&#116;&#111;&#x2E;&#108;&#x61;&#x61;&#x6E;&#111;&#106;&#x61;&#x40;&#101;&#x79;&#x70;&#46;&#x65;&#101;, Fix for integer overflow when setting CRLPeriod longer than 596 hours. Several instances of one altName and other patches. User authentication with JAAS/Kerberos.</li>
-<li>Giampaolo Tomassoni. &#x67;&#x69;&#x61;&#109;&#112;&#x61;&#111;&#x6C;&#x6F;&#x40;&#116;&#111;&#x6D;&#x61;&#115;&#x73;&#x6F;&#110;&#x69;&#46;&#x62;&#x69;&#122;, PostgresSQL 8.0.</li>
-<li>Philipp Faerber, &#x70;&#x68;&#x69;&#108;&#105;&#x70;&#112;&#x2E;&#x66;&#x61;&#101;&#114;&#x62;&#x65;&#114;&#x40;&#x61;&#100;&#x6E;&#111;&#x76;&#x75;&#109;&#x2E;&#99;&#104;, EJBCA 3.0.x on Weblogic 8.1, adminweb sql fix. Initial support for Eracom HSM. German translation.</li>
-<li>Hu Aranjuez, &#x6D;&#x79;&#x6E;&#101;&#116;&#x62;&#117;&#x73;&#x40;&#x31;&#50;&#54;&#x2E;&#x63;&#111;&#x6D;, Column name fix for MS SQL2000.</li>
-<li>Marco Ferrante, &#x6D;&#x61;&#x72;&#99;&#111;&#x40;&#99;&#x73;&#x69;&#x74;&#97;&#46;&#x75;&#x6E;&#105;&#x67;&#x65;&#46;&#x69;&#116;, Italian translation, openssl migration howto, importcert cli function.</li>
-<li>Alejandro Falcone, &#x61;&#x66;&#x61;&#108;&#99;&#x6F;&#110;&#x65;&#x40;&#x73;&#112;&#101;&#x65;&#x64;&#121;&#x2E;&#x63;&#111;&#x6D;&#46;&#x61;&#x72;, Spanish translation.</li>
-<li>Bruno Bonfils, &#x61;&#x73;&#x79;&#100;&#64;&#x61;&#115;&#x79;&#x64;&#x2E;&#110;&#101;&#x74;, added X-ORIGIN to device schema for latest Sun Directory Server. Tested Cisco IOS and made the IOS Howto. OpenSSH and X509 authentication. Hudson.</li>
-<li>Resurrección Mazo González, &#x72;&#x6D;&#x61;&#122;&#103;&#x6F;&#110;&#x40;&#x63;&#x61;&#110;&#97;&#x72;&#x69;&#97;&#x73;&#x2E;&#111;&#x72;&#103;, LdapSearchPublisher.</li>
-<li>Ronan le Meillat, &#x72;&#x6F;&#x6E;&#97;&#110;&#x2E;&#108;&#x65;&#x5F;&#x6D;&#101;&#105;&#x6C;&#x6C;&#97;&#x74;&#x40;&#108;&#x65;&#115;&#x6D;&#x75;&#105;&#x64;&#115;&#46;&#x63;&#x6F;&#109;, Htmlized french translation.</li>
-<li>Zhengrong (Jerry) Liu, &#x7A;&#x6A;&#x6C;&#54;&#64;&#x75;&#115;&#x65;&#x72;&#x73;&#46;&#115;&#x6F;&#x75;&#114;&#x63;&#x65;&#102;&#x6F;&#114;&#x67;&#x65;&#46;&#x6E;&#101;&#116;, Limit length of primary key columns when using UTF-8 encoding in MySQL, fix for static fields in server.xml.</li>
-<li>Gabriel Belingueres, &#x62;&#x65;&#108;&#x69;&#x6E;&#103;&#x75;&#101;&#x72;&#x65;&#115;&#x40;&#121;&#97;&#x68;&#x6F;&#111;&#46;&#x63;&#x6F;&#x6D;&#x2E;&#x61;&#114;, Support for Informix 9.2.</li>
-<li>Yovko Ilchev Yovkov, &#x79;&#x79;&#x6F;&#118;&#107;&#x6F;&#118;&#x40;&#x79;&#x79;&#111;&#118;&#x6B;&#x6F;&#118;&#x2E;&#x6E;&#101;&#x74;, Howtos for Fedora Core 4 and 5.</li>
-<li>Javier Aparicio Conesa, &#x61;&#x70;&#x61;&#114;&#105;&#x63;&#105;&#x6F;&#x5F;&#x66;&#114;&#97;&#x63;&#x6F;&#110;&#x40;&#x67;&#118;&#x61;&#46;&#x65;&#x73;, User notice and CPS in certificate policy extension. Directoryname in alternative names. CRL Issue period. Option to not remove certificates from publisher when revoked. Patch for unsuspend from CRL.</li>
-<li>Jon Bendtsen, &#x6A;&#x6F;&#x6E;&#46;&#98;&#x65;&#110;&#x64;&#x74;&#x73;&#101;&#110;&#x40;&#x6C;&#97;&#x65;&#x72;&#100;&#x61;&#108;&#x2E;&#x64;&#107;, OpenVPN installer package enrollment.</li>
-<li>Henrik Schack, &#x68;&#x65;&#x6E;&#114;&#105;&#x6B;&#64;&#x73;&#x63;&#x68;&#97;&#99;&#x6B;&#x2E;&#100;&#x6B;, Documentation about dns alt name for Cisco PIX.</li>
-<li>Alexander Horvath, &#x61;&#x6C;&#x65;&#120;&#64;&#x67;&#101;&#x6B;&#x6F;&#x6D;&#46;&#98;&#x69;&#x7A;, Patch to make OCSP compatible with Thunderbird/Firefox.</li>
-<li>Henrik Anreasson, &#x68;&#x61;&#x6E;&#64;&#104;&#x61;&#110;&#x2E;&#x70;&#x70;&#46;&#115;&#x65;, Debian package, installer and documentation improvements, lots of testing and suggestions.</li>
-<li>Michael Rieken, &#x6D;&#x69;&#x63;&#104;&#97;&#x65;&#108;&#x2E;&#x72;&#x69;&#101;&#107;&#x65;&#x6E;&#64;&#x61;&#x74;&#111;&#x73;&#111;&#x72;&#x69;&#103;&#x69;&#110;&#46;&#x63;&#x6F;&#109;, Updates to german translation.</li>
-<li>Johan Eklund, &#x6A;&#x6F;&#x68;&#97;&#110;&#x40;&#112;&#x72;&#x69;&#x6D;&#101;&#107;&#x65;&#x79;&#46;&#x73;&#x65;, Core developer.</li>
-<li>Rolf Staflin, &#x72;&#x6F;&#x6C;&#102;&#64;&#x70;&#105;&#x72;&#x6F;&#x2E;&#115;&#101;, new public web.</li>
-<li>Joakim Bågnert, &#x6A;&#x6F;&#x61;&#107;&#105;&#x6D;&#64;&#x70;&#x72;&#x69;&#109;&#101;&#x6B;&#x65;&#121;&#x2E;&#x73;&#101;, Core Technician/Developer.</li>
-<li>Munteanu Olimpiu Andrei, &#x6D;&#x6F;&#x61;&#51;&#51;&#x33;&#51;&#x40;&#x67;&#x6D;&#97;&#105;&#x6C;&#x2E;&#99;&#x6F;&#x6D;, Jasper reports functionality.</li>
-<li>Lee, &#x63;&#x6F;&#x72;&#101;&#103;&#x70;&#115;&#x40;&#x79;&#x61;&#104;&#111;&#x6F;&#x2E;&#99;&#x6F;&#x6D;&#46;&#x63;&#110;, updates to chineese translation.</li>
-<li>Yuji, &#x79;&#x69;&#x73;&#116;&#111;&#x6E;&#101;&#x72;&#x69;&#x76;&#101;&#114;&#x40;&#x75;&#115;&#x65;&#x72;&#115;&#x2E;&#115;&#x6F;&#x75;&#114;&#x63;&#101;&#102;&#x6F;&#x72;&#103;&#101;&#x2E;&#x6E;&#x65;&#x74;, patch for deadlock problem.</li>
-<li>Nuno Ponte, &#x6E;&#x75;&#x6E;&#111;&#46;&#x70;&#111;&#x6E;&#x74;&#x65;&#64;&#109;&#x75;&#x6C;&#116;&#x69;&#x63;&#101;&#x72;&#116;&#x2E;&#x63;&#111;&#x6D;, portuguese translation, delta CRL, noOcspCheck extension, freshestCRL, intermediade nodes in LDAP, caIssuers AIA extension, Pseudonym DN component, and much more.</li>
-<li>Nicolas Coudene, &#x6E;&#x69;&#x63;&#111;&#108;&#x61;&#115;&#x2E;&#x63;&#x6F;&#117;&#100;&#x65;&#x6E;&#101;&#x40;&#x6C;&#105;&#x6E;&#97;&#x67;&#x6F;&#114;&#x61;&#46;&#99;&#x6F;&#x6D;, completing the DB2 support, updates to french translation.</li>
-<li>Sébastien Levesque, &#x73;&#x6C;&#x65;&#118;&#101;&#x73;&#113;&#x75;&#x65;&#x40;&#108;&#105;&#x6E;&#x61;&#103;&#x6F;&#x72;&#97;&#x2E;&#99;&#x6F;&#x6D;, WS-API calls for listing CAs and profiles.</li>
-<li>Abbas Razam, &#x61;&#x62;&#x62;&#97;&#115;&#x72;&#97;&#x7A;&#x61;&#x6D;&#64;&#121;&#x61;&#x68;&#111;&#x6F;&#x2E;&#99;&#x6F;&#109;, fixes to ms-sql upgrade scripts 31_32 and 33_34.</li>
-<li>Darren Johnson, &#x64;&#x61;&#x72;&#114;&#101;&#x6E;&#46;&#x6A;&#x6F;&#x68;&#110;&#115;&#x6F;&#x6E;&#64;&#x73;&#x61;&#102;&#x65;&#110;&#x65;&#x74;&#45;&#x69;&#110;&#99;&#x2E;&#x63;&#111;&#109;, split CAToken to be able to use separate JCE/JCA providers, makes SCEP work on Luna HSM with java provider.</li>
-<li>Matt Stevenson, &#x6D;&#x61;&#x76;&#114;&#105;&#x63;&#107;&#x6E;&#x7A;&#x77;&#111;&#114;&#x6B;&#x40;&#121;&#x61;&#x68;&#111;&#x6F;&#46;&#x63;&#x6F;&#109;, code for adding CRMF and SPKAC requests in WS-API, Sybase and case-sensitive columns, MS document signing extended key usage, Intel AMT extended key usage.</li>
-<li>David Carella, &#x64;&#x63;&#x61;&#114;&#101;&#x6C;&#108;&#x61;&#x40;&#x6C;&#105;&#110;&#x61;&#x67;&#111;&#x72;&#x61;&#46;&#x63;&#111;&#x6D;, language improvements and other standard compliance suggestions.</li>
-<li>Miguel Angel Tormo Alfaro, &#x6D;&#x61;&#x74;&#111;&#114;&#x6D;&#111;&#x40;&#x65;&#x64;&#105;&#99;&#x6F;&#x6D;&#46;&#x65;&#x73;, ETSI retention period in QC certificate extension, fix for advanced searches with ProtectedLog, Sequences in BasicCertificateExtension.</li>
-<li>Damir Farazetdinov, &#x66;&#x64;&#x61;&#109;&#105;&#x72;&#118;&#x40;&#x6D;&#x61;&#105;&#108;&#x2E;&#x72;&#117;, Found bug with duplicate error codes in OCSPUnidClient.</li>
-<li>Liam Kian Shin, &#x6B;&#x69;&#x61;&#110;&#115;&#x68;&#105;&#x6E;&#x2E;&#x6C;&#105;&#109;&#x40;&#x67;&#101;&#x6D;&#x61;&#108;&#x74;&#111;&#x2E;&#x63;&#111;&#x6D;, Howto for using GEMSafe with EJBCA.</li>
-<li>Koichi Sugimoto, &#x6B;&#x6F;&#x2D;&#115;&#117;&#x67;&#105;&#x6D;&#x6F;&#x74;&#111;&#64;&#x75;&#x73;&#101;&#x72;&#x73;&#46;&#x73;&#102;&#x2E;&#x6E;&#101;&#x74;, initial patch for creating certificate request from any CA.</li>
-<li>Keijo Kurkinen, National Swedish Police Board, &#x6B;&#x65;&#x69;&#106;&#111;&#x2E;&#107;&#x75;&#x72;&#x6B;&#105;&#110;&#x65;&#x6E;&#64;&#x69;&#x6E;&#110;&#x6F;&#103;&#x72;&#x61;&#116;&#x65;&#46;&#99;&#x6F;&#x6D;, Cert-CVC library for handling CV certificates for EU EAC ePassports.</li>
-<li>Tham Wickenberg, &#x74;&#x68;&#x61;&#109;&#64;&#x70;&#114;&#x69;&#x6D;&#x65;&#107;&#101;&#x79;&#x2E;&#115;&#x65;, Core developer.</li>
-<li>Kelly Hayashi, &#x6B;&#x65;&#x6C;&#108;&#121;&#x40;&#101;&#x76;&#x61;&#x6C;&#116;&#101;&#x63;&#x2E;&#99;&#x6F;&#x6D;&#46;&#x62;&#114;, patch for PKCS12 ExtRA requests not working with approvals.</li>
-<li>Jakob Jenkov, &#x6A;&#x61;&#x6B;&#111;&#98;&#x40;&#106;&#x65;&#x6E;&#x6B;&#111;&#118;&#x2E;&#x63;&#111;&#x6D;, advice on fair thread locking for ProtectedLog synchronization.</li>
-<li>David Galichet, &#x64;&#x61;&#x76;&#105;&#100;&#x2E;&#103;&#x61;&#x6C;&#x69;&#99;&#104;&#x65;&#x74;&#64;&#x6C;&#x69;&#110;&#x61;&#103;&#x6F;&#x72;&#97;&#x2E;&#99;&#111;&#x6D;, add error code on web services. WS user creation uses profile informations</li>
-<li>Vincent Kan, &#x76;&#x6B;&#x61;&#110;&#64;&#x6C;&#105;&#x6E;&#x61;&#x67;&#111;&#114;&#x61;&#x2E;&#99;&#x6F;&#x6D;, WS user creation uses profile informations</li>
-<li>Thomas Noel, &#109;&#97;&#105;&#108;&#116;&#111;:&#x74;&#x68;&#x6F;&#109;&#97;&#x73;&#46;&#x6E;&#x6F;&#x65;&#108;&#43;&#x65;&#x6A;&#98;&#x63;&#x61;&#64;&#x61;&#117;&#x66;&#x2E;&#111;&#x72;&#103;, Retrieve Delta CRL in CertDistServlet.</li>
-<li>Christian Kleinewächter, &#x63;&#x68;&#x72;&#105;&#115;&#x74;&#105;&#x61;&#x6E;&#x2E;&#107;&#108;&#x65;&#x69;&#110;&#x65;&#x77;&#97;&#x65;&#99;&#x68;&#x74;&#101;&#x72;&#64;&#105;&#x6E;&#x66;&#105;&#110;&#x69;&#x74;&#x79;&#x2D;&#x33;&#46;&#x64;&#x65;, Support PostgreSQL in Glassfish</li> 
-<li>Dirk-Willem van Gulik, &#x64;&#x69;&#x72;&#107;&#45;&#x77;&#105;&#x6C;&#x6C;&#x65;&#109;&#46;&#x76;&#x61;&#110;&#x2E;&#x67;&#117;&#x6C;&#105;&#x6B;&#x40;&#98;&#x62;&#99;&#46;&#x63;&#x6F;&#46;&#117;&#x6B;, Substitutions in sender and rcpt in email notificaitons.</li> 
-<li>Dai Tokunaga, &#x65;&#x74;&#x65;&#114;&#110;&#x61;&#108;&#x76;&#x69;&#x72;&#116;&#117;&#x65;&#x40;&#103;&#x6D;&#x61;&#105;&#x6C;&#46;&#x63;&#x6F;&#109;, XKMS working on Java 6 and Glassfish.</li> 
-<li>Martin Simka, &#x6D;&#x2E;&#x73;&#105;&#109;&#x6B;&#97;&#x40;&#x70;&#x77;&#112;&#119;&#x2E;&#x70;&#108;, cvcwscli.cmd.</li> 
-<li>Waldek Kozba, &#x77;&#x61;&#x6C;&#100;&#101;&#x6D;&#97;&#x72;&#x2E;&#x6B;&#111;&#122;&#x62;&#x61;&#64;&#x6D;&#x61;&#120;&#x2E;&#99;&#x6F;&#x6D;&#46;&#x70;&#108;, Patch for not quoting int type columns for advanced log search.</li>
-<li>Kevin Dean, &#x6B;&#x65;&#118;&#x69;&#x6E;&#46;&#x64;&#101;&#x61;&#x6E;&#64;&#x64;&#97;&#116;&#x61;&#x64;&#101;&#118;&#x65;&#x6C;&#x6F;&#x70;&#x6D;&#101;&#x6E;&#x74;&#46;&#x63;&#111;&#x6D;, sql script for MS-SQL on Glassfish, help with issue mixing EJBs and SQL.</li>
-<li>Rafal Parzych, &#x72;&#x2E;&#x70;&#97;&#114;&#x7A;&#121;&#x63;&#x68;&#x40;&#112;&#119;&#x70;&#x77;&#46;&#x70;&#x6C;, fix IAIK provider usage with multiple CAs.</li> 
+<li>Tomas Gustavsson, <!-- tomas@primekey.se -->Project founder.</li>
+<li>Philip Vendil, <!-- philip@primekey.se -->Core developer until 2008.</li>
+<li>Anna Diruba Christensen, <!-- dilnet@hotmail.com -->First project homepage design, until EJBCA 3.5.</li>
+<li>Nathan Phelps, <!-- nphelps@solarc.com -->Testing, bugfinding and suggestions.</li>
+<li>Leo Tai, <!--hkleo@users.sourceforge.net  -->Oracle database configuration.</li>
+<li>Timothy Fisher, <!-- timothyf@users.sourceforge.net -->Architecture overview.</li>
+<li>Karl-König Königsson, <!-- karlkoenig@users.sourceforge.net -->Better deployment scripts for EJBCA 2.x.</li>
+<li>Thomas Karlsson, <!-- thomas.karlsson@planet.eu.org -->Firewall script, swedish translation.</li>
+<li>Magnus Broqvist, <!-- magnus@han.pp.se -->Initial P12toPEM implementation.</li>
+<li>Slava Sklarewski, <!-- slava.sklarewski@de.gi-de.com -->Data flow diagram.</li>
+<li>Leonardo Souza Mario Bueno, <!-- isbueno@users.sourceforge.net -->Patch for request template path.</li>
+<li>Jean Ye, <!-- zhjeanye@pub.zhuhai.gd.cn -->Support for Sybase, intial support for Active Directory, EJBCA 3.1 on Weblogic 8.1, port of EJBCA 2 to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA. Improved internationalization support. Chinese translation.</li>
+<li>Lars Silven, <!-- lars@primekey.se -->Core developer.</li>
+<li>Gösta Bäckström, <!-- gosta.backstrom@goyada.com -->Initial PKCS7 to browsers.</li>
+<li>Ville Skyttä, <!-- ville.skytta@secgo.com -->AdminCertReqServlet, Various patches, LDAP publisher advice</li>
+<li>Koen Serry, <!-- koen@serry.org -->Many small improvements.</li>
+<li>Dickon Field, <!-- dickon.field@concise.co.uk -->EJBCA 3.0.x on Weblogic 7.1.</li>
+<li>Justin Wood, <!-- justin@braidquest.com -->PKI Tools subproject.</li>
+<li>Thomas Meckel, <!-- meckel@ophios.com -->Initial OCSP implementation.</li>
+<li>Jon Barber, <!-- jon.barber@acm.org -->Early SCEP testing and fixes.</li>
+<li>surd0007(at)yahoo.com.cn, Initial install guide.</li>
+<li>Mike Jackson, <!-- mj@sci.fi -->Proper LDAP schema. Device certificate schemas.</li>
+<li>Stephane Bailliez, <!-- stephane@bearaway.org -->Patches all over, XDoclet, new install, configure and cli for 3.1, web.</li>
+<li>Yannick Quenec'hdu, <!-- yquenechdu@linagora.com -->French translation, help with SafeNet HSM and some other patches, new EJBCA pki logo.</li>
+<li>James A. Rome, <!-- jar@ornl.gov -->Additional 'Use fields in DN' for publisher, JKStoPEM, lots of testing and input, change_p12_pwd.</li>
+<li>Manuel Ruiz, <!-- mruiz@safa.es -->Make admin commands flexible and usable from within java-code.</li>
+<li>Risto Laanoja, <!-- risto.laanoja@eyp.ee -->Fix for integer overflow when setting CRLPeriod longer than 596 hours. Several instances of one altName and other patches. User authentication with JAAS/Kerberos.</li>
+<li>Giampaolo Tomassoni. <!-- giampaolo@tomassoni.biz -->PostgresSQL 8.0.</li>
+<li>Philipp Faerber, <!-- philipp.faerber@adnovum.ch -->EJBCA 3.0.x on Weblogic 8.1, adminweb sql fix. Initial support for Eracom HSM. German translation.</li>
+<li>Hu Aranjuez, <!-- mynetbus@126.com -->Column name fix for MS SQL2000.</li>
+<li>Marco Ferrante, <!-- marco@csita.unige.it -->Italian translation, openssl migration howto, importcert cli function.</li>
+<li>Alejandro Falcone, <!-- afalcone@speedy.com.ar -->Spanish translation.</li>
+<li>Bruno Bonfils, <!-- asyd@asyd.net -->added X-ORIGIN to device schema for latest Sun Directory Server. Tested Cisco IOS and made the IOS Howto. OpenSSH and X509 authentication. Hudson.</li>
+<li>Resurrección Mazo González, <!-- rmazgon@canarias.org -->LdapSearchPublisher.</li>
+<li>Ronan le Meillat, <!-- ronan.le_meillat@lesmuids.com -->Htmlized french translation.</li>
+<li>Zhengrong (Jerry) Liu, <!-- zjl6@users.sourceforge.net -->Limit length of primary key columns when using UTF-8 encoding in MySQL, fix for static fields in server.xml.</li>
+<li>Gabriel Belingueres, <!-- belingueres@yahoo.com.ar -->Support for Informix 9.2.</li>
+<li>Yovko Ilchev Yovkov, <!-- yyovkov@yyovkov.net -->Howtos for Fedora Core 4 and 5.</li>
+<li>Javier Aparicio Conesa, <!-- aparicio_fracon@gva.es -->User notice and CPS in certificate policy extension. Directoryname in alternative names. CRL Issue period. Option to not remove certificates from publisher when revoked. Patch for unsuspend from CRL.</li>
+<li>Jon Bendtsen, <!-- jon.bendtsen@laerdal.dk -->OpenVPN installer package enrollment.</li>
+<li>Henrik Schack, <!-- henrik@schack.dk -->Documentation about dns alt name for Cisco PIX.</li>
+<li>Alexander Horvath, <!-- alex@gekom.biz -->Patch to make OCSP compatible with Thunderbird/Firefox.</li>
+<li>Henrik Anreasson, <!-- han@han.pp.se -->Debian package, installer and documentation improvements, lots of testing and suggestions.</li>
+<li>Michael Rieken, <!-- michael.rieken@atosorigin.com -->Updates to german translation.</li>
+<li>Johan Eklund, <!-- johan@primekey.se -->Core developer.</li>
+<li>Rolf Staflin, <!-- rolf@piro.se -->New public web for EJBCA 3.5.</li>
+<li>Joakim Bågnert, <!-- joakim@primekey.se -->Core Technician/Developer.</li>
+<li>Munteanu Olimpiu Andrei, <!-- moa3333@gmail.com -->Jasper reports functionality.</li>
+<li>Lee, <!-- coregps@yahoo.com.cn -->updates to chineese translation.</li>
+<li>Yuji, <!-- yistoneriver@users.sourceforge.net -->patch for deadlock problem.</li>
+<li>Nuno Ponte, <!-- nuno.ponte@multicert.com -->portuguese translation, delta CRL, noOcspCheck extension, freshestCRL, intermediade nodes in LDAP, caIssuers AIA extension, Pseudonym DN component, and much more.</li>
+<li>Nicolas Coudene, <!-- nicolas.coudene@linagora.com -->completing the DB2 support, updates to french translation.</li>
+<li>Sébastien Levesque, <!-- slevesque@linagora.com -->WS-API calls for listing CAs and profiles.</li>
+<li>Abbas Razam, <!-- abbasrazam@yahoo.com -->fixes to ms-sql upgrade scripts 31_32 and 33_34.</li>
+<li>Darren Johnson, <!-- darren.johnson@safenet-inc.com -->split CAToken to be able to use separate JCE/JCA providers, makes SCEP work on Luna HSM with java provider.</li>
+<li>Matt Stevenson, <!-- mavricknzwork@yahoo.com -->code for adding CRMF and SPKAC requests in WS-API, Sybase and case-sensitive columns, MS document signing extended key usage, Intel AMT extended key usage.</li>
+<li>David Carella, <!-- dcarella@linagora.com -->language improvements, minor web improvements, and other standard compliance suggestions.</li>
+<li>Miguel Angel Tormo Alfaro, <!-- matormo@edicom.es -->ETSI retention period in QC certificate extension, fix for advanced searches with ProtectedLog, Sequences in BasicCertificateExtension.</li>
+<li>Damir Farazetdinov, <!-- fdamirv@mail.ru -->Found bug with duplicate error codes in OCSPUnidClient.</li>
+<li>Liam Kian Shin, <!-- kianshin.lim@gemalto.com -->Howto for using GEMSafe with EJBCA.</li>
+<li>Koichi Sugimoto, <!-- ko-sugimoto@users.sf.net -->initial patch for creating certificate request from any CA.</li>
+<li>Keijo Kurkinen, National Swedish Police Board, <!-- keijo.kurkinen@diversify.se -->Cert-CVC library for handling CV certificates for EU EAC ePassports.</li>
+<li>Tham Wickenberg, <!-- tham@primekey.se -->Core developer.</li>
+<li>Kelly Hayashi, <!-- kelly@evaltec.com.br -->patch for PKCS12 ExtRA requests not working with approvals.</li>
+<li>Jakob Jenkov, <!-- jakob@jenkov.com -->advice on fair thread locking for ProtectedLog synchronization.</li>
+<li>David Galichet, <!-- david.galichet@linagora.com -->add error code on web services. WS user creation uses profile informations</li>
+<li>Vincent Kan, <!-- vkan@linagora.com -->WS user creation uses profile informations</li>
+<li>Thomas Noel, <!-- thomas.noel+ejbca@auf.org -->Retrieve Delta CRL in CertDistServlet.</li>
+<li>Christian Kleinewächter, <!-- christian.kleinewaechter@infinity-3.de -->Support PostgreSQL in Glassfish</li> 
+<li>Dirk-Willem van Gulik, <!-- dirk-willem.van.gulik@bbc.co.uk -->Substitutions in sender and rcpt in email notificaitons.</li> 
+<li>Dai Tokunaga, <!-- eternalvirtue@gmail.com -->XKMS working on Java 6 and Glassfish.</li> 
+<li>Martin Simka, <!-- m.simka@pwpw.pl -->cvcwscli.cmd.</li> 
+<li>Waldek Kozba, <!-- waldemar.kozba@max.com.pl -->Patch for not quoting int type columns for advanced log search.</li>
+<li>Kevin Dean, <!-- kevin.dean@datadevelopment.com -->sql script for MS-SQL on Glassfish, help with issue mixing EJBs and SQL.</li>
+<li>Rafal Parzych, <!-- r.parzych@pwpw.pl -->fix IAIK provider usage with multiple CAs.</li>
+<li>Thijs van Dalen, <!-- Dalen@collis.nl -->KeyStrings fixes for HSM key generation and other minor CVC fixes.</li>
 </ul>
     </section>
   </body>
