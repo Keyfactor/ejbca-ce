@@ -451,19 +451,9 @@ public class CATokenContainerImpl extends CATokenContainer {
 				log.debug("Old key label is: "+keyLabel);
 				String crlKeyLabel = token.getKeyLabel(SecConst.CAKEYPURPOSE_CRLSIGN);
 				// The key label to use for the new key
-				// Here we will strip any sequence number at the end of the key label and add the new sequence there
-				StringBuffer buf = new StringBuffer();
-				for (int i = keyLabel.length()-1; i > 0; i--) {
-					char c = keyLabel.charAt(i);		
-					if (CharUtils.isAsciiNumeric(c)) {
-						buf.insert(0, c);						
-					} else {
-						break; // at first non numeric character we break
-					}
-				}
-				String end = buf.toString();
-				String chompedLabel = StringUtils.removeEnd(keyLabel, end);
-				String newKeyLabel = chompedLabel+newSequence;
+				// Remove the old sequence from the end of the key label and replace it with the
+				// new label. If no label was present just concatenate the new label
+				String newKeyLabel = StringUtils.removeEnd(keyLabel, oldSequence)+newSequence;
 				log.debug("New key label is: "+newKeyLabel);
 				char[] authCode = (authenticationCode!=null && authenticationCode.length()>0)? authenticationCode.toCharArray():null;
 				if (authCode == null) {
