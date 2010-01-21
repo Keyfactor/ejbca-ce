@@ -27,7 +27,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Map.Entry;
 
 /**
  * @author Lars Silven, PrimeKey Solutions AB
@@ -156,17 +155,15 @@ public class PerformanceTest {
                                 synchronized(this) {
                                     wait(waitTime);
                                 }
-                                this.statistic.addTime("Relative time waiting between jobs",waitTime);
+                                this.statistic.addTime("Time waiting between jobs",waitTime);
                             }
                         }
                         final Command command = this.commands[i];
                         final JobRunner jobRunner = new JobRunner(command);
-                        long now = System.currentTimeMillis();
                         if ( !jobRunner.execute() ) {
                             failingCommand = command;
                         }
                         this.statistic.addTime(command.getJobTimeDescription(), jobRunner.getTimeConsumed());
-                        this.statistic.addMinMaxTime(jobRunner.getTimeConsumed(), now);
                     }
                     String sResult = "Test in thread "+this.nr+" completed ";
                     if ( failingCommand==null ) {
@@ -187,7 +184,6 @@ public class PerformanceTest {
                     PerformanceTest.this.log.error("Exeption in thread "+this.nr+".", t);
                 }
             }
-        	
         }
     }
 
@@ -204,26 +200,67 @@ public class PerformanceTest {
         new Thread(statistic).start();
         printStream.println("Test client started, tail info and error files in this directory for output.");
         printStream.println("Statistic will be written to standard output each "+this.STATISTIC_UPDATE_PERIOD_IN_SECONDS+" second.");
+        printStream.println("The test was started at "+ new Date());
         synchronized(this) {
             wait();
         }
     }
     private class Statistic implements Runnable {
         private final int nr;
-        private final Map<String, Long> mTimes;
+        private final Map<String, Job> jobs;
         private int nrOfSuccesses = 0;
         private int nrOfSuccessesLastTime = 0;
         private int nrOfFailures = 0;
         private long startTime;
-        private long minTime = Long.MAX_VALUE;
-        private long maxTime = Long.MIN_VALUE;
-        private long minTimeAt;
-        private long maxTimeAt;
         private final PrintStream printStream;
         Statistic(int _nr, PrintStream _printStream) {
             this.nr = _nr;
-            this.mTimes = new HashMap<String, Long>();
+            this.jobs = new HashMap<String, Job>();
             this.printStream = _printStream;
+        }
+        private class Job {
+            private final String name;
+            private long totalTime;
+            private long minTime = Long.MAX_VALUE;
+            private long maxTime = Long.MIN_VALUE;
+            private Date minTimeAt;
+            private Date maxTimeAt;
+            private Job(String _name) {
+                this.name = _name;
+                this.totalTime = 0;
+            }
+            void addTime(long duration) {
+                this.totalTime += duration;
+                final Date now = new Date();
+
+                if (duration < this.minTime) {
+                    this.minTime = duration;
+                    this.minTimeAt = now;
+                }
+                if (duration > this.maxTime) {
+                    this.maxTime = duration;
+                    this.maxTimeAt = now;
+                }
+            }
+            long getTimeSpent() {
+                return this.totalTime;
+            }
+            void printRelativeTime(long allThreadsTime) {
+                printLine(this.name, new Float((float)this.totalTime / allThreadsTime));
+            }
+            void printMinMaxTime() {
+                printLine("Min time for job '"+this.name+"' (ms)", Long.toString(this.minTime), this.minTimeAt);
+                printLine("Max time per job '"+this.name+"' (ms)", Long.toString(this.maxTime), this.maxTimeAt);
+            }
+        }
+        private Job getJob(String name) {
+            Job job = this.jobs.get(name);
+            if ( job!=null ) {
+                return job;
+            }
+            job = new Job(name);
+            this.jobs.put(name, job);
+            return job;
         }
         void taskFailed() {
             this.nrOfFailures++;
@@ -235,23 +272,7 @@ public class PerformanceTest {
             this(nr, System.out);
         }
         void addTime(String timeName, long duration) {
-            final long lastTime;
-            if ( this.mTimes.containsKey(timeName) ) {
-                lastTime = this.mTimes.get(timeName).longValue();
-            } else {
-                lastTime = 0;
-            }
-            this.mTimes.put(timeName, new Long(lastTime+duration));
-        }
-        void addMinMaxTime(long time, long thisdate) {
-        	if (time < minTime) {
-        		minTime = time;
-        		minTimeAt = thisdate;
-        	}
-        	if (time > maxTime) {
-        		maxTime = time;
-        		maxTimeAt = thisdate;
-        	}
+            getJob(timeName).addTime(duration);
         }
         private void printLine(String description, Object value) {
         	printLine(description, value, null);
@@ -276,9 +297,9 @@ public class PerformanceTest {
             final float relativeWork; 
             {
                 long tmp = 0;
-                Iterator<Long> i=this.mTimes.values().iterator();
+                Iterator<Job> i=this.jobs.values().iterator();
                 while (i.hasNext() ) {
-                    tmp += i.next().longValue();
+                    tmp += i.next().getTimeSpent();
                 }
                 relativeWork = (float)(allThreadsTime-tmp) / allThreadsTime;
             }
@@ -289,15 +310,24 @@ public class PerformanceTest {
             printLine("Total # of failed tests", new Integer(this.nrOfFailures));
             printLine("# of tests completed each second", testsPerSecond);
             printLine("# of tests completed each second in last period", testsPerSecondInLastPeriod);
-            final Iterator<Entry<String, Long>> i = this.mTimes.entrySet().iterator();
-            while( i.hasNext() ) {
-                final Entry<String, Long> entry = i.next();
-                printLine(entry.getKey(), new Float((float)entry.getValue().longValue() / allThreadsTime));
+            this.printStream.println();
+            this.printStream.println("Relative average time for different tasks (all should sum up to 1):");
+            {
+                final Iterator<Job> i = this.jobs.values().iterator();
+                while( i.hasNext() ) {
+                    i.next().printRelativeTime(allThreadsTime);
+                }
             }
-            printLine("Relative time spent with test client work", new Float(relativeWork));
-            printLine("Min time per job (ms)", new Float(minTime), new Date(minTimeAt));
-            printLine("Max time per job (ms)", new Float(maxTime), new Date(maxTimeAt));
-            this.printStream.print(CSI+(8+this.mTimes.size())+"A"); // move up.
+            printLine("Time spent with test client work", new Float(relativeWork));
+            this.printStream.println();
+            this.printStream.println("Absolute extremes:");
+            {
+                final Iterator<Job> i = this.jobs.values().iterator();
+                while( i.hasNext() ) {
+                    i.next().printMinMaxTime();
+                }
+            }
+            this.printStream.print(CSI+(10+this.jobs.size()*3)+"A"); // move up. 3 lines for each job. relative max min
             this.printStream.flush();
         }
         public void run() {
