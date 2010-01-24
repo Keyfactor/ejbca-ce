@@ -4,6 +4,13 @@ import java.io.Serializable;
 
 /**
  * The error code describes the cause of an EjbcaException.
+ * Usage:
+ * <pre>
+ * (caught EjbcaException e)
+ * If (e.equals(ErrorCode.SIGNATURE_ERROR) {
+ *     System.out.println("Error verifying signature (popp) of request");
+ * }
+ * </pre>
  * 
  * @author David Galichet.
  * @version $Id$
