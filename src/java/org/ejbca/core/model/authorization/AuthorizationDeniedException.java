@@ -23,6 +23,7 @@ package org.ejbca.core.model.authorization;
  * An exception thrown by the isauthorized method in the EjbcaAthorization bean.
  *
  * @author  Philip Vendil
+ * @version $Id$
  */
 public class AuthorizationDeniedException extends java.lang.Exception {
     
