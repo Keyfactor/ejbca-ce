@@ -31,7 +31,8 @@ import org.ejbca.util.CertTools;
 
 
 /**
- * A response message consisting of a single X509 Certificate.
+ * A response message consisting of a single X509 or CVC Certificate. Name is nowadays slightly misleading since the class can 
+ * care any type of "Certificate", for example a CV certificate.
  *
  * @version $Id$
  */
