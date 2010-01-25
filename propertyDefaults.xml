@@ -46,9 +46,6 @@
 	<property name="web.contentencoding" value="UTF-8" />
 	<property name="web.docbaseuri" value="internal" /> <!-- Default used to determine if to build or not.. -->
 	<property name="web.renewalenabled" value="false" />
-	<condition property="database.comment.column" value="comment_" else="comment" >
-		<equals arg1="${database.name}" arg2="oracle"/>
-	</condition>
 	<condition property="doc.war.enabled">
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
