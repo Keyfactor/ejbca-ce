@@ -26,6 +26,8 @@
 </cmp-field>
 <cmp-field>
   <field-name>deleted</field-name>
+  <jdbc-type>BIT</jdbc-type>
+  <sql-type>INTEGER</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>b64Signature</field-name>

@@ -19,8 +19,9 @@ After this you must do:
 - ant clean
 - ant deploy
 
-All database upgrades require CREATE and ALTER TABLE privileges besides the regular
-SELECT, UPDATE, INSERT and DELETE.
+All database upgrades require CREATE and ALTER TABLE privileges besides the regular SELECT, UPDATE,
+INSERT and DELETE. The SQL executed by database upgrades code is available in
+"src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
 From EJBCA 3.9.x to EJBCA 3.10.x
 --------------------------------
@@ -53,6 +54,14 @@ database in src/upgrade/39_310/39_310-upgrade-<<database name>>.sql.
 Approvals that are pending during the upgrade process will be upgraded automatically. These are Java
 Objects and cannot be upgraded manually using custom SQL. If you need to perform a manual SQL update
 all pending approvals should be taken care of before the upgrade.
+
+A quick fix for the LogEntryData table that was spread in the wild in 2005 will also be corrected in
+this release. The column "comment" (or "comment_" on Oracle) will change name to "logComment" for all
+databases. Since older versions of DB2 than 9.7 cannot rename columns, it requires a massive UPDATE
+operation on this database. DB2 9.7+ users can alter src/upgrade/39_310/39_310-upgrade-db2.sql to use
+"ALTER TABLE LogEntryData RENAME COLUMN comment TO logComment;" instead. For all other databases this
+renaming will be handled automatically by "ant upgrade". Please note that logging to the OldLogDevice
+will not work during this upgrade.
 
 The database upgrade is normally done automatically for you when you run 'ant upgrade'. 
 Some application servers will not let you deploy unless the database is in sync though, so you may have

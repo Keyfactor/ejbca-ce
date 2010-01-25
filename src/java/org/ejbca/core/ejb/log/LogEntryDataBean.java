@@ -76,6 +76,8 @@ import java.util.Date;
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
+	// NOTE: The column mapping here is also present in LogMatch used for queries to the log table.
+	
     /**
      * @ejb.pk-field
      * @ejb.persistence column-name="id"
@@ -167,12 +169,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
     public abstract void setEvent(int event);
 
     /**
-     * If you are using Weblogic and Oracle add:
-     * column-name="comment_"
-     * to the end of the ejb persistense line.
-     * 
-     * The column-name is normally comment, but comment_ for oracle.
-     * @ejb.persistence column-name="@database.comment.column@"
+     * @ejb.persistence column-name="logComment"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getComment();

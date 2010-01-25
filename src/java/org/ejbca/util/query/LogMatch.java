@@ -45,7 +45,7 @@ public class LogMatch extends BasicMatch {
 
     // Private Constants.
     static final String[] MATCH_WITH_SQLNAMES = {"username", "adminData", "adminData", "adminType"
-                                                         , "certificateSNR", "comment", "event", "module", "caid"}; // Represents the column names in ra userdata table.
+                                                         , "certificateSNR", "logComment", "event", "module", "caid"}; // Represents the column names in ra userdata table.
    
     
     // Public methods.
@@ -66,7 +66,7 @@ public class LogMatch extends BasicMatch {
         this.matchtype = matchtype;
         this.matchvalue = matchvalue;
 
-        // The row below does not do anthing but check that matchvalue contains
+        // The row below does not do anything but check that matchvalue contains
         // a legal number value when matching number field. See @throws clause.
         if ((matchwith == MATCH_WITH_EVENT) || (matchwith == MATCH_WITH_SPECIALADMIN)) {
             new Integer(matchvalue);

@@ -435,16 +435,6 @@ xkms.serviceport                = ${xkms.serviceport}
         <property name="jboss5dependencyquote" value=""/>
         <copy todir="${preprocessed}" encoding="ISO-8859-1">
             <fileset dir="src">
-                <include name="java/org/ejbca/core/ejb/log/LogEntryDataBean.java"/>
-            </fileset>	   
-			<filterchain>
-			<tokenfilter>			    
-				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>	<!-- src/java/org/ejbca/core/ejb/log/LogEntryDataBean.java -->
-			</tokenfilter>
-			</filterchain>
-	    </copy>
-        <copy todir="${preprocessed}" encoding="ISO-8859-1">
-            <fileset dir="src">
                 <include name="java/org/ejbca/core/ejb/**/*.java"/>
             </fileset>	   
 			<filterchain>
