@@ -173,13 +173,15 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Note that the PKCS#11 keys will not be updated by the periodical update defined by 'ocsp.signingCertsValidTime' method
 # if 'ocsp.rekeying.wsurl' or 'ocsp.activation.doNotStorePasswordsInMemory' is defined.
 
-# P11 shared library path name.
+# P11 shared library path name. 
+# Must not be used if ocsp.p11.sunConfigurationFile is used.
 # Default: empty
 #ocsp.p11.sharedLibrary=/opt/nfast/toolkits/pkcs11/libcknfast.so
 
-# Sun P11 Configuration file. Must be used instead of 'ocsp.p11.sharedLibrary' if the feature 're-keying' .
+# Sun P11 Configuration file (see Admin Guide for examples). 
+# Must be used instead of 'ocsp.p11.sharedLibrary' if the feature 'rekeying' is used.
 # Default: empty
-#ocsp.p11.sunConfigurationFile=./ocs4.cfg
+#ocsp.p11.sunConfigurationFile=/home/ejbca/ocs4.cfg
 
 # P11 password.
 # Default: null
