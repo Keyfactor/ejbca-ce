@@ -151,7 +151,7 @@ public abstract class BaseCAToken implements ICAToken {
             if (pair == null) {
                 log.info("No keys with alias "+keyAliases[i]+" exists.");
             } else {
-                testKey(pair);
+                testKey(pair);	// Test signing for the KeyPair (this could theoretically fail if singing is not allowed by the provider for this key)
                 if (log.isDebugEnabled()) {
                     log.debug("Key with alias "+keyAliases[i]+" tested.");            	
                 }            	
