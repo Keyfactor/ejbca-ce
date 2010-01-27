@@ -19,7 +19,7 @@
 			</tr>
 				<%	while(caiter.hasNext()) {
 						Integer id = (Integer) caiter.next();
-						CAInfoView cainfo = cabean.getCAInfo(id);
+						CAInfoView cainfo = cabean.getCAInfo(id.intValue());
 						if (cainfo != null) {
 							String name = cainfo.getCAInfo().getName();
 							CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), false);
