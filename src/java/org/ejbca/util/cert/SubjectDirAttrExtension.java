@@ -134,9 +134,9 @@ public class SubjectDirAttrExtension extends CertTools {
 
     /**
      * From subjectDirAttributes string as defined in getSubjectDirAttribute 
-     * @param string of SubjectDirectoryAttributes
+     * @param dirAttr string of SubjectDirectoryAttributes
      * @return A Collection of ASN.1 Attribute (org.bouncycastle.asn1.x509), or an empty Collection, never null
-     * @see #getSubjectDirectoryAttributes(X509Certificate)
+     * @see #getSubjectDirectoryAttributes(Certificate)
      */
     public static Collection getSubjectDirectoryAttributes(String dirAttr) {
     	ArrayList ret = new ArrayList();

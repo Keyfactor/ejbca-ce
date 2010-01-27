@@ -100,9 +100,9 @@ public class KeyTools {
     /**
      * Generates a keypair
      *
-     * @param keyspec string specification of keys to generate, typical value is 1024 for RSA or DSA keys, or prime192v1 for ECDSA keys or null of algspec is to be used.
-     * @param algspec AlgorithmParameterSpec of keys to generate, typically an EXParameterSpec for EC keys, or null if keySpec is to be used.
-     * @param keyalg algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see org.ejbca.core.model.ca.catoken.CATokenConstants.KEYALGORITHM_XX
+     * @param keySpec string specification of keys to generate, typical value is 1024 for RSA or DSA keys, or prime192v1 for ECDSA keys or null of algspec is to be used.
+     * @param algSpec AlgorithmParameterSpec of keys to generate, typically an EXParameterSpec for EC keys, or null if keySpec is to be used.
+     * @param keyAlg algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see org.ejbca.core.model.ca.catoken.CATokenConstants.KEYALGORITHM_XX
      * 
      * @see org.ejbca.core.model.ca.catoken.CATokenConstants
      * @see org.bouncycastle.asn1.x9.X962NamedCurves
@@ -347,9 +347,7 @@ public class KeyTools {
      * @param alias the alias used for the key entry
      * @param privKey RSA private key
      * @param cert user certificate
-     * @param cacert Collection of X509Certificate, or null if only one cert in chain, in that case use 'cert'.
-     * @param username user's username
-     * @param password user's password
+     * @param cacerts Collection of X509Certificate, or null if only one cert in chain, in that case use 'cert'.
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
@@ -744,7 +742,7 @@ public class KeyTools {
         }
     }
     /**
-     * @param Input stream for sun configuration file.
+     * @param is InputStream for sun configuration file.
      * @return The Sun provider
      * @throws IOException
      */

@@ -40,7 +40,7 @@ public abstract class FileReadHardTokenImporter implements IHardTokenImporter {
 	 * Open up a text file and expecting the property "file" to point to
 	 * the location of the input file.
 	 * @see org.ejbca.ui.cli.hardtoken.importer.IHardTokenImporter#startImport(java.util.Properties)
-	 * @throws IOException if file doesn't exist of the property FILE isnät set.
+	 * @throws IOException if file doesn't exist of the property FILE isn't set.
 	 */
 	public void startImport(Properties props) throws IOException {
 		if(props.getProperty("file") == null){

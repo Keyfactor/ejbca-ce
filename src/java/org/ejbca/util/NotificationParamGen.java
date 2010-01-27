@@ -43,9 +43,8 @@ public class NotificationParamGen {
       paramPut("DATE", date);
   }
 
-/**
+  /**
    * Method used to retrieve the populated parameter HashMap with the notification text.
-   * @return
    */
   public HashMap getParams(){
 	  return params;

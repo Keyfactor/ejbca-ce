@@ -25,7 +25,7 @@ public interface IPatternLogger {
 	public static final String SESSION_ID = "SESSION_ID"; //A random 32 bit number identifying a log entry for a request
 	/** REPLY_TIME is a marker that is used to record the total time a request takes to process. It is replaced with 
 	 * the correct value when the log entry is written.
-	 * @see org.ejbca.util.PatternLogger.flush()
+	 * @see org.ejbca.util.PatternLogger#flush()
 	 */
     public static final String REPLY_TIME = "REPLY_TIME";
 	

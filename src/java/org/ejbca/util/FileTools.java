@@ -101,8 +101,6 @@ public class FileTools {
     /**
      * Helpfunction to read an InputStream to a byte array.
      *
-     * @param file filename of file.
-     *
      * @return byte[] containing the contents of the file.
      *
      * @throws IOException if the file does not exist or cannot be read.

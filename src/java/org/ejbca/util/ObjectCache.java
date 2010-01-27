@@ -39,7 +39,7 @@ public class ObjectCache {
 
 	/**
 	 * Constructor with expire as argument.
-	 * @param expire expiration time in milliseconds
+	 * @param expireTime expiration time in milliseconds
 	 */
 	public ObjectCache(long expireTime) {
 		this.objects = Collections.synchronizedMap(new HashMap());

@@ -49,7 +49,6 @@ public class PrinterManager {
 	/**
 	 * Method that returns the names of all the available printers or an empty list if
 	 * no printers were found or an error occurred.
-	 * @return
 	 */
 	public static String[] listPrinters(){
 		String[] printerNames = new String[0];
@@ -96,8 +95,8 @@ public class PrinterManager {
 	 * @param pINs the PINS (or password)
 	 * @param pUKs the PUKS, optional
 	 * @param hardTokenSerialPrefix the prefix of the hardtoken, optional
-	 * @param hardTokenSN, optional
-	 * @param copyOfHardTokenSN, optional
+	 * @param hardTokenSN optional
+	 * @param copyOfHardTokenSN optional
 	 * @throws PrinterException throws if any printer problems occur.
 	 */
 	public static void print(String printerName, String svtTemplateName, 

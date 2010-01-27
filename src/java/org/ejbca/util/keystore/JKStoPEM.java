@@ -107,9 +107,9 @@ public class JKStoPEM {
     }
 
     /**
-     * Basic construtor using a inmemory keystore instead for a file.
+     * Basic constructor using an in memory KeyStore instead for a file.
      *
-     * @param ks the keystore to use.
+     * @param keystore the KeyStore to use.
      * @param password password The password for the jks file.
      * @param overwrite overwrite If existing files should be overwritten.
      */

@@ -145,7 +145,7 @@ public class P11Slot {
      * @param configFileName name of config file
      * @param token Token that should use this object.
      * @param caid unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
-     * @return
+     * @return a new P11Slot instance
      * @throws CATokenOfflineException
      */
     static public P11Slot getInstance(String configFileName, P11SlotUser token, int caid) throws CATokenOfflineException {
