@@ -273,7 +273,8 @@ public class CertDistServlet extends HttpServlet {
                     	if (certcert instanceof CardVerifiableCertificate) {
                     		ending = ".cvcert";
                     	}
-                        String filename = CertTools.getPartFromDN(dn,"CN")+ending;
+                        String filename = RequestHelper.getFileNameFromCertNoEnding(certcert, "ca");
+                        filename = filename+ending;                        
                         // We must remove cache headers for IE
                         ServletUtils.removeCacheHeaders(res);
                         res.setHeader("Content-disposition", "attachment; filename=\"" +  filename+"\"");
@@ -348,10 +349,7 @@ public class CertDistServlet extends HttpServlet {
                     return;
                 }
                 Certificate cacert = (Certificate)chain[level];
-                String filename=CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
-                if (filename == null) {
-                    filename = "ca";
-                }
+                String filename = RequestHelper.getFileNameFromCertNoEnding(cacert, "ca");
                 byte[] enccert = null;
                 if (pkcs7) {
                     enccert = ss.createPKCS7(administrator, cacert, true);

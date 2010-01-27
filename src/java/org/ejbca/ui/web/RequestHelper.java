@@ -44,6 +44,9 @@ import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
+import org.ejbca.cvc.CAReferenceField;
+import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
@@ -509,5 +512,38 @@ public class RequestHelper {
             request.setCharacterEncoding(encoding);         
         }        
     }
-        
+
+    public static String getFileNameFromCertNoEnding(Certificate cacert, String defaultname) throws NoSuchFieldException {
+    	String dnpart = null;
+    	if (StringUtils.equals(cacert.getType(), "CVC")) {
+    		CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cacert;
+    		String car = "car";
+    		CAReferenceField carf = cvccert.getCVCertificate().getCertificateBody().getAuthorityReference();
+    		if (carf != null) {
+    			car = carf.getConcatenated();
+    		}
+    		String chr = "chr";
+    		HolderReferenceField chrf = cvccert.getCVCertificate().getCertificateBody().getHolderReference();
+    		if (chrf != null) {
+    			chr = chrf.getConcatenated();
+    		}
+    		dnpart = car + "_" + chr;
+    	} else {
+    		dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
+    		if (dnpart == null) {
+    			dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "SN");
+    		}
+    		if (dnpart == null) {
+    			dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+    		}
+    	}
+    	if (dnpart == null) {
+    		dnpart = defaultname;
+    	}
+    	log.debug("dnpart: "+dnpart);
+    	// Strip whitespace though
+    	String filename = dnpart.replaceAll("\\W", "");
+    	return filename;
+    }
+
 }
