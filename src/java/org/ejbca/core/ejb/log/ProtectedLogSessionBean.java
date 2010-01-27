@@ -181,6 +181,7 @@ import org.ejbca.util.TCPTool;
  * @jonas.bean
  *   ejb-name="ProtectedLogSession"
  *
+ * @deprecated
  */
 public class ProtectedLogSessionBean extends BaseSessionBean {
 

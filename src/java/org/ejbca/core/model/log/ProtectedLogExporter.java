@@ -25,6 +25,7 @@ import org.ejbca.util.CertTools;
 /**
  * Thread-safe singleton that invokes forwards an export from the export service.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogExporter {
 	

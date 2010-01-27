@@ -15,6 +15,7 @@ package org.ejbca.core.model.log;
 /**
  * Class that is invoked when something has gone wrong.
  * @version $Id$
+ * @deprecated
  */
 public interface IProtectedLogAction {
 

@@ -17,6 +17,7 @@ import java.io.Serializable;
 /**
  * Dummy implementation. This is the simplest possible (and most useless) implementation.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogDummyAction implements IProtectedLogAction, Serializable {
 

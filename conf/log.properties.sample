@@ -2,18 +2,11 @@
 # 
 # You should copy and rename this file to log.properties and customize at will.
 #
-# From EJBCA 3.6 there is a new ProtectedLogDevice.
-# This is not default yet because it is rather new. However we believe this log device
-# is far superior from the old log device, especially if you are using a clustered environment.
-# For more info of the ProtectedLogDevice, see logdevices/protectedlog.properties.sample 
-#
-# You should use it!
-#
 
 # Used log devices.
 #  The devices will be displayed in reversed order in the Admin GUI.
 #  Default is "Log4jLogDevice;OldLogDevice" for now.
-#usedLogDevices=Log4jLogDevice;ProtectedLogDevice
+#usedLogDevices=Log4jLogDevice;OldLogDevice
 
 #
 # List of available loggers, name=Factory Class;propertyfile
@@ -25,6 +18,8 @@ DummyLogDevice=org.ejbca.core.model.log.DummyLogDeviceFactory;
 Log4jLogDevice=org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties
 # Internal EJBCA logging device that writes to the database. See logdevices/oldlog.properties.sample for more information.
 OldLogDevice=org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties
-# Improved internal EJBCA logging device that writes to the database. See logdevices/protectedlog.properties.sample for more information.
-ProtectedLogDevice=org.ejbca.core.model.log.ProtectedLogDeviceFactory;logdevices/protectedlog.properties
 
+# "Improved" internal EJBCA logging device that writes to the database. See logdevices/protectedlog.properties.sample for more information.
+# The ProtectedLogDevice has been deprecated in EJBCA 3.10, since it's hard to configure right and extremely inefficient. 
+#
+#ProtectedLogDevice=org.ejbca.core.model.log.ProtectedLogDeviceFactory;logdevices/protectedlog.properties

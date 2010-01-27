@@ -33,6 +33,7 @@ import org.ejbca.util.CertTools;
 /**
  * Represents an export.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogExportRow {
 	

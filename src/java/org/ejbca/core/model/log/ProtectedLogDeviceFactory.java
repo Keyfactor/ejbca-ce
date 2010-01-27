@@ -16,7 +16,7 @@ package org.ejbca.core.model.log;
 /**
  * 
  * @version $Id$
- *
+ * @deprecated
  */
 public class ProtectedLogDeviceFactory {
 

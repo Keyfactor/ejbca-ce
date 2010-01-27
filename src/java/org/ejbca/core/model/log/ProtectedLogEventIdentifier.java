@@ -20,6 +20,7 @@ import org.ejbca.util.Base64;
 /**
  * (NodeGUID, counter) identifer for ProtectedLogEvent
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogEventIdentifier implements Serializable{
 	

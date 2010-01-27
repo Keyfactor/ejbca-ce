@@ -1,5 +1,8 @@
 # This is the configuration file for the ProtectedLogDevice
 #
+# NOTE: The ProtectedLogDevice has been deprecated in EJBCA 3.10, since it's
+#       hard to configure right and extremely inefficient. 
+#
 # All the gory details on how it works can be found in the latest version of
 # the design document at https://jira.primekey.se/browse/ECA-633
 #

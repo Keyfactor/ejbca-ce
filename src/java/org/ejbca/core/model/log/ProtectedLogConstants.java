@@ -15,6 +15,7 @@ package org.ejbca.core.model.log;
 
 /**
  * @version $Id$
+ * @deprecated
  */
 public abstract class ProtectedLogConstants {
 

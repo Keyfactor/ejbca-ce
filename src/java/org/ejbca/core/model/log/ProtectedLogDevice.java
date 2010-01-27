@@ -44,6 +44,7 @@ import org.ejbca.util.query.Query;
 /**
  * Implements a log device using a protected log. Implements the Singleton pattern.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogDevice implements ILogDevice, Serializable {
 

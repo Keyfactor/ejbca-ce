@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 /**
  * Stores the last taken action so that the JUnit test can read the result.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogTestAction implements IProtectedLogAction, Serializable {
 

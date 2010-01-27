@@ -37,6 +37,7 @@ import org.ejbca.util.keystore.KeyTools;
 /**
  * Represents the token used for protect-operations of the log events.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogToken implements IProtectedLogToken {
 
