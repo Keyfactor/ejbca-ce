@@ -21,6 +21,7 @@ import org.ejbca.core.model.InternalResources;
 /**
  * Runs an executable with the error code as argument. 
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogScriptAction implements IProtectedLogAction, Serializable {
 

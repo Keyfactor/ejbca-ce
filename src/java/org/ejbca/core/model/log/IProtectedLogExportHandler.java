@@ -19,6 +19,7 @@ package org.ejbca.core.model.log;
  * It's not neccesary for the export handler to use the supplied parameters. but they are given
  * to simplify some exports.
  * @version $Id$
+ * @deprecated
  */
 public interface IProtectedLogExportHandler {
 

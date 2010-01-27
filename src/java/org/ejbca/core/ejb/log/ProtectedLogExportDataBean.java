@@ -82,6 +82,7 @@ import org.ejbca.util.GUIDGenerator;
 *   
 * @jonas.jdbc-mapping
 *   jndi-name="${datasource.jndi-name}"
+* @deprecated
 */
 public abstract class ProtectedLogExportDataBean extends BaseEntityBean {
 

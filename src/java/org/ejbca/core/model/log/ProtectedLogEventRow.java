@@ -30,6 +30,7 @@ import org.ejbca.util.Base64;
 /**
  * Represents a protected log event with all its context information.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogEventRow {
 

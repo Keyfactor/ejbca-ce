@@ -71,6 +71,10 @@ You should be able to upgrade from EJBCA 3.2.x directly to 3.10.x, by following 
 as above (this upgrade is not thoroughly tested though). Also see instructions below for additional
 issues when upgrading all the way from a much older version.
 
+The ProtectedLogDevice has been deprecated, since it's hard to configure right and extremely
+inefficient. There are currently plans to create a LogDevice aiming at non-repudiation rather than
+detection of missing log-entries.
+
 To improve testing there is a new configuration option to allow changing used properties through Remote
 EJB access using conf/ejbca.properties#ejbca.productionmode. Default is to not allow configuration
 changes, but some of the development system tests will fail until this is allowed.

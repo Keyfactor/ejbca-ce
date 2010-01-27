@@ -20,6 +20,7 @@ import org.ejbca.core.model.InternalResources;
 /**
  * Kills the JVM.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogShutDownAction implements IProtectedLogAction, Serializable {
 

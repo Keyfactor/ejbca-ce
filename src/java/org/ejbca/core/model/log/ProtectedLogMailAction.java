@@ -25,6 +25,7 @@ import org.ejbca.core.model.services.actions.MailActionInfo;
 /**
  * Send an email based on configuration.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogMailAction implements IProtectedLogAction, Serializable {
 

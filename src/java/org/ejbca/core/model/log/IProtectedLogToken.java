@@ -18,6 +18,7 @@ import java.security.cert.Certificate;
 
 /**
  * @version $Id$
+ * @deprecated
  */
 public interface IProtectedLogToken {
 

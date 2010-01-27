@@ -4284,6 +4284,10 @@ be exported from the Admin GUI.
 </p>
 </subsection>
 <subsection name="ProtectedLogDevice">
+<p><b><i>
+The ProtectedLogDevice has been deprecated in EJBCA 3.10, since it's hard to
+configure right and extremely inefficient.
+</i></b></p>
 <p>
 The ProtectedLogDevice stores log-events in the database and has the ability
 to detect changed or missing log-events. In an environment where at least one

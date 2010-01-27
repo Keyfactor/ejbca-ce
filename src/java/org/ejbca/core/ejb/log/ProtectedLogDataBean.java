@@ -106,6 +106,7 @@ import org.ejbca.util.StringTools;
 *   
 * @jonas.jdbc-mapping
 *   jndi-name="${datasource.jndi-name}"
+* @deprecated
 */
 public abstract class ProtectedLogDataBean extends BaseEntityBean {
 

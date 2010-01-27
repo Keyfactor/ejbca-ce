@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 /**
  * Dummy implementation. This is the simplest possible (and most useless) implementation.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogDummyExportHandler implements IProtectedLogExportHandler, Serializable {
 

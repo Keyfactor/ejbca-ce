@@ -22,6 +22,7 @@ import org.ejbca.config.ProtectedLogConfiguration;
 /**
  * Invokes configured actions.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogActions implements Serializable {
 

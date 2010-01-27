@@ -35,6 +35,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 /**
  * Exports the given log-events as a CMS/PKCS7-file signed by a configured CA with CMS services enabled.
  * @version $Id$
+ * @deprecated
  */
 public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler, Serializable {
 

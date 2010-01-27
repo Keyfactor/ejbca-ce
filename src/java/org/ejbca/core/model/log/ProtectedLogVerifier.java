@@ -27,6 +27,7 @@ import org.ejbca.core.model.InternalResources;
 /**
  * Thread-safe singleton that invokes forwards a request from the verification service.
  * @version $Id$  
+ * @deprecated
  */
 public class ProtectedLogVerifier {
 
