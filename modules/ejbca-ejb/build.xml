@@ -472,6 +472,24 @@
         	<!-- From EJBCA External SCEP RA (including some of the classes above) -->
            	<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
            	<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>
+        	<!-- Dependencies from SignServer -->
+        	<!-- Execute "grep "import.*org.ejbca.*" src/ -r | grep -v svn | awk '{print $2}' | tr -d ';' | sort | uniq" in the SignServer home dir to get a list of dependencies. -->
+           	<include name="org/ejbca/core/ejb/JNDINames.java"/>
+           	<include name="org/ejbca/model/ca/caadmin/IllegalKeyStoreException.java"/>
+           	<include name="org/ejbca/model/ca/catoken/CATokenAuthenticationFailedException.java"/>
+           	<include name="org/ejbca/model/ca/catoken/CATokenOfflineException.java"/>
+           	<include name="org/ejbca/model/ca/catoken/ICAToken.java"/>
+           	<include name="org/ejbca/model/ca/catoken/PKCS11CAToken.java"/>
+           	<include name="org/ejbca/model/ca/crl/RevokedCertInfo.java"/>
+           	<include name="org/ejbca/model/UpgradeableDataHashMap.java"/>
+           	<include name="org/ejbca/ui/cli/util/ConsolePasswordReader.java"/>
+           	<include name="org/ejbca/ui/web/pub/cluster/IHealthCheck.java"/>
+           	<include name="org/ejbca/util/Base64.java"/>
+           	<include name="org/ejbca/util/Base64GetHashMap.java"/>
+           	<include name="org/ejbca/util/Base64PutHashMap.java"/>
+           	<include name="org/ejbca/util/CertTools.java"/>
+           	<include name="org/ejbca/util/JDBCUtil.java"/>
+           	<include name="org/ejbca/util/keystore/KeyTools.java"/>
     	</javac>
     </target>
 
