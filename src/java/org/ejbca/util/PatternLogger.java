@@ -120,7 +120,7 @@ public class PatternLogger implements IPatternLogger {
 	}
 
 	/**
-	 * @see IPatternLogger#paramPut(String, Integer))
+	 * @see IPatternLogger#paramPut(String, Integer)
 	 */
 	public void paramPut(String key, Integer value){
 		if(value == null){
@@ -138,7 +138,7 @@ public class PatternLogger implements IPatternLogger {
 	}
 	
     /**
-     * @see org.ejbca.core.protocol.ocsp.ITransactionLogger#flush(String)
+     * @see org.ejbca.core.protocol.ocsp.ITransactionLogger#flush()
      */
     public void flush() {
         this.pw.flush();

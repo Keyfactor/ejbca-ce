@@ -341,8 +341,8 @@ public class CertTools {
 
     /**
      * Convenience method for getting an email addresses from a DN. Uses {@link
-     * getPartsFromDN(String,String)} internally, and searches for {@link EMAIL}, {@link EMAIL1},
-     * {@link EMAIL2}, {@link EMAIL3} and returns the first one found.
+     * #getPartsFromDN(String,String)} internally, and searches for {@link #EMAIL}, {@link #EMAIL1},
+     * {@link #EMAIL2}, {@link #EMAIL3} and returns the first one found.
      *
      * @param dn the DN
      *
@@ -569,7 +569,6 @@ public class CertTools {
 	 * Gets a list of all custom OIDs defined in the string. A custom OID is defined as an OID, simply as that. Otherwise, if it is not a custom oid, the DNpart is defined by a name such as CN och rfc822Name.
 	 *
 	 * @param dn String containing DN, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz", or "rfc822Name=foo@bar.com", etc.
-	 * @param dnpart String specifying which part of the DN to get, should be "CN" or "OU" etc.
 	 *
 	 * @return ArrayList containing oids or empty list if no custom OIDs are present
 	 */
@@ -958,7 +957,7 @@ public class CertTools {
      * Reads a certificate in PEM-format from an InputStream. The stream may contain other things,
      * the first certificate in the stream is read.
      *
-     * @param certFile the input stream containing the certificate in PEM-format
+     * @param certstream the input stream containing the certificate in PEM-format
      * @return Ordered Collection of Certificate, first certificate first, or empty Collection
      * @exception IOException if the stream cannot be read.
      * @exception CertificateException if the stream does not contain a correct certificate.
@@ -2048,7 +2047,7 @@ public class CertTools {
 	 * Checks that the given date is within the certificate's validity period. 
 	 * In other words, this determines whether the certificate would be valid at the given date/time.
 	 *
-	 * @param certificate cert to verify
+	 * @param cert certificate to verify
 	 * @param date the Date to check against to see if this certificate is valid at that date/time.
 	 * @throws CertificateNotYetValidException 
 	 * @throws NoSuchFieldException 
@@ -2118,8 +2117,7 @@ public class CertTools {
     
     /** Returns OCSP URL that is inside AuthorithInformationAccess extension, or null.
      * 
-     * @param cert
-     * @return
+     * @param cert is the certificate to parse
      * @throws CertificateParsingException
      */
     public static String getAuthorityInformationAccessOcspUrl(Certificate cert)
@@ -2249,7 +2247,7 @@ public class CertTools {
     /**
      * Generate SHA1 fingerprint of byte array in string representation.
      *
-     * @param byte array to fingerprint.
+     * @param in byte array to fingerprint.
      *
      * @return String containing hex format of SHA1 fingerprint.
      */

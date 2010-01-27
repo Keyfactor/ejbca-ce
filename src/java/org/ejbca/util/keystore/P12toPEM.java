@@ -13,19 +13,29 @@
  
 package org.ejbca.util.keystore;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * P12toPEM is used to export PEM files from a single p12 file. The class exports the user
@@ -56,7 +66,7 @@ public class P12toPEM {
      */
     public static void main(String[] args) {
         // Bouncy Castle security provider
-        CertTools.installBCProvider();
+    	CryptoProviderTools.installBCProvider();
 
         P12toPEM p12 = null;
 
@@ -96,9 +106,9 @@ public class P12toPEM {
     }
 
 	/**
-	 * Basic construtor using a inmemory keystore instead for a file.
+	 * Basic constructor using a in memory KeyStore instead for a file.
 	 *
-	 * @param ks the keystore to use.
+	 * @param keystore the KeyStore to use.
 	 * @param password password The password for the p12 file.
 	 * @param overwrite overwrite If existing files should be overwritten.    
 	 */

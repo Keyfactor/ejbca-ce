@@ -39,15 +39,15 @@ public interface KeyStoreContainer {
     byte[] storeKeyStore() throws Exception;
 
     /**
-     * @param alias
+     * @param alias is a reference to the entry in the KeyStore that should be deleted
      * @return keystore identifier
      * @throws Exception 
      */
     byte[] delete(String alias) throws Exception;
 
     /**
-     * @param oldAlias
-     * @param newAlias
+     * @param oldAlias is the current name
+     * @param newAlias si the new name
      * @return keystore identifier
      * @throws Exception
      */
@@ -119,19 +119,19 @@ public interface KeyStoreContainer {
     char[] getPassPhraseGetSetEntry();
 
     /**
-     * @param alias
-     * @return
+     * @param alias is the name of an entry in the underlying KeyStore
+     * @return the Key object
      * @throws Exception
      */
     Key getKey(String alias) throws Exception;
 
     /**
-     * @return
+     * @return a reference to the KeyStore for this container
      */
     KeyStore getKeyStore();
 
     /**
-     * @return
+     * @return the name of the Provider used by this container
      */
     String getProviderName();
 

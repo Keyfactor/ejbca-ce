@@ -114,8 +114,6 @@ public class ValidityDate {
 	}
 	/**
 	 * decodes encoded value to string.
-	 * @param lEncoded
-	 * @return
 	 */
 	public static String getString(long lEncoded) {
 		if ( isDeltaTime(lEncoded) ) {
@@ -127,7 +125,6 @@ public class ValidityDate {
 	 * Decodes encoded value to Date.
 	 * @param lEncoded encoded value
 	 * @param firstDate date to be used if encoded value is a delta time.
-	 * @return
 	 */
 	public static Date getDate(long lEncoded, Date firstDate) {
 		if ( isDeltaTime(lEncoded) ) {

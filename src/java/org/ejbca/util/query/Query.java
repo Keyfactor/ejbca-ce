@@ -221,7 +221,7 @@ public class Query implements java.io.Serializable {
      * The add(String) methods checks against StringTools.hasStripChars.
      *
      * @return true if the query is legal, false otherwise
-     * @see org.ejbca.util.StringTools#hasStripChars
+     * @see org.ejbca.util.StringTools#hasSqlStripChars(String)
      */
     public boolean hasIllegalSqlChars() {
         log.debug("hasIllegalSqlChars: "+hasIllegalSqlChars);

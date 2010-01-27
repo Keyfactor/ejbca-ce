@@ -277,7 +277,6 @@ public class DnComponents {
     
     /** This method is only used to initialize EndEntityProfile, because of legacy baggage.
      * Should be refactored sometime! Please don't use this whatever you do!
-     * @return
      */
     public static HashMap getProfilenameIdMap() {
     	return profileNameIdMap;

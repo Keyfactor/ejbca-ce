@@ -61,7 +61,7 @@ public class TimeMatch extends BasicMatch {
      * @param matchwith should be one of MATCH_WITH contants to determine with field to search.
      *        Only used in ra user queries.
      * @param startdate gives a startdate for the query, null if not needed.
-     * @param startdate gives a enddate for the query, null if not needed.
+     * @param enddate gives a enddate for the query, null if not needed.
      */
     public TimeMatch(int type, int matchwith, Date startdate, Date enddate) {
         this.type = type;
@@ -75,7 +75,7 @@ public class TimeMatch extends BasicMatch {
      *
      * @param type uses Query class constants to determine if it's a log query or ra query.
      * @param startdate gives a startdate for the query, null if not needed.
-     * @param startdate gives a enddate for the query, null if not needed.
+     * @param enddate gives a enddate for the query, null if not needed.
      */
     public TimeMatch(int type, Date startdate, Date enddate) {
         this.type = type;

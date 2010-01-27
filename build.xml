@@ -607,10 +607,56 @@
     <!-- =================================================================== -->
     <!-- Build Javadoc part                                                  -->
     <!-- =================================================================== -->
-    <target name="javadoc" depends="">
+    <target name="javadoc" depends="preprocess" description="Build JavaDoc for all modules">
         <mkdir dir="${apidoc}" />
-        <javadoc packagenames="org.ejbca.*" maxmemory="256m" sourcepath="${src.java}" destdir="${apidoc}" extdirs="${lib}" author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB.">
+    	<path id="javadoc-dependencies.classpath">
+    		<fileset dir="${lib}" includes="**/*.jar"/>
+    	</path>
+    	<!-- extdirs="${lib}" -->
+        <javadoc packagenames="org.ejbca.*" maxmemory="256m" destdir="${apidoc}" classpathref="javadoc-dependencies.classpath" 
+        	author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB." >
+        	<sourcepath location="${src.java}"/>
+        	<sourcepath location="${src.gen}"/>
+           	<sourcepath location="modules/externalra-scep/src"/>
+           	<sourcepath location="modules/externalra/src"/>
+           	<sourcepath location="modules/ejbca-xkms/src"/>
+           	<sourcepath location="modules/ejbca-ws-cli/src"/>
+           	<sourcepath location="modules/ejbca-ws-cli/src-gen"/>
+           	<sourcepath location="modules/ejbca-ws/src"/>	<!-- ECA-1396 will probably change this.. -->
+           	<sourcepath location="modules/ejbca-ejb-cli/src"/>
+           	<sourcepath location="modules/clientToolBox/src"/>
+           	<sourcepath location="modules/ejbca-entity/src"/>
+        	<!-- Surpress XDoclet warnings. Thsi should be removed to EJBCA 4.0 -->
+        	<tag name="ejb.bean" enabled="no"/>
+        	<tag name="ejb.create-method" enabled="no"/>
+        	<tag name="ejb.ejb-external-ref" enabled="no"/>
+	    	<tag name="ejb.env-entry" enabled="no"/>
+        	<tag name="ejb.finder" enabled="no"/>
+        	<tag name="ejb.home" enabled="no"/>
+        	<tag name="ejb.interface" enabled="no"/>
+        	<tag name="ejb.interface-method" enabled="no"/>
+        	<tag name="ejb.permission" enabled="no"/>
+        	<tag name="ejb.persistence" enabled="no"/>
+        	<tag name="ejb.pk" enabled="no"/>
+        	<tag name="ejb.pk-field" enabled="no"/>
+        	<tag name="ejb.relation" enabled="no"/>
+        	<tag name="ejb.transaction" enabled="no"/>
+	    	<tag name="jonas.jdbc-mapping" enabled="no"/>
+	    	<tag name="jonas.bean" enabled="no"/>
+	    	<tag name="jboss.method-attributes" enabled="no"/>
+	    	<tag name="jboss.target-relation" enabled="no"/>
+	    	<tag name="weblogic.enable-call-by-reference" enabled="no"/>
+	    	<tag name="weblogic.target-column-map" enabled="no"/>
+	    	<tag name="sunone.relation" enabled="no"/>
+	    	<tag name="web.servlet" enabled="no"/>
+	    	<tag name="web.servlet-mapping" enabled="no"/>
+	    	<tag name="web.env-entry" enabled="no"/>
+	    	<tag name="web.ejb-local-ref" enabled="no"/>
+	    	<tag name="web.resource-ref" enabled="no"/>
         </javadoc>
+    	<echo message=""/>
+    	<dirname file="${apidoc}/index.html" property="javadoc.dir"/>
+    	<echo message="EJBCA API is available in file://${javadoc.dir}/index.html"/>
     </target>
 
     <!-- ========================================================================== -->
