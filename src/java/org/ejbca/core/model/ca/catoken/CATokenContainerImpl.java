@@ -27,13 +27,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.util.AlgorithmTools;
-import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
