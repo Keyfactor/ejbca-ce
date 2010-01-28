@@ -332,9 +332,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         m_log.error("No key available. "+errMsg);
                         continue;
                     }
-                    final X509Certificate entityCert = signingEntity.keyContainer.getCertificate();
-                    final String providerName = signingEntity.providerHandler.getProviderName();
                     final PrivateKey privKey = signingEntity.keyContainer.getKey();
+                    final String providerName = signingEntity.providerHandler.getProviderName();
+                    final X509Certificate entityCert = signingEntity.keyContainer.getCertificate(); // must be after getKey
                     if ( privKey==null ) {
                         pw.println();
                         pw.print(errMsg);
@@ -368,6 +368,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     }
     /**
      * An object of this class is used to handle an OCSP signing key.
+     * Please note that {@link #getKey()} is blocking during re-keying but {@link #getCertificate()} is not.
+     * This means that {@link #getCertificate()} must always be called after {@link #getKey()}.
      */
     private interface PrivateKeyContainer {
         /**
@@ -377,13 +379,14 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         void init(List<X509Certificate> chain, int caid);
         /**
-         * Gets the OCSP signing key.
+         * Gets the OCSP signing key. The method is blocking while re-keying.
+         * If a the certificate of the key is needed you must call {@link #getCertificate()} after this method.
          * @return the key
          * @throws Exception
          */
         PrivateKey getKey() throws Exception;
         /**
-         * Must allways be called after key has been used.
+         * Must always be called after key fetched with {@link #getKey()} has been used.
          */
         void releaseKey();
         /**
@@ -402,7 +405,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          */
         boolean isOK();
         /**
-         * Gets the cert
+         * You got to call {@link #getKey()} before this method in order to always get the certificate of the key.
          * @return the certificate of the key
          */
         X509Certificate getCertificate();
@@ -1325,16 +1328,16 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                                                                                      keyStore, cert, providerHandler.getProviderName(), fileName );
                     final PrivateKey key = pkf.getKey();
                     if ( key==null ) {
-                        m_log.debug("Key not available. Not adding signer entity for: "+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
+                        m_log.debug("Key not available. Not adding signer entity for: "+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'");
                         continue;
                     }
                     try {
-                        if ( !signTest(key, cert.getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
-                            m_log.debug("Key not working. Not adding signer entity for: "+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
+                        if ( !signTest(key, pkf.getCertificate().getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
+                            m_log.debug("Key not working. Not adding signer entity for: "+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'");
                             continue;
                         }
-                        m_log.debug("Adding sign entity for '"+cert.getSubjectDN()+"', keystore alias '"+alias+"'");
-                        putSignEntity(pkf, cert, adm, providerHandler, newSignEntity);
+                        m_log.debug("Adding sign entity for '"+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'");
+                        putSignEntity(pkf, pkf.getCertificate(), adm, providerHandler, newSignEntity);
                     } finally {
                         pkf.releaseKey();
                     }
@@ -1771,8 +1774,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             final PrivateKey privKey;
             final X509Certificate entityCert;
             try {
-                entityCert = this.keyContainer.getCertificate();
-                privKey = this.keyContainer.getKey(); // must be last.
+                privKey = this.keyContainer.getKey();
+                entityCert = this.keyContainer.getCertificate(); // must be after getKey
             } catch (ExtendedCAServiceRequestException e) {
                 this.providerHandler.reload();
                 throw e;
