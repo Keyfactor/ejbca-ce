@@ -38,7 +38,7 @@ public class CATokenConstants {
     public static final int CATOKENTYPE_P12          = 1;
     public static final int CATOKENTYPE_HSM          = 2;
 	public static final int CATOKENTYPE_NULL         = 3;
-	
+		
     public static final String DEFAULT_KEYSEQUENCE = "00000";
 
 }

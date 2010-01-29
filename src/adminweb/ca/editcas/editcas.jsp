@@ -6,7 +6,7 @@
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
                org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
-               org.ejbca.util.SimpleTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError" %>
+               org.ejbca.util.SimpleTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.ejbca.util.StringTools" %>
 
 
 
@@ -135,6 +135,7 @@
   static final String SELECT_SIGNEDBY                             = "selectsignedby"; 
   static final String SELECT_KEYSIZE                              = "selectsize";
   static final String SELECT_KEYSIZE_DSA                          = "selectsizedsa";
+  static final String SELECT_KEY_SEQUENCE_FORMAT                  = "selectkeysequenceformat";
   static final String SELECT_AVAILABLECRLPUBLISHERS               = "selectavailablecrlpublishers";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
@@ -167,6 +168,7 @@
   String includefile = "choosecapage.jspf"; 
   String processedsubjectdn = "";
   int catype = CAInfo.CATYPE_X509;  // default
+  int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC; // default
   int catokentype = CATokenInfo.CATOKENTYPE_P12; // default
   String catokenpath = "NONE";
   String importcaname = null;
@@ -285,6 +287,7 @@
            if(caid != 0){             
              editca = true;
              catype = cadatahandler.getCAInfo(caid).getCAInfo().getCAType();
+             keySequenceFormat = cadatahandler.getCAInfo(caid).getCATokenInfo().getKeySequenceFormat();
              includefile="editcapage.jspf";              
            }
          } 
@@ -419,12 +422,17 @@
          }
 
          if (catokentype != CATokenInfo.CATOKENTYPE_NULL) {
+             int format = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+             if(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
+                 format = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT));
+             }
+             catoken.setKeySequenceFormat(format);        	 
+             
              String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
              if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
                sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
              catoken.setKeySequence(sequence);        	 
          }
-         
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
@@ -838,9 +846,16 @@
          }
 
          if (catokentype != CATokenInfo.CATOKENTYPE_NULL) {
+             int format = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+             if(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
+                 format = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT));
+             }
+             catoken.setKeySequenceFormat(format); 
+                    	 
              String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
-             if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
+             if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null) {
                sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
+             }
              catoken.setKeySequence(sequence);        	 
          }
           
@@ -1450,6 +1465,10 @@
     	  // Change the CA type we are
     	  catype = Integer.parseInt(request.getParameter(SELECT_CATYPE));
           caname = request.getParameter(HIDDEN_CANAME);   
+          keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+          if (request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
+          	keySequenceFormat = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT));
+          }
           editca = false;
           processedsubjectdn = request.getParameter(HIDDEN_PROCESSREQUESTDN);
           String processrequeststr = request.getParameter(HIDDEN_PROCESSREQUEST);
@@ -1463,6 +1482,10 @@
         catokenpath = request.getParameter(SELECT_CATOKEN);  
         catype = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
         caname = request.getParameter(HIDDEN_CANAME);   
+        keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+        if (request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
+        	keySequenceFormat = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT)); 
+        }
         if(catokenpath.equals(SoftCAToken.class.getName())){
           catokentype = CATokenInfo.CATOKENTYPE_P12;
         }else{

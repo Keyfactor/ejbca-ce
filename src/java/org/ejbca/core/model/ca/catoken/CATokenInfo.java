@@ -15,6 +15,8 @@ package org.ejbca.core.model.ca.catoken;
 
 import java.io.Serializable;
 
+import org.ejbca.util.StringTools;
+
 /**
  * Holds nonsensitive information about a CAToken.
  *
@@ -37,8 +39,10 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
     private String signaturealgoritm = SIGALG_SHA1_WITH_RSA;
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants */
     private String encryptionalgoritm = SIGALG_SHA1_WITH_RSA;
+    /** Format according to which the key sequence needs to be incremented */
+    private int sequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
 	/** Key sequence to be updated when keys are re-generated */
-    private String sequence = "00000"; // Default value first time token is created
+    private String sequence = DEFAULT_KEYSEQUENCE; // Default value first time token is created
     /** Authentication code to activate a CA Token, can be PIN for a smartcard/HSM or password for a PKCS12 */
 	private String authenticationCode;
 	/** indicates if the CA token is available for use, i.e. if the authenticationCode has been entered and the hardware is functioning */
@@ -66,6 +70,14 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
 	 * @param encryptionalgoritm Any of the supported algorithms CATokenConstants.SIGALG_XX 
 	 */
     public void setEncryptionAlgorithm(String encryptionalgoritm){ this.encryptionalgoritm=encryptionalgoritm;}
+    /**
+     * Method to retrieve the sequence of keys
+     */
+    public int getKeySequenceFormat(){ return sequenceFormat; }
+    /** Sequence of the signature keys 
+     * @param sequence 
+     */
+    public void setKeySequenceFormat(int sequenceFormat){ this.sequenceFormat=sequenceFormat;}
     /**
      * Method to retrieve the sequence of keys
      */
