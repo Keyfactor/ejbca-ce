@@ -744,12 +744,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	        		returnval = new CmsCAService((HashMap)data.get(EXTENDEDCASERVICE+type));
 	        		break;	
         	}
-		extendedcaservicemap.put(new Integer(type), returnval);
+        	extendedcaservicemap.put(new Integer(type), returnval);
         }
 	  }catch(Exception e){
-	  	throw new RuntimeException(e);  
+		  throw new RuntimeException(e);  
 	  }
-    
       return returnval;
     }
     
