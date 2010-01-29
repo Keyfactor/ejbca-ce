@@ -119,18 +119,44 @@ An X509 CA is a <i>normal</i> CA for secure email, login, web authentication, VP
 A CVC CA is a CA issuing CV certificates, which are special certificates for EU EAC ePassports. CVC CAs are described in depth in the document about <a href="cvccas.html">CVC</a> CAs.
 </p>
 </subsubsection>
+
 <subsubsection name="Key sequence">
 <p>
-Key sequence is mostly important for <a href="cvccas.html">CVC</a> CAs. <br/>
-The key sequence is an enumeration of the key pair for CVC CAs, it should be a number or a combination of letters and number in the end. For example 00001, 98653 or SE002. 
-For CVC CAs the sequence is always 5 letters. 
-When renewing keys for HSMs using the Admin-GUI, the new signing key label will be the old label with the new key sequence in the end.
-When renewing keys for HSMs using the Admin-GUI the key sequence is automatically increased.<br/>
+<a href="cvccas.html">CVC</a> Sequence<br/>
+The key sequence is used in the certificate holder reference of an EAC CVC certificate / certificate request.
+According to the BSI specifications the sequence must be 5 bytes long. The initial value must be specified
+in the sequence field. The sequence MAY start with an iso 3166-2 countrycode.
+</p>
+<p>
+When renewing keys for HSMs using the Admin-GUI, the new signing key label will be the old label with the 
+new key sequence in the end. When renewing keys for HSMs using the Admin-GUI the key sequence is 
+automatically increased.
+</p>
+<p>
 For X.509 CAs the key sequence should not be important, except for key labels when renewing keys.
-<br/>
+</p>
+<p>
 If you are unsure of the key sequence you can safely leave it to be handled automatically.
 </p>
 </subsubsection>
+<subsubsection name="Key sequence format">
+<p>
+Within EAC, there are several options regarding the sequence format. The format can be choosen in the 
+field &quot;Key sequence format&quot;. The following options are available:
+<dl>
+	<dt>5 byte numeric</dt>
+		<dd>The sequence MUST contain numeric characters [0-9]. The sequence shall be increased from 00000 to 99999</dd> 
+	<dt>5 byte alphanumeric</dt>
+		<dd>The sequence MUST contain alphanumeric characters [0-9][A-Z]. The sequence shall be increased from 00000 to ZZZZZ</dd>
+	<dt>2 byte country code, 3 byte numeric</dt>
+		<dd>The sequence must start with a 2 byte country code (e.g. SE). The other bytes shall be increased  from 000 to 999</dd>
+	<dt>2 byte country code, 3 byte alphanumeric</dt>
+		<dd>The sequence must start with a 2 byte country code(e.g. SE). The other bytes shall be increased from 000 to ZZZ</dd>
+</dl>
+For X.509 the 5 byte numeric is recommended
+</p>
+</subsubsection>
+
 <subsubsection name="CRL Period">
 <p>
 There are four settings in CA configuration dictating the times when CRL generation is done:

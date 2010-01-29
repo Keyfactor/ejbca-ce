@@ -112,15 +112,22 @@ public class TestStringTools extends TestCase {
     }
     public void testKeySequence() throws Exception {
     	String oldSeq = "00001";
-    	assertEquals("00002", StringTools.incrementKeySequence(oldSeq));
+    	assertEquals("00002", StringTools.incrementKeySequence(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, oldSeq));
     	oldSeq = "92002";
-    	assertEquals("92003", StringTools.incrementKeySequence(oldSeq));
+    	assertEquals("92003", StringTools.incrementKeySequence(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, oldSeq));
     	oldSeq = "SE201";
-    	assertEquals("SE202", StringTools.incrementKeySequence(oldSeq));
+    	assertEquals("SE202", StringTools.incrementKeySequence(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, oldSeq));
     	oldSeq = "SEFO1";
-    	assertEquals("SEFO2", StringTools.incrementKeySequence(oldSeq));
+    	assertEquals("SEFO2", StringTools.incrementKeySequence(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, oldSeq));
     	oldSeq = "SEBAR";
-    	assertEquals("SEBAR", StringTools.incrementKeySequence(oldSeq));
+    	assertEquals("SEBAR", StringTools.incrementKeySequence(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, oldSeq));
+    	
+    	oldSeq = "AAAAA";
+    	assertEquals("AAAAB", StringTools.incrementKeySequence(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC, oldSeq));
+    	oldSeq = "SE201";
+    	assertEquals("SE202", StringTools.incrementKeySequence(StringTools.KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC, oldSeq));
+    	oldSeq = "SEFAA";
+    	assertEquals("SEFAB", StringTools.incrementKeySequence(StringTools.KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC, oldSeq));
     }
 
     public void testIpStringToOctets() throws Exception {

@@ -34,6 +34,8 @@ public abstract class CATokenContainer extends UpgradeableDataHashMap implements
 
     /** A sequence for the keys, updated when keys are re-generated */
     protected static final String SEQUENCE = "sequence";
+    /** Format of the key sequence */
+    protected static final String SEQUENCE_FORMAT = "sequenceformat";
     
     /** constants needed for soft CA keystores */
     protected static final String SIGNKEYSPEC       = "SIGNKEYSPEC";

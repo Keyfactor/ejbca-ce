@@ -67,6 +67,11 @@ public class StringTools {
     
     private static final Pattern WS = Pattern.compile("\\s+");
 
+    public static final int KEY_SEQUENCE_FORMAT_NUMERIC                        = 1; 
+    public static final int KEY_SEQUENCE_FORMAT_ALPHANUMERIC                   = 2; 
+    public static final int KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC      = 4; 
+    public static final int KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC = 8; 
+
     /**
      * Strips all special characters from a string by replacing them with a forward slash, '/'.
      *
@@ -417,41 +422,105 @@ public class StringTools {
             return in;
         }
     }
-
-    public static String incrementKeySequence(String oldSequence) {
+    
+    public static String incrementKeySequence(int keySequenceFormat, String oldSequence) {
     	if (log.isTraceEnabled()) {
-        	log.trace(">incrementKeySequence: "+ oldSequence);
+        	log.trace(">incrementKeySequence: " + keySequenceFormat + ", " + oldSequence);
     	}
-    	// If the sequence does not contain any number in it at all, we can only return the same
-		String ret = oldSequence; 
-    	// A sequence can be 00001, or SE001 for example
-		// Here we will strip any sequence number at the end of the key label and add the new sequence there
-		StringBuffer buf = new StringBuffer();
-		for (int i = oldSequence.length()-1; i >= 0; i--) {
-			char c = oldSequence.charAt(i);		
-			if (CharUtils.isAsciiNumeric(c)) {
-				buf.insert(0, c);						
-			} else {
-				break; // at first non numeric character we break
-			}
-		}
-		int restlen = oldSequence.length() - buf.length();
-		String rest = oldSequence.substring(0, restlen);
-
-		String intStr = buf.toString();
-		if (StringUtils.isNotEmpty(intStr)) {
-	    	Integer seq = Integer.valueOf(intStr);
-	    	seq = seq + 1;
-	    	// We want this to be the same number of numbers as we converted and incremented 
-	    	DecimalFormat df = new DecimalFormat("0000000000".substring(0,intStr.length()));
-	    	String fseq = df.format(seq);
-	    	ret = rest + fseq;
-	    	if (log.isTraceEnabled()) {
-		    	log.trace("<incrementKeySequence: "+ ret);			
-	    	}
-		} else {
-			log.info("incrementKeySequence - Sequence does not contain any nummeric part: "+ret);
-		}
+        // If the sequence does not contain any number in it at all, we can only return the same
+        String ret = null; 
+        // If the sequence starts with a country code we will increment the remaining characters leaving
+        // the first two untouched. Per character 10 [0-9] or 36 [0-9A-Z] different values 
+        // can be coded
+        if (keySequenceFormat == KEY_SEQUENCE_FORMAT_NUMERIC) {
+            ret = incrementNumeric(oldSequence);
+        } else if (keySequenceFormat == KEY_SEQUENCE_FORMAT_ALPHANUMERIC) {
+            ret = incrementAlphaNumeric(oldSequence);
+        } else if (keySequenceFormat == KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC) {
+            String countryCode = oldSequence.substring(0, Math.min(2, oldSequence.length()));
+            log.debug("countryCode: " + countryCode);
+            String inc = incrementNumeric(oldSequence.substring(2));
+            // Cut off the country code
+            if (oldSequence.length() > 2 && inc != null) {
+                ret = countryCode + inc;
+            }
+        } else if (keySequenceFormat == KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC) {
+            String countryCode = oldSequence.substring(0, Math.min(2, oldSequence.length()));
+            log.debug("countryCode: " + countryCode);
+            String inc = incrementAlphaNumeric(oldSequence.substring(2));
+            // Cut off the country code
+            if (oldSequence.length() > 2 && inc != null) {
+                ret = countryCode + inc;
+            }
+        }
+        // unknown, fall back to old implementation
+        if (ret == null) {
+            ret = oldSequence;
+            // A sequence can be 00001, or SE001 for example
+            // Here we will strip any sequence number at the end of the key label and add the new sequence there
+            // We will only count decimal (0-9) to ensure that we will not accidentally update the first to 
+            // characters to the provided country code
+            StringBuffer buf = new StringBuffer();
+            for (int i = oldSequence.length()-1; i >= 0; i--) {
+                char c = oldSequence.charAt(i);     
+                if (CharUtils.isAsciiNumeric(c)) {
+                    buf.insert(0, c);                       
+                } else {
+                    break; // at first non numeric character we break
+                }
+            }
+            int restlen = oldSequence.length() - buf.length();
+            String rest = oldSequence.substring(0, restlen);
+    
+            String intStr = buf.toString();
+            if (StringUtils.isNotEmpty(intStr)) {
+                Integer seq = Integer.valueOf(intStr);
+                seq = seq + 1;
+                // We want this to be the same number of numbers as we converted and incremented 
+                DecimalFormat df = new DecimalFormat("0000000000".substring(0,intStr.length()));
+                String fseq = df.format(seq);
+                ret = rest + fseq;
+                if (log.isTraceEnabled()) {
+                    log.trace("<incrementKeySequence: "+ ret);          
+                }
+            } else {
+                log.info("incrementKeySequence - Sequence does not contain any nummeric part: "+ret);
+            }
+        }
     	return ret;
+    }
+    
+    private static String incrementNumeric(String s) {
+        // check if input is valid, if not return null
+        if (!s.matches("[0-9]{1,5}")) {
+            return null;
+        }
+        int len = s.length();
+        // Parse to int and increment by 1
+        int incrSeq = Integer.parseInt(s, 10) + 1;
+        // Reset if the maximum value is exceeded
+        if (incrSeq == Math.pow(10, len))
+            incrSeq = 0;
+        // Make a nice String again
+        String newSeq = "00000" + Integer.toString(incrSeq, 10);
+        newSeq = newSeq.substring(newSeq.length()-len);
+        return newSeq.toUpperCase();
+    }
+    
+    private static String incrementAlphaNumeric(String s) {
+        // check if input is valid, if not return null
+        if (!s.matches("[0-9A-Z]{1,5}")) {
+            return null;
+        }
+        int len = s.length();
+        // Parse to int and increment by 1
+        int incrSeq = Integer.parseInt(s, 36) + 1;
+        // Reset if the maximum value is exceeded
+        if (incrSeq == Math.pow(36, len))
+            incrSeq = 0;
+        // Make a nice String again
+        String newSeq = "00000" + Integer.toString(incrSeq, 36);
+        newSeq = newSeq.substring(newSeq.length()-len);
+        return newSeq.toUpperCase();
     }
 } // StringTools
