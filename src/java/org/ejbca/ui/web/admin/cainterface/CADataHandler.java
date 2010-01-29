@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -40,6 +41,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
@@ -312,37 +314,40 @@ public class CADataHandler implements Serializable {
 
  }
  
- public void revokeOCSPCertificate(int caid){
+ public void renewAndRevokeOCSPCertificate(int caid) throws CATokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException, AuthorizationDeniedException{
  	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
 	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	while(iter.hasNext()){
 	  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 	  if(next instanceof OCSPCAServiceInfo){
 	  	X509Certificate ocspcert = (X509Certificate)((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);
+	  	caadminsession.initExternalCAService(administrator, caid, next);
 		certificatesession.revokeCertificate(administrator,ocspcert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 	  }
 	}  
  }
  
- public void revokeXKMSCertificate(int caid){
+ public void renewAndRevokeXKMSCertificate(int caid) throws CATokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException, AuthorizationDeniedException{
 	 	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
 		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 		while(iter.hasNext()){
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof XKMSCAServiceInfo){
 		  	X509Certificate xkmscert = (X509Certificate)((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath().get(0);
+		  	caadminsession.initExternalCAService(administrator, caid, next);
 			certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 		  }
 		}  
 	 }
  
- public void revokeCmsCertificate(int caid){
+ public void renewAndRevokeCmsCertificate(int caid) throws CATokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException, AuthorizationDeniedException{
 	 	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
 		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 		while(iter.hasNext()){
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof CmsCAServiceInfo){
 		  	X509Certificate cmscert = (X509Certificate)((CmsCAServiceInfo) next).getCertificatePath().get(0);
+		  	caadminsession.initExternalCAService(administrator, caid, next);
 			certificatesession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 		  }
 		}  

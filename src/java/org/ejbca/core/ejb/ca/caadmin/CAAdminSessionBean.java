@@ -539,7 +539,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         
         if(castatus ==SecConst.CA_ACTIVE){
         	// activate External CA Services
-        	activateAndPublishExternalCAServices(admin, cainfo, ca);
+        	activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
         }
         // Store CA in database.
         try{
@@ -1592,6 +1592,44 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	    getSignSession().publishCACertificate(admin, certificates, null, ca.getSubjectDN());
     }
 
+    /** Inits an external CA service. this means that a new key and certificate will be generated for this service, if it exists before.
+     * If it does not exist before it will be created.
+     * @throws CATokenOfflineException 
+     * @throws AuthorizationDeniedException 
+     * @throws IllegalKeyStoreException 
+     * @throws UnsupportedEncodingException 
+     * @ejb.interface-method
+     */
+    public void initExternalCAService(Admin admin, int caid, ExtendedCAServiceInfo info) throws CATokenOfflineException, AuthorizationDeniedException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException {
+    	// check authorization
+    	try{
+    		getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+    	}catch(AuthorizationDeniedException e){
+    		String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorenew", new Integer(caid));            	
+    		getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,e);
+    		throw new AuthorizationDeniedException(msg);
+    	}
+
+    	// Get CA info.
+    	try {
+    		CADataLocal cadata = null;
+    		cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
+    		CA ca = cadata.getCA();
+    		if(ca.getStatus() == SecConst.CA_OFFLINE){
+    			String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getName());            	
+    			throw new CATokenOfflineException(msg);
+    		}
+    		ArrayList infos = new ArrayList();
+    		infos.add(info);
+    		activateAndPublishExternalCAServices(admin, infos, ca);
+            // Update CA in database
+            cadata.setCA(ca);
+    	} catch (FinderException e) {
+    		throw new CADoesntExistsException("caid="+caid);
+    	}
+    	
+    }
+    
     /**
      *  Renews a existing CA certificate using the same keys as before. Data about new CA is taken
      *  from database. This method is used for renewing CAs internally in EJBCA. For renewing CAs signed by external CAs,
@@ -2327,7 +2365,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		//  Publish CA certificates.
 		getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
 		// activate External CA Services
-		activateAndPublishExternalCAServices(admin, cainfo, ca);
+		activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
 		// Store CA in database.
 		cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
 		this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
@@ -2922,9 +2960,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /** Helper method that activates CA services and publisher their certificates, if the services are marked as active
      * 
      */
-	private void activateAndPublishExternalCAServices(Admin admin, CAInfo cainfo, CA ca) {
+	private void activateAndPublishExternalCAServices(Admin admin, Collection extendedCAServiceInfos, CA ca) {
 		// activate External CA Services
-		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+		Iterator iter = extendedCAServiceInfos.iterator();
 		while(iter.hasNext()){
 			ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
 			ArrayList certificate = new ArrayList();
