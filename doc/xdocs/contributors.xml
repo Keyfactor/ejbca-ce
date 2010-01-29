@@ -96,7 +96,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Waldek Kozba, <!-- waldemar.kozba@max.com.pl -->Patch for not quoting int type columns for advanced log search.</li>
 <li>Kevin Dean, <!-- kevin.dean@datadevelopment.com -->sql script for MS-SQL on Glassfish, help with issue mixing EJBs and SQL.</li>
 <li>Rafal Parzych, <!-- r.parzych@pwpw.pl -->fix IAIK provider usage with multiple CAs.</li>
-<li>Thijs van Dalen, <!-- Dalen@collis.nl -->KeyStrings fixes for HSM key generation and other minor CVC fixes.</li>
+<li>Thijs van Dalen, <!-- Dalen@collis.nl -->KeyStrings fixes for HSM key generation, proper key sequence incrementation, and other CVC fixes.</li>
 </ul>
     </section>
   </body>
