@@ -52,6 +52,7 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 
 /**
@@ -72,7 +73,7 @@ public class TestCAs extends TestCase {
      */
     public TestCAs(String name) {
         super(name);
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
     }
 
     protected void setUp() throws Exception {
@@ -1221,4 +1222,45 @@ public class TestCAs extends TestCase {
         log.trace("<test11AddDSACA()");
     }
 
+    public void test12RenewCA() throws Exception {
+    	// Test renew cacert
+    	CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
+    	Collection certs = info.getCertificateChain();
+    	X509Certificate cacert1 = (X509Certificate)certs.iterator().next();
+        TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", false);
+    	info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
+    	certs = info.getCertificateChain();
+    	X509Certificate cacert2 = (X509Certificate)certs.iterator().next();
+    	assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
+    	assertEquals(new String(CertTools.getSubjectKeyId(cacert1)), new String(CertTools.getSubjectKeyId(cacert2)));
+    	cacert2.verify(cacert1.getPublicKey()); // throws if it fails
+
+    	// Test renew CA keys
+        TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", true);
+    	info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
+    	certs = info.getCertificateChain();
+    	X509Certificate cacert3 = (X509Certificate)certs.iterator().next();
+    	assertFalse(cacert2.getSerialNumber().equals(cacert3.getSerialNumber()));
+    	String keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
+    	String keyid2 = new String(CertTools.getSubjectKeyId(cacert3));
+    	assertFalse(keyid1.equals(keyid2));
+
+    	// Test create X.509 link certificate (NewWithOld rollover cert)
+    	// We have cacert3 that we want to sign with the old keys from cacert2, create a link certificate.
+    	// That link certificate should have the same subjetcKeyId as cert3, but be possible to verify with cert2.
+    	byte[] bytes = TestTools.getCAAdminSession().signRequest(admin, TestTools.getTestCAId(), cacert3.getEncoded(), true, true);
+    	X509Certificate cacert4 = (X509Certificate)CertTools.getCertfromByteArray(bytes);
+    	// Same public key as in cacert3 -> same subject key id
+    	keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
+    	keyid2 = new String(CertTools.getSubjectKeyId(cacert4));
+    	assertTrue(keyid1.equals(keyid2));
+
+    	// Same signer as for cacert2 -> same auth key id in cacert4 as subject key id in cacert2
+    	keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
+    	keyid2 = new String(CertTools.getAuthorityKeyId(cacert4));
+    	assertTrue(keyid1.equals(keyid2));
+    	
+    	cacert4.verify(cacert2.getPublicKey());
+
+    }
 }

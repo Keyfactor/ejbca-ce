@@ -1,3 +1,18 @@
+EJBCA 3.9.5
+-----------
+This is a minor release with some fixes and new features. 
+
+Noteworthy changes:
+- Possible to create a NewWithOld roll-over certificate for root CAs.
+
+Read the full changelog for details.
+
+Note that this version contains an inevitable API change for custom extensions. If you have created any custom extensions Java classes, you must add:
+"PublicKey caPublicKey" to the parameter list in the getValue method. 
+The value does not have to be handled. The CA key used to sign certificates does not have to be the same as the currently active CA key.
+ 
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.9.4
 -----------
 This is a minor release with only a few minor fixes. 

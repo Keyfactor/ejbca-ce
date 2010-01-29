@@ -25,12 +25,14 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Principal;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -102,6 +104,7 @@ import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
 import org.ejbca.core.model.ca.certextensions.standard.CrlDistributionPoints;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
@@ -405,14 +408,107 @@ public class X509CA extends CA implements Serializable {
 		} 
     }
 
-	/** Returns the original request without adding any signature to it.
+	/** If request is an CA certificate, useprevious==true and createlinkcert==true it returns a new certificate signed with the CAs keys. This can be used
+	 * to create a NewWithOld certificate for CA key rollover. This method can only create a self-signed certificate and only uses the public key from the passed in certificate.
+	 * If the passed in certificate is not signed by the CAs signature key and does not have the same DN as the current CA, null certificate is returned. 
+	 * This is because we do not want to create anything else than a NewWithOld certificate, because that would be a security risk. Regular certificates must be issued using createCertificate.
+	 * 
+	 * Note: Creating the NewWithOld will only work correctly for Root CAs.
+	 * 
+	 * If request is a CSR (pkcs10) it returns null.
 	 * 
 	 * @see CA#signRequest(Collection, String)
 	 */
 	public byte[] signRequest(byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CATokenOfflineException {
-		return request;
+		byte[] ret = null;
+		try {
+			// Get either the current or the previous signing key for signing this request
+			int key = SecConst.CAKEYPURPOSE_CERTSIGN;
+			if (usepreviouskey) {
+				log.debug("Using previous CertSign key to sign certificate");
+				key = SecConst.CAKEYPURPOSE_CERTSIGN_PREVIOUS;
+			} else {
+				log.debug("Using current CertSign key to sign certificate");
+			}
+			CATokenContainer catoken = getCAToken();
+
+			byte[] binbytes = request;
+			X509Certificate cert = null;
+			try {
+				// We don't know if this is a PEM or binary certificate so we first try to 
+				// decode it as a PEM certificate, and if it's not we try it as a binary certificate 
+				Collection col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
+				cert = (X509Certificate)col.iterator().next();
+				if (cert != null) {
+					binbytes = cert.getEncoded();
+				}
+			} catch (Exception e) {
+				log.debug("This is not a PEM certificate?: "+e.getMessage());
+			}
+			cert = (X509Certificate)CertTools.getCertfromByteArray(binbytes);
+			// Check if the input was a CA certificate, which is the same CA as this. If all is true we should create a NewWithOld link-certificate
+			X509Certificate cacert = (X509Certificate)getCACertificate();
+			if (CertTools.getSubjectDN(cert).equals(CertTools.getSubjectDN(cacert))) {
+	            PublicKey currentCaPublicKey = catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+				cert.verify(currentCaPublicKey); // Throws SignatureException if verify fails
+				if (createlinkcert && usepreviouskey) {
+					log.debug("We will create a link certificate.");
+					X509CAInfo info = (X509CAInfo)getCAInfo();
+	        		UserDataVO cadata = new UserDataVO("nobody", info.getSubjectDN(), info.getSubjectDN().hashCode(), info.getSubjectAltName(), null,
+	        				0,0,0,  info.getCertificateProfileId(), null, null, 0, 0, null);
+					
+					CertificateProfile certProfile = new RootCACertificateProfile();
+		        	if((info.getPolicies() != null) && (info.getPolicies().size() > 0)) {
+		        		certProfile.setUseCertificatePolicies(true);
+		        		certProfile.setCertificatePolicies(info.getPolicies());
+		        	}				
+		            PublicKey previousCaPublicKey = catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
+		            PrivateKey previousCaPrivateKey = catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
+		            String provider = catoken.getProvider();
+		        	String sequence = catoken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
+	        		Certificate retcert = generateCertificate(cadata, null, cert.getPublicKey(),-1, cert.getNotBefore(), cert.getNotAfter(), certProfile, null, sequence, previousCaPublicKey, previousCaPrivateKey, provider);
+					log.debug("Signed an X509Certificate: '"+cadata.getDN()+"'.");
+					String msg = intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN());
+					log.info(msg);
+					ret = retcert.getEncoded();
+				} else {
+					log.debug("Not signing any certificate, useprevious="+usepreviouskey+", createlinkcert="+createlinkcert);
+				}
+			} else {
+				log.debug("Not signing any certificate, certSubjectDN != cacertSubjectDN.");				
+			}
+			
+		} catch (IllegalKeyStoreException e) {
+			throw new javax.ejb.EJBException(e);
+		} catch (SignatureException e) {
+			log.debug("Not signing any certificate, input certificate did not verify with current CA signing key.");				
+			// Will return request as it was			
+		} catch (CertificateException e) {
+			log.debug("Not signing any certificate, input was not a certificate.");				
+			// It was not a certificate, will return request as it was
+		} catch (Exception e) {
+			throw new javax.ejb.EJBException(e);
+		} 
+		return ret;
 	}
 
+    public Certificate generateCertificate(UserDataVO subject, 
+            X509Name requestX509Name,
+            PublicKey publicKey, 
+            int keyusage, 
+            Date notBefore,
+            Date notAfter,
+            CertificateProfile certProfile,
+            X509Extensions extensions,
+            String sequence) throws Exception {
+    	// Before we start, check if the CA is off-line, we don't have to waste time
+    	// one the stuff below of we are off-line. The line below will throw CATokenOfflineException of CA is offline
+    	CATokenContainer catoken = getCAToken();
+        PublicKey caPublicKey = catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+        PrivateKey caPrivateKey = catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+        String provider = catoken.getProvider();
+    	return generateCertificate(subject, requestX509Name, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, caPublicKey, caPrivateKey, provider);
+    }
 	/**
 	 * sequence is ignored by X509CA
 	 */
@@ -424,12 +520,10 @@ public class X509CA extends CA implements Serializable {
                                            Date notAfter,
                                            CertificateProfile certProfile,
                                            X509Extensions extensions,
-                                           String sequence) throws Exception {
-    	// Before we start, check if the CA is off-line, we don't have to waste time
-    	// one the stuff below of we are off-line. The line below will throw CATokenOfflineException of CA is offline
-        getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+                                           String sequence,
+                                           PublicKey caPublicKey, PrivateKey caPrivateKey, String provider) throws Exception {
 
-        // Also, we must only allow signing to take place if the CA itself if on line, even if the token is on-line.
+        // We must only allow signing to take place if the CA itself if on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
         if ((getStatus() != SecConst.CA_ACTIVE) && ((getStatus() != SecConst.CA_EXPIRED))) {
         	String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
@@ -563,7 +657,7 @@ public class X509CA extends CA implements Serializable {
         	if (overridenexts.getExtension(new DERObjectIdentifier(oid)) == null) {
             	CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
             	if (certExt != null) {
-            		DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
+            		DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey, caPublicKey);
             		if (value != null) {
             			extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
             		}
@@ -586,7 +680,7 @@ public class X509CA extends CA implements Serializable {
              	// from the request, if AllowExtensionOverride is enabled.
              	// Two extensions with the same oid is not allowed in the standard.
         		 if (overridenexts.getExtension(new DERObjectIdentifier(certExt.getOID())) == null) {
-        			 DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey);
+        			 DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey, caPublicKey);
         			 if (value != null) {
         				 extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
         			 }             		
@@ -610,16 +704,10 @@ public class X509CA extends CA implements Serializable {
          //
          
          X509Certificate cert;
-         try{
-           cert = certgen.generate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
-                                            getCAToken().getProvider());
-         }catch(CATokenOfflineException e){
-             log.debug("X509CA : CA Token STATUS OFFLINE: ", e);
-             throw e; 
-         }
+         cert = certgen.generate(caPrivateKey, provider);
         
         // Verify before returning
-        cert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+        cert.verify(caPublicKey);
         
         // If we have a CA-certificate, verify that we have all path verification stuff correct
         if (cacert != null) {

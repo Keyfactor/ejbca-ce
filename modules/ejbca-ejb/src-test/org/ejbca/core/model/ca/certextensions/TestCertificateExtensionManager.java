@@ -86,8 +86,8 @@ public class TestCertificateExtensionManager extends TestCase {
 		assertTrue(certExt.getId() == 1);
 		assertTrue(certExt.getOID().equals("1.2.3.4"));
 		assertTrue(certExt.isCriticalFlag());
-		assertTrue(certExt.getValue(null, null, null, null) instanceof DERPrintableString);
-		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null)).getString().equals("Test 123"));
+		assertTrue(certExt.getValue(null, null, null, null, null) instanceof DERPrintableString);
+		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null, null)).getString().equals("Test 123"));
 		
 		assertNull(fact.getCertificateExtensions(new Integer(2)));
 		
@@ -96,8 +96,8 @@ public class TestCertificateExtensionManager extends TestCase {
 		assertTrue(certExt.getId() == 3);
 		assertTrue(certExt.getOID().equals("3.2.3.4"));
 		assertTrue(!certExt.isCriticalFlag());
-		assertTrue(certExt.getValue(null, null, null, null) instanceof DERPrintableString);
-		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null)).getString().equals("Test 321"));
+		assertTrue(certExt.getValue(null, null, null, null, null) instanceof DERPrintableString);
+		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null, null)).getString().equals("Test 321"));
 		
 	}
 	

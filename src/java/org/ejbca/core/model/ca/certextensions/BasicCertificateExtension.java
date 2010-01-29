@@ -135,7 +135,7 @@ public class BasicCertificateExtension extends CertificateExtension {
 		return toret;
 	}
 
-	public DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey)
+	public DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
 	throws CertificateExtensionException, CertificateExtentionConfigurationException {
 		try {
 			if(dEREncodable == null) {
