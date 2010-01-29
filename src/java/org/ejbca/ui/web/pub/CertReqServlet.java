@@ -49,6 +49,7 @@ import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
@@ -513,7 +514,8 @@ public class CertReqServlet extends HttpServlet {
         	ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         	ks.store(buffer, kspassword.toCharArray());
         	
-        	File fout = new File("/usr/local/tmp/" + username + ".p12");
+        	String tempDirectory = System.getProperty("java.io.tmpdir");
+        	File fout = new File(tempDirectory + System.getProperty("file.separator") + username + ".p12");
         	FileOutputStream certfile = new FileOutputStream(fout);
         	
         	Enumeration en = ks.aliases();
@@ -542,7 +544,7 @@ public class CertReqServlet extends HttpServlet {
         	if (rt==null) {
         		log.error(intres.getLocalizedMessage("certreq.ovpntnoruntime"));
         	} else {
-        		final String script = "/usr/local/ejbca/bin/mk_openvpn_" + "windows_installer.sh";
+        		final String script = ConfigurationHolder.getString("web.openvpn.createInstallerScript", "/usr/local/ejbca/bin/mk_openvpn_windows_installer.sh");        		
         		Process p = rt.exec(script);
         		if (p==null) {
             		log.error(intres.getLocalizedMessage("certreq.ovpntfailedexec", script));
@@ -571,9 +573,8 @@ public class CertReqServlet extends HttpServlet {
         	
         	// sending the OpenVPN windows installer
         	String filename = "openvpn-gui-install-" + username + ".exe";
-        	File fin =  new File("/usr/local/tmp/" + filename);
-        	FileInputStream vpnfile = new FileInputStream(fin);
-        	
+        	File fin =  new File(tempDirectory + System.getProperty("file.separator") + filename);
+        	FileInputStream vpnfile = new FileInputStream(fin);        	
         	out.setContentType("application/x-msdos-program");
         	out.setHeader("Content-disposition", "filename=" + filename);
     		out.setContentLength( new Long(fin.length()).intValue() );
