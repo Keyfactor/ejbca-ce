@@ -10,8 +10,11 @@
 	<property name="ca.tokentype" value="soft"/>
 	<property name="ca.tokenpassword" value="null"/>
 	<property name="ca.tokenproperties" value=""/>
-	<property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
-	<property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
+    <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
+    <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
+    <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
+    <property name="ocsp.usecasigningcert" value="true"/>
+    <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA"/>
 	<property name="datasource.jndi-name" value="EjbcaDS" />
 	<property name="datasource.jndi-name-prefix" value="java:/" />
 	<property name="database.name" value="hsqldb" />
