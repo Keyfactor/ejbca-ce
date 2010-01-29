@@ -975,7 +975,7 @@
               boolean renew = false;
               if(active == ExtendedCAServiceInfo.STATUS_ACTIVE && 
                  request.getParameter(BUTTON_REVOKERENEWOCSPCERTIFICATE) != null){
-                 cadatahandler.revokeOCSPCertificate(caid);
+                 cadatahandler.renewAndRevokeOCSPCertificate(caid);
                  renew=true;
                  ocsprenewed = true;             
                  includefile="choosecapage.jspf"; 
@@ -984,7 +984,7 @@
               boolean xkmsrenew = false;
               if(xkmsactive == ExtendedCAServiceInfo.STATUS_ACTIVE && 
                  request.getParameter(BUTTON_REVOKERENEWXKMSCERTIFICATE) != null){
-                 cadatahandler.revokeXKMSCertificate(caid);
+                 cadatahandler.renewAndRevokeXKMSCertificate(caid);
                  xkmsrenew=true;
                  xkmsrenewed = true;             
                  includefile="choosecapage.jspf"; 
@@ -993,7 +993,7 @@
               boolean cmsrenew = false;
               if(cmsactive == ExtendedCAServiceInfo.STATUS_ACTIVE && 
                  request.getParameter(BUTTON_REVOKERENEWCMSCERTIFICATE) != null){
-                 cadatahandler.revokeCmsCertificate(caid);
+                 cadatahandler.renewAndRevokeCmsCertificate(caid);
                  cmsrenew=true;
                  cmsrenewed = true;             
                  includefile="choosecapage.jspf"; 
