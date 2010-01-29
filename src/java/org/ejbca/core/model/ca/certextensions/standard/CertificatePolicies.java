@@ -72,7 +72,7 @@ public class CertificatePolicies extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DERSequence ret = null;
     	// The UserNotice policy qualifier can have two different character encodings,
     	// the correct one (UTF8) or the wrong one (BMP) used by IE < 7.

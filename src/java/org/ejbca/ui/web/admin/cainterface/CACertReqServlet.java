@@ -38,6 +38,7 @@ import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
+import org.ejbca.util.CertTools;
 
 /**
  * Servlet used to distribute  CRLs.<br>
@@ -154,6 +155,7 @@ public class CACertReqServlet extends HttpServlet {
             	byte[] request = cabean.getRequestData();
                 String filename = null;
                 CVCertificate cvccert = null;
+                boolean isx509cert = false;
                 try {
                     CVCObject parsedObject = CertificateParser.parseCVCObject(request);
                     // We will handle both the case if the request is an
@@ -171,7 +173,17 @@ public class CACertReqServlet extends HttpServlet {
                     	filename = chrf.getConcatenated();
                     }
                 } catch (ParseException ex) {
-                    // Apparently it wasn't a CVC request, Ignore
+                    // Apparently it wasn't a CVC request, ignore
+                } catch (IllegalArgumentException ex) {
+                    // Apparently it wasn't a CVC request, see if it was an X.509 certificate
+                	Certificate cert = CertTools.getCertfromByteArray(request);
+                	filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+                	if (filename == null) {
+                		filename = "cert";
+                	} else {
+                		filename = StringUtils.strip(filename, " ");
+                	}
+                	isx509cert = true;
                 }
 
                 if (filename == null) {
@@ -180,17 +192,27 @@ public class CACertReqServlet extends HttpServlet {
                 int length = request.length;
                 byte[] outbytes = request;
             	if (!StringUtils.equals(format, "binary")) {
+            		String begin = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
+            		String end = RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
+            		if (isx509cert) {
+            			begin = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;
+            			end = RequestHelper.END_CERTIFICATE_WITH_NL;
+            		}
     				byte[] b64certreq = org.ejbca.util.Base64.encode(request);
-    				String out = "-----BEGIN CERTIFICATE REQUEST-----\n";
+    				String out = begin;
     				out += new String(b64certreq);
-    				out += "\n-----END CERTIFICATE REQUEST-----\n";
+    				out += end;
     				length = out.length();
                     filename += ".pem";
                     outbytes = out.getBytes();
                 } else if (cvccert != null) {
                     filename += ".cvreq";
                 } else {
-                    filename += ".req";
+                	if (isx509cert) {
+                        filename += ".crt";                		
+                	} else {
+                        filename += ".req";                		
+                	}
                 }
             	
                 // We must remove cache headers for IE

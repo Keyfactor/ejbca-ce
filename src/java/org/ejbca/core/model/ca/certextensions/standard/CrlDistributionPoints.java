@@ -74,7 +74,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		String crldistpoint = certProfile.getCRLDistributionPointURI();
 		String crlissuer=certProfile.getCRLIssuer();
 		X509CA x509ca = (X509CA)ca;

@@ -44,7 +44,7 @@ public class DummyAdvancedCertificateExtension extends CertificateExtension {
 	 * @see org.ejbca.core.model.ca.certextensions.CertificateExtension#getValue(org.ejbca.core.model.ra.UserDataVO, org.ejbca.core.model.ca.caadmin.CA, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, PublicKey)
 	 */	
 	public DEREncodable getValue(UserDataVO userData, CA ca,
-			CertificateProfile certProfile, PublicKey userPublicKey) throws CertificateExtensionException {
+			CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey) throws CertificateExtensionException {
 		
 		String value = getProperties().getProperty(PROPERTY_VALUE);
 		

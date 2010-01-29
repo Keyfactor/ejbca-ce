@@ -253,6 +253,21 @@ have access to the correct certificate chain. If you are cross-certified with se
 <br/>Handling the certificate chains on clients is out of the scope for EJBCA.
 </p> 
 </subsection>
+<subsection name="Signing a roll-over certificate (NewWithOld)">
+<p>
+One way to handle update of trust points when renewing a Root CA is to generate a certificate that contains the new key signed with the old key.
+For X.509 CAs you can create such a certificate:
+<ol>
+<li>In 'Edit CA' screen, renew a Root CA, selecting to also renew keys.</li>
+<li>Download the new Root CA certificate.</li>
+<li>In the Edit Certificate Authorities screen, type the name of the CA in the input field and click 'Sign Certificate Request'.</li>
+<li>Upload the new Root CA certificate, select the checkboxes 'Use previous key' and 'Create link certificate' and click 'Sign Certificate Request'.</li>
+</ol>
+</p>
+<p>The certificate that you upload must have the same DN as the CA you selected, and the certificate must also be verifiable using the CAs currently active signature keys. 
+This means that you can only use this function to create a 'NewWithOld' certificate, and not for other signing purposes.
+</p> 
+</subsection>
 <subsection name="Converting an OpenSSL CA">
 <p>
 You can convert a PEM-style Root CA key to a PKCS12 file that can be imported in EJBCA.

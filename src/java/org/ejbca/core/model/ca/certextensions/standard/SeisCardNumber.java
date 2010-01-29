@@ -59,7 +59,7 @@ public class SeisCardNumber extends StandardCertificateExtension {
 	}
 	
 
-	public DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey)
+	public DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
 			throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		String cardnumber = userData.getCardNumber();
 		DEREncodable ret = null;

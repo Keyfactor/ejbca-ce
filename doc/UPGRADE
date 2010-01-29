@@ -86,6 +86,11 @@ and is configured in conf/scep.properties. The documentation is available as a p
 The API as such has not changed and old client should still work, but External RA workers in EJBCA have to
 be reconfigured.
 
+Note that this version contains an inevitable API change for custom extensions because 
+the CA key used to sign certificates does not have to be the same as the currently active CA key.
+If you have created any custom extensions Java classes, you must add:
+"PublicKey caPublicKey" to the parameter list in the getValue method. The value does not have to be handled.
+
 From EJBCA 3.9.x to EJBCA 3.9.x
 -------------------------------
 See release notes for details between certain versions. 

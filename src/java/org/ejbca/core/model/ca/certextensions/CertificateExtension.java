@@ -132,7 +132,7 @@ public abstract class CertificateExtension {
 	 * @return a DEREncodable or null, if this extension should not be used, which was determined from the values somehow.
 	 * @throws CertificateExtensionException TODO
 	 */
-	public abstract DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
+	public abstract DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
 
 	
 }

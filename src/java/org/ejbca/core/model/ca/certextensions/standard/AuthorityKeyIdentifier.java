@@ -29,10 +29,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionException;
 import org.ejbca.core.model.ca.certextensions.CertificateExtentionConfigurationException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -73,13 +70,13 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		org.bouncycastle.asn1.x509.AuthorityKeyIdentifier ret = null;
 		// Default value is that we calculate it from scratch!
 		// (If this is a root CA we must calculate the AuthorityKeyIdentifier from scratch)
 		// (If the CA signing this cert does not have a SubjectKeyIdentifier we must calculate the AuthorityKeyIdentifier from scratch)
 		try{
-			byte[] keybytes = ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded();
+			byte[] keybytes = caPublicKey.getEncoded();
 			SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(keybytes)).readObject());
 			ret = new org.bouncycastle.asn1.x509.AuthorityKeyIdentifier(apki);
 
@@ -103,15 +100,8 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
 				log.debug("Using AuthorityKeyIdentifier from CA-certificates SubjectKeyIdentifier.");
 			}
 		}
-		}catch(CATokenOfflineException e){
-			log.debug("X509CA: CA Token Offline Exception: ", e);                
-			CertificateExtensionException ex = new CertificateExtensionException("CA Token is off-line: "+e.getMessage(), e);
-			throw ex;
 		} catch (IOException e) {
 			CertificateExtensionException ex = new CertificateExtensionException("IOException parsing CA public key: "+e.getMessage(), e);
-			throw ex;
-		} catch (IllegalKeyStoreException e) {
-			CertificateExtensionException ex = new CertificateExtensionException("IllegalKeyStoreException parsing getting CA keystore: "+e.getMessage(), e);
 			throw ex;
 		}
 		if (ret == null) {
