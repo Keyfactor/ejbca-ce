@@ -30,6 +30,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
@@ -181,7 +182,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     		adminspreferences = new AdminPreferenceDataHandler(administrator);
     		
     		// Check if user certificate is revoked
-    		certificateStoreSession.authenticate(certificates[0]);
+    		certificateStoreSession.authenticate(certificates[0], WebConfiguration.getRequireAdminCertificateInDatabase());
     		
     		// Set ServletContext for reading language files from resources
     		servletContext = request.getSession(true).getServletContext();

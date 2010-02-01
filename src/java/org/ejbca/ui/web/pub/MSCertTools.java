@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.util;
+package org.ejbca.ui.web.pub;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +26,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsExcep
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DnComponents;
 

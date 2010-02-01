@@ -53,7 +53,6 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.ActiveDirectoryTools;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.MSCertTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;

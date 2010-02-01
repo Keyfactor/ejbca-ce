@@ -35,7 +35,6 @@ import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -1285,10 +1284,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Method that authenticates a certificate by checking validity and lookup if certificate is revoked.
      *
      * @param certificate the certificate to be authenticated.
+     * @param requireAdminCertificateInDatabase if true the certificate has to exist in the database
      * @throws AuthenticationFailedException if authentication failed.
      * @ejb.interface-method
      */
-    public void authenticate(X509Certificate certificate) throws AuthenticationFailedException {
+    public void authenticate(X509Certificate certificate, boolean requireAdminCertificateInDatabase) throws AuthenticationFailedException {
         // Check Validity
         try {
             certificate.checkValidity();
@@ -1296,7 +1296,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         	String msg = intres.getLocalizedMessage("authentication.certexpired", CertTools.getNotAfter(certificate).toString());            	
             throw new AuthenticationFailedException(msg);
         }
-        if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+        if (requireAdminCertificateInDatabase) {
             // TODO: Verify Signature on cert? Not really needed since it's one of ou certs in the database.
             // Check if certificate is revoked.
             boolean isRevoked = isRevoked(CertTools.getIssuerDN(certificate),CertTools.getSerialNumber(certificate));
