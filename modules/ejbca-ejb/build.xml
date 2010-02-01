@@ -403,7 +403,7 @@
         	</classpath>
         </javac>
     	<!-- Certificate Extensions component -->
-    	<!-- Depends on CA, CertProfiles, UserDataVO
+    	<!-- Depends on CA, X509CA, CertProfiles, UserDataVO
     	<echo message=" ** Validating component: Certificate Extensions **"/>
     	<mkdir dir="${src-temp.dir}/certext"/>
     	<mkdir dir="${build-temp.dir}/certext"/>
@@ -430,6 +430,43 @@
         		<pathelement location="${build-temp.dir}/certprof"/>
         	</classpath>
         </javac>
+        -->
+    	<!-- Certificate Storage component -->
+    	<echo message=" ** Validating component: Certificate Storage **"/>
+    	<mkdir dir="${src-temp.dir}/certstore"/>
+    	<mkdir dir="${build-temp.dir}/certstore"/>
+    	<copy todir="${src-temp.dir}/certstore">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ca/store/*DataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/*DataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/*DataPK.java"/>
+    			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistory*.java"/>
+    			<exclude name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/store/**/*.java"/>
+    			<include name="org/ejbca/core/model/ca/store/**/*.java"/>
+    			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataLocalHome.java"/>
+    			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataLocal.java"/>
+    			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataPK.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/certstore" destdir="${build-temp.dir}/certstore" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/publish"/>
+        		<pathelement location="${build-temp.dir}/certhist"/>
+        		<pathelement location="${build-temp.dir}/certprof"/>
+        	</classpath>
+        </javac>
+ 	    <!--
         -->
     	<!-- Signing component -->
     	<!--
