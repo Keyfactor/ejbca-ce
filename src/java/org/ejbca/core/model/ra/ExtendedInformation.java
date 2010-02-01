@@ -19,7 +19,6 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 
 /**
@@ -69,11 +68,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     /** Identifier for Custom data holding a end time when the users certificate should be valid
      * extInfo.setCustomData(EndEntityProfile.STARTTIME, "");
      */
-    public static final String CUSTOM_STARTTIME = EndEntityProfile.STARTTIME;
+    public static final String CUSTOM_STARTTIME = "STARTTIME";	//EndEntityProfile.STARTTIME;
     /** Identifier for Custom data holding a end time when the users certificate should be valid
      * extInfo.setCustomData(EndEntityProfile.ENDTIME, "");
      */
-    public static final String CUSTOM_ENDTIME = EndEntityProfile.ENDTIME;
+    public static final String CUSTOM_ENDTIME = "ENDTIME";	//EndEntityProfile.ENDTIME;
     /** The (optional) counter is the counter how many request have been received, will decrease for every request until 0. */
     public static final String CUSTOM_REQUESTCOUNTER = "REQUESTCOUNTER";
     /** The (optional) revocation status a certificate issued to this user will have, immediately upon issuance. */

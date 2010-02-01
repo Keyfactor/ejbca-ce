@@ -41,7 +41,7 @@ public class SeisCardNumber extends StandardCertificateExtension {
 
     /** OID for creating Smartcard Number Certificate Extension
      *  SEIS Cardnumber Extension according to SS 614330/31 */
-    public static final String OID_CARDNUMBER= "1.2.752.34.2.1";
+    public static final String OID_CARDNUMBER = CertificateProfile.OID_CARDNUMBER;	//"1.2.752.34.2.1";
 
 	/**
 	 * Constructor for creating the certificate extension 

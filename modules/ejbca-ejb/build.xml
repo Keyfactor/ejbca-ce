@@ -108,7 +108,14 @@
     			<include name="org/ejbca/core/ejb/*.java"/>
     			<!-- Dependecies from Protect that are pretty general.. -->
     			<include name="org/ejbca/core/model/InternalResources.java"/>
-    			
+    			<!-- Dependecies from Publisher and Approval that are pretty general.. -->
+    			<include name="org/ejbca/core/model/UpgradeableDataHashMap.java"/>
+    			<include name="org/ejbca/core/model/IUpgradeableData.java"/>
+    			<include name="org/ejbca/core/ErrorCode.java"/>
+    			<include name="org/ejbca/core/EjbcaException.java"/>
+    			<!-- Dependecies from Publisher that are pretty general.. -->
+    			<include name="org/ejbca/util/Base64GetHashMap.java"/>
+				<include name="org/ejbca/util/Base64PutHashMap.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/common" destdir="${build-temp.dir}/common" debug="on" includeantruntime="no"
@@ -128,6 +135,8 @@
     			<include name="org/ejbca/core/ejb/protect/**/*DataLocal.java"/>
     			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionLocal.java"/>
     			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionRemote.java"/>
+    			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/protect/**/*.java"/>
@@ -268,15 +277,12 @@
     			<include name="org/ejbca/core/ejb/approval/IApprovalSessionLocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ErrorCode.java"/>
     			<include name="org/ejbca/core/ejb/approval/**/*.java"/>
     			<include name="org/ejbca/core/model/approval/**/*.java"/>
     	    	<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
     			<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
     			<include name="org/ejbca/config/InternalConfiguration.java"/>
     			<include name="org/ejbca/config/WebConfiguration.java"/>
-    			<include name="org/ejbca/core/model/UpgradeableDataHashMap.java"/>
-    			<include name="org/ejbca/core/model/IUpgradeableData.java"/>
     	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
     			<include name="org/ejbca/core/model/SecConst.java"/>
     	    	<!-- RA approval requests -->
@@ -303,6 +309,158 @@
         		<pathelement location="${build-temp.dir}/notification"/>
         	</classpath>
         </javac>
+    	<!-- Publish component -->
+    	<echo message=" ** Validating component: Publish **"/>
+    	<mkdir dir="${src-temp.dir}/publish"/>
+    	<mkdir dir="${build-temp.dir}/publish"/>
+    	<copy todir="${src-temp.dir}/publish">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ca/publisher/*DataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/publisher/*DataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/publisher/*DataPK.java"/>
+    			<include name="org/ejbca/core/ejb/ca/publisher/*Local.java"/>
+    			<include name="org/ejbca/core/ejb/ca/publisher/*LocalHome.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/publisher/**/*.java"/>
+    			<include name="org/ejbca/core/model/ca/publisher/**/*.java"/>
+    			<!-- Use by the LDAP Publisher -->
+    			<include name="org/ejbca/util/TCPTool.java"/>
+    			<!-- Use by the OCSP Publisher -->
+    			<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
+    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
+    			<include name="org/ejbca/core/model/SecConst.java"/>
+    			<!-- RA classes that shouldn't be here.. -->
+    			<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
+    			<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/publish" destdir="${build-temp.dir}/publish" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        	</classpath>
+        </javac>
+    	<!-- Certificate History component -->
+    	<echo message=" ** Validating component: Certificate History **"/>
+    	<mkdir dir="${src-temp.dir}/certhist"/>
+    	<mkdir dir="${build-temp.dir}/certhist"/>
+    	<copy todir="${src-temp.dir}/certhist">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataPK.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/store/CertReqHistory*.java"/>
+    			<include name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
+    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
+    			<include name="org/ejbca/core/model/SecConst.java"/>
+    			<!-- RA classes that maybe shouldn't be here.. -->
+    			<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
+    			<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/certhist" destdir="${build-temp.dir}/certhist" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        	</classpath>
+        </javac>
+    	<!-- Certificate Profile component -->
+    	<echo message=" ** Validating component: Certificate Profile **"/>
+    	<mkdir dir="${src-temp.dir}/certprof"/>
+    	<mkdir dir="${build-temp.dir}/certprof"/>
+    	<copy todir="${src-temp.dir}/certprof">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ca/certificateprofiles/*DataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/certificateprofiles/*DataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/certificateprofiles/*DataPK.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/certificateprofiles/*.java"/>
+    			<include name="org/ejbca/core/model/ca/certificateprofiles/*.java"/>
+    			<include name="org/ejbca/config/ExtendedKeyUsageConfiguration.java"/>
+    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
+    			<include name="org/ejbca/core/model/SecConst.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/certprof" destdir="${build-temp.dir}/certprof" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        	</classpath>
+        </javac>
+    	<!-- Certificate Extensions component -->
+    	<!-- Depends on CA, CertProfiles, UserDataVO
+    	<echo message=" ** Validating component: Certificate Extensions **"/>
+    	<mkdir dir="${src-temp.dir}/certext"/>
+    	<mkdir dir="${build-temp.dir}/certext"/>
+    	<copy todir="${src-temp.dir}/certext">
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/certextensions/**/*.java"/>
+    			<include name="org/ejbca/core/model/ca/certextensions/**/*.java"/>
+    			<!- - RA classes that maybe shouldn't be here.. the extensions SeisCardNumber, SubjectAltNames, SubjectDirectoryAttributes are read from a UserDataVO parameter - ->
+    			<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
+    			<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/certext" destdir="${build-temp.dir}/certext" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/certprof"/>
+        	</classpath>
+        </javac>
+        -->
+    	<!-- Signing component -->
+    	<!--
+    	<echo message=" ** Validating component: Signing **"/>
+    	<mkdir dir="${src-temp.dir}/signing"/>
+    	<mkdir dir="${build-temp.dir}/signing"/>
+    	<copy todir="${src-temp.dir}/signing">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ca/sign/*DataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/sign/*DataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/sign/*DataPK.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/sign/**/*.java"/>
+    			<include name="org/ejbca/core/model/ca/sign/**/*.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/signing" destdir="${build-temp.dir}/signing" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        	</classpath>
+        </javac>
+        -->
     	<!-- Key Recovery component - Is still dependend on the CA component... -->
     	<!--
     	<echo message=" ** Validating component: Key Recovery **"/>
@@ -376,6 +534,7 @@
         	<include name="org/ejbca/core/model/approval/ApprovalRequestExecutionException.java"/>
         	<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>
            	<include name="org/ejbca/core/model/approval/WaitingForApprovalException.java"/>
+           	<include name="org/ejbca/core/model/approval/ApprovalException.java"/>
            	<include name="org/ejbca/core/model/authorization/AuthorizationDeniedException.java"/>
            	<include name="org/ejbca/core/model/ca/SignRequestException.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
@@ -424,8 +583,12 @@
            	<include name="org/ejbca/core/model/ca/publisher/PublisherExistsException.java"/>
            	<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
            	<include name="org/ejbca/core/model/ca/SignRequestSignatureException.java"/>
-           	<include name="org/ejbca/core/model/ca/extendedcaservices/ExtendedCAServiceRequest.java"/>
-           	<include name="org/ejbca/core/model/ca/extendedcaservices/ExtendedCAServiceResponse.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceRequestException.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/IllegalExtendedCAServiceRequestException.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceNotActiveException.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceRequest.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceResponse.java"/>
            	<include name="org/ejbca/core/ejb/ca/store/CertificateStatus.java"/>
            	<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
            	<include name="org/ejbca/core/model/ca/store/CRLInfo.java"/>
@@ -450,6 +613,7 @@
            	<include name="org/ejbca/core/model/log/IProtectedLogExportHandler.java"/>
            	<include name="org/ejbca/core/model/protect/TableVerifyResult.java"/>
            	<include name="org/ejbca/core/model/ra/raadmin/AdminPreference.java"/>
+           	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfile.java"/>
            	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileExistsException.java"/>
            	<include name="org/ejbca/core/model/ra/userdatasource/BaseUserDataSource.java"/>
            	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
@@ -469,6 +633,14 @@
            	<include name="org/ejbca/core/model/log/ProtectedLogConstants.java"/>
            	<include name="org/ejbca/core/model/hardtoken/profiles/IPINEnvelopeSettings.java"/>
            	<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/CmsCAServiceInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/OCSPCAServiceInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/XKMSCAServiceInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/catoken/SoftCATokenInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/catoken/HardCATokenInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/catoken/KeyStrings.java"/>
+           	<include name="org/ejbca/core/model/ca/catoken/NFastCAToken.java"/>
+           	<include name="org/ejbca/util/keystore/KeyStoreContainerFactory.java"/>
         	<!-- From EJBCA External SCEP RA (including some of the classes above) -->
            	<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
            	<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>

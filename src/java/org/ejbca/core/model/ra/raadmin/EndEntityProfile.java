@@ -98,8 +98,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final String CARDNUMBER         = "CARDNUMBER";
     public static final String DEFAULTCA          = "DEFAULTCA";
     public static final String AVAILCAS           = "AVAILCAS";
-    public static final String STARTTIME          = "STARTTIME";
-    public static final String ENDTIME            = "ENDTIME";
+    public static final String STARTTIME          = ExtendedInformation.CUSTOM_STARTTIME;	//"STARTTIME"
+    public static final String ENDTIME            = ExtendedInformation.CUSTOM_ENDTIME;	//"ENDTIME"
     /** A maximum value of the (optional) counter specifying how many certificate requests can be processed
      * before user is finalized (status set to GENERATED). Counter is only used when finishUser is
      * enabled in the CA (by default it is)

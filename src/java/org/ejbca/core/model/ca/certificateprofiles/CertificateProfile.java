@@ -31,7 +31,6 @@ import org.ejbca.config.ExtendedKeyUsageConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.ca.certextensions.standard.SeisCardNumber;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 
@@ -198,6 +197,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCCUSTOMSTRINGTEXT             = "qccustomstringtext";
     protected static final String USESUBJECTDIRATTRIBUTES        = "usesubjectdirattributes";
     protected static final String CVCACCESSRIGHTS                = "cvcaccessrights";
+    
+    /** OID for creating Smartcard Number Certificate Extension
+     *  SEIS Cardnumber Extension according to SS 614330/31 */
+    public static final String OID_CARDNUMBER= "1.2.752.34.2.1";
 
     /** Constants holding the use properties for certificate extensions */
     protected static final HashMap useStandardCertificateExtensions = new HashMap();
@@ -216,7 +219,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS,X509Extensions.AuthorityInfoAccess.getId());
     	useStandardCertificateExtensions.put(USEOCSPNOCHECK,OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
     	useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE,CertTools.OID_MSTEMPLATE);
-    	useStandardCertificateExtensions.put(USECARDNUMBER, SeisCardNumber.OID_CARDNUMBER);
+    	useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
     }
 
     // Old values used to upgrade from v22 to v23
