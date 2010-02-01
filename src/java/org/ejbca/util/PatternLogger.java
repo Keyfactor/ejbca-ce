@@ -138,7 +138,7 @@ public class PatternLogger implements IPatternLogger {
 	}
 	
     /**
-     * @see org.ejbca.core.protocol.ocsp.ITransactionLogger#flush()
+     * @see org.ejbca.util.IPatternLogger#flush()
      */
     public void flush() {
         this.pw.flush();
