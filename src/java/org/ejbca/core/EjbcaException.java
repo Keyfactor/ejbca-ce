@@ -13,7 +13,6 @@
  
 package org.ejbca.core;
 
-import org.ejbca.core.model.approval.ApprovalException;
 
 /**
  * Base for all specific application exceptions thrown by EJBCA. Can be used to catch any
@@ -78,7 +77,9 @@ public class EjbcaException extends Exception {
      */
     public EjbcaException(Exception exception) {
         super(exception);
-        processException(exception);
+        if (exception instanceof EjbcaException) {
+        	errorCode = ((EjbcaException) exception).getErrorCode();
+        }
     }
 
     /**
@@ -93,16 +94,23 @@ public class EjbcaException extends Exception {
         this.errorCode = errorCode;
     }
 
-    /** This method check the potential error code nested in the exception in order to set the error code.
-     * @param exception the exception to process.
+    /**
+     * Constructor used to create exception with an errormessage. Calls the same constructor in
+     * baseclass <code>Exception</code>.
+     *
+     * @param message Human redable error message, can not be NULL.
      */
-    private void processException(Exception exception) {
-        // check if the exception is an instance of ApprovalException.
-        if (exception != null && exception instanceof ApprovalException) {
-            ApprovalException approvalException = (ApprovalException) exception;
-            this.errorCode = approvalException.getErrorCode();
+    public EjbcaException(String message, Throwable cause) {
+		super(message, cause);
+        if (cause instanceof EjbcaException) {
+        	errorCode = ((EjbcaException) cause).getErrorCode();
         }
-    }
+	}
+
+	public EjbcaException(ErrorCode errorCode, String message, Throwable cause) {
+		super(message, cause);
+        this.errorCode = errorCode;
+	}
 
     /** Get the error code.
      * @return the error code.
