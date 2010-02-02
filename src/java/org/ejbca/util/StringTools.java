@@ -20,6 +20,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.DecimalFormat;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.regex.Pattern;
 
 import javax.crypto.BadPaddingException;
@@ -523,4 +525,57 @@ public class StringTools {
         newSeq = newSeq.substring(newSeq.length()-len);
         return newSeq.toUpperCase();
     }
+    
+	/**
+	 * Splits a string with semicolon separated and optionally double-quoted 
+	 * strings into a collection of strings.
+	 * <p>
+	 * Strings that contains semicolon has to be quoted.
+	 * Unbalanced quotes (the end quote is missing) is handled as if there 
+	 * was a quote at the end of the string.
+	 * <pre>
+	 * Examples:
+	 * splitURIs("a;b;c") =&gt; [a, b, c]
+	 * splitURIs("a;\"b;c\";d") =&gt; [a, b;c, d]
+	 * splitURIs("a;\"b;c;d") =&gt; [a, b;c;d]
+	 * </pre>
+	 * <p>
+	 * See org.ejbca.core.model.ca.certextensions.TestCertificateExtensionManager#test03TestSplitURIs() 
+	 * for more examples.
+	 * @param dispPoints The semicolon separated string and which optionally 
+	 * uses double-quotes
+	 * @return A collection of strings
+	 */
+	public static Collection/*String*/ splitURIs(String dispPoints) {
+
+        LinkedList/*String*/ result = new LinkedList/*String*/();
+
+        dispPoints = dispPoints.trim();
+        
+        for(int i = 0; i < dispPoints.length(); i++) {
+            int nextQ = dispPoints.indexOf('"', i);
+            if(nextQ == i) {
+                nextQ = dispPoints.indexOf('"', i+1);
+                if(nextQ == -1) {
+                    nextQ = dispPoints.length(); // unbalanced so eat(the rest)
+                }
+                // eat(to quote)
+                result.add(dispPoints.substring(i+1, nextQ).trim());
+                i = nextQ;
+            } else {
+                int nextSep = dispPoints.indexOf(';', i);
+                if(nextSep != i) {   
+	                if(nextSep != -1) { // eat(to sep)
+	                    result.add(dispPoints.substring(i, nextSep).trim());
+	                    i = nextSep;
+	                } else if (i < dispPoints.length()) { // eat(the rest)
+	                    result.add(dispPoints.substring(i).trim());
+	                    break;
+	                }
+                } // Else skip
+            }
+        }
+        return result;
+    }
+    
 } // StringTools

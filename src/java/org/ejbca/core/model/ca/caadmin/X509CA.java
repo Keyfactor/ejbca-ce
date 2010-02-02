@@ -102,13 +102,13 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
-import org.ejbca.core.model.ca.certextensions.standard.CrlDistributionPoints;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.SimpleTime;
+import org.ejbca.util.StringTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
 import org.ejbca.util.dn.DnComponents;
 
@@ -872,7 +872,7 @@ public class X509CA extends CA implements Serializable {
     		distPoints = "";
     	}
         // Multiple CDPs are spearated with the ';' sign
-    	Iterator/*String*/ it = CrlDistributionPoints.splitURIs(distPoints).iterator();
+    	Iterator/*String*/ it = StringTools.splitURIs(distPoints).iterator();
     	ArrayList result = new ArrayList();
         while (it.hasNext()) {
             String uri = (String) it.next();
