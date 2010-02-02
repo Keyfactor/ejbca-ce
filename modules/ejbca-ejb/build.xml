@@ -402,35 +402,6 @@
         		<pathelement location="${build-temp.dir}/logging"/>
         	</classpath>
         </javac>
-    	<!-- Certificate Extensions component -->
-    	<!-- Depends on CA, X509CA, CertProfiles, UserDataVO
-    	<echo message=" ** Validating component: Certificate Extensions **"/>
-    	<mkdir dir="${src-temp.dir}/certext"/>
-    	<mkdir dir="${build-temp.dir}/certext"/>
-    	<copy todir="${src-temp.dir}/certext">
-    		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ejb/ca/certextensions/**/*.java"/>
-    			<include name="org/ejbca/core/model/ca/certextensions/**/*.java"/>
-    			<!- - RA classes that maybe shouldn't be here.. the extensions SeisCardNumber, SubjectAltNames, SubjectDirectoryAttributes are read from a UserDataVO parameter - ->
-    			<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
-    			<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
-    		</fileset>
-    	</copy>
-        <javac srcdir="${src-temp.dir}/certext" destdir="${build-temp.dir}/certext" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
-        	<classpath>
-        		<path refid="compile.classpath"/>
-        		<pathelement location="${build-temp.dir}/common"/>
-        		<pathelement location="${build-temp.dir}/protect"/>
-        		<pathelement location="${build-temp.dir}/admins"/>
-        		<pathelement location="${build-temp.dir}/logging"/>
-        		<pathelement location="${build-temp.dir}/authorization"/>
-        		<pathelement location="${build-temp.dir}/notification"/>
-        		<pathelement location="${build-temp.dir}/approval"/>
-        		<pathelement location="${build-temp.dir}/certprof"/>
-        	</classpath>
-        </javac>
-        -->
     	<!-- Certificate Storage component -->
     	<echo message=" ** Validating component: Certificate Storage **"/>
     	<mkdir dir="${src-temp.dir}/certstore"/>
@@ -464,6 +435,99 @@
         		<pathelement location="${build-temp.dir}/publish"/>
         		<pathelement location="${build-temp.dir}/certhist"/>
         		<pathelement location="${build-temp.dir}/certprof"/>
+        	</classpath>
+        </javac>
+    	<!-- CA Token component -->
+    	<echo message=" ** Validating component: CA Token **"/>
+    	<mkdir dir="${src-temp.dir}/catoken"/>
+    	<mkdir dir="${build-temp.dir}/catoken"/>
+    	<copy todir="${src-temp.dir}/catoken">
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/model/ca/catoken/*.java"/>
+    			<include name="org/ejbca/core/model/util/AlgorithmTools.java"/>
+    			<include name="org/ejbca/util/keystore/*.java"/>
+    			<include name="org/ejbca/util/CMS.java"/>
+    			<include name="org/ejbca/ui/cli/ErrorAdminCommandException.java"/>
+    			<include name="org/ejbca/ui/cli/util/ConsolePasswordReader.java"/>
+    			<include name="org/ejbca/ui/cli/util/PasswordReader.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/IllegalKeyStoreException.java"/>
+    			<!-- CertTools -->
+    			<include name="org/ejbca/util/CertTools.java"/>
+    			<include name="org/ejbca/core/model/ca/crl/RevokedCertInfo.java"/>
+    			<include name="org/ejbca/util/dn/DnComponents.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/catoken" destdir="${build-temp.dir}/catoken" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/certprof"/>
+        	</classpath>
+        </javac>
+    	<!-- CA and Certificate Extensions component -->
+    	<echo message=" ** Validating component: CA and Certificate Extensions **"/>
+    	<mkdir dir="${src-temp.dir}/ca"/>
+    	<mkdir dir="${build-temp.dir}/ca"/>
+    	<copy todir="${src-temp.dir}/ca">
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/model/ca/caadmin/CA.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/CVCCA.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/X509CA.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/CAInfo.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/X509CAInfo.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/CVCCAInfo.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/CertificateValidity.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/IllegalValidityException.java"/>
+    			<include name="org/ejbca/core/model/ca/CAOfflineException.java"/>
+    			<include name="org/ejbca/core/model/ca/SignRequestSignatureException.java"/>
+    			<include name="org/ejbca/core/model/ca/SignRequestException.java"/>
+    			<include name="org/ejbca/core/ejb/ca/sign/SernoGenerator.java"/>
+    			<include name="org/ejbca/core/ejb/ca/sign/ISernoGenerator.java"/>
+    			<include name="org/ejbca/util/ValidityDate.java"/>
+    			<include name="org/ejbca/util/SimpleTime.java"/>
+    			<include name="org/ejbca/util/UnitParser.java"/>
+    			<include name="org/ejbca/util/YearMonthDayTime.java"/>
+    			<include name="org/ejbca/util/RequestMessageUtils.java"/>
+    			<include name="org/ejbca/util/cert/PrintableStringEntryConverter.java"/>
+    			<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
+    			<include name="org/ejbca/core/protocol/PKCS10RequestMessage.java"/>
+    			<include name="org/ejbca/core/protocol/CVCRequestMessage.java"/>
+    			<include name="org/ejbca/core/protocol/IRequestMessage.java"/>
+    			<include name="org/ejbca/core/protocol/IResponseMessage.java"/>
+    			<include name="org/ejbca/core/protocol/ResponseStatus.java"/>
+    			<include name="org/ejbca/core/protocol/FailInfo.java"/>
+    			<!-- Dependency on Certificate Extension's interface/factory -->
+    			<include name="org/ejbca/util/cert/SubjectDirAttrExtension.java"/>
+    			<include name="org/ejbca/core/model/ca/certextensions/standard/*.java"/>
+    			<include name="org/ejbca/core/model/ca/certextensions/*.java"/>
+    			<!-- OCSP classes that maybe shouldn't be here.. -->
+    			<include name="org/ejbca/config/OcspConfiguration.java"/>
+    			<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
+    			<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>
+    			<include name="org/ejbca/core/protocol/ocsp/CertificateCache.java"/>
+    			<include name="org/ejbca/core/model/ca/NotSupportedException.java"/>
+    			<!-- RA classes that maybe shouldn't be here.. -->
+    			<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
+    			<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/ca" destdir="${build-temp.dir}/ca" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/certprof"/>
+        		<pathelement location="${build-temp.dir}/catoken"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<!--
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        		-->
         	</classpath>
         </javac>
  	    <!--

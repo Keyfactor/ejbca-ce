@@ -22,8 +22,8 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.bouncycastle.asn1.DERPrintableString;
-import org.ejbca.core.model.ca.certextensions.standard.CrlDistributionPoints;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.util.StringTools;
 
 /**
  * 
@@ -122,26 +122,25 @@ public class TestCertificateExtensionManager extends TestCase {
         	CertificateExtension certExt = fact.getStandardCertificateExtension(oid, profile);
         	assertNotNull(certExt);
         }
-
 		
 	}
 	
 	public void test03TestSplitURIs() throws Exception {
-		assertEquals(Arrays.asList("aa;a", "bb;;;b", "cc"), CrlDistributionPoints.splitURIs("\"aa;a\";\"bb;;;b\";\"cc\""));
-		assertEquals(Arrays.asList("aa", "bb;;;b", "cc"), CrlDistributionPoints.splitURIs("aa;\"bb;;;b\";\"cc\""));
-		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs("aa;bb;cc"));
-		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs("aa;bb;cc;"));
-		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs("aa   ;  bb;cc  "));	// Extra white-spaces
-		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs("  aa;bb ;cc;  "));	// Extra white-spaces
-		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs("aa;bb;;;;cc;"));
-		assertEquals(Arrays.asList("aa", "bb", "cc"), CrlDistributionPoints.splitURIs(";;;;;aa;bb;;;;cc;"));
-		assertEquals(Arrays.asList("aa", "b", "c", "d", "e"), CrlDistributionPoints.splitURIs(";;\"aa\";;;b;c;;;;d;\"e\";;;"));
-		assertEquals(Arrays.asList("http://example.com"), CrlDistributionPoints.splitURIs("http://example.com"));
-		assertEquals(Arrays.asList("http://example.com"), CrlDistributionPoints.splitURIs("\"http://example.com\""));
-		assertEquals(Arrays.asList("http://example.com"), CrlDistributionPoints.splitURIs("\"http://example.com\";"));
-		assertEquals(Collections.EMPTY_LIST, CrlDistributionPoints.splitURIs(""));
-		assertEquals(Arrays.asList("http://example.com"), CrlDistributionPoints.splitURIs("\"http://example.com")); 	// No ending quote
-		assertEquals(Arrays.asList("aa;a", "bb;;;b", "cc"), CrlDistributionPoints.splitURIs("\"aa;a\";\"bb;;;b\";\"cc")); 	// No ending quote
+		assertEquals(Arrays.asList("aa;a", "bb;;;b", "cc"), StringTools.splitURIs("\"aa;a\";\"bb;;;b\";\"cc\""));
+		assertEquals(Arrays.asList("aa", "bb;;;b", "cc"), StringTools.splitURIs("aa;\"bb;;;b\";\"cc\""));
+		assertEquals(Arrays.asList("aa", "bb", "cc"), StringTools.splitURIs("aa;bb;cc"));
+		assertEquals(Arrays.asList("aa", "bb", "cc"), StringTools.splitURIs("aa;bb;cc;"));
+		assertEquals(Arrays.asList("aa", "bb", "cc"), StringTools.splitURIs("aa   ;  bb;cc  "));	// Extra white-spaces
+		assertEquals(Arrays.asList("aa", "bb", "cc"), StringTools.splitURIs("  aa;bb ;cc;  "));	// Extra white-spaces
+		assertEquals(Arrays.asList("aa", "bb", "cc"), StringTools.splitURIs("aa;bb;;;;cc;"));
+		assertEquals(Arrays.asList("aa", "bb", "cc"), StringTools.splitURIs(";;;;;aa;bb;;;;cc;"));
+		assertEquals(Arrays.asList("aa", "b", "c", "d", "e"), StringTools.splitURIs(";;\"aa\";;;b;c;;;;d;\"e\";;;"));
+		assertEquals(Arrays.asList("http://example.com"), StringTools.splitURIs("http://example.com"));
+		assertEquals(Arrays.asList("http://example.com"), StringTools.splitURIs("\"http://example.com\""));
+		assertEquals(Arrays.asList("http://example.com"), StringTools.splitURIs("\"http://example.com\";"));
+		assertEquals(Collections.EMPTY_LIST, StringTools.splitURIs(""));
+		assertEquals(Arrays.asList("http://example.com"), StringTools.splitURIs("\"http://example.com")); 	// No ending quote
+		assertEquals(Arrays.asList("aa;a", "bb;;;b", "cc"), StringTools.splitURIs("\"aa;a\";\"bb;;;b\";\"cc")); 	// No ending quote
 	}
 
 

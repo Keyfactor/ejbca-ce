@@ -15,9 +15,7 @@ package org.ejbca.core.model.ca.certextensions.standard;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +37,7 @@ import org.ejbca.core.model.ca.certextensions.CertificateExtensionException;
 import org.ejbca.core.model.ca.certextensions.CertificateExtentionConfigurationException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.util.StringTools;
 
 /** 
  * 
@@ -85,7 +84,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 		// Multiple CDPs are separated with the ';' sign        	         	 
 		ArrayList dpns = new ArrayList();
 		if (StringUtils.isNotEmpty(crldistpoint)) {
-			Iterator/*String*/ it = CrlDistributionPoints.splitURIs(crldistpoint).iterator();
+			Iterator/*String*/ it = StringTools.splitURIs(crldistpoint).iterator();
 			while (it.hasNext()) {
 				// 6 is URI
 				String uri = (String) it.next();
@@ -141,57 +140,5 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 			log.error("DrlDistributionPoints missconfigured, no distribution points available.");
 		}
 		return ret;
-	}
-	
-	/**
-	 * Splits a string with semicolon separated and optionally double-quoted 
-	 * strings into a collection of strings.
-	 * <p>
-	 * Strings that contains semicolon has to be quoted.
-	 * Unbalanced quotes (the end quote is missing) is handled as if there 
-	 * was a quote at the end of the string.
-	 * <pre>
-	 * Examples:
-	 * splitURIs("a;b;c") =&gt; [a, b, c]
-	 * splitURIs("a;\"b;c\";d") =&gt; [a, b;c, d]
-	 * splitURIs("a;\"b;c;d") =&gt; [a, b;c;d]
-	 * </pre>
-	 * <p>
-	 * See org.ejbca.core.model.ca.certextensions.TestCertificateExtensionManager#test03TestSplitURIs() 
-	 * for more examples.
-	 * @param dispPoints The semicolon separated string and which optionally 
-	 * uses double-quotes
-	 * @return A collection of strings
-	 */
-	public static Collection/*String*/ splitURIs(String dispPoints) {
-
-        LinkedList/*String*/ result = new LinkedList/*String*/();
-
-        dispPoints = dispPoints.trim();
-        
-        for(int i = 0; i < dispPoints.length(); i++) {
-            int nextQ = dispPoints.indexOf('"', i);
-            if(nextQ == i) {
-                nextQ = dispPoints.indexOf('"', i+1);
-                if(nextQ == -1) {
-                    nextQ = dispPoints.length(); // unbalanced so eat(the rest)
-                }
-                // eat(to quote)
-                result.add(dispPoints.substring(i+1, nextQ).trim());
-                i = nextQ;
-            } else {
-                int nextSep = dispPoints.indexOf(';', i);
-                if(nextSep != i) {   
-	                if(nextSep != -1) { // eat(to sep)
-	                    result.add(dispPoints.substring(i, nextSep).trim());
-	                    i = nextSep;
-	                } else if (i < dispPoints.length()) { // eat(the rest)
-	                    result.add(dispPoints.substring(i).trim());
-	                    break;
-	                }
-                } // Else skip
-            }
-        }
-        return result;
-    }
+	}	
 }
