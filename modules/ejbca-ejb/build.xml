@@ -410,6 +410,8 @@
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
     			<include name="org/ejbca/core/ejb/ca/store/*DataLocalHome.java"/>
     			<include name="org/ejbca/core/ejb/ca/store/*DataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/*LocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/*Local.java"/>
     			<include name="org/ejbca/core/ejb/ca/store/*DataPK.java"/>
     			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistory*.java"/>
     			<exclude name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
@@ -521,19 +523,9 @@
         		<pathelement location="${build-temp.dir}/certprof"/>
         		<pathelement location="${build-temp.dir}/catoken"/>
         		<pathelement location="${build-temp.dir}/admins"/>
-        		<!--
-        		<pathelement location="${build-temp.dir}/protect"/>
-        		<pathelement location="${build-temp.dir}/logging"/>
-        		<pathelement location="${build-temp.dir}/authorization"/>
-        		<pathelement location="${build-temp.dir}/notification"/>
-        		<pathelement location="${build-temp.dir}/approval"/>
-        		-->
         	</classpath>
         </javac>
- 	    <!--
-        -->
     	<!-- Signing component -->
-    	<!--
     	<echo message=" ** Validating component: Signing **"/>
     	<mkdir dir="${src-temp.dir}/signing"/>
     	<mkdir dir="${build-temp.dir}/signing"/>
@@ -542,10 +534,26 @@
     			<include name="org/ejbca/core/ejb/ca/sign/*DataLocalHome.java"/>
     			<include name="org/ejbca/core/ejb/ca/sign/*DataLocal.java"/>
     			<include name="org/ejbca/core/ejb/ca/sign/*DataPK.java"/>
+    			<!-- CA Admin dependency (not ideal, but ok for now..)-->
+    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocalHome.java"/>
+    			<!-- Authentication dependency (unwanted.. depends on RA..) -->
+    			<include name="org/ejbca/core/ejb/ca/auth/IAuthenticationSessionLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/auth/IAuthenticationSessionLocalHome.java"/>
+    			<!-- CRL dependency (unwanted.. depends on CRL..) -->
+    			<include name="org/ejbca/core/ejb/ca/crl/ICreateCRLSessionLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/crl/ICreateCRLSessionLocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/ca/sign/**/*.java"/>
     			<include name="org/ejbca/core/model/ca/sign/**/*.java"/>
+    			<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
+    			<!-- CA Admin dependency (not ideal, but ok for now..)-->
+    			<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
+    			<!-- Authentication dependency (unwanted.. depends on RA..) -->
+    			<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
+    			<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/signing" destdir="${build-temp.dir}/signing" debug="on" includeantruntime="no"
@@ -559,9 +567,13 @@
         		<pathelement location="${build-temp.dir}/authorization"/>
         		<pathelement location="${build-temp.dir}/notification"/>
         		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/publish"/>
+        		<pathelement location="${build-temp.dir}/certprof"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/catoken"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
         	</classpath>
         </javac>
-        -->
     	<!-- Key Recovery component - Is still dependend on the CA component... -->
     	<!--
     	<echo message=" ** Validating component: Key Recovery **"/>
@@ -674,6 +686,7 @@
            	<include name="org/ejbca/core/model/authorization/AuthenticationFailedException.java"/>
            	<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
            	<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/CA.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/CAInfo.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/IllegalKeyStoreException.java"/>

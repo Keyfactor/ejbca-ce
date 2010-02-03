@@ -913,6 +913,46 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // getCAInfo
     
     /**
+     * Get the CA object. Does not perform any authorization check.
+     * @param admin is used for logging
+     * @param caid identifies the CA
+     * @return the CA object
+     * @throws CADoesntExistsException if no CA was found, the CA has expired or the certificate isn't valid yet
+     * @ejb.interface-method
+     */
+    public CA getCA(Admin admin, int caid) throws CADoesntExistsException {
+        CADataLocal cadata = null;
+        try {
+            cadata = cadatahome.findByPrimaryKey(new Integer(caid));
+        } catch (javax.ejb.FinderException fe) {
+            String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", new Integer(caid));        	
+            getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, fe);
+            throw new CADoesntExistsException(msg);
+        }
+        CA ca = null;
+        try {
+            ca = cadata.getCA();
+        } catch (java.io.UnsupportedEncodingException uee) {
+            throw new EJBException(uee);
+        } catch(IllegalKeyStoreException e){
+            throw new EJBException(e);
+        }
+    	// Check that CA hasn't expired.
+        try {
+        	CertTools.checkValidity(ca.getCACertificate(), new Date());
+        } catch (CertificateExpiredException cee) {
+        	// Signers Certificate has expired.
+        	cadata.setStatus(SecConst.CA_EXPIRED);
+            String msg = intres.getLocalizedMessage("signsession.caexpired", cadata.getSubjectDN());
+            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, cee);
+            throw new CADoesntExistsException(msg);
+        } catch (CertificateNotYetValidException e) {
+            throw new CADoesntExistsException(e);
+		}
+        return ca;
+    }
+    
+    /**
      * Verify that a CA exists. (This method does not check admin privileges
      * and will leak the existance of a CA.)
      * 
