@@ -116,6 +116,8 @@
     			<!-- Dependecies from Publisher that are pretty general.. -->
     			<include name="org/ejbca/util/Base64GetHashMap.java"/>
 				<include name="org/ejbca/util/Base64PutHashMap.java"/>
+    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
+    			<include name="org/ejbca/core/model/SecConst.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/common" destdir="${build-temp.dir}/common" debug="on" includeantruntime="no"
@@ -283,8 +285,6 @@
     			<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
     			<include name="org/ejbca/config/InternalConfiguration.java"/>
     			<include name="org/ejbca/config/WebConfiguration.java"/>
-    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
-    			<include name="org/ejbca/core/model/SecConst.java"/>
     	    	<!-- RA approval requests -->
     			<exclude name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
     			<exclude name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
@@ -531,8 +531,8 @@
     	<mkdir dir="${build-temp.dir}/signing"/>
     	<copy todir="${src-temp.dir}/signing">
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/ca/sign/*DataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/ca/sign/*DataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/sign/*LocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/sign/*Local.java"/>
     			<include name="org/ejbca/core/ejb/ca/sign/*DataPK.java"/>
     			<!-- CA Admin dependency (not ideal, but ok for now..)-->
     			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocal.java"/>
@@ -574,38 +574,97 @@
         		<pathelement location="${build-temp.dir}/ca"/>
         	</classpath>
         </javac>
-    	<!-- Key Recovery component - Is still dependend on the CA component... -->
-    	<!--
-    	<echo message=" ** Validating component: Key Recovery **"/>
-    	<mkdir dir="${src-temp.dir}/keyrecovery"/>
-    	<mkdir dir="${build-temp.dir}/keyrecovery"/>
-    	<copy todir="${src-temp.dir}/keyrecovery">
-    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataLocal.java"/>
-    			<include name="org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataPK.java"/>
-    		</fileset>
+    	<!-- OCSP component -->
+    	<echo message=" ** Validating component: OCSP **"/>
+    	<mkdir dir="${src-temp.dir}/ocsp"/>
+    	<mkdir dir="${build-temp.dir}/ocsp"/>
+    	<copy todir="${src-temp.dir}/ocsp">
     		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ejb/keyrecovery/**/*.java"/>
-    			<include name="org/ejbca/core/model/keyrecovery/**/*.java"/>
+    			<include name="org/ejbca/config/OcspConfiguration.java"/>
+    			<include name="org/ejbca/util/IPatternLogger.java"/>
+    			<include name="org/ejbca/util/PatternLogger.java"/>
+    			<include name="org/ejbca/core/protocol/ocsp/*.java"/>
+    			<include name="org/ejbca/core/model/util/AlgorithmTools.java"/>
+    			<include name="org/ejbca/util/keystore/KeyTools.java"/>
     		</fileset>
     	</copy>
-        <javac srcdir="${src-temp.dir}/keyrecovery" destdir="${build-temp.dir}/keyrecovery" debug="on" includeantruntime="no"
+        <javac srcdir="${src-temp.dir}/ocsp" destdir="${build-temp.dir}/ocsp" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
         		<path refid="compile.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
-        		<pathelement location="${build-temp.dir}/protect"/>
         		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        	</classpath>
+        </javac>
+    	<!-- CRL component -->
+    	<echo message=" ** Validating component: CRL **"/>
+    	<mkdir dir="${src-temp.dir}/crl"/>
+    	<mkdir dir="${build-temp.dir}/crl"/>
+    	<copy todir="${src-temp.dir}/crl">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ca/store/CRLDataLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/CRLDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/CRLDataPK.java"/>
+    			<!-- Undesired dependency on CAAdministraion ? -->
+    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocal.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/crl/*.java"/>
+    			<include name="org/ejbca/core/model/ca/crl/*.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/crl" destdir="${build-temp.dir}/crl" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/signing"/>
         		<pathelement location="${build-temp.dir}/logging"/>
         		<pathelement location="${build-temp.dir}/authorization"/>
-        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/catoken"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
         		<pathelement location="${build-temp.dir}/approval"/>
         	</classpath>
         </javac>
-        -->
-    	<!-- User Data Source component... - Depends on the CA component -->
-    	<!--
+    	<!-- CA Admin component -->
+    	<echo message=" ** Validating component: CA Admin **"/>
+    	<mkdir dir="${src-temp.dir}/caadmin"/>
+    	<mkdir dir="${build-temp.dir}/caadmin"/>
+    	<copy todir="${src-temp.dir}/caadmin">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ca/caadmin/*Home.java"/>
+    			<include name="org/ejbca/core/ejb/ca/caadmin/*Local.java"/>
+    			<include name="org/ejbca/core/ejb/ca/caadmin/*Remote.java"/>
+    			<include name="org/ejbca/core/ejb/ca/caadmin/*DataPK.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/cadamin/*.java"/>
+    			<include name="org/ejbca/core/model/ca/cadamin/*.java"/>
+    			<include name="org/ejbca/core/model/approval/approvalrequests/ActivateCATokenApprovalRequest.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/caadmin" destdir="${build-temp.dir}/caadmin" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/signing"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/catoken"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/crl"/>
+        	</classpath>
+        </javac>
+    	<!-- User Data Source component... -->
     	<echo message=" ** Validating component: User Data Source **"/>
     	<mkdir dir="${src-temp.dir}/userdatasource"/>
     	<mkdir dir="${build-temp.dir}/userdatasource"/>
@@ -624,12 +683,158 @@
         	<classpath>
         		<path refid="compile.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
-        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/logging"/>
         		<pathelement location="${build-temp.dir}/authorization"/>
-        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/caadmin"/>
+        	</classpath>
+        </javac>
+    	<!-- Key Recovery component -->
+    	<echo message=" ** Validating component: Key Recovery **"/>
+    	<mkdir dir="${src-temp.dir}/keyrecovery"/>
+    	<mkdir dir="${build-temp.dir}/keyrecovery"/>
+    	<copy todir="${src-temp.dir}/keyrecovery">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/keyrecovery/*LocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/keyrecovery/*Local.java"/>
+    			<include name="org/ejbca/core/ejb/keyrecovery/*DataPK.java"/>
+    			<!-- Undesired dependency on User Administration ? -->
+    			<include name="org/ejbca/core/ejb/ra/IUserAdminSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ra/IUserAdminSessionLocal.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/keyrecovery/**/*.java"/>
+    			<include name="org/ejbca/core/model/keyrecovery/**/*.java"/>
+    			<include name="org/ejbca/core/model/approval/approvalrequests/KeyRecoveryApprovalRequest.java"/>
+    			<!-- Undesired dependency on User Administration ? -->
+    			<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
+    			<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/keyrecovery" destdir="${build-temp.dir}/keyrecovery" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/caadmin"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
         		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/signing"/>
+        	</classpath>
+        </javac>
+    	<!-- RA Administration component -->
+    	<echo message=" ** Validating component: RA Administration **"/>
+    	<mkdir dir="${src-temp.dir}/raadmin"/>
+    	<mkdir dir="${build-temp.dir}/raadmin"/>
+    	<copy todir="${src-temp.dir}/raadmin">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ra/raadmin/*LocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ra/raadmin/*Local.java"/>
+    			<include name="org/ejbca/core/ejb/ra/raadmin/*DataPK.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ra/raadmin/**/*.java"/>
+    			<include name="org/ejbca/core/model/ra/raadmin/**/*.java"/>
+    			<include name="org/ejbca/util/passgen/*.java"/>
+    			<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/raadmin" destdir="${build-temp.dir}/raadmin" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/caadmin"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/signing"/>
+        	</classpath>
+        </javac>
+    	<!-- Hard Token component -->
+    	<echo message=" ** Validating component: Hard Token **"/>
+    	<mkdir dir="${src-temp.dir}/hardtoken"/>
+    	<mkdir dir="${build-temp.dir}/hardtoken"/>
+    	<copy todir="${src-temp.dir}/hardtoken">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/hardtoken/*LocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/hardtoken/*Local.java"/>
+    			<include name="org/ejbca/core/ejb/hardtoken/*PK.java"/>
+    			<include name="org/ejbca/core/ejb/hardtoken/*Remote.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/hardtoken/**/*.java"/>
+    			<include name="org/ejbca/core/model/hardtoken/**/*.java"/>
+    			<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+    			<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/hardtoken" destdir="${build-temp.dir}/hardtoken" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/caadmin"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/signing"/>
+        		<pathelement location="${build-temp.dir}/raadmin"/>
+        	</classpath>
+        </javac>
+    	<!-- User Administration component -->
+    	<!-- Still depends in Authentication and RA Interface
+    	<echo message=" ** Validating component: User Administration **"/>
+    	<mkdir dir="${src-temp.dir}/useradmin"/>
+    	<mkdir dir="${build-temp.dir}/useradmin"/>
+    	<copy todir="${src-temp.dir}/useradmin">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ra/*Home.java"/>
+    			<include name="org/ejbca/core/ejb/ra/*Local.java"/>
+    			<include name="org/ejbca/core/ejb/ra/*Remote.java"/>
+    			<include name="org/ejbca/core/ejb/ra/*PK.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ra/*.java"/>
+    			<include name="org/ejbca/core/model/ra/*.java"/>
+    			<include name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
+    			<include name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
+    			<include name="org/ejbca/core/model/approval/ApprovalRequestHelper.java"/>
+    			<include name="org/ejbca/core/model/approval/approvalrequests/ChangeStatusEndEntityApprovalRequest.java"/>
+    			<include name="org/ejbca/core/model/approval/approvalrequests/RevocationApprovalRequest.java"/>
+    			<include name="org/ejbca/util/PrinterManager.java"/>
+    			<include name="org/ejbca/util/dn/DistinguishedName.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/useradmin" destdir="${build-temp.dir}/useradmin" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/caadmin"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/certprof"/>
+        		<pathelement location="${build-temp.dir}/signing"/>
+        		<pathelement location="${build-temp.dir}/raadmin"/>
+        		<pathelement location="${build-temp.dir}/keyrecovery"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/hardtoken"/>
         	</classpath>
         </javac>
         -->

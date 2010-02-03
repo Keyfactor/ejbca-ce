@@ -171,7 +171,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	/**
 	 * This method should return the request data in text representation.
 	 * This text is presented for the approving administrator in order
-	 * for him to make a desition about the request.
+	 * for him to make a decision about the request.
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
