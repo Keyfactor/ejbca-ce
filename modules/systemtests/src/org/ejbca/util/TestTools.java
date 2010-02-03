@@ -381,7 +381,7 @@ public class TestTools {
 			log.error("", e);
 			return false;
 		}
-		// Create request CA, if neccesary
+		// Create request CA, if necessary
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec(""+keyStrength);
         catokeninfo.setEncKeySpec(""+keyStrength);
@@ -391,11 +391,7 @@ public class TestTools {
         catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.
         ArrayList extendedcaservices = new ArrayList();
-        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                "CN=OCSPSignerCertificate, " + "CN="+caName,
-                "",
-                ""+keyStrength,
-                CATokenConstants.KEYALGORITHM_RSA));
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
                 "CN=XKMSCertificate, " + "CN="+caName,
                 "",

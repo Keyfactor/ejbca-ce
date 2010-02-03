@@ -75,7 +75,6 @@
   static final String BUTTON_REVOKECA                   = "buttonrevokeca";  
   static final String BUTTON_RECIEVEFILE                = "buttonrecievefile";     
   static final String BUTTON_PUBLISHCA                  = "buttonpublishca";     
-  static final String BUTTON_REVOKERENEWOCSPCERTIFICATE = "checkboxrenewocspcertificate";
   static final String BUTTON_REVOKERENEWXKMSCERTIFICATE = "checkboxrenewxkmscertificate";
   static final String BUTTON_REVOKERENEWCMSCERTIFICATE  = "checkboxrenewcmscertificate";
   static final String BUTTON_GENDEFAULTCRLDISTPOINT     = "checkboxgeneratedefaultcrldistpoint";
@@ -184,7 +183,6 @@
   boolean  cadeletefailed       = false;
   boolean  illegaldnoraltname   = false;
   boolean  errorrecievingfile   = false;
-  boolean  ocsprenewed          = false;
   boolean  xkmsrenewed          = false;
   boolean  cmsrenewed           = false;
   boolean  catokenoffline       = false;
@@ -369,7 +367,7 @@
           
          CATokenInfo catoken = null;
          catokentype = Integer.parseInt(request.getParameter(HIDDEN_CATOKENTYPE));
-         String signkeyspec = "2048"; // Default signature key, for OCSP, CMS and XKMS, is 2048 bit RSA
+         String signkeyspec = "2048"; // Default signature key, for CMS and XKMS, is 2048 bit RSA
          String signkeytype = CATokenConstants.KEYALGORITHM_RSA;
          
          if(catokentype == CATokenInfo.CATOKENTYPE_P12){
@@ -608,18 +606,13 @@
 				 String keySpec = signkeyspec;
 				 String keyAlg = signkeytype;
 				 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
-					 // Never use larger keys than 2048 bit RSA for OCSP, CMS and XKMS signing
+					 // Never use larger keys than 2048 bit RSA for CMS and XKMS signing
 					 int len = Integer.parseInt(keySpec);
 					 if (len > 2048) {
 						 keySpec = "2048";				 
 					 }
 				 }
-				 extendedcaservices.add(
-				             new OCSPCAServiceInfo(ocspactive,
-								  "CN=OCSPSignerCertificate, " + subjectdn,
-					     		  "",
-					     		  keySpec,
-								  keyAlg));
+				 extendedcaservices.add(new OCSPCAServiceInfo(ocspactive));
 				 extendedcaservices.add(
 			             new XKMSCAServiceInfo(xkmsactive,
 							  "CN=XKMSCertificate, " + subjectdn,
@@ -686,18 +679,13 @@
 				 String keySpec = signkeyspec;
 				 String keyAlg = signkeytype;
 				 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
-					 // Never use larger keys than 2048 bit RSA for OCSP, CMS and XKMS signing
+					 // Never use larger keys than 2048 bit RSA for CMS and XKMS signing
 					 int len = Integer.parseInt(keySpec);
 					 if (len > 2048) {
 						 keySpec = "2048";				 
 					 }
 				 }
-				 extendedcaservices.add(
-				             new OCSPCAServiceInfo(ocspactive,
-								  "CN=OCSPSignerCertificate, " + subjectdn,
-					     		          "",
-								  keySpec,
-								  keyAlg));
+				 extendedcaservices.add(new OCSPCAServiceInfo(ocspactive));
 				 extendedcaservices.add(
 			             new XKMSCAServiceInfo(xkmsactive,
 							  "CN=XKMSCertificate, " + subjectdn,
@@ -798,7 +786,6 @@
           request.getParameter(BUTTON_REVOKECA)  != null ||
           request.getParameter(BUTTON_PUBLISHCA) != null ||
           request.getParameter(BUTTON_MAKEREQUEST) != null ||
-          request.getParameter(BUTTON_REVOKERENEWOCSPCERTIFICATE) != null ||
           request.getParameter(BUTTON_REVOKERENEWCMSCERTIFICATE) != null ||
           request.getParameter(BUTTON_REVOKERENEWXKMSCERTIFICATE) != null){
          // Create and save CA                          
@@ -988,14 +975,6 @@
             	  cmsactive = ExtendedCAServiceInfo.STATUS_ACTIVE; 
 
               boolean renew = false;
-              if(active == ExtendedCAServiceInfo.STATUS_ACTIVE && 
-                 request.getParameter(BUTTON_REVOKERENEWOCSPCERTIFICATE) != null){
-                 cadatahandler.renewAndRevokeOCSPCertificate(caid);
-                 renew=true;
-                 ocsprenewed = true;             
-                 includefile="choosecapage.jspf"; 
-               }
-              
               boolean xkmsrenew = false;
               if(xkmsactive == ExtendedCAServiceInfo.STATUS_ACTIVE && 
                  request.getParameter(BUTTON_REVOKERENEWXKMSCERTIFICATE) != null){
@@ -1016,7 +995,7 @@
 
 	      	  ArrayList extendedcaservices = new ArrayList();
               extendedcaservices.add(
-		             new OCSPCAServiceInfo(active, renew));    
+		             new OCSPCAServiceInfo(active));    
               extendedcaservices.add(
  		             new XKMSCAServiceInfo(xkmsactive, xkmsrenew)); 
               extendedcaservices.add(

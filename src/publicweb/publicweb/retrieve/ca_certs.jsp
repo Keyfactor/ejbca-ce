@@ -55,28 +55,6 @@
 					</c:url>
 					<a href="${ie}">Download to Internet Explorer</a>
 					</p>
-					<c:if test="${status.last && finder.ocspEnabled}">
-					<p>
-					<c:out value="OCSP certificate: "/>
-					<c:url var="pem_ocsp" value="../publicweb/webdist/certdist" >
-						<c:param name="cmd" value="ocspcert" />
-						<c:param name="issuer" value="${cert.subjectDN}" />
-					</c:url>
-					<a href="${pem_ocsp}">Download as PEM</a>,
-					<!-- OCSP certificates cannot be imported to Firefox, so there is no point in showing this
-					<c:url var="ns_ocsp" value="../publicweb/webdist/certdist" >
-						<c:param name="cmd" value="nsocspcert" />
-						<c:param name="issuer" value="${cert.subjectDN}" />
-					</c:url>
-					<a href="${ns_ocsp}">Download to Firefox</a>,
-					-->
-					<c:url var="ie_ocsp" value="../publicweb/webdist/certdist" >
-						<c:param name="cmd" value="ieocspcert" />
-						<c:param name="issuer" value="${cert.subjectDN}" />
-					</c:url>
-					<a href="${ie_ocsp}">Download to Internet Explorer</a>
-					</p>
-					</c:if>
 					</div>
 				</c:forEach>
 				</div>

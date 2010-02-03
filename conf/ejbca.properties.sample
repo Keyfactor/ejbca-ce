@@ -119,12 +119,6 @@
 #ca.keystorepass=foo123
 #ca.keystorepass=!secret!
 
-# Password used to protect OCSP keystores in the database (CAs OCSP signer certificate).
-# If upgrading from EJBCA 3.0.x, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> OCSPKeyStorePass. 
-# The default value is the same for convenience.
-#ca.ocspkeystorepass=foo123
-#ca.ocspkeystorepass=ocsp!secret!
-
 # Password used to protect XKMS keystores in the database (CAs XKMS signer/enc certificate).
 # The default value is the same for convenience.
 #ca.xkmskeystorepass=foo123

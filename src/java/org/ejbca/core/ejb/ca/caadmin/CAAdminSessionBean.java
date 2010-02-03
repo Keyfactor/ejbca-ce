@@ -581,7 +581,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void editCA(Admin admin, CAInfo cainfo) throws AuthorizationDeniedException{
-        boolean ocsprenewcert = false;
         boolean xkmsrenewcert = false;
         boolean cmsrenewcert = false;
 
@@ -594,21 +593,17 @@ public class CAAdminSessionBean extends BaseSessionBean {
             throw new AuthorizationDeniedException(msg);
         }
 
-        // Check if OCSP Certificate is about to be renewed.
+        // Check if extended service certificates are about to be renewed.
         Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
         while(iter.hasNext()){
           Object next = iter.next();
-          if(next instanceof OCSPCAServiceInfo){
-            ocsprenewcert = ((OCSPCAServiceInfo) next).getRenewFlag();
-          }
+    	  // No OCSP Certificate exists that can be renewed.
           if(next instanceof XKMSCAServiceInfo){
               xkmsrenewcert = ((XKMSCAServiceInfo) next).getRenewFlag();
-          }
-          if(next instanceof CmsCAServiceInfo){
+          } else if(next instanceof CmsCAServiceInfo){
               cmsrenewcert = ((CmsCAServiceInfo) next).getRenewFlag();
           }
         }
-
 
         // Get CA from database
         try{
@@ -637,18 +632,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             	String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());            	
             	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, ctoe);
             }
-
-            // If OCSP Certificate renew, publish the new one.
-            if(ocsprenewcert){
-              OCSPCAServiceInfo info = (OCSPCAServiceInfo)ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE);
-              Certificate ocspcert = (Certificate)info.getOCSPSignerCertificatePath().get(0);
-			  ArrayList ocspcertificate = new ArrayList();
-              ocspcertificate.add(ocspcert);
-              // Publish the extended service certificate, but only for active services
-              if ( (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!ocspcertificate.isEmpty()) ) {
-            	  getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), ca.getSubjectDN());
-              }
-            }
+            // No OCSP Certificate exists that can be renewed.
             if(xkmsrenewcert){
            	  XKMSCAServiceInfo info = (XKMSCAServiceInfo)ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE);
               Certificate xkmscert = (Certificate)info.getXKMSSignerCertificatePath().get(0);
@@ -1287,7 +1271,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				        ExtendedCAServiceInfo info = null;
     				        if(type == ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE){
     				        	info = (OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE);
-    				        	extcacertificate.add(((OCSPCAServiceInfo)info).getOCSPSignerCertificatePath().get(0));
+    				        	// The OCSP certificate is the same as the singing certificate
     				        }
     				        if(type == ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE){
     				        	info = ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE);
@@ -2321,12 +2305,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		if (caSignatureCertificate instanceof X509Certificate) {
 			// Create an X509CA
 			// Create and active extended CA Services (OCSP, XKMS, CMS).
-			extendedcaservices.add(
-					new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-			                        "CN=OCSPSignerCertificate, " + CertTools.getSubjectDN(caSignatureCertificate),
-			                        "",
-			                        keySpecification,
-			                        keyAlgorithm));
+			extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 			// Create and active XKMS CA Service.
 			extendedcaservices.add(
 			        new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
@@ -3009,7 +2988,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			if(info instanceof OCSPCAServiceInfo){
 				try{
 					ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
-					certificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE)).getOCSPSignerCertificatePath().get(0));
+					// The OCSP certificate is the same as the CA signing certifcate
 				}catch(Exception fe){
 					String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "OCSPCAService");            	
 					getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,msg,fe);

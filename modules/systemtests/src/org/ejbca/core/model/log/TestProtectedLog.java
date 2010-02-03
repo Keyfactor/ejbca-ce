@@ -210,7 +210,7 @@ public class TestProtectedLog extends TestCase {
 		}
 		if (wasCMSDisabled) {
 			ArrayList extendedcaserviceinfos = new ArrayList();
-			extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE, false));    
+			extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE));    
 			extendedcaserviceinfos.add(new XKMSCAServiceInfo(XKMSCAServiceInfo.STATUS_ACTIVE, false));
 			extendedcaserviceinfos.add(new CmsCAServiceInfo(CmsCAServiceInfo.STATUS_ACTIVE, "CN=CMSCertificate, " + x509cainfo.getSubjectDN(), "",
 					((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeySpec(), ((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeyAlgorithm()));
@@ -276,7 +276,7 @@ public class TestProtectedLog extends TestCase {
 				x509cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(internalAdmin, DEFAULT_CA_NAME);
 				//CmsCAServiceInfo cmscainfo = null; 
 				ArrayList extendedcaserviceinfos = new ArrayList();
-				extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE, false));    
+				extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE));    
 				extendedcaserviceinfos.add(new XKMSCAServiceInfo(XKMSCAServiceInfo.STATUS_ACTIVE, false)); 
 				extendedcaserviceinfos.add(new CmsCAServiceInfo(CmsCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + x509cainfo.getSubjectDN(), "",
 						((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeySpec(), ((SoftCATokenInfo) x509cainfo.getCATokenInfo()).getSignKeyAlgorithm()));

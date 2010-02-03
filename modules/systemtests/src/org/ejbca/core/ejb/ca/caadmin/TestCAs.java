@@ -104,11 +104,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + "CN=TEST",
-                    "",
-                    "1024",
-                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=XKMSCertificate, " + "CN=TEST",
                     "",
@@ -245,11 +241,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + "CN=TESTECDSA",
-                    "",
-                    "prime192v1",
-                    CATokenConstants.KEYALGORITHM_ECDSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=XKMSSignerCertificate, " + "CN=TESTECDSA",
                     "",
@@ -348,11 +340,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + "CN=TESTECDSAImplicitlyCA",
-                    "",
-                    "prime192v1",
-                    CATokenConstants.KEYALGORITHM_ECDSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=XKMSCertificate, " + "CN=TESTECDSAImplicitlyCA",
@@ -452,11 +440,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + cadn,
-                    "",
-                    "1024",
-                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=XKMSCertificate, " + cadn,
                     "",
@@ -542,11 +526,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + dn,
-                    "",
-                    "2048",
-                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=XKMSCertificate, " + dn,
                     "",
@@ -637,11 +617,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + dn,
-                    "",
-                    "1024",
-                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=XKMSCertificate, " + dn,
                     "",
@@ -1015,11 +991,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
-                    "",
-                    "1024",
-                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=XKMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
                     "",
@@ -1141,11 +1113,7 @@ public class TestCAs extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + "CN=TESTDSA",
-                    "",
-                    "1024",
-                    CATokenConstants.KEYALGORITHM_DSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                     "CN=XKMSCertificate, " + "CN=TESTDSA",
                     "",

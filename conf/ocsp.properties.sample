@@ -1,6 +1,6 @@
 # ------------ OCSP responder configuration ---------------------
 
-# Specifies the subject of a certificate which is used to identifiy the 
+# Specifies the subject of a certificate which is used to identify the 
 # responder which will generate responses when no real CA can be found from the request. 
 # This is used to generate 'unknown' responses when a request is received for a certificate 
 # that is not signed by any CA on this server. Recommended to use same as ca.dn.
@@ -9,10 +9,6 @@
 # For an external OCSP responder this is the issuer DN of the OCSP responders certificate to use for signing, i.e. the CAs subject DN.
 # Default: CN=AdminCA1,O=EJBCA Sample,C=SE
 ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
-
-# If set to true the OCSP responses will be signed directly by the CAs certificate instead 
-# of the CAs OCSP responder. Default true.
-#ocsp.usecasigningcert=true
 
 # If set to false the OCSP responses will only contain the signature certificate, and not the whole certificate chain of the OCSP responder. 
 # Default true.

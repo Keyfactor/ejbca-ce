@@ -10,7 +10,7 @@
   </ul>
   <h2>Retrieve</h2>
   <ul>
-	  <li>Fetch CA & OCSP Certificates - Browse and download CA certificates.</li>
+	  <li>Fetch CA Certificates - Browse and download CA certificates.</li>
 	  <li>Fetch CA CRLs - Download Certificate Revocation Lists.</li>
 	  <li>Fetch User's Latest Certificate - Download the last issued certificate for a user for whom you know the certificate Distinguished Name.</li>
   </ul>

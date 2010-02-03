@@ -49,13 +49,6 @@
         <td width="35%"></td>
       </tr>
     <% } %>
-    <% if(ocsprenewed){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("OCSPCERTIFICATERENEWED") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
     <% if(xkmsrenewed){ %> 
       <tr> 
         <td width="5%"></td>

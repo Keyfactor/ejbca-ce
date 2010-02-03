@@ -123,10 +123,6 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 * for a certificate not signed by a CA on this server is received.
 	 */
 	private final String m_defaultResponderId = OcspConfiguration.getDefaultResponderId();
-	/** Marks if the CAs certificate or the CAs OCSP responder certificate should be used for 
-	 * signing the OCSP response.
-	 */
-	private final boolean m_useCASigningCert = OcspConfiguration.getUseCASigningCert();
 	/** Marks if the CAs certificate chain should be included in the OCSP response or not 
 	 */
 	private final boolean m_includeChain = OcspConfiguration.getIncludeCertChain();
@@ -228,7 +224,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
 
 	    // Call extended CA services to get our OCSP stuff
-	    OCSPCAServiceRequest ocspservicerequest = new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_useCASigningCert, m_includeChain);
+	    OCSPCAServiceRequest ocspservicerequest = new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_includeChain);
 	    ocspservicerequest.setRespIdType(m_respIdType);
 	    OCSPCAServiceResponse caserviceresp = extendedService(m_adm, getCaid(cacert), ocspservicerequest);
 	    // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
@@ -266,7 +262,6 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			} 
 		}
 		if (m_log.isDebugEnabled()) {
-			m_log.debug("Use CA signing cert: '" + m_useCASigningCert + "'");
 			m_log.debug("Responder Id type: '" + m_respIdType + "'");
 			m_log.debug("Include certificate chain: '" + m_includeChain + "'");
 			m_log.debug("Non existing certificates are good: '" + m_nonExistingIsGood + "'");

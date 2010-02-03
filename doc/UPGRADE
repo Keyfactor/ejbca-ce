@@ -75,6 +75,10 @@ The ProtectedLogDevice has been deprecated, since it's hard to configure right a
 inefficient. There are currently plans to create a LogDevice aiming at non-repudiation rather than
 detection of missing log-entries.
 
+The option to use a separate soft keystore for the internal OCSP responder is no longer available. The
+upgrade will remove the soft keystore and OCSP requests will be signed directly by the CA signing
+certificate (currently the default behavior). External OCSP installations are not affected.
+
 To improve testing there is a new configuration option to allow changing used properties through Remote
 EJB access using conf/ejbca.properties#ejbca.productionmode. Default is to not allow configuration
 changes, but some of the development system tests will fail until this is allowed.

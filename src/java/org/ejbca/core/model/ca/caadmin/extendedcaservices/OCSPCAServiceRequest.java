@@ -36,7 +36,6 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     private ArrayList responseList = null;
     private X509Extensions exts = null;
     private String sigAlg = "SHA1WithRSA";
-    private boolean useCACert = false;
     private boolean includeChain = true;
     private String privKeyProvider = "BC"; // Default for OCSP responder not using the CAs private key
     private int respIdType = OcspConfiguration.RESPONDERIDTYPE_KEYHASH; // Default to use KeyId
@@ -45,14 +44,12 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     private PrivateKey privKey = null;
     private List certificateChain = null;
     
-    /** Constructor for OCSPCAServiceRequest
-     */                   
-    public OCSPCAServiceRequest(OCSPReq req, ArrayList responseList, X509Extensions exts, String sigAlg, boolean useCACert, boolean includeChain) {
+    /** Constructor for OCSPCAServiceRequest */                   
+    public OCSPCAServiceRequest(OCSPReq req, ArrayList responseList, X509Extensions exts, String sigAlg, boolean includeChain) {
         this.req = req;
         this.responseList = responseList;
         this.exts = exts;
         this.sigAlg = sigAlg;       
-        this.useCACert = useCACert;
         this.includeChain = includeChain;
     }
     public OCSPReq getOCSPrequest() {
@@ -67,13 +64,7 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     public String getSigAlg() {
         return sigAlg;
     }
-    /** If true, the CA certificate should be used to sign the OCSP response.
-     * 
-     * @return true if the CA cert should be used, false if the OCSPSigner cert shoudl be used.
-     */
-    public boolean useCACert() {
-        return useCACert;
-    }
+
     /** If true, the CA certificate chain is included in the response.
      * 
      * @return true if the CA cert chain should be included in the response.

@@ -41,13 +41,6 @@ public class EjbcaConfiguration {
 	}
 
 	/**
-	 * Password used to protect OCSP keystores in the database.
-	 */
-	public static String getCaOcspKeyStorePass() {
-		return ConfigurationHolder.getExpandedString("ca.ocspkeystorepass", "foo123");
-	}
-
-	/**
 	 * Password used to protect XKMS keystores in the database.
 	 */
 	public static String getCaXkmsKeyStorePass() {

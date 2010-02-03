@@ -74,15 +74,12 @@
   }
 
   OCSPCAServiceInfo ocspcainfo = null; 
-  java.security.cert.X509Certificate ocspcert = null; 
   if(editca && !isexternal){
     Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();       
     while(iter.hasNext()){
       ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
       if(serviceinfo instanceof OCSPCAServiceInfo){
         ocspcainfo = (OCSPCAServiceInfo) serviceinfo;
-        if(ocspcainfo.getOCSPSignerCertificatePath() != null)
-          ocspcert = (java.security.cert.X509Certificate) ocspcainfo.getOCSPSignerCertificatePath().get(0);
       }
      }
    }
@@ -271,27 +268,7 @@ function confirmrenewal(){
   return confirm("<%= ejbcawebbean.getText("AREYOUSURERENEWCA",true) %>") && checkallfields();     
 }
 
-
-    
-  <% if(ocspcert != null){ %>
-function viewocspcert(){        
-    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%= java.net.URLEncoder.encode(ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(ocspcert),"UTF-8")%>";
-    link = encodeURI(link);
-    win_popup = window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
-    win_popup.focus();
-}
- 
-function checkactivateocsp(){ 
-  if(document.ca.<%=CHECKBOX_ACTIVATEOCSPSERVICE%>.checked){
-    document.ca.<%=BUTTON_REVOKERENEWOCSPCERTIFICATE%>.disabled = false;
-  }
-  else{    
-    document.ca.<%=BUTTON_REVOKERENEWOCSPCERTIFICATE%>.disabled = true;
-  }
-}
-
-<% } 
-  if(xkmscert != null){ %>
+<% if(xkmscert != null){ %>
   function viewxkmscert(){        
       var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%= java.net.URLEncoder.encode(xkmscert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(xkmscert),"UTF-8")%>";
       link = encodeURI(link);
@@ -562,7 +539,7 @@ function checkallfields(){
         <% if(editca){
               out.write(cainfo.getSubjectDN() + "<br>"); 
            }else{ %>
-        <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=OCSPSignerCertificate," string that is added for OCSP. */ %>
+        <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="40" <% if(processrequest) out.write(" value='" + processedsubjectdn + "'"); %> maxlength="225">
         <% } %>
       </td>
@@ -902,15 +879,10 @@ function checkallfields(){
         <%= ejbcawebbean.getText("OCSPSERVICE") %>
       </td>
       <td width="50%"> <%= ejbcawebbean.getText("ACTIVE") %> 
-        <input type="checkbox"          <% if(editca && ocspcert != null){ %> onclick="checkactivateocsp()" <% } %> name="<%=CHECKBOX_ACTIVATEOCSPSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox" name="<%=CHECKBOX_ACTIVATEOCSPSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(waitingresponse) out.write(" disabled ");%>
             <% if((editca && (ocspcainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)) || !editca)
                  out.write("CHECKED");%>>
-         <% if(editca && ocspcert != null){ %> &nbsp;&nbsp;         
-         <input type="submit" name="<%= BUTTON_REVOKERENEWOCSPCERTIFICATE %>" <% if(ocspcainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWOCSPCERT") %>" >
-         <br>         
-         <a style="cursor:pointer;" onClick="viewocspcert()"><u><%= ejbcawebbean.getText("VIEWOCSPCERTIFICATE")%></u></a>
-         <% } %>
       </td>
     </tr>    
     <% } %>    
