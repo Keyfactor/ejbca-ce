@@ -178,12 +178,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             		keySpec = "2048";				 
             	}
             }
-            extendedcaservices.add(
-              new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                                    "CN=OCSPSignerCertificate, " + dn,
-                                    "",
-                                    keySpec,
-                                    keytype));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
             extendedcaservices.add(
                     new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                                           "CN=XKMSCertificate, " + dn,

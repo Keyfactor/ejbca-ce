@@ -44,6 +44,7 @@ import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockECDSAPublicKey;
 import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockRSAPublicKey;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * 
@@ -54,7 +55,7 @@ import org.ejbca.util.CertTools;
 public class TestOcspUtil extends TestCase {
 	
 	protected void setUp() throws Exception {
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 	}
 
 	public void test01CreateOCSPCAServiceResponse() throws Exception {
@@ -89,7 +90,7 @@ public class TestOcspUtil extends TestCase {
 		responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), 0));
 
 		// First check that the whole chain is included and the responderId is keyHash
-		OCSPCAServiceRequest ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithDSA;SHA1WithECDSA", false, true);
+		OCSPCAServiceRequest ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithDSA;SHA1WithECDSA", true);
 		ocspServiceReq.setRespIdType(OcspConfiguration.RESPONDERIDTYPE_KEYHASH);
 
 		OCSPCAServiceResponse response = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, certChain);
@@ -103,7 +104,7 @@ public class TestOcspUtil extends TestCase {
 		assertFalse(respId.equals(testName));
 
 		// Second check that the whole chain is NOT included and the responderId is Name
-		ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithDSA;SHA1WithECDSA", false, false);
+		ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithDSA;SHA1WithECDSA", false);
 		ocspServiceReq.setRespIdType(OcspConfiguration.RESPONDERIDTYPE_NAME);
 		response = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, certChain);
 		basicResp = response.getBasicOCSPResp();

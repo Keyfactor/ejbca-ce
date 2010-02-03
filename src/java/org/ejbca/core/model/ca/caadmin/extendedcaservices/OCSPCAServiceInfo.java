@@ -14,53 +14,21 @@
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
-import java.util.List;
-
-
 
 /**
  * Class used mostly when creating service. Also used when info about the services 
- * is neesed
+ * is needed
  * 
+ * The certificate path is set per request for the OCSP CA Service.
  * 
  * @version $Id$
  */
 public class OCSPCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
        
     /**
-     * Used when creating new service.
+     * Used when creating new service and when returning information from service
      */
-       
-    public OCSPCAServiceInfo(int status,
-                             String subjectdn, 
-                             String subjectaltname, 
-                             String keyspec, 
-                             String keyalgorithm){
-      super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	
+    public OCSPCAServiceInfo(int status) {
+    	super(status, null, null, null, null);                       	
     }
-    
-	/**
-	 * Used when returning information from service
-	 */
-       
-	public OCSPCAServiceInfo(int status,
-							 String subjectdn, 
-							 String subjectaltname, 
-							 String keyspec, 
-							 String keyalgorithm,
-							 List ocspcertpath){
-	  super(status, subjectdn, subjectaltname, keyspec, keyalgorithm, ocspcertpath);                       	
-	}    
-    
-    /*
-     * Used when updating existing services, only status is used.
-     */
-    public OCSPCAServiceInfo(int status, boolean renew){
-      super(status, renew);	
-    }
-    
-    public List getOCSPSignerCertificatePath(){ return super.getCertificatePath();}   
-    
-    
-
 }

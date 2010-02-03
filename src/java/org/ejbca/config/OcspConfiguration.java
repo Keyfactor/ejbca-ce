@@ -127,14 +127,6 @@ public class OcspConfiguration {
 	}
 
 	/**
-	 * If set to true the OCSP responses will be signed directly by the CAs certificate instead of the CAs OCSP responder.
-	 */
-	public static boolean getUseCASigningCert() {
-		String value = ConfigurationHolder.getString("ocsp.usecasigningcert", "true");
-		return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
-	}
-
-	/**
 	 * If set to name the OCSP responses will use the Name ResponseId type, if set to keyhash the KeyHash type will be used.
 	 * @returns one of OCSPUtil.RESPONDERIDTYPE_NAME and OCSPUtil.RESPONDERIDTYPE_KEYHASH
 	 */

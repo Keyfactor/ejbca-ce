@@ -44,7 +44,6 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
@@ -286,12 +285,7 @@ public class CADataHandler implements Serializable {
 		ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		// Only publish certificates for active services
 		if (next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
-			if(next instanceof OCSPCAServiceInfo){
-				List ocspcert = ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath();
-				if (ocspcert != null) {
-					signsession.publishCACertificate(administrator, ocspcert, publishers, cainfo.getSubjectDN());
-				}
-			}
+			// The OCSP certificate is the same as the CA signing certificate
 			if(next instanceof XKMSCAServiceInfo){
 				List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
 				if (xkmscert != null) {
@@ -312,19 +306,6 @@ public class CADataHandler implements Serializable {
     publishers.addAll(certprofile.getPublisherList());
     signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
 
- }
- 
- public void renewAndRevokeOCSPCertificate(int caid) throws CATokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException, AuthorizationDeniedException{
- 	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
-	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
-	while(iter.hasNext()){
-	  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
-	  if(next instanceof OCSPCAServiceInfo){
-	  	X509Certificate ocspcert = (X509Certificate)((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);
-	  	caadminsession.initExternalCAService(administrator, caid, next);
-		certificatesession.revokeCertificate(administrator,ocspcert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
-	  }
-	}  
  }
  
  public void renewAndRevokeXKMSCertificate(int caid) throws CATokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException, AuthorizationDeniedException{

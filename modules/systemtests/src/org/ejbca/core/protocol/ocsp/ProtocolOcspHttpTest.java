@@ -69,7 +69,6 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
@@ -744,11 +743,7 @@ public class ProtocolOcspHttpTest extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + dn,
-                    "",
-                    keySpec,
-                    CATokenConstants.KEYALGORITHM_ECDSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
             ArrayList policies = new ArrayList(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
@@ -848,11 +843,7 @@ public class ProtocolOcspHttpTest extends TestCase {
             catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + dn,
-                    "",
-                    keySpec,
-                    CATokenConstants.KEYALGORITHM_DSA));
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
             ArrayList policies = new ArrayList(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));

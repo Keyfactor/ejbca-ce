@@ -84,7 +84,6 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    private String[] cainfodatatexts = null;
    
    private CAInfo          cainfo   = null;
-   private X509Certificate ocspcert = null; 
    
     public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, HashMap publishersidtonamemap){
       this.cainfo = cainfo;  
@@ -114,17 +113,11 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 	      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
 	      if(next instanceof OCSPCAServiceInfo){
 	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
-	      	if(((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath() != null) {
-	      	  ocspcert = (X509Certificate) ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath().get(0);
-	      	}
 	      }
 		}
 		
 		if(active){
-	      cainfodata[OCSP] = ejbcawebbean.getText("ACTIVE") + 
-                             "<br>" + "&nbsp;<a style='cursor:pointer;' onClick='viewocspcert()'><u>" +
-			                 ejbcawebbean.getText("VIEWOCSPCERTIFICATE") + 
-			                 "</u></a>";	
+	      cainfodata[OCSP] = ejbcawebbean.getText("ACTIVE");	
 		}else{
 		  cainfodata[OCSP] = ejbcawebbean.getText("INACTIVE");	
 		}
@@ -219,8 +212,4 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    public CAInfo getCAInfo() { return cainfo;}
    public CATokenInfo getCATokenInfo() { return cainfo.getCATokenInfo(); }
    public Collection getCertificateChain() { return cainfo.getCertificateChain(); }
-   
-   public X509Certificate getOCSPSignerCertificate() { return ocspcert;}
-   
-   
 }

@@ -637,20 +637,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
           ExtendedCAServiceResponse returnval = null; 
           if(request instanceof OCSPCAServiceRequest) {
         	  OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
-              boolean useCACert = ocspServiceReq.useCACert();
               try {
-                  if (useCACert) {
-                	  ocspServiceReq.setPrivKey(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-                	  ocspServiceReq.setPrivKeyProvider(getCAToken().getProvider());
-                	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
-                	  List chain = Arrays.asList(signerChain);
-                	  ocspServiceReq.setCertificateChain(chain);
-                      // Super class handles signing with the OCSP signing certificate
-                      log.debug("extendedService, with ca cert)");
-                  } else {
-                      // Super class handles signing with the OCSP signing certificate
-                      log.debug("extendedService, no ca cert)");
-                  }
+            	  ocspServiceReq.setPrivKey(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+            	  ocspServiceReq.setPrivKeyProvider(getCAToken().getProvider());
+            	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
+            	  List chain = Arrays.asList(signerChain);
+            	  ocspServiceReq.setCertificateChain(chain);
+            	  // Super class handles signing with the OCSP signing certificate
+            	  log.debug("extendedService, with ca cert)");
               } catch (IllegalKeyStoreException ike) {
             	  throw new ExtendedCAServiceRequestException(ike);
               } catch (CATokenOfflineException ctoe) {

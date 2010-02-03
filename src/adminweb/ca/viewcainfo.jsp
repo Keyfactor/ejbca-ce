@@ -30,25 +30,6 @@
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
-<SCRIPT language="JavaScript">
-<!--
-function viewocspcert(){
-	<%
-	X509Certificate ocspcert = viewcainfohelper.ocspcert;
-	String ocspdn = "N/A";
-	String ocspserno = "N/A";
-	if (ocspcert != null) {
-		ocspdn = CertTools.getIssuerDN(viewcainfohelper.ocspcert);
-		ocspserno = viewcainfohelper.ocspcert.getSerialNumber().toString(16);
-	}
-	%>
-    var link = "<%= VIEWCERT_LINK %>?<%= viewcainfohelper.CERTSERNO_PARAMETER %>=<%=java.net.URLEncoder.encode(ocspserno + "," + ocspdn,"UTF-8")%>";
-    link = encodeURI(link);
-    win_popup = window.open(link, 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
-    win_popup.focus();
-}
--->
-</SCRIPT>
 <body >
 
   <h2 align="center"><%= ejbcawebbean.getText("CAINFORMATION") %></h2>

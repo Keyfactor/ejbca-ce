@@ -13,8 +13,6 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.security.cert.X509Certificate;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.ejbca.core.model.SecConst;
@@ -52,6 +50,18 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	public static final String CHECKBOX_INCLUDEINHEALTHCHECK = "includeinhealthcheck";
 	public static final String SUBMITHS					= "submiths";
 
+    private CAInterfaceBean cabean;
+    private boolean initialized=false;
+	public String   generalerrormessage = null;
+	public String   activationerrormessage = null;
+	public String   activationerrorreason = null;
+	public String   activationmessage = null;
+    public boolean  can_activate = false;    
+    public boolean  authorized = false; 
+    public CAInfoView cainfo = null;
+    public  int status = 0; 
+    public boolean tokenoffline = false;
+    public  int caid = 0; 
 
     /** Creates new LogInterfaceBean */
     public ViewCAInfoJSPHelper(){     	    	
@@ -166,7 +176,6 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      cainfo = cabean.getCAInfo(caid);
     	      status = cainfo.getCAInfo().getStatus();
     	      tokenoffline = cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE;
-    	      ocspcert = cainfo.getOCSPSignerCertificate();
     	    } catch(AuthorizationDeniedException e){
     	    	generalerrormessage = "NOTAUTHORIZEDTOVIEWCA";
     	    }
@@ -179,23 +188,4 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	  }
   
     }
-
-    
-       
-    // Private fields.
-    private CAInterfaceBean cabean;
-    private boolean initialized=false;
-	public String   generalerrormessage = null;
-	public String   activationerrormessage = null;
-	public String   activationerrorreason = null;
-	public String   activationmessage = null;
-    public boolean  can_activate = false;    
-    public boolean  authorized = false; 
-    public CAInfoView cainfo = null;
-    public  int status = 0; 
-    public boolean tokenoffline = false;
-    public  int caid = 0; 
-    public  X509Certificate ocspcert = null;
-    
-	
 }

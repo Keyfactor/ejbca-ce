@@ -500,7 +500,7 @@
     			<include name="org/ejbca/core/protocol/IResponseMessage.java"/>
     			<include name="org/ejbca/core/protocol/ResponseStatus.java"/>
     			<include name="org/ejbca/core/protocol/FailInfo.java"/>
-    			<!-- Dependency on Certificate Extension's interface/factory -->
+    			<!-- Dependency on Certificate Extensions -->
     			<include name="org/ejbca/util/cert/SubjectDirAttrExtension.java"/>
     			<include name="org/ejbca/core/model/ca/certextensions/standard/*.java"/>
     			<include name="org/ejbca/core/model/ca/certextensions/*.java"/>
