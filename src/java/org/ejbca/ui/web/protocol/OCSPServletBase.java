@@ -88,7 +88,15 @@ import org.ejbca.util.DummyPatternLogger;
 import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.IPatternLogger;
 
-/**
+/** Base servlet for handling OCSP requests, subclass of both OCSPServlet and OCSPServletStandalone.
+ * 
+ * Only one servlet instance must exist in the jvm.
+ * This is stating that it will only be one servlet instance for EJBCA:
+ * http://java.sun.com/blueprints/guidelines/designing_enterprise_applications_2e/web-tier/web-tier5.html
+ * 4.4.8.1 Distributed Servlet Instances
+ * By default, only one servlet instance per servlet definition is allowed for servlets that are neither in an application marked distributable, nor implement SingleThreadModel. Servlets in applications marked distributable have exactly one servlet instance per servlet definition for each Java virtual machine (JVM). The container may create and pool multiple instances of a servlet that implements SingleThreadModel, but using SingleThreadModel is discouraged.
+ * At any particular time, session attributes for a given session are local to a particular JVM. The distributed runtime environment therefore acts to ensure that all requests associated with a given session are handled by exactly one JVM at a time. A servlet's session state may migrate to, or be failed-over to, some other JVM between requests.
+ *
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
  * @version  $Id$
  */
@@ -552,7 +560,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		if (m_log.isTraceEnabled()) {
 			m_log.trace(">service()");
 		}
-        mTransactionID += 1;
+		final int localTransactionID;
+		synchronized( this ) {
+			this.mTransactionID += 1;
+			localTransactionID = this.mTransactionID;
+		}
 		final IPatternLogger transactionLogger;
 		final IPatternLogger auditLogger;
 		final Date startTime = new Date();
@@ -568,10 +580,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 		final String remoteAddress = request.getRemoteAddr();
 		auditLogger.paramPut(IAuditLogger.OCSPREQUEST, ""); // No request bytes yet
-		auditLogger.paramPut(IPatternLogger.LOG_ID, new Integer(this.mTransactionID));
+		auditLogger.paramPut(IPatternLogger.LOG_ID, new Integer(localTransactionID));
 		auditLogger.paramPut(IPatternLogger.SESSION_ID, this.m_SessionID);
 		auditLogger.paramPut(IOCSPLogger.CLIENT_IP, remoteAddress);
-		transactionLogger.paramPut(IPatternLogger.LOG_ID, new Integer(this.mTransactionID));
+		transactionLogger.paramPut(IPatternLogger.LOG_ID, new Integer(localTransactionID));
 		transactionLogger.paramPut(IPatternLogger.SESSION_ID, this.m_SessionID);
 		transactionLogger.paramPut(IOCSPLogger.CLIENT_IP, remoteAddress);
 
