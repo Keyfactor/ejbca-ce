@@ -26,8 +26,6 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -37,7 +35,6 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -51,8 +48,8 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.CADataLocal;
-import org.ejbca.core.ejb.ca.caadmin.CADataLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
@@ -116,14 +113,6 @@ import org.ejbca.util.keystore.KeyTools;
  *   type="java.lang.String"
  *   value="SHA1PRNG"
  *
- * @ejb.ejb-external-ref description="The CA entity bean"
- *   view-type="local"
- *   ref-name="ejb/CADataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ca.caadmin.CADataLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.CADataLocal"
- *   link="CAData"
- *
  * @ejb.ejb-external-ref description="The CRL Create bean"
  *   view-type="local"
  *   ref-name="ejb/CreateCRLSessionLocal"
@@ -167,6 +156,14 @@ import org.ejbca.util.keystore.KeyTools;
  *   business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
  *   link="PublisherSession"
  *
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   remote-class="org.ejbca.core.ejb.ca.sign.ISignSessionHome"
@@ -187,15 +184,7 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
-
-    /**
-     * Local interfacte to ca admin store
-     */
-    private CADataLocalHome cadatahome;
-
-    /**
-     * Home interface to certificate store
-     */
+    /* Home interface to certificate store */
     private ICertificateStoreSessionLocalHome storeHome = null;
 
     /* Home interface to Authentication session */
@@ -204,8 +193,11 @@ public class RSASignSessionBean extends BaseSessionBean {
     /* Home interface to Publisher session */
     private IPublisherSessionLocalHome publishHome = null;
 
-    /** The local interface of the job runner session bean used to create crls.*/
+    /* The local interface of the job runner session bean used to create crls.*/
     private ICreateCRLSessionLocal crlSession;
+
+    /* The local interface of CA administration.*/
+    private ICAAdminSessionLocal caAdminSession;
 
     /**
      * The local interface of the log session bean
@@ -232,9 +224,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             // get home interfaces to other session beans used
             storeHome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
             authHome = (IAuthenticationSessionLocalHome) getLocator().getLocalHome(IAuthenticationSessionLocalHome.COMP_NAME);
-
-            cadatahome = (CADataLocalHome) getLocator().getLocalHome(CADataLocalHome.COMP_NAME);
-
             publishHome = (IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
 
             // Set up the serial number generator for Certificate Serial numbers
@@ -281,6 +270,18 @@ public class RSASignSessionBean extends BaseSessionBean {
     	return crlSession;
     }
 
+    private ICAAdminSessionLocal getCaAdminSession() {
+    	if(caAdminSession == null){
+    		try{
+    			ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+    			caAdminSession = home.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);
+    		}
+    	}
+    	return caAdminSession;
+    }
+
     /**
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
      * RootCA certificate in the last position.
@@ -293,25 +294,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Collection getCertificateChain(Admin admin, int caid) {
-        // get CA
-        CADataLocal cadata = null;
-        try {
-            cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-        } catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
-        }
-
-        CA ca = null;
-        try {
-            ca = cadata.getCA();
-        } catch (java.io.UnsupportedEncodingException uee) {
-            throw new EJBException(uee);
-        } catch(IllegalKeyStoreException e){
-            throw new EJBException(e);
-        }
-
-        return ca.getCertificateChain();
-    }  // getCertificateChain
+    	try {
+    		return getCaAdminSession().getCA(admin, caid).getCertificateChain();
+    	} catch (CADoesntExistsException e) {
+    		throw new EJBException(e);
+    	}
+    }
 
 
     /**
@@ -364,42 +352,11 @@ public class RSASignSessionBean extends BaseSessionBean {
     	if (log.isTraceEnabled()) {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
     	}
-        byte[] returnval = null;
-        // get CA
-        CADataLocal cadata = null;
-        try {
-            cadata = cadatahome.findByPrimaryKey(new Integer(caId));
-        } catch (javax.ejb.FinderException fe) {
-            throw new CADoesntExistsException(fe);
-        }
-
-        CA ca = null;
-        try {
-            ca = cadata.getCA();
-        } catch (java.io.UnsupportedEncodingException uee) {
-            throw new CADoesntExistsException(uee);
-        } catch(IllegalKeyStoreException e){
-            throw new EJBException(e);
-        }
-
-        // Check that CA hasn't expired.
-        Certificate cacert = ca.getCACertificate();
-        try {
-            CertTools.checkValidity(cacert, new Date());
-        } catch (CertificateExpiredException e) {
-            // Signers Certificate has expired.
-            cadata.setStatus(SecConst.CA_EXPIRED);
-            ca.setStatus(SecConst.CA_EXPIRED);
-        	String msg = intres.getLocalizedMessage("signsession.caexpired", cadata.getSubjectDN());
-            throw new CADoesntExistsException(msg);
-        } catch (CertificateNotYetValidException cve) {
-            throw new CADoesntExistsException(cve);
-        }
-
-        returnval = ca.createPKCS7(cert, includeChain);
+        CA ca = getCaAdminSession().getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
+        byte[] returnval = ca.createPKCS7(cert, includeChain);
         log.trace("<createPKCS7()");
         return returnval;
-    } // createPKCS7
+    }
 
     /**
      * Requests for a certificate to be created for the passed public key with default key usage
@@ -691,14 +648,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, NotFoundException {
-        trace(">createCertificate(IRequestMessage)");
+        log.trace(">createCertificate(IRequestMessage)");
         // Get CA that will receive request
-        CADataLocal cadata = null;
         UserDataVO data = null;
         IResponseMessage ret = null;            
+        CA ca = getCAFromRequest(admin, req);
         try {
-        	cadata = getCAFromRequest(admin, req);
-            CA ca = cadata.getCA();
             CATokenContainer catoken = ca.getCAToken();
             
             // See if we need some key material to decrypt request
@@ -709,19 +664,19 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Verify the request
             if (req.verify() == false) {
             	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new SignRequestSignatureException(msg);
             }
             
             if (req.getUsername() == null) {
             	String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new SignRequestException(msg);
                 //ret.setFailInfo(FailInfo.BAD_REQUEST);
                 //ret.setStatus(ResponseStatus.FAILURE);
             } else if (req.getPassword() == null) {
             	String msg = intres.getLocalizedMessage("signsession.nopasswordinrequest");
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new SignRequestException(msg);
             } else {        
             	ResponseStatus status = ResponseStatus.SUCCESS;
@@ -733,7 +688,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             		data = authUser(admin, req.getUsername(), req.getPassword());
                     PublicKey reqpk = req.getRequestPublicKey();
                     if (reqpk == null) {
-                        getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.nokeyinrequest"));
+                        getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.nokeyinrequest"));
                         throw new InvalidKeyException("Key is null!");
                     }
                     // We need to make sure we use the users registered CA here
@@ -741,7 +696,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     	failText = intres.getLocalizedMessage("signsession.wrongauthority", new Integer(ca.getCAId()), new Integer(data.getCAId()));
                         status = ResponseStatus.FAILURE;
                         failInfo = FailInfo.WRONG_AUTHORITY;
-                        getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, failText);
+                        getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, failText);
                     }
 
                     if (status.equals(ResponseStatus.SUCCESS)) {
@@ -777,7 +732,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 	failText = intres.getLocalizedMessage("signsession.nosuchuser", req.getUsername());
                     status = ResponseStatus.FAILURE;
                     failInfo = FailInfo.INCORRECT_DATA;
-                    getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, failText);
+                    getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, failText);
             	}
                 
                 //Create the response message with all nonces and checks etc
@@ -811,8 +766,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw ke;
         } catch (IllegalKeyStoreException e) {
             throw new IllegalKeyException(e);
-        } catch (UnsupportedEncodingException e) {
-            throw new CADoesntExistsException(e);
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
@@ -822,12 +775,12 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
-            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
+            getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
-        trace("<createCertificate(IRequestMessage)");
+        log.trace("<createCertificate(IRequestMessage)");
         return ret;
     }
     
@@ -850,19 +803,16 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws IllegalKeyException 
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
-     * @see se.anatom.ejbca.protocol.IRequestMessage
-     * @see se.anatom.ejbca.protocol.IResponseMessage
-     * @see se.anatom.ejbca.protocol.X509ResponseMessage
+     * @see org.ejbca.core.protocol.IRequestMessage
+     * @see org.ejbca.core.protocol.IResponseMessage
+     * @see org.ejbca.core.protocol.X509ResponseMessage
      */
     public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req,  Class responseClass) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException {
-        trace(">createRequestFailedResponse(IRequestMessage)");
+    	log.trace(">createRequestFailedResponse(IRequestMessage)");
         IResponseMessage ret = null;            
-        CADataLocal cadata = null;
+        CA ca = getCAFromRequest(admin, req);
         try {
-        	cadata = getCAFromRequest(admin, req);
-            CA ca = cadata.getCA();
             CATokenContainer catoken = ca.getCAToken();
-         
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
@@ -871,26 +821,18 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Verify the request
             if (req.verify() == false) {
             	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.popverificationfailed"));
+                getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.popverificationfailed"));
                 throw new SignRequestSignatureException(msg);
             }
-            
             //Create the response message with all nonces and checks etc
             ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT), catoken.getProvider());
-            
             ret.setStatus(ResponseStatus.FAILURE);
             ret.setFailInfo(FailInfo.BAD_REQUEST);
             ret.create();
-        } catch (AuthStatusException se) {
-            throw se;
-        } catch (AuthLoginException le) {
-            throw le;
         } catch (IllegalKeyStoreException e) {
             throw new IllegalKeyException(e);
         } catch (NotFoundException e) {
         	// This can actually not happen here?
-            throw new CADoesntExistsException(e);
-        } catch (UnsupportedEncodingException e) {
             throw new CADoesntExistsException(e);
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
@@ -901,12 +843,12 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
-            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
+            getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
-        trace("<createRequestFailedResponse(IRequestMessage)");
+        log.trace("<createRequestFailedResponse(IRequestMessage)");
         return ret;
     }
 
@@ -927,20 +869,16 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws SignRequestSignatureException if the the request couldn't be verified.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
-     * @see se.anatom.ejbca.protocol.IRequestMessage
-     * @see se.anatom.ejbca.protocol.IResponseMessage
-     * @see se.anatom.ejbca.protocol.X509ResponseMessage
+     * @see org.ejbca.core.protocol.IRequestMessage
+     * @see org.ejbca.core.protocol.IResponseMessage
+     * @see org.ejbca.core.protocol.X509ResponseMessage
      */
     public IRequestMessage decryptAndVerifyRequest(Admin admin, IRequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
-        trace(">decryptAndVerifyRequest(IRequestMessage)");
+    	log.trace(">decryptAndVerifyRequest(IRequestMessage)");
         // Get CA that will receive request
-        CADataLocal cadata = null;
-            
+        CA ca = getCAFromRequest(admin, req);
         try {
-        	cadata = getCAFromRequest(admin, req);
-            CA ca = cadata.getCA();
             CATokenContainer catoken = ca.getCAToken();
-            
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
@@ -949,18 +887,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Verify the request
             if (req.verify() == false) {
             	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-            	getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+            	getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new SignRequestSignatureException(msg);
             }
-  
-        } catch (AuthStatusException se) {
-            throw se;
-        } catch (AuthLoginException le) {
-            throw le;
         } catch (IllegalKeyStoreException e) {
             throw new IllegalKeyException(e);
-        } catch (UnsupportedEncodingException e) {
-            throw new CADoesntExistsException(e);
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
@@ -968,12 +899,12 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
         }  catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
-            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
+            getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
-        trace("<decryptAndVerifyRequest(IRequestMessage)");
+        log.trace("<decryptAndVerifyRequest(IRequestMessage)");
         return req;
     }
     
@@ -994,40 +925,15 @@ public class RSASignSessionBean extends BaseSessionBean {
     public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException {
         trace(">getCRL(IRequestMessage)");
         IResponseMessage ret = null;
-        ICertificateStoreSessionLocal certificateStore = null;
-        try {
-            certificateStore = storeHome.create();
-        } catch (CreateException e) {
-            error("Can not create certificate store session: ", e);
-            throw new EJBException(e);
-        }
         // Get CA that will receive request
-        CADataLocal cadata = getCAFromRequest(admin, req);
+        CA ca = getCAFromRequest(admin, req);
         try {
-            CA ca = cadata.getCA();
             CATokenContainer catoken = ca.getCAToken();
-
             if (ca.getStatus() != SecConst.CA_ACTIVE) {
-            	String msg = intres.getLocalizedMessage("signsession.canotactive", cadata.getSubjectDN());
-            	getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
+            	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+            	getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
                 throw new EJBException(msg);
             }
-
-            // Check that CA hasn't expired.
-            Certificate cacert = ca.getCACertificate();
-            try {
-                CertTools.checkValidity(cacert, new Date());
-            } catch (CertificateExpiredException cee) {
-                // Signers Certificate has expired.
-                cadata.setStatus(SecConst.CA_EXPIRED);
-                ca.setStatus(SecConst.CA_EXPIRED);
-                String msg = intres.getLocalizedMessage("signsession.caexpired", cadata.getSubjectDN());
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg, cee);
-                throw new CADoesntExistsException(msg);
-            } catch (CertificateNotYetValidException cve) {
-                throw new CADoesntExistsException(cve);
-            }
-
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
@@ -1055,8 +961,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new CADoesntExistsException(e);
         } catch (IllegalKeyStoreException e) {
             throw new IllegalKeyException(e);
-        } catch (UnsupportedEncodingException e) {
-            throw new CADoesntExistsException(e);
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
@@ -1068,9 +972,9 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
         	log.error(msg, ctoe);
-            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg, ctoe);
+            getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
         trace("<getCRL(IRequestMessage)");
@@ -1081,8 +985,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Help Method that extracts the CA specified in the request.
      * 
      */
-    private CADataLocal getCAFromRequest(Admin admin, IRequestMessage req) throws AuthStatusException, AuthLoginException, CADoesntExistsException, UnsupportedEncodingException{
-    	CADataLocal cadata = null;
+    private CA getCAFromRequest(Admin admin, IRequestMessage req) throws AuthStatusException, AuthLoginException, CADoesntExistsException {
+        CA ca = null;
+    	//CADataLocal cadata = null;
         try {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
@@ -1101,73 +1006,49 @@ public class RSASignSessionBean extends BaseSessionBean {
             	}
             	debug("Using DN: "+dn);
             	try {
-                    cadata = cadatahome.findByPrimaryKey(new Integer(dn.hashCode()));            		
-                    debug("Using CA (from issuerDN) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
-            	} catch (Exception e) {
+            		ca = getCaAdminSession().getCA(admin, dn.hashCode());
+                    debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+            	} catch (CADoesntExistsException e) {
             		// We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
             		if (req.getUsername() != null) {
-            			cadata = getCAFromUsername(admin, req);
+            			ca = getCAFromUsername(admin, req);
                     } else {
                         String msg = intres.getLocalizedMessage("signsession.canotfoundissuerusername", dn, "null");        	
                         throw new CADoesntExistsException(msg);
                     }
             	}
             } else if (req.getUsername() != null) {
-                cadata = getCAFromUsername(admin, req);
+                ca = getCAFromUsername(admin, req);
             } else {
-                throw new CADoesntExistsException();
+                throw new CADoesntExistsException(intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
             }
-        } catch (javax.ejb.FinderException fe) {
-            String msg = intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername());        	
-            error(msg);
-            getLogSession().log(admin, -1, LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, fe);
-            throw new CADoesntExistsException(fe);
         } catch (CreateException ce) {
         	// Really fatal error
             String msg = intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername());        	
             error(msg, ce);        	
             getLogSession().log(admin, -1, LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ce);
             throw new EJBException(ce);
-        }
+        } catch (ObjectNotFoundException e) {
+            throw new CADoesntExistsException(intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
+		}
         
-        CA ca = null;
-        try {
-        	ca = cadata.getCA();
-        	
-        	if (ca.getStatus() != SecConst.CA_ACTIVE) {
-                String msg = intres.getLocalizedMessage("signsession.canotactive", cadata.getSubjectDN());
-        		getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-        		throw new EJBException(msg);
-        	}
-        	
-        	// Check that CA hasn't expired.
-        	Certificate cacert = ca.getCACertificate();
-        	CertTools.checkValidity(cacert, new Date());
-        } catch (CertificateExpiredException cee) {
-            // Signers Certificate has expired.
-            cadata.setStatus(SecConst.CA_EXPIRED);
-            ca.setStatus(SecConst.CA_EXPIRED);
-            String msg = intres.getLocalizedMessage("signsession.caexpired", cadata.getSubjectDN());
-            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, cee);
-            throw new CADoesntExistsException(msg);
-        } catch (CertificateNotYetValidException cve) {
-            throw new CADoesntExistsException(cve);
-        } catch (IllegalKeyStoreException e) {
-        	throw new EJBException(e);
+        if (ca.getStatus() != SecConst.CA_ACTIVE) {
+        	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+        	getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+        	throw new EJBException(msg);
         }
-        
-        return cadata;
+        return ca;
     }
 
-	private CADataLocal getCAFromUsername(Admin admin, IRequestMessage req)
-			throws ObjectNotFoundException, AuthStatusException, AuthLoginException, FinderException {
+	private CA getCAFromUsername(Admin admin, IRequestMessage req)
+			throws ObjectNotFoundException, AuthStatusException, AuthLoginException, CADoesntExistsException {
 		// See if we can get username and password directly from request
 		String username = req.getUsername();
 		String password = req.getPassword();
 		UserDataVO data = authUser(admin, username, password);
-		CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-		debug("Using CA (from username) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
-		return cadata;
+		CA ca = getCaAdminSession().getCA(admin, data.getCAId());
+		debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+		return ca;
 	}
 
     /**
@@ -1184,45 +1065,14 @@ public class RSASignSessionBean extends BaseSessionBean {
     public byte[] createCRL(Admin admin, int caid, Collection certs, int basecrlnumber) throws CATokenOfflineException {
         trace(">createCRL()");
         byte[] crlBytes = null; // return value
-        CADataLocal cadata = null;
+        CA ca = null;
         try {
-            // get CA
-            try {
-                cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-            } catch (javax.ejb.FinderException fe) {
-                String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", new Integer(caid));        	
-                getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, fe);
-                throw new EJBException(fe);
-            }
-
-            final CA ca;
-            try {
-                ca = cadata.getCA();
-            } catch (java.io.UnsupportedEncodingException uee) {
-                throw new EJBException(uee);
-            }
+            ca = getCaAdminSession().getCA(admin, caid);
             if ( (ca.getStatus() != SecConst.CA_ACTIVE) && (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) ) {
-                String msg = intres.getLocalizedMessage("signsession.canotactive", cadata.getSubjectDN());
+                String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
                 getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new CATokenOfflineException(msg);
             }
-
-            // Check that CA hasn't expired.
-            Certificate cacert = ca.getCACertificate();
-            try {
-                CertTools.checkValidity(cacert, new Date());
-            } catch (CertificateExpiredException e) {
-                // Signers Certificate has expired.
-                cadata.setStatus(SecConst.CA_EXPIRED);
-                ca.setStatus(SecConst.CA_EXPIRED);
-                String msg = intres.getLocalizedMessage("signsession.caexpired", cadata.getSubjectDN());
-                getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
-                throw new EJBException(msg);
-            } catch (CertificateNotYetValidException e) {
-                throw new EJBException(e);
-            }
-
-            ICertificateStoreSessionLocal certificateStore = storeHome.create();
             // Get highest number of last CRL (full or delta) and increase by 1, both full CRLs and deltaCRLs share the same 
             // series of CRL Number
             final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
@@ -1241,11 +1091,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             	crl = (X509CRL) ca.generateCRL(certs, number);
             }
             if (crl != null) {
-                String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(number), cadata.getName(), cadata.getSubjectDN());
+                String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(number), ca.getName(), ca.getSubjectDN());
                 getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
 
                 // Store CRL in the database
-                String fingerprint = CertTools.getFingerprintAsString(cacert);
+                String fingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
                 crlBytes = crl.getEncoded();            	
                 log.debug("Storing CRL in certificate store.");
                 getCRLCreateSession().storeCRL(admin, crlBytes, fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
@@ -1255,11 +1105,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 pub.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, number, ca.getSubjectDN());
             }
         } catch (CATokenOfflineException ctoe) {
-            String cadn = null;
-            if (cadata != null) {
-                cadn = cadata.getSubjectDN();
-            }
-            String msg = intres.getLocalizedMessage("error.catokenoffline", cadn);
+            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
             getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, ctoe);
             throw ctoe;
@@ -1418,81 +1264,40 @@ public class RSASignSessionBean extends BaseSessionBean {
      * 
      */
     private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        trace(">createCertificate(pk, ku, date)");
-        try {
-            // Authorize user and get DN
-            UserDataVO data = authUser(admin, username, password);
-            debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
-            if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
-                debug("Overriding user certificate profile with :" + certificateprofileid);
-                data.setCertificateProfileId(certificateprofileid);
-            }
-            
-            if (caid != SecConst.CAID_USEUSERDEFINED) {
-                debug("Overriding user caid with :" + caid);
-                data.setCAId(caid);
-            }
-
-
-            debug("User type=" + data.getType());
-            // get CA
-            CADataLocal cadata = null;
-            try {
-                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-            } catch (javax.ejb.FinderException fe) {
-                String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", new Integer(data.getCAId()));        	
-                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, fe);
-                throw new CADoesntExistsException(msg);
-            }
-            CA ca = null;
-            try {
-                ca = cadata.getCA();
-            } catch (java.io.UnsupportedEncodingException uee) {
-                throw new EJBException(uee);
-            } catch(IllegalKeyStoreException e){
-                throw new EJBException(e);
-            }
-
-            if (ca.getStatus() != SecConst.CA_ACTIVE) {
-            	String msg = intres.getLocalizedMessage("signsession.canotactive", cadata.getSubjectDN());
-                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                throw new EJBException(msg);
-            }
-
-            // Check that CA hasn't expired.
-            Certificate cacert = ca.getCACertificate();
-            try {
-                CertTools.checkValidity(cacert, new Date());
-            } catch (CertificateExpiredException cee) {
-                // Signers Certificate has expired.
-                cadata.setStatus(SecConst.CA_EXPIRED);
-                ca.setStatus(SecConst.CA_EXPIRED);
-            	String msg = intres.getLocalizedMessage("signsession.caexpired", cadata.getSubjectDN());
-                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, cee);
-                throw new EJBException(msg);
-            } catch (CertificateNotYetValidException cve) {
-                throw new EJBException(cve);
-            }
-
-
-            // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-            Certificate cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
-            // Call authentication session and tell that we are finished with this user
-            if (ca.getFinishUser() == true) {
-                finishUser(admin, username, password);
-            }
-            trace("<createCertificate(pk, ku, date)");
-            return cert;
-        } catch (ObjectNotFoundException oe) {
-            throw oe;
-        } catch (AuthStatusException se) {
-            throw se;
-        } catch (AuthLoginException le) {
-            throw le;
-        } catch (IllegalKeyException ke) {
-            throw ke;
+    	log.trace(">createCertificate(pk, ku, date)");
+        // Authorize user and get DN
+        UserDataVO data = authUser(admin, username, password);
+        log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
+        if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
+        	debug("Overriding user certificate profile with :" + certificateprofileid);
+        	data.setCertificateProfileId(certificateprofileid);
         }
-    } // createCertificate
+        // Check if we should override the CAId
+        if (caid != SecConst.CAID_USEUSERDEFINED) {
+        	if (log.isDebugEnabled()) {
+            	log.debug("Overriding user caid with :" + caid);
+        	}
+        	data.setCAId(caid);
+        }
+    	if (log.isDebugEnabled()) {
+            log.debug("User type=" + data.getType());
+    	}
+        // Get CA object and make sure it's active
+        CA ca = getCaAdminSession().getCA(admin, data.getCAId());
+        if (ca.getStatus() != SecConst.CA_ACTIVE) {
+        	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+        	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+        	throw new EJBException(msg);
+        }
+        // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
+        Certificate cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
+        // Call authentication session and tell that we are finished with this user
+        if (ca.getFinishUser() == true) {
+        	finishUser(admin, username, password);
+        }
+        log.trace("<createCertificate(pk, ku, date)");
+        return cert;
+    }
 
     /**
      * Creates the certificate, does NOT check any authorization on user, profiles or CA!
@@ -1646,10 +1451,10 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param keyPupose one of SecConst.CAKEYPURPOSE_...
      * @ejb.interface-method view-type="both"
      */
-    public byte[] signData(byte[] data, int caId, int keyPurpose) throws NoSuchAlgorithmException, CATokenOfflineException, IllegalKeyStoreException, UnsupportedEncodingException,
-    		FinderException, InvalidKeyException, SignatureException {
-        CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caId));
-        CATokenContainer caToken = cadata.getCA().getCAToken(); 
+    public byte[] signData(byte[] data, int caId, int keyPurpose) throws NoSuchAlgorithmException, CATokenOfflineException, IllegalKeyStoreException,
+    		InvalidKeyException, SignatureException, CADoesntExistsException {
+        CA ca = getCaAdminSession().getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
+        CATokenContainer caToken = ca.getCAToken(); 
         PrivateKey pk = caToken.getPrivateKey(keyPurpose);
     	Signature signer = Signature.getInstance(caToken.getCATokenInfo().getSignatureAlgorithm());
         signer.initSign(pk);
@@ -1662,10 +1467,10 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param keyPupose one of SecConst.CAKEYPURPOSE_...
      * @ejb.interface-method view-type="both"
      */
-    public boolean verifySignedData(byte[] data, int caId, int keyPurpose, byte[] signature) throws FinderException, IllegalKeyStoreException, UnsupportedEncodingException,
-    		CATokenOfflineException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caId));
-        CATokenContainer caToken = cadata.getCA().getCAToken();
+    public boolean verifySignedData(byte[] data, int caId, int keyPurpose, byte[] signature) throws IllegalKeyStoreException, 
+    		CATokenOfflineException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CADoesntExistsException {
+        CA ca = getCaAdminSession().getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
+        CATokenContainer caToken = ca.getCAToken();
         PublicKey pk = caToken.getPublicKey(keyPurpose);
         Signature signer = Signature.getInstance(caToken.getCATokenInfo().getSignatureAlgorithm());
         signer.initVerify(pk);
@@ -1689,27 +1494,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request)
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException {
-
         // Get CA that will process request
-        CADataLocal cadata = null;
-        ExtendedCAServiceResponse returnval = null;
-        try {
-            cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-            if (log.isDebugEnabled()) {
-                debug("Exteneded service with request class '"+request.getClass().getName()+"' called for CA '"+cadata.getName()+"'");            	
-            }
-            returnval = cadata.getCA().extendedService(request);
-        } catch (javax.ejb.FinderException fe) {
-            throw new CADoesntExistsException(fe);
-        } catch (UnsupportedEncodingException ue) {
-            throw new EJBException(ue);
-        } catch(IllegalKeyStoreException e){
-            throw new EJBException(e);
+        CA ca = getCaAdminSession().getCA(admin, caid);
+        if (log.isDebugEnabled()) {
+        	debug("Exteneded service with request class '"+request.getClass().getName()+"' called for CA '"+ca.getName()+"'");            	
         }
-
-
-        return returnval;
-
+        return ca.extendedService(request);
     }
 
     /**
