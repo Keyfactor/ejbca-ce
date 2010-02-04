@@ -2913,6 +2913,34 @@ Key statistics.
 Signings per second: 68 No crypto available for this key.
 </source>
 </subsubsection>
+<subsubsection name="Sample Hard Token Properties">
+<p>This is a sample configuration of the Hard Token Properties for PKCS#11 token when creating a new CA.</p>
+<source>
+sharedLibrary=/usr/lunasa/lib/libCryptoki2_64.so
+slot=1
+certSignKey=myECCKey
+crlSignKey=myECCKey
+defaultKey=default
+attributesFile=/home/ejbca/lunasatoken.cfg
+</source>
+<p>Where lunasatoken.cfg is:</p>
+<source>
+attributes(generate,*,*) = {
+  CKA_TOKEN = true
+}
+attributes(generate,CKO_PUBLIC_KEY,*) = {
+  CKA_ENCRYPT = true
+  CKA_VERIFY = true
+  CKA_WRAP = true
+}
+attributes(generate, CKO_PRIVATE_KEY,*) = {
+  CKA_EXTRACTABLE = false
+  CKA_DECRYPT = true
+  CKA_SIGN = true
+  CKA_UNWRAP = true
+}
+</source>
+</subsubsection>
 </subsection>
 
 <subsection name="SafeNet ProtectServer">
