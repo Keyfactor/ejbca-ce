@@ -914,8 +914,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 		new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(),"revokeUser"),
 		new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(),"revokeCert"),
 		new ApprovalOveradableClassName(org.ejbca.core.ejb.ca.auth.LocalAuthenticationSessionBean.class.getName(),"finishUser"),
-		new ApprovalOveradableClassName(org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName(),"unrevokeCert"),
-		new ApprovalOveradableClassName(org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName(),"markForRecovery"),
+		new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(),"unrevokeCert"),
+		new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(),"prepareForKeyRecovery"),
 		/** can not use .class.getName() below, because it is not part of base EJBCA dist */
 		new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 		new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
