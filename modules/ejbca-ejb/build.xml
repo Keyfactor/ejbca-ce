@@ -506,7 +506,7 @@
     			<include name="org/ejbca/util/cert/SubjectDirAttrExtension.java"/>
     			<include name="org/ejbca/core/model/ca/certextensions/standard/*.java"/>
     			<include name="org/ejbca/core/model/ca/certextensions/*.java"/>
-    			<!-- OCSP classes that maybe shouldn't be here.. -->
+    			<!-- OCSPCAService dependencies that maybe shouldn't be here.. -->
     			<include name="org/ejbca/config/OcspConfiguration.java"/>
     			<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
     			<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>
@@ -1035,12 +1035,25 @@
     	<copy todir="${src-temp.dir}/scep">
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/protocol/scep/*.java"/>
+    			<include name="org/ejbca/ui/web/protocol/Scep*.java"/>
+    			<!-- Servlet dependency -->
+    			<include name="org/ejbca/ui/web/RequestHelper.java"/>
+    			<include name="org/ejbca/ui/web/pub/ServletDebug.java"/>
+    			<include name="org/ejbca/ui/web/pub/ServletUtils.java"/>
+    			<include name="org/ejbca/config/WebConfiguration.java"/>
     		</fileset>
     	</copy>
-        <javac srcdir="${src-temp.dir}/cmp" destdir="${build-temp.dir}/cmp" debug="on" includeantruntime="no"
+        <javac srcdir="${src-temp.dir}/scep" destdir="${build-temp.dir}/scep" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
         		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+				<pathelement location="${build-temp.dir}/admins"/>
+				<pathelement location="${build-temp.dir}/ca"/>
+				<pathelement location="${build-temp.dir}/caadmin"/>
+				<pathelement location="${build-temp.dir}/catoken"/>
+				<pathelement location="${build-temp.dir}/signing"/>
+				<pathelement location="${build-temp.dir}/authorization"/>
         	</classpath>
         </javac>
     </target>
