@@ -90,6 +90,7 @@ public class KeyTools {
     /** The name of Suns pkcs11 implementation */
     public static final String SUNPKCS11CLASS = "sun.security.pkcs11.SunPKCS11";
     public static final String IAIKPKCS11CLASS = "iaik.pkcs.pkcs11.provider.IAIKPkcs11";
+    public static final String IAIKJCEPROVIDERCLASS = "iaik.security.provider.IAIK";
         
     /**
      * Prevent from creating new KeyTools object
