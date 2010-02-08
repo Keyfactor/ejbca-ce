@@ -86,6 +86,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V2CRLGenerator;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.CAOfflineException;
@@ -95,7 +96,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
@@ -989,7 +989,7 @@ public class X509CA extends CA implements Serializable {
     		// Create XKMS service if it does not exist
     		if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE))){
 
-    			String keytype = CATokenConstants.KEYALGORITHM_RSA;
+    			String keytype = AlgorithmConstants.KEYALGORITHM_RSA;
     			String keyspec = "2048";
 
     			XKMSCAServiceInfo xKMSCAInfo =  new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
@@ -1018,7 +1018,7 @@ public class X509CA extends CA implements Serializable {
     		// Create CMS service if it does not exist
     		if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE))){
 
-    			String keytype = CATokenConstants.KEYALGORITHM_RSA;
+    			String keytype = AlgorithmConstants.KEYALGORITHM_RSA;
     			String keyspec = "2048";
 
     			CmsCAServiceInfo cmsCAInfo =  new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,

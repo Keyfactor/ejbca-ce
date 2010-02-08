@@ -234,7 +234,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		if (catokeninfo instanceof NullCATokenInfo) {
 			log.debug("CA Token is CATOKENTYPE_NULL");
 			if (data.get(CATOKENTYPE) == null) {
-		    	data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_NULL));
+		    	data.put(CATOKENTYPE, new Integer(CATokenConstants.CATOKENTYPE_NULL));
 				changed = true;				
 			}
 		}
@@ -242,7 +242,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		if (catokeninfo instanceof HardCATokenInfo) {
 			log.debug("CA Token is CATOKENTYPE_HSM");
 			if (data.get(CATOKENTYPE) == null) {
-				data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_HSM));
+				data.put(CATOKENTYPE, new Integer(CATokenConstants.CATOKENTYPE_HSM));
 				changed = true;
 			}
 		}
@@ -250,7 +250,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		if (catokeninfo instanceof SoftCATokenInfo) {
 			log.debug("CA Token is CATOKENTYPE_P12");
 			if (data.get(CATOKENTYPE) == null) {
-				data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_P12));
+				data.put(CATOKENTYPE, new Integer(CATokenConstants.CATOKENTYPE_P12));
 				changed = true;
 			}
 			SoftCATokenInfo sinfo = (SoftCATokenInfo) catokeninfo;

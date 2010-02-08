@@ -49,6 +49,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.TestRevocationApproval;
@@ -57,8 +58,6 @@ import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
@@ -110,6 +109,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
@@ -135,7 +135,7 @@ public class CommonEjbcaWSTest extends TestCase {
     
 	protected void setUpAdmin() throws Exception {
 		super.setUp();
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 		try {
 			hostname = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
 		} catch (RemoteException e) {
@@ -158,7 +158,7 @@ public class CommonEjbcaWSTest extends TestCase {
 	
 	protected void setUpNonAdmin() throws Exception {
 		super.setUp();
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 		try {
 			hostname = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
 		} catch (RemoteException e) {
@@ -415,7 +415,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			setUpAdmin();
 		}
 		
-		KeyPair keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+		KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());
 		
@@ -518,7 +518,7 @@ public class CommonEjbcaWSTest extends TestCase {
 
 		boolean exceptionThrown = false;
 		try{
-           ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+           ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){
 			exceptionThrown = true;
 		}
@@ -537,7 +537,7 @@ public class CommonEjbcaWSTest extends TestCase {
         
         exceptionThrown = false;
 		try{
-          ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+          ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){
 			exceptionThrown = true;
 		}
@@ -551,7 +551,7 @@ public class CommonEjbcaWSTest extends TestCase {
         
         KeyStore ksenv = null;
         try{
-          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
         	assertTrue(e.getMessage(),false);
         }
@@ -582,7 +582,7 @@ public class CommonEjbcaWSTest extends TestCase {
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));
 		// A new PK12 request now should return the same key and certificate
-        KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(),"PKCS12","foo456");
         assertNotNull(ks2);
         en = ks2.aliases();
@@ -620,7 +620,7 @@ public class CommonEjbcaWSTest extends TestCase {
         ejbcaraws.editUser(userdatas.get(0));        
         KeyStore ksenv = null;
         try{
-            ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+            ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
           	assertTrue(e.getMessage(),false);
         }
@@ -687,7 +687,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		
         KeyStore ksenv = null;
         try{
-          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
         	assertTrue(e.getMessage(),false);
         }
@@ -750,7 +750,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));        
 		KeyStore ksenv = null;
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", CATokenConstants.KEYALGORITHM_RSA);
+			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}
@@ -767,7 +767,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));  
 		
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", CATokenConstants.KEYALGORITHM_RSA);
+			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}
@@ -814,7 +814,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));        
 		KeyStore ksenv = null;
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", CATokenConstants.KEYALGORITHM_RSA);
+			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}
@@ -931,7 +931,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		tokenUser1.setEndEntityProfileName("EMPTY");
 		tokenUser1.setCertificateProfileName("ENDUSER"); 
 		
-		KeyPair basickeys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);		
+		KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);		
 		PKCS10CertificationRequest  basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=NOUSED"), basickeys.getPublic(), new DERSet(), basickeys.getPrivate());
 
@@ -1254,7 +1254,7 @@ public class CommonEjbcaWSTest extends TestCase {
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));
 		
-		KeyPair keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+		KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());
 		
@@ -1342,7 +1342,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		user1.setCertificateProfileName("ENDUSER");
         ejbcaraws.editUser(user1);
 
-        KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1","foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(),"PKCS12","foo456");
         assertNotNull(ks);
         Enumeration en = ks.aliases();
@@ -1365,7 +1365,7 @@ public class CommonEjbcaWSTest extends TestCase {
         userdatas.get(0).setStatus(UserDataConstants.STATUS_KEYRECOVERY);
         ejbcaraws.editUser(userdatas.get(0));
 		// A new PK12 request now should return the same key and certificate
-        KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+        KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1","foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(),"PKCS12","foo456");
         assertNotNull(ks2);
         en = ks2.aliases();
@@ -1745,7 +1745,7 @@ public class CommonEjbcaWSTest extends TestCase {
         ErrorCode errorCode = null;
 
         /////// Check Error.LOGIN_ERROR ///////
-		keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+		keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=WSTESTUSER30"), 
                 keys.getPublic(), new DERSet(), keys.getPrivate());
@@ -1767,7 +1767,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		user1.setStatus(UserDataConstants.STATUS_REVOKED);
         ejbcaraws.editUser(user1);
 
-		keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+		keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(), keys.getPrivate());
 
@@ -1809,7 +1809,7 @@ public class CommonEjbcaWSTest extends TestCase {
 
         // Should failed because of the bad token type (USERGENERATED instead of P12)
         try {
-            ejbcaraws.pkcs12Req("WSTESTUSER31","foo1234",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+            ejbcaraws.pkcs12Req("WSTESTUSER31","foo1234",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
             assertEquals(org.ejbca.core.ErrorCode.BAD_USER_TOKEN_TYPE.getInternalErrorCode(), 
@@ -1823,7 +1823,7 @@ public class CommonEjbcaWSTest extends TestCase {
 
         // Should failed because of the bad password
         try {
-            ejbcaraws.pkcs12Req("WSTESTUSER31","foo123",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+            ejbcaraws.pkcs12Req("WSTESTUSER31","foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
             assertEquals(org.ejbca.core.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), 
@@ -1839,7 +1839,7 @@ public class CommonEjbcaWSTest extends TestCase {
 
         // Should failed because certificate already exists.
         try {
-            ejbcaraws.pkcs12Req("WSTESTUSER31","foo1234",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
+            ejbcaraws.pkcs12Req("WSTESTUSER31","foo1234",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
             assertEquals(org.ejbca.core.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), 
@@ -2008,10 +2008,10 @@ public class CommonEjbcaWSTest extends TestCase {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec("1024");
         catokeninfo.setEncKeySpec("1024");
-        catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-        catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-        catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-        catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         // No CA Services.
         ArrayList extendedcaservices = new ArrayList();
 
@@ -2149,7 +2149,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		tokenUser1.setTokenType("USERGENERATED");
 		tokenUser1.setEndEntityProfileName("EMPTY");
 		tokenUser1.setCertificateProfileName("ENDUSER"); 
-		KeyPair basickeys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);		
+		KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);		
 		PKCS10CertificationRequest  basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=NOTUSED"), basickeys.getPublic(), new DERSet(), basickeys.getPrivate());
 		ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();

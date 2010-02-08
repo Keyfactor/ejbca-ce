@@ -19,10 +19,10 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
@@ -69,11 +69,11 @@ public class TestCAImportExport extends TestCase  {
 	public void test01ImportExportSHA1withRSA() throws Exception {
 	    log.trace("<test01ImportExport..()");
         CATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeySpec("2048");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
 	    log.trace("<test01ImportExport()");
@@ -87,11 +87,11 @@ public class TestCAImportExport extends TestCase  {
 	public void test02ImportExportSHA1withECDSA() throws Exception {
 	    log.trace("<test02ImportExport..()");
         CATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_ECDSA);
-        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_ECDSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
+        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeySpec("prime192v1");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
 	    log.trace("<test02ImportExport()");
@@ -105,11 +105,11 @@ public class TestCAImportExport extends TestCase  {
 	public void test03ImportExportSHA256withRSA() throws Exception {
 	    log.trace("<test03ImportExport..()");
         CATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_RSA);
-        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeySpec("2048");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
 	    log.trace("<test03ImportExport()");
@@ -123,11 +123,11 @@ public class TestCAImportExport extends TestCase  {
 	public void test04ImportExportSHA256withECDSA() throws Exception {
 	    log.trace("<test04ImportExport..()");
 	    CATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_ECDSA);
-        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_ECDSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeySpec("prime192v1");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
 	    log.trace("<test04ImportExport()");
@@ -143,11 +143,11 @@ public class TestCAImportExport extends TestCase  {
 	public void test05ImportExportAccess() throws Exception {
 	    log.trace("<test05ImportExport..()");
 	    CATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_ECDSA);
-        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_ECDSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeySpec("prime192v1");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
 		subTestPublicAccess(catokeninfo, new Admin(Admin.TYPE_PUBLIC_WEB_USER));
 	    log.trace("<test05ImportExport()");
@@ -161,11 +161,11 @@ public class TestCAImportExport extends TestCase  {
 	public void test06ImportExportSHA1withDSA() throws Exception {
 	    log.trace("<test06ImportExport..()");
         CATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_DSA);
-        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_DSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
+        ((SoftCATokenInfo) catokeninfo).setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_DSA);
         ((SoftCATokenInfo) catokeninfo).setSignKeySpec("1024");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("2048");
         subTest(catokeninfo);
 	    log.trace("<test06ImportExport()");

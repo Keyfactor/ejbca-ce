@@ -45,13 +45,13 @@
     isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
 
     if(catokeninfo instanceof SoftCATokenInfo){
-       catokentype = CATokenInfo.CATOKENTYPE_P12;
+       catokentype = CATokenConstants.CATOKENTYPE_P12;
     }
     if(catokeninfo instanceof HardCATokenInfo){
-       catokentype = CATokenInfo.CATOKENTYPE_HSM;
+       catokentype = CATokenConstants.CATOKENTYPE_HSM;
     }
     if(catokeninfo instanceof NullCATokenInfo){
-        catokentype = CATokenInfo.CATOKENTYPE_NULL;
+        catokentype = CATokenConstants.CATOKENTYPE_NULL;
      }
        catokenpath = catokeninfo.getClassPath();
        AvailableCAToken availablecatoken = CATokenManager.instance().getAvailableCAToken(catokenpath); 
@@ -497,10 +497,10 @@ function checkallfields(){
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
   <%   }
      }
-   if( catokentype == CATokenInfo.CATOKENTYPE_P12 && !processrequest && !isexternal){ %>
+   if( catokentype == CATokenConstants.CATOKENTYPE_P12 && !processrequest && !isexternal){ %>
    <%@ include file="softcatokenpage.jspf" %> 
 <%}  
-   if( catokentype == CATokenInfo.CATOKENTYPE_HSM && !processrequest && !isexternal){ %>
+   if( catokentype == CATokenConstants.CATOKENTYPE_HSM && !processrequest && !isexternal){ %>
    <%@ include file="hardcatokenpage.jspf" %> 
 <%}  %>
 
@@ -1149,7 +1149,7 @@ function checkallfields(){
 	if ( caname == null ) {
 		caname = cainfo.getName();
 	} 
-	if ( catokentype != CATokenInfo.CATOKENTYPE_HSM ) {
+	if ( catokentype != CATokenConstants.CATOKENTYPE_HSM ) {
 	%>
 	<form name="exportca" action="<%= globalconfiguration.getCaPath() + "/exportca" %>" method="post">
     <tr  id="Row<%=row++%2%>"> 

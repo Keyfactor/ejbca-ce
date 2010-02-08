@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -37,8 +38,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
@@ -98,10 +97,10 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -109,7 +108,7 @@ public class TestCAs extends TestCase {
                     "CN=XKMSCertificate, " + "CN=TEST",
                     "",
                     "1024",
-                    CATokenConstants.KEYALGORITHM_RSA));
+                    AlgorithmConstants.KEYALGORITHM_RSA));
 
 
             X509CAInfo cainfo = new X509CAInfo("CN=TEST",
@@ -155,7 +154,7 @@ public class TestCAs extends TestCase {
             rootcacertchain = info.getCertificateChain();
             X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
-            assertEquals(CATokenInfo.SIGALG_SHA1_WITH_RSA, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TEST"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TEST"));
             PublicKey pk = cert.getPublicKey();
@@ -235,10 +234,10 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("prime192v1");
             catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_ECDSA);
-            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_ECDSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
+            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -246,7 +245,7 @@ public class TestCAs extends TestCase {
                     "CN=XKMSSignerCertificate, " + "CN=TESTECDSA",
                     "",
                     "prime192v1",
-                    CATokenConstants.KEYALGORITHM_ECDSA));
+                    AlgorithmConstants.KEYALGORITHM_ECDSA));
 
             ArrayList policies = new ArrayList(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
@@ -296,7 +295,7 @@ public class TestCAs extends TestCase {
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
-            assertEquals(CATokenInfo.SIGALG_SHA256_WITH_ECDSA, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSA"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTECDSA"));
             PublicKey pk = cert.getPublicKey();
@@ -334,10 +333,10 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("implicitlyCA");
             catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_ECDSA);
-            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_ECDSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
+            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -346,7 +345,7 @@ public class TestCAs extends TestCase {
                     "CN=XKMSCertificate, " + "CN=TESTECDSAImplicitlyCA",
                     "",
                     "prime192v1",
-                    CATokenConstants.KEYALGORITHM_ECDSA));
+                    AlgorithmConstants.KEYALGORITHM_ECDSA));
 
             ArrayList policies = new ArrayList(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
@@ -434,10 +433,10 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -445,7 +444,7 @@ public class TestCAs extends TestCase {
                     "CN=XKMSCertificate, " + cadn,
                     "",
                     "1024",
-                    CATokenConstants.KEYALGORITHM_RSA));
+                    AlgorithmConstants.KEYALGORITHM_RSA));
 
 
             X509CAInfo cainfo = new X509CAInfo(cadn,
@@ -490,7 +489,7 @@ public class TestCAs extends TestCase {
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
-            assertEquals(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(cadn));
             assertTrue("Creating CA failed", info.getSubjectDN().equals(cadn));
             PublicKey pk = cert.getPublicKey();
@@ -520,10 +519,10 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("4096");
             catokeninfo.setEncKeySpec("2048");
-            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -531,7 +530,7 @@ public class TestCAs extends TestCase {
                     "CN=XKMSCertificate, " + dn,
                     "",
                     "2048",
-                    CATokenConstants.KEYALGORITHM_RSA));
+                    AlgorithmConstants.KEYALGORITHM_RSA));
 
 
             X509CAInfo cainfo = new X509CAInfo(dn,
@@ -578,7 +577,7 @@ public class TestCAs extends TestCase {
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
-            assertEquals(CATokenInfo.SIGALG_SHA256_WITH_RSA, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, sigAlg);
             assertTrue("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()).equals(dn));
             assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
             // Normal order
@@ -611,10 +610,10 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -622,7 +621,7 @@ public class TestCAs extends TestCase {
                     "CN=XKMSCertificate, " + dn,
                     "",
                     "1024",
-                    CATokenConstants.KEYALGORITHM_RSA));
+                    AlgorithmConstants.KEYALGORITHM_RSA));
 
 
             X509CAInfo cainfo = new X509CAInfo(dn,
@@ -669,7 +668,7 @@ public class TestCAs extends TestCase {
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
-            assertEquals(CATokenInfo.SIGALG_SHA1_WITH_RSA, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, sigAlg);
             assertEquals("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()),dn);
             assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
             // reverse order
@@ -697,10 +696,10 @@ public class TestCAs extends TestCase {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec("1024");
         catokeninfo.setEncKeySpec("1024");
-        catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-        catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-        catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-        catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         // No CA Services.
         ArrayList extendedcaservices = new ArrayList();
 
@@ -743,7 +742,7 @@ public class TestCAs extends TestCase {
 
             Certificate cert = (Certificate)cvcainfo.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
-            assertEquals(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, sigAlg);
             assertEquals("CVC", cert.getType());
             assertEquals(rootcadn, CertTools.getSubjectDN(cert));
             assertEquals(rootcadn, CertTools.getIssuerDN(cert));
@@ -985,10 +984,10 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -996,12 +995,12 @@ public class TestCAs extends TestCase {
                     "CN=XKMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
                     "",
                     "1024",
-                    CATokenConstants.KEYALGORITHM_RSA));
+                    AlgorithmConstants.KEYALGORITHM_RSA));
 			 extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
 						  "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
 			     		  "",
 			     		  "1024",
-			     		 CATokenConstants.KEYALGORITHM_RSA));
+			     		 AlgorithmConstants.KEYALGORITHM_RSA));
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL",
                     "TESTSIGNEDBYEXTERNAL", SecConst.CA_ACTIVE, new Date(),
@@ -1060,7 +1059,7 @@ public class TestCAs extends TestCase {
             Iterator iter = info.getCertificateChain().iterator();
             X509Certificate cert = (X509Certificate) iter.next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
-            assertEquals(CATokenInfo.SIGALG_SHA1_WITH_RSA, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, sigAlg);
             assertTrue("Error in created ca certificate", CertTools.getSubjectDN(cert).equals("CN=TESTSIGNEDBYEXTERNAL"));
             assertTrue("Error in created ca certificate", CertTools.getIssuerDN(cert).equals("CN=TEST"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTSIGNEDBYEXTERNAL"));
@@ -1107,10 +1106,10 @@ public class TestCAs extends TestCase {
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_DSA);
-            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_DSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_DSA);
+            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1118,7 +1117,7 @@ public class TestCAs extends TestCase {
                     "CN=XKMSCertificate, " + "CN=TESTDSA",
                     "",
                     "1024",
-                    CATokenConstants.KEYALGORITHM_DSA));
+                    AlgorithmConstants.KEYALGORITHM_DSA));
 
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA",
@@ -1164,7 +1163,7 @@ public class TestCAs extends TestCase {
             rootcacertchain = info.getCertificateChain();
             X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
-            assertEquals(CATokenInfo.SIGALG_SHA1_WITH_DSA, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTDSA"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTDSA"));
             PublicKey pk = cert.getPublicKey();

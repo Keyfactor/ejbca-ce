@@ -67,17 +67,18 @@ import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -157,12 +158,12 @@ public class ProtocolScepHttpTest extends TestCase {
     public ProtocolScepHttpTest(String name) throws Exception {
         super(name);
         // Install BouncyCastle provider
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         TestTools.createTestCA();
         cacert = (X509Certificate) TestTools.getTestCACert();
         usersession = TestTools.getUserAdminSession();
         // Pre-generate key for all requests to speed things up a bit
-        keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);        	
+        keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);        	
     }
 
     protected void setUp() throws Exception {

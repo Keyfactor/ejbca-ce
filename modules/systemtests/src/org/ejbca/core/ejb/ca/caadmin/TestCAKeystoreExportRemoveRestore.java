@@ -19,10 +19,10 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
@@ -76,11 +76,11 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 	    log.trace("<test01ExportRemoveRestoreSHA1WithRSA()");
         
 	    SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setSignKeySpec("2048");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeySpec("2048");
         exportRemoveRestore(catokeninfo);
         
@@ -97,11 +97,11 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 	    log.trace(">test02ExportRemoveRestoreSHA256WithRSAForSigning()");
         
 	    SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_RSA);
-        catokeninfo.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setSignKeySpec("1024");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeySpec("2048");
         exportRemoveRestore(catokeninfo);
         
@@ -118,11 +118,11 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 	    log.trace(">test03ExportRemoveRestoreSHA1WithECDSAForSigning()");
         
 	    SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_ECDSA);
-        catokeninfo.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_ECDSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
         catokeninfo.setSignKeySpec("prime192v1");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_RSA);
-        catokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeySpec("1024");
         exportRemoveRestore(catokeninfo);
         
@@ -139,11 +139,11 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 	    log.trace(">test04ExportRemoveRestoreSHA1WithDSAForSigning()");
         
 	    SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_DSA);
-        catokeninfo.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_DSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_DSA);
         catokeninfo.setSignKeySpec("1024");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_RSA);
-        catokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeySpec("1024");
         exportRemoveRestore(catokeninfo);
         
@@ -166,33 +166,33 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 		// CA using SHA1withRSA and 2048 bit RSA KEY
 		String caname1 = "TestExportRemoveRestoreCA1";
 		SoftCATokenInfo catokeninfo1 = new SoftCATokenInfo();
-        catokeninfo1.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo1.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo1.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo1.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo1.setSignKeySpec("2048");
-        catokeninfo1.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo1.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo1.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo1.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo1.setEncKeySpec("2048");
         X509CAInfo cainfo1 = getNewCAInfo(caname1, catokeninfo1);
         
         // This CA uses DSA instead
         String caname2 = "TestExportRemoveRestoreCA2";
 		SoftCATokenInfo catokeninfo2 = new SoftCATokenInfo();
-        catokeninfo2.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_DSA);
-        catokeninfo2.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_DSA);
+        catokeninfo2.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
+        catokeninfo2.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_DSA);
         catokeninfo2.setSignKeySpec("1024");
-        catokeninfo2.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo2.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo2.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo2.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo2.setEncKeySpec("1024");
         X509CAInfo cainfo2 = getNewCAInfo(caname2, catokeninfo2);
         
         // This CA uses RSA but with 1024 bits
         String caname3 = "TestExportRemoveRestoreCA3";
 		SoftCATokenInfo catokeninfo3 = new SoftCATokenInfo();
-        catokeninfo3.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo3.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo3.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo3.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo3.setSignKeySpec("1024");
-        catokeninfo3.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo3.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo3.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo3.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo3.setEncKeySpec("1024");
         X509CAInfo cainfo3 = getNewCAInfo(caname3, catokeninfo3);
         
@@ -315,11 +315,11 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 		// CA1
 		String caname1 = "TestExportRemoveRestoreCA1";
 		SoftCATokenInfo catokeninfo1 = new SoftCATokenInfo();
-        catokeninfo1.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo1.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo1.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo1.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo1.setSignKeySpec("2048");
-        catokeninfo1.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo1.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo1.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo1.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo1.setEncKeySpec("2048");
         X509CAInfo cainfo1 = getNewCAInfo(caname1, catokeninfo1);
         

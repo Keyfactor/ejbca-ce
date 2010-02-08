@@ -591,7 +591,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * null if it is to be inherited from the CA (i.e., it is the same as the
      * algorithm used to sign the CA certificate).
      *
-     * @see org.ejbca.core.model.ca.catoken.CATokenConstants.AVAILABLE_SIGALGS
+     * @see org.ejbca.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      * @return JCE identifier for the signature algorithm or null if it is to
      * be inherited from the CA (i.e., it is the same as the algorithm used to
      * sign the CA certificate).
@@ -609,7 +609,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param signAlg JCE identifier for the signature algorithm or null if it
      * is to be inherited from the CA (i.e., it is the same as the algorithm
      * used to sign the CA certificate).
-     * @see org.ejbca.core.model.ca.catoken.CATokenConstants.AVAILABLE_SIGALGS
+     * @see org.ejbca.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
      */
     public void setSignatureAlgorithm(String signAlg){
         data.put(SIGNATUREALGORITHM, signAlg);

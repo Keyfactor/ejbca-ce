@@ -31,12 +31,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.TestRevocationApproval;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
@@ -154,7 +154,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
-			keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+			keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		}
 	}
 	

@@ -31,16 +31,17 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -67,7 +68,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 	public CrmfRARequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
 		super(arg0);
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-		CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
@@ -106,7 +107,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
-			keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+			keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		}
 	}
 	

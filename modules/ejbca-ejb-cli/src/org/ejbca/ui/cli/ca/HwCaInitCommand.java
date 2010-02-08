@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.KeyStrings;
 import org.ejbca.core.model.ca.catoken.NFastCAToken;
@@ -73,8 +73,8 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
             getLogger().info("DN: "+dn);
             getLogger().info("Validity (days): "+validity);
                             
-            catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);

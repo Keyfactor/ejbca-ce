@@ -46,11 +46,12 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -116,7 +117,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	public CrmfRAPbeMultipleKeyIdRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
 		super(arg0);
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-		CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         ICAAdminSessionRemote caAdminSession = TestTools.getCAAdminSession();
         // Try to get caIds
         CAInfo adminca1 = caAdminSession.getCAInfo(admin, "CmpCA1");
@@ -162,7 +163,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
-			keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+			keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		}
 	}
 	

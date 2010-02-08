@@ -34,9 +34,9 @@ import java.util.Iterator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserAdminConstants;
@@ -45,6 +45,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.KeyTools;
 import org.ejbca.util.keystore.P12toPEM;
 
@@ -94,7 +95,7 @@ public class BatchMakeP12 extends BaseCommand {
             	getLogger().info("Use '" + getSubCommand() + " --help' for additional options.");
             }
             // Bouncy Castle security provider
-            CertTools.installBCProviderIfNotAvailable();
+            CryptoProviderTools.installBCProviderIfNotAvailable();
             // Create subdirectory 'p12' if it does not exist
             File dir = new File(directory).getCanonicalFile();
             dir.mkdir();
@@ -232,9 +233,9 @@ public class BatchMakeP12 extends BaseCommand {
           
         }else{       
         	// Create self signed certificate, because ECDSA keys are not serializable
-        	String sigAlg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+        	String sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
         	if (props.getKeyAlg().equals("ECDSA")) {
-        		sigAlg = CATokenConstants.SIGALG_SHA256_WITH_ECDSA;
+        		sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
         	}
         	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), sigAlg, false);
         	cert = (X509Certificate) signSession.createCertificate(getAdmin(), username,

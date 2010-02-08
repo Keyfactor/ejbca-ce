@@ -106,6 +106,7 @@
     			<include name="org/ejbca/util/FileTools.java"/>
     			<include name="org/ejbca/util/Base64.java"/>
     			<include name="org/ejbca/core/ejb/*.java"/>
+    			<include name="org/ejbca/core/model/AlgorithmConstants.java"/>
     			<!-- Dependecies from Protect that are pretty general.. -->
     			<include name="org/ejbca/core/model/InternalResources.java"/>
     			<!-- Dependecies from Publisher and Approval that are pretty general.. -->
@@ -166,7 +167,6 @@
     			<include name="org/ejbca/util/dn/DnComponents.java"/>
     			<include name="org/ejbca/util/CertTools.java"/>
     			<include name="org/ejbca/core/model/ca/crl/RevokedCertInfo.java"/>
-    			<include name="org/ejbca/core/model/ca/catoken/CATokenConstants.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/admins" destdir="${build-temp.dir}/admins" debug="on" includeantruntime="no"
@@ -302,7 +302,6 @@
         	<classpath>
         		<path refid="compile.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
-        		<!--<pathelement location="${build-temp.dir}/protect"/> "Legal" dependency, but not really used -->
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/logging"/>
         		<pathelement location="${build-temp.dir}/authorization"/>
@@ -330,7 +329,7 @@
     			<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
     	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
     			<include name="org/ejbca/core/model/SecConst.java"/>
-    			<!-- RA classes that shouldn't be here.. -->
+    			<!-- RA classes that maybe shouldn't be here.. -->
     			<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
     			<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
     		</fileset>

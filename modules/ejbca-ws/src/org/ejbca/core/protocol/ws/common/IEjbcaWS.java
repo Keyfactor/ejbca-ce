@@ -272,7 +272,7 @@ public interface IEjbcaWS {
 	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
-	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in CATokenConstants.org.ejbca.core.model.ca.catoken.KEYALGORITHM_XX.
+	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in org.ejbca.core.model.AlgorithmConstants.KEYALGORITHM_...
 	 * @return the generated keystore
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request

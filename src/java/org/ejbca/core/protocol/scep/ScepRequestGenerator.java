@@ -45,8 +45,7 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -97,7 +96,7 @@ public class ScepRequestGenerator {
         X509Name name = CertTools.stringToBcX509Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());
         // Create self signed cert, validity 1 day
-        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),CATokenInfo.SIGALG_SHA1_WITH_RSA,false);
+        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
         
         // wrap message in pkcs#7
         byte[] msg = wrap(ias.getEncoded(), "22", transactionId);        
@@ -153,7 +152,7 @@ public class ScepRequestGenerator {
                 CertTools.stringToBcX509Name(reqdn), keys.getPublic(), attributes, keys.getPrivate());
         
         // Create self signed cert, validity 1 day
-        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),CATokenConstants.SIGALG_SHA1_WITH_RSA,false);
+        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
         
         // wrap message in pkcs#7
         byte[] msg = wrap(p10request.getEncoded(), "19", transactionId);
@@ -175,7 +174,7 @@ public class ScepRequestGenerator {
         
         // The self signed certificate has already been generated when the request message was created
         // Create self signed cert, validity 1 day
-        //cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),CATokenConstants.SIGALG_SHA1_WITH_RSA,false);
+        //cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
         
         // wrap message in pkcs#7
         byte[] msg = wrap(seq.getEncoded(), "20", transactionId);

@@ -1,12 +1,12 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.util.FileTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.caadmin.CVCCAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
+    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.caadmin.CVCCAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
                org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
-               org.ejbca.util.SimpleTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.ejbca.util.StringTools" %>
+               org.ejbca.util.SimpleTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.ejbca.util.StringTools, org.ejbca.core.model.AlgorithmConstants" %>
 
 
 
@@ -168,7 +168,7 @@
   String processedsubjectdn = "";
   int catype = CAInfo.CATYPE_X509;  // default
   int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC; // default
-  int catokentype = CATokenInfo.CATOKENTYPE_P12; // default
+  int catokentype = CATokenConstants.CATOKENTYPE_P12; // default
   String catokenpath = "NONE";
   String importcaname = null;
   String importpassword = null;
@@ -368,22 +368,22 @@
          CATokenInfo catoken = null;
          catokentype = Integer.parseInt(request.getParameter(HIDDEN_CATOKENTYPE));
          String signkeyspec = "2048"; // Default signature key, for CMS and XKMS, is 2048 bit RSA
-         String signkeytype = CATokenConstants.KEYALGORITHM_RSA;
+         String signkeytype = AlgorithmConstants.KEYALGORITHM_RSA;
          
-         if(catokentype == CATokenInfo.CATOKENTYPE_P12){
+         if(catokentype == CATokenConstants.CATOKENTYPE_P12){
            String signalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
            String encalg = AlgorithmTools.getEncSigAlgFromSigAlg(signalg);
            String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
            String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
            String enckeyspec = request.getParameter(SELECT_KEYSIZE);
-           String enckeytype = CATokenConstants.KEYALGORITHM_RSA;
+           String enckeytype = AlgorithmConstants.KEYALGORITHM_RSA;
            signkeytype = AlgorithmTools.getKeyAlgorithmFromSigAlg(signalg);
            if (signalg.indexOf("ECDSA") != -1) {
         	   signkeyspec = request.getParameter(TEXTFIELD_KEYSPEC);
-        	   encalg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+        	   encalg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
            } else if(signalg.indexOf("DSA") != -1) {
         	   signkeyspec = request.getParameter(SELECT_KEYSIZE_DSA);
-        	   encalg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+        	   encalg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
            } else {
         	   signkeyspec = request.getParameter(SELECT_KEYSIZE);
            }
@@ -405,7 +405,7 @@
                }
            }          
          } 
-         if(catokentype == CATokenInfo.CATOKENTYPE_HSM){
+         if(catokentype == CATokenConstants.CATOKENTYPE_HSM){
             catokenpath = request.getParameter(HIDDEN_CATOKENPATH);
             String properties = request.getParameter(TEXTFIELD_HARDCATOKENPROPERTIES);
             String signalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
@@ -419,7 +419,7 @@
             catoken.setAuthenticationCode(authenticationcode);
          }
 
-         if (catokentype != CATokenInfo.CATOKENTYPE_NULL) {
+         if (catokentype != CATokenConstants.CATOKENTYPE_NULL) {
              int format = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
              if(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
                  format = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT));
@@ -605,7 +605,7 @@
 				 ArrayList extendedcaservices = new ArrayList();
 				 String keySpec = signkeyspec;
 				 String keyAlg = signkeytype;
-				 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
+				 if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
 					 // Never use larger keys than 2048 bit RSA for CMS and XKMS signing
 					 int len = Integer.parseInt(keySpec);
 					 if (len > 2048) {
@@ -678,7 +678,7 @@
 				 ArrayList extendedcaservices = new ArrayList();
 				 String keySpec = signkeyspec;
 				 String keyAlg = signkeytype;
-				 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
+				 if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
 					 // Never use larger keys than 2048 bit RSA for CMS and XKMS signing
 					 int len = Integer.parseInt(keySpec);
 					 if (len > 2048) {
@@ -804,7 +804,7 @@
          CAInfoView infoView = cadatahandler.getCAInfo(caid);  
          CATokenInfo catoken = infoView.getCATokenInfo();
          
-         if(catokentype == CATokenInfo.CATOKENTYPE_P12){
+         if(catokentype == CATokenConstants.CATOKENTYPE_P12){
            String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
            if (catoken == null) {
                catoken = new SoftCATokenInfo();                  	   
@@ -821,7 +821,7 @@
            }
            
          } 
-         if(catokentype == CATokenInfo.CATOKENTYPE_HSM){
+         if(catokentype == CATokenConstants.CATOKENTYPE_HSM){
             String properties = request.getParameter(TEXTFIELD_HARDCATOKENPROPERTIES);
             if(catokenpath == null)
               throw new Exception("Error in CATokenData");  
@@ -832,7 +832,7 @@
             catoken.setProperties(properties);
          }
 
-         if (catokentype != CATokenInfo.CATOKENTYPE_NULL) {
+         if (catokentype != CATokenConstants.CATOKENTYPE_NULL) {
              int format = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
              if(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
                  format = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT));
@@ -1466,9 +1466,9 @@
         	keySequenceFormat = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT)); 
         }
         if(catokenpath.equals(SoftCAToken.class.getName())){
-          catokentype = CATokenInfo.CATOKENTYPE_P12;
+          catokentype = CATokenConstants.CATOKENTYPE_P12;
         }else{
-          catokentype = CATokenInfo.CATOKENTYPE_HSM;
+          catokentype = CATokenConstants.CATOKENTYPE_HSM;
         }
         editca = false;
         includefile="editcapage.jspf";              

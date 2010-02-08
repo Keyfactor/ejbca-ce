@@ -31,8 +31,8 @@
               }else{%>
         <select name="<%=SELECT_SIGNATUREALGORITHM %>" size="1">
                 
-                <% for(int i=0; i < SoftCATokenInfo.AVAILABLE_SIGALGS.length; i++){ %>
-                     <option value="<%= SoftCATokenInfo.AVAILABLE_SIGALGS[i]%>"><%= SoftCATokenInfo.AVAILABLE_SIGALGS[i] %></option>  
+                <% for(int i=0; i < AlgorithmConstants.AVAILABLE_SIGALGS.length; i++){ %>
+                     <option value="<%= AlgorithmConstants.AVAILABLE_SIGALGS[i]%>"><%= AlgorithmConstants.AVAILABLE_SIGALGS[i] %></option>  
                 <% } %> 
 	 </select>
            <% } %> 
