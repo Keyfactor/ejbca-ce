@@ -1,3 +1,17 @@
+EJBCA 3.10.0
+-----------
+This is a major release with lots of internal reorganizations, new features and fixes. 
+
+Noteworthy changes:
+- todo
+
+Read the full changelog for details.
+
+This version removes the SafeNet Luna JCE class for use as a CA Token. You must now use the more generic, and well tested, PKCS#11 CA token type instead.
+The usage of PKCS11 CA tokens is well documented in the Admin Guide.
+ 
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.9.5
 -----------
 This is a minor release with some fixes and new features. 
