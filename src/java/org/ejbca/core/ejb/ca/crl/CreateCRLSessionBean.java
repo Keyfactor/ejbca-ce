@@ -31,8 +31,8 @@ import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CRLDataLocal;
 import org.ejbca.core.ejb.ca.store.CRLDataLocalHome;
 import org.ejbca.core.ejb.ca.store.CRLDataPK;
@@ -45,6 +45,7 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -140,14 +141,14 @@ import org.ejbca.util.JDBCUtil;
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  *   link="CertificateStoreSession"
  *
- * @ejb.ejb-external-ref
- *   description="The signing session used to create CRL"
+ * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places
+ * from the main database. Publishers runs as local beans"
  *   view-type="local"
- *   ref-name="ejb/RSASignSessionLocal"
+ *   ref-name="ejb/PublisherSessionLocal"
  *   type="Session"
- *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *   link="RSASignSession"
+ *   home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
+ *   link="PublisherSession"
  *
  */
 public class CreateCRLSessionBean extends BaseSessionBean {
@@ -164,11 +165,10 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     /** The local home interface of Certificate entity bean */
     private CertificateDataLocalHome certHome = null;
 
-    /** The local home interface of the signing session */
-    private ISignSessionLocalHome signHome = null;
-
     /** The local home interface of the caadmin session */
-    private ICAAdminSessionLocalHome caadminHome = null;
+    private ICAAdminSessionLocal caAdminSession = null;
+    
+    private IPublisherSessionLocal publisherSession = null;
 
     /** The local interface of the log session bean */
     private ILogSessionLocal logsession;
@@ -180,10 +180,10 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      */
     public void ejbCreate () throws CreateException {
         crlDataHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
-        caadminHome = (ICAAdminSessionLocalHome)getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+        caAdminSession = ((ICAAdminSessionLocalHome)getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME)).create();
         storeHome = (ICertificateStoreSessionLocalHome)getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         certHome = (CertificateDataLocalHome)getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
-        signHome = (ISignSessionLocalHome)getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+        publisherSession = ((IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME)).create();
         ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
         logsession = logsessionhome.create();
     }
@@ -221,10 +221,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         int caid = issuerdn.hashCode();
         String ret = null;
         try {
-            ICAAdminSessionLocal caadmin = caadminHome.create();
             ICertificateStoreSessionLocal store = storeHome.create();
 
-            CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+            CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
             if (cainfo == null) {
                 throw new CADoesntExistsException("CA not found: "+issuerdn);
             }
@@ -263,9 +262,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             			}
             		}
             	}
-            	ISignSessionLocal sign = signHome.create();
             	// a full CRL
-            	byte[] crlBytes = sign.createCRL(admin, caid, revcerts, -1);
+            	byte[] crlBytes = createCRL(admin, caid, revcerts, -1);
             	if (crlBytes != null) {
                 	ret = CertTools.getFingerprintAsString(crlBytes);            		
             	}
@@ -331,9 +329,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     	byte[] crlBytes = null;
     	final int caid = issuerdn.hashCode();
     	try {
-    		final ICAAdminSessionLocal caadmin = caadminHome.create();
     		final ICertificateStoreSessionLocal store = storeHome.create();
-    		final CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+    		final CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
     		if (cainfo == null) {
     			throw new CADoesntExistsException("CA not found: "+issuerdn);
     		}
@@ -361,9 +358,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     				}
     				certs.add(ci);
     			}
-    			ISignSessionLocal sign = signHome.create();
     			// create a delta CRL
-    			crlBytes = sign.createCRL(admin, caid, certs, baseCrlNumber);
+    			crlBytes = createCRL(admin, caid, certs, baseCrlNumber);
     			X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
     			debug("Created delta CRL with expire date: "+crl.getNextUpdate());
     		}
@@ -426,21 +422,19 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     	int createdcrls = 0;
     	try {
     		Date currenttime = new Date();
-    		ICAAdminSessionLocal caadmin = caadminHome.create();
-    		ICertificateStoreSessionLocal store = storeHome.create();
 
     		Iterator iter = null;
     		if (caids != null) {
     			iter = caids.iterator();
     		} 
     		if ( (iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS))) ) {
-        		iter = caadmin.getAvailableCAs().iterator();
+        		iter = caAdminSession.getAvailableCAs().iterator();
     		}
     		while(iter.hasNext()){
     			int caid = ((Integer) iter.next()).intValue();
     			log.debug("createCRLs for caid: "+caid);
     			try {
-    			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+    			   CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
     			   if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
     				   log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
     			   } else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
@@ -562,21 +556,19 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     	int createddeltacrls = 0;
     	try {
     		Date currenttime = new Date();
-    		ICAAdminSessionLocal caadmin = caadminHome.create();
-    		ICertificateStoreSessionLocal store = storeHome.create();
 
     		Iterator iter = null;
     		if (caids != null) {
     			iter = caids.iterator();
     		}
     		if ( (iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS))) ) {
-        		iter = caadmin.getAvailableCAs().iterator();
+        		iter = caAdminSession.getAvailableCAs().iterator();
     		}
     		while (iter.hasNext()) {
     			int caid = ((Integer) iter.next()).intValue();
     			log.debug("createDeltaCRLs for caid: "+caid);
     			try{
-    				CAInfo cainfo = caadmin.getCAInfo(admin, caid);
+    				CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
     				if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
     					log.debug("Not trying to generate delta CRL for external CA "+cainfo.getName());
     				} else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
@@ -645,6 +637,69 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 
     	return createddeltacrls;
     }
+
+    /**
+     * Requests for a CRL to be created with the passed (revoked) certificates.
+     *
+     * @param admin Information about the administrator or admin preforming the event.
+     * @param caid Id of the CA which CRL should be created.
+     * @param certs collection of RevokedCertInfo object.
+     * @param basecrlnumber the CRL number of the Case CRL to generate a deltaCRL, -1 to generate a full CRL
+     * @param nextCrlNumber The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
+     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
+     * @throws CATokenOfflineException 
+     * @ejb.interface-method view-type="both"
+     */
+    public byte[] createCRL(Admin admin, int caid, Collection certs, int basecrlnumber) throws CATokenOfflineException {
+        log.trace(">createCRL()");
+        byte[] crlBytes = null; // return value
+        CA ca = null;
+        try {
+            ca = caAdminSession.getCA(admin, caid);
+            if ( (ca.getStatus() != SecConst.CA_ACTIVE) && (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) ) {
+                String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                throw new CATokenOfflineException(msg);
+            }
+            final X509CRL crl;
+            int fullnumber = getLastCRLNumber(admin, ca.getSubjectDN(), false);
+            int deltanumber = getLastCRLNumber(admin, ca.getSubjectDN(), true);
+            int nextCrlNumber = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
+            boolean deltaCRL = (basecrlnumber > -1);
+            if (deltaCRL) {
+            	// Workaround if transaction handling fails so that crlNumber for deltaCRL would happen to be the same
+            	if (nextCrlNumber == basecrlnumber) {
+            		nextCrlNumber++;
+            	}
+            	crl = (X509CRL) ca.generateDeltaCRL(certs, nextCrlNumber, basecrlnumber);	
+            } else {
+            	crl = (X509CRL) ca.generateCRL(certs, nextCrlNumber);
+            }
+            if (crl != null) {
+                String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(nextCrlNumber), ca.getName(), ca.getSubjectDN());
+                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
+
+                // Store CRL in the database
+                String fingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
+                crlBytes = crl.getEncoded();            	
+                log.debug("Storing CRL in certificate store.");
+                storeCRL(admin, crlBytes, fingerprint, nextCrlNumber, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
+                // Store crl in ca CRL publishers.
+                log.debug("Storing CRL in publishers");
+                publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, nextCrlNumber, ca.getSubjectDN());
+            }
+        } catch (CATokenOfflineException ctoe) {
+            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
+            log.error(msg, ctoe);
+            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, ctoe);
+            throw ctoe;
+        } catch (Exception e) {
+        	logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
+            throw new EJBException(intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
+        }
+        log.trace("<createCRL()");
+        return crlBytes;
+    } // createCRL
 
     /**
      * Stores a CRL
@@ -843,5 +898,30 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     } //getLastCRLNumber
 
 
+    /**
+     * (Re-)Publish the last CRLs for a CA.
+     *
+     * @param admin            Information about the administrator or admin preforming the event.
+     * @param caCert           The certificate for the CA to publish CRLs for
+     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
+     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
+     * @ejb.interface-method view-type="both"
+     */
+    public void publishCRL(Admin admin, Certificate caCert, Collection usedpublishers, String caDataDN) {
+        if (usedpublishers != null) {
+        	String issuerDN = CertTools.getSubjectDN(caCert);
+        	String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
+        	final byte crl[] = getLastCRL(admin, issuerDN, false);
+        	if ( crl!=null ) {
+        		final int nr = getLastCRLNumber(admin, issuerDN, false);
+        		publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
+        	}
+        	final byte deltaCrl[] = getLastCRL(admin, issuerDN, true);
+        	if ( deltaCrl!=null ) {
+        		final int nr = getLastCRLNumber(admin, issuerDN, true);
+        		publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
+        	}
+        }
+    }
 }
 

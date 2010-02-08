@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
@@ -76,6 +77,7 @@ public class CADataHandler implements Serializable {
                          ICertificateStoreSessionLocal certificatesession,
                          IAuthorizationSessionLocal authorizationsession,
                          ISignSessionLocal signsession,
+                         ICreateCRLSessionLocal crlSession,
                          EjbcaWebBean ejbcawebbean) {
                             
        this.caadminsession = caadminsession;           
@@ -85,6 +87,7 @@ public class CADataHandler implements Serializable {
        this.raadminsession = raadminsession;
        this.administrator = administrator;          
        this.signsession = signsession;
+       this.crlSession = crlSession;
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
     }
@@ -305,7 +308,7 @@ public class CADataHandler implements Serializable {
     // (which there is probably not) 
     publishers.addAll(certprofile.getPublisherList());
     signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
-
+    crlSession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN());
  }
  
  public void renewAndRevokeXKMSCertificate(int caid) throws CATokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException, AuthorizationDeniedException{
@@ -359,5 +362,6 @@ public class CADataHandler implements Serializable {
   private IRaAdminSessionLocal           raadminsession; 
   private ICertificateStoreSessionLocal  certificatesession;                          
   private EjbcaWebBean                   ejbcawebbean;
-  private ISignSessionLocal               signsession;
+  private ISignSessionLocal              signsession;
+  private ICreateCRLSessionLocal         crlSession;
 }

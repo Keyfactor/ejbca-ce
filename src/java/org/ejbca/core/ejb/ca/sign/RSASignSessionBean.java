@@ -88,6 +88,7 @@ import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -219,7 +220,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
         try {
             // Install BouncyCastle provider
-            CertTools.installBCProvider();
+        	CryptoProviderTools.installBCProvider();
 
             // get home interfaces to other session beans used
             storeHome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
@@ -987,7 +988,6 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     private CA getCAFromRequest(Admin admin, IRequestMessage req) throws AuthStatusException, AuthLoginException, CADoesntExistsException {
         CA ca = null;
-    	//CADataLocal cadata = null;
         try {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
@@ -1050,72 +1050,6 @@ public class RSASignSessionBean extends BaseSessionBean {
 		debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
 		return ca;
 	}
-
-    /**
-     * Requests for a CRL to be created with the passed (revoked) certificates.
-     *
-     * @param admin Information about the administrator or admin preforming the event.
-     * @param caid Id of the CA which CRL should be created.
-     * @param certs collection of RevokedCertInfo object.
-     * @param basecrlnumber the CRL number of the Case CRL to generate a deltaCRL, -1 to generate a full CRL
-     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
-     * @throws CATokenOfflineException 
-     * @ejb.interface-method view-type="both"
-     */
-    public byte[] createCRL(Admin admin, int caid, Collection certs, int basecrlnumber) throws CATokenOfflineException {
-        trace(">createCRL()");
-        byte[] crlBytes = null; // return value
-        CA ca = null;
-        try {
-            ca = getCaAdminSession().getCA(admin, caid);
-            if ( (ca.getStatus() != SecConst.CA_ACTIVE) && (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) ) {
-                String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-                getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                throw new CATokenOfflineException(msg);
-            }
-            // Get highest number of last CRL (full or delta) and increase by 1, both full CRLs and deltaCRLs share the same 
-            // series of CRL Number
-            final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-            int fullnumber = getCRLCreateSession().getLastCRLNumber(admin, certSubjectDN, false);
-            int deltanumber = getCRLCreateSession().getLastCRLNumber(admin, certSubjectDN, true);
-            int number = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
-            final X509CRL crl;
-            boolean deltaCRL = (basecrlnumber > -1);
-            if (deltaCRL) {
-            	// Workaround if transaction handling fails so that crlNumber for deltaCRL would happen to be the same
-            	if (number == basecrlnumber) {
-            		number++;
-            	}
-            	crl = (X509CRL) ca.generateDeltaCRL(certs, number, basecrlnumber);	
-            } else {
-            	crl = (X509CRL) ca.generateCRL(certs, number);
-            }
-            if (crl != null) {
-                String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(number), ca.getName(), ca.getSubjectDN());
-                getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
-
-                // Store CRL in the database
-                String fingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
-                crlBytes = crl.getEncoded();            	
-                log.debug("Storing CRL in certificate store.");
-                getCRLCreateSession().storeCRL(admin, crlBytes, fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
-                // Store crl in ca CRL publishers.
-                log.debug("Storing CRL in publishers");
-                IPublisherSessionLocal pub = publishHome.create();
-                pub.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, number, ca.getSubjectDN());
-            }
-        } catch (CATokenOfflineException ctoe) {
-            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            log.error(msg, ctoe);
-            getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, ctoe);
-            throw ctoe;
-        } catch (Exception e) {
-            getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
-            throw new EJBException(intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
-        }
-        trace("<createCRL()");
-        return crlBytes;
-    } // createCRL
 
     /**
      * Method that publishes the given CA certificate chain to the list of publishers.
@@ -1184,19 +1118,6 @@ public class RSASignSessionBean extends BaseSessionBean {
                 IPublisherSessionLocal pub = publishHome.create();
                 if (usedpublishers != null) {
                     pub.storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint, SecConst.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);
-                    if ( type != SecConst.CERTTYPE_ENDENTITY ) {
-                        final String issuerDN = CertTools.getSubjectDN(cert);
-                        final byte crl[] = getCRLCreateSession().getLastCRL(admin, issuerDN, false);
-                        if ( crl!=null ) {
-                            final int nr = getCRLCreateSession().getLastCRLNumber(admin, issuerDN, false);
-                            pub.storeCRL(admin, usedpublishers, crl, cafp, nr, caDataDN);
-                        }
-                        final byte deltaCrl[] = getCRLCreateSession().getLastCRL(admin, issuerDN, true);
-                        if ( deltaCrl!=null ) {
-                            final int nr = getCRLCreateSession().getLastCRLNumber(admin, issuerDN, true);
-                            pub.storeCRL(admin, usedpublishers, deltaCrl, cafp, nr, caDataDN);
-                        }
-                    }
                 }
             }
         } catch (javax.ejb.CreateException ce) {

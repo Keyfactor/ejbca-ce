@@ -134,16 +134,11 @@
     	<mkdir dir="${build-temp.dir}/protect"/>
     	<copy todir="${src-temp.dir}/protect">
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/protect/**/*DataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/protect/**/*DataLocal.java"/>
-    			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionLocal.java"/>
-    			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionRemote.java"/>
-    			<include name="org/ejbca/core/ejb/protect/**/TableProtectSessionHome.java"/>
+    			<include name="org/ejbca/core/ejb/protect/*.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ejb/protect/**/*.java"/>
-    			<include name="org/ejbca/core/model/protect/**/*.java"/>
+    			<include name="org/ejbca/core/ejb/protect/*.java"/>
+    			<include name="org/ejbca/core/model/protect/*.java"/>
     			<include name="org/ejbca/config/ProtectConfiguration.java"/>
     		</fileset>
     	</copy>
@@ -218,20 +213,12 @@
     	<mkdir dir="${build-temp.dir}/authorization"/>
     	<copy todir="${src-temp.dir}/authorization">
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/authorization/**/AdminEntityDataLocal.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/AdminEntityDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/AccessRulesDataLocal.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/AccessRulesDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/AdminGroupDataLocal.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/AdminGroupDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/AuthorizationTreeUpdateDataLocal.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/AuthorizationTreeUpdateDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/IAuthorizationSessionLocal.java"/>
-    			<include name="org/ejbca/core/ejb/authorization/**/IAuthorizationSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/*Local.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/*LocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ejb/authorization/**/*.java"/>
-    			<include name="org/ejbca/core/model/authorization/**/*.java"/>
+    			<include name="org/ejbca/core/ejb/authorization/*.java"/>
+    			<include name="org/ejbca/core/model/authorization/*.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
@@ -273,10 +260,8 @@
     	<mkdir dir="${build-temp.dir}/approval"/>
     	<copy todir="${src-temp.dir}/approval">
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/approval/ApprovalDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/approval/ApprovalDataLocal.java"/>
-    			<include name="org/ejbca/core/ejb/approval/IApprovalSessionLocal.java"/>
-    			<include name="org/ejbca/core/ejb/approval/IApprovalSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/approval/*LocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/approval/*Local.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/approval/**/*.java"/>
@@ -285,15 +270,15 @@
     			<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
     			<include name="org/ejbca/config/InternalConfiguration.java"/>
     			<include name="org/ejbca/config/WebConfiguration.java"/>
-    	    	<!-- RA approval requests -->
+    	    	<!-- Exclude RA approval requests.. org.ejbca.core.model.ra.approvalrequests would be a better location for these -->
     			<exclude name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
     			<exclude name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
     			<exclude name="org/ejbca/core/model/approval/ApprovalRequestHelper.java"/>
     			<exclude name="org/ejbca/core/model/approval/approvalrequests/ChangeStatusEndEntityApprovalRequest.java"/>
     			<exclude name="org/ejbca/core/model/approval/approvalrequests/RevocationApprovalRequest.java"/>
-    	    	<!-- CA approval requests -->
+    	    	<!-- CA approval requests.. org.ejbca.core.model.ca.approvalrequests would be a better location for this -->
     			<exclude name="org/ejbca/core/model/approval/approvalrequests/ActivateCATokenApprovalRequest.java"/>
-    	    	<!-- Key Recovery approval requests -->
+    	    	<!-- Key Recovery approval requests.. org.ejbca.core.model.keyrecovery.approvalrequests would be a better location for this -->
     			<exclude name="org/ejbca/core/model/approval/approvalrequests/KeyRecoveryApprovalRequest.java"/>
     		</fileset>
     	</copy>
@@ -314,21 +299,17 @@
     	<mkdir dir="${build-temp.dir}/publish"/>
     	<copy todir="${src-temp.dir}/publish">
     		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/ca/publisher/*DataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/ca/publisher/*DataLocal.java"/>
     			<include name="org/ejbca/core/ejb/ca/publisher/*DataPK.java"/>
     			<include name="org/ejbca/core/ejb/ca/publisher/*Local.java"/>
     			<include name="org/ejbca/core/ejb/ca/publisher/*LocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ejb/ca/publisher/**/*.java"/>
-    			<include name="org/ejbca/core/model/ca/publisher/**/*.java"/>
+    			<include name="org/ejbca/core/ejb/ca/publisher/*.java"/>
+    			<include name="org/ejbca/core/model/ca/publisher/*.java"/>
     			<!-- Use by the LDAP Publisher -->
     			<include name="org/ejbca/util/TCPTool.java"/>
     			<!-- Use by the OCSP Publisher -->
     			<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
-    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
-    			<include name="org/ejbca/core/model/SecConst.java"/>
     			<!-- RA classes that maybe shouldn't be here.. -->
     			<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
     			<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
@@ -358,8 +339,6 @@
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/ca/store/CertReqHistory*.java"/>
     			<include name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
-    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
-    			<include name="org/ejbca/core/model/SecConst.java"/>
     			<!-- RA classes that maybe shouldn't be here.. -->
     			<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
     			<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
@@ -388,8 +367,6 @@
     			<include name="org/ejbca/core/ejb/ca/certificateprofiles/*.java"/>
     			<include name="org/ejbca/core/model/ca/certificateprofiles/*.java"/>
     			<include name="org/ejbca/config/ExtendedKeyUsageConfiguration.java"/>
-    	    	<!-- SecConst should proabaly be devided into several constants classes.. -->
-    			<include name="org/ejbca/core/model/SecConst.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/certprof" destdir="${build-temp.dir}/certprof" debug="on" includeantruntime="no"
@@ -420,9 +397,7 @@
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/ca/store/**/*.java"/>
     			<include name="org/ejbca/core/model/ca/store/**/*.java"/>
-    			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataLocalHome.java"/>
-    			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataLocal.java"/>
-    			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataPK.java"/>
+    			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryData*.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/certstore" destdir="${build-temp.dir}/certstore" debug="on" includeantruntime="no"
@@ -440,7 +415,7 @@
         		<pathelement location="${build-temp.dir}/certprof"/>
         	</classpath>
         </javac>
-    	<!-- CA Token component -->
+    	<!-- CA Token component. Should be merged and divided into a Crypto Token component. See ECA-1532. -->
     	<echo message=" ** Validating component: CA Token **"/>
     	<mkdir dir="${src-temp.dir}/catoken"/>
     	<mkdir dir="${build-temp.dir}/catoken"/>
@@ -526,6 +501,44 @@
         		<pathelement location="${build-temp.dir}/admins"/>
         	</classpath>
         </javac>
+    	<!-- CRL component -->
+    	<echo message=" ** Validating component: CRL **"/>
+    	<mkdir dir="${src-temp.dir}/crl"/>
+    	<mkdir dir="${build-temp.dir}/crl"/>
+    	<copy todir="${src-temp.dir}/crl">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/ca/store/CRLDataLocalHome.java"/>	<!-- Strange package for a CRL component.. -->
+    			<include name="org/ejbca/core/ejb/ca/store/CRLDataLocal.java"/>
+    			<include name="org/ejbca/core/ejb/ca/store/CRLDataPK.java"/>
+    			<include name="org/ejbca/core/ejb/ca/crl/ICreateCRLSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/crl/ICreateCRLSessionLocal.java"/>
+    			<!-- CA Admin dependency (not ideal, but ok for now..)-->
+    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocalHome.java"/>
+    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocal.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/core/ejb/ca/crl/*.java"/>
+    			<include name="org/ejbca/core/model/ca/crl/*.java"/>
+    			<!-- CA Admin dependency (not ideal, but ok for now..)-->
+    			<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
+    			<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/crl" destdir="${build-temp.dir}/crl" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/catoken"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/publish"/>
+        	</classpath>
+        </javac>
     	<!-- Signing component -->
     	<echo message=" ** Validating component: Signing **"/>
     	<mkdir dir="${src-temp.dir}/signing"/>
@@ -543,17 +556,11 @@
     			<!-- Authentication dependency (unwanted.. depends on RA..) -->
     			<include name="org/ejbca/core/ejb/ca/auth/IAuthenticationSessionLocal.java"/>
     			<include name="org/ejbca/core/ejb/ca/auth/IAuthenticationSessionLocalHome.java"/>
-    			<!-- CRL dependency (unwanted.. depends on CRL..) -->
-    			<include name="org/ejbca/core/ejb/ca/crl/ICreateCRLSessionLocal.java"/>
-    			<include name="org/ejbca/core/ejb/ca/crl/ICreateCRLSessionLocalHome.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/ca/sign/**/*.java"/>
     			<include name="org/ejbca/core/model/ca/sign/**/*.java"/>
     			<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
-    			<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
-    			<!-- CA Admin dependency (not ideal, but ok for now..)-->
-    			<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
     			<!-- Authentication dependency (unwanted.. depends on RA..) -->
     			<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
     			<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
@@ -575,6 +582,7 @@
         		<pathelement location="${build-temp.dir}/certstore"/>
         		<pathelement location="${build-temp.dir}/catoken"/>
         		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/crl"/>
         	</classpath>
         </javac>
     	<!-- OCSP component -->
@@ -599,39 +607,6 @@
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/certstore"/>
         		<pathelement location="${build-temp.dir}/ca"/>
-        	</classpath>
-        </javac>
-    	<!-- CRL component -->
-    	<echo message=" ** Validating component: CRL **"/>
-    	<mkdir dir="${src-temp.dir}/crl"/>
-    	<mkdir dir="${build-temp.dir}/crl"/>
-    	<copy todir="${src-temp.dir}/crl">
-    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/ca/store/CRLDataLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/ca/store/CRLDataLocal.java"/>
-    			<include name="org/ejbca/core/ejb/ca/store/CRLDataPK.java"/>
-    			<!-- Undesired dependency on CAAdministraion ? -->
-    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocal.java"/>
-    		</fileset>
-    		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ejb/ca/crl/*.java"/>
-    			<include name="org/ejbca/core/model/ca/crl/*.java"/>
-    		</fileset>
-    	</copy>
-        <javac srcdir="${src-temp.dir}/crl" destdir="${build-temp.dir}/crl" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
-        	<classpath>
-        		<path refid="compile.classpath"/>
-        		<pathelement location="${build-temp.dir}/common"/>
-        		<pathelement location="${build-temp.dir}/admins"/>
-        		<pathelement location="${build-temp.dir}/ca"/>
-        		<pathelement location="${build-temp.dir}/signing"/>
-        		<pathelement location="${build-temp.dir}/logging"/>
-        		<pathelement location="${build-temp.dir}/authorization"/>
-        		<pathelement location="${build-temp.dir}/catoken"/>
-        		<pathelement location="${build-temp.dir}/certstore"/>
-        		<pathelement location="${build-temp.dir}/approval"/>
         	</classpath>
         </javac>
     	<!-- CA Admin component -->
