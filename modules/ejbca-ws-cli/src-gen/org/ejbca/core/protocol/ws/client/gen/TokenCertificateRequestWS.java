@@ -1,241 +1,119 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 
 package org.ejbca.core.protocol.ws.client.gen;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 /**
- * <p>Java class for tokenCertificateRequestWS complex type.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="tokenCertificateRequestWS">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="CAName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="certificateProfileName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="keyalg" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="keyspec" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="pkcs10Data" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
- *         &lt;element name="tokenType" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="type" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *         &lt;element name="validityIdDays" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
+ * Base class this is a ITokenCertificateRequest, either
+ * a PKCS10 or KeyStore defined by the type field.
  * 
  * 
+ * @author Philip Vendil 2007 feb 8
+ *
+ * @version $Id: TokenCertificateRequestWS.java 8373 2009-11-30 14:07:00Z jeklund $
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "tokenCertificateRequestWS", propOrder = {
-    "caName",
-    "certificateProfileName",
-    "keyalg",
-    "keyspec",
-    "pkcs10Data",
-    "tokenType",
-    "type",
-    "validityIdDays"
-})
 public class TokenCertificateRequestWS {
+	
 
-    @XmlElement(name = "CAName")
-    protected String caName;
-    protected String certificateProfileName;
-    protected String keyalg;
-    protected String keyspec;
-    protected byte[] pkcs10Data;
-    protected String tokenType;
-    protected int type;
-    protected String validityIdDays;
+    	
+	private String cAName = null;
+	private String certificateProfileName = null;
+	private String validityIdDays = null;
+	private int type = 0;
+	private byte[] pkcs10Data = null;
+	private String tokenType = HardTokenConstants.TOKENTYPE_PKCS12;
+	private String keyspec = "1024";
+	private String keyalg = "RSA";
+	
+	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays, PKCS10CertificationRequest pkcs10) {
+		super();
+		type = HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST;
+		cAName = name;
+		this.validityIdDays = validityIdDays;
+		this.certificateProfileName = certificateProfileName;
+		this.pkcs10Data = pkcs10.getEncoded();
+	}
+	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays,String tokenType, String keyspec, String keyalg) {
+		super();
+		type = HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST;
+		cAName = name;
+		this.validityIdDays = validityIdDays;
+		this.certificateProfileName = certificateProfileName;
+		this.tokenType = tokenType;
+		this.keyspec = keyspec;
+		this.keyalg = keyalg;
+	}
 
-    /**
-     * Gets the value of the caName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getCAName() {
-        return caName;
-    }
+	/**
+	 * WS Constructor
+	 */
+	public TokenCertificateRequestWS() {
+		super();
+	}
 
-    /**
-     * Sets the value of the caName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setCAName(String value) {
-        this.caName = value;
-    }
+	public String getCAName() {
+		return cAName;
+	}
 
-    /**
-     * Gets the value of the certificateProfileName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getCertificateProfileName() {
-        return certificateProfileName;
-    }
+	public void setCAName(String name) {
+		cAName = name;
+	}
 
-    /**
-     * Sets the value of the certificateProfileName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setCertificateProfileName(String value) {
-        this.certificateProfileName = value;
-    }
+	public String getCertificateProfileName() {
+		return certificateProfileName;
+	}
 
-    /**
-     * Gets the value of the keyalg property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getKeyalg() {
-        return keyalg;
-    }
-
-    /**
-     * Sets the value of the keyalg property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setKeyalg(String value) {
-        this.keyalg = value;
-    }
-
-    /**
-     * Gets the value of the keyspec property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getKeyspec() {
-        return keyspec;
-    }
-
-    /**
-     * Sets the value of the keyspec property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setKeyspec(String value) {
-        this.keyspec = value;
-    }
-
-    /**
-     * Gets the value of the pkcs10Data property.
-     * 
-     * @return
-     *     possible object is
-     *     byte[]
-     */
-    public byte[] getPkcs10Data() {
-        return pkcs10Data;
-    }
-
-    /**
-     * Sets the value of the pkcs10Data property.
-     * 
-     * @param value
-     *     allowed object is
-     *     byte[]
-     */
-    public void setPkcs10Data(byte[] value) {
-        this.pkcs10Data = ((byte[]) value);
-    }
-
-    /**
-     * Gets the value of the tokenType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTokenType() {
-        return tokenType;
-    }
-
-    /**
-     * Sets the value of the tokenType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTokenType(String value) {
-        this.tokenType = value;
-    }
-
-    /**
-     * Gets the value of the type property.
-     * 
-     */
-    public int getType() {
-        return type;
-    }
-
-    /**
-     * Sets the value of the type property.
-     * 
-     */
-    public void setType(int value) {
-        this.type = value;
-    }
-
-    /**
-     * Gets the value of the validityIdDays property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getValidityIdDays() {
-        return validityIdDays;
-    }
-
-    /**
-     * Sets the value of the validityIdDays property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setValidityIdDays(String value) {
-        this.validityIdDays = value;
-    }
+	public void setCertificateProfileName(String certificateProfileName) {
+		this.certificateProfileName = certificateProfileName;
+	}
+	public String getKeyalg() {
+		return keyalg;
+	}
+	public void setKeyalg(String keyalg) {
+		this.keyalg = keyalg;
+	}
+	public String getKeyspec() {
+		return keyspec;
+	}
+	public void setKeyspec(String keyspec) {
+		this.keyspec = keyspec;
+	}
+	public byte[] getPkcs10Data() {
+		return pkcs10Data;
+	}
+	public void setPkcs10Data(byte[] pkcs10Data) {
+		this.pkcs10Data = pkcs10Data;
+	}
+	public String getTokenType() {
+		return tokenType;
+	}
+	public void setTokenType(String tokenType) {
+		this.tokenType = tokenType;
+	}
+	public int getType() {
+		return type;
+	}
+	public void setType(int type) {
+		this.type = type;
+	}
+	public String getValidityIdDays() {
+		return validityIdDays;
+	}
+	public void setValidityIdDays(String validityIdDays) {
+		this.validityIdDays = validityIdDays;
+	}
 
 }

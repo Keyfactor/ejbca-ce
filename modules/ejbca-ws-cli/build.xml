@@ -60,6 +60,25 @@
         	<src path="${src.dir}"/>
     	</javac>
     </target>
+	
+	<target name="overwritegenerated">
+		<!-- Verify that the generated class is a true subset of the handwritten class -->
+	  	<java classname="org.ejbca.util.JAXWSDocAndConvTools" 
+	  		  classpath="${mod.ejbca-ejb.lib}"
+	  		  failonerror="yes"
+	  		  fork="true">
+	  	    <arg value="${mod.ejbca-ws.path}/src/org/ejbca/core/protocol/ws/objects/${class}.java"/>
+	  	    <arg value="${src-gen.dir}/org/ejbca/core/protocol/ws/client/gen/${class}.java"/>
+	  	</java>
+		<!-- It was, overwrite the generated class to get constants, JavaDoc and additional methods -->
+		<copy overwrite="true" 
+			  file="${mod.ejbca-ws.path}/src/org/ejbca/core/protocol/ws/objects/${class}.java" 
+			  todir="${src-gen.dir}/org/ejbca/core/protocol/ws/client/gen"/>
+		<!-- Fix the package name -->
+		<replace file="${src-gen.dir}/org/ejbca/core/protocol/ws/client/gen/${class}.java"
+			     token="package org.ejbca.core.protocol.ws.objects;"
+			     value="package org.ejbca.core.protocol.ws.client.gen;"/>
+	</target>
 
     <target name="generate" depends="ejbca-ws-wsdl" description="Generate WS client stubs from implementation">
 		<available classname="com.sun.tools.ws.ant.WsImport" classpathref="lib.jaxws.classpath" property="tool.present"/>
@@ -72,6 +91,42 @@
         <wsimport package="org.ejbca.core.protocol.ws.client.gen" keep="true" destdir="${build.dir}" 
         	    sourcedestdir="${src-gen.dir}" wsdl="${mod.ejbca-ws.wsdl}">
         </wsimport>
+        <antcall target="overwritegenerated">
+           <param name="class" value="Certificate"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="CertificateResponse"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="HardTokenDataWS"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="KeyStore"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="NameAndId"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="PinDataWS"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+          <param name="class" value="RevokeStatus"/>
+        </antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="TokenCertificateRequestWS"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="TokenCertificateResponseWS"/>
+    	</antcall>
+    	<antcall target="overwritegenerated">
+           <param name="class" value="UserDataSourceVOWS"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="UserDataVOWS"/>
+    	</antcall>
+        <antcall target="overwritegenerated">
+           <param name="class" value="UserMatch"/>
+    	</antcall>
 		<delete dir="${build.dir}" />	<!-- Since we cannot specify the target java version we have to recompile -->
     </target>
 

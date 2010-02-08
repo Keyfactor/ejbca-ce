@@ -19,6 +19,7 @@ import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -51,6 +52,7 @@ import javax.ejb.RemoveException;
 import javax.jws.WebService;
 import javax.naming.NamingException;
 import javax.xml.ws.WebServiceContext;
+import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -69,6 +71,7 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.ICertificateRequestSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -128,7 +131,7 @@ import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
-import org.ejbca.core.protocol.ws.objects.PINDataWS;
+import org.ejbca.core.protocol.ws.objects.PinDataWS;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
@@ -205,10 +208,10 @@ public class EjbcaWS implements IEjbcaWS {
 		  
 		  if(ejbhelper.getUserAdminSession().findUser(admin, userdatavo.getUsername()) != null){
 			  log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
-			  ejbhelper.getUserAdminSession().changeUser(admin,userdatavo,userdata.getClearPwd(), true);
+			  ejbhelper.getUserAdminSession().changeUser(admin,userdatavo,userdata.isClearPwd(), true);
 		  }else{
 			  log.debug("New User " + userdata.getUsername() + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
-			  ejbhelper.getUserAdminSession().addUserFromWS(admin,userdatavo,userdata.getClearPwd());
+			  ejbhelper.getUserAdminSession().addUserFromWS(admin,userdatavo,userdata.isClearPwd());
 		  }
 		}catch(UserDoesntFullfillEndEntityProfile e){
 			log.debug(e.toString());
@@ -1341,6 +1344,8 @@ public class EjbcaWS implements IEjbcaWS {
             throw getInternalException(e, logger);
 		} catch (RemoteException e) {
             throw getInternalException(e, logger);
+        } catch( DatatypeConfigurationException e) {
+            throw getInternalException(e, logger);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -1713,9 +1718,9 @@ public class EjbcaWS implements IEjbcaWS {
 		String signaturePUK = "";
 		String basicInitialPIN = "";
 		String basicPUK = "";
-		Iterator<PINDataWS> iter = hardTokenDataWS.getPinDatas().iterator();
+		Iterator<PinDataWS> iter = hardTokenDataWS.getPinDatas().iterator();
 		while(iter.hasNext()){
-			PINDataWS pinData = iter.next();
+			PinDataWS pinData = iter.next();
 			switch(pinData.getType()){
 			case HardTokenConstants.PINTYPE_BASIC :
 				basicInitialPIN = pinData.getInitialPIN();
@@ -2418,5 +2423,171 @@ public class EjbcaWS implements IEjbcaWS {
             logger.flush();
         }
     }
+
+    private void setUserDataVOWS (UserDataVOWS userdata){
+        userdata.setStatus (UserDataVOWS.STATUS_NEW);
+//        userdata.setUsername ();
+        if (userdata.getPassword() == null){
+        	userdata.setPassword ("foo123");
+        }
+        userdata.setClearPwd (false);
+//        userdata.setSubjectDN ();
+//        userdata.setCaName ();
+//        userdata.setEmail ();
+//        userdata.setSubjectAltName ();
+        userdata.setTokenType (UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+//        userdata.setEndEntityProfileName ();
+//        userdata.setCertificateProfileName ();
+    }
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest(org.ejbca.core.protocol.ws.objects.UserDataVOWS, String, int, String, String)
+	 */
+	public CertificateResponse certificateRequest(UserDataVOWS userdata, String requestData, int requestType, String hardTokenSN, String responseType)
+	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
+	ApprovalException, WaitingForApprovalException, EjbcaException {
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+	    try {
+	        log.debug("CertReq for user '" + userdata.getUsername() + "'.");
+	        setUserDataVOWS (userdata);
+	    	EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper ();
+	    	Admin admin = ejbcawshelper.getAdmin(false, wsContext);
+	        UserDataVO userdatavo = ejbcawshelper.convertUserDataVOWS(admin, userdata);
+	        int responseTypeInt = SecConst.CERT_RES_TYPE_CERTIFICATE;
+	        if (!responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
+		        if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+		        	responseTypeInt = SecConst.CERT_RES_TYPE_PKCS7;
+		        }
+		        else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
+		        	responseTypeInt = SecConst.CERT_RES_TYPE_PKCS7WITHCHAIN;
+		        }
+		        else{
+		        	throw new NoSuchAlgorithmException ("Bad responseType:" + responseType);
+		        }
+	        }
+	        	
+	    	ICertificateRequestSessionRemote certreqsession = ejbcawshelper.getCertficateRequestSession();
+	        return new CertificateResponse(responseType, 
+	        		                       certreqsession.processCertReq(admin, userdatavo, requestData, requestType, hardTokenSN, responseTypeInt));
+        } catch( CADoesntExistsException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+        } catch( AuthorizationDeniedException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+        } catch( NotFoundException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+        } catch( RuntimeException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+		} catch (InvalidKeyException e) {
+            throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
+		} catch (IllegalKeyException e) {
+			// Don't log a bad error for this (user's key length too small)
+            throw getEjbcaException(e, logger, ErrorCode.ILLEGAL_KEY, Level.DEBUG);
+		} catch (AuthStatusException e) {
+			// Don't log a bad error for this (user wrong status)
+            throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
+		} catch (AuthLoginException e) {
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
+		} catch (SignatureException e) {
+            throw getEjbcaException(e, logger, ErrorCode.SIGNATURE_ERROR, Level.ERROR);
+		} catch (SignRequestSignatureException e) {
+            throw getEjbcaException(e.getMessage(), logger, null, Level.ERROR);
+		} catch (InvalidKeySpecException e) {
+            throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
+		} catch (NoSuchAlgorithmException e) {
+            throw getInternalException(e, logger);
+		} catch (NoSuchProviderException e) {
+            throw getInternalException(e, logger);
+		} catch (CertificateException e) {
+            throw getInternalException(e, logger);
+		} catch (CreateException e) {
+            throw getInternalException(e, logger);
+		} catch (IOException e) {
+            throw getInternalException(e, logger);
+		} catch (FinderException e) {
+			new NotFoundException(e.getMessage());
+		} catch (NoSuchFieldException e) {
+			// CVC error
+            throw getInternalException(e, logger);
+       } finally {
+            logger.writeln();
+            logger.flush();
+        }
+    return null;
+	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#softTokenRequest(org.ejbca.core.protocol.ws.objects.UserDataVOWS, String, String, String)
+	 */
+	public KeyStore softTokenRequest(UserDataVOWS userdata, String hardTokenSN, String keyspec, String keyalg)
+	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
+	ApprovalException, WaitingForApprovalException, EjbcaException {
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+	    try {
+	        log.debug("Soft token req for user '" + userdata.getUsername() + "'.");
+	        userdata.setStatus(UserDataVOWS.STATUS_NEW);
+	        userdata.setClearPwd(true);
+	    	EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper ();
+	    	Admin admin = ejbcawshelper.getAdmin(false, wsContext);
+	        UserDataVO userdatavo = ejbcawshelper.convertUserDataVOWS(admin, userdata);
+	        boolean createJKS = userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
+	    	ICertificateRequestSessionRemote certreqsession = ejbcawshelper.getCertficateRequestSession();
+	        java.security.KeyStore ks = certreqsession.processSoftTokenReq(admin, userdatavo, hardTokenSN, keyspec, keyalg, createJKS);
+            return new KeyStore(ks, userdata.getPassword());
+
+        } catch( CADoesntExistsException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+        } catch( AuthorizationDeniedException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+        } catch( NotFoundException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+        } catch( RuntimeException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+		} catch (InvalidKeyException e) {
+            throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
+		} catch (IllegalKeyException e) {
+			// Don't log a bad error for this (user's key length too small)
+            throw getEjbcaException(e, logger, ErrorCode.ILLEGAL_KEY, Level.DEBUG);
+		} catch (AuthStatusException e) {
+			// Don't log a bad error for this (user wrong status)
+            throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
+		} catch (AuthLoginException e) {
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
+		} catch (SignatureException e) {
+            throw getEjbcaException(e, logger, ErrorCode.SIGNATURE_ERROR, Level.ERROR);
+		} catch (SignRequestSignatureException e) {
+            throw getEjbcaException(e.getMessage(), logger, null, Level.ERROR);
+		} catch (InvalidKeySpecException e) {
+            throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
+		} catch (NoSuchAlgorithmException e) {
+            throw getInternalException(e, logger);
+		} catch (NoSuchProviderException e) {
+            throw getInternalException(e, logger);
+        } catch( KeyStoreException e ) {
+            throw getInternalException(e, logger);
+		} catch (CertificateException e) {
+            throw getInternalException(e, logger);
+		} catch (CreateException e) {
+            throw getInternalException(e, logger);
+		} catch (IOException e) {
+            throw getInternalException(e, logger);
+		} catch (FinderException e) {
+			new NotFoundException(e.getMessage());
+		} catch (NoSuchFieldException e) {
+			// CVC error
+            throw getInternalException(e, logger);
+       } finally {
+            logger.writeln();
+            logger.flush();
+        }
+    return null;
+	}
 
 }

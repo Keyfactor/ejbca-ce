@@ -1,60 +1,68 @@
-
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import java.security.cert.CertificateEncodingException;
 
+import org.ejbca.util.Base64;
 
 /**
- * <p>Java class for certificate complex type.
+ * Holds certificate WS elements
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="certificate">
- *   &lt;complexContent>
- *     &lt;extension base="{http://ws.protocol.core.ejbca.org/}tokenCertificateResponseWS">
- *       &lt;sequence>
- *         &lt;element name="certificateData" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- * 
- * 
+ * @version $Id: Certificate.java 8282 2009-11-09 14:57:21Z jeklund $
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "certificate", propOrder = {
-    "certificateData"
-})
-public class Certificate
-    extends TokenCertificateResponseWS
-{
+public class Certificate extends TokenCertificateResponseWS {
+	
+	private byte[] certificateData = null;
+	
+	/**
+	 * WS Constructor
+	 */
+	public Certificate(){
+		
+	}
 
-    protected byte[] certificateData;
+	public Certificate(java.security.cert.Certificate cert) throws CertificateEncodingException{
+		certificateData = Base64.encode(cert.getEncoded());
+	}
+	
+	public Certificate(byte[] certData) {
+		certificateData = Base64.encode(certData);
+	}
 
-    /**
-     * Gets the value of the certificateData property.
-     * 
-     * @return
-     *     possible object is
-     *     byte[]
-     */
-    public byte[] getCertificateData() {
-        return certificateData;
-    }
+	/**
+	 * Returns the certificateData in binary format
+	 * @return the certificateData in binary format
+	 */
+	public byte[] getRawCertificateData() {
+		return Base64.decode(certificateData);
+	}
 
-    /**
-     * Sets the value of the certificateData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     byte[]
-     */
-    public void setCertificateData(byte[] value) {
-        this.certificateData = ((byte[]) value);
-    }
+	/**
+	 * Returns the certificateData in Base64 encoded format
+	 * @return the certificateData in Base64 encoded format
+	 */
+	public byte[] getCertificateData() {
+		return certificateData;
+	}
+
+	/**
+	 * Sets certificateData in Base64 encoded format
+	 * @param certificateData The certificateData to set, in Base64 encoded format.
+	 */
+	public void setCertificateData(byte[] certificateData) {
+		this.certificateData = certificateData;
+	}
+
 
 }

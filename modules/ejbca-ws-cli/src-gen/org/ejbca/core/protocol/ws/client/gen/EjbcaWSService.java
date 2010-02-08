@@ -15,7 +15,7 @@ import javax.xml.ws.WebServiceClient;
  * Generated source version: 2.0
  * 
  */
-@WebServiceClient(name = "EjbcaWSService", targetNamespace = "http://ws.protocol.core.ejbca.org/", wsdlLocation = "/home/user/workspace/ejbca/modules/dist/EjbcaWSService.wsdl")
+@WebServiceClient(name = "EjbcaWSService", targetNamespace = "http://ws.protocol.core.ejbca.org/", wsdlLocation = "/home/anders/workspace/ejbca/modules/dist/EjbcaWSService.wsdl")
 public class EjbcaWSService
     extends Service
 {
@@ -25,7 +25,7 @@ public class EjbcaWSService
     static {
         URL url = null;
         try {
-            url = new URL("file:/home/user/workspace/ejbca/modules/dist/EjbcaWSService.wsdl");
+            url = new URL("file:/home/anders/workspace/ejbca/modules/dist/EjbcaWSService.wsdl");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

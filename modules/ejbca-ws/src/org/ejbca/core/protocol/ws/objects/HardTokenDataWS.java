@@ -13,8 +13,13 @@
 package org.ejbca.core.protocol.ws.objects;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * Value object containing WS representation
@@ -27,6 +32,19 @@ import java.util.List;
  *
  * $Id$
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "hardTokenDataWS", propOrder = {
+    "certificates",
+    "copies",
+    "copyOfSN",
+    "createTime",
+    "encKeyKeyRecoverable",
+    "hardTokenSN",
+    "label",
+    "modifyTime",
+    "pinDatas",
+    "tokenType"
+})
 public class HardTokenDataWS {
 
 
@@ -35,13 +53,18 @@ public class HardTokenDataWS {
 	private String hardTokenSN = null;
 	private String copyOfSN = null;
 	private List<String> copies = new ArrayList();
-	private List<PINDataWS> pinDatas = new ArrayList();
+	private List<PinDataWS> pinDatas = new ArrayList();
 	private List<Certificate> certificates = new ArrayList();
-	private Date createTime = null;
-	private Date modifyTime = null;
+    @XmlSchemaType(name = "dateTime")
+	private XMLGregorianCalendar createTime = null;
+    @XmlSchemaType(name = "dateTime")
+	private XMLGregorianCalendar modifyTime = null;
 	
 	private boolean encKeyKeyRecoverable = false;
 	
+	/**
+	 * WS Constructor
+	 */
 	public HardTokenDataWS(){}
 	
 	/**
@@ -57,7 +80,7 @@ public class HardTokenDataWS {
 	 * @param certificates the certificate stored on the token
 	 * @param encKeyKeyRecoverable if the token have a special encryption key it should be specified if it is recoverable or not.
 	 */
-	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<String> copies, List<PINDataWS> pinDatas, List<Certificate> certificates, boolean encKeyKeyRecoverable) {
+	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<String> copies, List<PinDataWS> pinDatas, List<Certificate> certificates, boolean encKeyKeyRecoverable) {
 		super();
 		this.tokenType = tokenType;
 		this.label = label;
@@ -79,7 +102,7 @@ public class HardTokenDataWS {
 	 * @param pinDatas a List of pin datas with PIN and PUK
 	 * @param encKeyKeyRecoverable if the token have a special encryption key it should be specified if it is recoverable or not.
 	 */
-	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<PINDataWS> pinDatas, boolean encKeyKeyRecoverable) {
+	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<PinDataWS> pinDatas, boolean encKeyKeyRecoverable) {
 		super();
 		this.tokenType = tokenType;
 		this.label = label;
@@ -175,7 +198,7 @@ public class HardTokenDataWS {
      * 
      * @return list of PIN data containing PIN and PUK of the 
      */
-	public List<PINDataWS> getPinDatas() {
+	public List<PinDataWS> getPinDatas() {
 		return pinDatas;
 	}
 
@@ -183,7 +206,7 @@ public class HardTokenDataWS {
      * 
      * @param pinDatas list of PIN data containing PIN and PUK of the
      */
-	public void setPinDatas(List<PINDataWS> pinDatas) {
+	public void setPinDatas(List<PinDataWS> pinDatas) {
 		this.pinDatas = pinDatas;
 	}
 
@@ -212,7 +235,7 @@ public class HardTokenDataWS {
 	
 
 	/**
-	 * @param the label indicating the use of the token, one of the LABEL_ constants
+	 * @param label indicating the use of the token, one of the LABEL_ constants
 	 */
 	public void setLabel(String label) {
 		this.label = label;
@@ -222,22 +245,22 @@ public class HardTokenDataWS {
 	 * 
 	 * @return Returns the time this token was created
 	 */
-	public Date getCreateTime() {
+	public XMLGregorianCalendar getCreateTime() {
 		return createTime;
 	}
 
-	public void setCreateTime(Date createTime) {
+	public void setCreateTime(XMLGregorianCalendar createTime) {
 		this.createTime = createTime;
 	}
 
 	/**
 	 * @return Returns the time this last was modified.
 	 */
-	public Date getModifyTime() {
+	public XMLGregorianCalendar getModifyTime() {
 		return modifyTime;
 	}
 
-	public void setModifyTime(Date modifyTime) {
+	public void setModifyTime(XMLGregorianCalendar modifyTime) {
 		this.modifyTime = modifyTime;
 	}
 	

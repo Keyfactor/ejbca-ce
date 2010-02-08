@@ -45,6 +45,8 @@ import org.ejbca.core.ejb.log.ILogSessionHome;
 import org.ejbca.core.ejb.log.ILogSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.ICertificateRequestSessionHome;
+import org.ejbca.core.ejb.ra.ICertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionHome;
@@ -304,5 +306,21 @@ public class EjbRemoteHelper {
 			}
 		}
 		return crlsession;
+	}
+
+	private ICertificateRequestSessionRemote certreqsession = null;
+	public ICertificateRequestSessionRemote getCertficateRequestSession() {
+		if(certreqsession == null){	  
+			try {
+				certreqsession = ((ICertificateRequestSessionHome) getLocator().getRemoteHome(ICertificateRequestSessionHome.JNDI_NAME,ICertificateRequestSessionHome.class)).create();
+			} catch (RemoteException e) {
+				throw new EJBException(e);
+			} catch (ServiceLocatorException e) {
+				throw new EJBException(e);
+			} catch (CreateException e) {
+				throw new EJBException(e);
+			}
+		}
+		return certreqsession;
 	}
 }

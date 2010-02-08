@@ -12,13 +12,22 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.objects;
 
-import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /**
- * Class used when checking the revokation status of a certificate.
+ * Class used when checking the revocation status of a certificate.
  * 
  * Contains the following data:
  *   IssuerDN
@@ -30,9 +39,16 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
  * @version $Id$
  */
 
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "revokeStatus", propOrder = {
+    "certificateSN",
+    "issuerDN",
+    "reason",
+    "revocationDate"
+})
 public class RevokeStatus {
 	
-    /** Constants defining different revokation reasons. */
+    /** Constants defining different revocation reasons. */
     public static final int NOT_REVOKED                            = RevokedCertInfo.NOT_REVOKED;
     public static final int REVOKATION_REASON_UNSPECIFIED          = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
     public static final int REVOKATION_REASON_KEYCOMPROMISE        = RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE;
@@ -45,26 +61,31 @@ public class RevokeStatus {
     public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN  = RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
     public static final int REVOKATION_REASON_AACOMPROMISE         = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
     
-	private String      issuerDN;
-    private String      certificateSN;
-    private Date        revocationDate;
-    private int         reason;
+	private String               issuerDN;
+    private String               certificateSN;
+    @XmlSchemaType(name = "dateTime")
+    private XMLGregorianCalendar revocationDate;
+    private int                  reason;
 	
     
     /** Default Web Service Constuctor */
 	public RevokeStatus(){}
 	
-	public RevokeStatus(RevokedCertInfo info, String issuerDN){
+	public RevokeStatus(RevokedCertInfo info, String issuerDN) throws DatatypeConfigurationException{
 		certificateSN = info.getUserCertificate().toString(16);
 		this.issuerDN = issuerDN;
-		revocationDate = info.getRevocationDate();
+		GregorianCalendar cal = new GregorianCalendar ();
+		cal.setTime(info.getRevocationDate());
+		revocationDate = DatatypeFactory.newInstance ().newXMLGregorianCalendar(cal);
 		reason = info.getReason();		
 	}
 
-	public RevokeStatus(CertificateStatus info, String issuerDN, String serno){
+	public RevokeStatus(CertificateStatus info, String issuerDN, String serno) throws DatatypeConfigurationException{
 		certificateSN = serno;
 		this.issuerDN = issuerDN;
-		revocationDate = info.revocationDate;
+		GregorianCalendar cal = new GregorianCalendar ();
+		cal.setTime(info.revocationDate);
+		revocationDate = DatatypeFactory.newInstance ().newXMLGregorianCalendar(cal);
 		reason = info.revocationReason;		
 	}
 
@@ -85,14 +106,14 @@ public class RevokeStatus {
 	/**
 	 * @return Returns the revocationDate.
 	 */
-	public Date getRevocationDate() {
+	public XMLGregorianCalendar getRevocationDate() {
 		return revocationDate;
 	}
 
 	/**
 	 * @param revocationDate The revocationDate to set.
 	 */
-	public void setRevocationDate(Date revocationDate) {
+	public void setRevocationDate(XMLGregorianCalendar revocationDate) {
 		this.revocationDate = revocationDate;
 	}
 

@@ -15,6 +15,8 @@ package org.ejbca.core.protocol.ws.objects;
 import org.ejbca.util.query.BasicMatch;
 
 /**
+ * Holder of user match/search data.
+ * 
  * @version $Id$
  */
 public class UserMatch {

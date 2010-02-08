@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -31,8 +32,12 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.ws.WebServiceContext;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.handler.MessageContext;
+import javax.xml.datatype.DatatypeConfigurationException;
+
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
@@ -55,7 +60,7 @@ import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
-import org.ejbca.core.protocol.ws.objects.PINDataWS;
+import org.ejbca.core.protocol.ws.objects.PinDataWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.CertTools;
@@ -332,7 +337,13 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 
 		return dataWS;
 	}
-	
+
+	XMLGregorianCalendar dateToXMKGregorianCalendar (Date date) throws DatatypeConfigurationException {
+		GregorianCalendar cal = new GregorianCalendar ();
+		cal.setTime(date);
+		return DatatypeFactory.newInstance ().newXMLGregorianCalendar(cal);
+	}
+
 	/**
 	 * Method used to convert a HardToken data to a WS version
 	 * @param data
@@ -352,15 +363,18 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			}
 		}
 		retval.setCopies(copies);
-		retval.setModifyTime(data.getModifyTime());
-		retval.setCreateTime(data.getCreateTime());
-		retval.setEncKeyKeyRecoverable(false);
-
 		try{
+			retval.setModifyTime(dateToXMKGregorianCalendar(data.getModifyTime()));
+			retval.setCreateTime(dateToXMKGregorianCalendar(data.getCreateTime()));
+			retval.setEncKeyKeyRecoverable(false);
+
 			Iterator iter = certificates.iterator();
 			while(iter.hasNext()){
 				retval.getCertificates().add(new Certificate((java.security.cert.Certificate) iter.next()));
 			}
+		}catch(DatatypeConfigurationException e){
+			log.error("EJBCA WebService error, getHardToken: ",e);
+			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}catch(CertificateEncodingException e){
 			log.error("EJBCA WebService error, getHardToken: ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
@@ -370,8 +384,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		if(data.getHardToken() instanceof SwedishEIDHardToken){
 			SwedishEIDHardToken ht = (SwedishEIDHardToken) data.getHardToken();
 			if(includePUK){
-			  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
-			  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthEncPIN(),ht.getAuthEncPUK()));
+			  retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
+			  retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthEncPIN(),ht.getAuthEncPUK()));
 			}
 			retval.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
 			return retval;
@@ -380,8 +394,8 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			EnhancedEIDHardToken ht = (EnhancedEIDHardToken) data.getHardToken();
 			retval.setEncKeyKeyRecoverable(ht.getEncKeyRecoverable());
 			if(includePUK){
-				retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
-				retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthPIN(),ht.getAuthPUK()));
+				retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
+				retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthPIN(),ht.getAuthPUK()));
 			}
 			retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
 			return retval;
@@ -389,7 +403,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		if(data.getHardToken() instanceof TurkishEIDHardToken){
 			TurkishEIDHardToken ht = (TurkishEIDHardToken) data.getHardToken();
 			if(includePUK){
-			  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialPIN(),ht.getPUK()));
+			  retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialPIN(),ht.getPUK()));
 			}
 			retval.setTokenType(HardTokenConstants.TOKENTYPE_TURKISHEID);
 			return retval;

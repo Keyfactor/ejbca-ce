@@ -57,6 +57,9 @@ public class TokenCertificateRequestWS {
 		this.keyalg = keyalg;
 	}
 
+	/**
+	 * WS Constructor
+	 */
 	public TokenCertificateRequestWS() {
 		super();
 	}

@@ -147,6 +147,16 @@ public class SecConst extends Object {
     /** The CAs previous signing key, if any exists */
     public static final int CAKEYPURPOSE_CERTSIGN_PREVIOUS   = 6;
 
+    // Certificate request types
+    public static final int CERT_REQ_TYPE_PKCS10	= 0;
+    public static final int CERT_REQ_TYPE_CRMF		= 1;
+    public static final int CERT_REQ_TYPE_SPKAC     = 2;
+    
+    // Certificate response types
+    public static final int CERT_RES_TYPE_CERTIFICATE	 = 0;
+    public static final int CERT_RES_TYPE_PKCS7      	 = 1;
+    public static final int CERT_RES_TYPE_PKCS7WITHCHAIN = 2;
+    
     /**
      * Default key lengths. Users are allowed to choose from these key lengths when
      * lookup of available bit lengths fails. 

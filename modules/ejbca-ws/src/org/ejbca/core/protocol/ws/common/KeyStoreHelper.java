@@ -44,7 +44,7 @@ public class KeyStoreHelper {
 	 * @throws KeyStoreException 
 	 */
 	public static java.security.KeyStore getKeyStore(byte[] keystoreData, String type, String password) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException, NoSuchProviderException{
-		java.security.KeyStore ks = java.security.KeyStore.getInstance(type, "BC");
+		java.security.KeyStore ks = type.equalsIgnoreCase("JKS") ? java.security.KeyStore.getInstance("JKS") : java.security.KeyStore.getInstance(type, "BC");
 		ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decode(keystoreData));
 		ks.load(bais, password.toCharArray());
         return ks; 

@@ -29,6 +29,9 @@ public class NameAndId implements Serializable{
 	/** An Id for example the CA-id */
 	private int id;
 
+	/**
+	 * WS Constructor
+	 */
 	public NameAndId() {
 		this.id = Integer.MIN_VALUE ;
 		this.name = null;

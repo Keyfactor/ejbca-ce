@@ -30,6 +30,9 @@ public class UserDataSourceVOWS implements Serializable{
 	private UserDataVOWS userDataVOWS = null;
 	private List<Integer> isModifyable = null;
 
+	/**
+	 * WS Constructor
+	 */
 	public UserDataSourceVOWS(){}
 
 	public UserDataSourceVOWS(UserDataVOWS userDataVOWS, Set isModifyableSet){

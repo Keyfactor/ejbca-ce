@@ -1,111 +1,79 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 
 package org.ejbca.core.protocol.ws.client.gen;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-
+import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 /**
- * <p>Java class for tokenCertificateResponseWS complex type.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="tokenCertificateResponseWS">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="certificate" type="{http://ws.protocol.core.ejbca.org/}certificate" minOccurs="0"/>
- *         &lt;element name="keyStore" type="{http://ws.protocol.core.ejbca.org/}keyStore" minOccurs="0"/>
- *         &lt;element name="type" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
+ * base class that this is a certificate response
+ * of either a Certificate or KeyStore
  * 
  * 
+ * @author Philip Vendil 2007 feb 8
+ *
+ * @version $Id: TokenCertificateResponseWS.java 8373 2009-11-30 14:07:00Z jeklund $
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "tokenCertificateResponseWS", propOrder = {
-    "certificate",
-    "keyStore",
-    "type"
-})
-@XmlSeeAlso({
-    KeyStore.class,
-    Certificate.class
-})
 public class TokenCertificateResponseWS {
+	
 
-    protected Certificate certificate;
-    protected KeyStore keyStore;
-    protected int type;
 
-    /**
-     * Gets the value of the certificate property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Certificate }
-     *     
-     */
-    public Certificate getCertificate() {
-        return certificate;
-    }
+	private int type = 0;
+	private Certificate certificate;
+	private KeyStore keyStore;
+	
+	public TokenCertificateResponseWS(Certificate certificate) {
+		super();
+		this.type = HardTokenConstants.RESPONSETYPE_CERTIFICATE_RESPONSE;
+		this.certificate = certificate;
+	}
 
-    /**
-     * Sets the value of the certificate property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Certificate }
-     *     
-     */
-    public void setCertificate(Certificate value) {
-        this.certificate = value;
-    }
+	public TokenCertificateResponseWS(KeyStore keyStore) {
+		super();
+		this.type = HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE;
+		this.keyStore = keyStore;
+	}
 
-    /**
-     * Gets the value of the keyStore property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link KeyStore }
-     *     
-     */
-    public KeyStore getKeyStore() {
-        return keyStore;
-    }
+	/**
+	 * WS Constructor
+	 */
+	public TokenCertificateResponseWS() {
+		super();
+	}
 
-    /**
-     * Sets the value of the keyStore property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link KeyStore }
-     *     
-     */
-    public void setKeyStore(KeyStore value) {
-        this.keyStore = value;
-    }
+	public Certificate getCertificate() {
+		return certificate;
+	}
 
-    /**
-     * Gets the value of the type property.
-     * 
-     */
-    public int getType() {
-        return type;
-    }
+	public void setCertificate(Certificate certificate) {
+		this.certificate = certificate;
+	}
 
-    /**
-     * Sets the value of the type property.
-     * 
-     */
-    public void setType(int value) {
-        this.type = value;
-    }
+	public KeyStore getKeyStore() {
+		return keyStore;
+	}
 
+	public void setKeyStore(KeyStore keyStore) {
+		this.keyStore = keyStore;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+	
+	
 }

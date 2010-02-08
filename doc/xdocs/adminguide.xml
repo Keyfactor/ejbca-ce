@@ -828,41 +828,9 @@ You can configure this in the certificate profile used to issue certificates.
 New to EJBCA 3.4 is a JAX-WS 2.0 Web Service Interface used to access the basic
 functions remotely over client authentication HTTPS. 
 </p><p>
-The functionality currently available through the Web Service Interface are:
+The functionality currently available through the Web Service Interface are documented in the
+<a href="ws/index.html" target="_blank">EJBCA Web Service API Reference</a>.
 </p>
-<ul>
-<li>getEjbcaVersion : Returns the version of the EJBCA server.</li>
-<li>editUser    : Edits/adds  userdata</li>
-<li>findUser    : Retrieves the userdata for a given user</li>
-<li>findCerts   : Retrieves the certificates generated for a user</li>
-<li>pkcs10Req   : Deprecated method previously used to generate a certificate using the given userdata and the public key from the PKCS10</li>
-<li>pkcs10Request : Newer method that generates a certificate or PKCS7 using the given userdata and the public key from the PKCS10</li>
-<li>pkcs12Req   : Generates a PKCS12 keystore (with the private key) using the given userdata</li>
-<li>cvcRequest  : Generate a CV certificate for the specified user using the public key from the CVC request. See the CVC documentation for more details.</li> 
-<li>revokeCert  : Revokes the given certificate</li>
-<li>revokeUser  : Revokes all certificates for a given user, it's also possible to delete the user</li>
-<li>revokeToken : Revokes all certificates placed on a given hard token</li>
-<li>checkRevokationStatus : Checks the revokation status of a certificate</li>
-<li>isAuthorized : Checks if an admin is authorized to an resource</li>
-<li>fetchUserData : Method used to fetch userdata from an existing UserDataSource</li>
-<li>genTokenCertificates : Method used to add information about a generated hardtoken</li>
-<li>existsHardToken : Looks up if a serial number already have been generated</li>
-<li>getHardTokenData : Method fetching information about a hard token given it's hard token serial number.</li>
-<li>getHardTokenDatas: Method fetching all hard token informations for a given user.</li>
-<li>republishCertificate : Method performing a republication of a selected certificate</li>
-<li>isApproved : Looks up if a requested action have been approved by an authorized administrator or not</li>
-<li>customLog  : Logs a CUSTOM_LOG event to the logging system</li>
-<li>deleteUserDataFromSource : Method used to remove user data from a user data source</li>
-<li>getCertificate : Returns a certificate given its issuer and serial number</li>
-<li>keyRecoverNewest : Marks the users latest certificate for key recovery. Note, to key recover the user the status 
-must also be set to KEYRECOVERY (70), and the user must have been generated for key recovery from the start.
-If all prerequisites are fulfilled, the next pkcs12Req call (for example) will return the recovered key and certificate.</li>
-<li>getAvailableCAs : Fetch a list of the ids and names of available CAs, i.e. not having status "external" or "waiting for certificate response".</li>
-<li>getAuthorizedEndEntityProfiles : Fetch a list of end entity profiles that the administrator is authorized to use.</li>
-<li>getAvailableCertificateProfiles : Fetch a list of available certificate profiles in an end entity profile.</li>
-<li>getAvailableCAsInProfile : Fetch a list of the ids and names of available CAs in an end entity profile.</li>
-<li>createCRL : Generates a CRL for the given CA.</li>
-</ul>
 <p>
 There is also a cli tool that can be used for remote scripting. See following section for more information.
 Note: All these calls are not available through the CLI.
@@ -965,35 +933,35 @@ Example call to find all users having 'Vendil' in their subject dn:
 </p>
 <source>
   UserMatch usermatch = new UserMatch();
-  usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_DN);
-  usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_CONTAINS);
+  usermatch.setMatchwith(UserMatch.MATCH_WITH_DN);
+  usermatch.setMatchtype(UserMatch.MATCH_TYPE_CONTAINS);
   usermatch.setMatchvalue("Vendil");
-  List(UserDataVOWS) result= ejbcaraws.findUser(usermatch);
+  List&lt;UserDataVOWS&gt; result = ejbcaraws.findUser(usermatch);
 </source>
 <p>
-Example to generate a certificate form a PKCS10 request:
+Example generating a certificate from a PKCS10 request:
 </p>
 <source>
   UserDataVOWS user1 = new UserDataVOWS();
   user1.setUsername("WSTESTUSER1");
-  user1.setPassword("foo123");
-  user1.setClearPwd(true);
   user1.setSubjectDN("CN=WSTESTUSER1");
   user1.setCaName("AdminCA1");
   user1.setEmail(null);
   user1.setSubjectAltName(null);
-  user1.setStatus(10);
-  user1.setTokenType("USERGENERATED");
   user1.setEndEntityProfileName("EMPTY");
   user1.setCertificateProfileName("ENDUSER");
 			
-  ejbcaraws.editUser(user1);	
   KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
   PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
   CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
-  CertificateResponse certenv =  ejbcaraws.pkcs10Request("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+
+  CertificateResponse certenv =  ejbcaraws.certificateRequest(user1,
+                                                              CertificateHelper.CERT_REQ_TYPE_PKCS10,
+                                                              new String(Base64.encode(pkcs10.getEncoded())),
+                                                              null,
+                                                              CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		
-  X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData()); 		
+  X509Certificate cert = certenv.getCertificate (); 		
 </source>
 <p>
 Example checking the revocation status of a certificate:
@@ -1001,7 +969,7 @@ Example checking the revocation status of a certificate:
 <source>
   RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(cert.getIssuerDN.toString,cert.getSerialNumber().toString(16));
   if(revokestatus != null){
-    if(revokestatus.getReason() != RevokeCertInfo.NOT_REVOKED)){
+    if(revokestatus.getReason() != RevokeStatus.NOT_REVOKED)){
       // Certificate is revoked
     }else{
 	  // Certificate isn't revoked
@@ -1051,11 +1019,19 @@ findUser, findCert:
 <li>/ra_functionality/'end entity profile of the user'/view_end_entity</li>
 </ul>
 <p>
-pkcs10req, pkcs10Request, pkcs12req:
+pkcs10Request, pkcs12req:
 </p>
 <ul>
 <li>/ra_functionality/view_end_entity</li>
 <li>/ra_functionality/'end entity profile of the user'/view_end_entity</li>
+<li>/ca_functionality/create_certificate</li>
+</ul>
+<p>
+certificateRequest, softTokenRequest:
+</p>
+<ul>
+<li>/ra_functionality/create_end_entity and/or edit_end_entity</li>
+<li>/ra_functionality/'end entity profile of user'/create_end_entity and/or edit_end_entity</li>
 <li>/ca_functionality/create_certificate</li>
 </ul>
 <p>

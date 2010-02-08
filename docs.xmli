@@ -15,10 +15,24 @@
     <property name="project.name" value="ejbca"/>
     <property name="docs.src"     location="doc/xdocs"/>
     <property name="docs.dest"    location="tmp/htdocs"/>
+    <property name="docs.dest.ws" location="tmp/htdocs/ws"/>
+    <property name="jdocs.ws.tmp" location="tmp/jdocswstmp"/>
+    <property name="ws.client.gen.relative-path" value="org/ejbca/core/protocol/ws/client/gen"/>
+    <property name="client.ws.class" value="EjbcaWS"/>
+    <property name="ws.objects.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/objects"/>
+    <property name="ws.common.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/common"/>
+    <property name="ws.client.gen.src" location="modules/ejbca-ws-cli/src-gen"/>
+    <property name="ws.master.file" location="${ws.common.dir}/IEjbcaWS.java"/>
     <property name="project.file" value="stylesheets/project.xml" />
     <property name="templ.path"   location="${docs.src}/stylesheets" />
     <property name="velocity.props"   location="${docs.src}/velocity.properties" />
     <property name="include.xml"  value="**/*.xml" />
+
+	<path id="jdoc.classpath">
+		<path location="dist/ejbca-util.jar" />
+		<path location="dist/ejbca-ejb.jar" />
+		<path location="lib/bcprov-jdk15.jar" />
+    </path>
 
     <target name="prepare">
         <path id="anakia.classpath">
@@ -59,6 +73,43 @@
         	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
         	<fileset dir="${docs.src}" includes="sensornet/**/*"/>
         </copy>
+        
+        <echo message="WS=${ws.objects.dir}"/>
+        <mkdir dir="${jdocs.ws.tmp}"/>
+        <mkdir dir="${docs.dest.ws}"/>
+	    <copy overwrite="yes" todir="${jdocs.ws.tmp}">
+		  <fileset dir="${ws.client.gen.src}">
+			<exclude name="**/${client.ws.class}.java"/>
+			<exclude name="**/ObjectFactory.java"/>
+		  </fileset>
+	    </copy>
+	    <copy overwrite="yes" file="${ws.objects.dir}/package.html" todir="${jdocs.ws.tmp}/${ws.client.gen.relative-path}"/>
+	  	<java classname="org.ejbca.util.JAXWSDocAndConvTools" 
+	  		  classpath="dist/ejbca-ejb.jar"
+	  		  failonerror="yes"
+	  		  fork="true">
+	  	    <arg value="${ws.master.file}"/>
+	  	    <arg value="${ws.client.gen.src}/${ws.client.gen.relative-path}/${client.ws.class}.java"/>
+		    <arg value="${jdocs.ws.tmp}"/>
+	  	</java>
+	    <javadoc destdir="${docs.dest.ws}"
+	             author="true"
+	             version="true"
+	             Package="false"
+	             Use="false"
+	             nodeprecated="true"
+	             nodeprecatedlist="true"
+	    	     classpathref="jdoc.classpath"
+	             windowtitle="EJBCA WS">
+	        <packageset dir="${jdocs.ws.tmp}"/>
+	        <fileset dir="${ws.common.dir}" defaultexcludes="yes">
+	          <include name="**/CertificateHelper.java"/>
+	          <include name="**/KeyStoreHelper.java"/>
+	         </fileset>
+	       <link offline="true" href="http://java.sun.com/javase/6/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
+	      <doctitle><![CDATA[<h1>EJBCA WS Support</h1>]]></doctitle>
+	      <bottom><![CDATA[<i>2010 PrimeKey Solutions AB.</i>]]></bottom>
+	    </javadoc>
         
         <echo message="Local documentation is now available in file://${docs.dest}/index.html"/>
     </target>

@@ -1,98 +1,114 @@
-
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
+import org.ejbca.util.query.BasicMatch;
 
 /**
- * <p>Java class for userMatch complex type.
+ * Holder of user match/search data.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="userMatch">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="matchtype" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *         &lt;element name="matchvalue" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="matchwith" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- * 
- * 
+ * @version $Id: UserMatch.java 8282 2009-11-09 14:57:21Z jeklund $
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "userMatch", propOrder = {
-    "matchtype",
-    "matchvalue",
-    "matchwith"
-})
 public class UserMatch {
 
-    protected int matchtype;
-    protected String matchvalue;
-    protected int matchwith;
-
+    public static final int MATCH_WITH_USERNAME            = org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME;
+    public static final int MATCH_WITH_EMAIL               = org.ejbca.util.query.UserMatch.MATCH_WITH_EMAIL;
+    public static final int MATCH_WITH_STATUS              = org.ejbca.util.query.UserMatch.MATCH_WITH_STATUS; // Value must the number representation.
+    public static final int MATCH_WITH_ENDENTITYPROFILE    = org.ejbca.util.query.UserMatch.MATCH_WITH_ENDENTITYPROFILE; // Matches the end entity profile name.
+    public static final int MATCH_WITH_CERTIFICATEPROFILE  = org.ejbca.util.query.UserMatch.MATCH_WITH_CERTIFICATEPROFILE; // Matches the certificate profile name.
+    public static final int MATCH_WITH_CA                  = org.ejbca.util.query.UserMatch.MATCH_WITH_CA; // Matches the CA name.
+	public static final int MATCH_WITH_TOKEN               = org.ejbca.util.query.UserMatch.MATCH_WITH_TOKEN;
+	public static final int MATCH_WITH_DN                  = org.ejbca.util.query.UserMatch.MATCH_WITH_DN;
+    // Subject DN fields.
+    public static final int MATCH_WITH_UID              = org.ejbca.util.query.UserMatch.MATCH_WITH_UID;
+    public static final int MATCH_WITH_COMMONNAME       = org.ejbca.util.query.UserMatch.MATCH_WITH_COMMONNAME;
+    public static final int MATCH_WITH_DNSERIALNUMBER   = org.ejbca.util.query.UserMatch.MATCH_WITH_DNSERIALNUMBER;
+    public static final int MATCH_WITH_GIVENNAME        = org.ejbca.util.query.UserMatch.MATCH_WITH_GIVENNAME;
+    public static final int MATCH_WITH_INITIALS         = org.ejbca.util.query.UserMatch.MATCH_WITH_INITIALS;
+    public static final int MATCH_WITH_SURNAME          = org.ejbca.util.query.UserMatch.MATCH_WITH_SURNAME;
+    public static final int MATCH_WITH_TITLE            = org.ejbca.util.query.UserMatch.MATCH_WITH_TITLE;
+    public static final int MATCH_WITH_ORGANIZATIONUNIT = org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATIONUNIT;
+    public static final int MATCH_WITH_ORGANIZATION     = org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATION;
+    public static final int MATCH_WITH_LOCALE           = org.ejbca.util.query.UserMatch.MATCH_WITH_LOCALE;
+    public static final int MATCH_WITH_STATE            = org.ejbca.util.query.UserMatch.MATCH_WITH_STATE;
+    public static final int MATCH_WITH_DOMAINCOMPONENT  = org.ejbca.util.query.UserMatch.MATCH_WITH_DOMAINCOMPONENT;
+    public static final int MATCH_WITH_COUNTRY          = org.ejbca.util.query.UserMatch.MATCH_WITH_COUNTRY;
+	
+    public static final int MATCH_TYPE_EQUALS     = BasicMatch.MATCH_TYPE_EQUALS;
+    public static final int MATCH_TYPE_BEGINSWITH = BasicMatch.MATCH_TYPE_BEGINSWITH;
+    public static final int MATCH_TYPE_CONTAINS   = BasicMatch.MATCH_TYPE_CONTAINS;
+    
+    private int matchwith;
+    private int matchtype;
+    private String matchvalue;
+    
+    /** Default Web Service Constructor */
+    public UserMatch(){}
+    
     /**
-     * Gets the value of the matchtype property.
+     * Constuctor to use to create a UserMatch.
      * 
+     * @param matchwith  one of MATCH_WITH_ constants.
+     * @param matchtype  one of MATCH_TYPE_ constants.
+     * @param matchvalue a string to search for.
      */
-    public int getMatchtype() {
-        return matchtype;
+    public UserMatch(int matchwith, int matchtype, String matchvalue){
+    	this.matchwith  = matchwith;
+    	this.matchtype  = matchtype;
+    	this.matchvalue = matchvalue;    	
     }
 
-    /**
-     * Sets the value of the matchtype property.
-     * 
-     */
-    public void setMatchtype(int value) {
-        this.matchtype = value;
-    }
+	/**
+	 * @return Returns the matchtype, one of MATCH_TYPE_ constants.
+	 */
+	public int getMatchtype() {
+		return matchtype;
+	}
 
-    /**
-     * Gets the value of the matchvalue property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getMatchvalue() {
-        return matchvalue;
-    }
+	/**
+	 * @param matchtype The matchtype to set, one of MATCH_TYPE_ constants.
+	 */
+	public void setMatchtype(int matchtype) {
+		this.matchtype = matchtype;
+	}
 
-    /**
-     * Sets the value of the matchvalue property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setMatchvalue(String value) {
-        this.matchvalue = value;
-    }
+	/**
+	 * @return Returns the matchvalue.
+	 */
+	public String getMatchvalue() {
+		return matchvalue;
+	}
 
-    /**
-     * Gets the value of the matchwith property.
-     * 
-     */
-    public int getMatchwith() {
-        return matchwith;
-    }
+	/**
+	 * @param matchvalue The matchvalue to set.
+	 */
+	public void setMatchvalue(String matchvalue) {
+		this.matchvalue = matchvalue;
+	}
 
-    /**
-     * Sets the value of the matchwith property.
-     * 
-     */
-    public void setMatchwith(int value) {
-        this.matchwith = value;
-    }
+	/**
+	 * @return Returns the matchwith, one of MATCH_WITH_ constants.
+	 */
+	public int getMatchwith() {
+		return matchwith;
+	}
+
+	/**
+	 * @param matchwith The matchwith to set, one of MATCH_WITH_ constants.
+	 */
+	public void setMatchwith(int matchwith) {
+		this.matchwith = matchwith;
+	}
+	
 
 }

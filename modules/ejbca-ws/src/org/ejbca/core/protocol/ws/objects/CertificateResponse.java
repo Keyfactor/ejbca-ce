@@ -13,8 +13,13 @@
 package org.ejbca.core.protocol.ws.objects;
 
 import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 /**
+ * Holds certificate WS response data 
+ *
  * @version $Id$
  */
 public class CertificateResponse  {
@@ -22,6 +27,9 @@ public class CertificateResponse  {
 	private String responseType;
 	private byte[] data = null;
 	
+	/**
+	 * WS Constructor
+	 */
 	public CertificateResponse(){
 		
 	}
@@ -51,6 +59,7 @@ public class CertificateResponse  {
 	}
 	
     /**
+     * Returns Base64 encoded data
      * @return the data, Base64 encoded
      * 
      */
@@ -59,6 +68,7 @@ public class CertificateResponse  {
 	}
 
     /**
+     * Sets Base64 encode data
      * @param data of the type set in responseType, should be Base64 encoded
      * 
      */	
@@ -66,6 +76,21 @@ public class CertificateResponse  {
 		this.data = data;
 	}
 
+	/**
+	 * Returns a certificate from the data in the WS response.
+	 */
+	public X509Certificate getCertificate() throws CertificateException{
+        return (X509Certificate) CertTools.getCertfromByteArray(getRawData()); 
+	}
+	
+	/**
+	 * Returns raw PKCS #7 or X509 data instead of the Base64 contained in
+	 * the WS response
+	 */
+	public byte[] getRawData() {
+		return Base64.decode(data);
+	}
+	
 
 
 }

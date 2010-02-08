@@ -1,43 +1,36 @@
-
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-
 /**
- * <p>Java class for hardTokenDataWS complex type.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="hardTokenDataWS">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="certificates" type="{http://ws.protocol.core.ejbca.org/}certificate" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="copies" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="copyOfSN" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="createTime" type="{http://www.w3.org/2001/XMLSchema}dateTime" minOccurs="0"/>
- *         &lt;element name="encKeyKeyRecoverable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="hardTokenSN" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="modifyTime" type="{http://www.w3.org/2001/XMLSchema}dateTime" minOccurs="0"/>
- *         &lt;element name="pinDatas" type="{http://ws.protocol.core.ejbca.org/}pinDataWS" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="tokenType" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
+ * Value object containing WS representation
+ * of a hard token data it contains information
+ * about PIN/PUK codes, hardtoken serial number
+ * certificate stored on the card.
  * 
  * 
+ * @author Philip Vendil
+ *
+ * $Id: HardTokenDataWS.java 8282 2009-11-09 14:57:21Z jeklund $
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "hardTokenDataWS", propOrder = {
@@ -54,259 +47,226 @@ import javax.xml.datatype.XMLGregorianCalendar;
 })
 public class HardTokenDataWS {
 
-    @XmlElement(nillable = true)
-    protected List<Certificate> certificates;
-    @XmlElement(nillable = true)
-    protected List<String> copies;
-    protected String copyOfSN;
+
+	private int tokenType = 0;
+	private String label = null;
+	private String hardTokenSN = null;
+	private String copyOfSN = null;
+	private List<String> copies = new ArrayList();
+	private List<PinDataWS> pinDatas = new ArrayList();
+	private List<Certificate> certificates = new ArrayList();
     @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar createTime;
-    protected boolean encKeyKeyRecoverable;
-    protected String hardTokenSN;
-    protected String label;
+	private XMLGregorianCalendar createTime = null;
     @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar modifyTime;
-    @XmlElement(nillable = true)
-    protected List<PinDataWS> pinDatas;
-    protected int tokenType;
+	private XMLGregorianCalendar modifyTime = null;
+	
+	private boolean encKeyKeyRecoverable = false;
+	
+	/**
+	 * WS Constructor
+	 */
+	public HardTokenDataWS(){}
+	
+	/**
+	 * Constuctor of a HardTokenDataWS with all it fields. This
+	 * constructor should be used on the server side of EJBCA
+	 * 
+	 * @param tokenType one of the TOKENTYPE_ constants
+	 * @param label indicating the use of the token, one of the LABEL_ constants
+	 * @param hardTokenSN the SN of the hard token
+	 * @param copyOfSN of this is a copy of another hard token, specify its SN otherwise use null.
+	 * @param copies if there is copies of this hard token a list of serial number is specified.
+	 * @param pinDatas a List of pin datas with PIN and PUK
+	 * @param certificates the certificate stored on the token
+	 * @param encKeyKeyRecoverable if the token have a special encryption key it should be specified if it is recoverable or not.
+	 */
+	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<String> copies, List<PinDataWS> pinDatas, List<Certificate> certificates, boolean encKeyKeyRecoverable) {
+		super();
+		this.tokenType = tokenType;
+		this.label = label;
+		this.hardTokenSN = hardTokenSN;
+		this.copyOfSN = copyOfSN;
+		this.copies = copies;
+		this.pinDatas = pinDatas;
+		this.certificates = certificates;
+		this.encKeyKeyRecoverable = encKeyKeyRecoverable;
+	}
+
+	/**
+	 * Constuctor that should be used with the genTokenCertificates request
+	 * 
+	 * @param tokenType one of the TOKENTYPE_ constants
+	 * @param label indicating the use of the token, one of the LABEL_ constants
+	 * @param hardTokenSN the SN of the hard token
+	 * @param copyOfSN of this is a copy of another hard token, specify its SN otherwise use null.
+	 * @param pinDatas a List of pin datas with PIN and PUK
+	 * @param encKeyKeyRecoverable if the token have a special encryption key it should be specified if it is recoverable or not.
+	 */
+	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<PinDataWS> pinDatas, boolean encKeyKeyRecoverable) {
+		super();
+		this.tokenType = tokenType;
+		this.label = label;
+		this.hardTokenSN = hardTokenSN;
+		this.copyOfSN = copyOfSN;
+		this.pinDatas = pinDatas;
+		this.encKeyKeyRecoverable = encKeyKeyRecoverable;
+	}
+
+
+	/**
+	 * 
+	 * @return a list WS representation of the stored certificates
+	 */
+	public List<Certificate> getCertificates() {
+		return certificates;
+	}
 
     /**
-     * Gets the value of the certificates property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the certificates property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getCertificates().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Certificate }
-     * 
-     * 
+     * @param certificates a List of EJBCAWS Certificates stored on the token
      */
-    public List<Certificate> getCertificates() {
-        if (certificates == null) {
-            certificates = new ArrayList<Certificate>();
-        }
-        return this.certificates;
-    }
+	public void setCertificates(List<Certificate> certificates) {
+		this.certificates = certificates;
+	}
+
+
+	/**
+	 * 
+	 * @return >a list of hard token SN of copies that have been made of this token.
+	 */
+	public List<String> getCopies() {
+		return copies;
+	}
 
     /**
-     * Gets the value of the copies property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the copies property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getCopies().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link String }
-     * 
-     * 
+     * @param copies a list of hard token SN of copies that have been made of this token.
      */
-    public List<String> getCopies() {
-        if (copies == null) {
-            copies = new ArrayList<String>();
-        }
-        return this.copies;
-    }
+	public void setCopies(List<String> copies) {
+		this.copies = copies;
+	}
 
     /**
-     * Gets the value of the copyOfSN property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return a serial number of which this token is a copy of,  null if it isn't a copy
      */
-    public String getCopyOfSN() {
-        return copyOfSN;
-    }
+	public String getCopyOfSN() {
+		return copyOfSN;
+	}
 
     /**
-     * Sets the value of the copyOfSN property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     * @param copyOfSN a serial number of which this token is a copy of,  null if it isn't a copy
      */
-    public void setCopyOfSN(String value) {
-        this.copyOfSN = value;
-    }
+	public void setCopyOfSN(String copyOfSN) {
+		this.copyOfSN = copyOfSN;
+	}
 
     /**
-     * Gets the value of the createTime property.
      * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
+     * @return true if the token have a separate encryption key and is key recoverable.
      */
-    public XMLGregorianCalendar getCreateTime() {
-        return createTime;
-    }
+	public boolean isEncKeyKeyRecoverable() {
+		return encKeyKeyRecoverable;
+	}
 
     /**
-     * Sets the value of the createTime property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
+     * @param encKeyKeyRecoverable if the token have a separate encryption key and is key recoverable.
      */
-    public void setCreateTime(XMLGregorianCalendar value) {
-        this.createTime = value;
-    }
+	public void setEncKeyKeyRecoverable(boolean encKeyKeyRecoverable) {
+		this.encKeyKeyRecoverable = encKeyKeyRecoverable;
+	}
 
     /**
-     * Gets the value of the encKeyKeyRecoverable property.
      * 
+     * @return the serial number of the token
      */
-    public boolean isEncKeyKeyRecoverable() {
-        return encKeyKeyRecoverable;
-    }
+	public String getHardTokenSN() {
+		return hardTokenSN;
+	}
 
     /**
-     * Sets the value of the encKeyKeyRecoverable property.
      * 
+     * @param hardTokenSN the serial number of the token
      */
-    public void setEncKeyKeyRecoverable(boolean value) {
-        this.encKeyKeyRecoverable = value;
-    }
+	public void setHardTokenSN(String hardTokenSN) {
+		this.hardTokenSN = hardTokenSN;
+	}
 
     /**
-     * Gets the value of the hardTokenSN property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return list of PIN data containing PIN and PUK of the 
      */
-    public String getHardTokenSN() {
-        return hardTokenSN;
-    }
+	public List<PinDataWS> getPinDatas() {
+		return pinDatas;
+	}
 
     /**
-     * Sets the value of the hardTokenSN property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     * @param pinDatas list of PIN data containing PIN and PUK of the
      */
-    public void setHardTokenSN(String value) {
-        this.hardTokenSN = value;
-    }
+	public void setPinDatas(List<PinDataWS> pinDatas) {
+		this.pinDatas = pinDatas;
+	}
 
     /**
-     * Gets the value of the label property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return one of the TOKENTYPE_ constants
      */
-    public String getLabel() {
-        return label;
-    }
+	public int getTokenType() {
+		return tokenType;
+	}
 
     /**
-     * Sets the value of the label property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     * @param tokenType  one of the TOKENTYPE_ constants
      */
-    public void setLabel(String value) {
-        this.label = value;
-    }
+	public void setTokenType(int tokenType) {
+		this.tokenType = tokenType;
+	}
 
-    /**
-     * Gets the value of the modifyTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getModifyTime() {
-        return modifyTime;
-    }
+	/**
+	 * @return the label indicating the use of the token, one of the LABEL_ constants
+	 */
+	public String getLabel() {
+		return label;
+	}
+	
 
-    /**
-     * Sets the value of the modifyTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setModifyTime(XMLGregorianCalendar value) {
-        this.modifyTime = value;
-    }
+	/**
+	 * @param label indicating the use of the token, one of the LABEL_ constants
+	 */
+	public void setLabel(String label) {
+		this.label = label;
+	}
 
-    /**
-     * Gets the value of the pinDatas property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the pinDatas property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getPinDatas().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link PinDataWS }
-     * 
-     * 
-     */
-    public List<PinDataWS> getPinDatas() {
-        if (pinDatas == null) {
-            pinDatas = new ArrayList<PinDataWS>();
-        }
-        return this.pinDatas;
-    }
+	/**
+	 * 
+	 * @return Returns the time this token was created
+	 */
+	public XMLGregorianCalendar getCreateTime() {
+		return createTime;
+	}
 
-    /**
-     * Gets the value of the tokenType property.
-     * 
-     */
-    public int getTokenType() {
-        return tokenType;
-    }
+	public void setCreateTime(XMLGregorianCalendar createTime) {
+		this.createTime = createTime;
+	}
 
-    /**
-     * Sets the value of the tokenType property.
-     * 
-     */
-    public void setTokenType(int value) {
-        this.tokenType = value;
-    }
+	/**
+	 * @return Returns the time this last was modified.
+	 */
+	public XMLGregorianCalendar getModifyTime() {
+		return modifyTime;
+	}
 
+	public void setModifyTime(XMLGregorianCalendar modifyTime) {
+		this.modifyTime = modifyTime;
+	}
+	
+	
+	
+	
+	
+	
 }
