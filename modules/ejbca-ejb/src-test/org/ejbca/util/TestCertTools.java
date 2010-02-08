@@ -51,7 +51,7 @@ import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -427,7 +427,7 @@ public class TestCertTools extends TestCase {
 
 	protected void setUp() throws Exception {
 		log.trace(">setUp()");
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 		log.trace("<setUp()");
 	}
 
@@ -1287,7 +1287,7 @@ public class TestCertTools extends TestCase {
 		KeyPair kp = KeyTools.genKeys("1024", "RSA");
 		Certificate cert = CertTools.genSelfCertForPurpose("CN=foo1", 10, null,
 				kp.getPrivate(), kp.getPublic(),
-				CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1, true,
+				AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, true,
 				X509KeyUsage.keyCertSign);
 		assertNotNull(cert);
 		PublicKey pk = cert.getPublicKey();
@@ -1346,7 +1346,7 @@ public class TestCertTools extends TestCase {
 		KeyPair kp = KeyTools.genKeys("1024", "DSA");
 		Certificate cert = CertTools.genSelfCertForPurpose("CN=foo1", 10, null,
 				kp.getPrivate(), kp.getPublic(),
-				CATokenInfo.SIGALG_SHA1_WITH_DSA, true,
+				AlgorithmConstants.SIGALG_SHA1_WITH_DSA, true,
 				X509KeyUsage.keyCertSign);
 		assertNotNull(cert);
 		PublicKey pk = cert.getPublicKey();

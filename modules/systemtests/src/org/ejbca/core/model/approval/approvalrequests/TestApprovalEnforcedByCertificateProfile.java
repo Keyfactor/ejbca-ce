@@ -31,13 +31,13 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -260,7 +260,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 		try {
 			String username1 = genRandomUserName("test04_1");
 			String email = "test@example.com";
-			KeyPair keypair = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+			KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 	        TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC", /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdNoApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
 	        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin1, username1, "foo123", keypair.getPublic());
 			
@@ -279,7 +279,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 		try {
 			String username1 = genRandomUserName("test04_2");
 			String email = "test@example.com";
-			KeyPair keypair = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+			KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		    TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC", /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdKeyRecoveryApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
 		    X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin1, username1, "foo123", keypair.getPublic());
 		    TestTools.getKeyRecoverySession().addKeyRecoveryData(admin1, cert, username1, keypair);
@@ -367,11 +367,11 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
  
 	public static int createCA(Admin internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes, ICAAdminSessionRemote caAdminSession, int certProfileId) throws Exception {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setSignKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setSignKeySpec("1024");
-        catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeySpec("1024");
         List approvalSettings = Arrays.asList(approvalRequirementTypes);
         log.info("approvalSettings: " + approvalSettings);

@@ -59,13 +59,13 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -79,6 +79,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -153,7 +154,7 @@ public class CertReqServlet extends HttpServlet {
 
         try {
             // Install BouncyCastle provider
-            CertTools.installBCProvider();
+        	CryptoProviderTools.installBCProvider();
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
@@ -190,7 +191,7 @@ public class CertReqServlet extends HttpServlet {
                 String openvpn = getParameter("openvpn");
                 String certprofile = getParameter("certprofile");
     			String keylength = "1024";
-    			String keyalg = CATokenConstants.KEYALGORITHM_RSA;
+    			String keyalg = AlgorithmConstants.KEYALGORITHM_RSA;
     			
                 int resulttype = 0;
                 if(getParameter("resulttype") != null)

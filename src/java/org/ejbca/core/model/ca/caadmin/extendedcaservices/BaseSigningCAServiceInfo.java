@@ -16,7 +16,7 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 import java.io.Serializable;
 import java.util.List;
 
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.AlgorithmConstants;
 
 
 
@@ -31,7 +31,7 @@ public class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements S
     private String subjectdn      = null;
     private String subjectaltname = null;   
 	private String keyspec        = "1024"; // Default key length
-    private String keyalgorithm   = CATokenConstants.KEYALGORITHM_RSA; // Default key algo
+    private String keyalgorithm   = AlgorithmConstants.KEYALGORITHM_RSA; // Default key algo
     private List   certchain  = null;
     
     private boolean renew = false;

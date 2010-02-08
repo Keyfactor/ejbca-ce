@@ -72,7 +72,7 @@ import org.bouncycastle.jce.provider.asymmetric.ec.EC5Util;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.util.CertTools;
@@ -104,16 +104,16 @@ public class KeyTools {
      *
      * @param keySpec string specification of keys to generate, typical value is 1024 for RSA or DSA keys, or prime192v1 for ECDSA keys or null of algspec is to be used.
      * @param algSpec AlgorithmParameterSpec of keys to generate, typically an EXParameterSpec for EC keys, or null if keySpec is to be used.
-     * @param keyAlg algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see org.ejbca.core.model.ca.catoken.CATokenConstants.KEYALGORITHM_XX
+     * @param keyAlg algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see AlgorithmConstants.KEYALGORITHM_XX
      * 
-     * @see org.ejbca.core.model.ca.catoken.CATokenConstants
+     * @see org.ejbca.core.model.AlgorithmConstants
      * @see org.bouncycastle.asn1.x9.X962NamedCurves
      * @see org.bouncycastle.asn1.nist.NISTNamedCurves
      * @see org.bouncycastle.asn1.sec.SECNamedCurves
      * 
      * @return KeyPair the generated keypair
      * @throws InvalidAlgorithmParameterException 
-     * @see org.ejbca.core.model.ca.catoken.CATokenConstants#KEYALGORITHM_RSA
+     * @see org.ejbca.core.model.AlgorithmConstants#KEYALGORITHM_RSA
      */
     public static KeyPair genKeys(String keySpec, AlgorithmParameterSpec algSpec, String keyAlg)
         throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
@@ -122,7 +122,7 @@ public class KeyTools {
     	}
 
         KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
-        if (StringUtils.equals(keyAlg, CATokenConstants.KEYALGORITHM_ECDSA)) {
+        if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
         	AlgorithmParameterSpec ecSpec = null;
         	if ( (keySpec != null) && !StringUtils.equals(keySpec,"implicitlyCA") ) {
         		log.debug("Generating named curve ECDSA key pair: "+keySpec);

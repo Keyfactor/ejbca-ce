@@ -108,7 +108,7 @@ import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.AuthorizationRoleEnum;
@@ -1237,7 +1237,7 @@ public class CertTools {
      * @param policyId policy string ('2.5.29.32.0') or null
      * @param privKey private key
      * @param pubKey public key
-     * @param sigAlg signature algorithm, you can use one of the contants CATokenConstants.SIGALG_XXX
+     * @param sigAlg signature algorithm, you can use one of the contants AlgorithmConstants.SIGALG_XXX
      * @param isCA boolean true or false
      *
      * @return X509Certificate, self signed
@@ -1269,7 +1269,7 @@ public class CertTools {
      * @param policyId policy string ('2.5.29.32.0') or null
      * @param privKey private key
      * @param pubKey public key
-     * @param sigAlg signature algorithm, you can use one of the contants CATokenConstants.SIGALG_XXX
+     * @param sigAlg signature algorithm, you can use one of the contants AlgorithmConstants.SIGALG_XXX
      * @param isCA boolean true or false
      * @param keyusage as defined by constants in X509KeyUsage
      *
@@ -2441,11 +2441,11 @@ public class CertTools {
 		}
 		// Try to make it easier to display some signature algorithms that cert.getSigAlgName() does not have a good string for.
 		if (certSignatureAlgorithm.equalsIgnoreCase("1.2.840.113549.1.1.10")) {
-			certSignatureAlgorithm = CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1;					
+			certSignatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1;					
 		}
 		// SHA256WithECDSA does not work to be translated in JDK5.
 		if (certSignatureAlgorithm.equalsIgnoreCase("1.2.840.10045.4.3.2")) {
-			certSignatureAlgorithm = CATokenConstants.SIGALG_SHA256_WITH_ECDSA;					
+			certSignatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;					
 		}
 		return certSignatureAlgorithm;
     }
@@ -2453,7 +2453,7 @@ public class CertTools {
     /** Simple method that looks at the certificate and determines, from EJBCA's standpoint, which signature algorithm it is
      * 
      * @param cert the cert to examine
-     * @return Signature algorithm from CATokenConstants.SIGALG_SHA1_WITH_RSA etc.
+     * @return Signature algorithm from AlgorithmConstants.SIGALG_SHA1_WITH_RSA etc.
      */
     public static String getSignatureAlgorithm(Certificate cert) {
 		String signatureAlgorithm = null;
@@ -2473,30 +2473,30 @@ public class CertTools {
 					md5 = false;
 				}
 				if (isMgf) {
-					signatureAlgorithm = CATokenConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1;					
+					signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1;					
 				} else {
 					if (md5) {
-						signatureAlgorithm = CATokenConstants.SIGALG_MD5_WITH_RSA;												
+						signatureAlgorithm = AlgorithmConstants.SIGALG_MD5_WITH_RSA;												
 					} else {
-						signatureAlgorithm = CATokenConstants.SIGALG_SHA1_WITH_RSA;						
+						signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;						
 					}
 				}
 			} else {
 				if (isMgf) {
-					signatureAlgorithm = CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1;					
+					signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1;					
 				} else {
-					signatureAlgorithm = CATokenConstants.SIGALG_SHA256_WITH_RSA;
+					signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
 				}
 			}
 		} else if ( publickey instanceof DSAPublicKey ) { 
-			signatureAlgorithm = CATokenConstants.SIGALG_SHA1_WITH_DSA;
+			signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
 		} else {
 			if (certSignatureAlgorithm.indexOf("256") != -1) {
-				signatureAlgorithm = CATokenConstants.SIGALG_SHA256_WITH_ECDSA;
+				signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
 			} else if (certSignatureAlgorithm.indexOf("224") != -1) {
-				signatureAlgorithm = CATokenConstants.SIGALG_SHA224_WITH_ECDSA;
+				signatureAlgorithm = AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA;
 			} else {
-				signatureAlgorithm = CATokenConstants.SIGALG_SHA1_WITH_ECDSA;
+				signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
 			}
 		}
 

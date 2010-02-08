@@ -61,6 +61,7 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.IServiceSessionHome;
 import org.ejbca.core.ejb.services.IServiceSessionRemote;
 import org.ejbca.core.ejb.upgrade.IConfigurationSessionRemote;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -68,8 +69,6 @@ import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
 
@@ -385,10 +384,10 @@ public class TestTools {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec(""+keyStrength);
         catokeninfo.setEncKeySpec(""+keyStrength);
-        catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-        catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
-        catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.
         ArrayList extendedcaservices = new ArrayList();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -396,13 +395,13 @@ public class TestTools {
                 "CN=XKMSCertificate, " + "CN="+caName,
                 "",
                 ""+keyStrength,
-                CATokenConstants.KEYALGORITHM_RSA));
+                AlgorithmConstants.KEYALGORITHM_RSA));
         /*
         extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
         		"CN=CMSCertificate, " + "CN="+caName,
         		"",
         		""+keyStrength,
-                CATokenConstants.KEYALGORITHM_RSA));
+                AlgorithmConstants.KEYALGORITHM_RSA));
         */
         X509CAInfo cainfo = new X509CAInfo("CN="+caName,
                 caName, SecConst.CA_ACTIVE, new Date(),

@@ -15,6 +15,8 @@ package org.ejbca.core.model.ca.catoken;
 
 import java.io.Serializable;
 
+import org.ejbca.core.model.AlgorithmConstants;
+
 /**
  * Holds nonsensitive information about a CAToken.
  *
@@ -24,8 +26,8 @@ public class SoftCATokenInfo extends CATokenInfo implements Serializable {
     
     private String signkeyspec = "1024"; 
     private String enckeyspec = "1024"; 
-    private String signalgorithm = KEYALGORITHM_RSA;
-    private String encalgorithm = KEYALGORITHM_RSA;
+    private String signalgorithm = AlgorithmConstants.KEYALGORITHM_RSA;
+    private String encalgorithm = AlgorithmConstants.KEYALGORITHM_RSA;
     
     
     public SoftCATokenInfo(){

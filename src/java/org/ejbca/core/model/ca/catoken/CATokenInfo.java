@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.catoken;
 
 import java.io.Serializable;
 
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.util.StringTools;
 
 /**
@@ -22,7 +23,7 @@ import org.ejbca.util.StringTools;
  *
  * @version $Id$
  */
-public abstract class CATokenInfo extends CATokenConstants implements Serializable {
+public abstract class CATokenInfo implements Serializable {
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -36,13 +37,13 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
     private static final long serialVersionUID = -8484441028763008079L;
 
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants */
-    private String signaturealgoritm = SIGALG_SHA1_WITH_RSA;
+    private String signaturealgoritm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants */
-    private String encryptionalgoritm = SIGALG_SHA1_WITH_RSA;
+    private String encryptionalgoritm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
     /** Format according to which the key sequence needs to be incremented */
     private int sequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
 	/** Key sequence to be updated when keys are re-generated */
-    private String sequence = DEFAULT_KEYSEQUENCE; // Default value first time token is created
+    private String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE; // Default value first time token is created
     /** Authentication code to activate a CA Token, can be PIN for a smartcard/HSM or password for a PKCS12 */
 	private String authenticationCode;
 	/** indicates if the CA token is available for use, i.e. if the authenticationCode has been entered and the hardware is functioning */
@@ -59,7 +60,7 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
      */
     public String getSignatureAlgorithm(){ return signaturealgoritm; }
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants 
-	 * @param signaturealgorithm Any of the supported algorithms CATokenConstants.SIGALG_XX 
+	 * @param signaturealgorithm Any of the supported algorithms AlgorithmConstants.SIGALG_XX 
 	 */
     public void setSignatureAlgorithm(String signaturealgoritm){ this.signaturealgoritm=signaturealgoritm;}
     /**
@@ -67,7 +68,7 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
      */
     public String getEncryptionAlgorithm(){ return encryptionalgoritm; }
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants 
-	 * @param encryptionalgoritm Any of the supported algorithms CATokenConstants.SIGALG_XX 
+	 * @param encryptionalgoritm Any of the supported algorithms AlgorithmConstants.SIGALG_XX 
 	 */
     public void setEncryptionAlgorithm(String encryptionalgoritm){ this.encryptionalgoritm=encryptionalgoritm;}
     /**

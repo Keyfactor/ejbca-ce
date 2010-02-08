@@ -21,13 +21,14 @@ import java.util.TimeZone;
 import junit.framework.TestCase;
 
 import org.bouncycastle.jce.X509KeyUsage;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -40,7 +41,7 @@ import org.ejbca.util.keystore.KeyTools;
 public class TestCertificateValidity extends TestCase {
 
 	public TestCertificateValidity() {
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 	}
     public void test01TestCertificateValidity() throws Exception {
         testBaseTestCertificateValidity(50);
@@ -55,7 +56,7 @@ public class TestCertificateValidity extends TestCase {
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
 		
     	X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", 100, null, keys.getPrivate(), keys.getPublic(),
-    			CATokenConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign);
+    			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign);
 
     	UserDataVO subject = new UserDataVO();
 

@@ -22,11 +22,11 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -50,7 +50,7 @@ public class TestKeyRecovery extends TestCase {
      */
     public TestKeyRecovery(String name) {
         super(name);
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
     }
 
     protected void setUp() throws Exception {
@@ -73,7 +73,7 @@ public class TestKeyRecovery extends TestCase {
         try {
             String email = "test@test.se";
             if (!TestTools.getUserAdminSession().existsUser(admin, user)) {
-                keypair = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+                keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
                 TestTools.getUserAdminSession().addUser(admin, user, "foo123", "CN=TESTKEYREC", "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, TestTools.getTestCAId());
                 cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, user, "foo123", keypair.getPublic());
             }
@@ -93,7 +93,7 @@ public class TestKeyRecovery extends TestCase {
      */
     public void test02MarkAndRecoverKeyPair() throws Exception {
         log.trace(">test02MarkAndRecoverKeyPair()");
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         assertTrue("Couldn't mark user for recovery in database", !TestTools.getKeyRecoverySession().isUserMarked(admin, user));
         TestTools.getUserAdminSession().prepareForKeyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
         assertTrue("Couldn't mark user for recovery in database", TestTools.getKeyRecoverySession().isUserMarked(admin, user));
@@ -111,7 +111,7 @@ public class TestKeyRecovery extends TestCase {
      */
     public void test03RemoveKeyPair() throws Exception {
         log.trace(">test03RemoveKeyPair()");
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         TestTools.getKeyRecoverySession().removeKeyRecoveryData(admin, cert);
         assertTrue("Couldn't remove keys from database", !TestTools.getKeyRecoverySession().existsKeys(admin, cert));
 

@@ -72,6 +72,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -2019,7 +2020,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			
 	    	CATokenContainer thisCAToken = thisCa.getCAToken();
 	    	int tokentype = thisCAToken.getCATokenType();
-	    	if ( tokentype != CATokenInfo.CATOKENTYPE_P12 && thisCAToken.getCATokenInfo() instanceof SoftCATokenInfo) {
+	    	if ( tokentype != CATokenConstants.CATOKENTYPE_P12 && thisCAToken.getCATokenInfo() instanceof SoftCATokenInfo) {
 	    		throw new Exception("Cannot export anything but a soft token.");
 	    	}
 	    	
@@ -2073,7 +2074,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			
 	    	CATokenContainer thisCAToken = thisCa.getCAToken();
 	    	int tokentype = thisCAToken.getCATokenType();
-	    	if (tokentype != CATokenInfo.CATOKENTYPE_P12 && thisCAToken.getCATokenInfo() instanceof SoftCATokenInfo) {
+	    	if (tokentype != CATokenConstants.CATOKENTYPE_P12 && thisCAToken.getCATokenInfo() instanceof SoftCATokenInfo) {
 	    		throw new Exception("Cannot restore anything but a soft token.");
 	    	}
 	    	
@@ -2190,8 +2191,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		// Identify the key algorithms for extended CA services, OCSP, XKMS, CMS
 		String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(p12PublicSignatureKey);
 		String keySpecification = AlgorithmTools.getKeySpecification(p12PublicSignatureKey);
-		if (keyAlgorithm == null || keyAlgorithm == CATokenConstants.KEYALGORITHM_RSA) {
-			keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;
+		if (keyAlgorithm == null || keyAlgorithm == AlgorithmConstants.KEYALGORITHM_RSA) {
+			keyAlgorithm = AlgorithmConstants.KEYALGORITHM_RSA;
 			keySpecification = "2048";
 		}
 		// Do the general import
@@ -2218,7 +2219,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	hardcatokeninfo.setAuthenticationCode(catokenpassword);
     	hardcatokeninfo.setCATokenStatus(ICAToken.STATUS_ACTIVE);
     	hardcatokeninfo.setClassPath(catokenclasspath);
-    	hardcatokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+    	hardcatokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
     	hardcatokeninfo.setProperties(catokenproperties);
     	hardcatokeninfo.setSignatureAlgorithm(signatureAlgorithm);
 
@@ -2226,7 +2227,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         CATokenContainer catoken = new CATokenContainerImpl(catokeninfo, StringTools.strip(CertTools.stringToBCDNString(CertTools.getSubjectDN(signatureCertChain[0]))).hashCode());
         catoken.activate(catokenpassword);
 
-        String keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;
+        String keyAlgorithm = AlgorithmConstants.KEYALGORITHM_RSA;
         String keySpecification = "2048";
         // Do the general import
         importCA(admin, caname, catokenpassword, signatureCertChain, catoken, keyAlgorithm, keySpecification);
@@ -2239,7 +2240,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @param keystorepass
      * @param signatureCertChain
      * @param catoken
-     * @param keyAlgorithm keyalgorithm for extended CA services, OCSP, XKMS, CMS. Example CATokenConstants.KEYALGORITHM_RSA
+     * @param keyAlgorithm keyalgorithm for extended CA services, OCSP, XKMS, CMS. Example AlgorithmConstants.KEYALGORITHM_RSA
      * @param keySpecification keyspecification for extended CA services, OCSP, XKMS, CMS. Example 2048
      * @throws Exception
      * @throws CATokenAuthenticationFailedException
@@ -2414,7 +2415,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			// Make sure we are not trying to export a hard or invalid token
 	    	CATokenContainer thisCAToken = thisCa.getCAToken();
 	    	int tokentype = thisCAToken.getCATokenType();
-	    	if ( tokentype != CATokenInfo.CATOKENTYPE_P12 ) {
+	    	if ( tokentype != CATokenConstants.CATOKENTYPE_P12 ) {
 	    		throw new Exception("Cannot export anything but a soft token.");
 	    	}
 	    	// Check authorization
@@ -2534,7 +2535,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			thisCa = cadatahome.findByName(caname).getCA();
 
 			// Make sure we are not trying to export a hard or invalid token
-			if ( thisCa.getCAType() != CATokenInfo.CATOKENTYPE_P12 ) {
+			if ( thisCa.getCAType() != CATokenConstants.CATOKENTYPE_P12 ) {
 				throw new Exception("Cannot extract fingerprint from a non-soft token ("+thisCa.getCAType()+").");
 			}
 			// Fetch keys

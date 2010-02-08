@@ -50,11 +50,11 @@ import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -69,6 +69,7 @@ import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.cert.SeisCardNumberExtension;
@@ -182,18 +183,18 @@ public class TestSignSession extends TestCase {
         super(name);
 
         // Install BouncyCastle provider
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         if (rsakeys == null) {
-        	rsakeys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+        	rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }
         if (ecdsakeys == null) {
-        	ecdsakeys = KeyTools.genKeys("prime192v1", CATokenConstants.KEYALGORITHM_ECDSA);
+        	ecdsakeys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         }
         if (ecdsaimplicitlyca == null) {
-        	ecdsaimplicitlyca = KeyTools.genKeys("implicitlyCA", CATokenConstants.KEYALGORITHM_ECDSA);
+        	ecdsaimplicitlyca = KeyTools.genKeys("implicitlyCA", AlgorithmConstants.KEYALGORITHM_ECDSA);
         }
         if (dsakeys == null) {
-        	dsakeys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_DSA);
+        	dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
         }
         // Add this again since it will be removed by the other tests in the batch..
         assertTrue("Could not create TestCA.", TestTools.createTestCA());
@@ -877,7 +878,7 @@ public class TestSignSession extends TestCase {
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
-    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
         X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
@@ -962,7 +963,7 @@ public class TestSignSession extends TestCase {
         TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsa' to NEW");
         // user that we know exists...
-    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
         X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "fooecdsa", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
@@ -1046,7 +1047,7 @@ public class TestSignSession extends TestCase {
         TestTools.getUserAdminSession().setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsaimpca' to NEW");
         // user that we know exists...
-    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
         X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "fooecdsaimpca", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
@@ -1131,7 +1132,7 @@ public class TestSignSession extends TestCase {
         TestTools.getUserAdminSession().setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // user that we know exists...
-    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, false);
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, false);
     	try {
     	selfcert.verify(selfcert.getPublicKey());
     	} catch (Exception e) {
@@ -1178,7 +1179,7 @@ public class TestSignSession extends TestCase {
         TestTools.getUserAdminSession().setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest(CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
                 CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foorsamgf1ca"), rsakeys.getPublic(), new DERSet(),
                 rsakeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -1416,7 +1417,7 @@ public class TestSignSession extends TestCase {
         TestTools.getUserAdminSession().setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
-    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(), CATokenConstants.SIGALG_SHA1_WITH_DSA, false);
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_DSA, false);
         X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foo", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
@@ -1496,7 +1497,7 @@ public class TestSignSession extends TestCase {
         TestTools.getUserAdminSession().setUserStatus(admin,"foodsa",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foodsa' to NEW");
         // user that we know exists...
-    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(), CATokenConstants.SIGALG_SHA1_WITH_DSA, false);
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_DSA, false);
         X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "foodsa", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
@@ -1837,16 +1838,15 @@ public class TestSignSession extends TestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
         // See if the request message works...
-        X509Extensions p10exts = p10.getRequestExtensions();
         IResponseMessage resp = TestTools.getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
-        assertEquals(CATokenConstants.SIGALG_SHA1_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
 
         // Change so that we can override signature algorithm
         CertificateProfile prof = TestTools.getCertificateStoreSession().getCertificateProfile(admin,cprofile);
-        prof.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA256_WITH_RSA);
+        prof.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         TestTools.getCertificateStoreSession().changeCertificateProfile(admin, "TESTSIGALG", prof);
 
     	TestTools.getUserAdminSession().changeUser(admin, user, false);
@@ -1854,7 +1854,7 @@ public class TestSignSession extends TestCase {
         cert = (X509Certificate)CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
-        assertEquals(CATokenConstants.SIGALG_SHA256_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
     } // test31TestProfileSignatureAlgorithm
     
     /**

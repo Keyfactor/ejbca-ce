@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -25,7 +26,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
@@ -63,7 +63,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     		getLogger().info(" keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.");
     		getLogger().info(" policyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and cpsurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".");
     		String availableSignAlgs = "";
-    		for (String algorithm : CATokenConstants.AVAILABLE_SIGALGS) {
+    		for (String algorithm : AlgorithmConstants.AVAILABLE_SIGALGS) {
     			availableSignAlgs += (availableSignAlgs.length()==0?"":", ") + algorithm;
     		}
     		getLogger().info(" signalgorithm is on of " + availableSignAlgs);
@@ -154,15 +154,15 @@ public class CaInitCommand extends BaseCaAdminCommand {
 	            softcatokeninfo.setSignKeyAlgorithm(keytype);
 	            softcatokeninfo.setSignatureAlgorithm(signAlg);
 	            softcatokeninfo.setEncKeySpec("2048");
-	            softcatokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
-	            softcatokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+	            softcatokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+	            softcatokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 	            catokeninfo = softcatokeninfo;
             } else {
             	HardCATokenInfo hardcatokeninfo = new HardCATokenInfo();
             	hardcatokeninfo.setAuthenticationCode(catokenpassword);
             	hardcatokeninfo.setCATokenStatus(ICAToken.STATUS_ACTIVE);
             	hardcatokeninfo.setClassPath(catokentype);
-            	hardcatokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+            	hardcatokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             	hardcatokeninfo.setProperties(catokenproperties);
             	hardcatokeninfo.setSignatureAlgorithm(signAlg);
             	catokeninfo = hardcatokeninfo;
@@ -171,7 +171,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             String keySpec = keyspec;
-            if (keytype.equals(CATokenConstants.KEYALGORITHM_RSA)) {
+            if (keytype.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
             	// Never use larger keys than 2048 bit RSA for OCSP signing
             	int len = Integer.parseInt(keySpec);
             	if (len > 2048) {

@@ -58,9 +58,9 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenContainerImpl;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
@@ -250,13 +250,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         if (ret == null) {
         	Integer tokentype = (Integer) ((HashMap)data.get(CATOKENDATA)).get(CATokenContainer.CATOKENTYPE);
             switch(tokentype.intValue()) {
-            case CATokenInfo.CATOKENTYPE_P12:
+            case CATokenConstants.CATOKENTYPE_P12:
                 ret = new CATokenContainerImpl((HashMap)data.get(CATOKENDATA), caid); 
                 break;
-            case CATokenInfo.CATOKENTYPE_HSM:
+            case CATokenConstants.CATOKENTYPE_HSM:
                 ret = new CATokenContainerImpl((HashMap)data.get(CATOKENDATA), caid);
                 break;
-            case CATokenInfo.CATOKENTYPE_NULL:
+            case CATokenConstants.CATOKENTYPE_NULL:
             	NullCATokenInfo info = new NullCATokenInfo();
                 ret = new CATokenContainerImpl(info, caid);
                 break;

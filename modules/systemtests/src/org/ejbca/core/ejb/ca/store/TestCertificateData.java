@@ -34,9 +34,8 @@ import javax.ejb.CreateException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -89,7 +88,7 @@ public class TestCertificateData extends TestCase {
      */
     public void test01CreateNewCertRSASha1() throws Exception {
         log.trace(">test01CreateNewCert()");
-        keyPair = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+        keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         cert = generateCert(SecConst.CERT_INACTIVE);
         log.trace("<test01CreateNewCert()");
     }
@@ -343,8 +342,8 @@ public class TestCertificateData extends TestCase {
     public void test09addCertReqHist() throws Exception {
         log.trace(">test09addCertReqHist()");
                 
-        cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, false);
-        cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, false);
+        cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         
         UserDataVO userdata = new UserDataVO();
         Random rand = new Random(new Date().getTime() + 4711);        
@@ -488,7 +487,7 @@ public class TestCertificateData extends TestCase {
     CertificateEncodingException, CreateException, RemoteException {
     	// create a key pair and a new self signed certificate
     	log.info("Generating a small key pair, might take a few seconds...");
-    	X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keyPair.getPrivate(), keyPair.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, false);
+    	X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
     	String fp = CertTools.getFingerprintAsString(xcert);
 
     	try {

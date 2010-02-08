@@ -39,7 +39,7 @@ public class GenerateToken {
      * @param password password for user
      * @param caid caid of the CA the user is registered for
      * @param keyspec name of ECDSA key or length of RSA and DSA keys  
-     * @param keyalg CATokenConstants.KEYALGORITHM_RSA, CATokenConstants.KEYALGORITHM_DSA or CATokenConstants.KEYALGORITHM_ECDSA
+     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @param loadkeys true if keys should be recovered
      * @param savekeys true if generated keys should be stored for keyrecovery

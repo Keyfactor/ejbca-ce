@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -35,7 +35,7 @@ import org.ejbca.util.keystore.KeyTools;
  * This class has to be updated when new key or signature algorithms are 
  * added to EJBCA.
  *
- * @see CATokenConstants
+ * @see AlgorithmConstants
  * @see CertTools#getSignatureAlgorithm
  * @see KeyTools#getKeyLength
  * 
@@ -60,37 +60,37 @@ public class AlgorithmTools {
 	
 	static {
 		SIG_ALGS_RSA = new LinkedList();
-		SIG_ALGS_RSA.add(CATokenConstants.SIGALG_SHA1_WITH_RSA);
-		SIG_ALGS_RSA.add(CATokenConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1);
-		SIG_ALGS_RSA.add(CATokenConstants.SIGALG_SHA256_WITH_RSA);
-		SIG_ALGS_RSA.add(CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1);
+		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
 		
 		SIG_ALGS_DSA = new LinkedList();
-		SIG_ALGS_DSA.add(CATokenConstants.SIGALG_SHA1_WITH_DSA);
+		SIG_ALGS_DSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
 		
 		SIG_ALGS_ECDSA = new LinkedList();
-		SIG_ALGS_ECDSA.add(CATokenConstants.SIGALG_SHA1_WITH_ECDSA);
-		SIG_ALGS_ECDSA.add(CATokenConstants.SIGALG_SHA224_WITH_ECDSA);
-		SIG_ALGS_ECDSA.add(CATokenConstants.SIGALG_SHA256_WITH_ECDSA);
+		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
+		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
+		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
 	}
 
 	/**
 	 * Gets the name of matching key algorithm from a public key as defined by 
-	 * <i>CATokenConstants</i>.
+	 * <i>AlgorithmConstants</i>.
 	 * @param publickey Public key to find matching key algorithm for.
 	 * @return Name of the matching key algorithm or null if no match.
-	 * @see CATokenConstants#KEYALGORITHM_RSA
-	 * @see CATokenConstants#KEYALGORITHM_DSA
-	 * @see CATokenConstants#KEYALGORITHM_ECDSA
+	 * @see AlgorithmConstants#KEYALGORITHM_RSA
+	 * @see AlgorithmConstants#KEYALGORITHM_DSA
+	 * @see AlgorithmConstants#KEYALGORITHM_ECDSA
 	 */
 	public static String getKeyAlgorithm(PublicKey publickey) {
 		String keyAlg = null;
 		if ( publickey instanceof RSAPublicKey ) {
-			keyAlg  = CATokenConstants.KEYALGORITHM_RSA;
+			keyAlg  = AlgorithmConstants.KEYALGORITHM_RSA;
 		} else if ( publickey instanceof DSAPublicKey ) {
-			keyAlg = CATokenConstants.KEYALGORITHM_DSA;
+			keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
 		} else if ( publickey instanceof ECPublicKey ) {
-			keyAlg = CATokenConstants.KEYALGORITHM_ECDSA;
+			keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
 		}
 		return keyAlg;
 	}
@@ -100,7 +100,7 @@ public class AlgorithmTools {
 	 * key.
 	 * @param publickey key to find supported algorithms for.
 	 * @return Collection of zero or more signature algorithm names
-	 * @see CATokenConstants
+	 * @see AlgorithmConstants
 	 */
 	public static Collection getSignatureAlgorithms(PublicKey publickey) {
 		if ( publickey instanceof RSAPublicKey ) {
@@ -118,15 +118,15 @@ public class AlgorithmTools {
 	 * @param signatureAlgorithm to get matching key algorithm for
 	 * @return The key algorithm matching the signature or algorithm or 
 	 * the default if no matching was found.
-	 * @see CATokenConstants 
+	 * @see AlgorithmConstants 
 	 */
 	public static String getKeyAlgorithmFromSigAlg(String signatureAlgorithm) {
 		if ( signatureAlgorithm.contains("ECDSA") ) {
-			return CATokenConstants.KEYALGORITHM_ECDSA;
+			return AlgorithmConstants.KEYALGORITHM_ECDSA;
 		} else if ( signatureAlgorithm.contains("DSA") ) {
-			return CATokenConstants.KEYALGORITHM_DSA;
+			return AlgorithmConstants.KEYALGORITHM_DSA;
 		}
-		return CATokenConstants.KEYALGORITHM_RSA;
+		return AlgorithmConstants.KEYALGORITHM_RSA;
 	}
 	
 	/**
@@ -148,7 +148,7 @@ public class AlgorithmTools {
 			if ( ((ECPublicKey) publicKey).getParams() instanceof ECNamedCurveSpec ) {
 				keyspec = ((ECNamedCurveSpec) ((ECPublicKey) publicKey).getParams()).getName();
 			} else {
-				keyspec = AlgorithmTools.KEYSPEC_UNKNOWN;
+				keyspec = KEYSPEC_UNKNOWN;
 			}
 		}
 		log.debug("KeySpecification: "+keyspec);
@@ -167,14 +167,14 @@ public class AlgorithmTools {
 	 */
 	public static String getEncSigAlgFromSigAlg(String signatureAlgorithm) {
 		String encSigAlg = signatureAlgorithm;
-		if ( signatureAlgorithm.equals(CATokenConstants.SIGALG_SHA256_WITH_ECDSA) ) {
-			encSigAlg = CATokenConstants.SIGALG_SHA256_WITH_RSA;
-		} else if ( signatureAlgorithm.equals(CATokenConstants.SIGALG_SHA224_WITH_ECDSA) ) {
-			encSigAlg = CATokenConstants.SIGALG_SHA256_WITH_RSA;
-		} else if ( signatureAlgorithm.equals(CATokenConstants.SIGALG_SHA1_WITH_ECDSA) ) {
-			encSigAlg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
-		} else if( signatureAlgorithm.equals(CATokenConstants.SIGALG_SHA1_WITH_DSA) ) {
-			encSigAlg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+		if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA) ) {
+			encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+		} else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ) {
+			encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+		} else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA) ) {
+			encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+		} else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA) ) {
+			encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
 		}
 		return encSigAlg;
 	}
@@ -186,15 +186,15 @@ public class AlgorithmTools {
 	 * @return true if signature algorithm can be used with the public key algorithm
 	 */
 	public static boolean isCompatibleSigAlg(PublicKey publicKey, String signatureAlgorithm) {
-		if (StringUtils.contains(signatureAlgorithm, CATokenConstants.KEYALGORITHM_RSA)) {
+		if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_RSA)) {
 			if (publicKey instanceof RSAPublicKey) {
 				return true;
 			}
-		} else if (StringUtils.contains(signatureAlgorithm, CATokenConstants.KEYALGORITHM_ECDSA)) {
+		} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
     		if (publicKey instanceof ECPublicKey) {
     			return true;
     		}
-    	} else if (StringUtils.contains(signatureAlgorithm, CATokenConstants.KEYALGORITHM_DSA)) {
+    	} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_DSA)) {
      		if (publicKey instanceof DSAPublicKey) {
      			return true;
      		}
