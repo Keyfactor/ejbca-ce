@@ -87,13 +87,6 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
             // The password parameter of the load method (this is the second parameter, which is null here) will be used if provided (i.e. if it is not null). If it is null, the default login manager will use the configured method for prompting the PIN on demand. If the application just provides the instance number as a string instead of the complete provider name, the key store will also accept it.            
             if (provider.getClass().getName().equals(KeyTools.IAIKPKCS11CLASS) ) {
             	keyStore.load(new ByteArrayInputStream(getProvider().getBytes("UTF-8")), authCodeCharArray);
-            	// It's not enough just to load the keystore. depending on algorithms we may have to install the IAIK JCE provider ar well in order to support algorithm delegation
-                final Class implClass = Class.forName(KeyTools.IAIKJCEPROVIDERCLASS);
-                Provider iaikProvider = (Provider)implClass.getConstructor().newInstance();
-                if (Security.getProvider(iaikProvider.getName()) == null) {
-                    log.info("Adding IAIK JCE provider for Delegation: "+KeyTools.IAIKJCEPROVIDERCLASS);
-                    Security.addProvider(iaikProvider);                	
-                }
             } else {
             	// For the Sun provider this works fine to initialize the provider using previously provided protection parameters. 
             	keyStore.load(null, null);

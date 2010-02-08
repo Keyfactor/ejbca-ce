@@ -33,6 +33,7 @@ import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -722,26 +723,40 @@ public class KeyTools {
 
         // We will first try to construct the more competent IAIK provider, if it exists in the classpath
         // if that does not exist, we will revert back to use the SUN provider
-        if (prop!=null) try {
-            final Class implClass = Class.forName(IAIKPKCS11CLASS);
-            log.info("Using IAIK PKCS11 provider: "+IAIKPKCS11CLASS);
-            // iaik PKCS11 has Properties as constructor argument
-            return (Provider)implClass.getConstructor(Properties.class).newInstance(new Object[] {prop});
-        } catch (Exception e) {
-            // do nothing here. Sun provider is tested below.
+    	Provider ret = null;
+        if (prop!=null) {
+        	try {
+                final Class implClass = Class.forName(IAIKPKCS11CLASS);
+                log.info("Using IAIK PKCS11 provider: "+IAIKPKCS11CLASS);
+                // iaik PKCS11 has Properties as constructor argument
+                ret = (Provider)implClass.getConstructor(Properties.class).newInstance(new Object[] {prop});
+            	// It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order to support algorithm delegation
+                final Class jceImplClass = Class.forName(KeyTools.IAIKJCEPROVIDERCLASS);
+                Provider iaikProvider = (Provider)jceImplClass.getConstructor().newInstance();
+                if (Security.getProvider(iaikProvider.getName()) == null) {
+                    log.info("Adding IAIK JCE provider for Delegation: "+KeyTools.IAIKJCEPROVIDERCLASS);
+                    Security.addProvider(iaikProvider);                	
+                }
+            } catch (Exception e) {
+                // do nothing here. Sun provider is tested below.
+            }
         }
-        try {
-            // Sun PKCS11 has InputStream as constructor argument
-            final Class implClass = Class.forName(SUNPKCS11CLASS);
-            log.info("Using SUN PKCS11 provider: "+SUNPKCS11CLASS);
-            return (Provider)implClass.getConstructor(InputStream.class).newInstance(new Object[] {is});
-        } catch (Exception e2) {
-            log.error("Error constructing pkcs11 provider: "+e2.getMessage());
-            IOException ioe = new IOException("Error constructing pkcs11 provider: "+e2.getMessage());
-            ioe.initCause(e2);
-            throw ioe;
+        if (ret == null) {
+            try {
+                // Sun PKCS11 has InputStream as constructor argument
+                final Class implClass = Class.forName(SUNPKCS11CLASS);
+                log.info("Using SUN PKCS11 provider: "+SUNPKCS11CLASS);
+                ret = (Provider)implClass.getConstructor(InputStream.class).newInstance(new Object[] {is});
+            } catch (Exception e) {
+                log.error("Error constructing pkcs11 provider: "+e.getMessage());
+                IOException ioe = new IOException("Error constructing pkcs11 provider: "+e.getMessage());
+                ioe.initCause(e);
+                throw ioe;
+            }        	
         }
+        return ret;
     }
+    
     /**
      * @param is InputStream for sun configuration file.
      * @return The Sun provider

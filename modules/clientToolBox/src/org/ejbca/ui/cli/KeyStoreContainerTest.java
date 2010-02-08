@@ -79,15 +79,19 @@ class KeyStoreContainerTest {
         while( e.hasMoreElements() ) {
             String alias = e.nextElement();
             if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
-                PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
-                Certificate cert = keyStore.getKeyStore().getCertificate(alias);
-                if (cert != null) {
-                    testSet.add(new NormalTest(alias,
-                            new KeyPair(cert.getPublicKey(), privateKey),
-                            keyStore.getProviderName()));                	
-                } else {
-                	System.out.println("Not testing keys with alias "+alias+". No certificate exists.");
-                }
+            	try {
+                    PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
+                    Certificate cert = keyStore.getKeyStore().getCertificate(alias);
+                    if (cert != null) {
+                        testSet.add(new NormalTest(alias,
+                                new KeyPair(cert.getPublicKey(), privateKey),
+                                keyStore.getProviderName()));                	
+                    } else {
+                    	System.out.println("Not testing keys with alias "+alias+". No certificate exists.");
+                    }            		
+            	} catch (ClassCastException ce) {
+                	System.out.println("Not testing keys with alias "+alias+". Not a private key.");            		
+            	}
             }
         }
         return testSet.toArray(new NormalTest[0]);

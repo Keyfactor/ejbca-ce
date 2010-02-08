@@ -25,7 +25,9 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
@@ -36,6 +38,7 @@ import java.util.Enumeration;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.X509Name;
@@ -151,7 +154,30 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         // Generate the EC Keypair
         final KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", this.providerName);
         try {
-            kpg.initialize(new ECGenParameterSpec(name));
+			Provider prov = Security.getProvider(this.providerName);
+			if (StringUtils.contains(prov.getClass().getName(), "iaik")) {
+        		throw new InvalidAlgorithmParameterException("IAIK ECC key generation not implemented.");
+        		/*
+        		ECDSAPrivateKey privateKeyTemplate = new ECDSAPrivateKey();
+        		privateKeyTemplate.getSign().setBooleanValue(Boolean.TRUE);
+        		privateKeyTemplate.getToken().setBooleanValue(Boolean.FALSE);
+
+        		ECDSAPublicKey publicKeyTemplate = new ECDSAPublicKey();
+        		publicKeyTemplate.getVerify().setBooleanValue(Boolean.TRUE);
+        		publicKeyTemplate.getToken().setBooleanValue(Boolean.FALSE);
+
+        		ObjectID eccCurveObjectID = new ObjectID(objectID);
+        		publicKeyTemplate.getEcdsaParams().setByteArrayValue(DerCoder.encode(eccCurveObjectID));
+
+        		PKCS11KeyPairGenerationSpec keyPairGenerationSpec =
+        			new PKCS11KeyPairGenerationSpec(tokenManager, publicKeyTemplate, privateKeyTemplate, 
+        					PKCS11Spec.USE_READ_WRITE_SESSION, PKCS11Spec.USE_USER_SESSION);
+
+        		keyPairGenerator.initialize(keyPairGenerationSpec);
+				*/
+        	} else {
+                kpg.initialize(new ECGenParameterSpec(name));        		
+        	}
         } catch( InvalidAlgorithmParameterException e ) {
             log.debug("EC name "+name+" not supported.");
             throw e;
