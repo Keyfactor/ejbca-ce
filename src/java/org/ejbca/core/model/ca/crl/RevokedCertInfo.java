@@ -172,7 +172,7 @@ public class RevokedCertInfo implements java.io.Serializable {
     
     /**
      * This method returns the revocation reason as a text string that is understandable.
-     * TODO: The strings in this method should be easier for users to change
+     * TODO: The strings in this method should be easier for users to change, used from "publicweb/retrieve/check_status_result.jsp"
      * 
      * @return A string describing the reason for revocation.
      */
