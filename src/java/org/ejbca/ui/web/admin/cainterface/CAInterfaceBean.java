@@ -122,7 +122,7 @@ public class CAInterfaceBean implements java.io.Serializable {
           this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);
-          cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, ejbcawebbean);
+          cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, createCRLSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, 
           		                                        caadminsession, certificatesession,  informationmemory);
           initialized =true;

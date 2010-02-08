@@ -1257,6 +1257,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		        ArrayList cacertcol = new ArrayList();
     		        cacertcol.add(cacert);
     				getSignSession().publishCACertificate(admin, cacertcol, ca.getCRLPublishers(), ca.getSubjectDN());
+    				getCRLCreateSession().publishCRL(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
 
     				// Set status to active, so we can sign certificates for the external services below.
     				cadata.setStatus(SecConst.CA_ACTIVE);
@@ -1485,6 +1486,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     				// Publish CA certificates.
     			    getSignSession().publishCACertificate(admin, certchain, signca.getCRLPublishers(), ca!=null ? ca.getSubjectDN() : null);
+    				getCRLCreateSession().publishCRL(admin, cacertificate, signca.getCRLPublishers(), ca!=null ? ca.getSubjectDN() : null);
 
     			}catch(CATokenOfflineException e){
     	    		String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());            	
@@ -1787,6 +1789,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			ArrayList cacert = new ArrayList();
     			cacert.add(ca.getCACertificate());
     			getSignSession().publishCACertificate(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
+    		    getCRLCreateSession().publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN());
     		}catch(CATokenOfflineException e){
 	    		String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));            	
     			getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
@@ -2389,7 +2392,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		// Store CA in database.
 		cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
 		this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
-		
 		return ca;
 	} // importCA
     

@@ -87,7 +87,7 @@ public class AdminEntity implements Serializable, Comparable {
     }
 
     public AdminEntity(int specialadmin) {
-        // FIXME this is a hack for now, to initialize explicitely attributes to some fixed values.
+        // FIXME this is a hack for now, to initialize explicitly attributes to some fixed values.
         // I'm setting matchvalue to some arbitrary value as the schema does not support null
         this(WITH_SERIALNUMBER, specialadmin, "UNUSED", 0);
     }
