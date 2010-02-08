@@ -49,6 +49,8 @@ public class EJBCAWSRACommandFactory {
             return new PKCS10ReqCommand(args);
         } else if (args[0].equals("pkcs12req")) {
             return new PKCS12ReqCommand(args);
+        } else if (args[0].equals("certreq")) {
+            return new CertificateRequestCommand(args);
         } else if (args[0].equals("revokecert")) {
             return new RevokeCertCommand(args);
         } else if (args[0].equals("getpublisherqueuelength")) {
@@ -73,7 +75,7 @@ public class EJBCAWSRACommandFactory {
             return new CvcPrintCommand(args);
         } else if (args[0].equals("cvcpem")) {
             return new CvcPemCommand(args);
-        }
+	    }
         
         else {
             return null;

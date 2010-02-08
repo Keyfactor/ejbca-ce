@@ -1,433 +1,373 @@
-
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
- * <p>Java class for userDataVOWS complex type.
+ * Class used to represent userdata in the WebService API.
+ * Is used instead of UserDataVO because of profilenames is used instead of id's.<br>
+ * Example code:<pre>
+ *   UserDataVOWS user = new UserDataVOWS ();
+ *   user.setUsername ("tester");
+ *   user.setPassword ("foo123");
+ *   user.setClearPwd (false);
+ *   user.setSubjectDN ("CN=Tester,C=SE");
+ *   user.setCaName ("AdminCA1");
+ *   user.setEmail (null);
+ *   user.setSubjectAltName (null);
+ *   user.setStatus (UserDataVOWS.STATUS_NEW);
+ *   user.setTokenType (UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+ *   user.setEndEntityProfileName ("EMPTY");
+ *   user.setCertificateProfileName ("ENDUSER");
+ *</pre>
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="userDataVOWS">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="caName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="certificateProfileName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="clearPwd" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="email" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="endEntityProfileName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="endTime" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="hardTokenIssuerName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="keyRecoverable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="password" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="sendNotification" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
- *         &lt;element name="startTime" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="status" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *         &lt;element name="subjectAltName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="subjectDN" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="tokenType" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="username" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- * 
- * 
+ * @author Philip Vendil
+ * @version $Id: UserDataVOWS.java 8282 2009-11-09 14:57:21Z jeklund $
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "userDataVOWS", propOrder = {
-    "caName",
-    "certificateProfileName",
-    "clearPwd",
-    "email",
-    "endEntityProfileName",
-    "endTime",
-    "hardTokenIssuerName",
-    "keyRecoverable",
-    "password",
-    "sendNotification",
-    "startTime",
-    "status",
-    "subjectAltName",
-    "subjectDN",
-    "tokenType",
-    "username"
-})
-public class UserDataVOWS {
-
-    protected String caName;
-    protected String certificateProfileName;
-    protected boolean clearPwd;
-    protected String email;
-    protected String endEntityProfileName;
-    protected String endTime;
-    protected String hardTokenIssuerName;
-    protected boolean keyRecoverable;
-    protected String password;
-    protected boolean sendNotification;
-    protected String startTime;
-    protected int status;
-    protected String subjectAltName;
-    protected String subjectDN;
-    protected String tokenType;
-    protected String username;
+public class UserDataVOWS implements Serializable{
+	
+	public static final java.lang.String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 
+	public static final java.lang.String TOKEN_TYPE_JKS           = "JKS";
+	public static final java.lang.String TOKEN_TYPE_PEM           = "PEM";
+	public static final java.lang.String TOKEN_TYPE_P12           = "P12";
+	
+    public static final int STATUS_NEW = UserDataConstants.STATUS_NEW;        // New user
+    public static final int STATUS_FAILED = UserDataConstants.STATUS_FAILED;     // Generation of user certificate failed
+    public static final int STATUS_INITIALIZED = UserDataConstants.STATUS_INITIALIZED;// User has been initialized
+    public static final int STATUS_INPROCESS = UserDataConstants.STATUS_INPROCESS;  // Generation of user certificate in process
+    public static final int STATUS_GENERATED = UserDataConstants.STATUS_GENERATED;  // A certificate has been generated for the user
+    public static final int STATUS_REVOKED = UserDataConstants.STATUS_REVOKED;  // The user has been revoked and should not have any more certificates issued
+    public static final int STATUS_HISTORICAL = UserDataConstants.STATUS_HISTORICAL; // The user is old and archived
+    public static final int STATUS_KEYRECOVERY  = UserDataConstants.STATUS_KEYRECOVERY; // The user is should use key recovery functions in next certificate generation.
+	
+    private java.lang.String username = null;
+    private java.lang.String password = null;
+    private boolean clearPwd = false;
+    private java.lang.String subjectDN = null;
+    private java.lang.String caName = null;
+    private java.lang.String subjectAltName = null;
+    private java.lang.String email = null;
+    private int status = 0;
+    private java.lang.String tokenType = null;
+    private boolean sendNotification = false;
+    private boolean keyRecoverable = false;
+    private java.lang.String endEntityProfileName = null;
+    private java.lang.String certificateProfileName = null;
+    private java.lang.String hardTokenIssuerName = null;
+    private java.lang.String startTime = null;
+    private java.lang.String endTime = null;
 
     /**
-     * Gets the value of the caName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * Emtpy constructor used by internally by web services
      */
-    public String getCaName() {
-        return caName;
-    }
+    public UserDataVOWS(){}
+    
+	/**
+	 * Constructor used when creating a new UserDataVOWS.
+	 * 
+	 * @param username the unique username if the user, used internally in EJBCA
+	 * @param password password u sed to lock the keystore
+	 * @param clearPwd true if password should be in clear
+	 * @param subjectDN of 
+	 * @param caName the name of the CA used in the EJBCA web gui.
+	 * @param subjectAltName
+	 * @param email 
+	 * @param status one of the STATUS_ constants
+	 * @param tokenType type of token, one of TOKEN_TYPE constants for soft tokens, for hard ones  use hardtokenprofilename
+	 * @param endEntityProfileName
+	 * @param certificateProfileName
+	 * @param hardTokenIssuerName if no hardTokenIssuer should be used then use null.
+	 */
+	public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName, String hardTokenIssuerName) {
+		super();
+		this.username = username;
+		this.password = password;
+		this.clearPwd = clearPwd;
+		this.subjectDN = subjectDN;
+		this.caName = caName;
+		this.subjectAltName = subjectAltName;
+		this.email = email;
+		this.status = status;
+		this.tokenType = tokenType;
+		this.endEntityProfileName = endEntityProfileName;
+		this.certificateProfileName = certificateProfileName;
+		this.hardTokenIssuerName = hardTokenIssuerName;
+	}
 
+    
     /**
-     * Sets the value of the caName property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     * @return true if the user is keyrecoverable
      */
-    public void setCaName(String value) {
-        this.caName = value;
+    public boolean isKeyRecoverable(){
+    	return this.keyRecoverable;
     }
-
+    
     /**
-     * Gets the value of the certificateProfileName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * indicates if the users keys should be keyrecoverable
+     * @param keyrecoverable
      */
-    public String getCertificateProfileName() {
-        return certificateProfileName;
+    public void setKeyRecoverable(boolean keyrecoverable){
+      this.keyRecoverable = keyrecoverable;
     }
-
+    
     /**
-     * Sets the value of the certificateProfileName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     * If true notifications will be sent to the user
      */
-    public void setCertificateProfileName(String value) {
-        this.certificateProfileName = value;
+	public boolean isSendNotification(){
+    	return sendNotification;
     }
+    
+	/**
+	 * set to true if notifications should be sent to the user.
+	 */
+    public void setSendNotification(boolean sendnotification){
+    	this.sendNotification = sendnotification;
+    }
+    
+    /**
+	 * @return Returns the cAName.
+	 */
+	public String getCaName() {
+		return caName;
+	}
+
+
+	/**
+	 * @return Returns the certificateProfileName.
+	 */
+	public String getCertificateProfileName() {
+		return certificateProfileName;
+	}
+
+
+	/**
+	 * @return Returns the email.
+	 */
+	public String getEmail() {
+		return email;
+	}
+
+
+	/**
+	 * @return Returns the endEntityProfileName.
+	 */
+	public String getEndEntityProfileName() {
+		return endEntityProfileName;
+	}
+
+
+	/**
+	 * @return Returns the hardTokenIssuerName.
+	 */
+	public String getHardTokenIssuerName() {
+		return hardTokenIssuerName;
+	}
+
+
+	/**
+	 * Observe when sending userdata to clients outside EJBCA will the password
+	 * always be null.
+	 * 
+	 * @return Returns the password.
+	 */
+	public String getPassword() {
+		return password;
+	}
+
+	/**
+	 * Observe sending usedata to clients outside EJBCA will always return false
+	 * @return Returns the clearpwd.
+	 */
+	public boolean isClearPwd() {
+		return clearPwd;
+	}
+
+	/**
+	 * @return Returns the status.
+	 */
+	public int getStatus() {
+		return status;
+	}
+
+
+	/**
+	 * @return Returns the subjecDN.
+	 */
+	public String getSubjectDN() {
+		return subjectDN;
+	}
+
+
+	/**
+	 * @return Returns the subjectAltName.
+	 */
+	public String getSubjectAltName() {
+		return subjectAltName;
+	}
+
+
+	/**
+	 * @return Returns the tokenType. One of TOKEN_TYPE constants for soft tokens, for hard ones  use hardtokenprofilename
+	 */
+	public String getTokenType() {
+		return tokenType;
+	}
+
+
+	/**
+	 * @return Returns the type.
+	 */
+	public int getType() {
+		int type = 1;
+		
+    	if(sendNotification)
+    		type = type | SecConst.USER_SENDNOTIFICATION;
+    	else
+    		type = type & (~SecConst.USER_SENDNOTIFICATION);
+    	
+    	if(keyRecoverable)
+    		type = type | SecConst.USER_KEYRECOVERABLE;
+    	else
+    		type = type & (~SecConst.USER_KEYRECOVERABLE);
+    			
+		return type;
+	}
+
+
+	/**
+	 * @return Returns the username.
+	 */
+	public String getUsername() {
+		return username;
+	}
+
+	/**
+	 * @param name The caName to set.
+	 */
+	public void setCaName(String name) {
+		caName = name;
+	}
+
+	/**
+	 * @param certificateProfileName The certificateProfileName to set.
+	 */
+	public void setCertificateProfileName(String certificateProfileName) {
+		this.certificateProfileName = certificateProfileName;
+	}
+
+	/**
+	 * @param clearPwd The clearpwd to set.
+	 */
+	public void setClearPwd(boolean clearPwd) {
+		this.clearPwd = clearPwd;
+	}
+
+	/**
+	 * @param email The email to set.
+	 */
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	/**
+	 * @param endEntityProfileName The endEntityProfileName to set.
+	 */
+	public void setEndEntityProfileName(String endEntityProfileName) {
+		this.endEntityProfileName = endEntityProfileName;
+	}
+
+	/**
+	 * @param hardTokenIssuerName The hardTokenIssuerName to set.
+	 */
+	public void setHardTokenIssuerName(String hardTokenIssuerName) {
+		this.hardTokenIssuerName = hardTokenIssuerName;
+	}
+
+	/**
+	 * @param password The password to set.
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/**
+	 * @param status The status to set.
+	 */
+	public void setStatus(int status) {
+		this.status = status;
+	}
+
+	/**
+	 * @param subjectAltName The subjectAltName to set.
+	 */
+	public void setSubjectAltName(String subjectAltName) {
+		this.subjectAltName = subjectAltName;
+	}
+
+	/**
+	 * @param subjectDN The subjectDN to set.
+	 */
+	public void setSubjectDN(String subjectDN) {
+		this.subjectDN = subjectDN;
+	}
+
+	/**
+	 * @param tokenType The tokenType to set.
+	 */
+	public void setTokenType(String tokenType) {
+		this.tokenType = tokenType;
+	}
+
+
+
+	/**
+	 * @param username The username to set.
+	 */
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
     /**
-     * Gets the value of the clearPwd property.
-     * 
-     */
-    public boolean isClearPwd() {
-        return clearPwd;
-    }
-
-    /**
-     * Sets the value of the clearPwd property.
-     * 
-     */
-    public void setClearPwd(boolean value) {
-        this.clearPwd = value;
-    }
-
-    /**
-     * Gets the value of the email property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * Sets the value of the email property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEmail(String value) {
-        this.email = value;
-    }
-
-    /**
-     * Gets the value of the endEntityProfileName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEndEntityProfileName() {
-        return endEntityProfileName;
-    }
-
-    /**
-     * Sets the value of the endEntityProfileName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEndEntityProfileName(String value) {
-        this.endEntityProfileName = value;
-    }
-
-    /**
-     * Gets the value of the endTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEndTime() {
-        return endTime;
-    }
-
-    /**
-     * Sets the value of the endTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEndTime(String value) {
-        this.endTime = value;
-    }
-
-    /**
-     * Gets the value of the hardTokenIssuerName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getHardTokenIssuerName() {
-        return hardTokenIssuerName;
-    }
-
-    /**
-     * Sets the value of the hardTokenIssuerName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setHardTokenIssuerName(String value) {
-        this.hardTokenIssuerName = value;
-    }
-
-    /**
-     * Gets the value of the keyRecoverable property.
-     * 
-     */
-    public boolean isKeyRecoverable() {
-        return keyRecoverable;
-    }
-
-    /**
-     * Sets the value of the keyRecoverable property.
-     * 
-     */
-    public void setKeyRecoverable(boolean value) {
-        this.keyRecoverable = value;
-    }
-
-    /**
-     * Gets the value of the password property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * Sets the value of the password property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setPassword(String value) {
-        this.password = value;
-    }
-
-    /**
-     * Gets the value of the sendNotification property.
-     * 
-     */
-    public boolean isSendNotification() {
-        return sendNotification;
-    }
-
-    /**
-     * Sets the value of the sendNotification property.
-     * 
-     */
-    public void setSendNotification(boolean value) {
-        this.sendNotification = value;
-    }
-
-    /**
-     * Gets the value of the startTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return the startTime
      */
     public String getStartTime() {
-        return startTime;
+        return this.startTime;
     }
 
     /**
-     * Sets the value of the startTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     * @param startTime the startTime to set
      */
-    public void setStartTime(String value) {
-        this.startTime = value;
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
     }
 
     /**
-     * Gets the value of the status property.
-     * 
+     * @return the endTime
      */
-    public int getStatus() {
-        return status;
+    public String getEndTime() {
+        return this.endTime;
     }
 
     /**
-     * Sets the value of the status property.
-     * 
+     * @param endTime the endTime to set
      */
-    public void setStatus(int value) {
-        this.status = value;
-    }
-
-    /**
-     * Gets the value of the subjectAltName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSubjectAltName() {
-        return subjectAltName;
-    }
-
-    /**
-     * Sets the value of the subjectAltName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSubjectAltName(String value) {
-        this.subjectAltName = value;
-    }
-
-    /**
-     * Gets the value of the subjectDN property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSubjectDN() {
-        return subjectDN;
-    }
-
-    /**
-     * Sets the value of the subjectDN property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSubjectDN(String value) {
-        this.subjectDN = value;
-    }
-
-    /**
-     * Gets the value of the tokenType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTokenType() {
-        return tokenType;
-    }
-
-    /**
-     * Sets the value of the tokenType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTokenType(String value) {
-        this.tokenType = value;
-    }
-
-    /**
-     * Gets the value of the username property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getUsername() {
-        return username;
-    }
-
-    /**
-     * Sets the value of the username property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setUsername(String value) {
-        this.username = value;
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
     }
 
 }

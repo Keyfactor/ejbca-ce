@@ -50,7 +50,11 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     	test19GeneratePkcs10Request(true);  
     }
 
-	public void test04GeneratePkcs12() throws Exception{
+    public void test03_5CertificateRequest() throws Exception{
+		test03CertificateRequest(true);
+	}
+
+    public void test04GeneratePkcs12() throws Exception{
 		test04GeneratePkcs12(true);
 	}
 	

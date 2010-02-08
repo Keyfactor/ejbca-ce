@@ -57,4 +57,7 @@
   <ejbRefBindings xmi:id="EJBLocalRefBinding_17" jndiName="CreateCRLSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_17"/>
   </ejbRefBindings>
+  <ejbRefBindings xmi:id="EJBLocalRefBinding_18" jndiName="CertificateRequestSession">
+    <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_18"/>
+  </ejbRefBindings>
 </webappbnd:WebAppBinding>

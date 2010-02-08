@@ -18,18 +18,21 @@ package org.ejbca.core.protocol.ws.objects;
  * of a PIN data such as type, PIN and PUK
  * 
  * 
- * @author Philip Vendil 2007 feb 8
+ * @author Philip Vendil
  *
  * @version $Id$
  */
-public class PINDataWS {
+public class PinDataWS {
 	
 	
 	private int type = 0;
 	private String initialPIN = null;
-	private String pUK = null;
+	private String PUK = null;
 	
-	public PINDataWS(){}
+	/**
+	 * WS Constructor
+	 */
+	public PinDataWS(){}
 	
 	/**
 	 * Default constructor
@@ -38,11 +41,11 @@ public class PINDataWS {
 	 * @param initialPIN the initial pin of the token
 	 * @param puk the puk of the token
 	 */
-	public PINDataWS(int type, String initialPIN, String puk) {
+	public PinDataWS(int type, String initialPIN, String puk) {
 		super();
 		this.type = type;
 		this.initialPIN = initialPIN;
-		pUK = puk;
+		PUK = puk;
 	}
 	
 	/**
@@ -64,7 +67,7 @@ public class PINDataWS {
 	 * @return  the puk of the token
 	 */
 	public String getPUK() {
-		return pUK;
+		return PUK;
 	}
 	
 	/**
@@ -72,7 +75,7 @@ public class PINDataWS {
 	 * @param puk the puk of the token
 	 */
 	public void setPUK(String puk) {
-		pUK = puk;
+		PUK = puk;
 	}
 	
 	/**

@@ -11,35 +11,32 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.core.protocol.ws.client;
+package org.ejbca.core.model.ca;
 
-import org.ejbca.ui.cli.IAdminCommand;
+import org.ejbca.core.EjbcaException;
+
+
 
 /**
- * Implements the EJBCA RA WS command line interface
+ * Error due to wrong token (user-gen, p12 etc)
  *
  * @version $Id$
  */
-public class ejbcawsracli  {
+public class WrongTokenTypeException extends EjbcaException {
     /**
-     * main Client
+     * Constructor used to create exception with an errormessage. Calls the same constructor in
+     * baseclass <code>Exception</code>.
      *
-     * @param args command line arguments
+     * @param message Human redable error message, can not be NULL.
      */
-    public static void main(String[] args) {
-        try {
-            IAdminCommand cmd = EJBCAWSRACommandFactory.getCommand(args);
-
-            if (cmd != null) {
-                cmd.execute();
-            } else {
-                System.out.println(
-                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | getpublisherqueuelength | revoketoken | revokeuser | checkrevokationstatus | generatenewuser | createcrl | stress");
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-            System.exit(-1);
-        }
+    public WrongTokenTypeException(String message) {
+        super(message);
+    }
+    /**
+     * Constructs an instance of <code>WrongTokenTypeException</code> with the specified cause.
+     * @param msg the detail message.
+     */
+    public WrongTokenTypeException(Exception e) {
+        super(e);
     }
 }

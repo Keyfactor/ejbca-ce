@@ -1,96 +1,84 @@
-
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-
+import java.util.Set;
 
 /**
- * <p>Java class for userDataSourceVOWS complex type.
+ * Class used to represent userdatasource in the WebService API.
+ * because of profilenames is used instead of id's.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="userDataSourceVOWS">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="isModifyable" type="{http://www.w3.org/2001/XMLSchema}int" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="userDataVOWS" type="{http://ws.protocol.core.ejbca.org/}userDataVOWS" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- * 
- * 
+ * @author Philip Vendil
+ * @version $Id: UserDataSourceVOWS.java 8282 2009-11-09 14:57:21Z jeklund $
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "userDataSourceVOWS", propOrder = {
-    "isModifyable",
-    "userDataVOWS"
-})
-public class UserDataSourceVOWS {
+public class UserDataSourceVOWS implements Serializable{
 
-    @XmlElement(nillable = true)
-    protected List<Integer> isModifyable;
-    protected UserDataVOWS userDataVOWS;
+	private UserDataVOWS userDataVOWS = null;
+	private List<Integer> isModifyable = null;
 
+	/**
+	 * WS Constructor
+	 */
+	public UserDataSourceVOWS(){}
+
+	public UserDataSourceVOWS(UserDataVOWS userDataVOWS, Set isModifyableSet){
+		this.userDataVOWS = userDataVOWS;
+		this.isModifyable = new ArrayList<Integer>();
+		Iterator<Integer> iter = isModifyableSet.iterator();
+		while(iter.hasNext()){
+			isModifyable.add(iter.next());
+		}	  
+	}
+
+	/**
+	 * Gets a list of modifyable fields, (Should be one of the constants
+	 * of the UserDataSourceVO.ISMODIFYABLE_ or
+	 * DNFieldExtractor constants defined in the AVAILABLEMODIFYABLEFIELDS array.
+	 * 
+	 * use the contains(Object) method do find out if a field should be modifyable or not.
+	 */
+	public List<Integer> getIsModifyable() {
+		return isModifyable;
+	}
+
+	/**
+	 * Method that shouldn't be used outside the WS framework.
+	 */
+	public void setIsModifyable(List<Integer> isModifyable) {
+		this.isModifyable = isModifyable;
+	}
+	
     /**
-     * Gets the value of the isModifyable property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the isModifyable property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getIsModifyable().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Integer }
-     * 
-     * 
+     * @return user data connected with this instance of user data source vo
      */
-    public List<Integer> getIsModifyable() {
-        if (isModifyable == null) {
-            isModifyable = new ArrayList<Integer>();
-        }
-        return this.isModifyable;
-    }
+	public UserDataVOWS getUserDataVOWS() {
+		return userDataVOWS;
+	}
 
-    /**
-     * Gets the value of the userDataVOWS property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link UserDataVOWS }
-     *     
-     */
-    public UserDataVOWS getUserDataVOWS() {
-        return userDataVOWS;
-    }
+	/**
+	 * Method that shouldn't be used outside the WS framework.
+	 */
+	public void setUserDataVOWS(UserDataVOWS userDataVOWS) {
+		this.userDataVOWS = userDataVOWS;
+	}
 
-    /**
-     * Sets the value of the userDataVOWS property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link UserDataVOWS }
-     *     
-     */
-    public void setUserDataVOWS(UserDataVOWS value) {
-        this.userDataVOWS = value;
-    }
+
+
+
 
 }

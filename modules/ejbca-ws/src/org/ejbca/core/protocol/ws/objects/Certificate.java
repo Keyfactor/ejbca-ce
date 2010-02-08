@@ -17,12 +17,17 @@ import java.security.cert.CertificateEncodingException;
 import org.ejbca.util.Base64;
 
 /**
+ * Holds certificate WS elements
+ * 
  * @version $Id$
  */
 public class Certificate extends TokenCertificateResponseWS {
 	
 	private byte[] certificateData = null;
 	
+	/**
+	 * WS Constructor
+	 */
 	public Certificate(){
 		
 	}
@@ -36,17 +41,28 @@ public class Certificate extends TokenCertificateResponseWS {
 	}
 
 	/**
-	 * @return Returns the certificateData in Base64 encoded format
+	 * Returns the certificateData in binary format
+	 * @return the certificateData in binary format
+	 */
+	public byte[] getRawCertificateData() {
+		return Base64.decode(certificateData);
+	}
+
+	/**
+	 * Returns the certificateData in Base64 encoded format
+	 * @return the certificateData in Base64 encoded format
 	 */
 	public byte[] getCertificateData() {
 		return certificateData;
 	}
 
 	/**
+	 * Sets certificateData in Base64 encoded format
 	 * @param certificateData The certificateData to set, in Base64 encoded format.
 	 */
 	public void setCertificateData(byte[] certificateData) {
 		this.certificateData = certificateData;
 	}
+
 
 }

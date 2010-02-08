@@ -19,7 +19,21 @@ import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
  * Class used to represent userdata in the WebService API.
- * Is used instead of UserDataVO because of profilenames is used instead of id's.
+ * Is used instead of UserDataVO because of profilenames is used instead of id's.<br>
+ * Example code:<pre>
+ *   UserDataVOWS user = new UserDataVOWS ();
+ *   user.setUsername ("tester");
+ *   user.setPassword ("foo123");
+ *   user.setClearPwd (false);
+ *   user.setSubjectDN ("CN=Tester,C=SE");
+ *   user.setCaName ("AdminCA1");
+ *   user.setEmail (null);
+ *   user.setSubjectAltName (null);
+ *   user.setStatus (UserDataVOWS.STATUS_NEW);
+ *   user.setTokenType (UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+ *   user.setEndEntityProfileName ("EMPTY");
+ *   user.setCertificateProfileName ("ENDUSER");
+ *</pre>
  * 
  * @author Philip Vendil
  * @version $Id$
@@ -66,7 +80,8 @@ public class UserDataVOWS implements Serializable{
 	 * Constructor used when creating a new UserDataVOWS.
 	 * 
 	 * @param username the unique username if the user, used internally in EJBCA
-	 * @param password, password used to lock the keystore
+	 * @param password password u sed to lock the keystore
+	 * @param clearPwd true if password should be in clear
 	 * @param subjectDN of 
 	 * @param caName the name of the CA used in the EJBCA web gui.
 	 * @param subjectAltName
@@ -77,7 +92,7 @@ public class UserDataVOWS implements Serializable{
 	 * @param certificateProfileName
 	 * @param hardTokenIssuerName if no hardTokenIssuer should be used then use null.
 	 */
-	public UserDataVOWS(java.lang.String username, java.lang.String password, boolean clearPwd, java.lang.String subjectDN, java.lang.String caName, java.lang.String subjectAltName, java.lang.String email, int status, java.lang.String tokenType, java.lang.String endEntityProfileName, java.lang.String certificateProfileName, java.lang.String hardTokenIssuerName) {
+	public UserDataVOWS(String username, String password, boolean clearPwd, String subjectDN, String caName, String subjectAltName, String email, int status, String tokenType, String endEntityProfileName, String certificateProfileName, String hardTokenIssuerName) {
 		super();
 		this.username = username;
 		this.password = password;
@@ -98,7 +113,7 @@ public class UserDataVOWS implements Serializable{
      * 
      * @return true if the user is keyrecoverable
      */
-    public boolean getKeyRecoverable(){
+    public boolean isKeyRecoverable(){
     	return this.keyRecoverable;
     }
     
@@ -113,7 +128,7 @@ public class UserDataVOWS implements Serializable{
     /**
      * If true notifications will be sent to the user
      */
-	public boolean getSendNotification(){
+	public boolean isSendNotification(){
     	return sendNotification;
     }
     
@@ -127,7 +142,7 @@ public class UserDataVOWS implements Serializable{
     /**
 	 * @return Returns the cAName.
 	 */
-	public java.lang.String getCaName() {
+	public String getCaName() {
 		return caName;
 	}
 
@@ -135,7 +150,7 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @return Returns the certificateProfileName.
 	 */
-	public java.lang.String getCertificateProfileName() {
+	public String getCertificateProfileName() {
 		return certificateProfileName;
 	}
 
@@ -143,7 +158,7 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @return Returns the email.
 	 */
-	public java.lang.String getEmail() {
+	public String getEmail() {
 		return email;
 	}
 
@@ -151,7 +166,7 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @return Returns the endEntityProfileName.
 	 */
-	public java.lang.String getEndEntityProfileName() {
+	public String getEndEntityProfileName() {
 		return endEntityProfileName;
 	}
 
@@ -159,7 +174,7 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @return Returns the hardTokenIssuerName.
 	 */
-	public java.lang.String getHardTokenIssuerName() {
+	public String getHardTokenIssuerName() {
 		return hardTokenIssuerName;
 	}
 
@@ -170,7 +185,7 @@ public class UserDataVOWS implements Serializable{
 	 * 
 	 * @return Returns the password.
 	 */
-	public java.lang.String getPassword() {
+	public String getPassword() {
 		return password;
 	}
 
@@ -178,7 +193,7 @@ public class UserDataVOWS implements Serializable{
 	 * Observe sending usedata to clients outside EJBCA will always return false
 	 * @return Returns the clearpwd.
 	 */
-	public boolean getClearPwd() {
+	public boolean isClearPwd() {
 		return clearPwd;
 	}
 
@@ -193,7 +208,7 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @return Returns the subjecDN.
 	 */
-	public java.lang.String getSubjectDN() {
+	public String getSubjectDN() {
 		return subjectDN;
 	}
 
@@ -201,7 +216,7 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @return Returns the subjectAltName.
 	 */
-	public java.lang.String getSubjectAltName() {
+	public String getSubjectAltName() {
 		return subjectAltName;
 	}
 
@@ -209,7 +224,7 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @return Returns the tokenType. One of TOKEN_TYPE constants for soft tokens, for hard ones  use hardtokenprofilename
 	 */
-	public java.lang.String getTokenType() {
+	public String getTokenType() {
 		return tokenType;
 	}
 
@@ -237,26 +252,26 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @return Returns the username.
 	 */
-	public java.lang.String getUsername() {
+	public String getUsername() {
 		return username;
 	}
 
 	/**
-	 * @param name The cAName to set.
+	 * @param name The caName to set.
 	 */
-	public void setCaName(java.lang.String name) {
+	public void setCaName(String name) {
 		caName = name;
 	}
 
 	/**
 	 * @param certificateProfileName The certificateProfileName to set.
 	 */
-	public void setCertificateProfileName(java.lang.String certificateProfileName) {
+	public void setCertificateProfileName(String certificateProfileName) {
 		this.certificateProfileName = certificateProfileName;
 	}
 
 	/**
-	 * @param clearpwd The clearpwd to set.
+	 * @param clearPwd The clearpwd to set.
 	 */
 	public void setClearPwd(boolean clearPwd) {
 		this.clearPwd = clearPwd;
@@ -265,28 +280,28 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @param email The email to set.
 	 */
-	public void setEmail(java.lang.String email) {
+	public void setEmail(String email) {
 		this.email = email;
 	}
 
 	/**
 	 * @param endEntityProfileName The endEntityProfileName to set.
 	 */
-	public void setEndEntityProfileName(java.lang.String endEntityProfileName) {
+	public void setEndEntityProfileName(String endEntityProfileName) {
 		this.endEntityProfileName = endEntityProfileName;
 	}
 
 	/**
 	 * @param hardTokenIssuerName The hardTokenIssuerName to set.
 	 */
-	public void setHardTokenIssuerName(java.lang.String hardTokenIssuerName) {
+	public void setHardTokenIssuerName(String hardTokenIssuerName) {
 		this.hardTokenIssuerName = hardTokenIssuerName;
 	}
 
 	/**
 	 * @param password The password to set.
 	 */
-	public void setPassword(java.lang.String password) {
+	public void setPassword(String password) {
 		this.password = password;
 	}
 
@@ -300,21 +315,21 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @param subjectAltName The subjectAltName to set.
 	 */
-	public void setSubjectAltName(java.lang.String subjectAltName) {
+	public void setSubjectAltName(String subjectAltName) {
 		this.subjectAltName = subjectAltName;
 	}
 
 	/**
 	 * @param subjectDN The subjectDN to set.
 	 */
-	public void setSubjectDN(java.lang.String subjectDN) {
+	public void setSubjectDN(String subjectDN) {
 		this.subjectDN = subjectDN;
 	}
 
 	/**
 	 * @param tokenType The tokenType to set.
 	 */
-	public void setTokenType(java.lang.String tokenType) {
+	public void setTokenType(String tokenType) {
 		this.tokenType = tokenType;
 	}
 
@@ -323,35 +338,35 @@ public class UserDataVOWS implements Serializable{
 	/**
 	 * @param username The username to set.
 	 */
-	public void setUsername(java.lang.String username) {
+	public void setUsername(String username) {
 		this.username = username;
 	}
 
     /**
      * @return the startTime
      */
-    public java.lang.String getStartTime() {
+    public String getStartTime() {
         return this.startTime;
     }
 
     /**
      * @param startTime the startTime to set
      */
-    public void setStartTime(java.lang.String startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
     /**
      * @return the endTime
      */
-    public java.lang.String getEndTime() {
+    public String getEndTime() {
         return this.endTime;
     }
 
     /**
      * @param endTime the endTime to set
      */
-    public void setEndTime(java.lang.String endTime) {
+    public void setEndTime(String endTime) {
         this.endTime = endTime;
     }
 

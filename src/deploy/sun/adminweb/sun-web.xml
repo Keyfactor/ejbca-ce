@@ -72,5 +72,9 @@
         <ejb-ref-name>ejb/PublisherQueueSessionLocal</ejb-ref-name>
         <jndi-name>PublisherQueueSession</jndi-name>
     </ejb-ref>
+    <ejb-ref>
+        <ejb-ref-name>ejb/CertificateRequestSessionLocal</ejb-ref-name>
+        <jndi-name>CertificateRequestSession</jndi-name>
+    </ejb-ref>
 
 </sun-web-app>

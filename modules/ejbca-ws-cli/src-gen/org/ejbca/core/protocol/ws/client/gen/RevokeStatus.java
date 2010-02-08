@@ -1,35 +1,44 @@
-
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
+
+import java.util.GregorianCalendar;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+
 /**
- * <p>Java class for revokeStatus complex type.
+ * Class used when checking the revocation status of a certificate.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="revokeStatus">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="certificateSN" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="issuerDN" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="reason" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *         &lt;element name="revocationDate" type="{http://www.w3.org/2001/XMLSchema}dateTime" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- * 
- * 
+ * Contains the following data:
+ *   IssuerDN
+ *   CertificateSN (hex)
+ *   RevokationDate 
+ *   Reason (One of the REVOKATION_REASON constants)
+ *
+ * @author Philip Vendil
+ * @version $Id: RevokeStatus.java 8401 2009-12-04 13:22:27Z anatom $
  */
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "revokeStatus", propOrder = {
     "certificateSN",
@@ -38,99 +47,104 @@ import javax.xml.datatype.XMLGregorianCalendar;
     "revocationDate"
 })
 public class RevokeStatus {
-
-    protected String certificateSN;
-    protected String issuerDN;
-    protected int reason;
+	
+    /** Constants defining different revocation reasons. */
+    public static final int NOT_REVOKED                            = RevokedCertInfo.NOT_REVOKED;
+    public static final int REVOKATION_REASON_UNSPECIFIED          = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
+    public static final int REVOKATION_REASON_KEYCOMPROMISE        = RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE;
+    public static final int REVOKATION_REASON_CACOMPROMISE         = RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE;
+    public static final int REVOKATION_REASON_AFFILIATIONCHANGED   = RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED;
+    public static final int REVOKATION_REASON_SUPERSEDED           = RevokedCertInfo.REVOKATION_REASON_SUPERSEDED;
+    public static final int REVOKATION_REASON_CESSATIONOFOPERATION = RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION;
+    public static final int REVOKATION_REASON_CERTIFICATEHOLD      = RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD;
+    public static final int REVOKATION_REASON_REMOVEFROMCRL        = RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL;
+    public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN  = RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
+    public static final int REVOKATION_REASON_AACOMPROMISE         = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
+    
+	private String               issuerDN;
+    private String               certificateSN;
     @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar revocationDate;
+    private XMLGregorianCalendar revocationDate;
+    private int                  reason;
+	
+    
+    /** Default Web Service Constuctor */
+	public RevokeStatus(){}
+	
+	public RevokeStatus(RevokedCertInfo info, String issuerDN) throws DatatypeConfigurationException{
+		certificateSN = info.getUserCertificate().toString(16);
+		this.issuerDN = issuerDN;
+		GregorianCalendar cal = new GregorianCalendar ();
+		cal.setTime(info.getRevocationDate());
+		revocationDate = DatatypeFactory.newInstance ().newXMLGregorianCalendar(cal);
+		reason = info.getReason();		
+	}
 
-    /**
-     * Gets the value of the certificateSN property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getCertificateSN() {
-        return certificateSN;
-    }
+	public RevokeStatus(CertificateStatus info, String issuerDN, String serno) throws DatatypeConfigurationException{
+		certificateSN = serno;
+		this.issuerDN = issuerDN;
+		GregorianCalendar cal = new GregorianCalendar ();
+		cal.setTime(info.revocationDate);
+		revocationDate = DatatypeFactory.newInstance ().newXMLGregorianCalendar(cal);
+		reason = info.revocationReason;		
+	}
 
-    /**
-     * Sets the value of the certificateSN property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setCertificateSN(String value) {
-        this.certificateSN = value;
-    }
+	/**
+	 * @return Returns the reason.
+	 */
+	public int getReason() {
+		return reason;
+	}
 
-    /**
-     * Gets the value of the issuerDN property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getIssuerDN() {
-        return issuerDN;
-    }
+	/**
+	 * @param reason The reason to set.
+	 */
+	public void setReason(int reason) {
+		this.reason = reason;
+	}
 
-    /**
-     * Sets the value of the issuerDN property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setIssuerDN(String value) {
-        this.issuerDN = value;
-    }
+	/**
+	 * @return Returns the revocationDate.
+	 */
+	public XMLGregorianCalendar getRevocationDate() {
+		return revocationDate;
+	}
 
-    /**
-     * Gets the value of the reason property.
-     * 
-     */
-    public int getReason() {
-        return reason;
-    }
+	/**
+	 * @param revocationDate The revocationDate to set.
+	 */
+	public void setRevocationDate(XMLGregorianCalendar revocationDate) {
+		this.revocationDate = revocationDate;
+	}
 
-    /**
-     * Sets the value of the reason property.
-     * 
-     */
-    public void setReason(int value) {
-        this.reason = value;
-    }
+	/**
+	 * @return Returns the certificateSN in hex format.
+	 */
+	public String getCertificateSN() {
+		return certificateSN;
+	}
 
-    /**
-     * Gets the value of the revocationDate property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getRevocationDate() {
-        return revocationDate;
-    }
+	/**
+	 * @param certificateSN The certificateSN to set in hex format
+	 */
+	public void setCertificateSN(String certificateSN) {
+		this.certificateSN = certificateSN;
+	}
 
-    /**
-     * Sets the value of the revocationDate property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setRevocationDate(XMLGregorianCalendar value) {
-        this.revocationDate = value;
-    }
+	/**
+	 * @return Returns the issuerDN.
+	 */
+	public String getIssuerDN() {
+		return issuerDN;
+	}
+
+	/**
+	 * @param issuerDN The issuerDN to set.
+	 */
+	public void setIssuerDN(String issuerDN) {
+		this.issuerDN = issuerDN;
+	}
+	
+
 
 }

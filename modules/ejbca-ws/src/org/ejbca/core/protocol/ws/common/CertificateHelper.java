@@ -16,6 +16,7 @@ import java.security.cert.CertificateException;
 
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.core.model.SecConst;
 
 /**
  * Class used to generate a java.security.Certificate from a 
@@ -39,6 +40,14 @@ public class CertificateHelper {
 	 * Indicates that the requester want a BASE64 encoded pkcs7 with the complete chain in the CertificateResponse object.
 	 */
 	public static String RESPONSETYPE_PKCS7WITHCHAIN = "PKCS7WITHCHAIN";
+	
+	/**
+	 * Request data types for WS
+	 */
+    public static final int CERT_REQ_TYPE_PKCS10	= SecConst.CERT_REQ_TYPE_PKCS10;
+    public static final int CERT_REQ_TYPE_CRMF		= SecConst.CERT_REQ_TYPE_CRMF;
+    public static final int CERT_REQ_TYPE_SPKAC     = SecConst.CERT_REQ_TYPE_SPKAC;
+
 	
 	/**
 	 * Method that builds a certificate from the data in the WS response.

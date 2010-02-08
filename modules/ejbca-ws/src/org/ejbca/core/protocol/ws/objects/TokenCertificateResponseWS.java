@@ -44,6 +44,9 @@ public class TokenCertificateResponseWS {
 		this.keyStore = keyStore;
 	}
 
+	/**
+	 * WS Constructor
+	 */
 	public TokenCertificateResponseWS() {
 		super();
 	}

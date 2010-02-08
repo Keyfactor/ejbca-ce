@@ -1,79 +1,61 @@
-
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
-
-/**
- * <p>Java class for nameAndId complex type.
+/** Value object holding a Name and Id pair, for example for a CA or a end entity- or certificate profile.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="nameAndId">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="id" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- * 
- * 
+ * @author Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
+ * @version $Id: NameAndId.java 8282 2009-11-09 14:57:21Z jeklund $
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "nameAndId", propOrder = {
-    "id",
-    "name"
-})
-public class NameAndId {
+public class NameAndId implements Serializable{
 
-    protected int id;
-    protected String name;
+	/** Serial version UID, must be changed if class undergoes structural changes */
+	private static final long serialVersionUID = 1734406078345094714L;
+	
+	/** A name, for example the name of a CA */
+	private String name;
+	/** An Id for example the CA-id */
+	private int id;
 
-    /**
-     * Gets the value of the id property.
-     * 
-     */
-    public int getId() {
-        return id;
-    }
+	/**
+	 * WS Constructor
+	 */
+	public NameAndId() {
+		this.id = Integer.MIN_VALUE ;
+		this.name = null;
+	}
+	
+	public NameAndId(String name, int id) {
+		this.name = name;
+		this.id = id;
+	}
 
-    /**
-     * Sets the value of the id property.
-     * 
-     */
-    public void setId(int value) {
-        this.id = value;
-    }
+	public String getName() {
+		return name;
+	}
 
-    /**
-     * Gets the value of the name property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getName() {
-        return name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    /**
-     * Sets the value of the name property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setName(String value) {
-        this.name = value;
-    }
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 }

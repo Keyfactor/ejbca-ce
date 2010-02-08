@@ -508,6 +508,12 @@
 
         </ejb>
 
+         <ejb>
+            <ejb-name>CertificateRequestSession</ejb-name>
+
+            <jndi-name>CertificateRequestSession</jndi-name>
+
+         </ejb>
         <!--
             To add any persistence manager descriptors, put an XML Document named
             sunone-pm-descriptors.xml in your XDoclet merge directory containing the

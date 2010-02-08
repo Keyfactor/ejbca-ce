@@ -21,12 +21,17 @@ import java.security.cert.CertificateException;
 import org.ejbca.util.Base64;
 
 /**
+ * Wrapper class for holding WS keystore data
+ * 
  * @version $Id$
  */
 public class KeyStore extends TokenCertificateResponseWS {
 	
 	private byte[] keystoreData = null;
 	
+	/**
+	 * WS Constructor
+	 */
 	public KeyStore(){
 		
 	}
@@ -41,6 +46,7 @@ public class KeyStore extends TokenCertificateResponseWS {
 
 	
 	/**
+	 * Returns the keystoreData in Base64 format
 	 * @return Returns the keystoreData, in Base64 encoded format.
 	 */
 	public byte[] getKeystoreData() {
@@ -48,6 +54,15 @@ public class KeyStore extends TokenCertificateResponseWS {
 	}
 
 	/**
+	 * Returns the keystoreData in binary format
+	 * @return the keystoreData in binary format
+	 */
+	public byte[] getRawKeystoreData() {
+		return Base64.decode(keystoreData);
+	}
+
+	/**
+	 * Set keystore data in Base64 format
 	 * @param keystoreData The keystoreData to set, in Base64 encoded format.
 	 */
 	public void setKeystoreData(byte[] keystoreData) {

@@ -902,7 +902,6 @@
     			<include name="org/ejbca/core/ejb/ca/auth/*.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ejb/ra/*.java"/>
     			<include name="org/ejbca/core/model/ra/*.java"/>
     			<include name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
     			<include name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
