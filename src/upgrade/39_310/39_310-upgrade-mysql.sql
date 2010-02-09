@@ -1,2 +1,3 @@
 ALTER TABLE LogEntryData CHANGE COLUMN comment logComment VARCHAR(250);
 ALTER TABLE TableProtectData DROP COLUMN keyRef;
+ALTER TABLE CertificateData ADD subjectKeyId VARCHAR(250) BINARY DEFAULT NULL;

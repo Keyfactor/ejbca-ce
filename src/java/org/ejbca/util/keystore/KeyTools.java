@@ -60,14 +60,18 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBMPString;
+import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.jce.provider.JCERSAPublicKey;
 import org.bouncycastle.jce.provider.asymmetric.ec.EC5Util;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
@@ -626,11 +630,20 @@ public class KeyTools {
      */
     public static SubjectKeyIdentifier createSubjectKeyId(PublicKey pubKey) {
         try {
-            ByteArrayInputStream bIn = new ByteArrayInputStream(pubKey.getEncoded());
-            SubjectPublicKeyInfo info = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(bIn).readObject());
-            return new SubjectKeyIdentifier(info);
+            final ASN1Sequence keyASN1Sequence;
+            final Object keyObject = new ASN1InputStream(new ByteArrayInputStream(pubKey.getEncoded())).readObject();
+            if ( keyObject instanceof ASN1Sequence ) {
+                keyASN1Sequence = (ASN1Sequence)keyObject;
+            } else {
+                // PublicKey key that don't encode to a ASN1Sequence. Fix this by creating a BC object instead.
+                final PublicKey altKey = (PublicKey)KeyFactory.getInstance(pubKey.getAlgorithm(),"BC").translateKey(pubKey);
+                keyASN1Sequence = (ASN1Sequence)new ASN1InputStream(new ByteArrayInputStream(altKey.getEncoded())).readObject();
+            }
+            return new SubjectKeyIdentifier(new SubjectPublicKeyInfo(keyASN1Sequence));
         } catch (Exception e) {
-            throw new RuntimeException("error creating key");
+        	final RuntimeException e2 = new RuntimeException("error creating key");
+        	e2.initCause(e);
+        	throw e2;
         }
     } // createSubjectKeyId
 

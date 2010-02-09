@@ -398,6 +398,8 @@
     			<include name="org/ejbca/core/ejb/ca/store/**/*.java"/>
     			<include name="org/ejbca/core/model/ca/store/**/*.java"/>
     			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryData*.java"/>
+    			<include name="org/ejbca/util/keystore/KeyTools.java"/>
+    			<include name="org/ejbca/core/model/util/AlgorithmTools.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/certstore" destdir="${build-temp.dir}/certstore" debug="on" includeantruntime="no"
@@ -623,8 +625,6 @@
     			<include name="org/ejbca/util/IPatternLogger.java"/>
     			<include name="org/ejbca/util/PatternLogger.java"/>
     			<include name="org/ejbca/core/protocol/ocsp/*.java"/>
-    			<include name="org/ejbca/core/model/util/AlgorithmTools.java"/>
-    			<include name="org/ejbca/util/keystore/KeyTools.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/ocsp" destdir="${build-temp.dir}/ocsp" debug="on" includeantruntime="no"
