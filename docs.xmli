@@ -102,10 +102,13 @@
 	    	     classpathref="jdoc.classpath"
 	             windowtitle="EJBCA WS">
 	        <packageset dir="${jdocs.ws.tmp}"/>
+	        <fileset dir="src/java" defaultexcludes="yes">
+	          <include name="**/AlgorithmConstants.java"/>
+	        </fileset>
 	        <fileset dir="${ws.common.dir}" defaultexcludes="yes">
 	          <include name="**/CertificateHelper.java"/>
 	          <include name="**/KeyStoreHelper.java"/>
-	         </fileset>
+	        </fileset>
 	       <link offline="true" href="http://java.sun.com/javase/6/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
 	      <doctitle><![CDATA[<h1>EJBCA WS Support</h1>]]></doctitle>
 	      <bottom><![CDATA[<i>2010 PrimeKey Solutions AB.</i>]]></bottom>
