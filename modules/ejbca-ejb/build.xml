@@ -672,7 +672,7 @@
     			<include name="org/ejbca/core/ejb/keyrecovery/*LocalHome.java"/>
     			<include name="org/ejbca/core/ejb/keyrecovery/*Local.java"/>
     			<include name="org/ejbca/core/ejb/keyrecovery/*DataPK.java"/>
-    			<!-- Undesired dependency on User Administration ? -->
+    			<!-- Undesired dependency on User Administration from KeyRecoveryApprovalRequest ? -->
     			<include name="org/ejbca/core/ejb/ra/IUserAdminSessionLocalHome.java"/>
     			<include name="org/ejbca/core/ejb/ra/IUserAdminSessionLocal.java"/>
     		</fileset>
@@ -680,7 +680,7 @@
     			<include name="org/ejbca/core/ejb/keyrecovery/**/*.java"/>
     			<include name="org/ejbca/core/model/keyrecovery/**/*.java"/>
     			<include name="org/ejbca/core/model/approval/approvalrequests/KeyRecoveryApprovalRequest.java"/>
-    			<!-- Undesired dependency on User Administration ? -->
+    			<!-- Undesired dependency on User Administration from KeyRecoveryApprovalRequest ? -->
     			<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
     			<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
     		</fileset>
