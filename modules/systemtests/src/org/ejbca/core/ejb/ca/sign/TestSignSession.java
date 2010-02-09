@@ -154,6 +154,7 @@ public class TestSignSession extends TestCase {
             "hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ").getBytes());
     private static final Logger log = Logger.getLogger(TestSignSession.class);
     private static KeyPair rsakeys=null;
+    private static KeyPair rsakeys2=null;
     private static KeyPair ecdsakeys=null;
     private static KeyPair ecdsaimplicitlyca=null;
     private static KeyPair dsakeys=null;
@@ -185,7 +186,10 @@ public class TestSignSession extends TestCase {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
         if (rsakeys == null) {
-        	rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        }
+        if (rsakeys2 == null) {
+            rsakeys2 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }
         if (ecdsakeys == null) {
         	ecdsakeys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
@@ -562,8 +566,8 @@ public class TestSignSession extends TestCase {
             log.debug("Reset status to NEW");
         }
 
-        // user that we know exists...
-        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "swede", "foo123", rsakeys.getPublic());
+        // user that we know exists...; use new key so that the check that two don't prevent the creation of the certificate.
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, "swede", "foo123", rsakeys2.getPublic());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"), CertTools.getSubjectDN(cert));

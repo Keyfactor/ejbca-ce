@@ -26,6 +26,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 
@@ -114,6 +115,10 @@ import org.ejbca.util.CertTools;
  * signature="Collection findByUsernameAndStatus(java.lang.String username, int status)"
  * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.username=?1 AND a.status=?2 ORDER BY a.expireDate DESC, a.serialNumber DESC"
  * 
+ * @ejb.finder description="findByIssuerDNAndSubjectKeyId"
+ * signature="Collection findByIssuerDNAndSubjectKeyId(java.lang.String issuerDN, java.lang.String subjectKeyId)"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.issuerDN=?1 AND a.subjectKeyId=?2"
+ *
  * @jboss.method-attributes
  *   pattern = "get*"
  *   read-only = "true"
@@ -400,6 +405,23 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      */
     public abstract void setUpdateTime(long updateTime);
 
+    /**
+     * The ID of the public key of the certificate
+     *
+     * @return subjectKeyId
+     * @ejb.persistence column-name="subjectKeyId"
+     * @ejb.interface-method
+     */
+    public abstract String getSubjectKeyId();
+
+    /**
+     * The ID of the public key of the certificate
+     *
+     * @param subjectKeyId subjectKeyId
+     * @ejb.interface-method
+     */
+    public abstract void setSubjectKeyId(String subjectKeyId);
+
     //
     // Public business methods used to help us manage certificates
     //
@@ -533,6 +555,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(0);
             setCertificateProfileId(0);
+            setSubjectKeyId(new String(Base64.encode(KeyTools.createSubjectKeyId(incert.getPublicKey()).getKeyIdentifier(),false)));
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
             // TODO should throw an exception

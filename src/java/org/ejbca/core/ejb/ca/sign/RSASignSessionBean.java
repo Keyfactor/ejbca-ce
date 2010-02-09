@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -1168,111 +1169,124 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (data.getType() == SecConst.USER_INVALID) {
             	String msg = intres.getLocalizedMessage("signsession.usertypeinvalid");
             	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-            } else {
-                ICertificateStoreSessionLocal certificateStore = storeHome.create();
-                // Retrieve the certificate profile this user should have
-                int certProfileId = data.getCertificateProfileId();
-                CertificateProfile certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
-                // What if certProfile == null?
-                if (certProfile == null) {
-                    certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
-                    certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
-                }
-
-                // Check that CAid is among available CAs
-                boolean caauthorized = false;
-                Iterator iter = certProfile.getAvailableCAs().iterator();
-                while (iter.hasNext()) {
-                    int next = ((Integer) iter.next()).intValue();
-                    if (next == data.getCAId() || next == CertificateProfile.ANYCA) {
-                        caauthorized = true;
-                    }
-                }
-
-                // Sign Session bean is only able to issue certificates with a End Entity or SubCA type certificate profile.
-                if ( (certProfile.getType() != CertificateProfile.TYPE_ENDENTITY) && (certProfile.getType() != CertificateProfile.TYPE_SUBCA) ) {
-                	String msg = intres.getLocalizedMessage("signsession.errorcertprofiletype", new Integer(certProfile.getType()));
-                    getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                    throw new EJBException(msg);
-                }
-
-                if (!caauthorized) {
-                	String msg = intres.getLocalizedMessage("signsession.errorcertprofilenotauthorized", new Integer(data.getCAId()), new Integer(certProfile.getType()));
-                	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                    throw new EJBException(msg);
-                }
-
-                log.debug("Using certificate profile with id " + certProfileId);
-                int keyLength = KeyTools.getKeyLength(pk);
-                if (keyLength == -1) {
-                	String text = intres.getLocalizedMessage("signsession.unsupportedkeytype", pk.getClass().getName()); 
-                    getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
-                    throw new IllegalKeyException(text);
-                }
-                log.debug("Keylength = " + keyLength); 
-                if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
-                        || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
-                	String text = intres.getLocalizedMessage("signsession.illegalkeylength", new Integer(keyLength)); 
-                    getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
-                    throw new IllegalKeyException(text);
-                }
-
-                // Below we have a small loop if it would happen that we generate the same serial number twice
-                int retrycounter = 0;
-                boolean stored = false;
-                Exception storeEx = null; // this will not be null if stored == false after the below passage
-                Certificate cert = null;
-                String cafingerprint = null;
-                String serialNo = "unknown";
-                long updateTime = new Date().getTime();
-                String tag = null;
-                while (!stored && retrycounter < 5) {
-                    cert = ca.generateCertificate(data, requestX509Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
-                    serialNo = CertTools.getSerialNumberAsString(cert);
-                    // Store certificate in the database
-                    Certificate cacert = ca.getCACertificate();
-                    cafingerprint = CertTools.getFingerprintAsString(cacert);
-                    try {
-                        certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), certProfileId, tag, updateTime);                        
-                        stored = true;
-                    } catch (CreateException e) {
-                    	// If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
-                    	// get a CreateException here if we would happen to generate a certificate with the same serialNumber
-                    	// as one already existing certificate.
-                    	log.info("Can not store certificate with serNo ("+serialNo+"), will retry (retrycounter="+retrycounter+") with a new certificate with new serialNo: "+e.getMessage());
-                    	storeEx = e;
-                    }
-                    retrycounter++;
-                }
-                if (!stored) {
-                	log.error("Can not store certificate in database in 5 tries, aborting: ", storeEx);
-                	throw storeEx;
-                }
-                
-                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogConstants.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
-                if (log.isDebugEnabled()) {
-                    debug("Generated certificate with SerialNumber '" + serialNo + "' for user '" + data.getUsername() + "'.");
-                    debug(cert.toString());                	
-                }
-
-                // Store the request data in history table.
-                certificateStore.addCertReqHistoryData(admin,cert,data);
-                // Store certificate in certificate profiles publishers.
-                IPublisherSessionLocal pub = publishHome.create();
-                Collection publishers = certProfile.getPublisherList();
-                if (publishers != null) {
-                    pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), data.getDN(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
-                }
-                
-                // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance 
-                int revreason = getIssuanceRevocationReason(data);
-                if (revreason != RevokedCertInfo.NOT_REVOKED) {
-                	certificateStore.revokeCertificate(admin, cert, publishers, revreason, data.getDN());
-                }                
-
-                trace("<createCertificate(pk, ku, notAfter)");
-                return cert;
+                trace("<createCertificate(pk, ku)");
+                log.error("Invalid user type for user " + data.getUsername());
+                throw new EJBException("Invalid user type for user " + data.getUsername());
             }
+            ICertificateStoreSessionLocal certificateStore = storeHome.create();
+            {
+                final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectKeyId(admin, ca.getSubjectDN(), KeyTools.createSubjectKeyId(pk).getKeyIdentifier());
+                if ( users.size()>0 && !users.contains(data.getUsername()) ) {
+                    Iterator i = users.iterator();
+                    String s = "";
+                    while ( i.hasNext() ) {
+                        s += " '"+i.next()+"'";
+                    }
+                    throw new EJBException("User '"+data.getUsername()+"' is not allowed to use same key as the user(s)"+s+" is/are using.");
+                }
+            }
+            // Retrieve the certificate profile this user should have
+            int certProfileId = data.getCertificateProfileId();
+            CertificateProfile certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
+            // What if certProfile == null?
+            if (certProfile == null) {
+                certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
+                certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
+            }
+
+            // Check that CAid is among available CAs
+            boolean caauthorized = false;
+            Iterator iter = certProfile.getAvailableCAs().iterator();
+            while (iter.hasNext()) {
+                int next = ((Integer) iter.next()).intValue();
+                if (next == data.getCAId() || next == CertificateProfile.ANYCA) {
+                    caauthorized = true;
+                }
+            }
+
+            // Sign Session bean is only able to issue certificates with a End Entity or SubCA type certificate profile.
+            if ( (certProfile.getType() != CertificateProfile.TYPE_ENDENTITY) && (certProfile.getType() != CertificateProfile.TYPE_SUBCA) ) {
+                String msg = intres.getLocalizedMessage("signsession.errorcertprofiletype", new Integer(certProfile.getType()));
+                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                throw new EJBException(msg);
+            }
+
+            if (!caauthorized) {
+                String msg = intres.getLocalizedMessage("signsession.errorcertprofilenotauthorized", new Integer(data.getCAId()), new Integer(certProfile.getType()));
+                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                throw new EJBException(msg);
+            }
+
+            log.debug("Using certificate profile with id " + certProfileId);
+            int keyLength = KeyTools.getKeyLength(pk);
+            if (keyLength == -1) {
+                String text = intres.getLocalizedMessage("signsession.unsupportedkeytype", pk.getClass().getName()); 
+                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
+                throw new IllegalKeyException(text);
+            }
+            log.debug("Keylength = " + keyLength); 
+            if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
+                    || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
+                String text = intres.getLocalizedMessage("signsession.illegalkeylength", new Integer(keyLength)); 
+                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
+                throw new IllegalKeyException(text);
+            }
+
+            // Below we have a small loop if it would happen that we generate the same serial number twice
+            int retrycounter = 0;
+            boolean stored = false;
+            Exception storeEx = null; // this will not be null if stored == false after the below passage
+            Certificate cert = null;
+            String cafingerprint = null;
+            String serialNo = "unknown";
+            long updateTime = new Date().getTime();
+            String tag = null;
+            while (!stored && retrycounter < 5) {
+                cert = ca.generateCertificate(data, requestX509Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
+                serialNo = CertTools.getSerialNumberAsString(cert);
+                // Store certificate in the database
+                Certificate cacert = ca.getCACertificate();
+                cafingerprint = CertTools.getFingerprintAsString(cacert);
+                try {
+                    certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), certProfileId, tag, updateTime);                        
+                    stored = true;
+                } catch (CreateException e) {
+                    // If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
+                    // get a CreateException here if we would happen to generate a certificate with the same serialNumber
+                    // as one already existing certificate.
+                    log.info("Can not store certificate with serNo ("+serialNo+"), will retry (retrycounter="+retrycounter+") with a new certificate with new serialNo: "+e.getMessage());
+                    storeEx = e;
+                }
+                retrycounter++;
+            }
+            if (!stored) {
+                log.error("Can not store certificate in database in 5 tries, aborting: ", storeEx);
+                throw storeEx;
+            }
+
+            getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogConstants.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
+            if (log.isDebugEnabled()) {
+                debug("Generated certificate with SerialNumber '" + serialNo + "' for user '" + data.getUsername() + "'.");
+                debug(cert.toString());                	
+            }
+
+            // Store the request data in history table.
+            certificateStore.addCertReqHistoryData(admin,cert,data);
+            // Store certificate in certificate profiles publishers.
+            IPublisherSessionLocal pub = publishHome.create();
+            Collection publishers = certProfile.getPublisherList();
+            if (publishers != null) {
+                pub.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), data.getDN(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
+            }
+
+            // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance 
+            int revreason = getIssuanceRevocationReason(data);
+            if (revreason != RevokedCertInfo.NOT_REVOKED) {
+                certificateStore.revokeCertificate(admin, cert, publishers, revreason, data.getDN());
+            }                
+
+            trace("<createCertificate(pk, ku, notAfter)");
+            return cert;
         } catch (IllegalKeyException ke) {
             throw ke;
         } catch (CATokenOfflineException ctoe) {
@@ -1284,9 +1298,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error(e);
             throw new EJBException(e);
         }
-        trace("<createCertificate(pk, ku)");
-        log.error("Invalid user type for user " + data.getUsername());
-        throw new EJBException("Invalid user type for user " + data.getUsername());
     } // createCertificate
 
     

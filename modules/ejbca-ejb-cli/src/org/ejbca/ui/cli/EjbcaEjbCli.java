@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,16 +35,22 @@ public class EjbcaEjbCli {
 		// Extract all the commands from the plugins
 		for (Class<?> command : list) {
 			try {
-				String mainCommand = (String) command.getMethod("getMainCommand", new Class[0]).invoke(command.newInstance(), new Object[0]);
-				String subCommand = (String) command.getMethod("getSubCommand", new Class[0]).invoke(command.newInstance(), new Object[0]);
-				String description = (String) command.getMethod("getDescription", new Class[0]).invoke(command.newInstance(), new Object[0]);
+				final Object object = command.newInstance();
+				if ( ! (object instanceof CliCommandPlugin) ) {
+					log.warn("Will not register plugin class " + command.getName() + ": Not an instance of CliCommandPlugin.");
+					continue;
+				}
+				final CliCommandPlugin cliCommandPlugin = (CliCommandPlugin)object;
+				final String mainCommand = cliCommandPlugin.getMainCommand();
+				final String subCommand = cliCommandPlugin.getSubCommand();
+				final String description = cliCommandPlugin.getDescription();
 				if (/*mainCommand == null || mainCommand.trim().length()==0 ||*/ subCommand == null || subCommand.trim().length()==0 ||
 						description == null || description.trim().length()==0) {
 					log.warn("Will not register plugin class " + command.getName() + ": Required getter returned an empty String.");
 					continue;
 				}
 				//log.debug(" main: " + mainCommand + " sub: " + subCommand + " description: " + description);
-				commandList.add(new CliCommand(mainCommand, subCommand, description, command));
+				commandList.add(new CliCommand(mainCommand, subCommand, description, (Class<CliCommandPlugin>)command));
 				if (!mainCommands.contains(mainCommand)) {
 					mainCommands.add(mainCommand);
 				}
@@ -91,10 +95,9 @@ public class EjbcaEjbCli {
 				showSubCommands(subTargetsOnly);
 			}
 			return;
-		} else {
-			log.info("Available sub commands for '" + args[0] + "':");
-			showSubCommands(subTargets);
 		}
+		log.info("Available sub commands for '" + args[0] + "':");
+		showSubCommands(subTargets);
 	}
 	
 	private static void showSubCommands(List<CliCommand> list) {
@@ -107,25 +110,12 @@ public class EjbcaEjbCli {
 	/**
 	 * 
 	 */
-	private static void executeCommand(Class<?> commandClass, String[] args, boolean shiftArgs) {
+	private static void executeCommand(Class<CliCommandPlugin> commandClass, String[] args, boolean shiftArgs) {
 		log.debug("Executing " + commandClass.getName());
 		try {
-			Class[] parameterTypes = new Class[1];
-			parameterTypes[0] = String[].class;
-			Method method = commandClass.getMethod("execute", parameterTypes);
-			CliCommandPlugin instance = (CliCommandPlugin) commandClass.newInstance();
-			if (shiftArgs) {
-				args = shiftStringArray(args);
-			}
-			method.invoke(instance, (Object)args);
+			final CliCommandPlugin instance = commandClass.newInstance();
+			instance.execute(shiftArgs ? shiftStringArray(args) :args);
 			return;
-		} catch (InvocationTargetException e) {
-			Throwable targetException = e.getTargetException();
-			if (targetException instanceof IllegalAdminCommandException) {
-				log.error(targetException.getMessage(), targetException);
-			} else if (targetException instanceof ErrorAdminCommandException) {
-				log.error("An error ocurred", targetException);
-			}
 		} catch (Exception e) {
 			log.error("Could not run execute method for class " + commandClass, e);
 		}
@@ -134,7 +124,7 @@ public class EjbcaEjbCli {
 	/**
 	 * Remove the first entry in the String array
 	 */
-	public static String[] shiftStringArray(String[] input) {
+	private static String[] shiftStringArray(String[] input) {
 		String[] output = new String[input.length-1];
 		for (int i=1 ;i<input.length; i++) {
 			output[i-1] = input[i];

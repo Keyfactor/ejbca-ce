@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -67,6 +68,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
@@ -330,8 +332,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         Certificate cert = incert;
         CertificateDataPK pk = new CertificateDataPK();
         pk.fingerprint = CertTools.getFingerprintAsString(cert);            
-        CertificateDataLocal data1 = null;
-        data1 = certHome.create(cert);
+        final CertificateDataLocal data1 = certHome.create(cert);
         data1.setUsername(username);
         data1.setCaFingerprint(cafp);
         data1.setStatus(status);
@@ -498,6 +499,39 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
     } //findCertificatesBySubjectAndIssuer
 
+    /**
+     * @param admin
+     * @param issuerDN
+     * @param subjectKeyId
+     * @return set of users with certificates with specified key issued by specified issuer.
+     * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method
+     */
+    public Set findUsernamesByIssuerDNAndSubjectKeyId(Admin admin, String issuerDN, byte subjectKeyId[]) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
+        }
+        // First make a DN in our well-known format
+        final String transformedIssuerDN = StringTools.strip(CertTools.stringToBCDNString(issuerDN));
+        final String sSubjectKeyId = new String(Base64.encode(subjectKeyId, false));
+        debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"+sSubjectKeyId+"'.");
+        try {
+            final Collection coll = this.certHome.findByIssuerDNAndSubjectKeyId(transformedIssuerDN, sSubjectKeyId);
+            final Set ret = new HashSet();
+            if (coll != null) {
+                Iterator iter = coll.iterator();
+                while (iter.hasNext()) {
+                    ret.add(((CertificateDataLocal) iter.next()).getUsername());
+                }
+            }
+            if (log.isTraceEnabled()) {
+                log.trace("<findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
+            }
+            return ret;
+        } catch (javax.ejb.FinderException fe) {
+            throw new EJBException(fe);
+        }
+    }
     /**
      * Lists certificates for a given subject.
      *

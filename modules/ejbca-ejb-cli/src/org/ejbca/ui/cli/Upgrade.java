@@ -13,6 +13,8 @@
  
 package org.ejbca.ui.cli;
 
+import java.rmi.RemoteException;
+
 /**
  * Implements call to the upgrade function
  *
@@ -25,40 +27,29 @@ public class Upgrade extends BaseCommand {
 	public String getDescription() { return "(Use 'ant upgrade' instead of running this directly)"; }
 
 	public void execute(String[] args) throws ErrorAdminCommandException {
+		if ( args.length <3 ) {
+			getLogger().error("Insufficient information to perform upgrade.");
+			return;
+		}
+		final String database = args[1];
+		final String upgradeFromVersion = args[2];
+		final boolean isPost = args.length>3;
+		getLogger().debug(args[0]+" ejbcaDB='"+database+"' ejbcaUpgradeFromVersion='"+upgradeFromVersion+"' isPost='"+isPost+"'");
+		// Check pre-requisites
+		if (!appServerRunning()) {
+			getLogger().error("The application server must be running.");
+			return;
+		}
+		// Upgrade the database
 		try {
-			boolean ret = false;
-			String database = System.getProperty("ejbcaDB");
-			getLogger().debug("ejbcaDB="+database);
-			String upgradeFromVersion = System.getProperty("ejbcaUpgradeFromVersion");
-			getLogger().debug("ejbcaUpgradeFromVersion="+upgradeFromVersion);
-			if (database == null || upgradeFromVersion == null) {
-				getLogger().error("Insufficient information to perform upgrade.");
-				return;
-			}
-			// Check pre-requisites
-			if (appServerRunning()) {
-				// Upgrade the database
-				try {
-					args = new String[2];	// Ignore arguments and use system properties instead
-					args[0] = database;
-					args[1] = upgradeFromVersion;
-					ret = getUpgradeSession().upgrade(getAdmin(), args);
-				} catch (Exception e) {
-					getLogger().error("Can't upgrade: ", e);
-					ret = false;
-				}
-				if (!ret) {
-					getLogger().error("Upgrade not performed, see server log for details.");
-				} else {
-					getLogger().info("Upgrade completed.");   
-				}
+			final boolean ret = getUpgradeSession().upgrade(getAdmin(), database, upgradeFromVersion, isPost);
+			if (ret) {
+				getLogger().info("Upgrade completed.");   
 			} else {
-				getLogger().error("The application server must be running.");
-				ret = false;
+				getLogger().error("Upgrade not performed, see server log for details.");
 			}
-		} catch (Exception e) {
-			getLogger().error("Error doing upgrade: ", e);
-			System.exit(-1);
+		} catch (RemoteException e) {
+			getLogger().error("Can't upgrade: ", e);
 		}
 	}
 }

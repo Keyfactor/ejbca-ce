@@ -18,12 +18,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -50,8 +56,11 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
+import org.ejbca.util.keystore.KeyTools;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
@@ -150,68 +159,67 @@ import org.ejbca.util.SqlExecutor;
 public class UpgradeSessionBean extends BaseSessionBean {
 
     /** The local interface of the CA Admin session bean */
-    private ICAAdminSessionLocal caadminsession = null;
+    private ICAAdminSessionLocal caadminsession;
 	private IApprovalSessionLocal approvalSession;
 	private IUserAdminSessionLocal userAdminSession;
 	private ICertificateStoreSessionLocal certificateStoreSession;
-    private Admin administrator = null;
     
     /**
      * Default create for SessionBean without any creation Arguments.
      *
      * @throws CreateException if bean instance can't be created
      */
-    public void ejbCreate() throws CreateException { }
+    public void ejbCreate() throws CreateException {  /* nothing to create */ }
 
     private IApprovalSessionLocal getApprovalSession() {
-    	if (approvalSession == null) {
+    	if (this.approvalSession == null) {
     		try {
     			IApprovalSessionLocalHome home = (IApprovalSessionLocalHome)getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
-    			approvalSession = home.create();
+    			this.approvalSession = home.create();
     		} catch(Exception e) {
     			throw new EJBException(e);
     		}
     	}
-    	return approvalSession;
+    	return this.approvalSession;
     }
 
     private IUserAdminSessionLocal getUserAdminSession() {
-		if (userAdminSession == null) {
+		if (this.userAdminSession == null) {
     		try {
     			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome)getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-    			userAdminSession = home.create();
+    			this.userAdminSession = home.create();
     		} catch(Exception e) {
     			throw new EJBException(e);
     		}
     	}
-    	return userAdminSession;
+    	return this.userAdminSession;
     }
 
     private ICertificateStoreSessionLocal getCertificateStoreSession() {
-		if (certificateStoreSession == null) {
+		if (this.certificateStoreSession == null) {
     		try {
     			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome)getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-    			certificateStoreSession = home.create();
+    			this.certificateStoreSession = home.create();
     		} catch(Exception e) {
     			throw new EJBException(e);
     		}
     	}
-    	return certificateStoreSession;
+    	return this.certificateStoreSession;
     }
 
     /** 
      * Gets connection to ca admin session bean
      */
     private ICAAdminSessionLocal getCaAdminSession() {
-        if(caadminsession == null){
+        if(this.caadminsession == null){
           try{
               ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome)getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-              caadminsession = caadminsessionhome.create();
+              this.caadminsession = caadminsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);
           }
         }
-        return caadminsession;
+        return this.caadminsession;
     } //getCaAdminSession
 
 
@@ -222,25 +230,32 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @param admin
      * @return true or false if upgrade was done or not
      */
-    public boolean upgrade(Admin admin, String[] args) {
-    	if (log.isTraceEnabled()) {
-            log.trace(">upgrade("+admin.toString()+")");
+    public boolean upgrade(Admin admin, String dbtype, String sOldVersion, boolean isPost) {
+    	if (this.log.isTraceEnabled()) {
+            this.log.trace(">upgrade("+admin.toString()+")");
     	}
-        this.administrator = admin;
-        
-        String dbtype = null;
-        if (args.length > 0) {
-            dbtype = args[0];
-            debug("Database type="+dbtype);
+    	try {
+    		debug("Upgrading from version="+sOldVersion);
+    		final int oldVersion; {
+    			final String[] oldVersionArray = sOldVersion.split("\\.");	// Split around the '.'-char
+    			oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
+    		}
+    		if ( isPost ) {
+    			return postUpgrade(admin, dbtype, oldVersion);
+    		}
+    		return upgrade(admin, dbtype, oldVersion);
+    	} finally {
+    		this.log.trace("<upgrade()");
+    	}
+    }
+    private boolean postUpgrade(Admin admin, String dbtype, int oldVersion) {
+    	// Upgrade database change between ejbca 3.9.x and 3.10.x if needed
+        if (oldVersion <= 309) {
+        	return postMigrateDatabase310(dbtype);
         }
-
-        int oldVersion = Integer.MAX_VALUE;
-        if (args.length > 1) {
-            debug("Upgrading from version="+args[1]);
-        	String[] oldVersionArray = args[1].split("\\x2E");	// Split around the '.'-char
-        	oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
-        }
-
+    	return false;
+    }
+    private boolean upgrade(Admin admin, String dbtype, int oldVersion) {
         // Upgrade database change between ejbca 3.1.x and 3.2.x if needed
         if (oldVersion <= 301) {
         	error("Upgrade from EJBCA 3.1.x is no longer supported in EJBCA 3.9.x and later.");
@@ -261,7 +276,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         }
     	// Upgrade database change between ejbca 3.7.x and 3.8.x if needed
         if (oldVersion <= 307) {
-        	if (!migrateDatabase38(dbtype)) {
+        	if (!migrateDatabase38(dbtype, admin)) {
         		return false;
         	}
         }
@@ -277,14 +292,13 @@ public class UpgradeSessionBean extends BaseSessionBean {
         		return false;
         	}
         }
-        log.trace("<upgrade()");
         return true;
     }
 
 
     /** Called from other migrate methods, don't call this directly, call from an interface-method
      */
-	public boolean migradeDatabase(String resource) {
+	private boolean migradeDatabase(String resource) {
         // Fetch the resource file with SQL to modify the database tables
         InputStream in = this.getClass().getResourceAsStream(resource);
         if (in == null) {
@@ -313,23 +327,13 @@ public class UpgradeSessionBean extends BaseSessionBean {
         return true;
 	}
 
-    /** 
-     * @ejb.interface-method
-     * @jboss.method-attributes transaction-timeout="3600"
-     * 
-     */
-	public boolean migrateDatabase33(String dbtype) {
+	private boolean migrateDatabase33(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.3.x to ejbca 3.4.x");
 		boolean ret = migradeDatabase("/33_34/33_34-upgrade-"+dbtype+".sql");
         error("(this is not an error) Finished migrating database.");
         return ret;
 	}
-    /** 
-     * @ejb.interface-method
-     * @jboss.method-attributes transaction-timeout="3600"
-     * 
-     */
-	public boolean migrateDatabase36(String dbtype) {
+	private boolean migrateDatabase36(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.5.x to ejbca 3.6.x");
 		boolean ret = migradeDatabase("/35_36/35_36-upgrade-"+dbtype+".sql");
         error("(this is not an error) Finished migrating database.");
@@ -339,11 +343,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * This upgrade will move the CA Id from the admin groups, to each administrator
      * Admingroups with similar names will be renamed with the CA Id as postfix to avoid collisions
      * Also removes the CAId from access rules primary key (since only group name is neccesary now) 
-     * 
-     * @ejb.interface-method
-     * @jboss.method-attributes transaction-timeout="3600"
      */
-	public boolean migrateDatabase38(String dbtype) {
+	private boolean migrateDatabase38(String dbtype, Admin administrator) {
 		error("(this is not an error) Starting upgrade from ejbca 3.7.x to ejbca 3.8.x");
 		boolean ret = migradeDatabase("/37_38/37_38-upgrade-"+dbtype+".sql");
 		
@@ -364,9 +365,9 @@ public class UpgradeSessionBean extends BaseSessionBean {
 							adminGroupData.removeAdminEntities(adminGroupData.getAdminEntityObjects());
 							adminGroupData.remove();
 						} catch (EJBException e) {
-							log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
+							this.log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
 						} catch (RemoveException e) {
-							log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
+							this.log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
 						}
 					} else {
 						// Conflicting name. We need to change it.
@@ -413,11 +414,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         return ret;
 	}
 
-    /** 
-     * @ejb.interface-method
-     * @jboss.method-attributes transaction-timeout="3600"
-     */
-	public boolean migrateDatabase39(String dbtype) {
+	private boolean migrateDatabase39(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.8.x to ejbca 3.9.x");
 		boolean ret = migradeDatabase("/38_39/38_39-upgrade-"+dbtype+".sql");
         error("(this is not an error) Finished migrating database.");
@@ -427,11 +424,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
     /**
      * We need to update all pending ApprovalsRequests since the Admin objects' now have username and email.
      * We need to update all pending Approvals since the it now stores an Admin object instead of pure information on the admin certificate.
-     *  
-     * @ejb.interface-method
-     * @jboss.method-attributes transaction-timeout="3600"
      */
-	public boolean migrateDatabase310(String dbtype) {
+	private boolean migrateDatabase310(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.9.x to ejbca 3.10.x");
 		boolean ret = migradeDatabase("/39_310/39_310-upgrade-"+dbtype+".sql");
 		if (ret) {
@@ -476,5 +470,53 @@ public class UpgradeSessionBean extends BaseSessionBean {
 		}
         error("(this is not an error) Finished migrating database.");
         return ret;
+	}
+	private boolean postMigrateDatabase310(String dbtype) {
+		error("(this is not an error) Starting post upgrade from ejbca 3.9.x to ejbca 3.10.x");
+		final String lKeyID = "subjectKeyId";
+		final String lCert = "base64Cert";
+		final String lFingerPrint = "fingerprint";
+		final Connection connection = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+		try {
+			final Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			final ResultSet srs = stmt.executeQuery("select "+lFingerPrint+","+lKeyID+","+lCert+" from CertificateData where "+lKeyID+" IS NULL");
+			final int iKeyID; // it should be faster to use column number instead of column label.
+			final int iCert;
+			{
+				final ResultSetMetaData rsmd= srs.getMetaData();
+				final Map map = new HashMap();
+				for (int i=1; i<=rsmd.getColumnCount(); i++) {
+					map.put(rsmd.getColumnLabel(i), new Integer(i));
+				}
+				iKeyID=((Integer)map.get(lKeyID)).intValue();
+				iCert=((Integer)map.get(lCert)).intValue();
+			}
+			while ( srs.next() ) {
+				final Certificate cert;
+				try {
+					cert = CertTools.getCertfromByteArray(Base64.decode(srs.getString(iCert).getBytes()));
+				} catch (CertificateException e) {
+					this.log.error("Certificate could not be parsed.", e);
+					continue;
+				}
+				srs.updateString(iKeyID, new String(Base64.encode(KeyTools.createSubjectKeyId(cert.getPublicKey()).getKeyIdentifier(), false)));
+				srs.updateRow();
+			}
+			srs.close();
+			stmt.close();
+			error("(this is not an error) Finished post upgrade.");
+			return true;
+		} catch (SQLException e) {
+			error("post upgrade failed. See exception:", e);
+		} finally {
+			if ( connection!=null ) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					// just ignore. other exception has been thrown before for the problem
+				}
+			}
+		}
+		return false;
 	}
 }
