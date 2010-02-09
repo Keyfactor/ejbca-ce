@@ -512,16 +512,10 @@
     			<include name="org/ejbca/core/ejb/ca/store/CRLDataPK.java"/>
     			<include name="org/ejbca/core/ejb/ca/crl/ICreateCRLSessionLocalHome.java"/>
     			<include name="org/ejbca/core/ejb/ca/crl/ICreateCRLSessionLocal.java"/>
-    			<!-- CA Admin dependency (not ideal, but ok for now..)-->
-    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/ca/caadmin/ICAAdminSessionLocal.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/core/ejb/ca/crl/*.java"/>
     			<include name="org/ejbca/core/model/ca/crl/*.java"/>
-    			<!-- CA Admin dependency (not ideal, but ok for now..)-->
-    			<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
-    			<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/crl" destdir="${build-temp.dir}/crl" debug="on" includeantruntime="no"
@@ -937,6 +931,7 @@
         		<pathelement location="${build-temp.dir}/crl"/>
         		<pathelement location="${build-temp.dir}/certstore"/>
         		<pathelement location="${build-temp.dir}/useradmin"/>
+        		<pathelement location="${build-temp.dir}/caadmin"/>
         	</classpath>
         </javac>
     	<!-- Upgrade component -->

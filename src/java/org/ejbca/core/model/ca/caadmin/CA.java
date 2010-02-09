@@ -374,6 +374,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
       
 	  this.certificatechain = new ArrayList();
 	  this.certificatechain.addAll(certificatechain);
+	  this.cainfo.setCertificateChain(certificatechain);
 	}
 
     

@@ -17,6 +17,7 @@ import java.util.Collection;
 import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
@@ -54,7 +55,7 @@ public class CRLUpdateWorker extends BaseWorker {
 			try {
 				running = true;
 			    long polltime = getNextInterval();
-			    ICreateCRLSessionLocal session = getCreateCRLSession();
+			    ICAAdminSessionLocal session = getCAAdminSession();
 			    if (session != null) {
 			    	// Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
 			    	// selecting CAs did not exist, no CA = Any CA.

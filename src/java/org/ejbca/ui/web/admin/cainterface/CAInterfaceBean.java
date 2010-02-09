@@ -51,6 +51,8 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.model.ca.caadmin.CA;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -246,13 +248,25 @@ public class CAInterfaceBean implements java.io.Serializable {
       
     public void createCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException  {      
       InitialContext jndicontext = new InitialContext();
+      CA ca;
+		try {
+			ca = caadminsession.getCA(administrator, issuerdn.hashCode());
+		} catch (CADoesntExistsException e) {
+			throw new RuntimeException(e);
+		}
       ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
-      home.create().run(administrator, issuerdn);
+      home.create().run(administrator, ca);
     }
     public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
     	InitialContext jndicontext = new InitialContext();
+        CA ca;
+		try {
+			ca = caadminsession.getCA(administrator, issuerdn.hashCode());
+		} catch (CADoesntExistsException e) {
+			throw new RuntimeException(e);
+		}
     	ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
-    	home.create().runDeltaCRL(administrator, issuerdn, -1, -1);
+    	home.create().runDeltaCRL(administrator, ca, -1, -1);
     }
 
     public int getLastCRLNumber(String  issuerdn) {

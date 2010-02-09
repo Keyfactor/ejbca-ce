@@ -29,7 +29,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -50,7 +50,7 @@ public class TestDeltaCRL extends TestCase {
     private static final Logger log = Logger.getLogger(TestDeltaCRL.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     private static int caid;
-    private static String cadn;
+    private static CA ca;
     private static KeyPair keys;
     
     private static final String USERNAME = "foo";
@@ -70,10 +70,9 @@ public class TestDeltaCRL extends TestCase {
     protected void setUp() throws Exception {
         log.trace(">setUp()");
         // Use Test CA created before
-        CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
-        assertNotNull("CA TEST not active. You must run TestCAs before this test", cainfo);
-        cadn = cainfo.getSubjectDN();
-        caid = cainfo.getCAId();
+        caid = TestTools.getTestCAId();
+        ca = TestTools.getCAAdminSession().getCA(admin, caid);
+        assertNotNull("CA TEST not active. You must run TestCAs before this test", ca.getSubjectDN());
         log.trace("<setUp()");
     }
 
@@ -81,34 +80,34 @@ public class TestDeltaCRL extends TestCase {
 
     public void test01CreateNewDeltaCRL() throws Exception {
         log.trace(">test01CreateNewCRL()");
-        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, ca, -1, -1);
         log.trace("<test01CreateNewCRL()");
     }
 
     public void test02LastDeltaCRL() throws Exception {
         log.trace(">test02LastCRL()");
         // Get number of last Delta CRL
-        int number = TestTools.getCreateCRLSession().getLastCRLNumber(admin, cadn, true);
+        int number = TestTools.getCreateCRLSession().getLastCRLNumber(admin, ca.getSubjectDN(), true);
         log.debug("Last CRLNumber = " + number);
-        byte[] crl = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, true);
+        byte[] crl = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         assertEquals(number, num.intValue());
         // Create a new CRL again to see that the number increases
-        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
-        int number1 = TestTools.getCreateCRLSession().getLastCRLNumber(admin, cadn, true);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, ca, -1, -1);
+        int number1 = TestTools.getCreateCRLSession().getLastCRLNumber(admin, ca.getSubjectDN(), true);
         assertEquals(number+1, number1);
-        byte[] crl1 = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, true);
+        byte[] crl1 = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), true);
         X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
         BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
         assertEquals(number+1, num1.intValue());
         // Now create a normal CRL and a deltaCRL again. CRLNUmber should now be increased by two
-        TestTools.getCreateCRLSession().run(admin, cadn);
-        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
-        int number2 = TestTools.getCreateCRLSession().getLastCRLNumber(admin, cadn, true);
+        TestTools.getCreateCRLSession().run(admin, ca);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, ca, -1, -1);
+        int number2 = TestTools.getCreateCRLSession().getLastCRLNumber(admin, ca.getSubjectDN(), true);
         assertEquals(number1+2, number2);
-        byte[] crl2 = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, true);
+        byte[] crl2 = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), true);
         X509CRL x509crl2 = CertTools.getCRLfromByteArray(crl2);
         BigInteger num2 = CrlExtensions.getCrlNumber(x509crl2);
         assertEquals(number1+2, num2.intValue());
@@ -119,12 +118,12 @@ public class TestDeltaCRL extends TestCase {
         // check revoked certificates
         log.trace(">test03CheckNumberofRevokedCerts()");
 
-        byte[] crl = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, false);
+        byte[] crl = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), false);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         // Get number of last CRL
-        Collection revfp = TestTools.getCertificateStoreSession().listRevokedCertInfo(admin, cadn, x509crl.getThisUpdate().getTime());
+        Collection revfp = TestTools.getCertificateStoreSession().listRevokedCertInfo(admin, ca.getSubjectDN(), x509crl.getThisUpdate().getTime());
         log.debug("Number of revoked certificates=" + revfp.size());
-        crl = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, true);
+        crl = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
 
         x509crl = CertTools.getCRLfromByteArray(crl);
@@ -142,7 +141,7 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new CRL again...
-        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
+        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate is present in a new CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -161,9 +160,9 @@ public class TestDeltaCRL extends TestCase {
         X509Certificate cert = createUserAndCert();
         
         // Create a new CRL again...
-        TestTools.getCreateCRLSession().run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, ca);
         // Check that our newly signed certificate is not present in a new CRL
-        byte[] crl = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, false);
+        byte[] crl = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         Set revset = x509crl.getRevokedCertificates();
@@ -179,7 +178,7 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new delta CRL again...
-        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
+        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate IS present in a new Delta CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -200,9 +199,9 @@ public class TestDeltaCRL extends TestCase {
         // Unrevoke the certificate that we just revoked
         TestTools.getCertificateStoreSession().revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED, null);
         // Create a new Delta CRL again...
-        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new CRL.
-        crl = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, true);
+        crl = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -224,7 +223,7 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new delta CRL again...
-        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
+        crl = TestTools.getCreateCRLSession().runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate IS present in a new Delta CRL
         //crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -247,9 +246,9 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new Full CRL 
-        TestTools.getCreateCRLSession().run(admin, cadn);
+        TestTools.getCreateCRLSession().run(admin, ca);
         // Check that our newly signed certificate IS present in a new Full CRL
-        crl = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, false);
+        crl = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -271,9 +270,9 @@ public class TestDeltaCRL extends TestCase {
         // Sleep 1 second so we don't issue the next CRL at the exact same time as the revocation 
         Thread.sleep(1000);
         // Create a new Delta CRL again...
-        TestTools.getCreateCRLSession().runDeltaCRL(admin, cadn, -1, -1);
+        TestTools.getCreateCRLSession().runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new Delta CRL.
-        crl = TestTools.getCreateCRLSession().getLastCRL(admin, cadn, true);
+        crl = TestTools.getCreateCRLSession().getLastCRL(admin, ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
