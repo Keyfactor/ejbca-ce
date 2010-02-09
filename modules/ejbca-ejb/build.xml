@@ -788,68 +788,6 @@
         		<pathelement location="${build-temp.dir}/logging"/>
         	</classpath>
         </javac>
-    	<!-- Protected Log component -->
-    	<echo message=" ** Validating component: Protected Log (deprecated unwanted dependency from Logging) **"/>
-    	<mkdir dir="${src-temp.dir}/protlog"/>
-    	<mkdir dir="${build-temp.dir}/protlog"/>
-    	<copy todir="${src-temp.dir}/protlog">
-    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
-    			<include name="org/ejbca/core/ejb/log/**/ProtectedLog*.java"/>
-    			<include name="org/ejbca/core/ejb/log/**/IProtectedLog*.java"/>
-    			<!-- Unwanted dependency on Services (drags User Admin into it too..) -->
-    			<include name="org/ejbca/core/ejb/services/IServiceSessionLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/services/IServiceSessionLocal.java"/>
-    			<include name="org/ejbca/core/ejb/ra/IUserAdminSessionLocalHome.java"/>
-    			<include name="org/ejbca/core/ejb/ra/IUserAdminSessionLocal.java"/>
-    		</fileset>
-    		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/config/ProtectedLogConfiguration.java"/>
-    			<include name="org/ejbca/core/ejb/log/**/ProtectedLog*.java"/>
-    			<include name="org/ejbca/core/model/log/**/ProtectedLog*.java"/>
-    			<include name="org/ejbca/core/model/log/**/IProtectedLog*.java"/>
-    			<include name="org/ejbca/util/ManualUpdateCache.java"/>
-    			<include name="org/ejbca/util/TCPTool.java"/>
-    			<!-- Unwanted dependency on Services (drags User Admin into it too..) -->
-    			<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
-    			<include name="org/ejbca/core/model/services/workers/ProtectedLogVerificationWorker.java"/>
-    			<include name="org/ejbca/core/model/services/workers/ProtectedLogExportWorker.java"/>
-    			<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
-    			<include name="org/ejbca/core/model/services/ActionException.java"/>
-    			<include name="org/ejbca/core/model/services/workers/EmailSendingWorkerConstants.java"/>
-    			<include name="org/ejbca/core/model/services/actions/MailAction.java"/>
-    			<include name="org/ejbca/core/model/services/actions/MailActionInfo.java"/>
-    			<include name="org/ejbca/core/model/services/IWorker.java"/>
-    			<include name="org/ejbca/core/model/services/IAction.java"/>
-    			<include name="org/ejbca/core/model/services/IInterval.java"/>
-    			<include name="org/ejbca/core/model/services/ActionInfo.java"/>
-    			<include name="org/ejbca/core/model/services/BaseAction.java"/>
-    			<include name="org/ejbca/core/model/services/BaseInterval.java"/>
-    			<include name="org/ejbca/core/model/services/BaseWorker.java"/>
-    			<include name="org/ejbca/core/model/services/ServiceExecutionFailedException.java"/>
-    			<include name="org/ejbca/core/model/services/BaseServiceComponent.java"/>
-    			<include name="org/ejbca/core/model/services/intervals/DummyInterval.java"/>
-    			<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
-    			<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
-    		</fileset>
-    	</copy>
-        <javac srcdir="${src-temp.dir}/protlog" destdir="${build-temp.dir}/protlog" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
-        	<classpath>
-        		<path refid="compile.classpath"/>
-        		<pathelement location="${build-temp.dir}/common"/>
-        		<pathelement location="${build-temp.dir}/admins"/>
-        		<pathelement location="${build-temp.dir}/caadmin"/>
-        		<pathelement location="${build-temp.dir}/catoken"/>
-        		<pathelement location="${build-temp.dir}/signing"/>
-        		<pathelement location="${build-temp.dir}/ca"/>
-        		<pathelement location="${build-temp.dir}/logging"/>
-        		<pathelement location="${build-temp.dir}/certstore"/>
-        		<pathelement location="${build-temp.dir}/protect"/>
-        		<pathelement location="${build-temp.dir}/notification"/>
-        		<pathelement location="${build-temp.dir}/authorization"/>
-        		<pathelement location="${build-temp.dir}/approval"/>
-        	</classpath>
-        </javac>
     	<!-- User Administration and Authentication component -->
     	<!-- The authentication dependecy comes from the use of ApprovalExecutorUtil.. it might not be the best way to do this..
     		 The RA interface dependecy is from the way we present information about an approval. It should probably be parse
@@ -1019,6 +957,46 @@
 				<pathelement location="${build-temp.dir}/catoken"/>
 				<pathelement location="${build-temp.dir}/signing"/>
 				<pathelement location="${build-temp.dir}/authorization"/>
+        	</classpath>
+        </javac>
+    	<!-- Protected Log component -->
+    	<echo message=" ** Validating component: Protected Log (deprecated unwanted dependency from Logging) **"/>
+    	<mkdir dir="${src-temp.dir}/protlog"/>
+    	<mkdir dir="${build-temp.dir}/protlog"/>
+    	<copy todir="${src-temp.dir}/protlog">
+    		<fileset dir="${ejbca.home}/tmp/bin/gensrc">
+    			<include name="org/ejbca/core/ejb/log/**/ProtectedLog*.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/IProtectedLog*.java"/>
+    		</fileset>
+    		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/config/ProtectedLogConfiguration.java"/>
+    			<include name="org/ejbca/core/ejb/log/**/ProtectedLog*.java"/>
+    			<include name="org/ejbca/core/model/log/**/ProtectedLog*.java"/>
+    			<include name="org/ejbca/core/model/log/**/IProtectedLog*.java"/>
+    			<include name="org/ejbca/util/ManualUpdateCache.java"/>
+    			<include name="org/ejbca/util/TCPTool.java"/>
+    			<include name="org/ejbca/core/model/services/workers/ProtectedLogVerificationWorker.java"/>
+    			<include name="org/ejbca/core/model/services/workers/ProtectedLogExportWorker.java"/>
+    		</fileset>
+    	</copy>
+        <javac srcdir="${src-temp.dir}/protlog" destdir="${build-temp.dir}/protlog" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        		<pathelement location="${build-temp.dir}/common"/>
+        		<pathelement location="${build-temp.dir}/admins"/>
+        		<pathelement location="${build-temp.dir}/caadmin"/>
+        		<pathelement location="${build-temp.dir}/catoken"/>
+        		<pathelement location="${build-temp.dir}/signing"/>
+        		<pathelement location="${build-temp.dir}/ca"/>
+        		<pathelement location="${build-temp.dir}/logging"/>
+        		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/protect"/>
+        		<pathelement location="${build-temp.dir}/notification"/>
+        		<pathelement location="${build-temp.dir}/authorization"/>
+        		<pathelement location="${build-temp.dir}/approval"/>
+        		<pathelement location="${build-temp.dir}/useradmin"/>
+        		<pathelement location="${build-temp.dir}/services"/>
         	</classpath>
         </javac>
     </target>
