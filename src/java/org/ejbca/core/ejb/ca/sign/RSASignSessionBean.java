@@ -26,7 +26,6 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,7 +76,6 @@ import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -1050,80 +1048,6 @@ public class RSASignSessionBean extends BaseSessionBean {
 		debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
 		return ca;
 	}
-
-    /**
-     * Method that publishes the given CA certificate chain to the list of publishers.
-     * Is mainly used by CAAdminSessionBean when CA is created.
-     *
-     * @param admin            Information about the administrator or admin preforming the event.
-     * @param certificatechain certchain of certificate to publish
-     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
-     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
-     * @ejb.interface-method view-type="both"
-     */
-    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, String caDataDN) {
-        try {
-            ICertificateStoreSessionLocal certificateStore = storeHome.create();
-
-            Object[] certs = certificatechain.toArray();
-            for (int i = 0; i < certs.length; i++) {
-				Certificate cert = (Certificate)certs[i];
-                String fingerprint = CertTools.getFingerprintAsString(cert);
-                // CA fingerprint, figure out the value if this is not a root CA
-                String cafp = fingerprint;
-                // Calculate the certtype
-                boolean isSelfSigned = CertTools.isSelfSigned(cert);
-                int type = SecConst.CERTTYPE_ENDENTITY;
-                if (CertTools.isCA(cert))  {
-                	// this is a CA
-                	if (isSelfSigned) {
-                		type = SecConst.CERTTYPE_ROOTCA;
-                	} else {
-                		type = SecConst.CERTTYPE_SUBCA;
-                		// If not a root CA, the next certificate in the chain should be the CA of this CA
-                		if ((i+1) < certs.length) {
-                			Certificate cacert = (Certificate)certs[i+1]; 
-                			cafp = CertTools.getFingerprintAsString(cacert);
-                		}
-                	}                		
-                } else if (isSelfSigned) {
-                	// If we don't have basic constraints, but is self signed, we are still a CA, just a stupid CA
-                	type = SecConst.CERTTYPE_ROOTCA;
-                } else {
-            		// If and end entity, the next certificate in the chain should be the CA of this end entity
-            		if ((i+1) < certs.length) {
-            			Certificate cacert = (Certificate)certs[i+1]; 
-            			cafp = CertTools.getFingerprintAsString(cacert);
-            		}
-                }
-                
-                String name = "SYSTEMCERT";
-                if (type != SecConst.CERTTYPE_ENDENTITY) {
-                	name = "SYSTEMCA";
-                }
-                // Store CA certificate in the database if it does not exist
-                long updateTime = new Date().getTime();
-                int profileId = 0;
-                String tag = null;
-                CertificateInfo ci = certificateStore.getCertificateInfo(admin, fingerprint);
-                if (ci == null) {
-                	// If we don't have it in the database, store it setting certificateProfileId = 0 and tag = null
-                    certificateStore.storeCertificate(admin, cert, name, cafp, SecConst.CERT_ACTIVE, type, profileId, tag, updateTime);
-                } else {
-                	updateTime = ci.getUpdateTime().getTime();
-                	profileId = ci.getCertificateProfileId();
-                	tag = ci.getTag();
-                }
-                // Store cert in ca cert publishers.
-                IPublisherSessionLocal pub = publishHome.create();
-                if (usedpublishers != null) {
-                    pub.storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint, SecConst.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);
-                }
-            }
-        } catch (javax.ejb.CreateException ce) {
-            throw new EJBException(ce);
-        }
-    }
 
     private UserDataVO authUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         // Authorize user and get DN

@@ -32,7 +32,6 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
@@ -76,7 +75,6 @@ public class CADataHandler implements Serializable {
                          IRaAdminSessionLocal raadminsession, 
                          ICertificateStoreSessionLocal certificatesession,
                          IAuthorizationSessionLocal authorizationsession,
-                         ISignSessionLocal signsession,
                          ICreateCRLSessionLocal crlSession,
                          EjbcaWebBean ejbcawebbean) {
                             
@@ -86,7 +84,6 @@ public class CADataHandler implements Serializable {
        this.certificatesession = certificatesession;
        this.raadminsession = raadminsession;
        this.administrator = administrator;          
-       this.signsession = signsession;
        this.crlSession = crlSession;
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
@@ -292,13 +289,13 @@ public class CADataHandler implements Serializable {
 			if(next instanceof XKMSCAServiceInfo){
 				List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
 				if (xkmscert != null) {
-					signsession.publishCACertificate(administrator, xkmscert, publishers, cainfo.getSubjectDN());
+					caadminsession.publishCACertificate(administrator, xkmscert, publishers, cainfo.getSubjectDN());
 				}
 			}
 			if(next instanceof CmsCAServiceInfo){
 				List cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
 				if (cmscert != null) {
-					signsession.publishCACertificate(administrator, cmscert, publishers, cainfo.getSubjectDN());
+					caadminsession.publishCACertificate(administrator, cmscert, publishers, cainfo.getSubjectDN());
 				}
 			}
 		}
@@ -307,7 +304,7 @@ public class CADataHandler implements Serializable {
     // A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
     // (which there is probably not) 
     publishers.addAll(certprofile.getPublisherList());
-    signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
+    caadminsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
     crlSession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN());
  }
  
@@ -362,6 +359,5 @@ public class CADataHandler implements Serializable {
   private IRaAdminSessionLocal           raadminsession; 
   private ICertificateStoreSessionLocal  certificatesession;                          
   private EjbcaWebBean                   ejbcawebbean;
-  private ISignSessionLocal              signsession;
   private ICreateCRLSessionLocal         crlSession;
 }
