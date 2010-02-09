@@ -72,7 +72,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
-	 * - /endentityprofilesrules/<end entity profile of user>/create_end_entity and/or edit_end_entity
+	 * - /endentityprofilesrules/&lt;end entity profile of user&gt;/create_end_entity and/or edit_end_entity
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
 	 * 
@@ -103,7 +103,7 @@ public interface IEjbcaWS {
 	 * </pre>
 	 * 
 	 * @param usermatch the unique user pattern to search for
-	 * @return a array of UserDataVOWS objects (Max 100) containing the information about the user or null if there are no matches.
+	 * @return a array of {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS} objects (Max 100) containing the information about the user or null if there are no matches.
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws IllegalQueryException if query isn't valid
 	 * @throws EjbcaException 
@@ -168,7 +168,8 @@ public interface IEjbcaWS {
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param crmf the CRMF request message (only the public key is used.)
-	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
+	 * @param responseType indicating which type of answer that should be returned, on of the 
+	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException
 	 * @throws NotFoundException
@@ -188,7 +189,8 @@ public interface IEjbcaWS {
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param spkac the SPKAC (netscape) request message (only the public key is used.)
-	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
+	 * @param responseType indicating which type of answer that should be returned, on of the
+	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException
 	 * @throws NotFoundException
@@ -203,7 +205,7 @@ public interface IEjbcaWS {
 	 * Generates a CV certificate for a user.
 	 * 
 	 * Uses the same authorizations as editUser and pkcs10Request
-	 * responseType is always CertificateHelper.RESPONSETYPE_CERTIFICATE.
+	 * responseType is always {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_CERTIFICATE.
 	 * 
 	 * @see #editUser(UserDataVOWS)
 	 * @see #pkcs10Request(String, String, String, String, String)
@@ -248,7 +250,8 @@ public interface IEjbcaWS {
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
 	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
-	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
+	 * @param responseType indicating which type of answer that should be returned, on of the
+	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @return the generated certificate, in either just X509Certificate or PKCS7 
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
@@ -265,12 +268,12 @@ public interface IEjbcaWS {
 	 * 
 	 * The method must be preceded by
 	 * a editUser call, either to set the userstatus to 'new' or to add non-existing users and
-	 * the user's token must be set to UserDataVOWS.TOKEN_TYPE_P12.<br>
+	 * the user's token must be set to {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS}.TOKEN_TYPE_P12.<br>
 	 * 
 	 * Authorization requirements: <pre>
 	 * - Administrator flag set
 	 * - /administrator
-	 * - /ra_functionality/view_end_entity<
+	 * - /ra_functionality/view_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
 	 * - /ca_functionality/create_certificate
 	 * - /ca/&lt;ca of user&gt;
@@ -282,7 +285,8 @@ public interface IEjbcaWS {
 	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
-	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in org.ejbca.core.model.AlgorithmConstants.KEYALGORITHM_...
+	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in
+	 * {@link org.ejbca.core.model.AlgorithmConstants}.KEYALGORITHM_...
 	 * @return the generated keystore
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
@@ -308,8 +312,8 @@ public interface IEjbcaWS {
 	 * 
 	 * @param issuerDN of the certificate to revoke
 	 * @param certificateSN of the certificate to revoke
-	 * @param reason for revocation, one of RevokedCertInfo.REVOKATION_REASON_ constants, 
-	 * or use RevokedCertInfo.NOT_REVOKED to un-revoke a certificate on hold.
+	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants, 
+	 * or use {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.NOT_REVOKED to un-revoke a certificate on hold.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if certificate doesn't exist
@@ -339,8 +343,8 @@ public interface IEjbcaWS {
 	 * </pre>
 	 * 
 	 * @param username unique username i EJBCA
-	 * @param reason for revocation, one of RevokedCertInfo.REVOKATION_REASON_ constants
-	 * or use RevokedCertInfo.NOT_REVOKED to un-revoke a certificate on hold.
+	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants
+	 * or use {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.NOT_REVOKED to un-revoke a certificate on hold.
 	 * @param deleteUser deletes the users after all the certificates have been revoked.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
@@ -391,7 +395,7 @@ public interface IEjbcaWS {
 	 * </pre>
 	 * 
 	 * @param hardTokenSN of the hardTokenSN
-	 * @param reason for revocation, one of RevokedCertInfo.REVOKATION_REASON_ constants
+	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if token doesn't exist
@@ -794,13 +798,13 @@ public interface IEjbcaWS {
 	 * Generates a soft token certificate for a user. 
 	 * If the user is not already present in the database, the user is added.<br>
 	 * Status is automatically set to STATUS_NEW.<br>
-	 * The user's token type must be set to UserDataVOWS.TOKEN_TYPE_ (JKS or P12).
+	 * The user's token type must be set to {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS}.TOKEN_TYPE_ (JKS or P12).
 	 * A token password must also be defined.<p>
 	 * Authorization requirements:<pre>
 	 * - Administrator flag set
 	 * - /administrator
-	 * - /ra_functionality/view_end_entity
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+	 * - /ra_functionality/create_end_entity and/or edit_end_entity
+	 * - /endentityprofilesrules/&lt;end entity profile of user&gt;/create_end_entity and/or edit_end_entity
 	 * - /ca_functionality/create_certificate
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
@@ -809,7 +813,8 @@ public interface IEjbcaWS {
 	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
-	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in CATokenConstants.org.ejbca.core.model.ca.catoken.KEYALGORITHM_XX.
+	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in 
+	 * {@link org.ejbca.core.model.AlgorithmConstants}.KEYALGORITHM_...
 	 * @return the generated token data 
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
@@ -830,8 +835,8 @@ public interface IEjbcaWS {
 	 * Authorization requirements:<pre>
 	 * - Administrator flag set
 	 * - /administrator
-	 * - /ra_functionality/view_end_entity
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+	 * - /ra_functionality/create_end_entity and/or edit_end_entity
+	 * - /endentityprofilesrules/&lt;end entity profile of user&gt;/create_end_entity and/or edit_end_entity
 	 * - /ca_functionality/create_certificate
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>

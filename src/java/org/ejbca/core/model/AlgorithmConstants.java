@@ -34,4 +34,6 @@ public class AlgorithmConstants {
     public static final String KEYALGORITHM_RSA   = "RSA";
     public static final String KEYALGORITHM_ECDSA = "ECDSA";
     public static final String KEYALGORITHM_DSA   = "DSA";
+    
+    private AlgorithmConstants () {} // Not for instantiation
 }
