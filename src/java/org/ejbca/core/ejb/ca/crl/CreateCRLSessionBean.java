@@ -29,8 +29,6 @@ import javax.ejb.FinderException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CRLDataLocal;
@@ -46,7 +44,6 @@ import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
@@ -124,15 +121,6 @@ import org.ejbca.util.JDBCUtil;
  *   link="CertificateData"
  *
  * @ejb.ejb-external-ref
- *   description="The CA Admin Session"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *
- * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
  *   ref-name="ejb/CertificateStoreSessionLocal"
@@ -165,22 +153,16 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     /** The local home interface of Certificate entity bean */
     private CertificateDataLocalHome certHome = null;
 
-    /** The local home interface of the caadmin session */
-    private ICAAdminSessionLocal caAdminSession = null;
-    
     private IPublisherSessionLocal publisherSession = null;
 
     /** The local interface of the log session bean */
     private ILogSessionLocal logsession;
-
-    private static final long DEFAULTCRLOVERLAPTIME = 0;
 
     /** Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate () throws CreateException {
         crlDataHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
-        caAdminSession = ((ICAAdminSessionLocalHome)getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME)).create();
         storeHome = (ICertificateStoreSessionLocalHome)getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         certHome = (CertificateDataLocalHome)getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
         publisherSession = ((IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME)).create();
@@ -193,16 +175,211 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="RequiresNew"
 	 */
-    public void runNewTransaction(Admin admin, String issuerdn) throws CATokenOfflineException {
-    	run(admin,issuerdn);
+    public void runNewTransaction(Admin admin, CA ca) throws CATokenOfflineException {
+    	run(admin, ca);
     }
-	/** Same as generating a new delta CRL but this is in a new separate transaction.
+
+    /**
+     * Method that checks if the CRL is needed to be updated for the CA and creates the CRL, if neccessary. A CRL is created:
+     * 1. if the current CRL expires within the crloverlaptime (milliseconds)
+     * 2. if a CRL issue interval is defined (>0) a CRL is issued when this interval has passed, even if the current CRL is still valid
+     *  
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
+     * @param addtocrloverlaptime given in milliseconds and added to the CRL overlap time, if set to how often this method is run (poll time), it can be used to issue a new CRL if the current one expires within
+     * the CRL overlap time (configured in CA) and the poll time. The used CRL overlap time will be (crloverlaptime + addtocrloverlaptime) 
+     *
+     * @return true if a CRL was created
+     * @throws EJBException if communication or system error occurrs
+     * 
+     * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew" 
+     */
+    public boolean runNewTransactionConditioned(Admin admin, CA ca, long addtocrloverlaptime) throws CATokenOfflineException {
+    	boolean ret = false;
+    	Date currenttime = new Date();
+    	CAInfo cainfo = ca.getCAInfo();
+    	try {
+    		if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
+    			log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
+    		} else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
+    			log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+    		} else {
+    			if (cainfo instanceof X509CAInfo) {
+    				Collection certs = cainfo.getCertificateChain();
+    				final Certificate cacert;
+    				if (!certs.isEmpty()) {
+    					cacert = (Certificate)certs.iterator().next();   
+    				} else {
+    					cacert = null;
+    				}
+    				// Don't create CRLs if the CA has expired
+    				if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
+    					if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
+    						String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(cainfo.getCAId()));            	    			    	   
+    						log.info(msg);
+    						logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
+    					} else {
+    						try {
+    							if (log.isDebugEnabled()) {
+    								log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
+    							}
+    							final String certSubjectDN = CertTools.getSubjectDN(cacert);
+    							CRLInfo crlinfo = getLastCRLInfo(admin,certSubjectDN,false);
+    							if (log.isDebugEnabled()) {
+    								if (crlinfo == null) {
+    									log.debug("Crlinfo was null");
+    								} else {
+    									log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+crlinfo.getLastCRLNumber()+", expireDate="+crlinfo.getExpireDate());
+    								}    			            	   
+    							}
+    							long crlissueinterval = cainfo.getCRLIssueInterval();
+    							if (log.isDebugEnabled()) {
+    								log.debug("crlissueinterval="+crlissueinterval);
+    								log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                            	   
+    							}
+    							long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
+    							long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
+    							if (crlinfo != null) {
+    								// CRL issueinterval in hours. If this is 0, we should only issue a CRL when
+    								// the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
+    								// if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
+    								nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
+    								if (crlissueinterval > 0) {
+    									long u = crlinfo.getCreateDate().getTime() + crlissueinterval;
+    									// If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
+    									// we need to issue one when the CRL expires
+    									if ((u + overlap) < nextUpdate) {
+    										nextUpdate = u;
+    										// When we issue CRLs before the real expiration date we don't use overlap
+    										overlap = 0;
+    									}
+    								}                                   
+    								log.debug("Calculated nextUpdate to "+nextUpdate);
+    							} else {
+    								String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());            	    			    	   
+    								log.info(msg);
+    							}
+    							if ((currenttime.getTime() + overlap) >= nextUpdate) {
+    								if (log.isDebugEnabled()) {
+    									log.debug("Creating CRL for CA, because:"+currenttime.getTime()+overlap+" >= "+nextUpdate);    			            		   
+    								}
+    								run(admin, ca);
+    								//this.runNewTransaction(admin, cainfo.getSubjectDN());
+    								ret = true;
+    								//createdcrls++;
+    							}
+
+    						} catch (CATokenOfflineException e) {
+    							String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(cainfo.getCAId()));            	    			    	   
+    							log.error(msg);
+    							logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
+    						}
+    					}
+    				} else if (cacert != null) {
+    					log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
+    				} else {
+    					log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());    			    	           			    	   
+    				}
+    			}                           				   
+    		}
+    	} catch(Exception e) {
+    		String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(cainfo.getCAId()));            	    			    	   
+    		error(msg, e);
+    		logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
+    		if (e instanceof EJBException) {
+    			throw (EJBException)e;
+    		}
+    		throw new EJBException(e);
+    	}
+    	return ret;
+    }
+
+    /** Same as generating a new delta CRL but this is in a new separate transaction.
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
 	 * 
      * @ejb.interface-method
      * @ejb.transaction type="RequiresNew"
      */
-    public byte[] runDeltaCRLnewTransaction(Admin admin, String issuerdn)  {
-    	return runDeltaCRL(admin, issuerdn, -1, -1);
+    public byte[] runDeltaCRLnewTransaction(Admin admin, CA ca)  {
+    	return runDeltaCRL(admin, ca, -1, -1);
+    }
+
+    /**
+     * Method that checks if the delta CRL needs to be updated and then creates it.
+     *
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
+     * @param crloverlaptime A new delta CRL is created if the current one expires within the crloverlaptime given in milliseconds
+	 * 
+     * @return true if a Delta CRL was created
+     * @throws EJBException if communication or system error occurrs
+     * 
+     * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
+     */
+    public boolean runDeltaCRLnewTransactionConditioned(Admin admin, CA ca, long crloverlaptime) {
+    	boolean ret = false;
+		Date currenttime = new Date();
+		CAInfo cainfo = ca.getCAInfo();
+		try{
+			if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
+				log.debug("Not trying to generate delta CRL for external CA "+cainfo.getName());
+			} else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
+				log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+			} else {
+				if (cainfo instanceof X509CAInfo) {
+					Collection certs = cainfo.getCertificateChain();
+					final Certificate cacert;
+					if (!certs.isEmpty()) {
+						cacert = (Certificate)certs.iterator().next();   
+					} else {
+					    cacert = null;
+					}
+					// Don't create CRLs if the CA has expired
+					if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
+    					if(cainfo.getDeltaCRLPeriod() > 0) {
+    						if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
+    							String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(cainfo.getCAId()));            	    			    	   
+    							log.error(msg);
+    							logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
+    						} else {
+    							if (log.isDebugEnabled()) {
+    								log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
+    							}
+    							final String certSubjectDN = CertTools.getSubjectDN(cacert);
+    							CRLInfo deltacrlinfo = getLastCRLInfo(admin, certSubjectDN, true);
+    							if (log.isDebugEnabled()) {
+    								if (deltacrlinfo == null) {
+    									log.debug("DeltaCrlinfo was null");
+    								} else {
+    									log.debug("Read deltacrlinfo for CA: "+cainfo.getName()+", lastNumber="+deltacrlinfo.getLastCRLNumber()+", expireDate="+deltacrlinfo.getExpireDate());
+    								}    			            	   
+    							}
+    							if((deltacrlinfo == null) || ((currenttime.getTime() + crloverlaptime) >= deltacrlinfo.getExpireDate().getTime())){
+    								runDeltaCRL(admin, ca, -1, -1);
+    								ret = true;
+    							}
+    						}
+    					}
+					} else if (cacert != null) {
+						log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
+					} else {
+						log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());    			    	           			    	   
+					}
+				}    					
+		   }
+		}catch(Exception e) {
+        	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(cainfo.getCAId()));            	    			    	   
+        	error(msg, e);
+        	logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
+        	if (e instanceof EJBException) {
+        		throw (EJBException)e;
+        	}
+        	throw new EJBException(e);
+		}
+		return ret;
     }
 
 	/**
@@ -210,23 +387,22 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 	 * CRL. This method also "archives" certificates when after they are no longer needed in the CRL. 
 	 *
 	 * @param admin administrator performing the task
-	 * @param issuerdn of the ca (normalized for EJBCA)
+     * @param ca the CA this operation regards
 	 * @return fingerprint (primarey key) of the generated CRL or null if generation failed
 	 * 
 	 * @throws EJBException if a communications- or system error occurs
      * @ejb.interface-method
 	 */
-    public String run(Admin admin, String issuerdn) throws CATokenOfflineException {
+    public String run(Admin admin, CA ca) throws CATokenOfflineException {
         trace(">run()");
-        int caid = issuerdn.hashCode();
+        if (ca == null) {
+            throw new EJBException("No CA specified.");
+        }
+        CAInfo cainfo = ca.getCAInfo();
+        int caid = cainfo.getCAId();
         String ret = null;
         try {
             ICertificateStoreSessionLocal store = storeHome.create();
-
-            CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
-            if (cainfo == null) {
-                throw new CADoesntExistsException("CA not found: "+issuerdn);
-            }
             final String caCertSubjectDN; // DN from the CA issuing the CRL to be used when searching for the CRL in the database.
             {
             	final Collection certs = cainfo.getCertificateChain();
@@ -263,7 +439,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             		}
             	}
             	// a full CRL
-            	byte[] crlBytes = createCRL(admin, caid, revcerts, -1);
+            	byte[] crlBytes = createCRL(admin, ca, revcerts, -1);
             	if (crlBytes != null) {
                 	ret = CertTools.getFingerprintAsString(crlBytes);            		
             	}
@@ -314,26 +490,26 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * CRL with the difference. If either of baseCrlNumber or baseCrlCreateTime is -1 this method will try to query the database for the last complete CRL.
      *
      * @param admin administrator performing the task
-     * @param issuerdn of the ca
+     * @param ca the CA this operation regards
      * @param baseCrlNumber base crl number to be put in the delta CRL, this is the CRL number of the previous complete CRL. If value is -1 the value is fetched by querying the database looking for the last complete CRL.
      * @param baseCrlCreateTime the time the base CRL was issued. If value is -1 the value is fetched by querying the database looking for the last complete CRL. 
      * @return the bytes of the Delta CRL generated or null of no delta CRL was generated.
      * 
-     * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
+     * @throws EJBException if a communications- or system error occurs
      * @ejb.interface-method
      */
-    public byte[] runDeltaCRL(Admin admin, String issuerdn, int baseCrlNumber, long baseCrlCreateTime)  {
+    public byte[] runDeltaCRL(Admin admin, CA ca, int baseCrlNumber, long baseCrlCreateTime)  {
+		if (ca == null) {
+			throw new EJBException("No CA specified.");
+		}
+		CAInfo cainfo = ca.getCAInfo();
     	if (log.isTraceEnabled()) {
-        	log.trace(">runDeltaCRL: "+issuerdn);
+        	log.trace(">runDeltaCRL: "+cainfo.getSubjectDN());
     	}
     	byte[] crlBytes = null;
-    	final int caid = issuerdn.hashCode();
+    	final int caid = cainfo.getCAId();
     	try {
     		final ICertificateStoreSessionLocal store = storeHome.create();
-    		final CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
-    		if (cainfo == null) {
-    			throw new CADoesntExistsException("CA not found: "+issuerdn);
-    		}
     		final String caCertSubjectDN; {
     		    final Collection certs = cainfo.getCertificateChain();
     		    final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
@@ -359,7 +535,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     				certs.add(ci);
     			}
     			// create a delta CRL
-    			crlBytes = createCRL(admin, caid, certs, baseCrlNumber);
+    			crlBytes = createCRL(admin, ca, certs, baseCrlNumber);
     			X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
     			debug("Created delta CRL with expire date: "+crl.getNextUpdate());
     		}
@@ -368,281 +544,16 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     		throw new EJBException(e);
     	}
     	if (log.isTraceEnabled()) {
-        	log.trace("<runDeltaCRL: "+issuerdn);
+        	log.trace("<runDeltaCRL: "+cainfo.getSubjectDN());
     	}
 		return crlBytes;
     } // runDeltaCRL
         
-        
-    /**
-     * Method that checks if there are any CRLs needed to be updated and then creates their
-     * CRLs. No overlap is used. This method can be called by a scheduler or a service.
-     *
-     * @param admin administrator performing the task
-     *
-     * @return the number of crls created.
-     * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
-     * @ejb.interface-method 
-     */
-    public int createCRLs(Admin admin)  {
-        return createCRLs(admin, null, DEFAULTCRLOVERLAPTIME);
-    }
-    /**
-     * Method that checks if there are any delta CRLs needed to be updated and then creates their
-     * delta CRLs. No overlap is used. This method can be called by a scheduler or a service.
-     *
-     * @param admin administrator performing the task
-     *
-     * @return the number of delta crls created.
-     * @throws EJBException if communication or system error happens
-     * @ejb.interface-method 
-     */
-    public int createDeltaCRLs(Admin admin)  {
-    	return this.createDeltaCRLs(admin, null, DEFAULTCRLOVERLAPTIME);
-    }
-    
-    /**
-     * Method that checks if there are any CRLs needed to be updated and then creates their
-     * CRLs. A CRL is created:
-     * 1. if the current CRL expires within the crloverlaptime (milliseconds)
-     * 2. if a crl issue interval is defined (>0) a CRL is issued when this interval has passed, even if the current CRL is still valid
-     *  
-     * This method can be called by a scheduler or a service.
-     *
-     * @param admin administrator performing the task
-     * @param caids list of CA ids (Integer) that will be checked, or null in which case ALL CAs will be checked
-     * @param addtocrloverlaptime given in milliseconds and added to the CRL overlap time, if set to how often this method is run (poll time), it can be used to issue a new CRL if the current one expires within
-     * the CRL overlap time (configured in CA) and the poll time. The used CRL overlap time will be (crloverlaptime + addtocrloverlaptime) 
-     *
-     * @return the number of crls created.
-     * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
-     * @ejb.interface-method 
-     */
-    public int createCRLs(Admin admin, Collection caids, long addtocrloverlaptime)  {
-    	int createdcrls = 0;
-    	try {
-    		Date currenttime = new Date();
-
-    		Iterator iter = null;
-    		if (caids != null) {
-    			iter = caids.iterator();
-    		} 
-    		if ( (iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS))) ) {
-        		iter = caAdminSession.getAvailableCAs().iterator();
-    		}
-    		while(iter.hasNext()){
-    			int caid = ((Integer) iter.next()).intValue();
-    			log.debug("createCRLs for caid: "+caid);
-    			try {
-    			   CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
-    			   if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
-    				   log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
-    			   } else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
-    				   log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
-    			   } else {
-        			   if (cainfo instanceof X509CAInfo) {
-        				   Collection certs = cainfo.getCertificateChain();
-        				   final Certificate cacert;
-        				   if (!certs.isEmpty()) {
-        					   cacert = (Certificate)certs.iterator().next();   
-        				   } else {
-        				       cacert = null;
-        				   }
-        				   // Don't create CRLs if the CA has expired
-        				   if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
-            			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
-            			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
-            			    	   log.info(msg);
-            			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
-            			       } else {
-            			           try {
-            			        	   if (log.isDebugEnabled()) {
-            			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
-            			        	   }
-            			               final String certSubjectDN = CertTools.getSubjectDN(cacert);
-            			               CRLInfo crlinfo = getLastCRLInfo(admin,certSubjectDN,false);
-            			               if (log.isDebugEnabled()) {
-                			               if (crlinfo == null) {
-                			            	   log.debug("Crlinfo was null");
-                			               } else {
-                			            	   log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+crlinfo.getLastCRLNumber()+", expireDate="+crlinfo.getExpireDate());
-                			               }    			            	   
-            			               }
-                                       long crlissueinterval = cainfo.getCRLIssueInterval();
-                                       if (log.isDebugEnabled()) {
-                                           log.debug("crlissueinterval="+crlissueinterval);
-                                           log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                            	   
-                                       }
-                                       long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
-                                       long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
-                                       if (crlinfo != null) {
-                                           // CRL issueinterval in hours. If this is 0, we should only issue a CRL when
-                                           // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
-                                           // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
-                                           nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
-                                           if (crlissueinterval > 0) {
-                                               long u = crlinfo.getCreateDate().getTime() + crlissueinterval;
-                                               // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
-                                               // we need to issue one when the CRL expires
-                                               if ((u + overlap) < nextUpdate) {
-                                                   nextUpdate = u;
-                                                   // When we issue CRLs before the real expiration date we don't use overlap
-                                                   overlap = 0;
-                                               }
-                                           }                                   
-                                           log.debug("Calculated nextUpdate to "+nextUpdate);
-                                       } else {
-                    			    	   String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());            	    			    	   
-                                    	   log.info(msg);
-                                       }
-            			               if ((currenttime.getTime() + overlap) >= nextUpdate) {
-            			            	   if (log.isDebugEnabled()) {
-                			            	   log.debug("Creating CRL for CA, because:"+currenttime.getTime()+overlap+" >= "+nextUpdate);    			            		   
-            			            	   }
-            			                   this.runNewTransaction(admin, cainfo.getSubjectDN());
-            			                   createdcrls++;
-            			               }
-            			               
-            			           } catch (CATokenOfflineException e) {
-                			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
-                			    	   log.error(msg);
-                			    	   logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
-            			           }
-            			       }
-        			       } else if (cacert != null) {
-        			    	   log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
-        			       } else {
-        			    	   log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());    			    	           			    	   
-        			       }
-        			   }                           				   
-    			   }
-                } catch(Exception e) {
-                	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   
-                	error(msg, e);
-                	logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
-                	if (e instanceof EJBException) {
-                		throw (EJBException)e;
-                	}
-                	throw new EJBException(e);
-    		    }
-    		}
-    	} catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("createcrl.erroravailcas");            	    			    	   
-        	error(msg, e);
-    		logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
-            if (e instanceof EJBException) {
-                throw (EJBException)e;
-            }
-    		throw new EJBException(e);
-    	}
-
-    	return createdcrls;
-    }
-
-    
-    /**
-     * Method that checks if there are any delta CRLs needed to be updated and then creates them.
-     * This method can be called by a scheduler or a service.
-     *
-     * @param admin administrator performing the task
-     * @param caids list of CA ids (Integer) that will be checked, or null in which case ALL CAs will be checked
-     * @param crloverlaptime A new delta CRL is created if the current one expires within the crloverlaptime given in milliseconds
-     *
-     * @return the number of delta crls created.
-     * @throws EJBException 
-     * @ejb.interface-method 
-     */
-    public int createDeltaCRLs(Admin admin, Collection caids, long crloverlaptime)  {
-    	int createddeltacrls = 0;
-    	try {
-    		Date currenttime = new Date();
-
-    		Iterator iter = null;
-    		if (caids != null) {
-    			iter = caids.iterator();
-    		}
-    		if ( (iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS))) ) {
-        		iter = caAdminSession.getAvailableCAs().iterator();
-    		}
-    		while (iter.hasNext()) {
-    			int caid = ((Integer) iter.next()).intValue();
-    			log.debug("createDeltaCRLs for caid: "+caid);
-    			try{
-    				CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
-    				if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
-    					log.debug("Not trying to generate delta CRL for external CA "+cainfo.getName());
-    				} else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
-    					log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
-    				} else {
-        				if (cainfo instanceof X509CAInfo) {
-        					Collection certs = cainfo.getCertificateChain();
-        					final Certificate cacert;
-        					if (!certs.isEmpty()) {
-        						cacert = (Certificate)certs.iterator().next();   
-        					} else {
-        					    cacert = null;
-        					}
-        					// Don't create CRLs if the CA has expired
-        					if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
-            					if(cainfo.getDeltaCRLPeriod() > 0) {
-            						if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
-            							String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
-            							log.error(msg);
-            							logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
-            						} else {
-            							if (log.isDebugEnabled()) {
-            								log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
-            							}
-            							final String certSubjectDN = CertTools.getSubjectDN(cacert);
-            							CRLInfo deltacrlinfo = getLastCRLInfo(admin, certSubjectDN, true);
-            							if (log.isDebugEnabled()) {
-            								if (deltacrlinfo == null) {
-            									log.debug("DeltaCrlinfo was null");
-            								} else {
-            									log.debug("Read deltacrlinfo for CA: "+cainfo.getName()+", lastNumber="+deltacrlinfo.getLastCRLNumber()+", expireDate="+deltacrlinfo.getExpireDate());
-            								}    			            	   
-            							}
-            							if((deltacrlinfo == null) || ((currenttime.getTime() + crloverlaptime) >= deltacrlinfo.getExpireDate().getTime())){
-            								this.runDeltaCRLnewTransaction(admin, cainfo.getSubjectDN());
-            								createddeltacrls++;
-            							}
-            						}
-            					}
-        					} else if (cacert != null) {
-        						log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
-        					} else {
-        						log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());    			    	           			    	   
-        					}
-        				}    					
-    			   }
-    			}catch(Exception e) {
-                	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   
-                	error(msg, e);
-                	logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
-                	if (e instanceof EJBException) {
-                		throw (EJBException)e;
-                	}
-                	throw new EJBException(e);
-    			}
-    		}
-    	} catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("createcrl.erroravailcas");            	    			    	   
-        	error(msg, e);
-    		logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
-            if (e instanceof EJBException) {
-                throw (EJBException)e;
-            }
-    		throw new EJBException(e);
-    	}
-
-    	return createddeltacrls;
-    }
-
     /**
      * Requests for a CRL to be created with the passed (revoked) certificates.
      *
-     * @param admin Information about the administrator or admin preforming the event.
-     * @param caid Id of the CA which CRL should be created.
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
      * @param certs collection of RevokedCertInfo object.
      * @param basecrlnumber the CRL number of the Case CRL to generate a deltaCRL, -1 to generate a full CRL
      * @param nextCrlNumber The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -650,15 +561,13 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @throws CATokenOfflineException 
      * @ejb.interface-method view-type="both"
      */
-    public byte[] createCRL(Admin admin, int caid, Collection certs, int basecrlnumber) throws CATokenOfflineException {
+    public byte[] createCRL(Admin admin, CA ca, Collection certs, int basecrlnumber) throws CATokenOfflineException {
         log.trace(">createCRL()");
         byte[] crlBytes = null; // return value
-        CA ca = null;
         try {
-            ca = caAdminSession.getCA(admin, caid);
             if ( (ca.getStatus() != SecConst.CA_ACTIVE) && (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) ) {
                 String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new CATokenOfflineException(msg);
             }
             final X509CRL crl;
@@ -677,7 +586,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             }
             if (crl != null) {
                 String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(nextCrlNumber), ca.getName(), ca.getSubjectDN());
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
+                logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
 
                 // Store CRL in the database
                 String fingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
@@ -691,10 +600,10 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         } catch (CATokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, ctoe);
+            logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, ctoe);
             throw ctoe;
         } catch (Exception e) {
-        	logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
+        	logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
             throw new EJBException(intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
         }
         log.trace("<createCRL()");

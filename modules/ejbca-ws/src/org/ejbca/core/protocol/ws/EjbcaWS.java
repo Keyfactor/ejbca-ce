@@ -51,8 +51,8 @@ import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.jws.WebService;
 import javax.naming.NamingException;
-import javax.xml.ws.WebServiceContext;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -70,8 +70,8 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.ICertificateRequestSessionRemote;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -90,6 +90,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -2371,7 +2372,8 @@ public class EjbcaWS implements IEjbcaWS {
 			Admin admin = ejbhelper.getAdmin(true, wsContext);
             logAdminName(admin,logger);
 			CAInfo info = ejbhelper.getCAAdminSession().getCAInfoOrThrowException(admin, caname);
-			ejbhelper.getCrlSession().run(admin, info.getSubjectDN());
+			CA ca = ejbhelper.getCAAdminSession().getCA(admin, info.getCAId());
+			ejbhelper.getCrlSession().run(admin, ca);
 		} catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
 		} catch (EJBException e) {

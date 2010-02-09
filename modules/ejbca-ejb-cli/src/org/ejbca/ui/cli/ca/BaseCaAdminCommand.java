@@ -27,6 +27,7 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.util.Base64;
@@ -108,19 +109,20 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     	getLogger().trace(">createCRL()");
         try {
             if(issuerdn != null){
+        		CA ca = getCAAdminSession().getCA(getAdmin(), issuerdn.hashCode());
             	if (!deltaCRL) {
-            		getCreateCRLSession().run(getAdmin(), issuerdn);
+            		getCreateCRLSession().run(getAdmin(), ca);
                     int number = getCreateCRLSession().getLastCRLNumber(getAdmin(), issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");            		
             	} else {
-            		getCreateCRLSession().runDeltaCRL(getAdmin(), issuerdn, -1, -1);
+            		getCreateCRLSession().runDeltaCRL(getAdmin(), ca, -1, -1);
                     int number = getCreateCRLSession().getLastCRLNumber(getAdmin(), issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
             	}
             }else{
-            	int createdcrls = getCreateCRLSession().createCRLs(getAdmin());
+            	int createdcrls = getCAAdminSession().createCRLs(getAdmin());
             	getLogger().info("  " + createdcrls + " CRLs have been created.");	
-            	int createddeltacrls = getCreateCRLSession().createDeltaCRLs(getAdmin());
+            	int createddeltacrls = getCAAdminSession().createDeltaCRLs(getAdmin());
             	getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");	
             }
         } catch (Exception e) {

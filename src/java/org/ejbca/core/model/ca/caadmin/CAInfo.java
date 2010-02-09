@@ -127,6 +127,7 @@ public class CAInfo implements Serializable {
 	 * RootCA certificate in the last position and the CAs certificate in the first.
      */
     public Collection getCertificateChain(){ return certificatechain;}
+    public void setCertificateChain(Collection certificatechain) { this.certificatechain = certificatechain; }
     public CATokenInfo getCATokenInfo() {return this.catokeninfo;}
     public void setCATokenInfo(CATokenInfo catokeninfo) {this.catokeninfo = catokeninfo;}
     
