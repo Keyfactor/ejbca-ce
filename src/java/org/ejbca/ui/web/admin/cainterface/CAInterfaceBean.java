@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -122,7 +121,7 @@ public class CAInterfaceBean implements java.io.Serializable {
           this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);
-          cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, signsession, createCRLSession, ejbcawebbean);
+          cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, createCRLSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, 
           		                                        caadminsession, certificatesession,  informationmemory);
           initialized =true;

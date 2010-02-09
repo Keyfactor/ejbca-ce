@@ -66,8 +66,6 @@ import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
@@ -112,6 +110,7 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CRLInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -125,6 +124,7 @@ import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SimpleTime;
 import org.ejbca.util.StringTools;
@@ -208,14 +208,6 @@ import org.ejbca.util.keystore.KeyTools;
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  *   link="CertificateStoreSession"
  *
- * @ejb.ejb-external-ref description="The Sign Session Bean"
- *   view-type="local"
- *   ref-name="ejb/RSASignSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *   link="RSASignSession"
- *
  * @ejb.ejb-external-ref description="The CRL Create bean"
  *   view-type="local"
  *   ref-name="ejb/CreateCRLSessionLocal"
@@ -224,15 +216,6 @@ import org.ejbca.util.keystore.KeyTools;
  *   business="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
  *   link="CreateCRLSession"
  *   
- * @ejb.ejb-external-ref
- *   description="The User Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/UserAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *   link="UserAdminSession"
- *
  * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places
  * from the main database. Publishers runs as local beans"
  *   view-type="local"
@@ -265,17 +248,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /** The local interface of the certificate store session bean */
     private ICertificateStoreSessionLocal certificatestoresession;
 
-    /** The local interface of the sign session bean */
-    private ISignSessionLocal signsession;
-
     /** The local interface of the job runner session bean used to create crls.*/
     private ICreateCRLSessionLocal crlsession;
 
     private IPublisherSessionLocal publisherSession;
 
-    /**
-     * The local interface of the approval session bean
-     */
+    /** The local interface of the approval session bean */
     private IApprovalSessionLocal approvalsession;
 
     /** Internal localization of logs and errors */
@@ -305,6 +283,66 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	return publisherSession;
     }
 
+    /** Gets connection to log session bean
+     */
+    private ILogSessionLocal getLogSession() {
+        if(logsession == null){
+            try{
+                ILogSessionLocalHome home = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
+                logsession = home.create();
+            }catch(Exception e){
+                throw new EJBException(e);
+            }
+        }
+        return logsession;
+    }
+
+
+    /** Gets connection to authorization session bean
+     * @return Connection
+     */
+    private IAuthorizationSessionLocal getAuthorizationSession() {
+        if(authorizationsession == null){
+            try{
+                IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+                authorizationsession = home.create();
+            }catch(Exception e){
+                throw new EJBException(e);
+            }
+        }
+        return authorizationsession;
+    } //getAuthorizationSession
+
+    /** Gets connection to crl create session bean
+     * @return Connection
+     */
+    private ICreateCRLSessionLocal getCRLCreateSession() {
+    	if(crlsession == null){
+    		try{
+    			ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) getLocator().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
+    			crlsession = home.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);
+    		}
+    	}
+    	return crlsession;
+    }
+
+    /** Gets connection to certificate store session bean
+     * @return Connection
+     */
+    private ICertificateStoreSessionLocal getCertificateStoreSession() {
+    	if(certificatestoresession == null){
+    		try{
+    			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+    			certificatestoresession = home.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);
+    		}
+    	}
+    	return certificatestoresession;
+    }
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -312,7 +350,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     public void ejbCreate() throws CreateException {
         cadatahome = (CADataLocalHome)getLocator().getLocalHome(CADataLocalHome.COMP_NAME);
         // Install BouncyCastle provider
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
     }
 
 
@@ -536,7 +574,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
         //	Publish CA certificates.
-        getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
+        publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
         
         if(castatus ==SecConst.CA_ACTIVE){
         	// activate External CA Services
@@ -641,7 +679,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
   			  xkmscertificate.add(xkmscert);
               // Publish the extended service certificate, but only for active services
               if ( (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!xkmscertificate.isEmpty()) ) {
-            	  getSignSession().publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
+            	  publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
               }
             }
             if(cmsrenewcert){
@@ -651,7 +689,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
   			  cmscertificate.add(cmscert);
               // Publish the extended service certificate, but only for active services
               if ( (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!cmscertificate.isEmpty()) ) {
-                  getSignSession().publishCACertificate(admin, cmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
+                  publishCACertificate(admin, cmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
               }
             }
             // Log Action
@@ -1256,7 +1294,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				// Publish CA Cert
     		        ArrayList cacertcol = new ArrayList();
     		        cacertcol.add(cacert);
-    				getSignSession().publishCACertificate(admin, cacertcol, ca.getCRLPublishers(), ca.getSubjectDN());
+    				publishCACertificate(admin, cacertcol, ca.getCRLPublishers(), ca.getSubjectDN());
     				getCRLCreateSession().publishCRL(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
 
     				// Set status to active, so we can sign certificates for the external services below.
@@ -1285,7 +1323,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				        }
     		        		// Publish the extended service certificate, but only for active services
     		        		if ( (info != null) && (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!extcacertificate.isEmpty()) ) {
-        				        getSignSession().publishCACertificate(admin, extcacertificate, ca.getCRLPublishers(), ca.getSubjectDN());
+        				        publishCACertificate(admin, extcacertificate, ca.getCRLPublishers(), ca.getSubjectDN());
     		        		}
     				    }catch(CATokenOfflineException e){
             	    		String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", new Integer(caid));            	
@@ -1485,7 +1523,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				}
 
     				// Publish CA certificates.
-    			    getSignSession().publishCACertificate(admin, certchain, signca.getCRLPublishers(), ca!=null ? ca.getSubjectDN() : null);
+    			    publishCACertificate(admin, certchain, signca.getCRLPublishers(), ca!=null ? ca.getSubjectDN() : null);
     				getCRLCreateSession().publishCRL(admin, cacertificate, signca.getCRLPublishers(), ca!=null ? ca.getSubjectDN() : null);
 
     			}catch(CATokenOfflineException e){
@@ -1616,7 +1654,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	// set status to active
     	cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					
 		// Publish CA certificates.
-	    getSignSession().publishCACertificate(admin, certificates, null, ca.getSubjectDN());
+	    publishCACertificate(admin, certificates, null, ca.getSubjectDN());
     }
 
     /** Inits an external CA service. this means that a new key and certificate will be generated for this service, if it exists before.
@@ -1788,7 +1826,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			// Publish the new CA certificate
     			ArrayList cacert = new ArrayList();
     			cacert.add(ca.getCACertificate());
-    			getSignSession().publishCACertificate(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
+    			publishCACertificate(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
     		    getCRLCreateSession().publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN());
     		}catch(CATokenOfflineException e){
 	    		String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));            	
@@ -2386,7 +2424,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		ca.setCertificateChain(certificatechain);
 		log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + ca.getCAToken().getCATokenInfo().getEncryptionAlgorithm());
 		//  Publish CA certificates.
-		getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
+		publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
 		// activate External CA Services
 		activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
 		// Store CA in database.
@@ -2816,7 +2854,76 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	return retval;
     }
     
-    
+    /**
+     * Method that publishes the given CA certificate chain to the list of publishers.
+     * Is mainly used when CA is created.
+     *
+     * @param admin            Information about the administrator or admin preforming the event.
+     * @param certificatechain certchain of certificate to publish
+     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
+     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
+     * @ejb.interface-method view-type="both"
+     */
+    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, String caDataDN) {
+    	try {
+    		Object[] certs = certificatechain.toArray();
+    		for (int i = 0; i < certs.length; i++) {
+    			Certificate cert = (Certificate)certs[i];
+    			String fingerprint = CertTools.getFingerprintAsString(cert);
+    			// CA fingerprint, figure out the value if this is not a root CA
+    			String cafp = fingerprint;
+    			// Calculate the certtype
+    			boolean isSelfSigned = CertTools.isSelfSigned(cert);
+    			int type = SecConst.CERTTYPE_ENDENTITY;
+    			if (CertTools.isCA(cert))  {
+    				// this is a CA
+    				if (isSelfSigned) {
+    					type = SecConst.CERTTYPE_ROOTCA;
+    				} else {
+    					type = SecConst.CERTTYPE_SUBCA;
+    					// If not a root CA, the next certificate in the chain should be the CA of this CA
+    					if ((i+1) < certs.length) {
+    						Certificate cacert = (Certificate)certs[i+1]; 
+    						cafp = CertTools.getFingerprintAsString(cacert);
+    					}
+    				}                		
+    			} else if (isSelfSigned) {
+    				// If we don't have basic constraints, but is self signed, we are still a CA, just a stupid CA
+    				type = SecConst.CERTTYPE_ROOTCA;
+    			} else {
+    				// If and end entity, the next certificate in the chain should be the CA of this end entity
+    				if ((i+1) < certs.length) {
+    					Certificate cacert = (Certificate)certs[i+1]; 
+    					cafp = CertTools.getFingerprintAsString(cacert);
+    				}
+    			}
+
+    			String name = "SYSTEMCERT";
+    			if (type != SecConst.CERTTYPE_ENDENTITY) {
+    				name = "SYSTEMCA";
+    			}
+    			// Store CA certificate in the database if it does not exist
+    			long updateTime = new Date().getTime();
+    			int profileId = 0;
+    			String tag = null;
+    			CertificateInfo ci = getCertificateStoreSession().getCertificateInfo(admin, fingerprint);
+    			if (ci == null) {
+    				// If we don't have it in the database, store it setting certificateProfileId = 0 and tag = null
+    				getCertificateStoreSession().storeCertificate(admin, cert, name, cafp, SecConst.CERT_ACTIVE, type, profileId, tag, updateTime);
+    			} else {
+    				updateTime = ci.getUpdateTime().getTime();
+    				profileId = ci.getCertificateProfileId();
+    				tag = ci.getTag();
+    			}
+    			if (usedpublishers != null) {
+    				getPublisherSession().storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint, SecConst.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);
+    			}
+    		}
+    	} catch (javax.ejb.CreateException ce) {
+    		throw new EJBException(ce);
+    	}
+    }
+
     /**
      * Retrives a Collection of id:s (Integer) to authorized publishers.
      *
@@ -2854,81 +2961,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     //
     // Private methods
     //
-	
-    /** Gets connection to log session bean
-     */
-    private ILogSessionLocal getLogSession() {
-        if(logsession == null){
-            try{
-                ILogSessionLocalHome home = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-                logsession = home.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return logsession;
-    } //getLogSession
-
-
-    /** Gets connection to authorization session bean
-     * @return Connection
-     */
-    private IAuthorizationSessionLocal getAuthorizationSession() {
-        if(authorizationsession == null){
-            try{
-                IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-                authorizationsession = home.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return authorizationsession;
-    } //getAuthorizationSession
-
-    /** Gets connection to crl create session bean
-     * @return Connection
-     */
-    private ICreateCRLSessionLocal getCRLCreateSession() {
-      if(crlsession == null){
-         try{
-            ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) getLocator().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-            crlsession = home.create();
-         }catch(Exception e){
-            throw new EJBException(e);
-         }
-      }
-      return crlsession;
-    }
-
-    /** Gets connection to certificate store session bean
-     * @return Connection
-     */
-    private ICertificateStoreSessionLocal getCertificateStoreSession() {
-        if(certificatestoresession == null){
-            try{
-                ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-                certificatestoresession = home.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return certificatestoresession;
-    } //getCertificateStoreSession
-
-    /** Gets connection to sign session bean
-     * @return Connection
-     */
-    private ISignSessionLocal getSignSession() {
-        if(signsession == null){
-            try{
-                ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-                signsession = signsessionhome.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return signsession;
-    } //getSignSession
 
 	/** Check if subject certificate is signed by issuer certificate. Used in
 	 * @see #upgradeFromOldCAKeyStore(Admin, String, byte[], char[], char[], String).
@@ -3020,7 +3052,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			}
 			// Publish the extended service certificate, but only for active services
 			if ( (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!certificate.isEmpty()) ) {
-				getSignSession().publishCACertificate(admin, certificate, ca.getCRLPublishers(), ca.getSubjectDN());        			
+				publishCACertificate(admin, certificate, ca.getCRLPublishers(), ca.getSubjectDN());        			
 			}
 		}
 	} // activateAndPublishExternalCAServices 
