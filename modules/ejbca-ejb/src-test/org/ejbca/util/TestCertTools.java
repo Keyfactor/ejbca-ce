@@ -1395,4 +1395,34 @@ public class TestCertTools extends TestCase {
         assertEquals("CN=oid,Name=name,SN=12345,O=\\<fff\\>\\\",C=se", dn);
 	}
 
+	public void testSerialNumberFromString() throws Exception {
+		// Test numerical format
+		BigInteger serno = CertTools.getSerialNumberFromString("00001");
+		assertEquals(1, serno.intValue());
+		// Test SE001 format
+		serno = CertTools.getSerialNumberFromString("SE021");
+		assertEquals(21, serno.intValue());
+		
+		// Test numeric and hexadecimal string, will get the numerical part in the middle
+		serno = CertTools.getSerialNumberFromString("F53AA");
+		assertEquals(53, serno.intValue());
+
+		// Test pure letters
+		serno = CertTools.getSerialNumberFromString("FXBAA");
+		assertEquals(26748514, serno.intValue());
+
+		// Test a strange format...
+		serno = CertTools.getSerialNumberFromString("SE02K");
+		assertEquals(2, serno.intValue());
+
+		// Test a real biginteger
+		serno = CertTools.getSerialNumberFromString("7331288210307371");
+		assertEquals(271610737, serno.intValue());
+
+		// Test a real certificate
+		Certificate cert = CertTools.getCertfromByteArray(testcert);
+		serno = CertTools.getSerialNumber(cert);
+		assertEquals(271610737, serno.intValue());
+
+	}
 }
