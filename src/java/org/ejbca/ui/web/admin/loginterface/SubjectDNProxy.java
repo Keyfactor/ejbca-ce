@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.admin.loginterface;
 
-import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.util.HashMap;
@@ -63,14 +62,14 @@ public class SubjectDNProxy implements java.io.Serializable {
       returnval = (String) subjectdnstore.get(admindata);
 
       if(returnval==null && admindata.indexOf(',') != -1){
-        // Retreive subjectDN over RMI
+        // Try to find the certificate in database
         String certificatesnr = admindata.substring(0,admindata.indexOf(','));
         String issuerdn = admindata.substring(admindata.indexOf(',')+1);
-          
-        if(local)
-          result = certificatesessionlocal.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr,16));
-        else
-          result = certificatesessionremote.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr, 16));
+        if(local) {
+          result = certificatesessionlocal.findCertificateByIssuerAndSerno(admin, issuerdn, CertTools.getSerialNumberFromString(certificatesnr));
+        } else {
+          result = certificatesessionremote.findCertificateByIssuerAndSerno(admin, issuerdn, CertTools.getSerialNumberFromString(certificatesnr));
+        }
         if(result != null){
           returnval = CertTools.getSubjectDN(result);
           subjectdnstore.put(admindata,returnval);

@@ -717,30 +717,7 @@ public class CertTools {
 			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
 			try {
 				String sequence = cvccert.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
-				try {
-					if (NumberUtils.isNumber(sequence)) {
-						ret = NumberUtils.createBigInteger(sequence);											
-					} else {
-						log.debug("getSerialNumber: Sequence is not a numeric string, trying to get numerical sequence part.");
-						StringBuffer buf = new StringBuffer();
-						for (int i = 0; i < sequence.length(); i++) {
-							char c = sequence.charAt(i);
-							if (CharUtils.isAsciiNumeric(c)) {
-								buf.append(c);
-							}
-						}
-						if (buf.length() > 0) {
-							ret = NumberUtils.createBigInteger(buf.toString());
-						} else {
-							log.debug("getSerialNumber: Sequence does not contain a numeric string, returning 0.");
-							ret = BigInteger.valueOf(0);
-						}
-					}
-				} catch (NumberFormatException e) {
-					// If we can't make the sequence into a serial number big integer, set it to 0
-		            log.debug("getSerialNumber: NumberFormatException for sequence: "+sequence);
-					ret = BigInteger.valueOf(0);				
-				}
+				ret = getSerialNumberFromString(sequence);
 			} catch (NoSuchFieldException e) {
 	            log.error("getSerialNumber: NoSuchFieldException: ", e);
 				ret = BigInteger.valueOf(0);
@@ -750,6 +727,57 @@ public class CertTools {
 		}
         return ret;
     }
+
+    /** Gets a serial number in numeric form, it takes
+     * - either a hex encoded integer with length != 5 (x.509 certificate)
+     * - 5 letter numeric string (cvc), will convert the number to an int
+     * - 5 letter alfanumeric string vi some numbers in it (cvc), will convert the numbers in it to a numeric string (remove the letters) and convert to int
+     * - 5 letter alfanumeric string with only letters (cvc), will convert to integer from string with radix 36
+     * 
+     * @param sernoString
+     * @return BigInteger
+     */
+	public static BigInteger getSerialNumberFromString(String sernoString) {
+		BigInteger ret;
+		if (sernoString.length() != 5) {
+			// This can not be a CVC certificate sequence, so it must be a hex encoded regular certificate serial number
+			ret = new BigInteger(sernoString,16);
+		} else {
+			// We try to handle the different cases of CVC certificate sequences, see StringTools.KEY_SEQUENCE_FORMAT
+			try {
+				if (NumberUtils.isNumber(sernoString)) {
+					ret = NumberUtils.createBigInteger(sernoString);											
+				} else {
+			        // check if input is hexadecimal
+					log.info("getSerialNumber: Sequence is not a numeric string, trying to extract numerical sequence part.");
+					StringBuffer buf = new StringBuffer();
+					for (int i = 0; i < sernoString.length(); i++) {
+						char c = sernoString.charAt(i);
+						if (CharUtils.isAsciiNumeric(c)) {
+							buf.append(c);
+						}
+					}
+					if (buf.length() > 0) {
+						ret = NumberUtils.createBigInteger(buf.toString());
+					} else {
+						log.info("getSerialNumber: can not extract numeric sequence part, trying alfanumeric value (radix 36).");
+				        if (sernoString.matches("[0-9A-Z]{1,5}")) {
+							int numSeq = Integer.parseInt(sernoString, 36);
+							ret = BigInteger.valueOf(numSeq);
+				        } else {
+							log.info("getSerialNumber: Sequence does not contain any numeric parts, returning 0.");
+							ret = BigInteger.valueOf(0);				        	
+				        }
+					}			        	
+				}
+			} catch (NumberFormatException e) {
+				// If we can't make the sequence into a serial number big integer, set it to 0
+			    log.debug("getSerialNumber: NumberFormatException for sequence: "+sernoString);
+				ret = BigInteger.valueOf(0);				
+			}			
+		}
+		return ret;
+	}
 
     /**
      * Gets Serial number of the certificate as a string. For X509 Certificate this means a HEX encoded BigInteger, and for CVC certificate is
