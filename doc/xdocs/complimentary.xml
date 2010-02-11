@@ -92,6 +92,15 @@ can be used together with PKI to even further improve your PKI experience.
 	</p>
 </subsection>
 
+<subsection name="jSCEP">"
+	<p>
+    <a href="http://code.google.com/p/jscep/">Java SCEP implementation</a>
+	</p>
+	<p>
+	jSCEP is an open-source Java implementation of the Simple Certificate Enrollment Protocol (SCEP). It is capable of supporting both client- and server-side operations.
+	</p>
+</subsection>
+
 </section>
 
 <section name="Complimentary proprietary software">
