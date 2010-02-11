@@ -976,8 +976,7 @@
 
               boolean renew = false;
               boolean xkmsrenew = false;
-              if(xkmsactive == ExtendedCAServiceInfo.STATUS_ACTIVE && 
-                 request.getParameter(BUTTON_REVOKERENEWXKMSCERTIFICATE) != null){
+              if(request.getParameter(BUTTON_REVOKERENEWXKMSCERTIFICATE) != null){
                  cadatahandler.renewAndRevokeXKMSCertificate(caid);
                  xkmsrenew=true;
                  xkmsrenewed = true;             
@@ -985,8 +984,7 @@
                }
               
               boolean cmsrenew = false;
-              if(cmsactive == ExtendedCAServiceInfo.STATUS_ACTIVE && 
-                 request.getParameter(BUTTON_REVOKERENEWCMSCERTIFICATE) != null){
+              if(request.getParameter(BUTTON_REVOKERENEWCMSCERTIFICATE) != null){
                  cadatahandler.renewAndRevokeCmsCertificate(caid);
                  cmsrenew=true;
                  cmsrenewed = true;             

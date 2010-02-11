@@ -95,7 +95,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
       if(data.get(XKMSKEYSTORE) != null){    
     	  // lookup keystore passwords
     	  final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaXkmsKeyStorePass(), "ca.xkmskeystorepass");
-               
+          int status = ExtendedCAServiceInfo.STATUS_INACTIVE;
         try {
         	m_log.debug("Loading XKMS keystore");
             KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
@@ -107,15 +107,12 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
             // Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
             // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
             this.xKMScertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
-            this.info = new XKMSCAServiceInfo(getStatus(),
-                                              getSubjectDN(),
-                                              getSubjectAltName(), 
-                                              (String)data.get(KEYSPEC), 
-                                              (String) data.get(KEYALGORITHM),
-                                              this.xKMScertificatechain);
-      
+            status = getStatus();
         } catch (Exception e) {
-            throw new IllegalKeyStoreException(e);
+        	m_log.error("Could not load keystore or certificate for CA XKMS service. Perhaps the password was changed? " + e.getMessage());
+		} finally {
+            this.info = new XKMSCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)data.get(KEYSPEC), 
+                    (String) data.get(KEYALGORITHM), this.xKMScertificatechain);
         }
         
         data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));        
