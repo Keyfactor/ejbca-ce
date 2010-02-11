@@ -34,6 +34,7 @@ import org.ejbca.core.model.ca.certificateprofiles.XKMSCertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 import org.w3c.dom.Document;
@@ -73,7 +74,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
             
     public XKMSCAService(ExtendedCAServiceInfo serviceinfo)  {
       m_log.debug("XKMSCAService : constructor " + serviceinfo.getStatus()); 
-      CertTools.installBCProvider();
+      CryptoProviderTools.installBCProvider();
 	  // Currently only RSA keys are supported
       XKMSCAServiceInfo info = (XKMSCAServiceInfo) serviceinfo;	
       data = new HashMap();   
@@ -89,7 +90,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
     }
     
     public XKMSCAService(HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
-      CertTools.installBCProvider();
+    	CryptoProviderTools.installBCProvider();
       loadData(data);  
       if(data.get(XKMSKEYSTORE) != null){    
     	  // lookup keystore passwords
