@@ -275,16 +275,6 @@ function confirmrenewal(){
       win_popup = window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
       win_popup.focus();
   }
-   
-  function checkactivatexkms(){ 
-    if(document.ca.<%=CHECKBOX_ACTIVATEXKMSSERVICE%>.checked){
-      document.ca.<%=BUTTON_REVOKERENEWXKMSCERTIFICATE%>.disabled = false;
-    }
-    else{    
-      document.ca.<%=BUTTON_REVOKERENEWXKMSCERTIFICATE%>.disabled = true;
-    }
-  }
-
 <% } 
   if(cmscert != null){ %>
   function viewcmscert(){        
@@ -293,16 +283,6 @@ function confirmrenewal(){
       win_popup = window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
       win_popup.focus();
   }
-   
-  function checkactivatecms(){ 
-    if(document.ca.<%=CHECKBOX_ACTIVATECMSSERVICE%>.checked){
-      document.ca.<%=BUTTON_REVOKERENEWCMSCERTIFICATE%>.disabled = false;
-    }
-    else{    
-      document.ca.<%=BUTTON_REVOKERENEWCMSCERTIFICATE%>.disabled = true;
-    }
-  }
-
   <% } 
 }  %>  
 
@@ -892,14 +872,16 @@ function checkallfields(){
         <%= ejbcawebbean.getText("XKMSSERVICE") %>
       </td>
       <td width="50%"> <%= ejbcawebbean.getText("ACTIVE") %> 
-        <input type="checkbox"          <% if(editca && xkmscert != null){ %> onclick="checkactivatexkms()" <% } %> name="<%=CHECKBOX_ACTIVATEXKMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse) out.write(" disabled ");%>
+        <input type="checkbox" name="<%=CHECKBOX_ACTIVATEXKMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(waitingresponse || (editca && xkmscert == null)) out.write(" disabled ");%>
             <% if((editca && (xkmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
                  out.write("CHECKED");%>>
-         <% if(editca && xkmscert != null){ %> &nbsp;&nbsp;         
-         <input type="submit" name="<%= BUTTON_REVOKERENEWXKMSCERTIFICATE %>" <% if(xkmscainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWXKMSCERT") %>" >
+         <% if(editca){ %> &nbsp;&nbsp;         
+         <input type="submit" name="<%= BUTTON_REVOKERENEWXKMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWXKMSCERT") %>" >
+         <%   if(xkmscert != null){ %> &nbsp;&nbsp;         
          <br>         
          <a style="cursor:pointer;" onClick="viewxkmscert()"><u><%= ejbcawebbean.getText("VIEWXKMSCERTIFICATE")%></u></a>
+         <%   } %>
          <% } %>
       </td>
     </tr>    
@@ -910,14 +892,16 @@ function checkallfields(){
         <%= ejbcawebbean.getText("CMSSERVICE") %>
       </td>
       <td width="50%"> <%= ejbcawebbean.getText("ACTIVE") %> 
-        <input type="checkbox"          <% if(editca && cmscert != null){ %> onclick="checkactivatecms()" <% } %> name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse) out.write(" disabled ");%>
+        <input type="checkbox" name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(waitingresponse || (editca && cmscert == null)) out.write(" disabled ");%>
             <% if((editca && (cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
                  out.write("CHECKED");%>>
-         <% if(editca && cmscert != null){ %> &nbsp;&nbsp;         
-         <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(cmscainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" >
+         <% if(editca){ %> &nbsp;&nbsp;         
+         <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" >
+         <%   if(cmscert != null){ %> &nbsp;&nbsp;         
          <br>         
          <a style="cursor:pointer;" onClick="viewcmscert()"><u><%= ejbcawebbean.getText("VIEWCMSCERTIFICATE")%></u></a>
+         <%   } %>
          <% } %>
       </td>
     </tr>    

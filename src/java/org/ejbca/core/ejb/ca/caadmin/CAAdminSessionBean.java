@@ -3168,9 +3168,13 @@ public class CAAdminSessionBean extends BaseSessionBean {
 					throw new EJBException(fe);
 				}
 			}
-			// Publish the extended service certificate, but only for active services
-			if ( (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!certificate.isEmpty()) ) {
-				publishCACertificate(admin, certificate, ca.getCRLPublishers(), ca.getSubjectDN());        			
+			// Always store the certificate. Only publish the extended service certificate for active services.
+			Collection publishers = null;
+			if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+				publishers = ca.getCRLPublishers();
+			}
+			if ( (!certificate.isEmpty()) ) {
+				publishCACertificate(admin, certificate, publishers, ca.getSubjectDN());        			
 			}
 		}
 	} // activateAndPublishExternalCAServices 

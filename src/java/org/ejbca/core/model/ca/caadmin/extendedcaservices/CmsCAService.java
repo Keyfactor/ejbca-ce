@@ -51,6 +51,7 @@ import org.ejbca.core.model.ca.certificateprofiles.XKMSCertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -97,7 +98,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 
 	public CmsCAService(ExtendedCAServiceInfo serviceinfo)  {
 		m_log.debug("CmsCAService : constructor " + serviceinfo.getStatus()); 
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 		// Currently only RSA keys are supported
 		CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo;	
 		data = new HashMap();   
@@ -113,12 +114,12 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	}
 
 	public CmsCAService(HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 		loadData(data);  
 		if(data.get(KEYSTORE) != null){    
 			// lookup keystore passwords      
 		    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
-
+		    int status = ExtendedCAServiceInfo.STATUS_INACTIVE;
 			try {
 				m_log.debug("Loading CMS keystore");
 				KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
@@ -130,15 +131,12 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	            // Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
 	            // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
 	            this.certificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
-				this.info = new CmsCAServiceInfo(getStatus(),
-						getSubjectDN(),
-						getSubjectAltName(), 
-						(String)data.get(KEYSPEC), 
-						(String) data.get(KEYALGORITHM),
-						this.certificatechain);
-
+	            status = getStatus();
 			} catch (Exception e) {
-				throw new IllegalKeyStoreException(e);
+	        	m_log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage());
+			} finally {
+				this.info = new CmsCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)data.get(KEYSPEC), 
+						(String) data.get(KEYALGORITHM), this.certificatechain);
 			}
 
 			data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));        

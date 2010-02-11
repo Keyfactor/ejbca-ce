@@ -314,9 +314,12 @@ public class CADataHandler implements Serializable {
 		while(iter.hasNext()){
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof XKMSCAServiceInfo){
-		  	X509Certificate xkmscert = (X509Certificate)((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath().get(0);
+		  	List xkmscerts = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
+		  	if (xkmscerts != null) {
+			  	X509Certificate xkmscert = (X509Certificate)xkmscerts.get(0);
+				certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
+		  	}
 		  	caadminsession.initExternalCAService(administrator, caid, next);
-			certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 		  }
 		}  
 	 }
@@ -327,9 +330,12 @@ public class CADataHandler implements Serializable {
 		while(iter.hasNext()){
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof CmsCAServiceInfo){
-		  	X509Certificate cmscert = (X509Certificate)((CmsCAServiceInfo) next).getCertificatePath().get(0);
-		  	caadminsession.initExternalCAService(administrator, caid, next);
-			certificatesession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
+			  List cmscerts = ((CmsCAServiceInfo) next).getCertificatePath();
+			  if (cmscerts != null) {
+				  	X509Certificate cmscert = (X509Certificate)cmscerts.get(0);
+					certificatesession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
+			  }
+			  caadminsession.initExternalCAService(administrator, caid, next);
 		  }
 		}  
 	 }
