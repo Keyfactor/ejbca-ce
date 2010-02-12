@@ -19,7 +19,7 @@ $Id$
 
   <mbean code="org.jboss.mail.MailService"
          name="jboss:service=ejbcaMail">
-    <!-- Synchronize JNDI name with org.ejbca.core.ejb.ra.LocalUserAdminSessionBean -->
+    <!-- Default JNDI name java:/EjbcaMail is set in MailConfiguration.java -->
     <attribute name="JNDIName">${mail.jndi-name}</attribute>
     
     <attribute name="User">${mail.user}</attribute>
