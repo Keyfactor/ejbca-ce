@@ -503,9 +503,9 @@ public class CertReqServlet extends HttpServlet {
     		log.debug("Received PKCS10 request: "+new String(reqBytes));
     		  byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
     		  if(resulttype == RequestHelper.ENCODED_PKCS7)  
-    		    RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
+    		    RequestHelper.sendNewB64File(b64cert, response, username+".pem", RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
     		  if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
-    		    RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+    		    RequestHelper.sendNewB64File(b64cert, response, username+".pem", RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
     	}
         /**
          * method to create an install package for OpenVPN including keys and send to user.
