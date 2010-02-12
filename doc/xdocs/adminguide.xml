@@ -339,6 +339,12 @@ openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ..
 You should only use CN in the users DN (same as for PIX below).
 </p>
 </subsubsection>
+<subsubsection name="jSCEP">
+<p>
+<a href="http://code.google.com/p/jscep/">jSCEP</a>.
+jSCEP uses EJBCA as one of the servers it is tested against.
+</p>
+</subsubsection>
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
 Works nice using the URL not including the CA certificate.
