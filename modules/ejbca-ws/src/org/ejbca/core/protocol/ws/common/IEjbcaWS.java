@@ -633,7 +633,7 @@ public interface IEjbcaWS {
 	 * @param username of the related user, use null if no related user exists.
 	 * @param certificate that relates to the log event, use null if no certificate is related
 	 * @param msg message data used in the log comment. The log comment will have
-	 * a syntax of '<type> : <msg'
+	 * a syntax of 'type : msg'
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if the administrators isn't authorized to log.
 	 * @throws EjbcaException if error occured server side
