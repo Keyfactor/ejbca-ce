@@ -167,13 +167,11 @@ public class X509CA extends CA implements Serializable {
       setDefaultCRLIssuer(cainfo.getDefaultCRLIssuer());
       setCADefinedFreshestCRL(cainfo.getCADefinedFreshestCRL());
       setDefaultOCSPServiceLocator(cainfo.getDefaultOCSPServiceLocator());
-      setFinishUser(cainfo.getFinishUser());
       setUseUTF8PolicyText(cainfo.getUseUTF8PolicyText());
       setUsePrintableStringSubjectDN(cainfo.getUsePrintableStringSubjectDN());
       setUseLdapDNOrder(cainfo.getUseLdapDnOrder());
       setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
       setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
-      setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
 
       data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
       data.put(VERSION, new Float(LATEST_VERSION));   
@@ -198,7 +196,7 @@ public class X509CA extends CA implements Serializable {
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(), getFinishUser(), externalcaserviceinfos, 
         		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder(),
-        		  getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),getIncludeInHealthCheck());
+        		  getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys());
         super.setCAInfo(info);
     }
 

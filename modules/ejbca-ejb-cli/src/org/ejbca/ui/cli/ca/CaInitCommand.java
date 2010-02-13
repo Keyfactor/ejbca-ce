@@ -227,7 +227,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 true, // Use LDAP DN order by default
 			                                 false, // Use CRL Distribution Point on CRL
 			                                 false,  // CRL Distribution Point on CRL critical
-			                                 true // include in health check
+			                                 true, // include in health check
+			                                 true // isDoEnforceUniquePublicKeys
 			                                 );
             
             getLogger().info("Creating CA...");

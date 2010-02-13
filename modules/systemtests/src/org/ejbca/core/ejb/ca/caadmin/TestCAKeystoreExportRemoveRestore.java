@@ -516,7 +516,8 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
                 true, // Use LDAP DN order by default
                 false, // Use CRL Distribution Point on CRL
                 false,  // CRL Distribution Point on CRL critical
-                true // include in health check
+                true, // include in health check
+                true // isDoEnforceUniquePublicKeys
         );
 		return cainfo;
 	}

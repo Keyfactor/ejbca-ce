@@ -1627,7 +1627,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				useldapdnorder,
     				usecrldistpointoncrl,
     				crldistpointoncrlcritical,
-    				false);
+    				false,
+                    true // isDoEnforceUniquePublicKeys
+    				);
     	} else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
     		cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
     				certprofileid, validity, 
@@ -1637,7 +1639,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				finishuser, new ArrayList(),
     				approvalsettings,
     				numofreqapprovals,
-    				false);
+    				false,
+                    true // isDoEnforceUniquePublicKeys
+                    );
     	}
     	if(cainfo instanceof X509CAInfo){
     		log.info("Creating a X509 CA (process request)");
@@ -2397,7 +2401,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                                   true, // Use LDAP DN order by default
 			                                   false,  // Use CRL Distribution Point on CRL
 			                                   false,  // CRL Distribution Point on CRL critical,
-			                                   true // Include in HealthCheck
+			                                   true, // Include in HealthCheck
+			                                   true // isDoEnforceUniquePublicKeys
 			                                   );
 			ca = new X509CA((X509CAInfo)cainfo);
 		} else if (caSignatureCertificate.getType().equals("CVC")) {
@@ -2414,7 +2419,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
                     extendedcaservices,
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
-                    true // Include in HealthCheck
+                    true, // Include in HealthCheck
+                    true // isDoEnforceUniquePublicKeys
                     );
 			ca = new CVCCA((CVCCAInfo)cainfo);
 		}

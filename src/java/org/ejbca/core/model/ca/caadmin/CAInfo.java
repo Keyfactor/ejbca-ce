@@ -103,6 +103,7 @@ public class CAInfo implements Serializable {
 	protected Collection approvalSettings;
 	protected int numOfReqApprovals;
 	protected boolean includeInHealthCheck;
+	protected boolean doEnforceUniquePublicKeys;
     
     public CAInfo(){}
     
@@ -198,6 +199,19 @@ public class CAInfo implements Serializable {
 	/**
 	 * The number of different administrators that needs to approve
 	 */
-	public void setNumOfReqApprovals(int numOfReqApprovals) {this.numOfReqApprovals = numOfReqApprovals;}     	
-	
+	public void setNumOfReqApprovals(int numOfReqApprovals) {this.numOfReqApprovals = numOfReqApprovals;}
+
+    /**
+	 * @return answer this: should this CA issue certificates to only one user with certificates from one specific key.
+     */
+    public boolean isDoEnforceUniquePublicKeys() {
+		return this.doEnforceUniquePublicKeys;
+	}
+
+	/**
+	 * @param doEnforceUniquePublicKeys
+	 */
+	public void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
+		this.doEnforceUniquePublicKeys = doEnforceUniquePublicKeys;
+	}
 }

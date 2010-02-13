@@ -60,7 +60,7 @@ public class X509CAInfo extends CAInfo{
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
-                    boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck) {
+                    boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -116,10 +116,12 @@ public class X509CAInfo extends CAInfo{
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
         this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
         this.includeInHealthCheck = includeInHealthCheck;
+        this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
     }
 
     /**
      * Constructor that should be used when updating CA data.
+     * Used by the web. Jsp and stuff like that.
      */
     public X509CAInfo(int caid, long validity, CATokenInfo catokeninfo, String description,
                       long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 

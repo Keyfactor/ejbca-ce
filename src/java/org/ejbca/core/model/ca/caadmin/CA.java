@@ -106,13 +106,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String CRLISSUEINTERVAL               = "crlIssueInterval";
     protected static final String CRLOVERLAPTIME                 = "crlOverlapTime";
     protected static final String CRLPUBLISHERS                  = "crlpublishers";
-	protected static final String FINISHUSER                     = "finishuser";
+	private static final String FINISHUSER                       = "finishuser";
 	protected static final String REQUESTCERTCHAIN               = "requestcertchain";
 	protected static final String EXTENDEDCASERVICES             = "extendedcaservices";
 	protected static final String EXTENDEDCASERVICE              = "extendedcaservice";
 	protected static final String APPROVALSETTINGS               = "approvalsettings";
 	protected static final String NUMBEROFREQAPPROVALS           = "numberofreqapprovals";
 	protected static final String INCLUDEINHEALTHCHECK			 = "includeinhealthcheck";
+	private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS    = "doEnforceUniquePublicKeys";
     
     // Public Methods
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
@@ -133,6 +134,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        setCRLPublishers(cainfo.getCRLPublishers());
        setFinishUser(cainfo.getFinishUser());
        setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
+       setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
 	   
 	   Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	   ArrayList extendedservicetypes = new ArrayList(); 
@@ -399,21 +401,32 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        }
        return ret;
     }
-    
-	public boolean  getFinishUser(){return ((Boolean)data.get(FINISHUSER)).booleanValue();}
-	
-	public void setFinishUser(boolean finishuser) {data.put(FINISHUSER, new Boolean(finishuser));}   
-	
-	public boolean  getIncludeInHealthCheck(){
-		Boolean temp = ((Boolean)data.get(INCLUDEINHEALTHCHECK)).booleanValue();
-		if (temp != null) {
-			return temp;
+
+	private boolean getBoolean(String key, boolean defaultValue) {
+		final Object temp = data.get(key);
+		if ( temp!=null && temp instanceof Boolean ) {
+			return ((Boolean)temp).booleanValue();
 		} 
-		return true;
+		return defaultValue;
+	}
+
+	protected boolean  getFinishUser(){return getBoolean(FINISHUSER, true);}
+	
+	private void setFinishUser(boolean finishuser) {data.put(FINISHUSER, new Boolean(finishuser));}   
+	
+	protected boolean  getIncludeInHealthCheck(){
+		return getBoolean(INCLUDEINHEALTHCHECK, true);
 	}
 	
-	public void setIncludeInHealthCheck(boolean includeInHealthCheck) {
-			data.put(INCLUDEINHEALTHCHECK, new Boolean(includeInHealthCheck)); 
+	protected void setIncludeInHealthCheck(boolean includeInHealthCheck) {
+		data.put(INCLUDEINHEALTHCHECK, new Boolean(includeInHealthCheck)); 
+	}
+
+	protected boolean isDoEnforceUniquePublicKeys() {
+		return getBoolean(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, true);
+	}
+    private void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
+    	data.put(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, new Boolean(doEnforceUniquePublicKeys));
 	}
     
 	/**
@@ -477,6 +490,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	}
     	setFinishUser(cainfo.getFinishUser());
     	setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
+        setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
     	
     	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
     	while(iter.hasNext()){

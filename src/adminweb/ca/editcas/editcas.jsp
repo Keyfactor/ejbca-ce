@@ -645,7 +645,8 @@
                                                         useldapdnorder,
                                                         usecrldistpointoncrl,
                                                         crldistpointoncrlcritical,
-                                                        true);
+                                                        true,
+                                                        true);// TODO: take care of this
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -718,7 +719,8 @@
                                                         useldapdnorder,
                                                         usecrldistpointoncrl,
                                                         crldistpointoncrlcritical,
-                                                        true);
+                                                        true,
+                                                        true);// TODO: take care of this
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -752,7 +754,8 @@
                          finishuser, extendedcaservices,
                          approvalsettings,
                          numofreqapprovals,
-                         true);
+                         true,
+                         true); //TODO: take care of this!
                                   
           		if(request.getParameter(BUTTON_CREATE) != null){           
                      try{
@@ -1349,7 +1352,8 @@
                                                         useldapdnorder,
                                                         usecrldistpointoncrl,
                                                         crldistpointoncrlcritical,
-                                                        true);
+                                                        true,
+                                                        true);// TODO: take care of this
                }                               
                }
              } // if(catype == CAInfo.CATYPE_X509)
@@ -1374,7 +1378,8 @@
                        finishuser, extendedcaservices,
                        approvalsettings,
                        numofreqapprovals,
-                       true);
+                       true,
+                       true); //TODO: take care of this!
                    }
                  }
                }  // if(catype == CAInfo.CATYPE_CVC)

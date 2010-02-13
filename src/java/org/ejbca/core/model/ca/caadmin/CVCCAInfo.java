@@ -39,7 +39,7 @@ public class CVCCAInfo extends CAInfo {
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection crlpublishers,boolean finishuser,Collection extendedcaserviceinfos, 
 			Collection approvalSettings, int numOfReqApprovals,
-			boolean includeInHealthCheck) {
+			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys) {
 		this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
 		this.caid = this.subjectdn.hashCode();
 		this.name = name;
@@ -65,10 +65,12 @@ public class CVCCAInfo extends CAInfo {
 		this.approvalSettings = approvalSettings;
 		this.numOfReqApprovals = numOfReqApprovals;
 		this.includeInHealthCheck = includeInHealthCheck;
+		this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
 	}
 
 	/**
 	 * Constructor that should be used when updating CA data.
+     * Used by the web. Jsp and stuff like that.
 	 */
 	public CVCCAInfo(int caid, long validity, CATokenInfo catokeninfo, String description,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
