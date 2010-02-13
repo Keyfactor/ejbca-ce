@@ -119,7 +119,8 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
 			                                 true, // Use LDAP DN order by default
 			                                 false, // Use CRL Distribution Point on CRL
 			                                 false,  // CRL Distribution Point on CRL critical
-			                                 true // Include in Health Check
+			                                 true, // Include in Health Check
+			                                 true // isDoEnforceUniquePublicKeys
 			                                 );
             
             getLogger().info("Creating CA...");

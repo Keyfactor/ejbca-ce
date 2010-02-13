@@ -145,7 +145,9 @@ public class TestCAs extends TestCase {
             		true, // Use LDAP DN order by default
             		false, // Use CRL Distribution Point on CRL
             		false,  // CRL Distribution Point on CRL critical
-            		true);
+            		true,
+                    true // isDoEnforceUniquePublicKeys
+            		);
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
 
@@ -284,7 +286,8 @@ public class TestCAs extends TestCase {
                     true, // Use LDAP DN order by default
                     false, // Use CRL Distribution Point on CRL
                     false,  // CRL Distribution Point on CRL critical
-                    true // include in Health Check
+                    true, // include in Health Check
+                    true // isDoEnforceUniquePublicKeys
                     );
 
 
@@ -384,7 +387,8 @@ public class TestCAs extends TestCase {
                     true, // Use LDAP DN order by default
                     false, // Use CRL Distribution Point on CRL
                     false,  // CRL Distribution Point on CRL critical
-                    true // Include in healthCheck
+                    true, // Include in healthCheck
+                    true // isDoEnforceUniquePublicKeys
             );
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -481,7 +485,8 @@ public class TestCAs extends TestCase {
                     true, // Use LDAP DN order by default
                     false, // Use CRL Distribution Point on CRL
                     false,  // CRL Distribution Point on CRL critical
-                    true // Include in healthCheck
+                    true, // Include in healthCheck
+                    true // isDoEnforceUniquePublicKeys
                     );
             TestTools.getCAAdminSession().createCA(admin, cainfo);
 
@@ -567,7 +572,8 @@ public class TestCAs extends TestCase {
                     true, // Use LDAP DN order by default
                     false, // Use CRL Distribution Point on CRL
                     false,  // CRL Distribution Point on CRL critical
-                    true // Include in HealthCheck
+                    true, // Include in HealthCheck
+                    true // isDoEnforceUniquePublicKeys
                     );
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -658,7 +664,8 @@ public class TestCAs extends TestCase {
                     false, // Use X500 DN order
                     false, // Use CRL Distribution Point on CRL
                     false,  // CRL Distribution Point on CRL critical
-                    true // Include in health check
+                    true, // Include in health check
+                    true // isDoEnforceUniquePublicKeys
                     );
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -732,7 +739,8 @@ public class TestCAs extends TestCase {
                     extendedcaservices,
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
-                    true // Include in health check
+                    true, // Include in health check
+                    true // isDoEnforceUniquePublicKeys
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -792,7 +800,8 @@ public class TestCAs extends TestCase {
                     extendedcaservices,
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
-                    true // Include in health check
+                    true, // Include in health check
+                    true // isDoEnforceUniquePublicKeys
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -847,7 +856,8 @@ public class TestCAs extends TestCase {
                     extendedcaservices,
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
-                    true // Include in health check
+                    true, // Include in health check
+                    true // isDoEnforceUniquePublicKeys
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -1036,7 +1046,9 @@ public class TestCAs extends TestCase {
             		true, // Use LDAP DN order by default
             		false, // Use CRL Distribution Point on CRL
             		false,  // CRL Distribution Point on CRL critical
-            		true);
+            		true,
+                    true // isDoEnforceUniquePublicKeys
+            		);
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
 
@@ -1154,7 +1166,9 @@ public class TestCAs extends TestCase {
             		true, // Use LDAP DN order by default
             		false, // Use CRL Distribution Point on CRL
             		false,  // CRL Distribution Point on CRL critical
-            		true);
+            		true,
+                    true // isDoEnforceUniquePublicKeys
+            		);
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
 

@@ -279,40 +279,52 @@ public class CommonEjbcaWSTest extends TestCase {
 	}
 	
 
-	protected void test01EditUser(boolean performSetup) throws Exception{
+	private static final String CA1_WSTESTUSER1 = "CA1_WSTESTUSER1";
+	private static final String CA1_WSTESTUSER2 = "CA1_WSTESTUSER2";
+	private static final String CA2_WSTESTUSER1 = "CA2_WSTESTUSER1";
+	private static final String CA1 = "CA1";
+	private static final String CA2 = "CA2";
+
+	private String getDN(String userName) {
+		return "CN="+userName+",O="+userName.charAt(userName.length()-1)+"Test";
+	}
+	private String getReversedDN(String userName) {
+		return "O="+userName.charAt(userName.length()-1)+"Test,CN="+userName;
+	}
+	private void editUser(boolean performSetup, String userName, String caName) throws Exception{
 		if(performSetup){
 		  setUpAdmin();
 		}
 		// Test to add a user.
-		UserDataVOWS user1 = new UserDataVOWS();
-		user1.setUsername("WSTESTUSER1");
-		user1.setPassword("foo123");
-		user1.setClearPwd(true);
-		user1.setSubjectDN("CN=WSTESTUSER1");
-		user1.setCaName(getAdminCAName());
-		user1.setEmail(null);
-		user1.setSubjectAltName(null);
-		user1.setStatus(UserDataVOWS.STATUS_NEW);
-		user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-		user1.setEndEntityProfileName("EMPTY");
-		user1.setCertificateProfileName("ENDUSER");
+		final UserDataVOWS user = new UserDataVOWS();
+		user.setUsername(userName);
+		user.setPassword("foo123");
+		user.setClearPwd(true);
+		user.setSubjectDN("CN="+userName);
+		user.setCaName(caName);
+		user.setEmail(null);
+		user.setSubjectAltName(null);
+		user.setStatus(UserDataVOWS.STATUS_NEW);
+		user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+		user.setEndEntityProfileName("EMPTY");
+		user.setCertificateProfileName("ENDUSER");
 
-            ejbcaraws.editUser(user1);
+		ejbcaraws.editUser(user);
 
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");
+        usermatch.setMatchvalue(userName);
 		
 	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);
 		UserDataVOWS userdata = userdatas.get(0);
-		assertTrue(userdata.getUsername().equals("WSTESTUSER1"));
+		assertTrue(userdata.getUsername().equals(userName));
 		assertTrue(userdata.getPassword() == null);
 		assertTrue(!userdata.isClearPwd());
-        assertTrue(userdata.getSubjectDN().equals("CN=WSTESTUSER1"));
-        assertTrue(userdata.getCaName().equals(getAdminCAName()));
+        assertTrue(userdata.getSubjectDN().equals("CN="+userName));
+        assertTrue(userdata.getCaName().equals(caName));
         assertTrue(userdata.getSubjectAltName() == null);
         assertTrue(userdata.getEmail() == null);
         assertTrue(userdata.getCertificateProfileName().equals("ENDUSER"));
@@ -321,16 +333,23 @@ public class CommonEjbcaWSTest extends TestCase {
         assertTrue(userdata.getStatus() == UserDataVOWS.STATUS_NEW);
         
         // Edit the user
-        userdata.setSubjectDN("CN=WSTESTUSER1,O=Test");
+        final String sDN = getDN(userName);
+        userdata.setSubjectDN(sDN);
         ejbcaraws.editUser(userdata);
         List<UserDataVOWS> userdatas2 = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas2 != null);
 		assertTrue(userdatas2.size() == 1);  
 		UserDataVOWS userdata2 = userdatas.get(0);
-        assertTrue(userdata2.getSubjectDN().equals("CN=WSTESTUSER1,O=Test"));
+        assertTrue(userdata2.getSubjectDN().equals(sDN));
 		
 	}
-	
+	protected void test01EditUser(boolean performSetup) throws Exception{
+		TestTools.createTestCA(CA1);
+		TestTools.createTestCA(CA2);
+		editUser(performSetup , CA1_WSTESTUSER1, CA1);
+		editUser(performSetup , CA1_WSTESTUSER2, CA1);
+		editUser(performSetup , CA2_WSTESTUSER1, CA2);
+	}	
 
 	protected void test02findUser(boolean performSetup) throws Exception{
 		if(performSetup){
@@ -341,7 +360,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER2");		
+        usermatch.setMatchvalue("noneExsisting");		
 		List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 0);
@@ -350,7 +369,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");	
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);	
 		
         List<UserDataVOWS> userdatas2 = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas2 != null);
@@ -360,21 +379,21 @@ public class CommonEjbcaWSTest extends TestCase {
 		usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_ORGANIZATION);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_BEGINSWITH);
-        usermatch.setMatchvalue("Te");			
+        usermatch.setMatchvalue("2Te");			
         List<UserDataVOWS> userdatas3 = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas3 != null);
 		assertTrue(userdatas3.size() == 1);
-		assertTrue(userdatas3.get(0).getSubjectDN().equals("CN=WSTESTUSER1,O=Test"));
+		assertTrue(userdatas3.get(0).getSubjectDN().equals(getDN(CA1_WSTESTUSER2)));
 		
 		// Find by subjectDN pattern
 		usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_DN);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_CONTAINS);
-        usermatch.setMatchvalue("WSTESTUSER1");				
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);				
 		List<UserDataVOWS> userdatas4 = ejbcaraws.findUser(usermatch);
-		assertNotNull(userdatas4 != null);
+		assertNotNull(userdatas4);
 		assertEquals(1, userdatas4.size());
-		assertEquals("CN=WSTESTUSER1,O=Test", userdatas4.get(0).getSubjectDN());
+		assertEquals(getDN(CA1_WSTESTUSER1), userdatas4.get(0).getSubjectDN());
 		
 		usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_ENDENTITYPROFILE);
@@ -419,7 +438,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());
 		
-		CertificateResponse certenv =  ejbcaraws.pkcs10Request("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+		CertificateResponse certenv =  ejbcaraws.pkcs10Request(CA1_WSTESTUSER1,"foo123",new String(Base64.encode(pkcs10.getEncoded())),null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		
 		assertNotNull(certenv);
 		
@@ -427,56 +446,106 @@ public class CommonEjbcaWSTest extends TestCase {
 		
 		assertNotNull(cert);
 		
-		assertEquals("CN=WSTESTUSER1,O=Test", cert.getSubjectDN().toString());
+		assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
 		
 	}
 	
 
-	private void certreqInternal(UserDataVOWS userdata, String requestdata, int requesttype) throws Exception{
-		CertificateResponse certenv =  ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
-		
-		assertNotNull(certenv);		
-		assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
-		X509Certificate cert = certenv.getCertificate (); 
-		
-		assertNotNull(cert);		
-		assertTrue(cert.getSubjectDN().toString().equals("CN=WSTESTUSER1,O=Test"));
-		
-		certenv =  ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_PKCS7);
-	    assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
-		CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
-		assertTrue(cmsSignedData != null);
+	private ErrorCode certreqInternal(UserDataVOWS userdata, String requestdata, int requesttype) throws Exception{
+		{
+			final CertificateResponse certenv;
+			try {
+				certenv =  ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+			} catch (EjbcaException_Exception e) {
+				final ErrorCode errorCode = e.getFaultInfo().getErrorCode();
+				log.info( errorCode.getInternalErrorCode(), e);
+				assertNotNull("error code should not be null", errorCode);
+				return errorCode;
+			}
 
-		CertStore certStore = cmsSignedData.getCertificatesAndCRLs("Collection","BC");
-		assertTrue(certStore.getCertificates(null).size() ==1);
-	
-	}
+			assertNotNull(certenv);		
+			assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
+			final X509Certificate cert = certenv.getCertificate (); 
 
-	protected void test03CertificateRequest(boolean performSetup) throws Exception{
-		if(performSetup){
-			setUpAdmin();
+			assertNotNull(cert);		
+			assertTrue(cert.getSubjectDN().toString().equals(getDN(userdata.getUsername())));
+		}{
+			final CertificateResponse certenv =  ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_PKCS7);
+			assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
+			CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
+			assertNotNull(cmsSignedData);
+
+			CertStore certStore = cmsSignedData.getCertificatesAndCRLs("Collection","BC");
+			assertTrue(certStore.getCertificates(null).size() ==1);
 		}
-		
+		return null;
+	}
+	private UserDataVOWS getUserData(String userName) throws Exception {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");       		
+        usermatch.setMatchvalue(userName);       		
 	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
         userdatas.get(0).setTokenType(null);  		   
         userdatas.get(0).setPassword(null);
         userdatas.get(0).setClearPwd(true);
-		
-		KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-		String pkcs10 = new String(Base64.encode(new PKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate()).getEncoded()));
-		certreqInternal (userdatas.get(0), pkcs10, CertificateHelper.CERT_REQ_TYPE_PKCS10);
+        return userdatas.get(0);
+	}
+	private String getP10() throws Exception {
+		final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+		return new String(Base64.encode(new PKCS10CertificationRequest("SHA1WithRSA",
+		                                                               CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(),
+		                                                               new DERSet(), keys.getPrivate()).getEncoded()));
+	}
+	protected void test03CertificateRequest(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		final UserDataVOWS userData1 = getUserData(CA1_WSTESTUSER1);
+		assertNull( certreqInternal(userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10) );
 
-		certreqInternal (userdatas.get(0), crmf, CertificateHelper.CERT_REQ_TYPE_CRMF);
+		assertNull( certreqInternal(userData1, crmf, CertificateHelper.CERT_REQ_TYPE_CRMF) );
 	
-		certreqInternal (userdatas.get(0), spkac, CertificateHelper.CERT_REQ_TYPE_SPKAC);
-		        
+		assertNull( certreqInternal(userData1, spkac, CertificateHelper.CERT_REQ_TYPE_SPKAC) );
+	}
+	protected void test03EnforcementOfUniquePublicKeys(boolean performSetup) throws Exception {
+		final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+		final UserDataVOWS ca1userData1 = getUserData(CA1_WSTESTUSER1);
+		final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
+		final UserDataVOWS ca2userData1 = getUserData(CA2_WSTESTUSER1);
+		final String p10_1 = getP10();
+		final String p10_2 = getP10();
+		final CAInfo ca1Info = TestTools.getCAAdminSession().getCAInfo(admin, CA1);
+
+		// make sure same keys for different users is prevented
+		ca1Info.setDoEnforceUniquePublicKeys(true);
+		TestTools.getCAAdminSession().editCA(admin, ca1Info);
+		
+		// fetching cert for new key on should be no problem
+		assertNull( certreqInternal(ca1userData1, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+
+		// fetching cert for existing key for a user that does not have a certificate for this key should be impossible
+		final ErrorCode errorCode = certreqInternal(ca1userData2, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10);
+		assertNotNull("error code should not be null", errorCode);
+		assertEquals(org.ejbca.core.ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(), errorCode.getInternalErrorCode());
+
+		// test that the user that was denied a cert can get a cert with another key.
+		assertNull( certreqInternal(ca1userData2, p10_2, CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+
+		// fetching more than one cert for the same key should be possible for the same user
+		assertNull( certreqInternal(ca1userData1, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+
+		// A user could get a certificate for a key already included in a certificate from another user if another CA is issuing it.
+		assertNull( certreqInternal(ca2userData1, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+
+		// permit same key for differ users
+		ca1Info.setDoEnforceUniquePublicKeys(false);
+		TestTools.getCAAdminSession().editCA(admin, ca1Info);
+
+		// fetching cert for existing key for a user that does not have a certificate for this key is now permitted
+		assertNull( certreqInternal(ca1userData2, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10) );
 	}
 
 	private static final String crmf = "MIIBdjCCAXIwgdkCBQCghr4dMIHPgAECpRYwFDESMBAGA1UEAxMJdW5kZWZpbmVk"+
@@ -494,18 +563,18 @@ public class CommonEjbcaWSTest extends TestCase {
 		}
 		// Edit our favorite test user
 		UserDataVOWS user1 = new UserDataVOWS();
-		user1.setUsername("WSTESTUSER1");
+		user1.setUsername(CA1_WSTESTUSER1);
 		user1.setPassword("foo123");
 		user1.setClearPwd(true);
-        user1.setSubjectDN("CN=WSTESTUSER1,O=Test");
-		user1.setCaName(getAdminCAName());
+        user1.setSubjectDN(getDN(CA1_WSTESTUSER1));
+		user1.setCaName(CA1);
 		user1.setStatus(UserDataVOWS.STATUS_NEW);
 		user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
 		user1.setEndEntityProfileName("EMPTY");
 		user1.setCertificateProfileName("ENDUSER");
 		ejbcaraws.editUser(user1);
 
-		CertificateResponse certenv =  ejbcaraws.crmfRequest("WSTESTUSER1","foo123",crmf,null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+		CertificateResponse certenv =  ejbcaraws.crmfRequest(CA1_WSTESTUSER1,"foo123",crmf,null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		
 		assertNotNull(certenv);
 		
@@ -513,7 +582,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		
 		assertNotNull(cert);
 		log.info(cert.getSubjectDN().toString());
-		assertEquals("CN=WSTESTUSER1,O=Test", cert.getSubjectDN().toString());
+		assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
 	}
 
 	private static final String spkac = "MIICSjCCATIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDbiUJ4Q7a9"+
@@ -536,18 +605,18 @@ public class CommonEjbcaWSTest extends TestCase {
 		}
 		// Edit our favorite test user
 		UserDataVOWS user1 = new UserDataVOWS();
-		user1.setUsername("WSTESTUSER1");
+		user1.setUsername(CA1_WSTESTUSER1);
 		user1.setPassword("foo123");
 		user1.setClearPwd(true);
-        user1.setSubjectDN("CN=WSTESTUSER1,O=Test");
-		user1.setCaName(getAdminCAName());
+        user1.setSubjectDN(getDN(CA1_WSTESTUSER1));
+		user1.setCaName(CA1);
 		user1.setStatus(UserDataVOWS.STATUS_NEW);
 		user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
 		user1.setEndEntityProfileName("EMPTY");
 		user1.setCertificateProfileName("ENDUSER");
 		ejbcaraws.editUser(user1);
 
-		CertificateResponse certenv =  ejbcaraws.spkacRequest("WSTESTUSER1","foo123",spkac,null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+		CertificateResponse certenv =  ejbcaraws.spkacRequest(CA1_WSTESTUSER1,"foo123",spkac,null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		
 		assertNotNull(certenv);
 		
@@ -555,7 +624,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		
 		assertNotNull(cert);
 		
-		assertEquals("CN=WSTESTUSER1,O=Test", cert.getSubjectDN().toString());
+		assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
 	}
 
 	
@@ -566,7 +635,7 @@ public class CommonEjbcaWSTest extends TestCase {
 
 		boolean exceptionThrown = false;
 		try{
-           ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
+           ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){
 			exceptionThrown = true;
 		}
@@ -576,7 +645,7 @@ public class CommonEjbcaWSTest extends TestCase {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");       		
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);       		
 	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
@@ -585,7 +654,7 @@ public class CommonEjbcaWSTest extends TestCase {
         
         exceptionThrown = false;
 		try{
-          ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
+          ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){
 			exceptionThrown = true;
 		}
@@ -599,7 +668,7 @@ public class CommonEjbcaWSTest extends TestCase {
         
         KeyStore ksenv = null;
         try{
-          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
+          ksenv = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
         	assertTrue(e.getMessage(),false);
         }
@@ -612,16 +681,16 @@ public class CommonEjbcaWSTest extends TestCase {
         Enumeration en = ks.aliases();
         String alias = (String) en.nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertEquals(cert.getSubjectDN().toString(), "CN=WSTESTUSER1,O=Test");
+        assertEquals(cert.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         PrivateKey privK1 = (PrivateKey)ks.getKey(alias, "foo456".toCharArray());
-        log.info("test04GeneratePkcs12() Certificate " +cert.getSubjectDN().toString() + " equals CN=WSTESTUSER1,O=Test");
+        log.info("test04GeneratePkcs12() Certificate " +cert.getSubjectDN().toString() + " equals "+getDN(CA1_WSTESTUSER1));
         
         // Generate a new one and make sure it is a new one and that key recovery does not kick in by mistake
 		// Set status to new
 		usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");       		
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);       		
 	 	userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
@@ -630,13 +699,13 @@ public class CommonEjbcaWSTest extends TestCase {
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));
 		// A new PK12 request now should return the same key and certificate
-        KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        KeyStore ksenv2 = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(),"PKCS12","foo456");
         assertNotNull(ks2);
         en = ks2.aliases();
         alias = (String) en.nextElement();
         X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSER1,O=Test");
+        assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         PrivateKey privK2 = (PrivateKey)ks2.getKey(alias, "foo456".toCharArray());
         
         // Compare certificates, must not be the same
@@ -653,7 +722,7 @@ public class CommonEjbcaWSTest extends TestCase {
         en = ks2.aliases();
         alias = (String) en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSER1,O=Test");
+        assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey)ks2.getKey(alias, "foo456".toCharArray());
 
         // Test the new request form JKS
@@ -664,7 +733,7 @@ public class CommonEjbcaWSTest extends TestCase {
         en = ks2.aliases();
         alias = (String) en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectX500Principal ().getName(), "O=Test,CN=WSTESTUSER1");
+        assertEquals(cert2.getSubjectX500Principal ().getName(), getReversedDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey)ks2.getKey(alias, "foo456".toCharArray());
 	}
 
@@ -677,7 +746,7 @@ public class CommonEjbcaWSTest extends TestCase {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");		
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);		
 	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
@@ -688,7 +757,7 @@ public class CommonEjbcaWSTest extends TestCase {
         ejbcaraws.editUser(userdatas.get(0));        
         KeyStore ksenv = null;
         try{
-            ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            ksenv = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo123",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
           	assertTrue(e.getMessage(),false);
         }
@@ -699,7 +768,7 @@ public class CommonEjbcaWSTest extends TestCase {
         String alias = en.nextElement();
         java.security.cert.Certificate gencert = (java.security.cert.Certificate) ks.getCertificate(alias);
         
-        List<Certificate> foundcerts = ejbcaraws.findCerts("WSTESTUSER1",false);
+        List<Certificate> foundcerts = ejbcaraws.findCerts(CA1_WSTESTUSER1,false);
         assertTrue(foundcerts != null);
         assertTrue(foundcerts.size() > 0);
         
@@ -717,7 +786,7 @@ public class CommonEjbcaWSTest extends TestCase {
         
         ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
         
-        foundcerts = ejbcaraws.findCerts("WSTESTUSER1",true);
+        foundcerts = ejbcaraws.findCerts(CA1_WSTESTUSER1,true);
         assertTrue(foundcerts != null);
         assertTrue(foundcerts.size() > 0);
         
@@ -743,7 +812,7 @@ public class CommonEjbcaWSTest extends TestCase {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");			
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);			
 		List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
@@ -755,7 +824,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		
         KeyStore ksenv = null;
         try{
-          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
+          ksenv = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo456",null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
         	assertTrue(e.getMessage(),false);
         }
@@ -765,7 +834,7 @@ public class CommonEjbcaWSTest extends TestCase {
         Enumeration en = ks.aliases();
         String alias = (String) en.nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertTrue(cert.getSubjectDN().toString().equals("CN=WSTESTUSER1,O=Test"));       
+        assertTrue(cert.getSubjectDN().toString().equals(getDN(CA1_WSTESTUSER1)));       
 		
         String issuerdn = cert.getIssuerDN().toString();
         String serno = cert.getSerialNumber().toString(16);
@@ -809,7 +878,7 @@ public class CommonEjbcaWSTest extends TestCase {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");			
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);			
 		List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);    
 		userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_P12);       		   
 		userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
@@ -818,7 +887,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));        
 		KeyStore ksenv = null;
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
+			ksenv = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}
@@ -835,7 +904,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));  
 		
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
+			ksenv = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}
@@ -873,7 +942,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		UserMatch usermatch = new UserMatch();
 		usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
 		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-		usermatch.setMatchvalue("WSTESTUSER1");				
+		usermatch.setMatchvalue(CA1_WSTESTUSER1);				
 		List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);    
 		userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_P12);       		   
 		userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
@@ -882,7 +951,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));        
 		KeyStore ksenv = null;
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
+			ksenv = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1,"foo123","12345678","1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}
@@ -919,7 +988,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		
 		// Test to add a user.
 		UserDataVOWS user1 = new UserDataVOWS();
-		user1.setUsername("WSTESTUSER1");
+		user1.setUsername(CA1_WSTESTUSER1);
 		user1.setPassword("foo123");
 		user1.setClearPwd(true);
 		user1.setSubjectDN("CN=WS������");
@@ -936,13 +1005,13 @@ public class CommonEjbcaWSTest extends TestCase {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);
 		
 	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);
 		UserDataVOWS userdata = userdatas.get(0);
-		assertTrue(userdata.getUsername().equals("WSTESTUSER1"));
+		assertTrue(userdata.getUsername().equals(CA1_WSTESTUSER1));
         assertTrue(userdata.getSubjectDN().equals("CN=WS������"));
 		
 	}
@@ -955,12 +1024,12 @@ public class CommonEjbcaWSTest extends TestCase {
 		}
 		
 		// Revoke and delete
-		ejbcaraws.revokeUser("WSTESTUSER1",RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE,true);
+		ejbcaraws.revokeUser(CA1_WSTESTUSER1,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE,true);
 		
 		UserMatch usermatch = new UserMatch();
 		usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
 		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-		usermatch.setMatchvalue("WSTESTUSER1");	
+		usermatch.setMatchvalue(CA1_WSTESTUSER1);	
 		List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 0);
@@ -1312,7 +1381,7 @@ public class CommonEjbcaWSTest extends TestCase {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("WSTESTUSER1");       		
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);       		
 	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);        
@@ -1326,17 +1395,17 @@ public class CommonEjbcaWSTest extends TestCase {
 		PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());
 		
-		CertificateResponse certenv =  ejbcaraws.pkcs10Request("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+		CertificateResponse certenv =  ejbcaraws.pkcs10Request(CA1_WSTESTUSER1,"foo123",new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		
 		assertNotNull(certenv);		
 		assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
 		X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData()); 
 		
 		assertNotNull(cert);		
-		assertTrue(cert.getSubjectDN().toString().equals("CN=WSTESTUSER1,O=Test"));
+		assertTrue(cert.getSubjectDN().toString().equals(getDN(CA1_WSTESTUSER1)));
 		
         ejbcaraws.editUser(userdatas.get(0));
-        certenv =  ejbcaraws.pkcs10Request("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_PKCS7);
+        certenv =  ejbcaraws.pkcs10Request(CA1_WSTESTUSER1,"foo123",new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_PKCS7);
         assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
 		CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
 		assertTrue(cmsSignedData != null);
@@ -1360,7 +1429,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		boolean trows = false;
 		try{
 			// This should throw an exception that key recovery is not enabled
-			ejbcaraws.keyRecoverNewest("WSTESTUSER1");
+			ejbcaraws.keyRecoverNewest(CA1_WSTESTUSER1);
 		}catch(EjbcaException_Exception e){
 			trows = true;
 			//e.printStackTrace();
@@ -1580,7 +1649,7 @@ public class CommonEjbcaWSTest extends TestCase {
 				
 		// Edit our favorite test user
 		UserDataVOWS user1 = new UserDataVOWS();
-		user1.setUsername("WSTESTUSER1");
+		user1.setUsername(CA1_WSTESTUSER1);
 		user1.setPassword("foo123");
 		user1.setClearPwd(true);
         user1.setSubjectDN("CN=Test,C=SE");
@@ -1693,14 +1762,14 @@ public class CommonEjbcaWSTest extends TestCase {
 		if(performSetup){
 			setUpAdmin();
 		}
-        List<Certificate> foundcerts = ejbcaraws.getLastCertChain("WSTESTUSER1");
+        List<Certificate> foundcerts = ejbcaraws.getLastCertChain(CA1_WSTESTUSER1);
         assertTrue(foundcerts != null);
         assertTrue(foundcerts.size() > 1);
         
     	java.security.cert.Certificate cacert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(foundcerts.size()-1).getCertificateData());
     	assertTrue(CertTools.isSelfSigned(cacert));
     	java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(0).getCertificateData());
-    	assertEquals("CN=WSTESTUSER1,O=Test", CertTools.getSubjectDN(cert));
+    	assertEquals(getDN(CA1_WSTESTUSER1), CertTools.getSubjectDN(cert));
     	for (int i = 1; i < foundcerts.size(); i++) {
         	java.security.cert.Certificate cert2 = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
     		cert.verify(cert2.getPublicKey()); // will throw if verification fails
@@ -2038,7 +2107,17 @@ public class CommonEjbcaWSTest extends TestCase {
         
 		// Remove test user
         try {
-        	getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        	getUserAdminSession().revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        try {
+        	getUserAdminSession().revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        try {
+        	getUserAdminSession().revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	e.printStackTrace();
         }
@@ -2060,6 +2139,16 @@ public class CommonEjbcaWSTest extends TestCase {
         // Remove Key recovery end entity profile
         try {
         	getRAAdmin().removeEndEntityProfile(intAdmin, "KEYRECOVERY");
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        try {
+        	TestTools.removeTestCA(CA1);
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+        try {
+        	TestTools.removeTestCA(CA2);
         } catch (Exception e) {
         	e.printStackTrace();
         }
@@ -2106,7 +2195,8 @@ public class CommonEjbcaWSTest extends TestCase {
                     extendedcaservices,
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
-                    true // Include in health check
+                    true, // Include in health check
+                    true // isDoEnforceUniquePublicKeys
                     );
             
             getCAAdminSession().createCA(intAdmin, cvccainfo);
@@ -2141,7 +2231,8 @@ public class CommonEjbcaWSTest extends TestCase {
         			extendedcaservices,
         			new ArrayList(), // Approvals Settings
         			1, // Number of Req approvals
-        			true // Include in health check
+        			true, // Include in health check
+                    true // isDoEnforceUniquePublicKeys
         	);
 
         	getCAAdminSession().createCA(intAdmin, cvcdvinfo);

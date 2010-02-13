@@ -56,6 +56,7 @@ public class ErrorCode implements Serializable {
     private static final String _NOT_SPECIFIED = "NOT_SPECIFIED"; // No error code specified.
     private static final String _CA_OFFLINE = "CA_OFFLINE"; // CA is offline.
     private static final String _ALREADY_REVOKED ="ALREADY_REVOKED"; // End entity is already revoked
+    private static final String _CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER="CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER";
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -135,6 +136,7 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode CA_OFFLINE = new ErrorCode(_CA_OFFLINE);
     /** End entity is already revoked. */
     public static final ErrorCode  ALREADY_REVOKED = new ErrorCode(_ALREADY_REVOKED);
+    public static final ErrorCode CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER = new ErrorCode(_CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER);
 
     /** Get the internal error code. */
     public String getInternalErrorCode() {

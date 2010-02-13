@@ -88,9 +88,6 @@ public class CVCCA extends CA implements Serializable {
 	public CVCCA(CVCCAInfo cainfo) {
 		super(cainfo);  
 
-		setFinishUser(cainfo.getFinishUser());
-		setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
-
 		data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_CVC));
 		data.put(VERSION, new Float(LATEST_VERSION));   
 	}
@@ -112,7 +109,7 @@ public class CVCCA extends CA implements Serializable {
 				getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
 				getApprovalSettings(), getNumOfRequiredApprovals(),
-				getIncludeInHealthCheck());
+				getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys());
 		super.setCAInfo(info);
 	}
 

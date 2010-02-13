@@ -437,7 +437,9 @@ public class TestTools {
         		true, // Use LDAP DN order by default
         		false, // Use CRL Distribution Point on CRL
         		false,  // CRL Distribution Point on CRL critical
-        		true);
+        		true,
+                true // isDoEnforceUniquePublicKeys
+        		);
 
         try {
         	getCAAdminSession().createCA(admin, cainfo);

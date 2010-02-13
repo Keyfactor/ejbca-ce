@@ -45,6 +45,8 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
@@ -752,7 +754,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             ret.create();
             // Call authentication session and tell that we are finished with this user
-            if (ca.getFinishUser() == true) {
+            if ( ca.getCAInfo().getFinishUser() ) {
             	finishUser(admin, req.getUsername(), req.getPassword());
             }            	
         } catch (NotFoundException oe) {
@@ -1138,7 +1140,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
         Certificate cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
         // Call authentication session and tell that we are finished with this user
-        if (ca.getFinishUser() == true) {
+        if ( ca.getCAInfo().getFinishUser() ) {
         	finishUser(admin, username, password);
         }
         log.trace("<createCertificate(pk, ku, date)");
@@ -1174,7 +1176,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new EJBException("Invalid user type for user " + data.getUsername());
             }
             ICertificateStoreSessionLocal certificateStore = storeHome.create();
-            {
+            if ( this.getCaAdminSession().getCAInfo(admin, data.getCAId()).isDoEnforceUniquePublicKeys() ){
                 final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectKeyId(admin, ca.getSubjectDN(), KeyTools.createSubjectKeyId(pk).getKeyIdentifier());
                 if ( users.size()>0 && !users.contains(data.getUsername()) ) {
                     Iterator i = users.iterator();
@@ -1182,7 +1184,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                     while ( i.hasNext() ) {
                         s += " '"+i.next()+"'";
                     }
-                    throw new EJBException("User '"+data.getUsername()+"' is not allowed to use same key as the user(s)"+s+" is/are using.");
+                    throw new EjbcaException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER,
+                                             "User '"+data.getUsername()+"' is not allowed to use same key as the user(s)"+s+" is/are using.");
                 }
             }
             // Retrieve the certificate profile this user should have

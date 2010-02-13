@@ -2213,8 +2213,19 @@ public class EjbcaWS implements IEjbcaWS {
     }
     private EjbcaException getEjbcaException(Throwable t, IPatternLogger logger, ErrorCode errorCode, Priority p) {
         log.log(p, "EJBCA WebService error", t);
-        logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorCode.toString());
-        return new EjbcaException(errorCode, t.getMessage());
+        try {
+            Throwable tmp = t;
+            while( tmp!=null ) {
+                if ( tmp instanceof EjbcaException && ((EjbcaException)tmp).getErrorCode()!=null ) {
+                    errorCode = ((EjbcaException)tmp).getErrorCode();
+                    return (EjbcaException)tmp;
+                }
+                tmp=tmp.getCause();
+            }
+            return new EjbcaException(errorCode, t.getMessage());
+        } finally {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorCode.toString());
+        }
     }
     private EjbcaException getEjbcaException(Exception t, IPatternLogger logger, Priority p) {
         if ( p!=null ) {
