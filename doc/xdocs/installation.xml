@@ -210,6 +210,8 @@ ANT_OPTS=-Xmx512m
 <note>
 JBoss 5.x have a bug causing issues with the BC JCE provider. To work around this you can copy the files EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
 Remember this when it's time for upgrades!
+<br/>
+JBoss 5.x also have a but with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample for configuration instructions.
 </note>
 <p>
 2) Open a console and type:
