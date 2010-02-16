@@ -734,7 +734,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	data.put(MICROSOFTTEMPLATE, mstemplate);	
     }
     
-    public Boolean getUseCardNumber() {
+    public boolean getUseCardNumber() {
     	return ((Boolean) data.get(USECARDNUMBER)).booleanValue();
     }
     
