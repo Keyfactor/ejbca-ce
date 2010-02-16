@@ -198,15 +198,14 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
    /**
     * Method used to add an approval to database.
     * 
-    * The main key of an approval is the approvalid, which should be unique for
+    * The main key of an approval is the approval id, which should be unique for
     * one administrator doing one type of action, requesting the same action twice should
     * result in the same approvalId
     * 
-    * It the approvalId already exists, it will check the status:
-    *   If status is waiting, approved, or rejected an ApprovalException is thrown
-    *   otherwise is an new approval requeset added to the database
+    * If the approvalId already exists, with a non expired approval an ApprovalException is thrown
+    * otherwise is an new approval request added to the database
     *   
-    * @throws ApprovalException 
+    * @throws ApprovalException if an approval already exists for this request.
     *   
     * @ejb.interface-method view-type="both"
     */
