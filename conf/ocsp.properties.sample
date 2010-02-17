@@ -332,7 +332,7 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 #ocsp.trx-log-order = ${SESSION_ID};${LOG_ID};${STATUS};${REQ_NAME}"${CLIENT_IP}";"${SIGN_ISSUER_NAME_DN}";"${SIGN_SUBJECT_NAME}";${SIGN_SERIAL_NO};"${LOG_TIME}";${REPLY_TIME};${NUM_CERT_ID};0;0;0;0;0;0;0;"${ISSUER_NAME_DN}";${ISSUER_NAME_HASH};${ISSUER_KEY};${DIGEST_ALGOR};${SERIAL_NOHEX};${CERT_STATUS}
 
 # Audit logging logs the complete requests and responses, which can be used to trace complete transaction afterwards.
-# change ocsp.trxlog to true of you want audit logging turned on
+# change ocsp.audit-log to true of you want audit logging turned on
 # Default: false
 #ocsp.audit-log = true
 
