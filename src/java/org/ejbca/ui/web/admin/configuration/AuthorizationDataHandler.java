@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.admin.configuration;
 
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -23,7 +22,6 @@ import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
-import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 
@@ -102,9 +100,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * Only the fields admingroup name and CA id is filled in these objects.
      */
     public Collection getAdminGroupNames(){ 
-      if(this.authorizedadmingroups==null)
+      if (this.authorizedadmingroups==null) {
         this.authorizedadmingroups = authorizationsession.getAuthorizedAdminGroupNames(administrator, caAdminSession.getAvailableCAs(administrator));    
-        
+      }
       return this.authorizedadmingroups;
     }
     
@@ -199,20 +197,24 @@ public class AuthorizationDataHandler implements java.io.Serializable {
       // Check if admin group is among available admin groups
       Iterator iter = getAdminGroupNames().iterator();
       boolean exists = false;
-      while(iter.hasNext()){
+      while (iter.hasNext()) {
         AdminGroup next = (AdminGroup) iter.next();  
-        if(next.getAdminGroupName().equals(admingroup))
+        if (next.getAdminGroupName().equals(admingroup)) {
           exists = true;
+        }
       }
-      if(!exists)
-        throw new AuthorizationDeniedException("Admingroup not among authorized admingroups.");  
+      if (!exists) {
+        throw new AuthorizationDeniedException("Admingroup not among authorized admingroups.");
+      }
     }
     
     private void authorizedToAddAccessRules(Collection accessrules) throws AuthorizationDeniedException{
       Iterator iter = accessrules.iterator();
-      while(iter.hasNext())
-        if(!this.informationmemory.getAuthorizedAccessRules().contains(((AccessRule) iter.next()).getAccessRule()))  
-          throw new AuthorizationDeniedException("Accessruleset contained non authorized access rules"); 
+      while (iter.hasNext()) {
+        if (!this.informationmemory.getAuthorizedAccessRules().contains(((AccessRule) iter.next()).getAccessRule())) {  
+          throw new AuthorizationDeniedException("Accessruleset contained non authorized access rules");
+        }
+      }
     }
    
 
