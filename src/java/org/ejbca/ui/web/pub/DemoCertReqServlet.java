@@ -219,8 +219,9 @@ public class DemoCertReqServlet extends HttpServlet {
 
     // Functionality to determine the class id of ie page.
     String classid         = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
-    if(request.getParameter("classid")!=null && !request.getParameter("classid").equals(""))
-      classid= request.getParameter("classid");      
+    if(request.getParameter("classid")!=null && !request.getParameter("classid").equals("")) {
+      classid= request.getParameter("classid");
+    }
     
     String includeEmail = request.getParameter("includeemail");
     log.debug("includeEmail="+includeEmail);
@@ -234,7 +235,9 @@ public class DemoCertReqServlet extends HttpServlet {
     newuser.setSendNotification(false);
     
     String email = request.getParameter("email");
-    if (email == null) email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
+    if (email == null) {
+    	email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
+    }
     if ((email != null) && (email.length() > 0)) {
       newuser.setEmail(email);
       if (includeEmail != null) {
@@ -267,13 +270,13 @@ public class DemoCertReqServlet extends HttpServlet {
     	// For security reasons, if there are more than one CA in the system
     	// we definataly want to hardwire the demo to the demo CA.
     }    
-    newuser.setCAId(caid);
-    
+    newuser.setCAId(caid);    
 
     String password = request.getParameter("password");
-    if (password == null) password = "demo";
+    if (password == null) {
+    	password = "demo";
+    }
     newuser.setPassword(password);
-   
 
     try {
         useradminsession.addUser(admin, newuser.getUsername(), newuser.getPassword(), newuser.getDN(), newuser.getSubjectAltName()
@@ -364,7 +367,9 @@ public class DemoCertReqServlet extends HttpServlet {
    */
   private final boolean checkUsername(Admin admin, String username, IUserAdminSessionRemote adminsession) throws ServletException
   {
-    if (username != null) username = username.trim();
+    if (username != null) {
+    	username = username.trim();
+    }
     if (username == null || username.length() == 0) {
       throw new ServletException("Username must not be empty.");
     }

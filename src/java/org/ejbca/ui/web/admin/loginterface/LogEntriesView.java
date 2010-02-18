@@ -69,16 +69,22 @@ public class LogEntriesView implements java.io.Serializable {
       int endindex;  
       LogEntryView[] returnval;
    
-      if(index > logentryviews.size()) index = logentryviews.size()-1;
-      if(index < 0) index =0;
+      if (index > logentryviews.size()) {
+    	  index = logentryviews.size()-1;
+      }
+      if (index < 0) {
+    	  index =0;
+      }
       
       endindex = index + size;
-      if(endindex > logentryviews.size()) endindex = logentryviews.size();
+      if (endindex > logentryviews.size()) {
+    	  endindex = logentryviews.size();
+      }
       
       returnval = new LogEntryView[endindex-index];  
       
       int end = endindex - index;
-      for(int i = 0; i < end; i++){
+      for (int i = 0; i < end; i++) {
         returnval[i] = (LogEntryView) logentryviews.get(index+i);   
       }
       
