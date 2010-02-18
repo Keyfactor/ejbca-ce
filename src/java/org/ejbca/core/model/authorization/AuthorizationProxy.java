@@ -16,9 +16,6 @@ package org.ejbca.core.model.authorization;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import javax.ejb.FinderException;
-
-import org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome;
 import org.ejbca.util.CertTools;
 
 
@@ -35,16 +32,13 @@ public class AuthorizationProxy implements Serializable {
     private HashMap                     authstore;
     private HashMap                     groupstore;
     private AccessTree                  accesstree;
-    private AdminGroupDataLocalHome     admingrouphome;
 
     
     /** Creates a new instance of AuthorizationProxy. */
-    public AuthorizationProxy(AdminGroupDataLocalHome admingrouphome, 
-                              AccessTree accesstree) {
+    public AuthorizationProxy(AccessTree accesstree) {
        authstore = new HashMap();
        groupstore = new HashMap();
        this.accesstree = accesstree;
-       this.admingrouphome = admingrouphome;
     }
 
 
@@ -98,7 +92,7 @@ public class AuthorizationProxy implements Serializable {
     }
 
     /**
-     * Method used to clear the proxy, should be called every time administrator priviledges have been
+     * Method used to clear the proxy, should be called every time administrator privileges have been
      * changed. 
      */
     public void clear(){

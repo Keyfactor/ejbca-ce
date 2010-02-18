@@ -192,7 +192,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     
     private Authorizer getAuthorizer() {
     	if (authorizer == null) {
-            authorizer = new Authorizer(getAdminGroups(), admingrouphome, getLogSession(), LogConstants.MODULE_AUTHORIZATION);
+            authorizer = new Authorizer(getAdminGroups(), getLogSession(), LogConstants.MODULE_AUTHORIZATION);
     	}
     	return authorizer;
     }

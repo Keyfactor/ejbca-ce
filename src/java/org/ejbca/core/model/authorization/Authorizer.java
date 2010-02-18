@@ -42,9 +42,9 @@ public class Authorizer extends Object implements java.io.Serializable {
     private AuthorizationProxy             authorizationproxy;
 
     /** Creates new EjbcaAthorization */
-    public Authorizer(Collection admingroups, AdminGroupDataLocalHome  admingrouphome, ILogSessionLocal logsession, int module) {
+    public Authorizer(Collection admingroups, ILogSessionLocal logsession, int module) {
         accesstree = new AccessTree();
-        authorizationproxy = new AuthorizationProxy(admingrouphome, accesstree);
+        authorizationproxy = new AuthorizationProxy(accesstree);
         buildAccessTree(admingroups);
         this.logsession = logsession;
         this.module=module;
