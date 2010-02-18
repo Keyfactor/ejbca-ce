@@ -4,8 +4,6 @@ import java.net.URLConnection;
 import java.security.*;
 import java.security.cert.*;
 import java.util.*;
-import java.security.cert.X509Certificate;
-import java.security.cert.PKIXParameters;
 
 /**
  * Check the revocation status of a public key certificate using a CRL.
@@ -132,18 +130,16 @@ public class ValidateCertUseCRL {
         try {
 
             File certFile = new File(path);
-            if (!certFile.canRead())
-                throw new IOException(" File " + certFile.toString() +
-		    " is unreadable");
-
+            if (!certFile.canRead()) {
+                throw new IOException(" File " + certFile.toString() + " is unreadable");
+            }
             FileInputStream fis = new FileInputStream(path);
             CertificateFactory cf = CertificateFactory.getInstance("X509");
             cert = (X509Certificate)cf.generateCertificate(fis);
 
         } catch(Exception e) {
-	    System.out.println("Can't construct X509 Certificate. " +
-		e.getMessage());
-	}
+        	System.out.println("Can't construct X509 Certificate. " + e.getMessage());
+        }
         return cert;
     }
 }

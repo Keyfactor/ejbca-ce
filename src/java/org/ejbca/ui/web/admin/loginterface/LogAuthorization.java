@@ -68,17 +68,16 @@ public class LogAuthorization implements Serializable {
             if(first){
               querystring = "(";
               first = false;
-            }
-            else
+            } else {
              querystring += " OR ";
-             
+            }
             querystring += "module=" + i;
           }  
         }
        
-       if(!querystring.equals(""))
+       if(!querystring.equals("")) {
         querystring += ")";
-        
+       }
      }   
               
       return querystring; 
@@ -90,27 +89,23 @@ public class LogAuthorization implements Serializable {
      * @return a string of log module privileges that should be used in the where clause of SQL queries.
      */
     public String getCARights(){
-      if(caidstring == null){
-        caidstring = "";
-        
-        Iterator iter = caAdminSession.getAvailableCAs(administrator).iterator();
-         
-        try{ 
-          this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-          caidstring = " cAId = " + LogConstants.INTERNALCAID;       
-        }catch(AuthorizationDeniedException e){} 
-      
-        
-        while(iter.hasNext()){
-          if(caidstring.equals(""))
-            caidstring = " cAId = " + ((Integer) iter.next()).toString();   
-          else    
-            caidstring = caidstring + " OR cAId = " + ((Integer) iter.next()).toString(); 
-        }                
-          
-      }  
-      
-      return caidstring;   
+    	if (caidstring == null) {
+    		caidstring = "";
+    		Iterator iter = caAdminSession.getAvailableCAs(administrator).iterator();
+    		try { 
+    			this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
+    			// Superadmin authorized to all
+    			caidstring = " cAId = " + LogConstants.INTERNALCAID;       
+    		} catch(AuthorizationDeniedException e){ /* ignore */ } 
+    		while(iter.hasNext()) {
+    			if(caidstring.equals("")) {
+    				caidstring = " cAId = " + ((Integer) iter.next()).toString();   
+    			} else {    
+    				caidstring = caidstring + " OR cAId = " + ((Integer) iter.next()).toString();
+    			}
+    		}                
+    	}
+    	return caidstring;   
     }
     
     public void clear(){

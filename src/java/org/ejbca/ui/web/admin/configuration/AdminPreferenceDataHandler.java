@@ -57,24 +57,25 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
     /** Adds a admin preference to the database */
     public void addAdminPreference(String certificatefingerprint, AdminPreference adminpreference)
                                   throws AdminExistsException, RemoteException {
-      if(!raadminsession.addAdminPreference(administrator, certificatefingerprint, adminpreference))
+      if(!raadminsession.addAdminPreference(administrator, certificatefingerprint, adminpreference)) {
         throw new AdminExistsException("Admin already exists in the database.");
+      }
     }
 
     /** Changes the admin preference for the given admin. */
     public void changeAdminPreference(String certificatefingerprint, AdminPreference adminpreference)
                               throws AdminDoesntExistException, RemoteException {
-      if(!raadminsession.changeAdminPreference(administrator, certificatefingerprint, adminpreference))
-        throw new AdminDoesntExistException("Admin doesn't exists in the database.");
-
+      if(!raadminsession.changeAdminPreference(administrator, certificatefingerprint, adminpreference)) {
+        throw new AdminDoesntExistException("Admin does not exist in the database.");
+      }
     }
     
     /** Changes the admin preference for the given admin, without performing any logging. */
     public void changeAdminPreferenceNoLog(String certificatefingerprint, AdminPreference adminpreference)
                               throws AdminDoesntExistException, RemoteException {
-      if(!raadminsession.changeAdminPreferenceNoLog(administrator, certificatefingerprint, adminpreference))
-        throw new AdminDoesntExistException("Admin doesn't exists in the database.");
-
+      if(!raadminsession.changeAdminPreferenceNoLog(administrator, certificatefingerprint, adminpreference)) {
+        throw new AdminDoesntExistException("Admin does not exist in the database.");
+      }
     }    
 
     /** Checks if admin preference exists in database. */
