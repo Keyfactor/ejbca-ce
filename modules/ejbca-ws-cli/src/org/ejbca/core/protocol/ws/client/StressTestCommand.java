@@ -128,8 +128,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                                                                                        new String(Base64.encode(this.pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
             final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
             X509Certificate cert = null;
-            while ( i.hasNext() )
+            while ( i.hasNext() ) {
                 cert = i.next();
+            }
             if ( cert==null ) {
                 StressTestCommand.this.performanceTest.getLog().error("no certificate generated for user "+this.jobData.userName);
                 return false;
@@ -222,8 +223,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             final List<Certificate> result = this.ejbcaWS.findCerts(this.jobData.userName, true);
             final Iterator<Certificate> i = result.iterator();
             this.jobData.userCertsToBeRevoked = new X509Certificate[result.size()];
-            for( int j=0; i.hasNext(); j++ )
+            for( int j=0; i.hasNext(); j++ ) {
                 this.jobData.userCertsToBeRevoked[j] = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(Base64.decode(i.next().getCertificateData())));
+            }
             if ( this.jobData.userCertsToBeRevoked.length < 1 ) {
                 StressTestCommand.this.performanceTest.getLog().error("no cert found for user "+this.jobData.userName);
                 return false;
@@ -242,10 +244,11 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.ejbcaWS = _ejbcaWS;
         }
         public boolean doIt() throws Exception {
-            for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++)
+            for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++) {
                 this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
                                         this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
                                         REVOKATION_REASON_UNSPECIFIED);
+            }
             return true;
         }
         public String getJobTimeDescription() {
@@ -282,9 +285,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             return true;
         }
         public String getJobTimeDescription() {
-            if ( this.doCreateNewUser )
+            if ( this.doCreateNewUser ) {
                 return "Relative time spent registring new users";
-
+            }
             return "Relative time spent setting status of user to NEW";
         }
     }
@@ -312,8 +315,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         getPrintStream().println("20 threads is started. After adding a user the thread waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA AdminCA1.");
         getPrintStream().print("Types of stress tests:");
         TestType testTypes[] = TestType.values(); 
-        for ( TestType testType : testTypes )
+        for ( TestType testType : testTypes ) {
             getPrintStream().print(" " + testType);
+        }
         getPrintStream().println();
     }
 

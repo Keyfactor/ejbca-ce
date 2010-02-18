@@ -216,16 +216,16 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 	private int getType(UserDataVOWS userData) {
 		int type = 1;
 		
-    	if(userData.isSendNotification())
+    	if(userData.isSendNotification()) {
     		type = type | SecConst.USER_SENDNOTIFICATION;
-    	else
+    	} else {
     		type = type & (~SecConst.USER_SENDNOTIFICATION);
-    	
-    	if(userData.isKeyRecoverable())
+    	}
+    	if(userData.isKeyRecoverable()) {
     		type = type | SecConst.USER_KEYRECOVERABLE;
-    	else
+    	} else {
     		type = type & (~SecConst.USER_KEYRECOVERABLE);
-    			
+    	}
 		return type;
 	}
 	
