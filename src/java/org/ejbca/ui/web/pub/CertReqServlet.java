@@ -194,9 +194,9 @@ public class CertReqServlet extends HttpServlet {
     			String keyalg = AlgorithmConstants.KEYALGORITHM_RSA;
     			
                 int resulttype = 0;
-                if(getParameter("resulttype") != null)
+                if(getParameter("resulttype") != null) {
                   resulttype = Integer.parseInt(getParameter("resulttype")); // Indicates if certificate or PKCS7 should be returned on manual PKCS10 request.
-                
+                }
 
                 String classid = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
 
@@ -313,8 +313,9 @@ public class CertReqServlet extends HttpServlet {
                   } else if ( (getParameter("pkcs10") != null) || (getParameter("PKCS10") != null) ) {
                       // if not firefox, check if it's IE
                       byte[] reqBytes = getParameter("pkcs10").getBytes();
-                      if (reqBytes == null)
+                      if (reqBytes == null) {
                           reqBytes=getParameter("PKCS10").getBytes();
+                      }
                       if ((reqBytes != null) && (reqBytes.length>0)) {
                           log.debug("Received IE request: "+new String(reqBytes));
                           byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
@@ -383,10 +384,12 @@ public class CertReqServlet extends HttpServlet {
                         	  filename = username;
                           }
                           log.debug("Filename: "+filename);
-                          if(resulttype == RequestHelper.BINARY_CERTIFICATE)  
+                          if(resulttype == RequestHelper.BINARY_CERTIFICATE) {  
                             RequestHelper.sendBinaryBytes(Base64.decode(b64cert), response, "application/octet-stream", filename+".cvcert");
-                          if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
+                          }
+                          if(resulttype == RequestHelper.ENCODED_CERTIFICATE) {
                             RequestHelper.sendNewB64File(b64cert, response, filename+".pem", RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+                          }
                       } else {
                     	  throw new SignRequestException("No request bytes received.");
                       }
@@ -419,7 +422,7 @@ public class CertReqServlet extends HttpServlet {
     	            debug.printDebugInfo();
     	            return;				
     			} else {
-    				if (e1 == null) e1 = e;
+    				if (e1 == null) { e1 = e; }
                 	String iMsg = intres.getLocalizedMessage("certreq.errorgeneral", e1.getMessage());
     	            log.debug(iMsg, e);
                 	iMsg = intres.getLocalizedMessage("certreq.parameters", e1.getMessage());
@@ -502,10 +505,12 @@ public class CertReqServlet extends HttpServlet {
     			IOException {
     		log.debug("Received PKCS10 request: "+new String(reqBytes));
     		  byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
-    		  if(resulttype == RequestHelper.ENCODED_PKCS7)  
+    		  if(resulttype == RequestHelper.ENCODED_PKCS7) {  
     		    RequestHelper.sendNewB64File(b64cert, response, username+".pem", RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
-    		  if(resulttype == RequestHelper.ENCODED_CERTIFICATE)
+    		  }
+    		  if(resulttype == RequestHelper.ENCODED_CERTIFICATE) {
     		    RequestHelper.sendNewB64File(b64cert, response, username+".pem", RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+    		  }
     	}
         /**
          * method to create an install package for OpenVPN including keys and send to user.

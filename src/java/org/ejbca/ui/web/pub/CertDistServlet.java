@@ -22,7 +22,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
@@ -35,7 +34,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -43,9 +41,6 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -87,9 +82,6 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_NSCACERT = "nscacert";
     private static final String COMMAND_IECACERT = "iecacert";
     private static final String COMMAND_CACERT = "cacert";
-    private static final String COMMAND_NSOCSPCERT = "nsocspcert";
-    private static final String COMMAND_IEOCSPCERT = "ieocspcert";
-    private static final String COMMAND_OCSPCERT = "ocspcert";
     
     private static final String SUBJECT_PROPERTY = "subject";
 	private static final String CAID_PROPERTY = "caid";
@@ -125,17 +117,6 @@ public class CertDistServlet extends HttpServlet {
     		}
     	}
     	return storesession;
-    }
-    private synchronized ICAAdminSessionLocal getCASession(){
-    	if(casession == null){	
-    		try {
-    			ICAAdminSessionLocalHome cahome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-    			casession = cahome.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return casession;
     }
     private synchronized ICreateCRLSessionLocal getCreateCRLSession(){
 		if(createCRLSession == null){	
@@ -206,8 +187,9 @@ public class CertDistServlet extends HttpServlet {
         // See if the client wants the response cert or CRL in PEM format (default is DER)
         String format = req.getParameter(FORMAT_PROPERTY); 
         command = req.getParameter(COMMAND_PROPERTY_NAME);
-        if (command == null)
+        if (command == null) {
             command = "";
+        }
         if ((command.equalsIgnoreCase(COMMAND_CRL) || command.equalsIgnoreCase(COMMAND_DELTACRL)) && issuerdn != null) {
             try {
                 byte[] crl = null;
@@ -380,15 +362,17 @@ public class CertDistServlet extends HttpServlet {
                 } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
                     byte[] b64cert = Base64.encode(enccert);
                     String out;
-                    if (pkcs7)
+                    if (pkcs7) {
                         out = "-----BEGIN PKCS7-----\n";
-                    else
+                    } else {
                         out = "-----BEGIN CERTIFICATE-----\n";
+                    }
                     out += new String(b64cert);
-                    if (pkcs7)
+                    if (pkcs7) {
                         out += "\n-----END PKCS7-----\n";
-                    else
+                    } else {
                         out += "\n-----END CERTIFICATE-----\n";
+                    }
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
                     res.setHeader("Content-disposition", "attachment; filename=\""+filename+".pem\"");

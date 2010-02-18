@@ -13,17 +13,10 @@
 package org.ejbca.core.model.services.actions;
 
 import java.util.Arrays;
-import java.util.Date;
 
 import javax.ejb.EJBException;
-import javax.mail.Message;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
-import org.ejbca.config.MailConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;

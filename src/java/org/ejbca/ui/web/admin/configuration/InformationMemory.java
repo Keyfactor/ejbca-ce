@@ -132,9 +132,9 @@ public class InformationMemory implements java.io.Serializable {
 	 * Returns end entity profile names with create rights as a treemap of name (String) -> id (Integer)
 	 */    
     public TreeMap getCreateAuthorizedEndEntityProfileNames(){
-		if(globalconfiguration.getEnableEndEntityProfileLimitations())
+		if(globalconfiguration.getEnableEndEntityProfileLimitations()) {
 		  return this.raauthorization.getCreateAuthorizedEndEntityProfileNames();
-		  
+		}
 		return this.raauthorization.getAuthorizedEndEntityProfileNames(); 
     }
 
@@ -142,9 +142,9 @@ public class InformationMemory implements java.io.Serializable {
 	 * Returns end entity profile names with view rights as a treemap of name (String) -> id (Integer)
 	 */    
 	public TreeMap getViewAuthorizedEndEntityProfileNames(){
-		if(globalconfiguration.getEnableEndEntityProfileLimitations())
+		if(globalconfiguration.getEnableEndEntityProfileLimitations()) {
 		  return this.raauthorization.getViewAuthorizedEndEntityProfileNames();
-		  
+		}
 		return this.raauthorization.getAuthorizedEndEntityProfileNames();   
 	}
 
@@ -248,9 +248,9 @@ public class InformationMemory implements java.io.Serializable {
      * Returns the end entity profile name proxy
      */      
     public EndEntityProfileNameProxy getEndEntityProfileNameProxy(){
-      if(endentityprofilenameproxy == null)
+      if(endentityprofilenameproxy == null) {
         endentityprofilenameproxy = new EndEntityProfileNameProxy(administrator, raadminsession);  
-        
+      }
       return endentityprofilenameproxy;
     }
     
@@ -258,9 +258,9 @@ public class InformationMemory implements java.io.Serializable {
      * Returns the end entity profile name proxy
      */      
     public CertificateProfileNameProxy getCertificateProfileNameProxy(){
-      if(certificateprofilenameproxy == null)
+      if(certificateprofilenameproxy == null) {
         certificateprofilenameproxy = new CertificateProfileNameProxy(administrator, certificatestoresession);  
-        
+      }
       return certificateprofilenameproxy;
     }
     
@@ -270,9 +270,9 @@ public class InformationMemory implements java.io.Serializable {
      * @return the publisheridtonamemap (HashMap)
      */
     public HashMap getPublisherIdToNameMap(){
-    	if(publisheridtonamemap == null)
+    	if(publisheridtonamemap == null) {
     	   publisheridtonamemap = publishersession.getPublisherIdToNameMap(administrator);
-    	   
+    	}
     	 return publisheridtonamemap;   	
     }
     
@@ -339,13 +339,15 @@ public class InformationMemory implements java.io.Serializable {
              Collection certprofilesavailablecas = certprofile.getAvailableCAs();
              if(certprofilesavailablecas.contains(new Integer(CertificateProfile.ANYCA))){
                ArrayList authorizedcastemp = new ArrayList(authorizedcas);
-               if(!endentityprofileallcas)
+               if(!endentityprofileallcas) {
                  authorizedcastemp.retainAll(endentityprofileavailcas);
+               }
                certificateprofilemap.put(nextcertprofileid,authorizedcastemp);
              }else{
                ArrayList authorizedcastemp = new ArrayList(authorizedcas);               
-               if(!endentityprofileallcas)
+               if(!endentityprofileallcas) {
                  authorizedcastemp.retainAll(endentityprofileavailcas);
+               }
                authorizedcastemp.retainAll(certprofilesavailablecas);
                certificateprofilemap.put(nextcertprofileid,authorizedcastemp);                 
              }  
@@ -364,11 +366,11 @@ public class InformationMemory implements java.io.Serializable {
      */
 
     public HashSet getAuthorizedAccessRules(){
-      if(authorizedaccessrules == null)
+      if(authorizedaccessrules == null) {
 	    authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator, caadminsession.getAvailableCAs(administrator),
 	    		globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(), globalconfiguration.getEnableKeyRecovery(),
 	    		raadminsession.getAuthorizedEndEntityProfileIds(administrator), userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true)));
-	    
+      }
 	   return authorizedaccessrules;
     }
 
