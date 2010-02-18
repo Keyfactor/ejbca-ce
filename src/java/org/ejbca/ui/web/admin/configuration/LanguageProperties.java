@@ -135,8 +135,9 @@ public class LanguageProperties extends java.util.Properties {
 	private boolean continueLine (String line) { 
 		int slashCount = 0;   
 		int index = line.length() - 1; 
-		while((index >= 0) && (line.charAt(index--) == '\\'))  
-			slashCount++;  
+		while((index >= 0) && (line.charAt(index--) == '\\')) {  
+			slashCount++;
+		}
 		return (slashCount % 2 == 1);
 	}
 	/*
@@ -175,12 +176,17 @@ public class LanguageProperties extends java.util.Properties {
 					}      
 					outBuffer.append((char)value);
 				} else { 
-					if (aChar == 't') aChar = '\t'; 
-					else if (aChar == 'r') aChar = '\r';    
-					else if (aChar == 'n') aChar = '\n';     
-					else if (aChar == 'f') aChar = '\f';                        
+					if (aChar == 't') { 
+						aChar = '\t'; 
+					} else if (aChar == 'r') { 
+						aChar = '\r';    
+					} else if (aChar == 'n') { 
+						aChar = '\n';   
+					} else if (aChar == 'f') { 
+						aChar = '\f'; 
+					}                      
 					outBuffer.append(aChar);
-					}  
+				}  
 			} else     
 				outBuffer.append(aChar); 
 		} 
