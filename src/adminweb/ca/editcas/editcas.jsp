@@ -1020,6 +1020,7 @@
                                                       useldapdnorder,
                                                       usecrldistpointoncrl,
                                                       crldistpointoncrlcritical,
+                                                      true,
                                                       true);
              } // if(catype == CAInfo.CATYPE_X509)
             	 
@@ -1036,6 +1037,7 @@
                            finishuser, extendedcaservices,
                            approvalsettings,
                            numofreqapprovals,
+                           true,
                            true);
              } // if(catype == CAInfo.CATYPE_CVC)
             	 

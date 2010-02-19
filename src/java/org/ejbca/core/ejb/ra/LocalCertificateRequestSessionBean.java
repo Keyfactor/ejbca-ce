@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
@@ -41,7 +42,6 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.BaseSessionBean;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -60,10 +60,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.IllegalKeyException;
-import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.WrongTokenTypeException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -358,10 +354,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	}
 
 	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg, String hardTokenSN, int responseType)
-	throws ObjectNotFoundException, AuthStatusException, AuthLoginException, 
-	       IllegalKeyException, CADoesntExistsException, ServiceLocatorException, 
-	       CreateException, SignRequestSignatureException, NotFoundException, 
-	       SignRequestException, CertificateException, IOException {
+	throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
 		byte[] retval = null;
 		Class respClass = org.ejbca.core.protocol.X509ResponseMessage.class; 
 		IResponseMessage resp =  getSignSession().createCertificate(admin, msg, respClass);

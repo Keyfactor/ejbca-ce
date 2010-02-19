@@ -77,7 +77,7 @@ public class CVCCAInfo extends CAInfo {
 			Collection crlpublishers,
 			boolean finishuser, Collection extendedcaserviceinfos, 
 			Collection approvalSettings, int numOfReqApprovals,
-			boolean includeInHealthCheck) {        
+			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys) {        
 		this.caid = caid;
 		this.validity=validity;
 		this.catokeninfo = catokeninfo; 
@@ -92,6 +92,7 @@ public class CVCCAInfo extends CAInfo {
 		this.approvalSettings = approvalSettings;
 		this.numOfReqApprovals = numOfReqApprovals;
 		this.includeInHealthCheck = includeInHealthCheck;
+		this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
 	}  
 
 

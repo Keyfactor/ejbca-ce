@@ -17,15 +17,9 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.IllegalKeyException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 
@@ -62,9 +56,7 @@ public class ScepPkiOpHelper {
      * @return byte[] containing response to be sent to client.
      */
     public byte[] scepCertRequest(byte[] msg, boolean includeCACert)
-            throws NotFoundException, AuthLoginException,
-            SignRequestException, AuthStatusException, IllegalKeyException,
-            SignRequestSignatureException, CADoesntExistsException {
+            throws EjbcaException {
         byte[] ret = null;
         if (log.isTraceEnabled()) {
         	log.trace(">getRequestMessage(" + msg.length + " bytes)");

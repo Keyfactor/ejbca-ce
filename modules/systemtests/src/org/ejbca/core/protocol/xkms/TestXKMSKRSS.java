@@ -28,7 +28,6 @@ import java.util.Random;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -53,6 +52,7 @@ import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -83,56 +83,67 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 
 public class TestXKMSKRSS extends TestCase {
 	
-	private static Logger log = Logger.getLogger(TestXKMSKRSS.class);
+	private final static Logger log = Logger.getLogger(TestXKMSKRSS.class);
 
-	static{
-		org.apache.xml.security.Init.init();
-	}
-	
-	private XKMSInvoker xKMSInvoker = new XKMSInvoker("http://localhost:8080/ejbca/xkms/xkms",null);
+	private final static XKMSInvoker xKMSInvoker = new XKMSInvoker("http://localhost:8080/ejbca/xkms/xkms",null);
 		
-	private ObjectFactory xKMSObjectFactory = new ObjectFactory();
-	private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
+	private final static ObjectFactory xKMSObjectFactory = new ObjectFactory();
+	private final static org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 
-	private static String baseUsername;
+	private final static String baseUsername;
 	
-	private static final Admin administrator = new Admin(Admin.TYPE_RA_USER);
+	private final static Admin administrator = new Admin(Admin.TYPE_RA_USER);
 	
-	private static String username1 = null;
-	private static String username2 = null;
-	private static String username3 = null;
+	private final static String username1;
+	private final static String username2;
+	private final static String username3;
 
-	private static final String issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
-	private final int caid = issuerdn.hashCode();
+	private final static String issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+	private final static int caid = issuerdn.hashCode();
 	
-	private int userNo;
+	private final static String dn1;
+	private final static String dn2;
+	private final static String dn3;
 	
-	private static String dn1;
-	private static String dn2;
-	private static String dn3;
-	
-	private static KeyPair keys1;
-	private static KeyPair keys3;
+	private final static KeyPair keys1;
+	private final static KeyPair keys3;
 	
 	private static Certificate cert1;
 	private static Certificate cert2;
 	
-	private static String certprofilename1 = null;
-	private static String certprofilename2 = null;
-	private static String endentityprofilename = null;
+	private final static String certprofilename1;
+	private final static String certprofilename2;
+	private final static String endentityprofilename;
 	
-	private static GlobalConfiguration orgGlobalConfig = null;
+	private final static GlobalConfiguration orgGlobalConfig;
 	
-	private static int endEntityProfileId;
-	
-	private static JAXBContext jAXBContext = null;
-	private static Marshaller marshaller = null;
+	private final static JAXBContext jAXBContext;
+	private final static Marshaller marshaller;
 	//private static Unmarshaller unmarshaller = null;
-	private static DocumentBuilderFactory dbf = null;
+	private final static DocumentBuilderFactory dbf;
 	
-	static{    	
+	static{
+		org.apache.xml.security.Init.init();
 		try {
-			CertTools.installBCProvider();
+	        CryptoProviderTools.installBCProviderIfNotAvailable();
+	        final Random ran = new Random();
+	        baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
+
+	    	certprofilename1 = "XKMSTESTSIGN" + baseUsername;
+	    	certprofilename2 = "XKMSTESTEXCHANDENC" + baseUsername;
+	    	endentityprofilename = "XKMSTESTPROFILE" + baseUsername;
+	    	
+	    	orgGlobalConfig = TestTools.getRaAdminSession().loadGlobalConfiguration(administrator);
+	    	
+    		username1 = baseUsername+'1';
+	    	dn1 = "C=SE, O=AnaTom, CN=" + username1;
+    		username2 = baseUsername+'2';
+	    	dn2 = "C=SE, O=AnaTom, CN=" + username2;
+	    	username3 = baseUsername+'3';
+	    	dn3 = "C=SE, O=AnaTom, CN=" + username3;
+
+	    	keys1 = genKeys();
+	    	keys3 = genKeys();
 			org.apache.xml.security.Init.init();
 
 			jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
@@ -146,56 +157,35 @@ public class TestXKMSKRSS extends TestCase {
 			dbf.setNamespaceAware(true);
 			//unmarshaller = jAXBContext.createUnmarshaller();
 
-		} catch (JAXBException e) {
+		} catch (Exception e) {
 			log.error("Error initializing RequestAbstractTypeResponseGenerator",e);
+			throw new Error(e);
 		}
 	}
 	
-    protected void setUp() throws Exception {
-        log.trace(">setUp()");
-        CertTools.installBCProvider();
-        Random ran = new Random();
-        if(baseUsername == null){
-          baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
-        }
-        
-        log.trace("<setUp()");
-    }
-
-    protected void tearDown() throws Exception {
-    }
-    
-    
     public void test00SetupDatabase() throws Exception{
     	
-
-    	certprofilename1 = "XKMSTESTSIGN" + baseUsername;
-    	certprofilename2 = "XKMSTESTEXCHANDENC" + baseUsername;
-    	endentityprofilename = "XKMSTESTPROFILE" + baseUsername;
-    	
-    	orgGlobalConfig = TestTools.getRaAdminSession().loadGlobalConfiguration(administrator);
-    	
-    	GlobalConfiguration newGlobalConfig = TestTools.getRaAdminSession().loadGlobalConfiguration(administrator);
+    	final GlobalConfiguration newGlobalConfig = TestTools.getRaAdminSession().loadGlobalConfiguration(administrator);
     	newGlobalConfig.setEnableKeyRecovery(true);
     	TestTools.getRaAdminSession().saveGlobalConfiguration(administrator, newGlobalConfig);
     	
     	
     	// Setup with two new Certificate profiles.
-    	EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
+    	final EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
     	profile1.setKeyUsage(CertificateProfile.DIGITALSIGNATURE,false);
     	profile1.setKeyUsage(CertificateProfile.KEYENCIPHERMENT,false);
     	profile1.setKeyUsage(CertificateProfile.NONREPUDIATION,true);
     	
-    	EndUserCertificateProfile profile2 = new EndUserCertificateProfile();
+    	final EndUserCertificateProfile profile2 = new EndUserCertificateProfile();
     	profile2.setKeyUsage(CertificateProfile.DATAENCIPHERMENT,true);
     	
     	TestTools.getCertificateStoreSession().addCertificateProfile(administrator, certprofilename1, profile1);
     	TestTools.getCertificateStoreSession().addCertificateProfile(administrator, certprofilename2, profile2);
     	
-    	int profile1Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, certprofilename1);
-    	int profile2Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, certprofilename2);
+    	final int profile1Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, certprofilename1);
+    	final int profile2Id = TestTools.getCertificateStoreSession().getCertificateProfileId(administrator, certprofilename2);
     	
-    	EndEntityProfile endentityprofile = new EndEntityProfile(true);
+    	final EndEntityProfile endentityprofile = new EndEntityProfile(true);
     	
     	endentityprofile.setValue(EndEntityProfile.AVAILCAS, 0, ""+caid);
     	endentityprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, ""+SecConst.CERTPROFILE_FIXED_ENDUSER +";" + profile1Id + ";" + profile2Id );
@@ -203,62 +193,72 @@ public class TestXKMSKRSS extends TestCase {
     	endentityprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
     	
     	TestTools.getRaAdminSession().addEndEntityProfile(administrator, endentityprofilename, endentityprofile);
-        endEntityProfileId = TestTools.getRaAdminSession().getEndEntityProfileId(administrator, endentityprofilename);
-        
-    	
-    	username1 = genUserName();
-    	String pwd = "foo123";
-    	int type = SecConst.USER_ENDUSER ;
-    	int token = SecConst.TOKEN_SOFT_BROWSERGEN;
-    	int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
-    	int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
-    	dn1 = "C=SE, O=AnaTom, CN=" + username1;
-    	String subjectaltname1 = "RFC822NAME=" + username1 + "@foo.se";
-    	String email1 = username1 + "@foo.se";
-    	if (TestTools.getUserAdminSession().findUser(administrator, username1) != null) {
-    		log.info("User already exists in the database.");
-    	} else {
-        	TestTools.getUserAdminSession().addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false, endEntityProfileId, certificatetypeid,
-        			type, token, hardtokenissuerid, caid);
-    	}
-    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, pwd);
- 
-    	username2 = genUserName();
-    	dn2 = "C=SE, O=AnaTom, CN=" + username2;
-    	type = SecConst.USER_ENDUSER | SecConst.USER_KEYRECOVERABLE;
-    	token = SecConst.TOKEN_SOFT_P12;
-    	String subjectaltname2 = "RFC822NAME=" + username2 + "@foo.se,UNIFORMRESOURCEIDENTIFIER=http://www.test.com/"+username2+",IPADDRESS=10.0.0.1,DNSNAME="+username2+".test.com";
-    	String email2 = username2 + "@foo.se";    	
-    	if (TestTools.getUserAdminSession().findUser(administrator, username2) != null) {
-    		log.info("User already exists in the database.");
-    	} else {
-        	TestTools.getUserAdminSession().addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
-        			type, token, hardtokenissuerid, caid);
-    	}
-    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, pwd);
+        final int endEntityProfileId = TestTools.getRaAdminSession().getEndEntityProfileId(administrator, endentityprofilename);
 
-    	username3 = genUserName();
-    	dn3 = "C=SE, O=AnaTom, CN=" + username3;
-    	String subjectaltname3 = "RFC822NAME=" + username3 + "@foo.se";
-    	String email3 = username3 + "@foo.se";
-    	if (TestTools.getUserAdminSession().findUser(administrator, username3) != null) {
-    		log.info("User already exists in the database.");
-    	} else {
-        	TestTools.getUserAdminSession().addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
-        			type, token, hardtokenissuerid, caid);
+		final String pwd = "foo123";
+		final int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
+		addUser(username1, dn1);
+
+		final int type = SecConst.USER_ENDUSER | SecConst.USER_KEYRECOVERABLE;
+		final int token = SecConst.TOKEN_SOFT_P12;
+
+    	{
+    		final String subjectaltname2 = "RFC822NAME=" + username2 + "@foo.se,UNIFORMRESOURCEIDENTIFIER=http://www.test.com/"+username2+",IPADDRESS=10.0.0.1,DNSNAME="+username2+".test.com";
+    		final String email2 = username2 + "@foo.se";    	
+    		if (TestTools.getUserAdminSession().findUser(administrator, username2) != null) {
+    			log.info("User already exists in the database.");
+    		} else {
+    			TestTools.getUserAdminSession().addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false, endEntityProfileId, profile1Id,
+    			                                        type, token, hardtokenissuerid, caid);
+    		}
+    		TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, pwd);
     	}
-    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username3, pwd);
+
+    	{
+    		String subjectaltname3 = "RFC822NAME=" + username3 + "@foo.se";
+    		String email3 = username3 + "@foo.se";
+    		if (TestTools.getUserAdminSession().findUser(administrator, username3) != null) {
+    			log.info("User already exists in the database.");
+    		} else {
+    			TestTools.getUserAdminSession().addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false, endEntityProfileId, profile2Id,
+    			                                        type, token, hardtokenissuerid, caid);
+    		}
+    		TestTools.getUserAdminSession().setClearTextPassword(administrator, username3, pwd);
+    	}
+
     }
-    
-    public void test01SimpleRegistration() throws Exception{
+
+    private static void addUser(String userName, String dn) throws Exception {
+		final String pwd = "foo123";
+		final int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
+    	{
+    		final int type = SecConst.USER_ENDUSER ;
+    		final int token = SecConst.TOKEN_SOFT_BROWSERGEN;
+    		final int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+    		final String subjectaltname1 = "RFC822NAME=" + userName + "@foo.se";
+    		final String email1 = userName + "@foo.se";
+    		if (TestTools.getUserAdminSession().findUser(administrator, userName) != null) {
+    			log.info("User already exists in the database.");
+    		} else {
+    			TestTools.getUserAdminSession().addUser(administrator, userName, pwd, CertTools.stringToBCDNString(dn), subjectaltname1, email1, false, TestTools.getRaAdminSession().getEndEntityProfileId(administrator, endentityprofilename), certificatetypeid,
+    			                                        type, token, hardtokenissuerid, caid);
+    		}
+    		TestTools.getUserAdminSession().setClearTextPassword(administrator, userName, pwd);
+    	}
     	
-    	keys1 = genKeys();
+    }
+    public void test01SimpleRegistration() throws Exception{
+    	cert1 = simpleRegistration(dn1, false);
+    }
+    private Certificate simpleRegistration(String dn, boolean willFail) throws Exception{
+    	
+    	
      	RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
     	registerRequestType.setId("600");       	
         	
         UseKeyWithType useKeyWithType = xKMSObjectFactory.createUseKeyWithType();
         useKeyWithType.setApplication(XKMSConstants.USEKEYWITH_PKIX);
-        useKeyWithType.setIdentifier(dn1);
+        useKeyWithType.setIdentifier(dn);
         
         registerRequestType.getRespondWith().add(XKMSConstants.RESPONDWITH_X509CHAIN);
     	
@@ -280,7 +280,11 @@ public class TestXKMSKRSS extends TestCase {
         prototypeKeyBindingType.setRevocationCodeIdentifier(second);
         
 		RegisterResultType registerResultType = xKMSInvoker.register(registerRequestType, null, null, "foo123", keys1.getPrivate(), prototypeKeyBindingType.getId());
-		
+		if ( willFail ) {
+			assertTrue(registerResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_RECIEVER));
+			assertTrue(registerResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_FAILURE));
+			return null;
+		}
 		assertTrue(registerResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
 
 		assertTrue(registerResultType.getKeyBinding().size() == 1);
@@ -296,13 +300,14 @@ public class TestXKMSKRSS extends TestCase {
 			byte[] encoded = (byte[]) next.getValue();
 			Certificate nextCert = CertTools.getCertfromByteArray(encoded);
 			
-			assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn1)) ||
+			assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn)) ||
 					   CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(issuerdn)));
-			if(CertTools.getSubjectDN(nextCert).equals(CertTools.stringToBCDNString(dn1))){
+			if(CertTools.getSubjectDN(nextCert).equals(CertTools.stringToBCDNString(dn))){
 				assertTrue(Arrays.equals(keys1.getPublic().getEncoded(), nextCert.getPublicKey().getEncoded()));
-                cert1 = nextCert;				
+                return nextCert;				
 			}
-		}	
+		}
+		return null;
     }
     
     public void test02ServerGenRegistration() throws Exception{
@@ -361,7 +366,6 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test03RegisterWithWrongDN() throws Exception{
-    	keys3 = genKeys();
      	RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
     	registerRequestType.setId("602");       	
         	
@@ -524,8 +528,12 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test08SimpleReissue() throws Exception{
-    	TestTools.getUserAdminSession().setUserStatus(administrator, username1, 10);
-    	TestTools.getUserAdminSession().setClearTextPassword(administrator, username1, "ReissuePassword");
+    	simpleReissue(username1, dn1);
+    	simpleReissue(username1, dn1); // could be repeated any number of times
+    }
+    public void simpleReissue(String userName, String dn) throws Exception{
+    	TestTools.getUserAdminSession().setUserStatus(administrator, userName, 10);
+    	TestTools.getUserAdminSession().setClearTextPassword(administrator, userName, "ReissuePassword");
      	ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
      	reissueRequestType.setId("607");       	
         	               
@@ -566,9 +574,9 @@ public class TestXKMSKRSS extends TestCase {
 			byte[] encoded = (byte[]) next.getValue();
 			Certificate nextCert = CertTools.getCertfromByteArray(encoded);
 			
-			assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn1)) ||
+			assertTrue(CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(dn)) ||
 					   CertTools.stringToBCDNString(CertTools.getSubjectDN(nextCert)).equals(CertTools.stringToBCDNString(issuerdn)));
-			if(CertTools.getSubjectDN(nextCert).equals(CertTools.stringToBCDNString(dn1))){
+			if(CertTools.getSubjectDN(nextCert).equals(CertTools.stringToBCDNString(dn))){
 				assertTrue(Arrays.equals(keys1.getPublic().getEncoded(), nextCert.getPublicKey().getEncoded()));
 				assertFalse(CertTools.getSerialNumber(cert1).equals(CertTools.getSerialNumber(nextCert)));                				
 			}
@@ -672,7 +680,7 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test12SimpleRecover() throws Exception{
-    	TestTools.getUserAdminSession().prepareForKeyRecovery(administrator, username2, endEntityProfileId, cert2);
+    	TestTools.getUserAdminSession().prepareForKeyRecovery(administrator, username2, TestTools.getRaAdminSession().getEndEntityProfileId(administrator, endentityprofilename), cert2);
     	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("700");       	
@@ -733,7 +741,7 @@ public class TestXKMSKRSS extends TestCase {
     }
     
     public void test13RecoverWrongPassword() throws Exception{
-    	TestTools.getUserAdminSession().prepareForKeyRecovery(administrator, username2, endEntityProfileId, cert2);
+    	TestTools.getUserAdminSession().prepareForKeyRecovery(administrator, username2, TestTools.getRaAdminSession().getEndEntityProfileId(administrator, endentityprofilename), cert2);
     	TestTools.getUserAdminSession().setClearTextPassword(administrator, username2, "RerecoverPassword");
      	RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
      	recoverRequestType.setId("701");       	
@@ -1079,7 +1087,12 @@ public class TestXKMSKRSS extends TestCase {
 	        }
 	    }
     } // test21RevocationApprovals
-    
+    public void test22SimpleRegistrationSameKeyDifferentUsers() throws Exception{
+		final String usernameX = baseUsername+'X';
+    	final String dnX = "C=SE, O=AnaTom, CN=" + usernameX;
+		addUser(usernameX, dnX);
+    	simpleRegistration(dnX, true);
+    }
     public void test99CleanDatabase() throws Exception{    	    	
     	Admin administrator = new Admin(Admin.TYPE_RA_USER);
     	TestTools.getUserAdminSession().deleteUser(administrator, username1);
@@ -1094,13 +1107,6 @@ public class TestXKMSKRSS extends TestCase {
     	TestTools.getRaAdminSession().saveGlobalConfiguration(administrator, orgGlobalConfig);
     }
 
-    private String genUserName() throws Exception {
-        // Gen new user
-        userNo++;
-
-        return baseUsername + userNo;
-    } // genRandomUserName
-    
     private static KeyPair genKeys() throws Exception {
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
         keygen.initialize(1024);

@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
@@ -45,8 +46,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
@@ -416,18 +415,6 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		} catch (AuthorizationDeniedException e) {
 			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
 			log.error(errMsg, e);			
-		} catch (NotFoundException e) {
-			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-			log.error(errMsg, e);			
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
-		} catch (AuthStatusException e) {
-			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-			log.error(errMsg, e);			
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
-		} catch (AuthLoginException e) {
-			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-			log.error(errMsg, e);			
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (IllegalKeyException e) {
 			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
 			log.error(errMsg, e);			
@@ -442,6 +429,10 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
 			log.error(errMsg, e);			
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_POP, e.getMessage());
+        } catch (EjbcaException e) {
+            String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+            log.error(errMsg, e);           
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (ClassNotFoundException e) {
 			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
 			log.error(errMsg, e);			

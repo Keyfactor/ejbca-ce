@@ -369,14 +369,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param password password for the user.
      * @param pk       the public key to be put in the created certificate.
      * @return The newly created certificate or null.
+     * @throws EjbcaException if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException {
         // Default key usage is defined in certificate profiles
         return createCertificate(admin, username, password, pk, -1);
     } // createCertificate
@@ -397,14 +395,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 keyCertSign             (5), cRLSign                 (6), encipherOnly (7),
      *                 decipherOnly            (8) }
      * @return The newly created certificate or null.
+     * @throws EjbcaException if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws EjbcaException, ObjectNotFoundException {
         return createCertificate(admin, username, password, pk, CertTools.sunKeyUsageToBC(keyusage));
     }
 
@@ -424,14 +420,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
      *                 | CertificateData.cRLSign; gives keyCertSign and cRLSign
      * @return The newly created certificate or null.
+     * @throws EjbcaException if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, EjbcaException {
         return createCertificate(admin, username, password, pk, keyusage, null, null, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
 
@@ -452,14 +446,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 | CertificateData.cRLSign; gives keyCertSign and cRLSign
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @return The newly created certificate or null.
+     * @throws EjbcaException if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws EjbcaException, ObjectNotFoundException {
         return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
 
@@ -477,14 +469,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 digitalSignature, keyEncipherment
      * @param pk       the public key to be put in the created certificate.
      * @return The newly created certificate or null.
+     * @throws EjbcaException if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws EjbcaException, ObjectNotFoundException {
         trace(">createCertificate(pk, certType)");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage = new boolean[9];
@@ -528,16 +518,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 Other (requested) parameters in the passed certificate can be used, such as DN,
      *                 Validity, KeyUsage etc. Currently only KeyUsage is considered!
      * @return The newly created certificate or null.
-     * @throws ObjectNotFoundException       if the user does not exist.
-     * @throws AuthStatusException           If the users status is incorrect.
-     * @throws AuthLoginException            If the password is incorrect.
-     * @throws IllegalKeyException           if the public key is of wrong type.
-     * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *                                       the CA.
+     * @throws EjbcaException if EJBCA did not accept any of all input parameters
+     * @throws ObjectNotFoundException if the user does not exist.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, SignRequestSignatureException, CADoesntExistsException {
+    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws EjbcaException, ObjectNotFoundException {
         trace(">createCertificate(cert)");
         X509Certificate cert = (X509Certificate) incert;
         try {
@@ -576,7 +562,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws NotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws EjbcaException {
         return createCertificate(admin, req, -1, responseClass);
     }
 
@@ -604,15 +590,13 @@ public class RSASignSessionBean extends BaseSessionBean {
      * 
      * 
      * @return The newly created certificate or null.
+     * @throws EjbcaException if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
      * 
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
     	return createCertificate(admin, username, password, pk, keyusage, null, null, certificateprofileid, caid);
     }
     
@@ -649,7 +633,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.protocol.IResponseMessage
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, NotFoundException {
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws EjbcaException {
         log.trace(">createCertificate(IRequestMessage)");
         // Get CA that will receive request
         UserDataVO data = null;
@@ -778,8 +762,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            log.error(msg, ctoe);
-            getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
         log.trace("<createCertificate(IRequestMessage)");
@@ -1105,13 +1087,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      * 
      * 
      * @return The newly created certificate or null.
+     * @throws EjbcaException if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
      * 
      */
-    private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
     	log.trace(">createCertificate(pk, ku, date)");
         // Authorize user and get DN
         UserDataVO data = authUser(admin, username, password);
@@ -1163,7 +1143,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return Certificate that has been generated and signed by the CA
      * @throws IllegalKeyException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws IllegalKeyException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws EjbcaException {
         trace(">createCertificate(pk, ku, notAfter)");
         try {
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
@@ -1182,10 +1162,13 @@ public class RSASignSessionBean extends BaseSessionBean {
                     Iterator i = users.iterator();
                     String s = "";
                     while ( i.hasNext() ) {
-                        s += " '"+i.next()+"'";
+                    	if (s .length()>0 ) {
+                    		s += " ";
+                    	}
+                        s += "'"+i.next()+"'";
                     }
                     throw new EjbcaException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER,
-                                             "User '"+data.getUsername()+"' is not allowed to use same key as the user(s)"+s+" is/are using.");
+                                             intres.getLocalizedMessage("signsession.key_exists_for_another_user", "'"+data.getUsername()+"'", s));
                 }
             }
             // Retrieve the certificate profile this user should have
@@ -1290,13 +1273,12 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             trace("<createCertificate(pk, ku, notAfter)");
             return cert;
-        } catch (IllegalKeyException ke) {
-            throw ke;
         } catch (CATokenOfflineException ctoe) {
-        	// This method should actually throw CATokenOfflineException instead of wrpping this in an EJBException
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             getLogSession().log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
-            throw new EJBException(msg, ctoe);
+            throw ctoe;
+        } catch (EjbcaException ke) {
+            throw ke;
         } catch (Exception e) {
             log.error(e);
             throw new EJBException(e);

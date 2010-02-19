@@ -672,29 +672,28 @@ public class CmpTestCase extends TestCase {
         //
         // Parse response message
         //
-		PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+		final PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
 		assertNotNull(respObject);
 		
-		PKIBody body = respObject.getBody();
-		int tag = body.getTagNo();
+		final PKIBody body = respObject.getBody();
+		final int tag = body.getTagNo();
 		assertEquals(tag, exptag);
+		final PKIStatusInfo info;
 		if (exptag == CmpPKIBodyConstants.ERRORMESSAGE) {
 			ErrorMsgContent c = body.getError();
 			assertNotNull(c);
-			PKIStatusInfo info = c.getPKIStatus();
+			info = c.getPKIStatus();
 			assertNotNull(info);
 			assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
 			int i = info.getFailInfo().intValue();
 			assertEquals(i,1<<err);
-			assertEquals(failMsg, info.getStatusString().getString(0).getString());
 		} else if (exptag == CmpPKIBodyConstants.REVOCATIONRESPONSE) {
 			RevRepContent rrc = body.getRp();
 			assertNotNull(rrc);
-			PKIStatusInfo info = rrc.getPKIStatusInfo(0);
+			info = rrc.getPKIStatusInfo(0);
 			assertNotNull(info);
 			assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
 			assertEquals(FailInfo.BAD_REQUEST.getAsBitString(), info.getFailInfo());
-			assertEquals(failMsg, info.getStatusString().getString(0).getString());			
 		} else {
 			CertRepMessage c = null;
 			if (exptag == CmpPKIBodyConstants.INITIALIZATIONRESPONSE) {
@@ -706,12 +705,13 @@ public class CmpTestCase extends TestCase {
 			CertResponse resp = c.getResponse(0);
 			assertNotNull(resp);
 			assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
-			PKIStatusInfo info = resp.getStatus();
+			info = resp.getStatus();
 			assertNotNull(info);
 			assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
 			assertEquals(FailInfo.INCORRECT_DATA.getAsBitString(), info.getFailInfo());
-			assertEquals(failMsg, info.getStatusString().getString(0).getString());			
 		}
+		log.debug("expected fail message: '"+failMsg+"'. received fail message: '"+info.getStatusString().getString(0).getString()+"'.");
+		assertEquals(failMsg, info.getStatusString().getString(0).getString());			
     }
     
     protected void checkCmpPKIErrorMessage(byte[] retMsg, String sender, String recipient, int errorCode, String errorMsg) throws IOException {
