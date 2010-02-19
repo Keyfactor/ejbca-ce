@@ -21,6 +21,11 @@ import java.lang.reflect.Method;
  * 1. Java6 console password reading
  * 2. JLine console library password reading
  * 3 Clear text (System.in)
+ * Usage:
+ * <pre>
+ * ConsolePasswordReader r = new ConsolePasswordReader();
+ * String password = String.valueOf(r.readPassword());            	
+ * </pre>
  * 
  * @version $Id$
  */
