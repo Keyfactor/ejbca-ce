@@ -111,6 +111,7 @@
   static final String CHECKBOX_USECRLNUMBER                       = "checkboxusecrlnumber";
   static final String CHECKBOX_CRLNUMBERCRITICAL                  = "checkboxcrlnumbercritical";
   static final String CHECKBOX_FINISHUSER                         = "checkboxfinishuser";
+  static final String CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS          = "isdoenforceuniquepublickeys";
   static final String CHECKBOX_USEUTF8POLICYTEXT                  = "checkboxuseutf8policytext";
   static final String CHECKBOX_USEPRINTABLESTRINGSUBJECTDN        = "checkboxuseprintablestringsubjectdn";
   static final String CHECKBOX_USELDAPDNORDER                     = "checkboxuseldapdnorder";
@@ -459,21 +460,27 @@
 
         	 // Approvals is generic for all types of CAs
              String[] values = request.getParameterValues(SELECT_APPROVALSETTINGS);
-             ArrayList approvalsettings = new ArrayList(); 
+             final ArrayList approvalsettings = new ArrayList(); 
              if(values != null){
                for(int i=0; i < values.length; i++){
             	   approvalsettings.add(new Integer(values[i]));
                }
              }
-             String value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
-             int numofreqapprovals = 1;
-             if(value != null){
-            	 numofreqapprovals = Integer.parseInt(value);
+             final int numofreqapprovals;
+             {
+                 final String value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
+            	 numofreqapprovals = value!=null ? Integer.parseInt(value) : 1;
              }
-             boolean finishuser = false;
-             value = request.getParameter(CHECKBOX_FINISHUSER);
-             if(value != null)
-               finishuser = value.equals(CHECKBOX_VALUE);         
+             final boolean finishuser;
+             {
+                 final String value = request.getParameter(CHECKBOX_FINISHUSER);
+                 finishuser = value!=null && value.equals(CHECKBOX_VALUE);
+             }
+             final boolean isDoEnforceUniquePublicKeys;
+             {
+                 final String value = request.getParameter(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS);
+                 isDoEnforceUniquePublicKeys = value==null || value.equals(CHECKBOX_VALUE);
+             }
 
 
              
@@ -510,7 +517,7 @@
 
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
-              value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
+              String value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
               if(value != null){
                  useauthoritykeyidentifier = value.equals(CHECKBOX_VALUE);                 
                  value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL); 
@@ -646,7 +653,7 @@
                                                         usecrldistpointoncrl,
                                                         crldistpointoncrlcritical,
                                                         true,
-                                                        true);// TODO: take care of this
+                                                        isDoEnforceUniquePublicKeys);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -720,7 +727,7 @@
                                                         usecrldistpointoncrl,
                                                         crldistpointoncrlcritical,
                                                         true,
-                                                        true);// TODO: take care of this
+                                                        isDoEnforceUniquePublicKeys);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -755,7 +762,7 @@
                          approvalsettings,
                          numofreqapprovals,
                          true,
-                         true); //TODO: take care of this!
+                         isDoEnforceUniquePublicKeys);
                                   
           		if(request.getParameter(BUTTON_CREATE) != null){           
                      try{
@@ -864,26 +871,32 @@
         	 
         	 // First common info for both X509 CAs and CVC CAs
         	CAInfo cainfo = null;
-            long crlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
-            long crlIssueInterval = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
-            long crlOverlapTime = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLOVERLAPTIME), "0"+SimpleTime.TYPE_MINUTES).getLong();
-            long deltacrlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
-            boolean finishuser = false;
-            String value = request.getParameter(CHECKBOX_FINISHUSER);
-            if(value != null)
-              finishuser = value.equals(CHECKBOX_VALUE);         
+            final long crlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
+            final long crlIssueInterval = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
+            final long crlOverlapTime = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLOVERLAPTIME), "0"+SimpleTime.TYPE_MINUTES).getLong();
+            final long deltacrlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
+            final boolean finishuser;
+            {
+                final String value = request.getParameter(CHECKBOX_FINISHUSER);
+                finishuser = value!=null && value.equals(CHECKBOX_VALUE);
+            }
+            final boolean isDoEnforceUniquePublicKeys;
+            {
+                final String value = request.getParameter(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS);
+                isDoEnforceUniquePublicKeys = value==null || value.equals(CHECKBOX_VALUE);
+            }
             String[] values = request.getParameterValues(SELECT_APPROVALSETTINGS);
-            ArrayList approvalsettings = new ArrayList(); 
+            final ArrayList approvalsettings = new ArrayList(); 
             if(values != null){
               for(int i=0; i < values.length; i++){
            	   approvalsettings.add(new Integer(values[i]));
               }
             }
             
-            value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
-            int numofreqapprovals = 1;
-            if(value != null){
-           	 numofreqapprovals = Integer.parseInt(value);
+            final int numofreqapprovals;
+            {
+                final String value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
+                numofreqapprovals = value!=null ? Integer.parseInt(value) : 1;
             }
             
             values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
@@ -899,7 +912,7 @@
                                           
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
-              value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
+              String value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
               if(value != null){
                  useauthoritykeyidentifier = value.equals(CHECKBOX_VALUE);                 
                  value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL); 
@@ -1021,7 +1034,7 @@
                                                       usecrldistpointoncrl,
                                                       crldistpointoncrlcritical,
                                                       true,
-                                                      true);
+                                                      isDoEnforceUniquePublicKeys);
              } // if(catype == CAInfo.CATYPE_X509)
             	 
              // Info specific for CVC CA
@@ -1038,7 +1051,7 @@
                            approvalsettings,
                            numofreqapprovals,
                            true,
-                           true);
+                           isDoEnforceUniquePublicKeys);
              } // if(catype == CAInfo.CATYPE_CVC)
             	 
                if(request.getParameter(BUTTON_SAVE) != null){
@@ -1277,14 +1290,15 @@
         	 CAInfo cainfo = null;
 
         	 // Parameters common for both X509 and CVC CAs
-             ArrayList approvalsettings = new ArrayList(); 
-             int numofreqapprovals = 1;
-             boolean finishuser = false;
-             ArrayList crlpublishers = new ArrayList(); 
-             int crlperiod = 0;
-             int crlIssueInterval = 0;
-             int crlOverlapTime = 10;
-             int deltacrlperiod = 0;
+             final ArrayList approvalsettings = new ArrayList(); 
+             final int numofreqapprovals = 1;
+             final boolean finishuser = false;
+             final boolean isDoEnforceUniquePublicKeys = true;
+             final ArrayList crlpublishers = new ArrayList(); 
+             final int crlperiod = 0;
+             final int crlIssueInterval = 0;
+             final int crlOverlapTime = 10;
+             final int deltacrlperiod = 0;
 
              
         	 if(catype == CAInfo.CATYPE_X509){
@@ -1355,7 +1369,7 @@
                                                         usecrldistpointoncrl,
                                                         crldistpointoncrlcritical,
                                                         true,
-                                                        true);// TODO: take care of this
+                                                        isDoEnforceUniquePublicKeys);
                }                               
                }
              } // if(catype == CAInfo.CATYPE_X509)
@@ -1381,7 +1395,7 @@
                        approvalsettings,
                        numofreqapprovals,
                        true,
-                       true); //TODO: take care of this!
+                       isDoEnforceUniquePublicKeys);
                    }
                  }
                }  // if(catype == CAInfo.CATYPE_CVC)
