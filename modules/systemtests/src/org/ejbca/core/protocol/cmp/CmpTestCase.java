@@ -663,8 +663,8 @@ public class CmpTestCase extends TestCase {
     /**
      * 
      * @param retMsg
-     * @param failMsg
-     * @param tag 1 is answer to initicalization resp, 3 certification resp etc, 23 is error 
+     * @param failMsg expected fail message
+     * @param tag 1 is answer to initialisation resp, 3 certification resp etc, 23 is error 
      * @param err a number from FailInfo
      * @throws IOException
      */
