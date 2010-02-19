@@ -100,7 +100,13 @@ public class CrmfRARequestTest extends CmpTestCase {
 		TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
 	}
 
-	public void crmfHttpUserTest(String userDN, KeyPair keys, String sExceptionMessage) throws Exception {
+	/**
+	 * @param userDN for new certificate.
+	 * @param keys key of the new certificate.
+	 * @param sFailMessage if !=null then EJBCA is expected to fail. The failure response message string is checked against this parameter.
+	 * @throws Exception
+	 */
+	private void crmfHttpUserTest(String userDN, KeyPair keys, String sFailMessage) throws Exception {
 
 		// Create a new good user
 
@@ -121,11 +127,12 @@ public class CrmfRARequestTest extends CmpTestCase {
 			final byte[] resp = sendCmpHttp(ba);
 			assertNotNull(resp);
 			assertTrue(resp.length > 0);
-			checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, sExceptionMessage==null, false);
-			if ( sExceptionMessage==null ) {
+			// do not check signing if we expect a failure (sFailMessage==null)
+			checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, sFailMessage==null, false);
+			if ( sFailMessage==null ) {
 				checkCmpCertRepMessage(userDN, cacert, resp, reqId);
 			} else {
-				checkCmpFailMessage(resp, sExceptionMessage,
+				checkCmpFailMessage(resp, sFailMessage,
 									CmpPKIBodyConstants.ERRORMESSAGE, reqId, FailInfo.BAD_REQUEST.hashCode());
 			}
 		}{
@@ -147,15 +154,22 @@ public class CrmfRARequestTest extends CmpTestCase {
 		}
 	}
 	public void test01CrmfHttpOkUser() throws Exception {
-		final KeyPair key = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        // make sure same keys for different users is prevented
+        final CAInfo caInfo = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
+        caInfo.setDoEnforceUniquePublicKeys(true);
+        TestTools.getCAAdminSession().editCA(admin, caInfo);
+
+        final KeyPair key = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		final String userDN1 = "C=SE,O=PrimeKey,CN=cmptest1";
 		final String userDN2 = "C=SE,O=PrimeKey,CN=cmptest2";
 		final String userName1 = "cmptest1";
 		final String userName2 = "cmptest2";
 		createCmpUser(userName1, userDN1);
+		// check that several certificates could be created for one user and one key.
 		crmfHttpUserTest(userDN1, key, null);
 		crmfHttpUserTest(userDN1, key, null);
 		createCmpUser(userName2, userDN2);
+		// check that the request fails when asking for certificate for another user with same key.
 		crmfHttpUserTest(userDN2, key, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"));
 	}
 	

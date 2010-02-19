@@ -369,8 +369,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param password password for the user.
      * @param pk       the public key to be put in the created certificate.
      * @return The newly created certificate or null.
-     * @throws EjbcaException if EJBCA did not accept any of all input parameters
+     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
@@ -397,6 +400,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return The newly created certificate or null.
      * @throws EjbcaException if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
@@ -420,8 +426,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
      *                 | CertificateData.cRLSign; gives keyCertSign and cRLSign
      * @return The newly created certificate or null.
-     * @throws EjbcaException if EJBCA did not accept any of all input parameters
+     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
@@ -446,8 +455,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 | CertificateData.cRLSign; gives keyCertSign and cRLSign
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @return The newly created certificate or null.
-     * @throws EjbcaException if EJBCA did not accept any of all input parameters
+     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
@@ -469,8 +481,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 digitalSignature, keyEncipherment
      * @param pk       the public key to be put in the created certificate.
      * @return The newly created certificate or null.
-     * @throws EjbcaException if EJBCA did not accept any of all input parameters
+     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
@@ -518,8 +533,13 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                 Other (requested) parameters in the passed certificate can be used, such as DN,
      *                 Validity, KeyUsage etc. Currently only KeyUsage is considered!
      * @return The newly created certificate or null.
-     * @throws EjbcaException if EJBCA did not accept any of all input parameters
-     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws EjbcaException                if EJBCA did not accept any of all input parameters
+     * @throws ObjectNotFoundException       if the user does not exist.
+     * @throws AuthStatusException           If the users status is incorrect.
+     * @throws AuthLoginException            If the password is incorrect.
+     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @throws SignRequestSignatureException if the provided client certificate was not signed by
+     *                                       the CA.
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
@@ -590,8 +610,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      * 
      * 
      * @return The newly created certificate or null.
-     * @throws EjbcaException if EJBCA did not accept any of all input parameters
+     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
      * 
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
@@ -1087,8 +1110,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      * 
      * 
      * @return The newly created certificate or null.
-     * @throws EjbcaException if EJBCA did not accept any of all input parameters
+     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
      * 
      */
     private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
@@ -1141,7 +1167,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param extensions an optional set of extensions to set in the created certificate, if the profile allows extension override, null if the profile default extensions should be used.
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by CVC CAs for sequence field. Can be set to null.
      * @return Certificate that has been generated and signed by the CA
-     * @throws IllegalKeyException if the public key given is invalid
+     * @throws EjbcaException if the public key given is invalid
      */
     private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws EjbcaException {
         trace(">createCertificate(pk, ku, notAfter)");

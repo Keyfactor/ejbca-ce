@@ -514,7 +514,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         // First make a DN in our well-known format
         final String transformedIssuerDN = StringTools.strip(CertTools.stringToBCDNString(issuerDN));
         final String sSubjectKeyId = new String(Base64.encode(subjectKeyId, false));
-        debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"+sSubjectKeyId+"'.");
+        if ( log.isDebugEnabled() ) {
+            log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"+sSubjectKeyId+"'.");
+        }
         try {
             final Collection coll = this.certHome.findByIssuerDNAndSubjectKeyId(transformedIssuerDN, sSubjectKeyId);
             final Set ret = new HashSet();
