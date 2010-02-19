@@ -30,20 +30,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.IllegalKeyException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.ui.web.RequestHelper;
@@ -304,6 +298,9 @@ public class AdminCertReqServlet extends HttpServlet {
             IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             pkcs7 = ss.createPKCS7(admin, cert, true);
+        } catch (EjbcaException e) {
+            // EJBCA did not accept any of all parameters in the request.
+            throw new ServletException(e);
         } catch (ClassNotFoundException e) {
             // Class not found
             throw new ServletException(e);
@@ -312,29 +309,6 @@ public class AdminCertReqServlet extends HttpServlet {
             throw new ServletException(e);
         } catch (CertificateException e) {
             // Error in cert
-            throw new ServletException(e);
-        } catch (NotFoundException e) {
-            // User not found
-            throw new ServletException(e);
-        } catch (AuthStatusException e) {
-            // Wrong user status, shouldn't really happen.  The user needs to have
-            // status of NEW, FAILED or INPROCESS.
-            throw new ServletException(e);
-        } catch (AuthLoginException e) {
-            // Wrong username or password, hmm... wasn't the wrong username caught
-            // in the objectnotfoundexception above... and this shouldn't happen.
-            throw new ServletException(e);
-        } catch (IllegalKeyException e) {
-            // Malformed key (?)
-            throw new ServletException(e);
-        } catch (SignRequestException e) {
-            // Invalid request
-            throw new ServletException(e);
-        } catch (SignRequestSignatureException e) {
-            // Invalid signature in certificate request
-            throw new ServletException(e);
-        } catch (CADoesntExistsException e) {
-            // Reqqested CA does not exist
             throw new ServletException(e);
         }
         

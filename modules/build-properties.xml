@@ -45,6 +45,9 @@
     <property file="${ejbca.home}/conf/externalra.properties" />
     <property file="${ejbca.home}/conf/scep.properties" />
 
+    <!-- httpsserver.hostname must be set cause it's used in preprocess. It will only be set here if not set in any property file -->
+    <property name="httpsserver.hostname" value="localhost"/>
+
     <!-- A little special something to handle backward compatibility with 
          people using JBOSS_HOME. They can switch to APPSRV_HOME now, and both will work. 
     -->        

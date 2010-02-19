@@ -791,8 +791,7 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 	
 	private byte[] processCertReq(String username, String password, String req, int reqType,
-			String hardTokenSN, String responseType, IPatternLogger logger) throws CADoesntExistsException,
-			AuthorizationDeniedException, NotFoundException, EjbcaException {
+			String hardTokenSN, String responseType, IPatternLogger logger) throws EjbcaException, AuthorizationDeniedException {
 		byte[] retval = null;
 
 		try{
@@ -912,8 +911,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw getInternalException(e, logger);
 		} catch (CertificateException e) {
             throw getInternalException(e, logger);
-		} catch (CreateException e) {
-            throw getInternalException(e, logger);
 		} catch (IOException e) {
             throw getInternalException(e, logger);
 		} catch (FinderException e) {
@@ -934,7 +931,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 
 	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg,
-			String hardTokenSN, String responseType, EjbcaWSHelper ejbhelper) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, ServiceLocatorException, CreateException, SignRequestSignatureException, NotFoundException, SignRequestException, CertificateException, IOException {
+			String hardTokenSN, String responseType, EjbcaWSHelper ejbhelper) throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
 		byte[] retval = null;
 		Class respClass = org.ejbca.core.protocol.X509ResponseMessage.class; 
 		IResponseMessage resp =  ejbhelper.getSignSession().createCertificate(admin, msg, respClass);

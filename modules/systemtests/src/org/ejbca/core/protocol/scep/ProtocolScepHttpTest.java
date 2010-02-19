@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import javax.ejb.FinderException;
+import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -68,6 +69,7 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -134,14 +136,18 @@ public class ProtocolScepHttpTest extends TestCase {
             "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI" +
             "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
 
-    private static IUserAdminSessionRemote usersession;
-    private static int caid = TestTools.getTestCAId();
+    private static final IUserAdminSessionRemote usersession;
+    private static final int caid = TestTools.getTestCAId();
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-    private static X509Certificate cacert = null;
-    private static KeyPair keys = null;
-    private static String caname = TestTools.getTestCAName();
-    private String senderNonce = null;
-    private String transId = null;
+    private static final X509Certificate cacert;
+    private static final KeyPair keys;
+    private static final String caname = TestTools.getTestCAName();
+    private static final String userName1 = "sceptest1";
+    private static final String userName2 = "sceptest2";
+    private static final String userDN1 = "C=SE,O=PrimeKey,CN=sceptest1";
+    private static final String userDN2 = "C=SE,O=PrimeKey,CN=sceptest2";
+    private static String senderNonce = null;
+    private static String transId = null;
     
     private Random rand = new Random();
 
@@ -154,16 +160,22 @@ public class ProtocolScepHttpTest extends TestCase {
         return new TestSuite(ProtocolScepHttpTest.class);
     }
 
-
-    public ProtocolScepHttpTest(String name) throws Exception {
-        super(name);
+    static {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
         TestTools.createTestCA();
         cacert = (X509Certificate) TestTools.getTestCACert();
         usersession = TestTools.getUserAdminSession();
         // Pre-generate key for all requests to speed things up a bit
-        keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);        	
+        try {
+            keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+
+    public ProtocolScepHttpTest(String name) throws Exception {
+        super(name);
     }
 
     protected void setUp() throws Exception {
@@ -208,13 +220,13 @@ public class ProtocolScepHttpTest extends TestCase {
         // send SCEP req to server and get good response with cert
 
         // Make user that we know...
-        createScepUser();
+        createScepUser(userName1, userDN1);
         
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
         log.debug("<test03ScepRequestOKSHA1()");
     }
 
@@ -224,13 +236,13 @@ public class ProtocolScepHttpTest extends TestCase {
         // send SCEP req to server and get good response with cert
 
         // Make user that we know...
-        createScepUser();
+        createScepUser(userName1, userDN1);
         
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false);
         log.debug("<test04ScepRequestOKMD5()");
     }
 
@@ -239,13 +251,13 @@ public class ProtocolScepHttpTest extends TestCase {
         // find a CA, create a user and
         // send SCEP req to server and get good response with cert
 
-        createScepUser();
+        createScepUser(userName1, userDN1);
         
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
         log.debug(">test05ScepRequestPostOK()");
     }
 
@@ -254,13 +266,13 @@ public class ProtocolScepHttpTest extends TestCase {
         // find a CA, create a user and
         // send SCEP req to server and get good response with cert
 
-        createScepUser();
+        createScepUser(userName1, userDN1);
         
-        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes, true);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, true);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, true);
         log.debug(">test06ScepRequestPostOKNoCA()");
     }
 
@@ -296,11 +308,11 @@ public class ProtocolScepHttpTest extends TestCase {
 
     public void test08ScepGetCrl() throws Exception {
         log.debug(">test08ScepGetCrl()");
-        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1);
+        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false);
+        checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false);
         log.debug(">test08ScepGetCrl()");
     }
     public void test09ScepGetCACaps() throws Exception {
@@ -330,34 +342,48 @@ public class ProtocolScepHttpTest extends TestCase {
         assertEquals(new String(respBytes), "POSTPKIOperation\nSHA-1");
         log.debug(">test09ScepGetCACaps()");
     }
+
+    public void test10EnforcementOfUniquePublicKeys() throws Exception {
+        log.debug(">test10EnforcementOfUniquePublicKeys()");
+        // find a CA create a user and
+        // send SCEP req to server and get good response with cert
+
+        // Make user that we know...
+        createScepUser(userName2, userDN2);
+        
+        final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2);
+        // Send message with GET
+        final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
+        log.debug(new String(retMsg));
+        assertTrue( new String(retMsg).indexOf(InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"))>=0 );
+        log.debug("<test10EnforcementOfUniquePublicKeys()");
+    }
     public void test99CleanUp() throws Exception {
         // remove user
-        usersession.deleteUser(admin,"sceptest");
-        log.debug("deleted user: sceptest");
+        this.usersession.deleteUser(admin,userName1);
+        log.debug("deleted user: "+userName1);
+        this.usersession.deleteUser(admin,userName2);
+        log.debug("deleted user: "+userName2);
     }
     
     //
     // Private helper methods
     //
-    private void createScepUser() throws RemoteException, AuthorizationDeniedException, FinderException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
+    private void createScepUser(String userName, String userDN) throws RemoteException, AuthorizationDeniedException, FinderException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"sceptest","foo123","C=SE,O=PrimeKey,CN=sceptest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
-            log.debug("created user: sceptest, foo123, C=SE, O=PrimeKey, CN=sceptest");
+            usersession.addUser(admin,userName,"foo123",userDN,null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            log.debug("created user: "+userName+", foo123, "+userDN);
         } catch (Exception e) {
-        	userExists = true;
-        } 
-
-        if (userExists) {
-            log.debug("User sceptest already exists.");
-            usersession.setUserStatus(admin,"sceptest",UserDataConstants.STATUS_NEW);
+            log.debug("User "+userName+" already exists.");
+            usersession.setUserStatus(admin,userName,UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException, CertificateEncodingException, IllegalStateException {
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException, CertificateEncodingException, IllegalStateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keys);
         gen.setDigestOid(digestoid);
@@ -369,9 +395,9 @@ public class ProtocolScepHttpTest extends TestCase {
         transId = new String(Base64.encode(digest));
 
         if (makeCrlReq) {
-            msgBytes = gen.generateCrlReq("C=SE, O=PrimeKey, CN=sceptest", transId, cacert);
+            msgBytes = gen.generateCrlReq(userDN, transId, cacert);
         } else {
-            msgBytes = gen.generateCertReq("C=SE, O=PrimeKey, CN=sceptest", "foo123", transId, cacert);            
+            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert);            
         }
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
@@ -508,7 +534,7 @@ public class ProtocolScepHttpTest extends TestCase {
                     String subjectdn = CertTools.stringToBCDNString(retcert.getSubjectDN().getName());
                     if (CertTools.stringToBCDNString(userDN).equals(subjectdn)) {
                         // issued certificate
-                        assertEquals(CertTools.stringToBCDNString("C=SE,O=PrimeKey,CN=sceptest"), subjectdn);
+                        assertEquals(CertTools.stringToBCDNString(userDN), subjectdn);
                         assertEquals(cacert.getSubjectDN().getName(), retcert.getIssuerDN().getName());
                         retcert.verify(cacert.getPublicKey());
                         assertTrue(checkKeys(keys.getPrivate(), retcert.getPublicKey()));
@@ -544,6 +570,9 @@ public class ProtocolScepHttpTest extends TestCase {
         return signer2.verify(signature);
     }
     private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca) throws IOException, NoSuchProviderException {
+        return sendScep(post, scepPackage, noca, HttpServletResponse.SC_OK);
+    }
+    private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca, int responseCode) throws IOException, NoSuchProviderException {
         // POST the SCEP request
         // we are going to do a POST
     	String resource = resourceScep;
@@ -552,7 +581,7 @@ public class ProtocolScepHttpTest extends TestCase {
     	}
     	String urlString = httpReqPath + '/' + resource+"?operation=PKIOperation";
     	log.debug("UrlString =" + urlString);
-        HttpURLConnection con = null;
+        final HttpURLConnection con;
         if (post) {
             URL url = new URL(urlString);
             con = (HttpURLConnection)url.openConnection();
@@ -572,12 +601,21 @@ public class ProtocolScepHttpTest extends TestCase {
             con.connect();
         }
 
-        assertEquals("Response code", 200, con.getResponseCode());
+        assertEquals("Response code", responseCode, con.getResponseCode());
         // Some appserver (Weblogic) responds with "application/x-pki-message; charset=UTF-8"
-        assertTrue(con.getContentType().startsWith("application/x-pki-message"));
+        if ( responseCode==HttpServletResponse.SC_OK ) {
+            assertTrue(con.getContentType().startsWith("application/x-pki-message"));
+        } else {
+            assertTrue(con.getContentType().startsWith("text/html"));
+        }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and SCEP requests are small enough
-        InputStream in = con.getInputStream();
+        final InputStream in;
+        if ( responseCode==HttpServletResponse.SC_OK ) {
+            in = con.getInputStream();
+        } else {
+            in = con.getErrorStream();
+        }
         int b = in.read();
         while (b != -1) {
             baos.write(b);
