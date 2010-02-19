@@ -738,7 +738,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	return ((Boolean) data.get(USECARDNUMBER)).booleanValue();
     }
     
-    public void setUseCardNumber(Boolean use) {
+    public void setUseCardNumber(boolean use) {
     	data.put(USECARDNUMBER, Boolean.valueOf(use));
     }
     
