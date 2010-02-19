@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
  * 3 Clear text (System.in)
  * Usage:
  * <pre>
+ * System.out.print("Enter password: ");
  * ConsolePasswordReader r = new ConsolePasswordReader();
  * String password = String.valueOf(r.readPassword());            	
  * </pre>
