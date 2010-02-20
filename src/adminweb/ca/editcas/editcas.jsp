@@ -479,7 +479,7 @@
              final boolean isDoEnforceUniquePublicKeys;
              {
                  final String value = request.getParameter(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS);
-                 isDoEnforceUniquePublicKeys = value==null || value.equals(CHECKBOX_VALUE);
+                 isDoEnforceUniquePublicKeys = value!=null && value.equals(CHECKBOX_VALUE);
              }
 
 
@@ -883,7 +883,7 @@
             final boolean isDoEnforceUniquePublicKeys;
             {
                 final String value = request.getParameter(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS);
-                isDoEnforceUniquePublicKeys = value==null || value.equals(CHECKBOX_VALUE);
+                isDoEnforceUniquePublicKeys = value!=null && value.equals(CHECKBOX_VALUE);
             }
             String[] values = request.getParameterValues(SELECT_APPROVALSETTINGS);
             final ArrayList approvalsettings = new ArrayList(); 
