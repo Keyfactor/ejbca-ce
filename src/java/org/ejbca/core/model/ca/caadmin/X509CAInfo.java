@@ -60,7 +60,8 @@ public class X509CAInfo extends CAInfo{
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
-                    boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys) {
+                    boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
+                    boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -117,6 +118,7 @@ public class X509CAInfo extends CAInfo{
         this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
         this.includeInHealthCheck = includeInHealthCheck;
         this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
+        this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
     }
 
     /**
@@ -130,7 +132,8 @@ public class X509CAInfo extends CAInfo{
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl,
                       boolean finishuser, Collection extendedcaserviceinfos, 
                       boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
-                      boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys) {        
+                      boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
+                      boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -159,6 +162,7 @@ public class X509CAInfo extends CAInfo{
         this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
         this.includeInHealthCheck = includeInHealthCheck;
         this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
+        this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
     }  
   
   

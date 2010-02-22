@@ -54,8 +54,12 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
 		test03CertificateRequest(true);
 	}
 
-    public void test03_6EnforcementOfUniquePublicKeys() throws Exception{
-    	test03EnforcementOfUniquePublicKeys(true);
+	public void test03_6EnforcementOfUniquePublicKeys() throws Exception{
+		test03EnforcementOfUniquePublicKeys(true);
+	}
+
+	public void test03_6EnforcementOfUniqueSubjectDN() throws Exception{
+		test03EnforcementOfUniqueSubjectDN(true);
 	}
 
     public void test04GeneratePkcs12() throws Exception{

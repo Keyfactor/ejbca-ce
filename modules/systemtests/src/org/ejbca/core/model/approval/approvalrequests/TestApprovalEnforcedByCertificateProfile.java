@@ -261,7 +261,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 			String username1 = genRandomUserName("test04_1");
 			String email = "test@example.com";
 			KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-	        TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC", /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdNoApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
+	        TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC1", /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdNoApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
 	        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin1, username1, "foo123", keypair.getPublic());
 			
 	        TestTools.getKeyRecoverySession().addKeyRecoveryData(admin1, cert, username1, keypair);
@@ -280,7 +280,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 			String username1 = genRandomUserName("test04_2");
 			String email = "test@example.com";
 			KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-		    TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC", /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdKeyRecoveryApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
+		    TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC2", /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdKeyRecoveryApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
 		    X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin1, username1, "foo123", keypair.getPublic());
 		    TestTools.getKeyRecoverySession().addKeyRecoveryData(admin1, cert, username1, keypair);
 		    		    
@@ -379,7 +379,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 		X509CAInfo cainfo = new X509CAInfo("CN="+nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId,
         		365, new Date(System.currentTimeMillis()+364*24*3600*1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null,
         		catokeninfo, "Used for testing approvals", -1, null, null, 24, 0, 10, 0, new ArrayList(), true,
-        		false, true, false, "", "", "", "", true, new ArrayList(), false, approvalSettings, 1, false, true, false, false, true, true);
+        		false, true, false, "", "", "", "", true, new ArrayList(), false, approvalSettings, 1, false, true, false, false, true, true, true);
 		int caID = cainfo.getCAId();
         try {
         	caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);

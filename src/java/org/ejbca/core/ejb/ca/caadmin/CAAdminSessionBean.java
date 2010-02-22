@@ -1628,7 +1628,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				usecrldistpointoncrl,
     				crldistpointoncrlcritical,
     				false,
-                    true // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniquePublicKeys
+                    true // isDoEnforceUniqueDistinguishedName
     				);
     	} else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
     		cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
@@ -1640,7 +1641,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				approvalsettings,
     				numofreqapprovals,
     				false,
-                    true // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniquePublicKeys
+                    true // isDoEnforceUniqueDistinguishedName
                     );
     	}
     	if(cainfo instanceof X509CAInfo){
@@ -2402,7 +2404,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                                   false,  // Use CRL Distribution Point on CRL
 			                                   false,  // CRL Distribution Point on CRL critical,
 			                                   true, // Include in HealthCheck
-			                                   true // isDoEnforceUniquePublicKeys
+			                                   true, // isDoEnforceUniquePublicKeys
+			                                   true // isDoEnforceUniqueDistinguishedName
 			                                   );
 			ca = new X509CA((X509CAInfo)cainfo);
 		} else if (caSignatureCertificate.getType().equals("CVC")) {
@@ -2420,7 +2423,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in HealthCheck
-                    true // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniquePublicKeys
+                    true // isDoEnforceUniqueDistinguishedName
                     );
 			ca = new CVCCA((CVCCAInfo)cainfo);
 		}

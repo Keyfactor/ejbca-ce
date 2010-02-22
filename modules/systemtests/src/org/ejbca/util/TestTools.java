@@ -438,7 +438,8 @@ public class TestTools {
         		false, // Use CRL Distribution Point on CRL
         		false,  // CRL Distribution Point on CRL critical
         		true,
-                true // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniquePublicKeys
+                true // isDoEnforceUniqueDistinguishedName
         		);
 
         try {
