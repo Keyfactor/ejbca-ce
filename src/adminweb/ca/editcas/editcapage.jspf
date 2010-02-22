@@ -609,6 +609,16 @@ function checkallfields(){
                  out.write("CHECKED");%>>         
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>">
+    <td width="50%"  align="right"> 
+      <%= ejbcawebbean.getText("DOENFORCEUNIQUEDN") %>
+    </td>
+    <td width="50%"> 
+      <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEDN %>" value="<%=CHECKBOX_VALUE %>" 
+          <% if((editca && cainfo.isDoEnforceUniqueDistinguishedName()) || !editca)
+               out.write("CHECKED");%>>         
+    </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>

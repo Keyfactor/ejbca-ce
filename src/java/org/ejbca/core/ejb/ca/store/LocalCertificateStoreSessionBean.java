@@ -498,7 +498,44 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             throw new EJBException(fe);
         }
     } //findCertificatesBySubjectAndIssuer
-
+    private Set getSet(Collection coll) {
+        final Set ret = new HashSet();
+        if (coll != null) {
+            Iterator iter = coll.iterator();
+            while (iter.hasNext()) {
+                ret.add(((CertificateDataLocal) iter.next()).getUsername());
+            }
+        }
+        return ret;
+    }
+    /**
+     * @param admin
+     * @param issuerDN
+     * @param subjectDN
+     * @return set of users with certificates with specified subject DN issued by specified issuer.
+     * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method
+     */
+    public Set findUsernamesByIssuerDNAndSubjectDN(Admin admin, String issuerDN, String subjectDN) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
+        }
+        // First make a DN in our well-known format
+        final String transformedIssuerDN = StringTools.strip(CertTools.stringToBCDNString(issuerDN));
+        final String transformedSubjectDN = StringTools.strip(CertTools.stringToBCDNString(subjectDN));
+        if ( log.isDebugEnabled() ) {
+            log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and subject DN(transformed) '"+transformedSubjectDN+"'.");
+        }
+        try {
+            return getSet(this.certHome.findBySubjectDNAndIssuerDN(transformedSubjectDN, transformedIssuerDN));
+        } catch (javax.ejb.FinderException fe) {
+            throw new EJBException(fe);
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
+            }
+        }
+    }
     /**
      * @param admin
      * @param issuerDN
@@ -518,20 +555,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"+sSubjectKeyId+"'.");
         }
         try {
-            final Collection coll = this.certHome.findByIssuerDNAndSubjectKeyId(transformedIssuerDN, sSubjectKeyId);
-            final Set ret = new HashSet();
-            if (coll != null) {
-                Iterator iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret.add(((CertificateDataLocal) iter.next()).getUsername());
-                }
-            }
+        	return getSet(this.certHome.findByIssuerDNAndSubjectKeyId(transformedIssuerDN, sSubjectKeyId));
+        } catch (javax.ejb.FinderException fe) {
+            throw new EJBException(fe);
+        } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
             }
-            return ret;
-        } catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
         }
     }
     /**

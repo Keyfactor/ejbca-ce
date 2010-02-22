@@ -114,6 +114,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	protected static final String NUMBEROFREQAPPROVALS           = "numberofreqapprovals";
 	protected static final String INCLUDEINHEALTHCHECK			 = "includeinhealthcheck";
 	private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS    = "doEnforceUniquePublicKeys";
+	private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
     
     // Public Methods
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
@@ -135,6 +136,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        setFinishUser(cainfo.getFinishUser());
        setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
        setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
+       setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
 	   
 	   Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	   ArrayList extendedservicetypes = new ArrayList(); 
@@ -422,11 +424,18 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 		data.put(INCLUDEINHEALTHCHECK, new Boolean(includeInHealthCheck)); 
 	}
 
-	protected boolean isDoEnforceUniquePublicKeys() {
+	public boolean isDoEnforceUniquePublicKeys() {
 		return getBoolean(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, true);
 	}
     private void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
     	data.put(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, new Boolean(doEnforceUniquePublicKeys));
+	}
+    
+	public boolean isDoEnforceUniqueDistinguishedName() {
+		return getBoolean(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, true);
+	}
+    private void setDoEnforceUniqueDistinguishedName(boolean doEnforceUniqueDistinguishedName) {
+    	data.put(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, new Boolean(doEnforceUniqueDistinguishedName));
 	}
     
 	/**
@@ -491,6 +500,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	setFinishUser(cainfo.getFinishUser());
     	setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
+        setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
     	
     	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
     	while(iter.hasNext()){

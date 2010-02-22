@@ -196,7 +196,7 @@ public class X509CA extends CA implements Serializable {
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(), getFinishUser(), externalcaserviceinfos, 
         		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder(),
-        		  getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys());
+        		  getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName());
         super.setCAInfo(info);
     }
 

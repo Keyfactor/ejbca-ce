@@ -214,7 +214,8 @@ public class TestCAImportExport extends TestCase  {
                 false, // Use CRL Distribution Point on CRL
                 false,  // CRL Distribution Point on CRL critical
                 true, // include in health check
-                true // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniquePublicKeys
+                true // isDoEnforceUniqueDistinguishedName
         );
 		return cainfo;
 	}

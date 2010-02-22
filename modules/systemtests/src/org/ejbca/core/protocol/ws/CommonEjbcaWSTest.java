@@ -120,6 +120,7 @@ public class CommonEjbcaWSTest extends TestCase {
 	
 	protected static EjbcaWS ejbcaraws;
     
+    private final static Random random = new Random();
     protected final static String wsTestAdminUsername = "wstest";
 	protected final static String wsTestNonAdminUsername = "wsnonadmintest";
     protected static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -291,10 +292,7 @@ public class CommonEjbcaWSTest extends TestCase {
 	private String getReversedDN(String userName) {
 		return "O="+userName.charAt(userName.length()-1)+"Test,CN="+userName;
 	}
-	private void editUser(boolean performSetup, String userName, String caName) throws Exception{
-		if(performSetup){
-		  setUpAdmin();
-		}
+	private void editUser(String userName, String caName) throws Exception{
 		// Test to add a user.
 		final UserDataVOWS user = new UserDataVOWS();
 		user.setUsername(userName);
@@ -311,44 +309,62 @@ public class CommonEjbcaWSTest extends TestCase {
 
 		ejbcaraws.editUser(user);
 
-        UserMatch usermatch = new UserMatch();
-        usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
-        usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue(userName);
-		
-	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+		UserMatch usermatch = new UserMatch();
+		usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
+		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+		usermatch.setMatchvalue(userName);
+
+		List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas != null);
 		assertTrue(userdatas.size() == 1);
 		UserDataVOWS userdata = userdatas.get(0);
 		assertTrue(userdata.getUsername().equals(userName));
 		assertTrue(userdata.getPassword() == null);
 		assertTrue(!userdata.isClearPwd());
-        assertTrue(userdata.getSubjectDN().equals("CN="+userName));
-        assertTrue(userdata.getCaName().equals(caName));
-        assertTrue(userdata.getSubjectAltName() == null);
-        assertTrue(userdata.getEmail() == null);
-        assertTrue(userdata.getCertificateProfileName().equals("ENDUSER"));
-        assertTrue(userdata.getEndEntityProfileName().equals("EMPTY"));
-        assertTrue(userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_USERGENERATED));        
-        assertTrue(userdata.getStatus() == UserDataVOWS.STATUS_NEW);
-        
-        // Edit the user
-        final String sDN = getDN(userName);
-        userdata.setSubjectDN(sDN);
-        ejbcaraws.editUser(userdata);
-        List<UserDataVOWS> userdatas2 = ejbcaraws.findUser(usermatch);
+		assertTrue(userdata.getSubjectDN().equals("CN="+userName));
+		assertTrue(userdata.getCaName().equals(caName));
+		assertTrue(userdata.getSubjectAltName() == null);
+		assertTrue(userdata.getEmail() == null);
+		assertTrue(userdata.getCertificateProfileName().equals("ENDUSER"));
+		assertTrue(userdata.getEndEntityProfileName().equals("EMPTY"));
+		assertTrue(userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_USERGENERATED));        
+		assertTrue(userdata.getStatus() == UserDataVOWS.STATUS_NEW);
+
+		// Edit the user
+		final String sDN = getDN(userName);
+		userdata.setSubjectDN(sDN);
+		ejbcaraws.editUser(userdata);
+		List<UserDataVOWS> userdatas2 = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas2 != null);
 		assertTrue(userdatas2.size() == 1);  
-		UserDataVOWS userdata2 = userdatas.get(0);
-        assertTrue(userdata2.getSubjectDN().equals(sDN));
-		
+		UserDataVOWS userdata2 = userdatas2.get(0);
+		assertTrue(userdata2.getSubjectDN().equals(sDN));
+
+	}
+	private void editUser(UserDataVOWS userdata, String subjectDN) throws Exception{
+		// Edit the user
+		userdata.setSubjectDN(subjectDN);
+		userdata.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);           
+		ejbcaraws.editUser(userdata);
+		final UserMatch usermatch = new UserMatch();
+		usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
+		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+		usermatch.setMatchvalue(userdata.getUsername());
+		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+		assertTrue(userdatas != null);
+		assertTrue(userdatas.size() == 1);  
+		final UserDataVOWS userdata2 = userdatas.get(0);
+		assertTrue(userdata2.getSubjectDN().equals(subjectDN));
 	}
 	protected void test01EditUser(boolean performSetup) throws Exception{
+        if(performSetup){
+            setUpAdmin();
+          }
 		TestTools.createTestCA(CA1);
 		TestTools.createTestCA(CA2);
-		editUser(performSetup , CA1_WSTESTUSER1, CA1);
-		editUser(performSetup , CA1_WSTESTUSER2, CA1);
-		editUser(performSetup , CA2_WSTESTUSER1, CA2);
+		editUser(CA1_WSTESTUSER1, CA1);
+		editUser(CA1_WSTESTUSER2, CA1);
+		editUser(CA2_WSTESTUSER1, CA2);
 	}	
 
 	protected void test02findUser(boolean performSetup) throws Exception{
@@ -468,7 +484,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			final X509Certificate cert = certenv.getCertificate (); 
 
 			assertNotNull(cert);		
-			assertTrue(cert.getSubjectDN().toString().equals(getDN(userdata.getUsername())));
+			assertTrue(cert.getSubjectDN().toString().equals(userdata.getSubjectDN()));
 		}{
 			final CertificateResponse certenv =  ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_PKCS7);
 			assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
@@ -511,6 +527,9 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertNull( certreqInternal(userData1, spkac, CertificateHelper.CERT_REQ_TYPE_SPKAC) );
 	}
 	protected void test03EnforcementOfUniquePublicKeys(boolean performSetup) throws Exception {
+		if(performSetup){
+			setUpAdmin();
+		}
 		final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 		final UserDataVOWS ca1userData1 = getUserData(CA1_WSTESTUSER1);
 		final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
@@ -540,12 +559,70 @@ public class CommonEjbcaWSTest extends TestCase {
 		// A user could get a certificate for a key already included in a certificate from another user if another CA is issuing it.
 		assertNull( certreqInternal(ca2userData1, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10) );
 
-		// permit same key for differ users
+		// permit same key for different users
 		ca1Info.setDoEnforceUniquePublicKeys(false);
 		TestTools.getCAAdminSession().editCA(admin, ca1Info);
-
 		// fetching cert for existing key for a user that does not have a certificate for this key is now permitted
 		assertNull( certreqInternal(ca1userData2, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+		// forbid same key for different users
+		ca1Info.setDoEnforceUniquePublicKeys(true);
+		TestTools.getCAAdminSession().editCA(admin, ca1Info);
+	}
+
+	protected void test03EnforcementOfUniqueSubjectDN(boolean performSetup) throws Exception {
+		if(performSetup){
+			setUpAdmin();
+		}
+		final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+		final UserDataVOWS ca1userData1 = getUserData(CA1_WSTESTUSER1);
+		final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
+		final UserDataVOWS ca2userData1 = getUserData(CA2_WSTESTUSER1);
+		final CAInfo ca1Info = TestTools.getCAAdminSession().getCAInfo(admin, CA1);
+		final int iRandom = random.nextInt(); // to make sure a new DN is used in next test
+		final String subjectDN_A = "CN=EnforcementOfUniqueSubjectDN Test A "+iRandom;
+		final String subjectDN_B = "CN=EnforcementOfUniqueSubjectDN Test B "+iRandom;
+
+		// set same DN for all users
+		editUser(ca1userData1, subjectDN_A);
+		editUser(ca1userData2, subjectDN_A);
+		editUser(ca2userData1, subjectDN_A);
+
+		// make sure same DN for different users is prevented
+		ca1Info.setDoEnforceUniqueDistinguishedName(true);
+		TestTools.getCAAdminSession().editCA(admin, ca1Info);
+
+		// fetching first cert for a DN should be no problem
+		assertNull( certreqInternal(ca1userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+
+		// fetching another cert for the same DN for a user that does not have a certificate with this DN should fail
+		final ErrorCode errorCode = certreqInternal(ca1userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10);
+		assertNotNull("error code should not be null", errorCode);
+		assertEquals(org.ejbca.core.ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(), errorCode.getInternalErrorCode());
+
+		// test that the user that was denied a cert can get a cert with another DN.
+		editUser(ca1userData2, subjectDN_B);
+		assertNull( certreqInternal(ca1userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+		editUser(ca1userData2, subjectDN_A);
+
+		// fetching more than one cert with the same DN should be possible for the same user
+		assertNull( certreqInternal(ca1userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+
+		// A user could get a certificate for a DN used in another certificate from another user if another CA is issuing it.
+		assertNull( certreqInternal(ca2userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+
+		// permit same DN for different users
+		ca1Info.setDoEnforceUniqueDistinguishedName(false);
+		TestTools.getCAAdminSession().editCA(admin, ca1Info);
+		// fetching cert for existing DN for a user that does not have a certificate with this DN is now permitted
+		assertNull( certreqInternal(ca1userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10) );
+		// forbid same DN for different users
+		ca1Info.setDoEnforceUniquePublicKeys(true);
+		TestTools.getCAAdminSession().editCA(admin, ca1Info);
+
+		// set back original DN for all users
+		editUser(ca1userData1, getDN(CA1_WSTESTUSER1));
+		editUser(ca1userData2, getDN(CA1_WSTESTUSER2));
+		editUser(ca2userData1, getDN(CA2_WSTESTUSER1));
 	}
 
 	private static final String crmf = "MIIBdjCCAXIwgdkCBQCghr4dMIHPgAECpRYwFDESMBAGA1UEAxMJdW5kZWZpbmVk"+
@@ -1263,7 +1340,6 @@ public class CommonEjbcaWSTest extends TestCase {
     	cert = ejbcaraws.getCertificate("1234567", CertTools.getIssuerDN(realcert));
     	assertNull(cert);
     }
-    
 	protected void test18RevocationApprovals(boolean performSetup) throws Exception {
 		final String APPROVINGADMINNAME = "superadmin";
         final String TOKENSERIALNUMBER = "42424242";
@@ -1274,7 +1350,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			  setUpAdmin();
 		}
 	    // Generate random username and CA name
-		String randomPostfix = Integer.toString((new Random(new Date().getTime() + 4711)).nextInt(999999));
+		String randomPostfix = Integer.toString(random.nextInt(999999));
 		String caname = "wsRevocationCA" + randomPostfix;
 		String username = "wsRevocationUser" + randomPostfix;
 		int caID = -1;
@@ -2196,7 +2272,8 @@ public class CommonEjbcaWSTest extends TestCase {
                     new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
-                    true // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniquePublicKeys
+                    true // isDoEnforceUniqueDistinguishedName
                     );
             
             getCAAdminSession().createCA(intAdmin, cvccainfo);
@@ -2232,7 +2309,8 @@ public class CommonEjbcaWSTest extends TestCase {
         			new ArrayList(), // Approvals Settings
         			1, // Number of Req approvals
         			true, // Include in health check
-                    true // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniquePublicKeys
+                    true // isDoEnforceUniqueDistinguishedName
         	);
 
         	getCAAdminSession().createCA(intAdmin, cvcdvinfo);

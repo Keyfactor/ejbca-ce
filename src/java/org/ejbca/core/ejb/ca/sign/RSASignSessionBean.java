@@ -1152,7 +1152,17 @@ public class RSASignSessionBean extends BaseSessionBean {
         log.trace("<createCertificate(pk, ku, date)");
         return cert;
     }
-
+    private String listUsers(Set users) {
+        Iterator i = users.iterator();
+        String s = "";
+        while ( i.hasNext() ) {
+        	if (s .length()>0 ) {
+        		s += " ";
+        	}
+            s += "'"+i.next()+"'";
+        }
+        return s;
+    }
     /**
      * Creates the certificate, does NOT check any authorization on user, profiles or CA!
      * This must be done earlier
@@ -1182,19 +1192,18 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new EJBException("Invalid user type for user " + data.getUsername());
             }
             ICertificateStoreSessionLocal certificateStore = storeHome.create();
-            if ( this.getCaAdminSession().getCAInfo(admin, data.getCAId()).isDoEnforceUniquePublicKeys() ){
+            if ( ca.isDoEnforceUniqueDistinguishedName() ){
+                final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectDN(admin, ca.getSubjectDN(), data.getDN());
+                if ( users.size()>0 && !users.contains(data.getUsername()) ) {
+                    throw new EjbcaException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER,
+                                             intres.getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users)));
+                }
+            }
+            if ( ca.isDoEnforceUniquePublicKeys() ){
                 final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectKeyId(admin, ca.getSubjectDN(), KeyTools.createSubjectKeyId(pk).getKeyIdentifier());
                 if ( users.size()>0 && !users.contains(data.getUsername()) ) {
-                    Iterator i = users.iterator();
-                    String s = "";
-                    while ( i.hasNext() ) {
-                    	if (s .length()>0 ) {
-                    		s += " ";
-                    	}
-                        s += "'"+i.next()+"'";
-                    }
                     throw new EjbcaException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER,
-                                             intres.getLocalizedMessage("signsession.key_exists_for_another_user", "'"+data.getUsername()+"'", s));
+                                             intres.getLocalizedMessage("signsession.key_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users)));
                 }
             }
             // Retrieve the certificate profile this user should have

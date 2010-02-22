@@ -120,7 +120,8 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
 			                                 false, // Use CRL Distribution Point on CRL
 			                                 false,  // CRL Distribution Point on CRL critical
 			                                 true, // Include in Health Check
-			                                 true // isDoEnforceUniquePublicKeys
+			                                 true, // isDoEnforceUniquePublicKeys
+			                                 true // isDoEnforceUniqueDistinguishedName
 			                                 );
             
             getLogger().info("Creating CA...");
