@@ -107,9 +107,8 @@
 #ca.policy=null
 
 # ------------ Basic CA configuration ---------------------
-# When upgrading, the important options are:
+# When upgrading, the important option is:
 # - ca.keystorepass
-# - ca.ocspkeystorepass
 
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
