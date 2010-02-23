@@ -438,25 +438,37 @@ public class UpgradeSessionBean extends BaseSessionBean {
 					if (approvalDataLocals.size() < 1 || approvalDataLocals.size() > 1) {
 						warn("There is an error in the database. You have " + approvalDataLocals.size() + " entries w approvalId " + approvalId.intValue());
 					}
-					Iterator iterator = approvalDataLocals.iterator();
+					final Iterator iterator = approvalDataLocals.iterator();
 					while (iterator.hasNext()) {
-						ApprovalDataLocal approvalDataLocal = (ApprovalDataLocal) iterator.next();
-						// Upgrade the request admin
-						Admin updatedAdmin = getUserAdminSession().getAdmin(approvalDataLocal.getApprovalRequest().getRequestAdmin().getAdminInformation().getX509Certificate());
-						ApprovalRequest approvalRequest = approvalDataLocal.getApprovalRequest();
-						approvalRequest.setRequestAdmin(updatedAdmin);
-						approvalDataLocal.setApprovalRequest(approvalRequest);
-						Collection approvals = approvalDataLocal.getApprovals();
-						Iterator iterator2 = approvals.iterator();
+						final ApprovalDataLocal approvalDataLocal = (ApprovalDataLocal) iterator.next();
+						final ApprovalRequest approvalRequest = approvalDataLocal.getApprovalRequest();
+						final Admin requestAdmin = approvalRequest.getRequestAdmin();
+						if (requestAdmin.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
+							// Upgrade the request admin if it of type CLIENT_CERT_USER
+							final Certificate adminCert = requestAdmin.getAdminInformation().getX509Certificate();
+							approvalRequest.setRequestAdmin(getUserAdminSession().getAdmin(adminCert));
+							approvalDataLocal.setApprovalRequest(approvalRequest);
+							
+						} else {
+							log.debug("Ignoring upgrade of approval request initialed by admin of type " + requestAdmin.getAdminType());
+						}
+						final Collection approvals = approvalDataLocal.getApprovals();
+						final Iterator iterator2 = approvals.iterator();
 						while (iterator2.hasNext()) {
-							Approval approval = (Approval) iterator2.next();
-							// Lookup admin certificate
-							String issuerDN = approval.getAdminCertIssuerDN();
-							BigInteger serialNumber = approval.getAdminCertSerialNumber();
+							final Approval approval = (Approval) iterator2.next();
+							// Lookup admin certificate that was used to approve this request and set a proper Admin that includes the admin certificate
+							final String issuerDN = approval.getAdminCertIssuerDN();
+							final BigInteger serialNumber = approval.getAdminCertSerialNumber();
 							if (issuerDN != null && serialNumber != null) {
-								Certificate certificate = getCertificateStoreSession().findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), issuerDN, serialNumber);
-								// Create a new Admin object from the certificate
-								approval.setApprovalAdmin(approval.isApproved(), getUserAdminSession().getAdmin(certificate));
+								final Certificate certificate = getCertificateStoreSession().findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), issuerDN, serialNumber);
+								if (certificate == null) {
+									// The approval was created with a certificate does not exist in the EJBCA database (an external Admin)
+									log.warn("External Admin with issuerDN '" + issuerDN + "' and serialNumer '" + serialNumber + "' does not have a certificate in the EJBCA database. Approval Admin will be set to Admin.TYPE_INTERNALUSER as a workaround.");
+									approval.setApprovalAdmin(approval.isApproved(), new Admin(Admin.TYPE_INTERNALUSER));
+								} else {
+									// Create a new Admin object from the certificate
+									approval.setApprovalAdmin(approval.isApproved(), getUserAdminSession().getAdmin(certificate));
+								}
 							} else {
 								error("Approval in ApprovalData w approvalId " + approvalId + " lacks issuerDN or serialNumber");
 							}
@@ -486,10 +498,10 @@ public class UpgradeSessionBean extends BaseSessionBean {
 				final ResultSetMetaData rsmd= srs.getMetaData();
 				final Map map = new HashMap();
 				for (int i=1; i<=rsmd.getColumnCount(); i++) {
-					map.put(rsmd.getColumnLabel(i), new Integer(i));
+					map.put(rsmd.getColumnLabel(i).toLowerCase(), new Integer(i));
 				}
-				iKeyID=((Integer)map.get(lKeyID)).intValue();
-				iCert=((Integer)map.get(lCert)).intValue();
+				iKeyID=((Integer)map.get(lKeyID.toLowerCase())).intValue();
+				iCert=((Integer)map.get(lCert.toLowerCase())).intValue();
 			}
 			while ( srs.next() ) {
 				final Certificate cert;
