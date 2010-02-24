@@ -161,7 +161,7 @@ fi
       <answer>
 	      <p>There is documentation over at JBoss for several different options:
 	      <br></br>
-	      <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=RunJBossAsAServiceOnWindows">http://wiki.jboss.org/wiki/Wiki.jsp?page=RunJBossAsAServiceOnWindows</a>
+	      <a href="http://community.jboss.org/wiki/RunJBossAsAServiceOnWIndows">http://community.jboss.org/wiki/RunJBossAsAServiceOnWIndows</a>
 	      </p>
 	      <p>In short summary there are a couple of tools: <br></br>
 	      <a href="http://javaservice.objectweb.org/">JavaService</a>
