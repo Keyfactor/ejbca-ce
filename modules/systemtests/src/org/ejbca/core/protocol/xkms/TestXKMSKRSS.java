@@ -121,12 +121,13 @@ public class TestXKMSKRSS extends TestCase {
 	private final static Marshaller marshaller;
 	//private static Unmarshaller unmarshaller = null;
 	private final static DocumentBuilderFactory dbf;
+	private final static Random ran;
 	
 	static{
 		org.apache.xml.security.Init.init();
 		try {
 	        CryptoProviderTools.installBCProviderIfNotAvailable();
-	        final Random ran = new Random();
+	        ran = new Random();
 	        baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
 
 	    	certprofilename1 = "XKMSTESTSIGN" + baseUsername;
@@ -165,6 +166,13 @@ public class TestXKMSKRSS extends TestCase {
 	
     public void test00SetupDatabase() throws Exception{
     	
+        final CAInfo caInfo = TestTools.getCAAdminSession().getCAInfo(administrator, "AdminCA1");
+        // make sure same keys for different users is prevented
+        caInfo.setDoEnforceUniquePublicKeys(true);
+        // make sure same DN for different users is prevented
+        caInfo.setDoEnforceUniqueDistinguishedName(true);
+        TestTools.getCAAdminSession().editCA(administrator, caInfo);
+
     	final GlobalConfiguration newGlobalConfig = TestTools.getRaAdminSession().loadGlobalConfiguration(administrator);
     	newGlobalConfig.setEnableKeyRecovery(true);
     	TestTools.getRaAdminSession().saveGlobalConfiguration(administrator, newGlobalConfig);
@@ -1005,7 +1013,7 @@ public class TestXKMSKRSS extends TestCase {
     public void test21RevocationApprovals() throws Exception {
 		final String APPROVINGADMINNAME = "superadmin";
 		final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval."; 
-		String randomPostfix = Integer.toString((new Random(new Date().getTime() + 4711)).nextInt(999999));
+		String randomPostfix = Integer.toString(ran.nextInt(999999));
 		String caname = "xkmsRevocationCA" + randomPostfix;
 		String username = "xkmsRevocationUser" + randomPostfix;
 		int caID = -1;
@@ -1092,10 +1100,17 @@ public class TestXKMSKRSS extends TestCase {
     	final String dnX = "C=SE, O=AnaTom, CN=" + usernameX;
 		addUser(usernameX, dnX);
     	simpleRegistration(dnX, true);
+    	TestTools.getUserAdminSession().deleteUser(administrator, usernameX);
+    }
+    public void test23SimpleRegistrationSameSubjcectDifferentUsers() throws Exception{
+    	TestTools.getUserAdminSession().deleteUser(administrator, username1);
+		final String usernameX = baseUsername+'X';
+		addUser(usernameX, dn1);
+    	simpleRegistration(dn1, true);
+    	TestTools.getUserAdminSession().deleteUser(administrator, usernameX);
     }
     public void test99CleanDatabase() throws Exception{    	    	
     	Admin administrator = new Admin(Admin.TYPE_RA_USER);
-    	TestTools.getUserAdminSession().deleteUser(administrator, username1);
         TestTools.getUserAdminSession().deleteUser(administrator, username2);
     	TestTools.getUserAdminSession().deleteUser(administrator, username3);
     	

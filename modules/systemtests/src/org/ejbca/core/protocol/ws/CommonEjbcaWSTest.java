@@ -123,10 +123,19 @@ public class CommonEjbcaWSTest extends TestCase {
     private final static Random random = new Random();
     protected final static String wsTestAdminUsername = "wstest";
 	protected final static String wsTestNonAdminUsername = "wsnonadmintest";
-    protected static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-	protected static String hostname = "localhost";
+    protected final static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+	protected final static String hostname;
 	private static final String BADCANAME = "BadCaName";
-	
+	static {
+		String tmp;
+		try {
+			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
+		} catch (RemoteException e) {
+			tmp = "localhost";
+			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, e);
+		}
+		hostname = tmp;
+	}
     protected String getAdminCAName() {
     	return "AdminCA1";
     }
@@ -137,11 +146,6 @@ public class CommonEjbcaWSTest extends TestCase {
 	protected void setUpAdmin() throws Exception {
 		super.setUp();
 		CryptoProviderTools.installBCProvider();
-		try {
-			hostname = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
-		} catch (RemoteException e) {
-			log.error("", e);
-		}
         if(new File("p12/wstest.jks").exists()){
         	String urlstr = "https://" + hostname + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
         	log.info("Contacting webservice at " + urlstr);                       
@@ -160,11 +164,6 @@ public class CommonEjbcaWSTest extends TestCase {
 	protected void setUpNonAdmin() throws Exception {
 		super.setUp();
 		CryptoProviderTools.installBCProvider();
-		try {
-			hostname = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
-		} catch (RemoteException e) {
-			log.error("", e);
-		}
         if(new File("p12/wsnonadmintest.jks").exists()){
         	String urlstr = "https://" + hostname + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
         	log.info("Contacting webservice at " + urlstr);                       
@@ -616,7 +615,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		// fetching cert for existing DN for a user that does not have a certificate with this DN is now permitted
 		assertNull( certreqInternal(ca1userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10) );
 		// forbid same DN for different users
-		ca1Info.setDoEnforceUniquePublicKeys(true);
+		ca1Info.setDoEnforceUniqueDistinguishedName(true);
 		TestTools.getCAAdminSession().editCA(admin, ca1Info);
 
 		// set back original DN for all users
