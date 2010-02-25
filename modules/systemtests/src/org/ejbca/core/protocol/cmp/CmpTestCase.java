@@ -108,7 +108,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  */
 public class CmpTestCase extends TestCase {
 
-    private static Logger log = Logger.getLogger(CmpTestCase.class);
+    private static final Logger log = Logger.getLogger(CmpTestCase.class);
     
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceCmp = "publicweb/cmp";

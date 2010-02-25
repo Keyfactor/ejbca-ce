@@ -22,8 +22,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.FinderException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -31,12 +29,10 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -51,35 +47,51 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  */
 public class CrmfRARequestTest extends CmpTestCase {
 
-	private static Logger log = Logger.getLogger(CrmfRARequestTest.class);
+	final private static Logger log = Logger.getLogger(CrmfRARequestTest.class);
 
-	private static final String PBEPASSWORD = "password";
+	final private static String PBEPASSWORD = "password";
 
-	private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+	final private static String issuerDN;
 
-	private static int caid = 0;
-	private static Admin admin;
-	private static X509Certificate cacert = null;
+	final private static int caid;
+	final private static Admin admin;
+	final private static X509Certificate cacert;
 
-	public CrmfRARequestTest(String arg0) throws RemoteException, CertificateEncodingException, CertificateException {
-		super(arg0);
+	static {
 		admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 		CryptoProviderTools.installBCProvider();
 		// Try to use AdminCA1 if it exists
-		CAInfo adminca1 = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
+		final CAInfo adminca1;
+		try {
+			adminca1 = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
+		} catch (RemoteException e) {
+			throw new Error(e);
+		}
 		if (adminca1 == null) {
-			Collection<Integer> caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
-			Iterator<Integer> iter = caids.iterator();
-			while (iter.hasNext()) {
-				caid = iter.next().intValue();
+			final Collection<Integer> caids;
+			try {
+				caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
+			} catch (RemoteException e) {
+				throw new Error(e);
 			}
+			final Iterator<Integer> iter = caids.iterator();
+			int tmp = 0;
+			while (iter.hasNext()) {
+				tmp = iter.next().intValue();
+			}
+			caid = tmp;
 		} else {
 			caid = adminca1.getCAId();
 		}
 		if (caid == 0) {
 			assertTrue("No active CA! Must have at least one active CA to run tests!", false);
 		}
-		CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
+		final CAInfo cainfo;
+		try {
+			cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
+		} catch (RemoteException e) {
+			throw new Error(e);
+		}
 		Collection<X509Certificate> certs = cainfo.getCertificateChain();
 		if (certs.size() > 0) {
 			Iterator<X509Certificate> certiter = certs.iterator();
@@ -87,12 +99,22 @@ public class CrmfRARequestTest extends CmpTestCase {
 			String subject = CertTools.getSubjectDN(cert);
 			if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
 				// Make sure we have a BC certificate
-				cacert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());				
+				try {
+					cacert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
+				} catch (Exception e) {
+					throw new Error(e);
+				}				
+			} else {
+				cacert = null;
 			}
 		} else {
 			log.error("NO CACERT for caid " + caid);
+			cacert = null;
 		}
-		issuerDN = cacert.getIssuerDN().getName();
+		issuerDN = cacert!=null ? cacert.getIssuerDN().getName() : "CN=AdminCA1,O=EJBCA Sample,C=SE";
+	}
+	public CrmfRARequestTest(String arg0) throws RemoteException, CertificateEncodingException, CertificateException {
+		super(arg0);
 		// Configure CMP for this test
 		TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
 		TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
@@ -154,41 +176,36 @@ public class CrmfRARequestTest extends CmpTestCase {
 		}
 	}
 	public void test01CrmfHttpOkUser() throws Exception {
-        // make sure same keys for different users is prevented
         final CAInfo caInfo = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
+        // make sure same keys for different users is prevented
         caInfo.setDoEnforceUniquePublicKeys(true);
+        // make sure same DN for different users is prevented
+        caInfo.setDoEnforceUniqueDistinguishedName(true);
         TestTools.getCAAdminSession().editCA(admin, caInfo);
 
-        final KeyPair key = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-		final String userDN1 = "C=SE,O=PrimeKey,CN=cmptest1";
-		final String userDN2 = "C=SE,O=PrimeKey,CN=cmptest2";
+        final KeyPair key1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final KeyPair key2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		final String userName1 = "cmptest1";
 		final String userName2 = "cmptest2";
-		createCmpUser(userName1, userDN1);
+		final String userDN1 = "C=SE,O=PrimeKey,CN="+userName1;
+		final String userDN2 = "C=SE,O=PrimeKey,CN="+userName2;
 		// check that several certificates could be created for one user and one key.
-		crmfHttpUserTest(userDN1, key, null);
-		crmfHttpUserTest(userDN1, key, null);
-		createCmpUser(userName2, userDN2);
+		crmfHttpUserTest(userDN1, key1, null);
+		crmfHttpUserTest(userDN2, key2, null);
 		// check that the request fails when asking for certificate for another user with same key.
-		crmfHttpUserTest(userDN2, key, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"));
+		crmfHttpUserTest(userDN2, key1, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"));
+		crmfHttpUserTest(userDN1, key2, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'"+userName1+"'", "'"+userName2+"'"));
+		// check that you can not issue a certificat with same DN as another user.
+		crmfHttpUserTest("CN=AdminCA1,O=EJBCA Sample,C=SE", key1, InternalResources.getInstance().getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'AdminCA1'", "'SYSTEMCA'"));
+		crmfHttpUserTest("CN=localhost,O=EJBCA Sample,C=SE", key1, InternalResources.getInstance().getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'localhost'", "'tomcat'"));
+
+		TestTools.getUserAdminSession().deleteUser(admin, userName1);
+		TestTools.getUserAdminSession().deleteUser(admin, userName2);
+		TestTools.getUserAdminSession().deleteUser(admin, "AdminCA1");
+		TestTools.getUserAdminSession().deleteUser(admin, "localhost");
 	}
 	
 	public void testZZZCleanUp() throws Exception {
 		TestTools.getConfigurationSession().restoreConfiguration();
-	}
-
-	//
-	// Private helper methods
-	//
-	private void createCmpUser(String userName, String userDN) throws RemoteException, AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
-		// Make user that we know...
-		try {
-			TestTools.getUserAdminSession().addUser(admin, userName,"foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
-			log.debug("created user: "+userName+", foo123, "+userDN);
-		} catch (Exception e) {
-			log.debug("User "+userName+" already exists.");
-			TestTools.getUserAdminSession().setUserStatus(admin, userName, UserDataConstants.STATUS_NEW);
-			log.debug("Reset status to NEW");
-		}
 	}
 }
