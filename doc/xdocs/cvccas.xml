@@ -384,7 +384,7 @@ ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /slot1.cfg secp256r1 signKey
   to stumble on a bug in the JDK which prevents reading of the public key from the HSM. the ejbcaClientToolBox.sh tool needs to read the public key,
   generate a "dummy" certificate and assign that to the key label, so we have a public key certificate in the keystore retrieved from 
   the Sun PKCS#11 provider.
-  This bug is present at least up to and including JDK 1.6u14.</p>
+  </p><p>This bug is present at least up to and including JDK 1.6u18. A fix has been merged though and should hopefully be available in u19.</p>
   <p>You can look at this issue in the EJBCA Jira for a solution to the problem: <a href="https://jira.primekey.se/browse/ECA-940">ECA-940</a>
   </p>
   </subsubsection>
