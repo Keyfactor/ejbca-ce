@@ -77,7 +77,8 @@
 
 # Password for the administrative CA token.
 # With soft token, use password null.
-# If no password should be used (for example nCipher module protected), use password ''.
+# To prompt for the password on the terminal, use password prompt.
+# If no password should be used (for example nCipher module protected), use password '' (nothing).
 #ca.tokenpassword=null
 
 # Configuration file were you define key name, password and key alias for the HSM used 

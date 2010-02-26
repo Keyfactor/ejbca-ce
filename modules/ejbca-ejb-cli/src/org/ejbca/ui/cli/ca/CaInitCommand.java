@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -33,6 +34,7 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.SimpleTime;
@@ -56,6 +58,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     		getLogger().info("Description: " + getDescription());
     		getLogger().info("Usage: " + getCommand() + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [<catokenproperties> or null] [<signed by caid>]");
     		getLogger().info(" catokentype defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.ejbca.core.model.ca.catoken.PKCS11CAToken' for PKCS#11 HSMs.");
+    		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal.");
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs");
     		getLogger().info(" keytype is RSA, DSA or ECDSA.");
     		getLogger().info(" keyspec for RSA keys is size of RSA keys (1024, 2048, 4096).");
@@ -76,7 +79,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
             final String caname = args[1];
             final String dn = StringTools.strip(CertTools.stringToBCDNString(args[2]));
             final String catokentype = args[3];
-            final String catokenpassword = StringTools.passwordDecryption(args[4], "ca.tokenpassword");
+            String catokenpassword = StringTools.passwordDecryption(args[4], "ca.tokenpassword");
+            if (StringUtils.equals(catokenpassword, "prompt")) {
+            	getLogger().info("Enter CA token password: ");
+            	getLogger().info("");
+            	ConsolePasswordReader r = new ConsolePasswordReader();
+            	catokenpassword = String.valueOf(r.readPassword());
+            }
             final String keyspec = args[5];
             final String keytype = args[6];
             final int validity = Integer.parseInt(args[7]);
@@ -127,7 +136,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("CA name: "+caname);
             getLogger().info("DN: "+dn);
             getLogger().info("CA token type: "+catokentype);
-            getLogger().info("CA token password: "+catokenpassword);
+            getLogger().info("CA token password: "+(catokenpassword == null ? "null" : "hidden"));
             getLogger().info("Keytype: "+keytype);
             getLogger().info("Keyspec: "+keyspec);
             getLogger().info("Validity (days): "+validity);
