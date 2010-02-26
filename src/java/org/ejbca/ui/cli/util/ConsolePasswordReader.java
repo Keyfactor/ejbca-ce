@@ -38,6 +38,8 @@ public class ConsolePasswordReader implements PasswordReader {
 		char[] passwd = null;
 		try {
 			try {
+				// For some reason System.console does not work when running from within ant
+				// JLine however does work.
 				Class implClass = Class.forName("java.lang.System");
     			Method m = implClass.getMethod("console", (Class[])null);
     			Object cons = m.invoke(this, (Object[])null);
