@@ -1,6 +1,11 @@
 EJBCA 3.10.0
 -----------
-This is a major release with lots of internal reorganizations, new features and fixes. 
+This is a major release with lots of internal reorganisations, new features and fixes. 
+
+NOTE:
+A user that is requesting a certificate with same public key or subject DN as an existing certificate issued to another user is now denied the
+certificate. If this will result in any problem in your installation you may disable any of these checks on the "Edit CA" page. You can read
+more about it in the user guide.
 
 Noteworthy changes:
 - todo
