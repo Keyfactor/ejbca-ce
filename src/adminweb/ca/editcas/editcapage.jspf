@@ -602,6 +602,7 @@ function checkallfields(){
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DOENFORCEUNIQUEPUBLICKEYS") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce unique public keys") %> <br>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS %>" value="<%=CHECKBOX_VALUE %>" 
@@ -612,6 +613,7 @@ function checkallfields(){
     <tr id="Row<%=row++%2%>">
     <td width="50%"  align="right"> 
       <%= ejbcawebbean.getText("DOENFORCEUNIQUEDN") %>
+      <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce unique DN") %> <br>
     </td>
     <td width="50%"> 
       <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEDN %>" value="<%=CHECKBOX_VALUE %>" 
