@@ -157,6 +157,24 @@ For X.509 the 5 byte numeric is recommended
 </p>
 </subsubsection>
 
+<subsubsection name="Enforce unique public keys">
+<p>
+When adding a new certificate it is checked if the public key is existing for any other certificate issued by this CA.
+If such certificates are existing then the issuing of the new certificate is rejected if the user that asks for the new certificate is not
+the user that owns these other certificates.
+If this checkbox is unchecked then the check is not performed.
+</p>
+</subsubsection>
+
+<subsubsection name="Enforce unique DN">
+<p>
+When adding a new certificate it is checked if the subject DN is existing for any other certificate issued by this CA.
+If such certificates are existing then the issuing of the new certificate is rejected if the user that asks for the new certificate is not
+the user that owns these other certificates.
+If this checkbox is unchecked then the check is not performed.
+</p>
+</subsubsection>
+
 <subsubsection name="CRL Period">
 <p>
 There are four settings in CA configuration dictating the times when CRL generation is done:
