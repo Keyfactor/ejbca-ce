@@ -39,7 +39,7 @@ public class EndUserCertificateProfile extends CertificateProfile{
 
       // Standard key usages for end users are: digitalSignature | nonRepudiation, and/or (keyEncipherment or keyAgreement)
       // Default key usage is digitalSignature | nonRepudiation | keyEncipherment
-      // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
+      // Create an array for KeyUsage according to X509Certificate.getKeyUsage()
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
       setKeyUsage(DIGITALSIGNATURE,true);
