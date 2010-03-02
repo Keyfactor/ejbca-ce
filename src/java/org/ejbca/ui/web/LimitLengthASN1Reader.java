@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web;
 
 import java.io.ByteArrayOutputStream;
@@ -18,6 +30,8 @@ import org.ejbca.core.model.ca.MalformedRequestException;
  * final ServletInputStream in = request.getInputStream(); // ServletInputStream does not have to be closed, container handles this
  * ret = new LimitLengthServletPostReader(in, n).readFirstASN1Object();
  * </pre>
+ * 
+ * @version $Id$
  */
 public class LimitLengthASN1Reader extends ASN1InputStream {
 
