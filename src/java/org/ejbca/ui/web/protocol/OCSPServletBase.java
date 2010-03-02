@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.web.protocol;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -83,6 +82,7 @@ import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
 import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.core.protocol.ocsp.TransactionLogger;
+import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.DummyPatternLogger;
 import org.ejbca.util.GUIDGenerator;
@@ -103,9 +103,6 @@ import org.ejbca.util.IPatternLogger;
 public abstract class OCSPServletBase extends HttpServlet implements ISaferAppenderListener { 
 
 	private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
-	
-	/** Max size of an OCSP request is 100000 bytes */
-	private static final int MAX_OCSP_REQUEST_SIZE = 100000;
 	
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
@@ -451,97 +448,82 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 * @throws MalformedRequestException 
 	 */
 	private byte[] checkAndGetRequestBytes(HttpServletRequest request, HttpServletResponse response) throws IOException, MalformedRequestException {
-		byte[] ret = null;
+		final byte[] ret;
 		// Get the request data
 		String method = request.getMethod();
 		String remoteAddress = request.getRemoteAddr();
+		final int n = request.getContentLength();
 		if (m_log.isDebugEnabled()) {
-			m_log.debug(">checkAndGetRequestBytes. Received "+method+" request with content length: "+request.getContentLength()+" from "+remoteAddress);		
+			m_log.debug(">checkAndGetRequestBytes. Received "+method+" request with content length: "+n+" from "+remoteAddress);		
 		}
-		if (request.getContentLength() > MAX_OCSP_REQUEST_SIZE) {
-			String msg = intres.getLocalizedMessage("ocsp.toolarge", MAX_OCSP_REQUEST_SIZE, request.getContentLength());
+		if (n > LimitLengthASN1Reader.MAX_REQUEST_SIZE) {
+			String msg = intres.getLocalizedMessage("ocsp.toolarge", LimitLengthASN1Reader.MAX_REQUEST_SIZE, n);
 			m_log.info(msg);
 			throw new MalformedRequestException(msg);
-		} else {
-			// So we passed basic tests, now we can read the bytes, but still keep an eye on the size
-			// we can not fully trust the sent content length.
-			if (StringUtils.equals(method, "POST")) {
-		        ServletInputStream in = request.getInputStream();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				// This works for small requests, and OCSP requests are small
-				int b = in.read();
-				while ( (b != -1) && (baos.size() <= MAX_OCSP_REQUEST_SIZE) ) {
-					baos.write(b);
-					b = in.read();
+		}
+		// So we passed basic tests, now we can read the bytes, but still keep an eye on the size
+		// we can not fully trust the sent content length.
+		if (StringUtils.equals(method, "POST")) {
+			final ServletInputStream in = request.getInputStream(); // ServletInputStream does not have to be closed, container handles this
+			ret = new LimitLengthASN1Reader(in, n).readFirstASN1Object();
+		} else if (StringUtils.equals(method, "GET")) {
+			// GET request
+			final StringBuffer url = request.getRequestURL();
+			// RFC2560 A.1.1 says that request longer than 255 bytes SHOULD be sent by POST, we support GET for longer requests anyway.
+			if (url.length() <= LimitLengthASN1Reader.MAX_REQUEST_SIZE) {
+				final String decodedRequest;
+				try {
+					// We have to extract the pathInfo manually, to avoid multiple slashes being converted to a single
+					// According to RFC 2396 2.2 chars only have to encoded if they conflict with the purpose, so
+					// we can for example expect both '/' and "%2F" in the request.
+					final String fullServletpath = request.getContextPath() + request.getServletPath();
+					final String requestString = url.substring(Math.max(url.indexOf(fullServletpath), 0) + fullServletpath.length() + 1);
+					decodedRequest = URLDecoder.decode(requestString, "UTF-8").replaceAll(" ", "+");
+					//						if (m_log.isDebugEnabled()) {
+					//							m_log.debug("URL: "+url.toString());
+					//						}
+				} catch (Exception e) {
+					String msg = intres.getLocalizedMessage("ocsp.badurlenc");
+					m_log.info(msg);
+					throw new MalformedRequestException(e);
 				}
-				// All seems good, we got the request bytes
-				// No need to double check that we did not get more than MAX_OCSP_REQUEST_SIZE, the above reading loop can impossibly read more than that.
-				// close() should not be called on the ServletInputStream, that is handled by the container.
-				// close() does not have to be called on the ByteArrayOutputStream, it does nothing.
-				baos.flush();
-				ret = baos.toByteArray();
-			} else if (StringUtils.equals(method, "GET")) {
-				// GET request
-				final StringBuffer url = request.getRequestURL();
-				// RFC2560 A.1.1 says that request longer than 255 bytes SHOULD be sent by POST, we support GET for longer requests anyway.
-				if (url.length() <= MAX_OCSP_REQUEST_SIZE) {
-					final String decodedRequest;
+				if (decodedRequest != null && decodedRequest.length() > 0) {
+					if (m_log.isDebugEnabled()) {
+						// Don't log the request if it's too long, we don't want to cause denial of service by filling log files or buffers.
+						if (decodedRequest.length() < 2048) {
+							m_log.debug("decodedRequest: "+decodedRequest);
+						} else {
+							m_log.debug("decodedRequest too long to log: "+decodedRequest.length());
+						}
+					}
 					try {
-						// We have to extract the pathInfo manually, to avoid multiple slashes being converted to a single
-						// According to RFC 2396 2.2 chars only have to encoded if they conflict with the purpose, so
-						// we can for example expect both '/' and "%2F" in the request.
-						final String fullServletpath = request.getContextPath() + request.getServletPath();
-						final String requestString = url.substring(Math.max(url.indexOf(fullServletpath), 0) + fullServletpath.length() + 1);
-						decodedRequest = URLDecoder.decode(requestString, "UTF-8").replaceAll(" ", "+");
-//						if (m_log.isDebugEnabled()) {
-//							m_log.debug("URL: "+url.toString());
-//						}
+						ret = org.ejbca.util.Base64.decode(decodedRequest.getBytes());
 					} catch (Exception e) {
 						String msg = intres.getLocalizedMessage("ocsp.badurlenc");
 						m_log.info(msg);
 						throw new MalformedRequestException(e);
 					}
-					if (decodedRequest != null && decodedRequest.length() > 0) {
-						if (m_log.isDebugEnabled()) {
-							// Don't log the request if it's too long, we don't want to cause denial of service by filling log files or buffers.
-							if (decodedRequest.length() < 2048) {
-								m_log.debug("decodedRequest: "+decodedRequest);
-							} else {
-								m_log.debug("decodedRequest too long to log: "+decodedRequest.length());
-							}
-						}
-						try {
-							ret = org.ejbca.util.Base64.decode(decodedRequest.getBytes());
-						} catch (Exception e) {
-							String msg = intres.getLocalizedMessage("ocsp.badurlenc");
-							m_log.info(msg);
-							throw new MalformedRequestException(e);
-						}
-					} else {
-						String msg = intres.getLocalizedMessage("ocsp.missingreq");
-						m_log.info(msg);
-						throw new MalformedRequestException(msg);
-					}
 				} else {
-					String msg = intres.getLocalizedMessage("ocsp.toolarge", MAX_OCSP_REQUEST_SIZE, url.length());
+					String msg = intres.getLocalizedMessage("ocsp.missingreq");
 					m_log.info(msg);
 					throw new MalformedRequestException(msg);
 				}
 			} else {
-				// Strange, an unknown method
-				String msg = intres.getLocalizedMessage("ocsp.unknownmethod", method);
+				String msg = intres.getLocalizedMessage("ocsp.toolarge", LimitLengthASN1Reader.MAX_REQUEST_SIZE, url.length());
 				m_log.info(msg);
 				throw new MalformedRequestException(msg);
 			}
+		} else {
+			// Strange, an unknown method
+			String msg = intres.getLocalizedMessage("ocsp.unknownmethod", method);
+			m_log.info(msg);
+			throw new MalformedRequestException(msg);
 		}
 		// Make a final check that we actually received something
 		if ((ret == null) || (ret.length == 0)) {
 			String msg = intres.getLocalizedMessage("ocsp.emptyreq", remoteAddress);
 			m_log.info(msg);
 			throw new MalformedRequestException(msg);
-		}
-		if (m_log.isDebugEnabled()) {
-			m_log.debug("<checkAndGetRequestBytes: "+ret.length);
 		}
 		return ret;
 	}
