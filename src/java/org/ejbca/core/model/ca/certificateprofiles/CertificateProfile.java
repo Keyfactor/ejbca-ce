@@ -281,7 +281,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
-      setAllowKeyUsageOverride(true);
+      setAllowKeyUsageOverride(false);
       setKeyUsageCritical(true);
 
       setUseExtendedKeyUsage(false);
