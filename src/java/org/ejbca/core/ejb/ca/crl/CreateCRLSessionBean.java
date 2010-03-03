@@ -571,8 +571,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                 throw new CATokenOfflineException(msg);
             }
             final X509CRL crl;
-            int fullnumber = getLastCRLNumber(admin, ca.getSubjectDN(), false);
-            int deltanumber = getLastCRLNumber(admin, ca.getSubjectDN(), true);
+            final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
+            int fullnumber = getLastCRLNumber(admin, certSubjectDN, false);
+            int deltanumber = getLastCRLNumber(admin, certSubjectDN, true);
             int nextCrlNumber = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
             boolean deltaCRL = (basecrlnumber > -1);
             if (deltaCRL) {
