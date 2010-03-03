@@ -45,6 +45,7 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.CertificateStatus;
 import org.bouncycastle.ocsp.OCSPReq;
@@ -670,6 +671,55 @@ public class ProtocolOcspHttpTest extends TestCase {
         
     } // test16OcspDsaGood 
 
+	/**
+	 * Verify that Internal OCSP responses are signed by CA signing key.
+	 */
+	public void test17OCSPResponseSignature() throws Exception {
+
+		// Get user and ocspTestCert that we know...
+		loadUserCert(caid);
+
+		// And an OCSP request
+		OCSPReqGenerator gen = new OCSPReqGenerator();
+		gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+
+		Hashtable exts = new Hashtable();
+		X509Extension ext = new X509Extension(false, new DEROctetString(
+				"123456789".getBytes()));
+		exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+		gen.setRequestExtensions(new X509Extensions(exts));
+		OCSPReq req = gen.generate();
+
+		// POST the OCSP request
+		URL url = new URL(httpReqPath + '/' + resourceOcsp);
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		// we are going to do a POST
+		con.setDoOutput(true);
+		con.setRequestMethod("POST");
+
+		// POST it
+		con.setRequestProperty("Content-Type", "application/ocsp-request");
+		OutputStream os = con.getOutputStream();
+		os.write(req.getEncoded());
+		os.close();
+		assertTrue("HTTP error", con.getResponseCode() == 200);
+
+		// Some appserver (Weblogic) responds with
+		// "application/ocsp-response; charset=UTF-8"
+		assertNotNull("No Content-Type in reply.", con.getContentType());
+		assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+		OCSPResp response = new OCSPResp(new ByteArrayInputStream(
+				OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+		assertTrue("Response status not the expected.",
+				response.getStatus() != 200);
+
+		BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+		boolean verify = brep.verify(cacert.getPublicKey(), "BC");
+		assertTrue("Signature verification", verify);
+	}
+
+    
+    
     /**
      * removes DSA CA
      *
