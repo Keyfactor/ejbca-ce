@@ -260,10 +260,22 @@ public class TestSignSession extends TestCase {
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
 
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"FOOCERTPROFILE");
+        final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        certprof.setAllowKeyUsageOverride(true);
+        TestTools.getCertificateStoreSession().addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
+        final int fooCertProfile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"FOOCERTPROFILE");
+
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "FOOEEPROFILE");
+        final EndEntityProfile profile = new EndEntityProfile(true);
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(fooCertProfile));
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "FOOEEPROFILE", profile);
+        final int fooEEProfile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "FOOEEPROFILE");
+
         // Make user that we know...
         boolean userExists = false;
         try {
-            TestTools.getUserAdminSession().addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+            TestTools.getUserAdminSession().addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,fooEEProfile,fooCertProfile,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
         	userExists = true;
@@ -272,7 +284,7 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             log.info("User foo already exists, resetting status.");
-            TestTools.getUserAdminSession().changeUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsacaid);
+            TestTools.getUserAdminSession().changeUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,fooEEProfile,fooCertProfile,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsacaid);
             log.debug("Reset status to NEW");
         }
         userExists = false;
@@ -1882,6 +1894,8 @@ public class TestSignSession extends TestCase {
         try {        	
             TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"TESTDNOVERRIDE ");
         } catch (Exception e) { /* ignore */ }
+        TestTools.getRaAdminSession().removeEndEntityProfile(admin, "FOOEEPROFILE");
+        TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"FOOCERTPROFILE");
         // delete users that we know...
         try {        	
         	TestTools.getUserAdminSession().deleteUser(admin, "foo");
