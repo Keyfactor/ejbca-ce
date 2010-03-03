@@ -1191,16 +1191,18 @@ public class RSASignSessionBean extends BaseSessionBean {
                 log.error("Invalid user type for user " + data.getUsername());
                 throw new EJBException("Invalid user type for user " + data.getUsername());
             }
-            ICertificateStoreSessionLocal certificateStore = storeHome.create();
+            final ICertificateStoreSessionLocal certificateStore = storeHome.create();
+            final Certificate cacert = ca.getCACertificate();
+            final String caSubjectDN = CertTools.getSubjectDN(cacert);
             if ( ca.isDoEnforceUniqueDistinguishedName() ){
-                final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectDN(admin, ca.getSubjectDN(), data.getDN());
+                final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectDN(admin, caSubjectDN, data.getDN());
                 if ( users.size()>0 && !users.contains(data.getUsername()) ) {
                     throw new EjbcaException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER,
                                              intres.getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users)));
                 }
             }
             if ( ca.isDoEnforceUniquePublicKeys() ){
-                final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectKeyId(admin, ca.getSubjectDN(), KeyTools.createSubjectKeyId(pk).getKeyIdentifier());
+                final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectKeyId(admin, caSubjectDN, KeyTools.createSubjectKeyId(pk).getKeyIdentifier());
                 if ( users.size()>0 && !users.contains(data.getUsername()) ) {
                     throw new EjbcaException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER,
                                              intres.getLocalizedMessage("signsession.key_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users)));
@@ -1266,7 +1268,6 @@ public class RSASignSessionBean extends BaseSessionBean {
                 cert = ca.generateCertificate(data, requestX509Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 // Store certificate in the database
-                Certificate cacert = ca.getCACertificate();
                 cafingerprint = CertTools.getFingerprintAsString(cacert);
                 try {
                     certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), certProfileId, tag, updateTime);                        
