@@ -535,13 +535,11 @@ public class X509CA extends CA implements Serializable {
         } else {
             sigAlg = certProfile.getSignatureAlgorithm();
         }
-        X509Certificate cacert = (X509Certificate)getCACertificate();
+        final X509Certificate cacert = (X509Certificate)getCACertificate();
         String dn = subject.getDN();        
         // Check if this is a root CA we are creating
-        boolean isRootCA = false;
-        if (certProfile.getType() == CertificateProfile.TYPE_ROOTCA) {
-        	isRootCA = true;
-        }
+        final boolean isRootCA = certProfile.getType()==CertificateProfile.TYPE_ROOTCA;
+
         // Get certificate validity time notBefore and notAfter
         CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
         
@@ -591,8 +589,7 @@ public class X509CA extends CA implements Serializable {
         	if (log.isDebugEnabled()) {
         		log.debug("Using subject DN also as issuer DN, because it is a root CA");
         	}
-            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter, dnorder);
-            certgen.setIssuerDN(caname);
+            certgen.setIssuerDN(subjectDNName);
         } else {
         	javax.security.auth.x500.X500Principal issuerPrincipal = cacert.getSubjectX500Principal();
         	if (log.isDebugEnabled()) {
