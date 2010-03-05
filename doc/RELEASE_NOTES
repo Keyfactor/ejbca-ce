@@ -19,17 +19,20 @@ For upgrade instructions, please see UPGRADE.
 
 EJBCA 3.9.5
 -----------
-This is a minor release with some fixes and new features. 
+This is a maintenance release with minor fixes and improvements. 
 
 Noteworthy changes:
-- Possible to create a NewWithOld roll-over certificate for root CAs.
+- Fixed a performance regression for the OCSP service that could lower throughput from 400 to 200 req/s.
+- Added process time parameter to OCSP transaction logging.
+- Fixed and improved usage of the optional IAIK PKCS#11 provider.
+- Improve sequence handing for EAC CVC CAs.
+- Fixed a bug when renewing CA keys on HSMs.
+- Fixed that you could not use a dot in pre-set usernames in end entity profiles.
+- Added possibility to install directly with external admin CA, initializing authorization module in importcacert cli command.
+- Added possibility to prompt for keystore password during install so you never have to write it anywhere. 
 
 Read the full changelog for details.
 
-Note that this version contains an inevitable API change for custom extensions. If you have created any custom extensions Java classes, you must add:
-"PublicKey caPublicKey" to the parameter list in the getValue method. 
-The value does not have to be handled. The CA key used to sign certificates does not have to be the same as the currently active CA key.
- 
 For upgrade instructions, please see UPGRADE. 
 
 EJBCA 3.9.4
