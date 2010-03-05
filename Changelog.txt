@@ -1,3 +1,34 @@
+3.9.5, 2010-03-05
+---
+Improvement
+
+    * [ECA-1523] - Display and accessibility of CA status table on home page
+    * [ECA-1538] - OCSP service closes ServletInputStream uneccesarily
+    * [ECA-1539] - When downloading a CVC certificate or request the name of the downloaded file should contain the CAR and the CHR (certificates only)
+    * [ECA-1543] - Remove hardcoded paths in CertReqServlet.java for OpenVPN installer creation
+    * [ECA-1547] - Add processtime variable to OCSP transaction logging
+    * [ECA-1574] - Possibility to prompt for password in install and ca init cli
+    * [ECA-1577] - Possibility to initilize authorization module when importing CA certificate of external CA
+
+Bug
+    * [ECA-1479] - relative path to the catoken.properties file in conf/ejbca.properties not working
+    * [ECA-1533] - EracomCAToken (old deprecated) uses sSlotLabel before it has been set
+    * [ECA-1534] - generation of new HSM keys does not update keyStrings in BaseCAToken
+    * [ECA-1540] - When generating new keys using a hard token the new key label is generated incorrectly, if the old sequence contained non numeric characters
+    * [ECA-1544] - Compile error in jsp in some cases
+    * [ECA-1545] - External OCSP signing is failing at the period of re-keying.
+    * [ECA-1546] - The key sequence is incremented decimal when renewing a key, but it could be incremented alphanumeric
+    * [ECA-1548] - OCSP responder performance drop i 3.9.4
+    * [ECA-1549] - mTransactionID in OCSPServletBase may not be thread safe
+    * [ECA-1552] - Iaik provider not working
+    * [ECA-1554] - PKCS11HSMKeyTool fails test command using IAIK provider in some cases
+    * [ECA-1555] - Can not use . (dot) in username when editing end entity profiles
+    * [ECA-1558] - Can not view log when using cvc sequences in alfanumeric form
+    * [ECA-1560] - No default value for ca.name
+    * [ECA-1562] - ejbca-mail-service is overridden by default mailservice in JBoss 5
+    * [ECA-1572] - clientToolBox not configuring logging on windows
+    * [ECA-1573] - Charcters in German languagefile causes JavaScript errors in adminweb
+
 3.9.4, 2010-01-07
 ---
 Improvement
