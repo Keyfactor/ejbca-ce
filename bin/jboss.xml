@@ -65,8 +65,7 @@
 
 	</target>
 
-	
-	<target name="deploytomcat">
+	<target name="detect-tomcatdir">
         <!-- detect jboss web version -->
         <available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
         <available file="${jboss.deploy.dir}/jbossweb-tomcat50.sar" type="dir" property="jboss.web" value="tomcat50"/>
@@ -82,6 +81,9 @@
         <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jboss-web.deployer"/>
 		<!-- For JBoss 5.0.0 tomcat has yet a new naming scheme -->
         <available file="${jboss.deploy.dir}/jbossweb.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb.sar"/>
+	</target>
+	
+	<target name="deploytomcat" depends="detect-tomcatdir">
         <!-- Set dummy value if password is not defined. If defined the old value is kept -->
         <property name="java.trustpassword" value="changeThisToThePassword"/>
         <property name="httpsserver.password" value="changeThisToThePassword"/>
@@ -150,6 +152,15 @@
         <copy todir="${jboss.farm.dir}" overwrite="true" file="dist/datasources/ramessage-ds.xml"/>
 		<chmod dir="dist" includes="scepraserver.war" perm="600"/>
         <copy todir="${jboss.farm.dir}" overwrite="true" file="dist/scepraserver.war"/>
+	</target>
+
+	<target name="j2ee:deploy-externalragui-war" depends="j2ee:check, detect-tomcatdir">
+		<chmod dir="dist/externalra-gui" includes="externalragui-ds.xml" perm="600"/>
+        <copy todir="${jboss.farm.dir}" overwrite="true" file="dist/externalra-gui/externalragui-ds.xml"/>
+		<chmod dir="dist/externalra-gui" includes="externalra-gui.war" perm="600"/>
+        <copy todir="${jboss.farm.dir}" overwrite="true" file="dist/externalra-gui/externalra-gui.war"/>
+		<chmod dir="dist/externalra-gui" includes="server.xml" perm="600"/>
+        <copy todir="${tomcat.dir}" overwrite="true" file="dist/externalra-gui/server.xml"/>
 	</target>
 
 	<target name="j2ee:ocspbasewebdeploy" if="j2ee.web-noconfigure">

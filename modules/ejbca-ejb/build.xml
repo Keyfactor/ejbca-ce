@@ -198,6 +198,8 @@
         	<!-- From EJBCA External SCEP RA (including some of the classes above) -->
            	<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
            	<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>
+        	<!-- From EJBCA External RA GUI (including some of the classes above) -->
+           	<include name="com/novosec/pkix/asn1/**/*.java"/>
         	<!-- Dependencies from SignServer -->
         	<!-- Execute "grep "import.*org.ejbca.*" src/ -r | grep -v svn | awk '{print $2}' | tr -d ';' | sort | uniq" in the SignServer home dir to get a list of dependencies. -->
            	<include name="org/ejbca/core/ejb/JNDINames.java"/>

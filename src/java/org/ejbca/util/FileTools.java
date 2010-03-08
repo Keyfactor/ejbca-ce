@@ -67,7 +67,10 @@ public class FileTools {
         }
 
         while (((temp = bufRdr.readLine()) != null) && !temp.equals(endKey)) {
-            opstr.print(temp);
+        	// Skip empty lines
+        	if (temp.trim().length() > 0) {
+                opstr.print(temp);
+        	}
         }
 
         if (temp == null) {

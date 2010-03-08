@@ -12,7 +12,7 @@
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
 	
 	<path id="systemtests.classpath">
-	<path refid="lib.servlet.classpath"/>
+    	<path refid="lib.servlet.classpath"/>
     	<path refid="lib.junit.classpath"/>
     	<path refid="lib.utils.classpath"/>
     	<path refid="lib.jee.classpath"/>

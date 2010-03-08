@@ -36,7 +36,9 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -55,23 +57,20 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBMPString;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.bouncycastle.jce.provider.JCERSAPublicKey;
 import org.bouncycastle.jce.provider.asymmetric.ec.EC5Util;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
@@ -79,10 +78,10 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.cvc.PublicKeyEC;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
-
 
 /**
  * Tools to handle common key and keystore operations.
@@ -96,7 +95,17 @@ public class KeyTools {
     public static final String SUNPKCS11CLASS = "sun.security.pkcs11.SunPKCS11";
     public static final String IAIKPKCS11CLASS = "iaik.pkcs.pkcs11.provider.IAIKPkcs11";
     public static final String IAIKJCEPROVIDERCLASS = "iaik.security.provider.IAIK";
-        
+
+    private static final byte[] BAG_ATTRIBUTES =    "Bag Attributes\n".getBytes();
+    private static final byte[] FRIENDLY_NAME =     "    friendlyName: ".getBytes();
+    private static final byte[] SUBJECT_ATTRIBUTE = "subject=/".getBytes();
+    private static final byte[] ISSUER_ATTRIBUTE =  "issuer=/".getBytes();
+    private static final byte[] BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----".getBytes();
+    private static final byte[] END_CERTIFICATE =   "-----END CERTIFICATE-----".getBytes();
+    private static final byte[] BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----".getBytes();
+    private static final byte[] END_PRIVATE_KEY =   "-----END PRIVATE KEY-----".getBytes();
+    private static final byte[] NL = "\n".getBytes();
+
     /**
      * Prevent from creating new KeyTools object
      */
@@ -530,6 +539,111 @@ public class KeyTools {
     } // createJKS
 
     /**
+     * Convert a KeyStore to PEM format.
+     */
+    public static byte[] getSinglePemFromKeyStore(KeyStore ks, char[] password) throws KeyStoreException, CertificateEncodingException, IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        // Find the key private key entry in the keystore
+        Enumeration e = ks.aliases();
+        Object o = null;
+        String alias = "";
+        PrivateKey serverPrivKey = null;
+        while (e.hasMoreElements()) {
+            o = e.nextElement();
+            if (o instanceof String) {
+                if ((ks.isKeyEntry((String) o)) && ((serverPrivKey = (PrivateKey) ks.getKey((String) o, password)) != null)) {
+                    alias = (String) o;
+                    break;
+                }
+            }
+        }
+
+        byte[] privKeyEncoded = "".getBytes();
+
+        if (serverPrivKey != null) {
+            privKeyEncoded = serverPrivKey.getEncoded();
+        }
+
+        Certificate[] chain = KeyTools.getCertChain(ks, (String) o);
+        X509Certificate userX509Certificate = (X509Certificate) chain[0];
+
+        byte[] output = userX509Certificate.getEncoded();
+        String sn = CertTools.getSubjectDN(userX509Certificate);
+
+        String subjectdnpem = sn.replace(',', '/');
+        String issuerdnpem = CertTools.getIssuerDN(userX509Certificate).replace(',', '/');
+
+        buffer.write(BAG_ATTRIBUTES);
+        buffer.write(FRIENDLY_NAME);
+        buffer.write(alias.getBytes());
+        buffer.write(NL);
+        buffer.write(BEGIN_PRIVATE_KEY);
+        buffer.write(NL);
+
+        byte[] privKey = Base64.encode(privKeyEncoded);
+        buffer.write(privKey);
+        buffer.write(NL);
+        buffer.write(END_PRIVATE_KEY);
+        buffer.write(NL);
+        buffer.write(BAG_ATTRIBUTES);
+        buffer.write(FRIENDLY_NAME);
+        buffer.write(alias.getBytes());
+        buffer.write(NL);
+        buffer.write(SUBJECT_ATTRIBUTE);
+        buffer.write(subjectdnpem.getBytes());
+        buffer.write(NL);
+        buffer.write(ISSUER_ATTRIBUTE);
+        buffer.write(issuerdnpem.getBytes());
+        buffer.write(NL);
+        buffer.write(BEGIN_CERTIFICATE);
+        buffer.write(NL);
+
+        byte[] userCertB64 = Base64.encode(output);
+        buffer.write(userCertB64);
+        buffer.write(NL);
+        buffer.write(END_CERTIFICATE);
+        buffer.write(NL);
+
+        if (!CertTools.isSelfSigned(userX509Certificate)) {
+            for (int num = 1; num < chain.length; num++) {
+                X509Certificate tmpX509Cert = (X509Certificate) chain[num];
+                sn = CertTools.getSubjectDN(tmpX509Cert);
+
+                String cn = CertTools.getPartFromDN(sn, "CN");
+                if (StringUtils.isEmpty(cn)) {
+                	cn="Unknown";
+                }
+
+                subjectdnpem = sn.replace(',', '/');
+                issuerdnpem = CertTools.getIssuerDN(tmpX509Cert).replace(',', '/');
+
+                buffer.write(BAG_ATTRIBUTES);
+                buffer.write(FRIENDLY_NAME);
+                buffer.write(cn.getBytes());
+                buffer.write(NL);
+                buffer.write(SUBJECT_ATTRIBUTE);
+                buffer.write(subjectdnpem.getBytes());
+                buffer.write(NL);
+                buffer.write(ISSUER_ATTRIBUTE);
+                buffer.write(issuerdnpem.getBytes());
+                buffer.write(NL);
+
+                byte[] tmpOutput = tmpX509Cert.getEncoded();
+                buffer.write(BEGIN_CERTIFICATE);
+                buffer.write(NL);
+
+                byte[] tmpCACertB64 = Base64.encode(tmpOutput);
+                buffer.write(tmpCACertB64);
+                buffer.write(NL);
+                buffer.write(END_CERTIFICATE);
+                buffer.write(NL);
+            }
+        }
+    	return buffer.toByteArray();
+    }
+
+    /**
      * Retrieves the certificate chain from a keystore.
      *
      * @param keyStore the keystore, which has been loaded and opened.
@@ -852,5 +966,4 @@ public class KeyTools {
             }
         }
     }
-
-} // KeyTools
+}

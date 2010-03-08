@@ -27,6 +27,7 @@
 		<ant antfile="${mod.ejbca-xkms-cli.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
@@ -98,6 +99,10 @@
 
 	<target name="externalra-scep" description="Build the EJBCA External RA StandAlone SCEP WAR">
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="externalra-gui" description="Build the EJBCA External RA StandAlone GUI WAR">
+		<ant antfile="${mod.externalra-gui.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
 	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->

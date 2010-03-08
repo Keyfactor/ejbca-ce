@@ -1018,5 +1018,13 @@
         <antcall target="j2ee:deploy-scep-war" />
 	</target>
 
+	<target name="externalra-gui" description="Build the EJBCA External RA StandAlone GUI application">
+    	<ant antfile="build.xml" dir="modules" target="externalra-gui"/>
+	</target>
+
+	<target name="externalra-gui-deploy" description="Deploy the EJBCA External RA StandAlone GUI application" depends="externalra-gui">
+        <antcall target="j2ee:deploy-externalragui-war" />
+	</target>
+
 
 </project>
