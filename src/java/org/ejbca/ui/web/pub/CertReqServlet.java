@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.KeyStore;
-import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -78,7 +77,6 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.keystore.KeyTools;
@@ -113,16 +111,6 @@ public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-
-    private static final byte[] BAG_ATTRIBUTES =    "Bag Attributes\n".getBytes();
-    private static final byte[] FRIENDLY_NAME =     "    friendlyName: ".getBytes();
-    private static final byte[] SUBJECT_ATTRIBUTE = "subject=/".getBytes();
-    private static final byte[] ISSUER_ATTRIBUTE =  "issuer=/".getBytes();
-    private static final byte[] BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----".getBytes();
-    private static final byte[] END_CERTIFICATE =   "-----END CERTIFICATE-----".getBytes();
-    private static final byte[] BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----".getBytes();
-    private static final byte[] END_PRIVATE_KEY =   "-----END PRIVATE KEY-----".getBytes();
-    private static final byte[] NL = "\n".getBytes();
 
     private IUserAdminSessionHome useradminhome = null;
     private ICertificateStoreSessionHome storehome = null;
@@ -626,119 +614,11 @@ public class CertReqServlet extends HttpServlet {
 
         private void sendPEMTokens(KeyStore ks, String username, String kspassword,
             HttpServletResponse out) throws Exception {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            String alias = "";
-
-            // Find the key private key entry in the keystore
-            Enumeration e = ks.aliases();
-            Object o = null;
-            PrivateKey serverPrivKey = null;
-
-            while (e.hasMoreElements()) {
-                o = e.nextElement();
-
-                if (o instanceof String) {
-                    if ((ks.isKeyEntry((String) o)) &&
-                            ((serverPrivKey = (PrivateKey) ks.getKey((String) o,
-                                    kspassword.toCharArray())) != null)) {
-                        alias = (String) o;
-
-                        break;
-                    }
-                }
-            }
-
-            byte[] privKeyEncoded = "".getBytes();
-
-            if (serverPrivKey != null) {
-                privKeyEncoded = serverPrivKey.getEncoded();
-            }
-
-            //Certificate chain[] = ks.getCertificateChain((String) o);
-            Certificate[] chain = KeyTools.getCertChain(ks, (String) o);
-            X509Certificate userX509Certificate = (X509Certificate) chain[0];
-
-            byte[] output = userX509Certificate.getEncoded();
-            String sn = CertTools.getSubjectDN(userX509Certificate);
-
-            String subjectdnpem = sn.replace(',', '/');
-            String issuerdnpem = CertTools.getIssuerDN(userX509Certificate).replace(',', '/');
-
-            buffer.write(BAG_ATTRIBUTES);
-            buffer.write(FRIENDLY_NAME);
-            buffer.write(alias.getBytes());
-            buffer.write(NL);
-            buffer.write(BEGIN_PRIVATE_KEY);
-            buffer.write(NL);
-
-            byte[] privKey = Base64.encode(privKeyEncoded);
-            buffer.write(privKey);
-            buffer.write(NL);
-            buffer.write(END_PRIVATE_KEY);
-            buffer.write(NL);
-            buffer.write(BAG_ATTRIBUTES);
-            buffer.write(FRIENDLY_NAME);
-            buffer.write(alias.getBytes());
-            buffer.write(NL);
-            buffer.write(SUBJECT_ATTRIBUTE);
-            buffer.write(subjectdnpem.getBytes());
-            buffer.write(NL);
-            buffer.write(ISSUER_ATTRIBUTE);
-            buffer.write(issuerdnpem.getBytes());
-            buffer.write(NL);
-            buffer.write(BEGIN_CERTIFICATE);
-            buffer.write(NL);
-
-            byte[] userCertB64 = Base64.encode(output);
-            buffer.write(userCertB64);
-            buffer.write(NL);
-            buffer.write(END_CERTIFICATE);
-            buffer.write(NL);
-
-            if (CertTools.isSelfSigned(userX509Certificate)) {
-            } else {
-                for (int num = 1; num < chain.length; num++) {
-                    X509Certificate tmpX509Cert = (X509Certificate) chain[num];
-                    sn = CertTools.getSubjectDN(tmpX509Cert);
-
-                    String cn = CertTools.getPartFromDN(sn, "CN");
-                    if (StringUtils.isEmpty(cn)) {
-                    	cn="Unknown";
-                    }
-
-                    subjectdnpem = sn.replace(',', '/');
-                    issuerdnpem = CertTools.getIssuerDN(tmpX509Cert).replace(',', '/');
-
-                    buffer.write(BAG_ATTRIBUTES);
-                    buffer.write(FRIENDLY_NAME);
-                    buffer.write(cn.getBytes());
-                    buffer.write(NL);
-                    buffer.write(SUBJECT_ATTRIBUTE);
-                    buffer.write(subjectdnpem.getBytes());
-                    buffer.write(NL);
-                    buffer.write(ISSUER_ATTRIBUTE);
-                    buffer.write(issuerdnpem.getBytes());
-                    buffer.write(NL);
-
-                    byte[] tmpOutput = tmpX509Cert.getEncoded();
-                    buffer.write(BEGIN_CERTIFICATE);
-                    buffer.write(NL);
-
-                    byte[] tmpCACertB64 = Base64.encode(tmpOutput);
-                    buffer.write(tmpCACertB64);
-                    buffer.write(NL);
-                    buffer.write(END_CERTIFICATE);
-                    buffer.write(NL);
-                }
-            }
-
             out.setContentType("application/octet-stream");
             out.setHeader("Content-disposition", " attachment; filename=" + username + ".pem");
-            buffer.writeTo(out.getOutputStream());
+            out.getOutputStream().write(KeyTools.getSinglePemFromKeyStore(ks, kspassword.toCharArray()));
             out.flushBuffer();
-            buffer.close();
         }
-
     }
 
     /**

@@ -44,6 +44,7 @@
     <property file="${ejbca.home}/conf/xkms.properties" />
     <property file="${ejbca.home}/conf/externalra.properties" />
     <property file="${ejbca.home}/conf/scep.properties" />
+    <property file="${ejbca.home}/conf/externalra-gui.properties" />
 
     <!-- httpsserver.hostname must be set cause it's used in preprocess. It will only be set here if not set in any property file -->
     <property name="httpsserver.hostname" value="localhost"/>
@@ -95,6 +96,9 @@
     <property name="mod.externalra.lib" location="${mod.dist.path}/externalra.jar" />
     <property name="mod.externalra-cli.path" location="${ejbca.dist.path}/externalra-cli" />
     <property name="mod.externalra-cli.lib" location="${mod.externalra-cli.path}/externalra-cli.jar" />
+    <property name="mod.externalra-gui.path" location="${mod.path}/externalra-gui" />
+    <property name="mod.externalra-gui.dist" location="${ejbca.dist.path}/externalra-gui" />
+    <property name="mod.externalra-gui.war" location="${mod.externalra-gui.dist}/externalra-gui.war" />
     <property name="mod.externalra-service.lib" location="${mod.dist.path}/externalra-service.jar" />
     <property name="mod.externalra-datasources.dist" location="${ejbca.dist.path}/datasources" />
     <property name="mod.externalra-scep.path" location="${mod.path}/externalra-scep" />
@@ -113,6 +117,7 @@
     <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
     <property name="log4j.test.file" location="${mod.common.path}/resources/log4j-test.xml" />
     <property name="log4j.cli.file" location="${mod.common.path}/resources/log4j-cli.xml" />
+    <property name="internal.properties.file" location="${ejbca.home}/src/internal.properties" />
     
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc.jar"/></path>
@@ -185,6 +190,18 @@
 			<include name="j2ee/home/oc4jclient.jar"/>
 			<!-- websphere -->
 			<include name="runtimes/com.ibm.*.jar"/>
+		</fileset>
+	</path>
+	
+	<path id="lib.jsf.classpath">
+		<fileset dir="${appserver.home}">
+			<!-- jboss -->
+			<include name="server/default/deploy/jboss-web.deployer/jsf-libs/jsf-api.jar" /> <!-- 4.2.x -->
+			<include name="server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar" /> <!-- 5.x -->
+			<!-- glassfish ? -->
+			<!-- weblogic ? -->
+			<!-- oracle ? -->
+			<!-- websphere ? -->
 		</fileset>
 	</path>
 	

@@ -86,6 +86,7 @@ The available worker properties are:
  (Default: foo123)</li>
  <li>externalra-caservice.raissuer: CA Name of the CA issuing RA Certificates, used to check the validity of RA signatures.
  (Default: AdminCA1)</li>
+ <li>externalra-caservice.whitelist: A comma separated list of request class-names that this worker will accept. If this is empty or undefined all kinds of request are accepted.</li>
 </ul>
 </p><p>
 Both the worker's keystore and the one used on the RA server must be issued by 'externalra-caservice.raissuer'.
@@ -118,7 +119,7 @@ New submessages require a new org.ejbca.extra.db.MyRequest and org.ejbca.extra.c
 class where 'My' is your name of choice. Dispatching of messages to a processing class is done using Java reflection
 to automatically instantiate the correct processor, so it is important that the class names are correct.
 </p><p>
-See also the more advanced External RA client "SCEP RA Server" described below. 
+See also the more External RA clients "SCEP RA Server" and "External RA GUI" described below. 
 </p>
 </section>
 
@@ -224,6 +225,66 @@ The normal work-flow using approvals will be the following:
  <li>The EJBCA admin approves the request and the router gets the certificate, or the EJBCA admin
  rejects the request and the router gets a failure message.</li>
 </ol>
+</p>
+</subsection>
+</section>
+
+<section name="Using the External RA GUI">
+<p>
+The External RA GUI is an External RA API client built from the EJBCA bundle.  
+</p><p>
+The External RA GUI allows browser enrollment, enrollment from certificate
+signing requests and keystore retrieval without incoming traffic to the CA
+installation. The functionality of the GUI is similar to the EJBCA's public web
+pages.
+</p>
+<subsection name="Configuration on the External RA GUI host">
+<p>
+<ol>
+ <li>Install/setup a message database on the External RA GUI host.</li>
+ <li>Issue a new JKS keystore with EJBCA to enable SSL (HTTPS) on the External RA GUI host.</li>
+ <li>Issue a PKCS#12 keystore with EJBCA for signing and decrypting messages from the CA and copy it to the host.</li>
+ <li>Download the certificate of the CA service's PKCS#12 keystore and copy it to the host.</li>
+ <li>Download the issuing certificate of the host's PKCS#12 keystore and copy it to the host (should be the same as the issuer for CA service's PKCS#12).</li>
+ <li>Configure conf/externalra-gui.properties to use the keystores, the certificates, the local database and the local application server.</li>
+ <li>Make sure a database JDBC connector JAR is installed in the local application server for your database.</li>
+ <li>Run 'ant externalra-gui-deploy' to deploy the DataSource and External RA GUI application.</li>
+</ol>
+</p>
+</subsection>
+<subsection name="Configuration message polling from EJBCA">
+<p>
+<ol>
+ <li>Issue a new PKCS#12 keystore for protection of messages.</li>
+ <li>Configure the conf/externalra.properties to deploy a new DataSource for the message database and re-deploy EJBCA.</li>
+ <li>Configure a new worker for this new DataSource and keystore (as described in previous sections). Use white-listing described in
+ the service configuration section to only allow org.ejbca.extra.db.CertificateRequestRequest and org.ejbca.extra.db.KeyStoreRetrievalRequest
+ request messages.</li>
+ <li>Make sure a database JDBC connector JAR is installed in the local application server for the external RA message database.</li>
+</ol>
+</p>
+</subsection>
+<subsection name="Verified platforms and browsers">
+<p>
+The external RA GUI currently supports JBoss and MySQL. Additional databases
+supported by Hibernate can easily be added.
+</p>
+<p>
+Known browser that support key generation:
+<ol>
+ <li>Ubuntu 9.04 x64: FireFox 3.0.18</li>
+ <li>Ubuntu 9.10 x64: FireFox 3.5.8</li>
+ <li>OS X 10.5.7: Safari 4.0.2</li>
+ <li>Windows XP Professional SP3 x86: FireFox 3.8.5, Internet Explorer 7.0, Internet Explorer 8.0</li>
+ <li>Windows XP Professional x64: FireFox 3.8.5, Internet Explorer 7.0</li>
+ <li>Windows Vista SP2 Enterprise x86: FireFox 3.8.5, Explorer 7.0, Internet Explorer 8.0</li>
+ <li>Windows Vista SP2 Enterprise x64: FireFox 3.8.5, Explorer 7.0, Internet Explorer 8.0</li>
+ <li>Windows 7 Ultimate x86: FireFox 3.8.5, Internet Explorer 8.0</li>
+ <li>Windows 7 Ultimate x64: FireFox 3.8.5, Internet Explorer 8.0</li>
+</ol>
+The Windows version of Safari 4.0.4 was tested, but does not support browser
+key generation. However, keystore retrieval and generation of certificates from
+a Certificate Signing Request works.
 </p>
 </subsection>
 </section>
