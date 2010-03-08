@@ -951,13 +951,18 @@ The administrators certificates will be issued by a CA called AdminCAv1
 <ul>
 <li>Under "CA Functions" -> "Edit Certificate Profiles"</li>
 <li>Enter a name for your end entity certificate profile e.g. "AdministratorEndEntityCertificateProfile"</li>
-<li>Select "AuthEndEntityCertificateProfile"</li>
+<li>Select "ENDUSER"</li>
 <li>Press "Use Selected as Template"</li>
 <li>Select "AdministratorEndEntityCertificateProfile"</li>
 <li>Press "Edit Certificate Profile"</li>
-<li>Under "Available CAs"</li>
-<li>Choose "AdminCAv1"</li>
-<li>Press "Save"</li>
+<li>Under "Validity" enter 365d (1 year validity).</li>
+<li>Under "Key usage", choose "Digital Signature" and "Key encipherment (ctrl-click to select multiple).</li>
+<li>Un-check "Allow Key Usage Override".</li>
+<li>Check "Use Extended Key Usage".</li>
+<li>Under "Extended Key Usage", choose "Client Authentication".</li>
+<li>Under "Available bit lengths", "1024 bit", "2048 bit" and "4096 bit".</li>
+<li>Under "Available CAs", choose "AdminCA1" (the CA you use to issue admin certificates).</li>
+<li>Press "Save".</li>
 </ul> 
 </p>
 </subsection>
@@ -968,18 +973,13 @@ The profile will be connected to the Certificate Profile created above.</p>
 <ul>
 <li>Under "RA Functions" -> "Edit End Entity Profiles"</li>
 <li>Enter a name for your end entity profile, "AdministratorEndEntityProfile"</li>
-<li>Select "AuthEndEntityProfile"</li>
-<li>Press "Use Selected as Template"</li>
-<li>Select "AdministratorEndEntityProfile"</li>
-<li>Press "Edit End Entity Profile"</li>
-<li>Under "Default Certificate Profile"</li>
-<li>Choose "AdministratorEndEntityCertificateProfile"</li>
-<li>Under "Available Certificate Profiles"</li>
-<li>Choose "AdministratorEndEntityCertificateProfile"</li>
-<li>Under "Default CA"</li>
-<li>Choose "AdminCAv1"</li>
-<li>Under "Available CAs"</li>
-<li>Choose "AdminCAv1"</li>
+<li>Press "Create"</li>
+<li>Select "AdministratorEndEntityProfile" and press "Edit End Entity Profile"</li>
+<li>Under the "Subject DN Fields" add a few DN fields that you want in the admin DN, for example O, UID and C.</li>
+<li>Under "Default Certificate Profile", choose "AdministratorEndEntityCertificateProfile"</li>
+<li>Under "Available Certificate Profiles", choose "AdministratorEndEntityCertificateProfile"</li>
+<li>Under "Default CA", choose "AdminCAv1"</li>
+<li>Under "Available CAs", choose "AdminCAv1"</li>
 <li>Press "Save"</li>
 </ul>
 Issue the following new end entity based on the new end entity profile.
