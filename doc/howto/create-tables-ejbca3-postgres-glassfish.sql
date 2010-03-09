@@ -101,6 +101,7 @@ CREATE TABLE certificatedata (
   tag TEXT, 
   certificateProfileId INT4, 
   updateTime INT8 NOT NULL, 
+  subjectKeyId TEXT, 
 CONSTRAINT pk_certificatedata PRIMARY KEY (fingerprint)
 );
 
@@ -238,7 +239,7 @@ CREATE TABLE logentrydata (
   username TEXT, 
   certificateSNR TEXT, 
   event INT4 NOT NULL, 
-  comment TEXT, 
+  logComment TEXT, 
 CONSTRAINT pk_logentrydata PRIMARY KEY (id)
 );
 

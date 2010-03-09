@@ -116,6 +116,7 @@ CREATE TABLE CertificateData (
     tag varchar(256),
     certificateProfileId integer,
     updateTime bigint NOT NULL,
+    subjectKeyId varchar(256),
     PRIMARY KEY (fingerprint)
 );
 
@@ -216,7 +217,7 @@ CREATE TABLE LogEntryData (
     username varchar(256),
     certificateSNR varchar(256),
     event integer NOT NULL,
-    comment varchar(256),
+    logComment varchar(256),
     PRIMARY KEY (id)
 );
 

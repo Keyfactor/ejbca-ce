@@ -102,6 +102,7 @@ CREATE TABLE CertificateData (
     tag varchar(250) NULL DEFAULT NULL,
     certificateProfileId int NULL DEFAULT '0',
     updateTime bigint NOT NULL DEFAULT '0',
+    subjectKeyId varchar(250) NULL DEFAULT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -191,7 +192,7 @@ CREATE TABLE LogEntryData (
     username varchar(250) NULL DEFAULT NULL,
     certificateSNR varchar(250) NULL DEFAULT NULL,
     event int NOT NULL DEFAULT '0',
-    comment varchar(250) NULL DEFAULT NULL,
+    logComment varchar(250) NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
