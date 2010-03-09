@@ -36,6 +36,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Database representing of a certificate and related information.
@@ -83,6 +84,7 @@ public class CertificateData implements Serializable {
 	private String tag;
 	private Integer certificateProfileId;
 	private long updateTime = 0;
+	private String subjectKeyId;
 
 	/**
 	 * Entity holding info about a certificate. Create by sending in the certificate, which
@@ -117,6 +119,7 @@ public class CertificateData implements Serializable {
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(new Date().getTime());
             setCertificateProfileId(0);
+            setSubjectKeyId(new String(Base64.encode(KeyTools.createSubjectKeyId(incert.getPublicKey()).getKeyIdentifier(),false)));
 		} catch (CertificateEncodingException cee) {
 			log.error("Can't extract DER encoded certificate information.", cee);
 			// TODO should throw an exception
@@ -329,6 +332,17 @@ public class CertificateData implements Serializable {
 	// Hibernate + Oracle ignores nullable=false so we can expect null-objects as input after upgrade
     public void setUpdateTime(Long updateTime) { this.updateTime = (updateTime==null?this.updateTime:updateTime); }
 
+    /**
+     * The ID of the public key of the certificate
+     */
+	@Column(name="subjectKeyId")
+    public String getSubjectKeyId() { return subjectKeyId; }
+
+    /**
+     * The ID of the public key of the certificate
+     */
+	public void setSubjectKeyId(String subjectKeyId) { this.subjectKeyId = subjectKeyId; }
+
 
 	//
 	// Public business methods used to help us manage certificates
@@ -531,6 +545,13 @@ public class CertificateData implements Serializable {
 	public static List<CertificateData> findByUsername(EntityManager entityManager, String username) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.username=:username");
 		query.setParameter("username", username);
+		return query.getResultList();
+	}
+
+	public static List<CertificateData> findByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
+		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
+		query.setParameter("issuerDN", issuerDN);
+		query.setParameter("subjectKeyId", subjectKeyId);
 		return query.getResultList();
 	}
 
