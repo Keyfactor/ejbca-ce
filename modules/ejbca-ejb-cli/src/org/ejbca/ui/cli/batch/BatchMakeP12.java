@@ -171,6 +171,11 @@ public class BatchMakeP12 extends BaseCommand {
             throw new IOException("Can't find directory to store keystore in.");
         }
 
+        if (!new File(mainStoreDir).exists()) {
+        	new File(mainStoreDir).mkdir();
+        	getLogger().info("Directory '"+mainStoreDir+"' did not exist and was created.");
+        }
+        
         String keyStoreFilename = mainStoreDir + "/" + username;
 
         if (createJKS) {

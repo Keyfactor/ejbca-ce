@@ -677,7 +677,7 @@ public class CmpTestCase extends TestCase {
 		
 		final PKIBody body = respObject.getBody();
 		final int tag = body.getTagNo();
-		assertEquals(tag, exptag);
+		assertEquals(exptag, tag);
 		final PKIStatusInfo info;
 		if (exptag == CmpPKIBodyConstants.ERRORMESSAGE) {
 			ErrorMsgContent c = body.getError();

@@ -74,7 +74,7 @@ public class TestKeyRecovery extends TestCase {
             String email = "test@test.se";
             if (!TestTools.getUserAdminSession().existsUser(admin, user)) {
                 keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-                TestTools.getUserAdminSession().addUser(admin, user, "foo123", "CN=TESTKEYREC", "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, TestTools.getTestCAId());
+                TestTools.getUserAdminSession().addUser(admin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, TestTools.getTestCAId());
                 cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, user, "foo123", keypair.getPublic());
             }
         } catch (Exception e) {
