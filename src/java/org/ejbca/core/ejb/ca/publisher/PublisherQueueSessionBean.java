@@ -271,7 +271,14 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     		ps.setInt(2, PublisherQueueData.STATUS_PENDING);
     		ps.setFetchSize(limit);
     		ps.setMaxRows(limit);
-    		ps.setQueryTimeout(timeout);
+    		try {
+    			ps.setQueryTimeout(timeout);
+    		} catch (Exception e) {
+    			// ignore, in postgresql 8.4 (jdbc4 driver v701) trying this throws an exception telling you that it's not implemented yet in the driver.
+        		if (log.isDebugEnabled()) {
+            		log.debug("Error setting query timeout, I guess this is postgresql 8? In this case it is expected. "+e.getMessage());    			
+        		}
+    		}
     		result = ps.executeQuery();
     		while (result.next()) {
     			String pk = result.getString(1);
