@@ -27,6 +27,7 @@
     			<path refid="lib.utils.classpath"/>
     			<path refid="lib.jpa.classpath"/>
        			<path refid="lib.ejbca-util.classpath"/>
+    			<path refid="lib.bouncycastle.classpath"/>
     		</classpath>
 		</javac>
     </target>
