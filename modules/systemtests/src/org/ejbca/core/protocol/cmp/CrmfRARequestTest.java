@@ -29,11 +29,8 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -212,7 +209,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 		TestTools.getUserAdminSession().deleteUser(admin, userName1);
 		TestTools.getUserAdminSession().deleteUser(admin, userName2);
 		TestTools.getUserAdminSession().deleteUser(admin, "AdminCA1");
-		TestTools.getUserAdminSession().deleteUser(admin, "localhost");
+		TestTools.getUserAdminSession().deleteUser(admin, hostname);
 	}
 	
 	public void testZZZCleanUp() throws Exception {
