@@ -159,19 +159,19 @@ For X.509 the 5 byte numeric is recommended
 
 <subsubsection name="Enforce unique public keys">
 <p>
-When adding a new certificate it is checked if the public key is existing for any other certificate issued by this CA.
-If such certificates are existing then the issuing of the new certificate is rejected if the user that asks for the new certificate is not
-the user that owns these other certificates.
-If this checkbox is unchecked then the check is not performed.
+'Enforce unique public keys' guarantees that certificates with the same public key can only be issued to the same user
+from this CA. This means that a user is allowed to have multiple certificates (e.g. due to renewal) with the same key
+as long as the same 'username' is used, but two users can not share the same public key. The check is only performed
+when new certificates are issued.
 </p>
 </subsubsection>
 
 <subsubsection name="Enforce unique DN">
 <p>
-When adding a new certificate it is checked if the subject DN is existing for any other certificate issued by this CA.
-If such certificates are existing then the issuing of the new certificate is rejected if the user that asks for the new certificate is not
-the user that owns these other certificates.
-If this checkbox is unchecked then the check is not performed.
+'Enforce unique DN' guarantees that certificates with the same Subject DN can only be issued to the same user from this
+CA. This means that a user is allowed to have multiple certificates (e.g. for different uses) with the same Subject DN
+as long as the same 'username' is used, but two users can not share the same Subject DN. The check is only performed
+when new certificates are issued.
 </p>
 </subsubsection>
 

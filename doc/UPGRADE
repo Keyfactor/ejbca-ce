@@ -71,10 +71,6 @@ The database upgrade is normally done automatically for you when you run 'ant up
 Some application servers will not let you deploy unless the database is in sync though, so you may have
 to run the SQL commands manually.
 
-You should be able to upgrade from EJBCA 3.2.x directly to 3.10.x, by following the same instructions
-as above (this upgrade is not thoroughly tested though). Also see instructions below for additional
-issues when upgrading all the way from a much older version.
-
 The ProtectedLogDevice has been deprecated, since it's hard to configure right and extremely
 inefficient. There are currently plans to create a LogDevice aiming at non-repudiation rather than
 detection of missing log-entries.
@@ -100,7 +96,7 @@ If you have created any custom extensions Java classes, you must add:
 "PublicKey caPublicKey" to the parameter list in the getValue method. The value does not have to be handled.
 
 Two more checks are now done before adding a certificate. See
-http://ejbca.org/userguide.html#Enforce%20unique%20public%20keys
+http://ejbca.org/userguide.html#Enforce%20unique%20public%20keys and
 http://ejbca.org/userguide.html#Enforce%20unique%20DN
 These checks are enabled on all CA:s that existed before the upgrading. It should not be any problem to
 have them enabled (different users do not normally share same keys or subject DN) in most installations.
@@ -111,6 +107,10 @@ executed. To check the public key in new certificates against certificates issue
 column has to be set (after upgrade all rows of the column is null). The columns is set by 'ant post-upgrade'
 (see step 8 above). Please note that 'post-upgrade' might take some minutes if there are many certificates in
 the database.
+
+You should be able to upgrade from EJBCA 3.2.x directly to 3.10.x, by following the same instructions
+as above (this upgrade is not thoroughly tested though). Also see instructions below for additional
+issues when upgrading all the way from a much older version.
 
 From EJBCA 3.9.x to EJBCA 3.9.x
 -------------------------------

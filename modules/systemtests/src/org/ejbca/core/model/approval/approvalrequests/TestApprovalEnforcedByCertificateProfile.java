@@ -261,7 +261,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 			String username1 = genRandomUserName("test04_1");
 			String email = "test@example.com";
 			KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-	        TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC1", /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdNoApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
+	        TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC1"+username1, /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdNoApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
 	        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin1, username1, "foo123", keypair.getPublic());
 			
 	        TestTools.getKeyRecoverySession().addKeyRecoveryData(admin1, cert, username1, keypair);
@@ -280,7 +280,7 @@ public class TestApprovalEnforcedByCertificateProfile extends TestCase {
 			String username1 = genRandomUserName("test04_2");
 			String email = "test@example.com";
 			KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-		    TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC2", /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdKeyRecoveryApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
+		    TestTools.getUserAdminSession().addUser(admin1, username1, "foo123", "CN=TESTKEYREC2"+username1, /*"rfc822name=" + email*/null, email, false, endEntityProfileId, certProfileIdKeyRecoveryApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
 		    X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin1, username1, "foo123", keypair.getPublic());
 		    TestTools.getKeyRecoverySession().addKeyRecoveryData(admin1, cert, username1, keypair);
 		    		    
