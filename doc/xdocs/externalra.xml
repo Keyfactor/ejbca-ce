@@ -17,6 +17,8 @@ The External Registration Authority (RA) API contains the most basic functions l
  <li>KeyRecovery of the users key (if requested using PKCS12)</li>
  <li>Edit users</li>
  <li>Revoke Certificates</li>
+ <li>Generate a certificate for an existing user using a shared secret</li>
+ <li>Generate a keystore for an existing user using a shared secret</li>
 </ul>
 From EJBCA 3.10 the External RA API is bundled as a part of EJBCA and can be enabled in conf/externalra.properties. 
 </p><p>
