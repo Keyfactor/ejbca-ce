@@ -293,18 +293,24 @@ public class JAXWSDocAndConvTools {
     		do{
        			type_decl.append(nxt.getText());
     			if (scan ().getType() != Types.IDENTIFIER) bad ("Missing <ID");
-       			type_decl.append(curr.getText());
+       			type_decl.append(getTypeDeclaration (curr));
     		}
-    		while ((nxt = scan ()).getType() == Types.COMMA);
+    		while ((nxt = curr).getType() == Types.COMMA);
     	    if (nxt.getType() != Types.RIGHTBRACK) bad ("> expected");
    			type_decl.append(nxt.getText());
    	    	scan ();
     	}
     	if (nxt.getType () == Types.LEFTARRAY){
-    		if (ws_gen) bad ("did not expect [] in WS-gen");
+    		boolean byte_array = type_decl.toString ().equals("byte");
+    		if (ws_gen && !byte_array) bad ("did not expect [] in WS-gen");
     			while ((nxt = scan()).getType() != Types.RIGHTARRAY){
     			}
-    		type_decl.insert(0, "List<").append('>');
+    		if (byte_array){
+    			type_decl.append("[]");
+    		}
+    		else{
+        		type_decl.insert(0, "List<").append('>');
+    		}
    			scan ();
     	}
     	return type_decl.toString();
