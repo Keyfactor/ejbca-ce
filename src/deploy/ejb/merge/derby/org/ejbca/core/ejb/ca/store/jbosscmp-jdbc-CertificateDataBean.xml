@@ -46,3 +46,6 @@
   <jdbc-type>LONGVARCHAR</jdbc-type>
   <sql-type>LONG VARCHAR</sql-type>
 </cmp-field>
+<cmp-field>
+  <field-name>subjectKeyId</field-name>
+</cmp-field>
