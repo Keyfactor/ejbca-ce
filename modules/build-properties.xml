@@ -176,10 +176,21 @@
 
 	<path id="lib.jee.classpath">
 		<fileset dir="${appserver.home}">
-			<!-- jboss -->
+			<!-- JBoss 4.2.x -->
 			<include name="client/jbossall-client.jar" /> 	                         
 			<include name="client/jboss-j2ee.jar" /> 	 
 			<include name="client/jnp-client.jar" />			
+			<!-- JBoss 5.0.0 -->
+			<include name="client/jboss-javaee.jar" />
+			<include name="client/jboss-logging-spi.jar" />
+			<include name="client/jboss-client.jar" />
+			<include name="client/jboss-security-spi.jar" />
+			<include name="client/jboss-serialization.jar" />
+			<include name="client/jboss-common-core.jar" />
+			<include name="client/jboss-remoting.jar" />
+			<include name="client/concurrent.jar" />
+			<include name="client/jbosssx-client.jar" />
+			<include name="client/jboss-integration.jar" />
 			<!-- glassfish -->
 			<include name="lib/javaee.jar"/>
 			<include name="lib/appserv-rt.jar"/>
