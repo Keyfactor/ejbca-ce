@@ -1437,7 +1437,16 @@
       if( action.equals(ACTION_RENEWCA_MAKEREQUEST)){
         if(!buttoncancel){
           try{
-           Collection certchain = CertTools.getCertsFromPEM(file);
+              Collection certchain = null;
+              byte[] certbytes = FileTools.readInputStreamtoBuffer(file);
+              try {
+        	       certchain = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+              } catch (IOException ioe) {
+            	  // Maybe it's just a sinlge binary CA cert
+            	  Certificate cert = CertTools.getCertfromByteArray(certbytes);
+            	  certchain = new ArrayList();
+            	  certchain.add(cert);
+              }
            // These parameters are set in 'if(FileUpload.isMultipartContent(request)){'            
            //renewauthenticationcode = request.getParameter(HIDDEN_RENEWAUTHCODE);
            //reGenerateKeys = Boolean.valueOf(request.getParameter(HIDDEN_RENEWKEYS)).booleanValue();
