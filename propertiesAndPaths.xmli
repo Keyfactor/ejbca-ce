@@ -65,6 +65,14 @@
         <contains string="${jboss.home}" substring="JBOSS_HOME"/>
     </condition>
 
+	<fail message="appserver.home (${appserver.home}) can not end with a slash.">
+    	<condition>
+    		<or>
+    	    	<contains string="${appserver.home}/thereisverylittlechancethatthisstringalreadyexistsinthepath" substring="//thereisverylittlechancethatthisstringalreadyexistsinthepath"/>
+    	    	<contains string="${appserver.home}\\thereisverylittlechancethatthisstringalreadyexistsinthepath" substring="\\\\thereisverylittlechancethatthisstringalreadyexistsinthepath"/>
+    	    </or>
+    	</condition>
+    </fail>
 	
     <!-- Default to 15 -->    
     <property name="java.ver" value="15" />

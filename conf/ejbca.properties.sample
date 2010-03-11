@@ -13,7 +13,7 @@
 # Default jboss
 #appserver.type=jboss
 
-# Application server home directory used during development
+# Application server home directory used during development. The path can not end with a slash or backslash.
 # Default: $APPSRV_HOME
 #appserver.home=/home/jboss/jboss-4.2.3.GA
 #appserver.home=/home/ibm/WebSphere/Appserver
