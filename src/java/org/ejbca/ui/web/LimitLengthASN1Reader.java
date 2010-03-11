@@ -51,7 +51,8 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 	 * @param contentLength the provided contentLength, we do not trust it but will use it if given
 	 */
 	public LimitLengthASN1Reader(InputStream input, int contentLength) {
-		super(input);
+		super(input, MAX_REQUEST_SIZE);
+		this.baos = new ByteArrayOutputStream();
 		this.contentLength = contentLength;
 	}
 	/* (non-Javadoc)
@@ -80,15 +81,15 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 		}
 		this.baos.write(value);
 		this.baos.flush();
-		return this.baos.toByteArray();			
+		return this.baos.toByteArray();
 	}
+
 	/** Reads all bytes for the first ASN.1 object in the stream. Limits the size that is ever read to MAX_REQUEST_SIZE.
 	 * @return all bytes for the first ASN.1 object in the stream. 
 	 * @throws IOException
 	 * @throws MalformedRequestException if the request is too large or not correctly GET encoded.
 	 */
 	public byte[] readFirstASN1Object() throws IOException, MalformedRequestException {
-		this.baos = new ByteArrayOutputStream();
 		final int tag = read() & 0x1f;
 		if (tag != SEQUENCE) {
 			final String msg = intres.getLocalizedMessage("request.notasequence", new Integer(tag));

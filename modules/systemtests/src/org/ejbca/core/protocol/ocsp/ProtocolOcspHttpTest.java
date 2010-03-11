@@ -14,9 +14,13 @@
 package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
@@ -27,6 +31,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
@@ -41,6 +46,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERTags;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -77,6 +83,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -718,8 +725,171 @@ public class ProtocolOcspHttpTest extends TestCase {
 		assertTrue("Signature verification", verify);
 	}
 
-    
-    
+	/**
+	 * Verify OCSP response for a malicious request. Uses nonsense payload.
+	 *  
+	 * HTTP Content-length:    1000 byte
+	 * ASN1 sequence length: 199995 byte
+	 * Payload size:         200000 byte (not including HTTP header)
+	 */
+	public void test18MaliciousOcspRequest() throws Exception {
+		log.trace(">test18MaliciousOcspRequest");
+		int i=0;
+		//Construct the fake data.
+		byte data[] = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE*2];
+		//The first byte indicate that this is a sequence. Necessary to past the first test as an accepted OCSP object.
+		data[0] = (byte) DERTags.SEQUENCE;
+		//The second byte indicates the number of the following bytes are more than can be represented by one byte and will be represented by 3 bytes instead.
+		data[1] = (byte) 0x83;
+		//The third through the forth bytes are the number of the following bytes. (0x030D3B = 199995)
+		data[2] = (byte) 0x03;	// MSB
+		data[3] = (byte) 0x0D;
+		data[4] = (byte) 0x3B;	// LSB
+		//Fill the rest of the array with some fake data.
+		for (i=5; i<data.length; i++) {
+			data[i] = (byte)i;
+		}
+		/*
+		*/
+		// Create the HTTP header 
+		String path = "/ejbca/"+ resourceOcsp;
+		String headers = "POST "+path+" HTTP/1.1\r\n" + 
+			"Host: 127.0.0.1\r\n" + 
+			"Content-Type: application/ocsp-request\r\n" +
+			"Content-Length: 1000\r\n" +
+			"\r\n";
+		//Merge the HTTP headers and the raw data into one package.
+		byte input[] = concatByteArrays(headers.getBytes(), data);
+		//Create the socket.
+		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 8080);
+		// Send data byte for byte. 
+		OutputStream os = socket.getOutputStream();
+		try {
+			for(i=0; i<input.length; i++){
+				os.write(input[i]);
+			}
+		} catch(IOException e){
+			log.info("Socket wrote " + i + " bytes before throwing an IOException.");
+		}
+		//Reading the response.
+		InputStream ins = socket.getInputStream();
+		byte ret[] = new byte[1024];
+		ins.read(ret);
+		socket.close();
+		//Removing the HTTP headers. The HTTP headers end at the last occurrence of "\r\n".
+		for (i=ret.length-1; i>0; i--) {
+			if ((ret[i]==0x0A) && (ret[i-1] ==0x0D)) {
+				break;
+			}
+		}
+		int start = i+1;
+		byte respa[] = new byte[ret.length-start];
+		for (i=start; i<ret.length; i++) {
+			respa[i-start] = ret[i];	
+		}
+		log.info("response contains: " + respa.length + " bytes.");
+		//Reading the response as a OCSPResp. When the input data array is longer than allowed the OCSP response will return as an internal error.
+		OCSPResp response = new OCSPResp(respa);
+		assertEquals("Incorrect response status.", OCSPRespGenerator.INTERNAL_ERROR, response.getStatus());
+		log.trace("<test18MaliciousOcspRequest");
+	}
+
+	/**
+	 * Verify OCSP response for a malicious request. Uses nonsense payload.
+	 *  
+	 * HTTP Content-length:  200000 byte
+	 * ASN1 sequence length:   9996 byte
+	 * Payload size:         200000 byte (not including HTTP header)
+	 */
+	public void test19MaliciousOcspRequest() throws Exception {
+		log.trace(">test19MaliciousOcspRequest");
+		int i=0;
+		//Construct the fake data.
+		byte data[] = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE*2];
+		//The first byte indicate that this is a sequence. Necessary to past the first test as an accepted OCSP object.
+		data[0] = (byte) DERTags.SEQUENCE;
+		//The second byte indicates the number of the following bytes are more than can be represented by one byte and will be represented by 2 bytes instead.
+		data[1] = (byte) 0x82;
+		//The third through the forth bytes are the number of the following bytes. (0x270C = 9996)
+		data[2] = (byte) 0x27;	// MSB
+		data[3] = (byte) 0x0C;	// LSB
+		//Fill the rest of the array with some fake data.
+		for (i=4; i<data.length; i++) {
+			data[i] = (byte)i;
+		}
+		// Create the HTTP header 
+		String path = "/ejbca/"+ resourceOcsp;
+		String headers = "POST "+path+" HTTP/1.1\r\n" + 
+			"Host: 127.0.0.1\r\n" + 
+			"Content-Type: application/ocsp-request\r\n" +
+			"Content-Length: 200000\r\n" +
+			"\r\n";
+		//Merge the HTTP headers and the raw data into one package.
+		byte input[] = concatByteArrays(headers.getBytes(), data);
+		//Create the socket.
+		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 8080);
+		// Send data byte for byte. 
+		OutputStream os = socket.getOutputStream();
+		try {
+			for(i=0; i<input.length; i++){
+				os.write(input[i]);
+			}
+		} catch(IOException e){
+			log.info("Socket wrote " + i + " bytes before throwing an IOException.");
+		}
+		//Reading the response.
+		InputStream ins = socket.getInputStream();
+		byte ret[] = new byte[1024];
+		ins.read(ret);
+		socket.close();
+		//Removing the HTTP headers. The HTTP headers end at the last occurrence of "\r\n".
+		for (i=ret.length-1; i>0; i--) {
+			if ((ret[i]==0x0A) && (ret[i-1] ==0x0D)) {
+				break;
+			}
+		}
+		int start = i+1;
+		byte respa[] = new byte[ret.length-start];
+		for (i=start; i<ret.length; i++) {
+			respa[i-start] = ret[i];
+		}
+		log.info("response contains: " + respa.length + " bytes.");
+		//Reading the response as a OCSPResp. When the input data array is longer than allowed the OCSP response will return as an internal error.
+		OCSPResp response = new OCSPResp(respa);			
+		assertEquals("Incorrect response status.", OCSPRespGenerator.MALFORMED_REQUEST, response.getStatus());
+		log.trace("<test19MaliciousOcspRequest");
+	}
+
+	/**
+	 * Verify OCSP response for a malicious request where the POST data starts with a proper OCSP request.
+	 */
+	public void test20MaliciousOcspRequest() throws Exception {
+		log.trace(">test20MaliciousOcspRequest");
+		// Start by sending a valid OCSP requests so we know the helpers work
+		byte validOcspReq[] = getValidOcspRequest();
+		OCSPResp response = sendRawRequestToOcsp(validOcspReq.length, validOcspReq, false);
+		assertEquals("Incorrect response status.", OCSPRespGenerator.SUCCESSFUL, response.getStatus());
+		// Try sending a valid request and then keep sending some more data.
+		byte[] buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE*2];
+		Arrays.fill(buf, (byte)123);
+		buf = concatByteArrays(validOcspReq, buf);
+		response = sendRawRequestToOcsp(buf.length, buf, false);
+		assertEquals("Incorrect response status.", OCSPRespGenerator.MALFORMED_REQUEST, response.getStatus());
+		// Now try with a fake HTTP content-length header
+		try {
+			response = sendRawRequestToOcsp(validOcspReq.length, buf, false);
+			fail("Was able to send a lot of data with a fake HTTP Content-length without any error.");
+		} catch (IOException e) {
+		}
+		// Try sneaking through a payload that is just under the limit. The responder will answer politely, but log a warning.
+		buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE-validOcspReq.length];
+		Arrays.fill(buf, (byte)123);
+		buf = concatByteArrays(validOcspReq, buf);
+		response = sendRawRequestToOcsp(buf.length, buf, false);
+		assertEquals("Server rejected malicious request. (This might be a good thing!)", OCSPRespGenerator.SUCCESSFUL, response.getStatus());
+		log.trace("<test20MaliciousOcspRequest");
+	}
+	
     /**
      * removes DSA CA
      *
@@ -770,6 +940,104 @@ public class ProtocolOcspHttpTest extends TestCase {
     //
     // Private helper methods
     //
+    
+    /**
+     * Generate a simple OCSP Request object
+     */
+    private byte[] getValidOcspRequest() throws Exception {
+		// Get user and ocspTestCert that we know...
+		loadUserCert(caid);
+		// And an OCSP request
+		OCSPReqGenerator gen = new OCSPReqGenerator();
+		gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+		Hashtable exts = new Hashtable();
+		X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+		exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+		gen.setRequestExtensions(new X509Extensions(exts));
+		OCSPReq req = gen.generate();
+		return req.getEncoded();
+    }
+    
+    /**
+     * Sends the payload to the OCSP Servlet using TCP. Can be used for testing malformed or
+     * malicious requests.
+     * 
+     * @param contentLength The HTTP 'Content-Length' header to send to the server.
+     * @return the OCSP Response from the server
+     * @throws IOException if the is a IO problem 
+     */
+    private OCSPResp sendRawRequestToOcsp(int contentLength, byte[] payload, boolean writeByteByByte) throws IOException {
+		// Create the HTTP header 
+		String headers = "POST "+"/ejbca/"+ resourceOcsp+" HTTP/1.1\r\n" + 
+        				 "Host: 127.0.0.1\r\n" + 
+        				 "Content-Type: application/ocsp-request\r\n" +
+        				 "Content-Length: "+contentLength+"\r\n" +
+        				 "\r\n";
+		// Merge the HTTP headers, the OCSP request and the raw data into one package.
+		byte[] input = concatByteArrays(headers.getBytes(), payload);
+		log.debug("HTTP request headers: " + headers);
+		log.debug("HTTP headers size: " + headers.getBytes().length);
+		log.debug("Size of data to send: " + input.length);
+		// Create the socket.
+		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 8080);
+		// Send data byte for byte. 
+		OutputStream os = socket.getOutputStream();
+		if (writeByteByByte) {
+			int i=0;
+			try {
+				for(i=0; i<input.length; i++){
+					os.write(input[i]);
+				}
+			} catch(IOException e){
+				log.info("Socket wrote " + i + " bytes before throwing an IOException.");
+			}
+		} else {
+			try {
+				os.write(input);
+			} catch (IOException e) {
+				log.info("Could not write to TCP Socket " + e.getMessage());
+			}
+		}
+		// Reading the response.
+		byte rawResponse[] = getHttpResponse(socket.getInputStream());
+		log.info("Response contains: " + rawResponse.length + " bytes.");
+		socket.close();
+		return new OCSPResp(rawResponse);			
+	}
+
+    /**
+     * Read the payload of a HTTP response as a byte array.
+     */
+    private byte[] getHttpResponse(InputStream ins) throws IOException {
+		byte buf[] = OcspJunitHelper.inputStreamToBytes(ins);
+		int i=0;
+		//Removing the HTTP headers. The HTTP headers end at the last occurrence of "\r\n".
+		for (i=buf.length-1; i>0; i--) {
+			if ((buf[i]==0x0A) && (buf[i-1] ==0x0D)) {
+				break;
+			}
+		}
+		byte[] header = Arrays.copyOfRange(buf, 0, i+1);
+		log.debug("HTTP reponse header: " + new String(header));
+		log.debug("HTTP reponse header size: " + header.length);
+		log.debug("Stream length: " + buf.length);
+		log.debug("HTTP payload length: " + (buf.length-header.length));
+		return Arrays.copyOfRange(buf, header.length, buf.length);
+    }
+    
+    /**
+     * @return a new byte array with the two arguments concatenated.
+     */
+    private byte[] concatByteArrays(byte[] array1, byte[] array2) {
+    	byte[] ret = new byte[array1.length + array2.length];
+    	for (int i=0; i<array1.length; i++) {
+    		ret[i] = array1[i];
+    	}
+    	for (int i=0; i<array2.length; i++) {
+    		ret[array1.length+i] = array2[i];
+    	}
+    	return ret;
+    }
     
     /**
      * adds a CA Using ECDSA keys to the database.

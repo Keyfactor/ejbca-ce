@@ -281,6 +281,15 @@ http://www.nic.com/~dave/SecurityAdminGuide/SecurityAdminGuide-5.html</a>
 </p>
 </subsection>
 </section>
+<section name="Denial of Service">
+    <subsection name="Due too large data packages">
+        <p>
+            There is no way to limit the datapackages reaching JBoss through a HTTP request from within JBoss. 
+            This is due to the way the TCP protocol works. 
+            The best way to avoid this kind of DOS attacks is to use a firewall or proxy that can limit the size of request and configure it properly.
+        </p>
+    </subsection>
+</section>
 
 </body>
 </document>
