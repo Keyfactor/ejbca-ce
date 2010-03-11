@@ -466,6 +466,13 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		if (StringUtils.equals(method, "POST")) {
 			final ServletInputStream in = request.getInputStream(); // ServletInputStream does not have to be closed, container handles this
 			ret = new LimitLengthASN1Reader(in, n).readFirstASN1Object();
+			if (n > ret.length) {
+				// The client is sending more data than the OCSP request. It might be slightly broken or trying to bog down the server on purpose.
+				// In the interest of not breaking existing systems that might have slightly broken clients we just log for a warning for now.
+				String msg = intres.getLocalizedMessage("ocsp.additionaldata", ret.length, n);
+				m_log.warn(msg);
+				//throw new MalformedRequestException(msg);	// Responding with MALFORMED_REQUEST. 
+			}
 		} else if (StringUtils.equals(method, "GET")) {
 			// GET request
 			final StringBuffer url = request.getRequestURL();
