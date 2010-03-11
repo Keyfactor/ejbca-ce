@@ -26,6 +26,8 @@ create index certificatedata_idx5 ON CertificateData(type);
 create index certificatedata_idx6 ON CertificateData(serialNumber);
 create index certificatedata_idx7 on CertificateData(certificateProfileId);
 create index certificatedata_idx8 on CertificateData(expireDate, status);
+create index certificatedata_idx9 on CertificateData(subjectKeyId,issuerDN);
+create index certificatedata_idx10 on CertificateData(subjectDN,issuerDN);
 
 -- Indexes on UserData:
 create index userdata_idx1 on UserData (cAId,endEntityProfileId);
