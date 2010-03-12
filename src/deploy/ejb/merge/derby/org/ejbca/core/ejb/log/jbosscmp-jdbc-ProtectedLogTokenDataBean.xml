@@ -1,0 +1,19 @@
+<cmp-field>
+  <field-name>pk</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>tokenIdentifier</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>tokenType</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>b64TokenCertificate</field-name>
+  <jdbc-type>LONGVARCHAR</jdbc-type>
+  <sql-type>LONG VARCHAR</sql-type>
+</cmp-field>
+<cmp-field>
+  <field-name>tokenReference</field-name>
+  <jdbc-type>LONGVARCHAR</jdbc-type>
+  <sql-type>VARCHAR(32672)</sql-type>
+</cmp-field>
