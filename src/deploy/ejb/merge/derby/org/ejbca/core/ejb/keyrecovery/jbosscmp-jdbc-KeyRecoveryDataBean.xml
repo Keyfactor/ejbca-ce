@@ -8,12 +8,10 @@
   <field-name>username</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>markedAsRecoverable</field-name>
-  <jdbc-type>BIT</jdbc-type>
-  <sql-type>SMALLINT</sql-type>
+  <field-name>markedAsRecoverableNumeric</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>keyData</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG VARCHAR</sql-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>
