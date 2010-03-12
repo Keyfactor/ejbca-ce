@@ -224,8 +224,8 @@ text or possible encrypted (application server specific) passwords.
 If you do not like to have your DataSource password available in clear text in EjbcaDS.xml, 
 there is an article in the JBoss Wiki about encrypting them:
 <br/>
-<a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=EncryptingDataSourcePasswords">
-http://wiki.jboss.org/wiki/Wiki.jsp?page=EncryptingDataSourcePasswords</a>
+<a href="http://community.jboss.org/wiki/encryptingdatasourcepasswords">
+http://community.jboss.org/wiki/encryptingdatasourcepasswords</a>
 </p>
 </section>
 
