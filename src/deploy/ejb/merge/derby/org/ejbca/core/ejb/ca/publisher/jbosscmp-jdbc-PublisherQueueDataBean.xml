@@ -34,6 +34,6 @@
     <field-name>volatileData</field-name>
     <column-name>volatileData</column-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG VARCHAR</sql-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>
 

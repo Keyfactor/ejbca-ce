@@ -9,7 +9,5 @@
   <field-name>rule</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>isRecursive</field-name>
-  <jdbc-type>BIT</jdbc-type>
-  <sql-type>SMALLINT</sql-type>
+  <field-name>isRecursiveNumeric</field-name>
 </cmp-field>

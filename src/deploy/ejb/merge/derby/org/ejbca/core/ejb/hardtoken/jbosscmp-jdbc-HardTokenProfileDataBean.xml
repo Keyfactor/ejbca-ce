@@ -9,6 +9,6 @@
 </cmp-field>
 <cmp-field>
   <field-name>data</field-name>
-  <jdbc-type>CLOB</jdbc-type>
+  <jdbc-type>LONGVARCHAR</jdbc-type>
   <sql-type>CLOB</sql-type>
 </cmp-field>
