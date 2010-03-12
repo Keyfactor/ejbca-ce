@@ -27,6 +27,7 @@
 	<path id="compile-library.classpath">
 		<pathelement location="${mod.ejbca-util.lib}" /> 
 		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.jaxws.classpath" /> 
 	</path>
 
 	<path id="generate.classpath">
