@@ -10,5 +10,5 @@
 <cmp-field>
   <field-name>data</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>CLOB</sql-type>
+  <sql-type>LONG VARCHAR</sql-type>
 </cmp-field>

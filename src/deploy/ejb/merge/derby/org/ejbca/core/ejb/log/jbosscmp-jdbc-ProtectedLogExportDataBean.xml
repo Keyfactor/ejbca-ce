@@ -1,0 +1,36 @@
+<cmp-field>
+  <field-name>pk</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>timeOfExport</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>exportEndTime</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>exportStartTime</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>b64LogDataHash</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>b64PreviosExportHash</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>currentHashAlgorithm</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>b64SignatureCertificate</field-name>
+  <jdbc-type>LONGVARCHAR</jdbc-type>
+  <sql-type>LONG VARCHAR</sql-type>
+</cmp-field>
+<cmp-field>
+  <field-name>deleted</field-name>
+  <jdbc-type>BIT</jdbc-type>
+  <sql-type>INTEGER</sql-type>
+</cmp-field>
+<cmp-field>
+  <field-name>b64Signature</field-name>
+  <jdbc-type>LONGVARCHAR</jdbc-type>
+  <sql-type>LONG VARCHAR</sql-type>
+</cmp-field>
