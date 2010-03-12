@@ -28,10 +28,13 @@
     <property name="velocity.props"   location="${docs.src}/velocity.properties" />
     <property name="include.xml"  value="**/*.xml" />
 
+    <fileset id="lib.jaxws.fileset" dir="${ejbca.home}/lib/jaxws" includes="*.jar"/>
+	<path id="lib.jaxws.classpath"><fileset refid="lib.jaxws.fileset"/></path>
 	<path id="jdoc.classpath">
 		<path location="dist/ejbca-util.jar" />
 		<path location="dist/ejbca-ejb.jar" />
 		<path location="lib/bcprov-jdk15.jar" />
+		<path refid="lib.jaxws.classpath" /> 
     </path>
 
     <target name="prepare">
