@@ -45,6 +45,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -258,6 +259,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
+
+    /**
+     * Caching of CA IDs with CA cert hash as ID
+     */
+    private final Map caCertToCaId = new HashMap();
 
     private IApprovalSessionLocal getApprovalSession(){
     	if(approvalsession == null){
@@ -944,18 +950,41 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public CA getCA(Admin admin, int caid) throws CADoesntExistsException {
-        CADataLocal cadata = null;
+        final CA ca;
+        final CADataLocal cadata;
         try {
-            cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-        } catch (javax.ejb.FinderException fe) {
-            String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", new Integer(caid));        	
-            getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, fe);
-            throw new CADoesntExistsException(msg);
-        }
-        CA ca = null;
-        try {
-            ca = cadata.getCA();
-        } catch (java.io.UnsupportedEncodingException uee) {
+            CADataLocal tmpCAdata = null;
+            try {
+                tmpCAdata = this.cadatahome.findByPrimaryKey(new Integer(caid));
+            } catch (FinderException fe) {
+    			// subject DN of the CA certificate might not have all objects that is the DN of the certificate data.
+            	try {
+            		final Integer oRealCAId = (Integer)this.caCertToCaId.get(new Integer(caid));
+            		if ( oRealCAId!=null ) { // has the "real" CAID been mapped to the certificate subject hash by a previous call?
+            			tmpCAdata = this.cadatahome.findByPrimaryKey(oRealCAId); // using cached value of real caid.
+            		} else {
+            			final Iterator i = cadatahome.findAll().iterator(); // no, we have to search for it among all CA certs
+            			while ( tmpCAdata==null && i.hasNext() ) {
+            				final CADataLocal tmp = (CADataLocal)i.next();
+            				final Certificate caCert = tmp!=null ? tmp.getCA().getCACertificate() : null;
+            				if ( caCert!=null && caid==CertTools.getSubjectDN(caCert).hashCode() ) {
+            					tmpCAdata = tmp; // found. Do also cache it if someone else is needing it later
+            					this.caCertToCaId.put(new Integer(caid), new Integer(tmpCAdata.getSubjectDN().hashCode()));
+            				}
+            			}
+            		}
+                } catch (FinderException e) {
+                    // do nothing. can not find CA. CADoesntExistsException will be thrown
+                }
+                if ( tmpCAdata==null ) {
+                    String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", new Integer(caid));        	
+                    getLogSession().log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, fe);
+                    throw new CADoesntExistsException(msg);
+                }
+            }
+            cadata = tmpCAdata;
+            ca = tmpCAdata.getCA();
+        } catch (UnsupportedEncodingException uee) {
             throw new EJBException(uee);
         } catch(IllegalKeyStoreException e){
             throw new EJBException(e);
