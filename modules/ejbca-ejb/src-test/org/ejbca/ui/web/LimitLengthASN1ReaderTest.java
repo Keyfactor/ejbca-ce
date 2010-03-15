@@ -181,32 +181,4 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 			assertEquals("Value #" + i + " did not match expected output.", UNDEFINED_LENGTH_HAPPY[i], result[i]);
 		}
 	}
-
-	/**
-	 * Private inner class which represents an input stream with controlled
-	 * output.
-	 * 
-	 * @author mikek
-	 */
-	private class InputStreamStub extends InputStream {
-
-		private int[] contents;
-		private int counter = 0;
-
-		public InputStreamStub(int[] contents) {
-			super();
-			this.contents = contents;
-		}
-
-		public int read() throws IOException {
-			if (contents == null) {
-				throw new NullPointerException("Class member contents must be set for anonymous inner class.");
-			}
-			if (counter < contents.length) {
-				return contents[counter++];
-			} else {
-				return -1;
-			}
-		}
-	}
 }
