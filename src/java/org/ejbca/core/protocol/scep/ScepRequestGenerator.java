@@ -103,6 +103,26 @@ public class ScepRequestGenerator {
         return msg;
     }
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, CertificateEncodingException, IllegalStateException {
+        // Extension request attribute is a set of X509Extensions
+        // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
+        // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
+        final Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
+        final Vector<X509Extension> valuevec = new Vector<X509Extension>();
+        // Requested extensions attribute
+        // AltNames
+        final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
+        final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        final DEROutputStream dOut = new DEROutputStream(bOut);
+        try {
+            dOut.writeObject(san);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("error encoding value: " + e);
+        }
+        valuevec.add(new X509Extension(false, new DEROctetString(bOut.toByteArray())));
+        oidvec.add(X509Extensions.SubjectAlternativeName);
+        return generateCertReq( dn, password, transactionId, ca, new X509Extensions(oidvec,valuevec) );
+    }
+    public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, X509Extensions exts) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, CertificateEncodingException, IllegalStateException {
         this.cacert = ca;
         this.reqdn = dn;
         // Generate keys
@@ -120,27 +140,8 @@ public class ScepRequestGenerator {
         ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
         pwdvalues.add(new DERUTF8String(password));
         challpwdattr.add(new DERSet(pwdvalues));
-        // Requested extensions attribute
         ASN1EncodableVector extensionattr = new ASN1EncodableVector();
         extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        // AltNames
-        GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        DEROutputStream dOut = new DEROutputStream(bOut);
-        try {
-            dOut.writeObject(san);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("error encoding value: " + e);
-        }
-        // Extension request attribute is a set of X509Extensions
-        // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
-        // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
-        ASN1EncodableVector extvalue = new ASN1EncodableVector();
-        Vector oidvec = new Vector();
-        oidvec.add(X509Extensions.SubjectAlternativeName);
-        Vector valuevec = new Vector();
-        valuevec.add(new X509Extension(false, new DEROctetString(bOut.toByteArray())));
-        X509Extensions exts = new X509Extensions(oidvec,valuevec);
         extensionattr.add(new DERSet(exts));
         // Complete the Attribute section of the request, the set (Attributes) contains two sequences (Attribute)
         ASN1EncodableVector v = new ASN1EncodableVector();
@@ -148,11 +149,11 @@ public class ScepRequestGenerator {
         v.add(new DERSequence(extensionattr));
         DERSet attributes = new DERSet(v);
         // Create PKCS#10 certificate request
-        p10request = new PKCS10CertificationRequest("SHA1WithRSA",
+        this.p10request = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name(reqdn), keys.getPublic(), attributes, keys.getPrivate());
         
         // Create self signed cert, validity 1 day
-        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
+        this.cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
         
         // wrap message in pkcs#7
         byte[] msg = wrap(p10request.getEncoded(), "19", transactionId);
