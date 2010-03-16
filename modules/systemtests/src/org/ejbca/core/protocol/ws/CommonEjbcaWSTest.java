@@ -465,36 +465,44 @@ public class CommonEjbcaWSTest extends TestCase {
 		
 	}
 	
-
-	private ErrorCode certreqInternal(UserDataVOWS userdata, String requestdata, int requesttype) throws Exception{
-		{
-			final CertificateResponse certenv;
-			try {
-				certenv =  ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
-			} catch (EjbcaException_Exception e) {
-				final ErrorCode errorCode = e.getFaultInfo().getErrorCode();
-				log.info( errorCode.getInternalErrorCode(), e);
-				assertNotNull("error code should not be null", errorCode);
-				return errorCode;
-			}
-
-			assertNotNull(certenv);		
-			assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
-			final X509Certificate cert = certenv.getCertificate (); 
-
-			assertNotNull(cert);		
-			assertTrue(cert.getSubjectDN().toString().equals(userdata.getSubjectDN()));
-		}{
-			final CertificateResponse certenv =  ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_PKCS7);
-			assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
-			CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
-			assertNotNull(cmsSignedData);
-
-			CertStore certStore = cmsSignedData.getCertificatesAndCRLs("Collection","BC");
-			assertTrue(certStore.getCertificates(null).size() ==1);
+	/**
+	 * Perform two WS certificate requests with different response-types: Certificate and PKCS#7.
+	 * If the first one fails an error code will be returned. I the second fails a Exception will be thrown. 
+	 */
+	private ErrorCode certreqInternal(UserDataVOWS userdata, String requestdata, int requesttype) throws Exception {
+		// Request a certificate via the WS API
+		final CertificateResponse certificateResponse;
+		try {
+			certificateResponse = ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+		} catch (EjbcaException_Exception e) {
+			final ErrorCode errorCode = e.getFaultInfo().getErrorCode();
+			log.info( errorCode.getInternalErrorCode(), e);
+			assertNotNull("error code should not be null", errorCode);
+			return errorCode;
 		}
+		// Verify that the response is of the right type
+		assertNotNull(certificateResponse);		
+		assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
+		// Verify that the certificate in the response has the same Subject DN as in the request.
+		final X509Certificate cert = certificateResponse.getCertificate (); 
+		assertNotNull(cert);		
+		assertTrue(cert.getSubjectDN().toString().equals(userdata.getSubjectDN()));
+
+		// Request a PKCS#7 via the WS API
+		final CertificateResponse pkcs7Response =  ejbcaraws.certificateRequest(userdata,requestdata,requesttype, null,CertificateHelper.RESPONSETYPE_PKCS7);
+		// Verify that the response is of the right type
+		assertTrue(pkcs7Response.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
+		// Verify that the PKCS#7 response contains a certificate 
+		CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(pkcs7Response.getData()));
+		assertNotNull(cmsSignedData);
+		CertStore certStore = cmsSignedData.getCertificatesAndCRLs("Collection","BC");
+		assertTrue(certStore.getCertificates(null).size() ==1);
 		return null;
 	}
+	
+	/**
+	 * Fetch a user's data via the WS API and reset some of its values.
+	 */
 	private UserDataVOWS getUserData(String userName) throws Exception {
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
@@ -508,6 +516,10 @@ public class CommonEjbcaWSTest extends TestCase {
         userdatas.get(0).setClearPwd(true);
         return userdatas.get(0);
 	}
+	
+	/**
+	 * Generate a new key pair and return a B64 encoded PKCS#10 encoded certificate request for the keypair.
+	 */
 	private String getP10() throws Exception {
 		final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
 		return new String(Base64.encode(new PKCS10CertificationRequest("SHA1WithRSA",
