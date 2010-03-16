@@ -1017,12 +1017,12 @@ public class ProtocolOcspHttpTest extends TestCase {
 				break;
 			}
 		}
-		byte[] header = Arrays.copyOfRange(buf, 0, i+1);
+		byte[] header = ArrayUtils.subarray(buf, 0, i+1);
 		log.debug("HTTP reponse header: " + new String(header));
 		log.debug("HTTP reponse header size: " + header.length);
 		log.debug("Stream length: " + buf.length);
 		log.debug("HTTP payload length: " + (buf.length-header.length));
-		return Arrays.copyOfRange(buf, header.length, buf.length);
+		return ArrayUtils.subarray(buf, header.length, buf.length);
     }
     
     /**
