@@ -48,13 +48,10 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
-import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -78,7 +75,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
 
 import com.novosec.pkix.asn1.crmf.CertRequest;
-
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
@@ -133,14 +129,6 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
  *   link="AuthorizationSession"
  *
- * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
- *   view-type="local"
- *   ref-name="ejb/CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *
  * @ejb.ejb-external-ref description="The Sign Session Bean"
  *   view-type="local"
  *   ref-name="ejb/RSASignSessionLocal"
@@ -149,27 +137,35 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   link="RSASignSession"
  *
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
  *
+ * @ejb.ejb-external-ref description="The Ra Admin session bean"
+ *   view-type="local"
+ *   ref-name="ejb/RaAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
+ *   link="RaAdminSession"
+ *   
+ * @ejb.ejb-external-ref description="The Hard token session bean"
+ *   view-type="local"
+ *   ref-name="ejb/HardTokenSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
+ *   link="HardTokenSession"
  */
 public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 
-	/** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    /** Requerid method by EJB 2.x. */
+    public void ejbCreate() throws CreateException { }
 
-
-    /**
-     * Default create for SessionBean.
-     *
-     * @throws CreateException if bean instance can't be created
-     * @see org.ejbca.core.model.log.Admin
-     */
-    public void ejbCreate() throws CreateException {
-    }
-
-
-    /** Gets connection to authorization session bean
-     * @return Connection
-     */
     private IAuthorizationSessionLocal authorizationsession = null;
     private IAuthorizationSessionLocal getAuthorizationSession() {
         if(authorizationsession == null){
@@ -222,21 +218,8 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
             return useradminsession;
     } //getAuthorizationSession
 
-    private ICertificateStoreSessionLocal certstoresession = null;
-    private ICertificateStoreSessionLocal getCertificateStoreSession() {
-        if(certstoresession == null){
-            try{
-                ICertificateStoreSessionLocalHome certstoresessionhome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-                certstoresession = certstoresessionhome.create();
-              }catch(Exception e){
-                 throw new EJBException(e);
-              }
-            }
-            return certstoresession;
-    } //getAuthorizationSession
-
 	private ISignSessionLocal signsession = null;
-	public ISignSessionLocal getSignSession() {
+	private ISignSessionLocal getSignSession() {
 		if(signsession == null){	  
 	      try{
 	    	  ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
@@ -249,7 +232,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	}
  
 	private IHardTokenSessionLocal tokensession = null;
-	public IHardTokenSessionLocal getHardTokenSession() {
+	private IHardTokenSessionLocal getHardTokenSession() {
 		if(tokensession == null){	  
 	      try{
 	    	  IHardTokenSessionLocalHome tokensessionhome = (IHardTokenSessionLocalHome) getLocator().getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
@@ -261,12 +244,20 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	      return tokensession;
 	}
 
-   
 	/**
-     * Implements ICertificateRequestSession::processCertReq is called from EjbcaWS
+	 * Edits or adds a user and generates a certificate for that user in a single transaction.
+     * Used from EjbcaWS.
      * 
+	 * @param admin is the requesting administrator
+	 * @param userdata contains information about the user that is about to get a certificate
+	 * @param req is the certificate request in the format specified in the reqType parameter
+	 * @param reqType is one of SecConst.CERT_REQ_TYPE_..
+	 * @param hardTokenSN is the hard token to associate this or null
+	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
+     * @return a encoded certificate of the type specified in responseType 
+	 * 
      * @ejb.interface-method
-     */
+	 */
 	public byte[] processCertReq(Admin admin, UserDataVO userdata, String req, int reqType,
 			String hardTokenSN, int responseType) throws CADoesntExistsException,
 			AuthorizationDeniedException, NotFoundException, InvalidKeyException,
@@ -353,6 +344,15 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 		return retval;
 	}
 
+	/**
+	 * Process a request in the CA module.
+	 * 
+	 * @param admin is the requesting administrator
+	 * @param msg is the request message processed by the CA
+	 * @param hardTokenSN is the hard token to associate this or null
+	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
+     * @return a encoded certificate of the type specified in responseType 
+	 */
 	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg, String hardTokenSN, int responseType)
 	throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
 		byte[] retval = null;
@@ -376,7 +376,17 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	}
 
 	/**
-     * Implements ICertificateRequestSession::processSoftTokenReq is called from EjbcaWS
+	 * Edits or adds a user and generates a keystore for that user in a single transaction.
+     * Used from EjbcaWS.
+     * 
+	 * @param admin is the requesting administrator
+	 * @param userdata contains information about the user that is about to get a keystore
+	 * @param hardTokenSN is the hard token to associate this or null
+     * @param keyspec name of ECDSA key or length of RSA and DSA keys  
+     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
+     * @param createJKS true to create a JKS, false to create a PKCS12
+     * @return a JKS or PKCS#12 KeyStore 
+     * @return a encoded certificate of the type specified in responseType 
      * 
      * @ejb.interface-method
      */
@@ -388,8 +398,6 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			CertificateException,UserDoesntFullfillEndEntityProfile,
 			ApprovalException, WaitingForApprovalException, FinderException,
 			NoSuchFieldException, EjbcaException, KeyStoreException {
-		byte[] retval = null;
-
 		int caid = userdata.getCAId();
 		getCAAdminSession().verifyExistenceOfCA(caid);
 
@@ -419,21 +427,18 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	    boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 	    log.debug("reusecertificate: "+reusecertificate);
 	    KeyStore keystore = null;
-	    try{
+	    try {
 		    GenerateToken tgen = new GenerateToken(false);
 			keystore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 			Enumeration en = keystore.aliases();
 			String alias = (String) en.nextElement();
 		    X509Certificate cert = (X509Certificate) keystore.getCertificate(alias);
 		    if ( (hardTokenSN != null) && (cert != null) ) {
-		          getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,cert);                 
-		      }
-	    }
-	    catch (Exception e){
+		    	getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,cert);                 
+		    }
+	    } catch (Exception e) {
 	    	throw new KeyStoreException (e);
 	    }
 	    return keystore;
 	}
-
-	
-} // LocalCertificateRequestSessionBean
+}
