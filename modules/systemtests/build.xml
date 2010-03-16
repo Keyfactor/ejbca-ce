@@ -139,7 +139,7 @@
 			<!-- Most system tests -->
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.dir}">
-					<include name="**/*" />
+					<include name="**/*Test*.class" />
 					<!-- Tests that require TestCAs to setup CAs -->
 					<exclude name="org/ejbca/core/ejb/ca/caadmin/TestCAs.class" />
 					<exclude name="org/ejbca/core/ejb/ca/sign/TestSignSession.class" />
