@@ -181,4 +181,5 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 			assertEquals("Value #" + i + " did not match expected output.", UNDEFINED_LENGTH_HAPPY[i], result[i]);
 		}
 	}
+
 }

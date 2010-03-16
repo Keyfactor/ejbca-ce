@@ -252,14 +252,9 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*.class">
-					<exclude name="org/ejbca/core/model/approval/ApprovalJunitHelper*.class"/>
-					<exclude name="org/ejbca/core/model/InternalResourcesTestClass.class"/>
-					<exclude name="org/ejbca/core/model/util/AlgorithmToolsHelper*.class"/>
-					<exclude name="org/ejbca/core/protocol/ocsp/CacheExceptionHandler.class"/>
-					<exclude name="org/ejbca/core/protocol/ocsp/CacheTester.class"/>
-					<exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups*.class"/>
-					<exclude name="org/ejbca/core/protocol/ocsp/OcspUtilMockups*.class"/>
+				<fileset dir="${build-test.dir}" includes="**/*Test*.class">			
+					<exclude name="**/InternalResourcesTestClass.class"/>
+					<exclude name="**/CacheTester.class"/>					
 				</fileset>
 			</batchtest>
 		</junit>
