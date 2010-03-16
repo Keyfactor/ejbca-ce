@@ -172,7 +172,6 @@ class SCEPTest extends ClientToolBox {
                 this.sessionData.certchain = tmp;
                 return true;
             }
-            @Override
             public String getJobTimeDescription() {
                 return "Get certificate chain";
             }
