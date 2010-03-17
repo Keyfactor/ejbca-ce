@@ -134,7 +134,7 @@ kind of information that the RA can approve, by defining End Entity Profiles. If
 used the service run as an 'internal user' where anything goes (Super Administrator).
 </p><p>
 If message signing is used, the RA servers certificate (used to sign the message) must be an
-administrator i EJBCA ant at least have the following rights:
+administrator i EJBCA and at least have the following rights:
 <ul>
  <li>The RA administrator role</li>
  <li>View/Create/Edit/Key Recovery/Revocation Rights</li>
@@ -245,7 +245,7 @@ pages.
 <ol>
  <li>Install/setup a message database on the External RA GUI host.</li>
  <li>Issue a new JKS keystore with EJBCA to enable SSL (HTTPS) on the External RA GUI host.</li>
- <li>Issue a PKCS#12 keystore with EJBCA for signing and decrypting messages from the CA and copy it to the host.</li>
+ <li>Issue a PKCS#12 keystore with EJBCA for signing and encrypting messages to the CA and copy it to the host. Don't forget to add the right administrator privileges to this certificate as described above in 'Security'.</li>
  <li>Download the certificate of the CA service's PKCS#12 keystore and copy it to the host.</li>
  <li>Download the issuing certificate of the host's PKCS#12 keystore and copy it to the host (should be the same as the issuer for CA service's PKCS#12).</li>
  <li>Configure conf/externalra-gui.properties to use the keystores, the certificates, the local database and the local application server.</li>
@@ -264,7 +264,26 @@ pages.
  request messages.</li>
  <li>Make sure a database JDBC connector JAR is installed in the local application server for the external RA message database.</li>
 </ol>
+Sample service properties:
 </p>
+<ul>
+<li>Select Worker: Custom Worker</li>
+<li>Custom Worker Class Path: org.ejbca.extra.caservice.ExtRACAServiceWorker</li>
+<li>Custom Worker Properties: (copy below)</li>
+<li>Select Interval: Periodical Interval</li>
+<li>Period: 5 seconds</li>
+<li>Select Action: No Action</li>
+<li>Active: Checked</li>
+</ul>
+<source>
+externalra-caservice.whitelist=org.ejbca.extra.db.CertificateRequestRequest,org.ejbca.extra.db.KeyStoreRetrievalRequest
+externalra-caservice.keystore.path=/home/ejbca/externalra-caservice.p12
+externalra-caservice.keystore.pwd=foo123
+externalra-caservice.raissuer=AdminCA1
+externalra-caservice.signature.required=true
+externalra-caservice.encryption.required=false
+externalra-caservice.persistenceunit=RAMessage1DS
+</source>
 </subsection>
 <subsection name="Verified platforms and browsers">
 <p>
