@@ -219,6 +219,8 @@
            	<include name="org/ejbca/util/CertTools.java"/>
            	<include name="org/ejbca/util/JDBCUtil.java"/>
            	<include name="org/ejbca/util/keystore/KeyTools.java"/>
+           	<include name="org/ejbca/util/PatternLogger.java"/>
+           	<include name="org/ejbca/util/IPatternLogger.java"/>
     	</javac>
     </target>
 
