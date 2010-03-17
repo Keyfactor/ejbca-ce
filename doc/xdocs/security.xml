@@ -237,7 +237,7 @@ upgrades EJCBA needs CREATE and ALTER TABLE privileges. (SELECT, UPDATE, INSERT 
 privileges are also required.)
 </p><p>
 After the installation during normal operations only regular SELECT, UPDATE, INSERT
-and DELETE commands are needed. The table LogEntryData will only be used with SELECT and
+and DELETE commands are needed. The table LogEntryData and ProtectedLogData will only be used with SELECT and
 INSERT.
 </p><p>
 Instead of changing the privileges of the EJBCA-user, it's recommended to have two
@@ -245,6 +245,9 @@ different users "ejbca" and "ejbca-admin". For regular operations "ejbca" is use
 for the installation and upgrades, EJBCA is re-deployed with "ejbca-admin" configured
 in conf/database.properties. 
 </p>
+<p>There is a script, <b>doc/howto/mysql-privileges.sh</b> that creates an SQL script that can be run to limit privileges
+on a MySQL database. The script will set restricted privileges for every table in the EJBCA database.
+See the script for in-line documentation.</p>
 </section>
 
 <section name="SSL connections in MySQL">
