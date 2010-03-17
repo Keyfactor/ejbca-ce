@@ -21,3 +21,5 @@ for table in $COMMAND; do echo "revoke ALL on $SQLDATABASE.$table from '$SQLUSER
 for table in $COMMAND; do echo "grant SELECT,INSERT on $SQLDATABASE.$table to '$SQLUSER'@'$SQLHOST';" | grep -i ProtectedLog | grep -iv ProtectedLogExportData; done >> $SQLFILE
 for table in $COMMAND; do echo "revoke ALL on $SQLDATABASE.$table from '$SQLUSER'@'$SQLHOST';" | grep -i LogEntryData; done >> $SQLFILE
 for table in $COMMAND; do echo "grant SELECT,INSERT on $SQLDATABASE.$table to '$SQLUSER'@'$SQLHOST';" | grep -i LogEntryData; done >> $SQLFILE
+# We need LOCK TABLES permission in order to do a database backup
+echo "grant LOCK TABLES on $SQLDATABASE.* to '$SQLUSER'@'$SQLHOST';" >> $SQLFILE
