@@ -526,17 +526,23 @@ public class CommonEjbcaWSTest extends TestCase {
 		                                                               CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(),
 		                                                               new DERSet(), keys.getPrivate()).getEncoded()));
 	}
+	
+	/**
+	 * Test method for creating/editing a user a requesting a certificate in a single transaction.
+	 */
 	protected void test03CertificateRequest(boolean performSetup) throws Exception{
-		if(performSetup){
+		if (performSetup) {
 			setUpAdmin();
 		}
 		final UserDataVOWS userData1 = getUserData(CA1_WSTESTUSER1);
-		assertNull( certreqInternal(userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10) );
-
-		assertNull( certreqInternal(userData1, crmf, CertificateHelper.CERT_REQ_TYPE_CRMF) );
-	
-		assertNull( certreqInternal(userData1, spkac, CertificateHelper.CERT_REQ_TYPE_SPKAC) );
+		ErrorCode errorCode = certreqInternal(userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10);
+		assertNull("PKCS#10 request resulted in error code: " + (errorCode==null?"":errorCode.getInternalErrorCode()), errorCode);
+		errorCode = certreqInternal(userData1, crmf, CertificateHelper.CERT_REQ_TYPE_CRMF);
+		assertNull("CRMF request resulted in error code: " + (errorCode==null?"":errorCode.getInternalErrorCode()), errorCode);
+		errorCode = certreqInternal(userData1, spkac, CertificateHelper.CERT_REQ_TYPE_SPKAC);
+		assertNull("SPKAC request resulted in error code: " + (errorCode==null?"":errorCode.getInternalErrorCode()), errorCode);
 	}
+
 	protected void test03EnforcementOfUniquePublicKeys(boolean performSetup) throws Exception {
 		if(performSetup){
 			setUpAdmin();
@@ -803,7 +809,7 @@ public class CommonEjbcaWSTest extends TestCase {
         String key2 = new String(Hex.encode(privK2.getEncoded()));
         assertFalse(key1.equals(key2));
 
-		// Test the new request form P12
+		// Test the method for adding/editing and requesting a PKCS#12 KeyStore in a single transaction
         ksenv2 = ejbcaraws.softTokenRequest(userdatas.get(0),null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(),"PKCS12","foo456");
         assertNotNull(ks2);
@@ -813,7 +819,7 @@ public class CommonEjbcaWSTest extends TestCase {
         assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey)ks2.getKey(alias, "foo456".toCharArray());
 
-        // Test the new request form JKS
+		// Test the method for adding/editing and requesting a JKS KeyStore in a single transaction
         userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_JKS);
         ksenv2 = ejbcaraws.softTokenRequest(userdatas.get(0),null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
         ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(),"JKS","foo456");

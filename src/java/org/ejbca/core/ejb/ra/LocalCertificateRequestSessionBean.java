@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ra;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -29,7 +30,6 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Enumeration;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -385,12 +385,11 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
      * @param keyspec name of ECDSA key or length of RSA and DSA keys  
      * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
      * @param createJKS true to create a JKS, false to create a PKCS12
-     * @return a JKS or PKCS#12 KeyStore 
-     * @return a encoded certificate of the type specified in responseType 
+     * @return an encoded keystore of the type specified in responseType 
      * 
      * @ejb.interface-method
      */
-	public KeyStore processSoftTokenReq(Admin admin, UserDataVO userdata,
+	public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata,
 			String hardTokenSN, String keyspec, String keyalg, boolean createJKS) throws CADoesntExistsException,
 			AuthorizationDeniedException, NotFoundException, InvalidKeyException,
 			NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
@@ -426,19 +425,21 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	    EndEntityProfile endEntityProfile = getRAAdminSession().getEndEntityProfile(admin, endEntityProfileId);
 	    boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 	    log.debug("reusecertificate: "+reusecertificate);
-	    KeyStore keystore = null;
+	    byte[] ret = null;
 	    try {
 		    GenerateToken tgen = new GenerateToken(false);
-			keystore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
-			Enumeration en = keystore.aliases();
-			String alias = (String) en.nextElement();
-		    X509Certificate cert = (X509Certificate) keystore.getCertificate(alias);
+		    KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+			String alias = keyStore.aliases().nextElement();
+		    X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
 		    if ( (hardTokenSN != null) && (cert != null) ) {
 		    	getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,cert);                 
 		    }
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			keyStore.store(baos, password.toCharArray());
+			ret = baos.toByteArray();
 	    } catch (Exception e) {
 	    	throw new KeyStoreException (e);
 	    }
-	    return keystore;
+	    return ret;
 	}
 }
