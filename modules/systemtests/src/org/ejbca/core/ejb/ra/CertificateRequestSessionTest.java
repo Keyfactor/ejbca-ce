@@ -26,6 +26,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.NonEjbTestTools;
 import org.ejbca.util.TestTools;
 
 /**
@@ -93,7 +94,7 @@ public class CertificateRequestSessionTest extends TestCase {
 		UserDataVO userdata = new UserDataVO(username, "CN="+username, TestTools.getTestCAId(), null, null, SecConst.USER_ENDUSER,
 				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		userdata.setPassword(password);
-		String pkcs10 = new String(Base64.encode(TestTools.generatePKCS10Req("CN=Ignored", password)));
+		String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
 		byte[] encodedCertificate = TestTools.getCertificateRequestSession().processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null, SecConst.CERT_RES_TYPE_CERTIFICATE);
         Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
         assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),

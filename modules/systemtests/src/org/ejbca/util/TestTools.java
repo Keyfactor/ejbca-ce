@@ -13,12 +13,6 @@
 package org.ejbca.util;
 
 import java.rmi.RemoteException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -28,12 +22,6 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.IApprovalSessionHome;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
@@ -85,7 +73,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.keystore.KeyTools;
 
 /** Common glue code that can be called from all JUnit tests to make it easier to call remote beans etc.
  * 
@@ -585,30 +572,4 @@ public class TestTools {
 		}
 		return cacert;
 	}
-	
-    public static byte[] generatePKCS10Req(String dn, String password) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException {
-        // Generate keys
-    	KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);            
-
-        // Create challenge password attribute for PKCS10
-        // Attributes { ATTRIBUTE:IOSet } ::= SET OF Attribute{{ IOSet }}
-        //
-        // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
-        //    type    ATTRIBUTE.&id({IOSet}),
-        //    values  SET SIZE(1..MAX) OF ATTRIBUTE.&Type({IOSet}{\@type})
-        // }
-        ASN1EncodableVector vec = new ASN1EncodableVector();
-        vec.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); 
-        ASN1EncodableVector values = new ASN1EncodableVector();
-        values.add(new DERUTF8String(password));
-        vec.add(new DERSet(values));
-        ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(new DERSequence(vec));
-        DERSet set = new DERSet(v);
-        // Create PKCS#10 certificate request
-        PKCS10CertificationRequest p10request = new PKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name(dn), keys.getPublic(), set, keys.getPrivate());
-        return p10request.getEncoded();        
-    }
-
 }
