@@ -749,8 +749,6 @@ public class ProtocolOcspHttpTest extends TestCase {
 		for (i=5; i<data.length; i++) {
 			data[i] = (byte)i;
 		}
-		/*
-		*/
 		// Create the HTTP header 
 		String path = "/ejbca/"+ resourceOcsp;
 		String headers = "POST "+path+" HTTP/1.1\r\n" + 
@@ -854,7 +852,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 			respa[i-start] = ret[i];
 		}
 		log.info("response contains: " + respa.length + " bytes.");
-		//Reading the response as a OCSPResp. When the input data array is longer than allowed the OCSP response will return as an internal error.
+		//Reading the response as a OCSPResp.
 		OCSPResp response = new OCSPResp(respa);			
 		assertEquals("Incorrect response status.", OCSPRespGenerator.MALFORMED_REQUEST, response.getStatus());
 		log.trace("<test19MaliciousOcspRequest");
