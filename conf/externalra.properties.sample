@@ -10,8 +10,9 @@
 #                            externalra-caservice.raissuer=AdminCA1
 #                            externalra-caservice.encryption.required=false
 #                            externalra-caservice.signature.required=false
-#                            externalra-caservice.keystore.path=keystore/extrakeystore.p12
+#                            externalra-caservice.keystore.path=/home/ejbca/externalra-caservice.p12
 #                            externalra-caservice.keystore.pwd=foo123
+#                            externalra-caservice.whitelist=
 # Select Interval:           Periodical Interval
 # Period:                    5 seconds
 # Select Action:             No Action
