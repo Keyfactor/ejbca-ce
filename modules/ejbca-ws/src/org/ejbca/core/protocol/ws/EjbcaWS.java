@@ -2434,20 +2434,13 @@ public class EjbcaWS implements IEjbcaWS {
         }
     }
 
-    private void setUserDataVOWS (UserDataVOWS userdata){
-        userdata.setStatus (UserDataVOWS.STATUS_NEW);
-//        userdata.setUsername ();
-        if (userdata.getPassword() == null){
-        	userdata.setPassword ("foo123");
-        }
-        userdata.setClearPwd (false);
-//        userdata.setSubjectDN ();
-//        userdata.setCaName ();
-//        userdata.setEmail ();
-//        userdata.setSubjectAltName ();
-        userdata.setTokenType (UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-//        userdata.setEndEntityProfileName ();
-//        userdata.setCertificateProfileName ();
+    private void setUserDataVOWS(UserDataVOWS userdata) {
+    	userdata.setStatus(UserDataVOWS.STATUS_NEW);
+    	if (userdata.getPassword() == null) {
+    		userdata.setPassword("foo123");
+    	}
+    	userdata.setClearPwd(false);
+    	userdata.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
     }
 
 	/**
@@ -2545,9 +2538,16 @@ public class EjbcaWS implements IEjbcaWS {
 	        UserDataVO userdatavo = ejbcawshelper.convertUserDataVOWS(admin, userdata);
 	        boolean createJKS = userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
 	    	ICertificateRequestSessionRemote certreqsession = ejbcawshelper.getCertficateRequestSession();
-	        java.security.KeyStore ks = certreqsession.processSoftTokenReq(admin, userdatavo, hardTokenSN, keyspec, keyalg, createJKS);
+	        byte[] encodedKeyStore = certreqsession.processSoftTokenReq(admin, userdatavo, hardTokenSN, keyspec, keyalg, createJKS);
+	        // Convert encoded KeyStore to the proper return type
+	        java.security.KeyStore ks;
+	        if (createJKS) {
+	        	ks = java.security.KeyStore.getInstance("JKS");
+	        } else {
+	        	ks = java.security.KeyStore.getInstance("PKCS12", "BC");
+	        }
+	        ks.load(new ByteArrayInputStream(encodedKeyStore), userdata.getPassword().toCharArray());
             return new KeyStore(ks, userdata.getPassword());
-
         } catch( CADoesntExistsException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
