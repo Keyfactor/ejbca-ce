@@ -221,6 +221,8 @@
            	<include name="org/ejbca/util/keystore/KeyTools.java"/>
            	<include name="org/ejbca/util/PatternLogger.java"/>
            	<include name="org/ejbca/util/IPatternLogger.java"/>
+        	<!-- General test helpers -->
+           	<include name="org/ejbca/util/NonEjbTestTools.java"/>
     	</javac>
     </target>
 
