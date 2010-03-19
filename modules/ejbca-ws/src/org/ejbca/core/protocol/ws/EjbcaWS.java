@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -2512,9 +2513,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw getInternalException(e, logger);
 		} catch (FinderException e) {
 			new NotFoundException(e.getMessage());
-		} catch (NoSuchFieldException e) {
-			// CVC error
-            throw getInternalException(e, logger);
        } finally {
             logger.writeln();
             logger.flush();
@@ -2590,10 +2588,9 @@ public class EjbcaWS implements IEjbcaWS {
             throw getInternalException(e, logger);
 		} catch (FinderException e) {
 			new NotFoundException(e.getMessage());
-		} catch (NoSuchFieldException e) {
-			// CVC error
-            throw getInternalException(e, logger);
-       } finally {
+       } catch (InvalidAlgorithmParameterException e) {
+           throw getInternalException(e, logger);
+		} finally {
             logger.writeln();
             logger.flush();
         }

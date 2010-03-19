@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.ra;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyStore;
@@ -263,9 +264,9 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			AuthorizationDeniedException, NotFoundException, InvalidKeyException,
 			NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
 			SignatureException, IOException, ObjectNotFoundException, CreateException,
-			CertificateException,UserDoesntFullfillEndEntityProfile,
-			ApprovalException, WaitingForApprovalException, FinderException,
-			NoSuchFieldException, EjbcaException {
+			CertificateException, UserDoesntFullfillEndEntityProfile,
+			ApprovalException, FinderException,
+			EjbcaException {
 		byte[] retval = null;
 
 		int caid = userdata.getCAId();
@@ -276,71 +277,103 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 
 		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
-		  
-		if(getUserAdminSession().findUser(admin, username) != null){
-		    log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
-		    getUserAdminSession().changeUser(admin,userdata, true, true);
-        }else{
-            log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
-			getUserAdminSession().addUserFromWS(admin,userdata,true);
-		}
-
+		
 		// Check tokentype
 		if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
 			throw new WrongTokenTypeException ("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
 		}
-
-		IRequestMessage imsg = null;
-			
-		if (reqType == SecConst.CERT_REQ_TYPE_PKCS10) {				
-			IRequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
-			PublicKey pubKey = pkcs10req.getRequestPublicKey();
-			imsg = new SimpleRequestMessage(pubKey, username, password);
+		// Add or edit user
+		try {
+			if (getUserAdminSession().findUser(admin, username) != null) {
+				log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
+				getUserAdminSession().changeUser(admin,userdata, true, true);
+			} else {
+				log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
+				getUserAdminSession().addUserFromWS(admin,userdata,true);
+			}
+		} catch (WaitingForApprovalException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			String msg = "Single transaction enrollment request rejected since approvals are enabled for this CA ("+caid+") or Certificate Profile ("+userdata.getCertificateProfileId()+").";
+			log.info(msg);
+			throw new ApprovalException(msg);
 		}
-		if (reqType == SecConst.CERT_REQ_TYPE_SPKAC) {
-			// parts copied from request helper.
-			byte[] reqBytes = req.getBytes();
-			if (reqBytes != null) {
-				log.debug("Received NS request: "+new String(reqBytes));
-				byte[] buffer = Base64.decode(reqBytes);
-				if (buffer == null) {
-					return null;
-				}
-				ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
-				ASN1Sequence spkacSeq = (ASN1Sequence) in.readObject();
-				in.close();
-				NetscapeCertRequest nscr = new NetscapeCertRequest(spkacSeq);
-				// Verify POPO, we don't care about the challenge, it's not important.
-				nscr.setChallenge("challenge");
-				if (nscr.verify("challenge") == false) {
-					log.debug("POPO verification Failed");
-					throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
-				}
-				log.debug("POPO verification successful");
-				PublicKey pubKey = nscr.getPublicKey();
+		// Process request
+		try {
+			IRequestMessage imsg = null;
+			if (reqType == SecConst.CERT_REQ_TYPE_PKCS10) {				
+				IRequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
+				PublicKey pubKey = pkcs10req.getRequestPublicKey();
 				imsg = new SimpleRequestMessage(pubKey, username, password);
-			}		
+			} else if (reqType == SecConst.CERT_REQ_TYPE_SPKAC) {
+				// parts copied from request helper.
+				byte[] reqBytes = req.getBytes();
+				if (reqBytes != null) {
+					log.debug("Received NS request: "+new String(reqBytes));
+					byte[] buffer = Base64.decode(reqBytes);
+					if (buffer == null) {
+						return null;
+					}
+					ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
+					ASN1Sequence spkacSeq = (ASN1Sequence) in.readObject();
+					in.close();
+					NetscapeCertRequest nscr = new NetscapeCertRequest(spkacSeq);
+					// Verify POPO, we don't care about the challenge, it's not important.
+					nscr.setChallenge("challenge");
+					if (nscr.verify("challenge") == false) {
+						log.debug("POPO verification Failed");
+						throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
+					}
+					log.debug("POPO verification successful");
+					PublicKey pubKey = nscr.getPublicKey();
+					imsg = new SimpleRequestMessage(pubKey, username, password);
+				}		
+			} else if (reqType == SecConst.CERT_REQ_TYPE_CRMF) {
+				byte[] request = Base64.decode(req.getBytes());
+				ASN1InputStream in = new ASN1InputStream(request);
+				ASN1Sequence    crmfSeq = (ASN1Sequence) in.readObject();
+				ASN1Sequence reqSeq =  (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
+				CertRequest certReq = new CertRequest( reqSeq );
+				SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
+				KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+				KeySpec keySpec = new X509EncodedKeySpec( pKeyInfo.getEncoded() );
+				PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
+				imsg = new SimpleRequestMessage(pubKey, username, password);
+				// a simple crmf is not a complete PKI message, as desired by the CrmfRequestMessage class
+				//PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
+				//CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
+				//imsg = reqmsg;
+			}
+			if (imsg != null) {
+				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
+			}
+		} catch (NotFoundException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (InvalidKeyException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (NoSuchAlgorithmException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (InvalidKeySpecException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (NoSuchProviderException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (SignatureException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (IOException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (CertificateException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (EjbcaException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
 		}
-		if (reqType == SecConst.CERT_REQ_TYPE_CRMF) {
-			byte[] request = Base64.decode(req.getBytes());
-			ASN1InputStream in = new ASN1InputStream(request);
-			ASN1Sequence    crmfSeq = (ASN1Sequence) in.readObject();
-			ASN1Sequence reqSeq =  (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
-			CertRequest certReq = new CertRequest( reqSeq );
-			SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
-			KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
-			KeySpec keySpec = new X509EncodedKeySpec( pKeyInfo.getEncoded() );
-			PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
-			imsg = new SimpleRequestMessage(pubKey, username, password);
-			// a simple crmf is not a complete PKI message, as desired by the CrmfRequestMessage class
-			//PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
-			//CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
-			//imsg = reqmsg;
-		}
-		if (imsg != null) {
-			retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
-		}
-
 		return retval;
 	}
 
@@ -389,14 +422,11 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
      * 
      * @ejb.interface-method
      */
-	public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata,
-			String hardTokenSN, String keyspec, String keyalg, boolean createJKS) throws CADoesntExistsException,
-			AuthorizationDeniedException, NotFoundException, InvalidKeyException,
-			NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
-			SignatureException, IOException, ObjectNotFoundException, CreateException,
-			CertificateException,UserDoesntFullfillEndEntityProfile,
-			ApprovalException, WaitingForApprovalException, FinderException,
-			NoSuchFieldException, EjbcaException, KeyStoreException {
+	public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS)
+	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException,
+	SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException,UserDoesntFullfillEndEntityProfile,
+	ApprovalException, FinderException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
+	InvalidAlgorithmParameterException {
 		int caid = userdata.getCAId();
 		getCAAdminSession().verifyExistenceOfCA(caid);
 
@@ -405,28 +435,38 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 
 		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
-		  
-		if(getUserAdminSession().findUser(admin, username) != null){
-		    log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
-		    getUserAdminSession().changeUser(admin,userdata, true, true);
-        }else{
-            log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
-			getUserAdminSession().addUserFromWS(admin,userdata,true);
+		try {
+			// Add or edit user  
+			if (getUserAdminSession().findUser(admin, username) != null) {
+				log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
+				getUserAdminSession().changeUser(admin,userdata, true, true);
+			} else {
+				log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
+				getUserAdminSession().addUserFromWS(admin,userdata,true);
+			}
+		} catch (WaitingForApprovalException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			String msg = "Single transaction keystore request rejected since approvals are enabled for this CA ("+caid+") or Certificate Profile ("+userdata.getCertificateProfileId()+").";
+			log.info(msg);
+			throw new ApprovalException(msg);
 		}
-        boolean usekeyrecovery = getRAAdminSession().loadGlobalConfiguration(admin).getEnableKeyRecovery();
-	    log.debug("usekeyrecovery: "+usekeyrecovery);
-	    boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery &&  (userdata.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
-	    log.debug("userdata.getKeyRecoverable(): "+userdata.getKeyRecoverable());
-	    log.debug("userdata.getStatus(): "+userdata.getStatus());
-	    log.debug("savekeys: "+savekeys);
-	    boolean loadkeys = (userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
-	    log.debug("loadkeys: "+loadkeys);
-	    int endEntityProfileId = userdata.getEndEntityProfileId();
-	    EndEntityProfile endEntityProfile = getRAAdminSession().getEndEntityProfile(admin, endEntityProfileId);
-	    boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
-	    log.debug("reusecertificate: "+reusecertificate);
-	    byte[] ret = null;
-	    try {
+		// Process request
+		byte[] ret = null;
+		try {
+			// Get key recovery info
+			boolean usekeyrecovery = getRAAdminSession().loadGlobalConfiguration(admin).getEnableKeyRecovery();
+			log.debug("usekeyrecovery: "+usekeyrecovery);
+			boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery &&  (userdata.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
+			log.debug("userdata.getKeyRecoverable(): "+userdata.getKeyRecoverable());
+			log.debug("userdata.getStatus(): "+userdata.getStatus());
+			log.debug("savekeys: "+savekeys);
+			boolean loadkeys = (userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
+			log.debug("loadkeys: "+loadkeys);
+			int endEntityProfileId = userdata.getEndEntityProfileId();
+			EndEntityProfile endEntityProfile = getRAAdminSession().getEndEntityProfile(admin, endEntityProfileId);
+			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
+			log.debug("reusecertificate: "+reusecertificate);
+			// Generate keystore
 		    GenerateToken tgen = new GenerateToken(false);
 		    KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 			String alias = keyStore.aliases().nextElement();
@@ -437,9 +477,42 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			keyStore.store(baos, password.toCharArray());
 			ret = baos.toByteArray();
-	    } catch (Exception e) {
-	    	throw new KeyStoreException (e);
-	    }
+		} catch (NotFoundException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (InvalidKeyException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (NoSuchAlgorithmException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (InvalidKeySpecException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (NoSuchProviderException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (SignatureException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (IOException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (CertificateException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (EjbcaException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (InvalidAlgorithmParameterException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw new KeyStoreException(e);
+		}
 	    return ret;
 	}
 }
