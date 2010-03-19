@@ -106,7 +106,12 @@ A new column in the database (subjectKeyId) for "Enforce unique public keys" is 
 executed. To check the public key in new certificates against certificates issued before the upgrade this
 column has to be set (after upgrade all rows of the column is null). The columns is set by 'ant post-upgrade'
 (see step 8 above). Please note that 'post-upgrade' might take some minutes if there are many certificates in
-the database. To be able to use the OCSP monitoring tool this column should be added to the External OCSP
+the database. After the upgrade, two new indexes for the enforcing uniqueness should be applied:
+
+    create index certificatedata_idx9 on CertificateData(subjectKeyId,issuerDN);
+    create index certificatedata_idx10 on CertificateData(subjectDN,issuerDN);
+
+To be able to use the OCSP monitoring tool the 'subjectKeyId' column should be added to the External OCSP
 responders, but it does not have to be populated. See src/upgrade/39_310/39_310-upgrade-<<database name>>.sql
 for the exact syntax to use for your OCSP database.
 
