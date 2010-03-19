@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ra;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
+import java.util.Enumeration;
 import java.util.Random;
 
 import junit.framework.TestCase;
@@ -59,11 +60,12 @@ public class CertificateRequestSessionTest extends TestCase {
         java.security.KeyStore keyStore = java.security.KeyStore.getInstance("JKS");
         keyStore.load(new ByteArrayInputStream(encodedKeyStore), userdata.getPassword().toCharArray());
         assertNotNull(keyStore);
-        String alias = keyStore.aliases().nextElement();
+        Enumeration<String> aliases = keyStore.aliases();
+        String alias = aliases.nextElement();
         Certificate cert = keyStore.getCertificate(alias);
         if (CertTools.isSelfSigned(cert)) {
         	// Ignore the CA cert and get another one
-        	alias = keyStore.aliases().nextElement();
+        	alias = aliases.nextElement();
             cert = keyStore.getCertificate(alias);
         }
         assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
