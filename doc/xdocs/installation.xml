@@ -61,8 +61,9 @@ install this package. Further information on this can be found in the Sun docume
 the JCE.
 </note>
 <note>
-The default, and easiest, installation is done on JBoss. EJBCA can however also run on Glassfish, Weblogic, OC4J and Websphere. 
-If you want to deploy on these application servers, read the section for your application server below.
+The default, and easiest, installation is done on JBoss. EJBCA can however also run on Glassfish, Weblogic and OC4J. 
+If you want to deploy on these application servers, read the section for your application server below. You mileage may vary on
+other appservers than JBoss, which is the most well supported.
 </note>
 <p>
 Needed to build and run are:
@@ -72,11 +73,13 @@ Needed to build and run are:
 <li>JBOSS >=4.2.x (support for JBoss 4.0.x was dropped in EJBCA 3.8).</li>
 <li>Ant >= 1.6.5 to build (http://jakarta.apache.org/ant/)</li>
 </ul>
+<p>Note that JBoss 5 contains bugs not present in JBoss 4. EJBCA works on some version of JBoss 5 but not others.
+Therefore we recommend the latest version of JBoss 4 for running EJBCA.</p>
 </p><p>
-Set the environment variable APPSRV_HOME (or JBOSS_HOME) to the directory where
-JBoss's root is
- (/jboss-version). This is done so the deploy script will
- know where files are to be copied, they are copied to the
+Set the environment variable APPSRV_HOME to the directory where
+the appservers root is
+ (/jboss-version). This is done so the compile process will find JEE jar files, and the deploy script will
+ know where files are to be copied on JBoss. On JBoss they are by default copied to the
  directory $APPSRV_HOME/server/default/deploy.
  </p><p>
  Windows/Unix: 
