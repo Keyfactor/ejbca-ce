@@ -130,7 +130,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 		String tmp;
 		try {
 			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
-		} catch (RemoteException e) {
+		} catch (Throwable e) {
 			tmp = "8080";
 			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
 		}
