@@ -125,6 +125,7 @@ public class CommonEjbcaWSTest extends TestCase {
 	protected final static String wsTestNonAdminUsername = "wsnonadmintest";
     protected final static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 	protected final static String hostname;
+	protected final static String httpsPort;
 	private static final String BADCANAME = "BadCaName";
 	static {
 		String tmp;
@@ -135,6 +136,13 @@ public class CommonEjbcaWSTest extends TestCase {
 			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, e);
 		}
 		hostname = tmp;
+		try {
+			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS, "8443");
+		} catch (RemoteException e) {
+			tmp = "8443";
+			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS, e);
+		}
+		httpsPort = tmp;
 	}
     protected String getAdminCAName() {
     	return "AdminCA1";
@@ -147,7 +155,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		super.setUp();
 		CryptoProviderTools.installBCProvider();
         if(new File("p12/wstest.jks").exists()){
-        	String urlstr = "https://" + hostname + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
+        	String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
         	log.info("Contacting webservice at " + urlstr);                       
 
         	System.setProperty("javax.net.ssl.trustStore","p12/wstest.jks");
@@ -165,7 +173,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		super.setUp();
 		CryptoProviderTools.installBCProvider();
         if(new File("p12/wsnonadmintest.jks").exists()){
-        	String urlstr = "https://" + hostname + ":8443/ejbca/ejbcaws/ejbcaws?wsdl";
+        	String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
         	log.info("Contacting webservice at " + urlstr);                       
 
         	System.setProperty("javax.net.ssl.trustStore","p12/wsnonadmintest.jks");

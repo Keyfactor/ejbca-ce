@@ -640,7 +640,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <p>
 <ol>
 <li>Create tables in your Oracle database using the script supplied in doc/howto/create-tables-ejbca3-oracle.sql.</li>
-<li>Configure $OC4J_HOME/j2ee/home/config/application.xml to not create tables: autocreate-tables=”false”</li>
+<li>Configure $OC4J_HOME/j2ee/home/config/application.xml to not create tables: autocreate-tables="false"</li>
 <li>Configure a mail session in $OC4J_HOME/j2ee/home/config/application.xml.<br/>
 <pre>
  &lt;mail-session location="mail/DefaultMail" smtp-host="localhost"&gt;
@@ -657,7 +657,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <li>There is an orion-application.xml under src/deploy/ear/META-INF that you can edit if you really know what you are doing with OC4J.<br/>
     Normally you don't edit this file.</li>
 <li>Give the server some more PermGen space, otherwise re-deploying and re-starting will not work very often. Do this by adding '-XX:MaxPermSize=192m' 
-    as a new parameter under server->Administration->Server Properties->Start-parameters</li>
+    as a new parameter under server->Administration->Server Properties->Start-parameters or use OC4J_JVM_ARGS="-XX:MaxPermSize=192m".</li>
 </ol>
 </p>
 </subsubsection>

@@ -199,6 +199,7 @@
 			<include name="server/lib/wlclient.jar"/>	<!-- For 10.3 -->
 			<!-- oracle -->
 			<include name="j2ee/home/oc4jclient.jar"/>
+			<include name="j2ee/home/lib/ejb.jar"/>
 			<!-- websphere -->
 			<include name="runtimes/com.ibm.*.jar"/>
 		</fileset>

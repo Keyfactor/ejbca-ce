@@ -18,6 +18,8 @@ import java.net.URL;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
+import org.ejbca.util.TestTools;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
@@ -31,7 +33,19 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class WebEjbcaHealthCheckTest extends TestCase {
     private static final Logger log = Logger.getLogger(WebEjbcaHealthCheckTest.class);
 
-    private static final String httpReqPath = "http://localhost:8080/ejbca/publicweb/healthcheck/ejbcahealth";
+	protected final static String httpPort;
+	static {
+		String tmp;
+		try {
+			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+		} catch (Exception e) {
+			tmp = "8080";
+			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
+		}
+		httpPort = tmp;
+	}
+
+	private static final String httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/healthcheck/ejbcahealth";
 
     /**
      * Creates a new TestSignSession object.

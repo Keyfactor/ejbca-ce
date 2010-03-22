@@ -7,8 +7,8 @@
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
 			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
-			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
 			<ejb-ref-mapping name="ejb/CreateCRLSessionLocal" />
+			<ejb-ref-mapping name="ejb/PublisherSessionLocal" />
 		</session-deployment>
 		<session-deployment name="HardTokenSession" location="HardTokenSession" local-location="ejbca-ejb_HardTokenSessionLocal" persistence-filename="HardTokenSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/HardTokenProfileDataLocal" />
@@ -21,6 +21,7 @@
 			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
 			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 		</session-deployment>
 		<session-deployment name="ServiceSession" location="ServiceSession" local-location="ejbca-ejb_ServiceSessionLocal" persistence-filename="ServiceSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/ServiceDataLocal" />
@@ -37,6 +38,7 @@
 			<ejb-ref-mapping name="ejb/AdminPreferencesDataLocal" />
 			<ejb-ref-mapping name="ejb/EndEntityProfileDataLocal" />
 			<ejb-ref-mapping name="ejb/GlobalConfigurationDataLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 		</session-deployment>
 		<session-deployment name="AuthenticationSession" location="AuthenticationSession" local-location="ejbca-ejb_AuthenticationSessionLocal" persistence-filename="AuthenticationSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
@@ -48,9 +50,9 @@
 		<session-deployment name="CreateCRLSession" location="CreateCRLSession" local-location="ejbca-ejb_CreateCRLSessionLocal" persistence-filename="CreateCRLSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
 			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
-			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/CRLDataLocal" />
 			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
-			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
+			<ejb-ref-mapping name="ejb/PublisherSessionLocal" />
 		</session-deployment>
 		<session-deployment name="UserAdminSession" location="UserAdminSession" local-location="ejbca-ejb_UserAdminSessionLocal" persistence-filename="UserAdminSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
@@ -70,18 +72,19 @@
 		</session-deployment>
 		<session-deployment name="CertificateStoreSession" location="CertificateStoreSession" local-location="ejbca-ejb_CertificateStoreSessionLocal" persistence-filename="CertificateStoreSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
-			<ejb-ref-mapping name="ejb/CRLDataLocal" />
 			<ejb-ref-mapping name="ejb/CertReqHistoryDataLocal" />
 			<ejb-ref-mapping name="ejb/CertificateProfileDataLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
 			<ejb-ref-mapping name="ejb/PublisherSessionLocal" />
 			<ejb-ref-mapping name="ejb/TableProtectSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 		</session-deployment>
 		<session-deployment name="UserDataSourceSession" location="UserDataSourceSession" local-location="ejbca-ejb_UserDataSourceSessionLocal" persistence-filename="UserDataSourceSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/UserDataSourceDataLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 		</session-deployment>
 		<session-deployment name="CertificateStoreOnlyDataSession" location="CertificateStoreOnlyDataSession" local-location="ejbca-ejb_CertificateStoreOnlyDataSessionLocal" persistence-filename="CertificateStoreOnlyDataSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
@@ -97,13 +100,18 @@
 		<session-deployment name="UpgradeSession" location="UpgradeSession" local-location="ejbca-ejb_UpgradeSessionLocal" persistence-filename="UpgradeSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/LogConfigurationDataLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/ApprovalDataLocal" />
+			<ejb-ref-mapping name="ejb/ApprovalSessionLocal" />
+			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
 		</session-deployment>
 		<session-deployment name="RSASignSession" location="RSASignSession" local-location="ejbca-ejb_RSASignSessionLocal" persistence-filename="RSASignSession.ejbca_default_group_1">
-			<ejb-ref-mapping name="ejb/CADataLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
 			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
 			<ejb-ref-mapping name="ejb/AuthenticationSessionLocal" />
 			<ejb-ref-mapping name="ejb/PublisherSessionLocal" />
+			<ejb-ref-mapping name="ejb/CreateCRLSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 		</session-deployment>
 		<session-deployment name="TableProtectSession" location="TableProtectSession" local-location="ejbca-ejb_TableProtectSessionLocal" persistence-filename="TableProtectSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/TableProtectDataLocal" />
@@ -113,7 +121,6 @@
 			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
 			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
-			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/ApprovalSessionLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
@@ -121,7 +128,6 @@
 		<session-deployment name="PublisherSession" location="PublisherSession" local-location="ejbca-ejb_PublisherSessionLocal" persistence-filename="PublisherSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/PublisherDataLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
-			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
 			<ejb-ref-mapping name="ejb/PublisherQueueSessionLocal" />
 		</session-deployment>
@@ -130,13 +136,7 @@
 		</session-deployment>
 		<session-deployment name="ApprovalSession" location="ApprovalSession" local-location="ejbca-ejb_ApprovalSessionLocal" persistence-filename="ApprovalSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/ApprovalDataLocal" />
-			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
-			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
-			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
-			<ejb-ref-mapping name="ejb/HardTokenSessionLocal" />
-			<ejb-ref-mapping name="ejb/KeyRecoverySessionLocal" />
-			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
 		</session-deployment>
 		<session-deployment name="ServiceTimerSession" location="ServiceTimerSession" local-location="ejbca-ejb_ServiceTimerSessionLocal" persistence-filename="ServiceTimerSession.ejbca_default_group_1">
@@ -155,18 +155,21 @@
 			<ejb-ref-mapping name="ejb/LogConfigurationDataLocal" />
 			<ejb-ref-mapping name="ejb/TableProtectSessionLocal" />
 			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
-			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/ProtectedLogSessionLocal" />
 		</session-deployment>
 		<session-deployment name="AuthorizationSession" location="AuthorizationSession" local-location="ejbca-ejb_AuthorizationSessionLocal" persistence-filename="AuthorizationSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
-			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
-			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
-			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
-			<ejb-ref-mapping name="ejb/UserDataSourceSessionLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationTreeUpdateDataLocal" />
 			<ejb-ref-mapping name="ejb/AdminGroupDataLocal" />
+		</session-deployment>
+		<session-deployment name="CertificateRequestSession" location="CertificateRequestSession" local-location="ejbca-ejb_CertificateRequestSessionLocal" persistence-filename="CertificateRequestSession.ejbca_default_group_1">
+			<ejb-ref-mapping name="ejb/UserAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
+			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
+			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/RaAdminSessionLocal" />
+			<ejb-ref-mapping name="ejb/HardTokenSessionLocal" />
 		</session-deployment>
 		<entity-deployment name="PublisherData" location="PublisherData" local-location="ejbca-ejb_PublisherDataLocal" concrete-bean-class="PublisherData_ConcreteSubClass60" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="PublisherData_LocalHomeProxy_634lm59">
 		</entity-deployment>

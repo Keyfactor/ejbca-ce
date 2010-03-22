@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.rmi.RemoteException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -65,6 +66,7 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
@@ -90,7 +92,19 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class ProtocolScepHttpTest extends TestCase {
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
-    private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
+	protected final static String httpPort;
+	static {
+		String tmp;
+		try {
+			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+		} catch (RemoteException e) {
+			tmp = "8080";
+			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
+		}
+		httpPort = tmp;
+	}
+
+    private static final String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
     private static final String resourceScep = "publicweb/apply/scep/pkiclient.exe";
     private static final String resourceScepNoCA = "publicweb/apply/scep/noca/pkiclient.exe";
 
