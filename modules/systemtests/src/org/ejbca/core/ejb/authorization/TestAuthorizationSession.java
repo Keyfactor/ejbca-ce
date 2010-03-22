@@ -67,7 +67,7 @@ public class TestAuthorizationSession extends TestCase {
         AdminGroup ag = TestTools.getAuthorizationSession().getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
         Collection rules = ag.getAccessRules();
-        assertEquals(8, rules.size());
+        assertEquals("Number of available access rules for AdminGroup.PUBLICWEBGROUPNAME was not the expected.", 8, rules.size());
 
         // Add some new strange access rules
 		ArrayList accessrules = new ArrayList();
