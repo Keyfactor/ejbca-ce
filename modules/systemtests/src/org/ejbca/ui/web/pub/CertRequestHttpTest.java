@@ -31,11 +31,12 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 
 /** Tests http servlet for certificate request
@@ -53,7 +54,19 @@ public class CertRequestHttpTest extends TestCase {
     protected static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     protected static X509Certificate cacert = null;
 
-    public static void main(String args[]) {
+	protected final static String httpPort;
+	static {
+		String tmp;
+		try {
+			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+		} catch (RemoteException e) {
+			tmp = "8080";
+			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
+		}
+		httpPort = tmp;
+	}
+
+	public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
     }
 
@@ -62,7 +75,7 @@ public class CertRequestHttpTest extends TestCase {
     }
 
     public CertRequestHttpTest(String name) throws Exception {
-        this(name,"http://127.0.0.1:8080/ejbca", "certreq");
+        this(name,"http://127.0.0.1:" + httpPort + "/ejbca", "certreq");
     }
 
     protected  CertRequestHttpTest(String name, String reqP, String res) throws Exception {
@@ -70,7 +83,7 @@ public class CertRequestHttpTest extends TestCase {
         httpReqPath = reqP;
         resourceReq = res;
         // Install BouncyCastle provider
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         TestTools.createTestCA();
         cacert = (X509Certificate) TestTools.getTestCACert();
         usersession = TestTools.getUserAdminSession();

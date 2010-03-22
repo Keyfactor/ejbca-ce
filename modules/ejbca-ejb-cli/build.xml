@@ -24,6 +24,15 @@
 	</path>
 	
     <target name="build" description="Build this module" depends="compile">
+    	<!-- OC4J requires a META-INF/application-client.xml file -->
+    	<mkdir dir="${build.dir}/META-INF"/>
+    	<condition property="application-client.filter" value="application-client.xml" else="nofile">
+    		<equals arg1="${appserver.type}" arg2="oracle"/>
+    	</condition>
+    	<copy todir="${build.dir}/META-INF">
+    		<fileset dir="${ejbca.home}/src/deploy/oracle/client/bin/META-INF" includes="${application-client.filter}"/>
+    	</copy>
+    	<!-- Create the JAR -->
     	<pathconvert property="ejbca-ejb-cli.dependencies" pathsep=" ">
     	    <path>
 	        	<fileset dir="${mod.ejbca-ejb-cli.dist}" includes="lib/*.jar"/>
@@ -37,7 +46,7 @@
     			<attribute name="Class-path" value="${ejbca-ejb-cli.dependencies} ./" />
     			<attribute name="Main-Class" value="org.ejbca.ui.cli.EjbcaEjbCli"/>
     		</manifest>
-   			<fileset dir="${build.dir}" includes="**/*.class"/>
+   			<fileset dir="${build.dir}" includes="**/*.class **/*.xml"/>
     	</jar>
     </target>
 

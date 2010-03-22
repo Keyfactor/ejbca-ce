@@ -22,7 +22,9 @@ public class WebConfiguration {
 
 	private static final Logger log = Logger.getLogger(WebConfiguration.class);
 	
-	public static final String CONFIG_HTTPSSERVERHOSTNAME = "httpsserver.hostname";
+	public static final String CONFIG_HTTPSSERVERHOSTNAME  = "httpsserver.hostname";
+	public static final String CONFIG_HTTPSERVERPUBHTTP    = "httpserver.pubhttp";
+	public static final String CONFIG_HTTPSSERVERPRIVHTTPS = "httpserver.privhttps";
 
 	/**
 	 * The configured server host name
@@ -37,7 +39,7 @@ public class WebConfiguration {
 	public static int getPublicHttpPort() {
 		int value = 8080;
 		try {
-			value = Integer.parseInt(ConfigurationHolder.getString("httpserver.pubhttp", ""+value));
+			value = Integer.parseInt(ConfigurationHolder.getString(CONFIG_HTTPSERVERPUBHTTP, ""+value));
 		} catch( NumberFormatException e ) {
 			log.warn("\"httpserver.pubhttp\" is not a decimal number. Using default value: " + value);
 		}
@@ -50,7 +52,7 @@ public class WebConfiguration {
 	public static int getPrivateHttpsPort() {
 		int value = 8443;
 		try {
-			value = Integer.parseInt(ConfigurationHolder.getString("httpserver.privhttps", ""+value));
+			value = Integer.parseInt(ConfigurationHolder.getString(CONFIG_HTTPSSERVERPRIVHTTPS, ""+value));
 		} catch( NumberFormatException e ) {
 			log.warn("\"httpserver.privhttps\" is not a decimal number. Using default value: " + value);
 		}

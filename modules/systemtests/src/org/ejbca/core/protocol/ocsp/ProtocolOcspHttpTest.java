@@ -61,6 +61,7 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -123,6 +124,18 @@ public class ProtocolOcspHttpTest extends TestCase {
     private static X509Certificate unknowncacert = null;
 
     protected OcspJunitHelper helper = null;
+    
+	protected final static String httpPort;
+	static {
+		String tmp;
+		try {
+			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+		} catch (RemoteException e) {
+			tmp = "8080";
+			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
+		}
+		httpPort = tmp;
+	}
 
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
@@ -133,7 +146,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     }
 
     public ProtocolOcspHttpTest(String name) throws Exception {
-        this(name,"http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp");
+        this(name,"http://127.0.0.1:" + httpPort + "/ejbca", "publicweb/status/ocsp");
     }
 
     protected  ProtocolOcspHttpTest(String name, String reqP, String res) throws Exception {
@@ -576,7 +589,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
         assertNotNull("Response should not be null.", response);
         assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
-    	final String dubbleSlashNonEncReq = "http://127.0.0.1:8080/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
+    	final String dubbleSlashNonEncReq = "http://127.0.0.1:" + httpPort + "/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
         url = new URL(dubbleSlashNonEncReq);
         log.info(url.toString());	// Dump the exact string we use for access
         con = (HttpURLConnection)url.openConnection();
@@ -759,7 +772,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 		//Merge the HTTP headers and the raw data into one package.
 		byte input[] = concatByteArrays(headers.getBytes(), data);
 		//Create the socket.
-		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 8080);
+		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
 		// Send data byte for byte. 
 		OutputStream os = socket.getOutputStream();
 		try {
@@ -825,7 +838,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 		//Merge the HTTP headers and the raw data into one package.
 		byte input[] = concatByteArrays(headers.getBytes(), data);
 		//Create the socket.
-		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 8080);
+		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
 		// Send data byte for byte. 
 		OutputStream os = socket.getOutputStream();
 		try {
@@ -977,7 +990,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 		log.debug("HTTP headers size: " + headers.getBytes().length);
 		log.debug("Size of data to send: " + input.length);
 		// Create the socket.
-		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), 8080);
+		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
 		// Send data byte for byte. 
 		OutputStream os = socket.getOutputStream();
 		if (writeByteByByte) {

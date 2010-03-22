@@ -1,5 +1,5 @@
 --
--- These definitions should work for EJBCA 3.8.x, Oracle 9.x or 10.x and the JDBC driver version 10.1.0.2.
+-- These definitions should work for EJBCA 3.10.x, Oracle 9.x or 10.x and the JDBC driver version 10.1.0.2.
 --
 
 DROP TABLE ACCESSRULESDATA;

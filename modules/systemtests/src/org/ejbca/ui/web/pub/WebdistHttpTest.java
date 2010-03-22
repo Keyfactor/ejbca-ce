@@ -15,6 +15,10 @@ package org.ejbca.ui.web.pub;
 
 import java.net.URL;
 
+import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
+import org.ejbca.util.TestTools;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -26,6 +30,20 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 /** Tests http pages of public webdist
  **/
 public class WebdistHttpTest extends TestCase {
+
+	final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
+			
+	protected final static String httpPort;
+	static {
+		String tmp;
+		try {
+			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+		} catch (Exception e) {
+			tmp = "8080";
+			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
+		}
+		httpPort = tmp;
+	}
 
     public static void main( String args[] ) {
         junit.textui.TestRunner.run( suite() );
@@ -43,7 +61,7 @@ public class WebdistHttpTest extends TestCase {
 
     public void testJspCompile() throws Exception {
         // We hit the pages and see that they return a 200 value, so we know they at least compile correctly
-        String httpReqPath = "http://127.0.0.1:8080/ejbca";
+        String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         String resourceName = "publicweb/webdist/certdist";
         String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0";
 
