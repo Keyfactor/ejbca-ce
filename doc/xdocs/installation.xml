@@ -398,7 +398,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
     Restart server<br/>
     (you would probably want to install your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
      default Glassfish cert, to do this you must edit both the http-listener and the IIOP-listeners.
-     You can also generate a new $APPSRV_HOME/domains/domain1/config/keystore.jks with key alias s1as.)</li>
+     You can also generate a new $APPSRV_HOME/domains/domain1/config/keystore.jks with key alias s1as, or even easier change the alias in tomcat.jks with keytool -changealias)</li>
     
 <li>Access protected EJBCA pages<br/>
     Import $EJBCA_HOME/p12/superadmin.p12 in your browser and go to url:<br/>
