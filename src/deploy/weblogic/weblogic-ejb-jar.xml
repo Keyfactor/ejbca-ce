@@ -617,6 +617,18 @@
 
    </weblogic-enterprise-bean>
    <weblogic-enterprise-bean>
+      <ejb-name>ConfigurationSession</ejb-name>
+      <stateless-session-descriptor>
+      </stateless-session-descriptor>
+      <reference-descriptor>
+      </reference-descriptor>
+
+      <enable-call-by-reference>True</enable-call-by-reference>
+
+      <jndi-name>ConfigurationSession</jndi-name>
+      <local-jndi-name>ConfigurationSessionLocal</local-jndi-name>
+   </weblogic-enterprise-bean>
+   <weblogic-enterprise-bean>
       <ejb-name>CertificateRequestSession</ejb-name>
       <stateless-session-descriptor>
       </stateless-session-descriptor>
