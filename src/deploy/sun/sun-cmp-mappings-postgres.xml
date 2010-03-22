@@ -264,7 +264,7 @@
 
             <cmp-field-mapping>
                 <field-name>comment</field-name>
-                <column-name>comment</column-name>
+                <column-name>logcomment</column-name>
 
             </cmp-field-mapping>
 
@@ -1113,6 +1113,12 @@
             <cmp-field-mapping>
                 <field-name>updateTime</field-name>
                 <column-name>updatetime</column-name>
+
+            </cmp-field-mapping>
+
+            <cmp-field-mapping>
+                <field-name>subjectKeyId</field-name>
+                <column-name>subjectkeyid</column-name>
 
             </cmp-field-mapping>
 

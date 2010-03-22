@@ -73,6 +73,10 @@
         <jndi-name>PublisherQueueSession</jndi-name>
     </ejb-ref>
     <ejb-ref>
+        <ejb-ref-name>ejb/CreateCRLSessionLocal</ejb-ref-name>
+        <jndi-name>CreateCRLSession</jndi-name>
+    </ejb-ref>
+    <ejb-ref>
         <ejb-ref-name>ejb/CertificateRequestSessionLocal</ejb-ref-name>
         <jndi-name>CertificateRequestSession</jndi-name>
     </ejb-ref>

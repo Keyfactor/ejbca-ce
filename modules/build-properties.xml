@@ -191,9 +191,11 @@
 			<include name="client/concurrent.jar" />
 			<include name="client/jbosssx-client.jar" />
 			<include name="client/jboss-integration.jar" />
-			<!-- glassfish -->
+			<!-- glassfish v2 -->
 			<include name="lib/javaee.jar"/>
 			<include name="lib/appserv-rt.jar"/>
+			<include name="lib/appserv-ext.jar"/>
+			<include name="lib/appserv-deployment-client.jar"/>
 			<!-- weblogic -->
 			<include name="server/lib/weblogic.jar"/>	<!-- For 9.2 -->
 			<include name="server/lib/wlclient.jar"/>	<!-- For 10.3 -->
