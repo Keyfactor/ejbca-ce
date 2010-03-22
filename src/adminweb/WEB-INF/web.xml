@@ -750,9 +750,9 @@
       <ejb-link>CreateCRLSession</ejb-link>
    </ejb-local-ref>
    <ejb-local-ref id="EJBLocalRef_18">
-      <ejb-ref-name>ejb/CertificateRequestSession</ejb-ref-name>
+      <ejb-ref-name>ejb/CertificateRequestSessionLocal</ejb-ref-name>
       <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ra.CertificateRequestSessionLocalHome</local-home>
+      <local-home>org.ejbca.core.ejb.ra.ICertificateRequestSessionLocalHome</local-home>
       <local>org.ejbca.core.ejb.ra.ICertificateRequestSessionLocal</local>
       <ejb-link>CertificateRequestSession</ejb-link>
    </ejb-local-ref>

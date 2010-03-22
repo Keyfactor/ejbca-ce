@@ -197,6 +197,13 @@ import org.ejbca.util.Base64;
  *  link="CreateCRLSession"
  *  home="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
  *  local="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
+ *
+ * @web.ejb-local-ref
+ *  name="ejb/CertificateRequestSessionLocal"
+ *  type="Session"
+ *  link="CertificateRequestSession"
+ *  home="org.ejbca.core.ejb.ra.ICertificateRequestSessionLocalHome"
+ *  local="org.ejbca.core.ejb.ra.ICertificateRequestSessionLocal"
  *  
  * @web.resource-ref
  *  name="${datasource.jndi-name-prefix}${datasource.jndi-name}"
