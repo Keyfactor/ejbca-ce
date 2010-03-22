@@ -376,7 +376,7 @@
       </field-map>
       <field-map>
          <cmp-field>comment</cmp-field>
-         <dbms-column>comment_</dbms-column>
+         <dbms-column>logComment</dbms-column>
       </field-map>
       </table-map>
 
@@ -534,6 +534,10 @@
          <cmp-field>updateTime</cmp-field>
          <dbms-column>updateTime</dbms-column>
       </field-map>
+      <field-map>
+         <cmp-field>subjectKeyId</cmp-field>
+         <dbms-column>subjectKeyId</dbms-column>
+       </field-map>
       </table-map>
 
    </weblogic-rdbms-bean>

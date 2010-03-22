@@ -626,7 +626,7 @@
       <enable-call-by-reference>True</enable-call-by-reference>
 
       <jndi-name>CertificateRequestSession</jndi-name>
-      <local-jndi-name>CertificateRequestSession</local-jndi-name>
+      <local-jndi-name>CertificateRequestSessionLocal</local-jndi-name>
 
    </weblogic-enterprise-bean>
    <weblogic-enterprise-bean>
