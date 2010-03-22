@@ -82,29 +82,17 @@ public class TestCreateCRLSession extends TestCase {
 	 *
 	 * @param name name
 	 */
-	public TestCreateCRLSession(String name) {
+	public TestCreateCRLSession(String name) throws Exception {
 		super(name);
+		CryptoProviderTools.installBCProviderIfNotAvailable();
+        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        CAInfo inforsa = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
+        assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
+        caid = inforsa.getCAId();
+		ca = TestTools.getCAAdminSession().getCA(admin, caid);
 	}
 
 	protected void setUp() throws Exception {
-		log.trace(">setUp()");
-		CryptoProviderTools.installBCProviderIfNotAvailable();
-
-		Collection caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
-		Iterator iter = caids.iterator();
-		if (iter.hasNext()) {
-			while (iter.hasNext()) {
-				caid = ((Integer) iter.next()).intValue();
-				ca = TestTools.getCAAdminSession().getCA(admin, caid);
-				if (ca.getCAType() == CAInfo.CATYPE_X509) {
-					// Don't try to run CRL tests on a CVC CA
-					break;
-				}
-			}
-		} else {
-			assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-		}
-		log.trace("<setUp()");
 	}
 
 	protected void tearDown() throws Exception {
@@ -484,6 +472,12 @@ public class TestCreateCRLSession extends TestCase {
                      ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint().getName()).getNames()[0].getName()).getString());
 
         log.trace("<test07CRLFreshestCRL()");
+    }
+
+    public void test99CleanUp() throws Exception {
+        log.trace(">test99CleanUp()");
+		TestTools.removeTestCA();
+        log.trace("<test99CleanUp()");
     }
 
     // 
