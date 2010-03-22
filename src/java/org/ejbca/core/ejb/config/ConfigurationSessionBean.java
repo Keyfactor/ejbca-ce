@@ -24,7 +24,7 @@ import org.ejbca.core.ejb.BaseSessionBean;
 /**
  * This bean handles configuration changes for system tests.
  * 
- * @version $Id:  $
+ * @version $Id$
  * 
  * @ejb.bean
  *   display-name="ConfigurationSessionBean"

@@ -20,7 +20,7 @@ import org.ejbca.util.TestTools;
 /**
  * Tests ConfigurationSessionBean
  * 
- * @version $Id:  $
+ * @version $Id$
  */
 public class TestConfigurationSession extends TestCase {
 
