@@ -612,9 +612,12 @@ To configure the transaction timeout to a larger value in weblogic:
 
 <subsection name="OC4J (EJBCA >=3.6)">
 <p>
-EJBCA has been tested on Oc4j 10g (10.1.3.3.0) using Oracle 10g database.
+EJBCA has been tested on Oc4j 10g (10.1.3.5.0) using Oracle 10g database. 
 </p>
 <p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
+<p>A bug in the version of TopLink bundled with Oc4j causes BLOB deserialization to fail under Java 6.
+See <a href="https://glassfish.dev.java.net/issues/show_bug.cgi?id=1673">Glassfish bug report</a> on the subject.</p>
+<p>EJBCA's automatic authorization tests fails. This might be a lack of working transactions with Toplink. Suggestions are appreciated.</p>
 
 <subsubsection name="Configure EJBCA">
 <p>
