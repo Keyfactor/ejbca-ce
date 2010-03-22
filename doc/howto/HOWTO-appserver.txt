@@ -41,6 +41,10 @@ Example for Derby:
 export CLASSPATH=/home/user/glassfish/javadb/lib/derbyclient.jar:$CLASSPATH 
 ./capture-schema -username ejbca -password ejbca -dburl jdbc:derby://127.0.0.1/ejbca -driver org.apache.derby.jdbc.ClientDriver -out ejbca-ejb
 
+Example for PostgreSQL:
+export CLASSPATH=../lib/postgresql-8.4-701.jdbc4.jar:$CLASSPATH 
+./capture-schema -username ejbca -password ejbca -dburl jdbc:postgresql://127.0.0.1/ejbca -driver org.postgresql.Driver -out ejbca-ejb
+
 Copy the generated ejbca-ejb.dbcschema file to src/deploy/sun/schema/<database>
 
 Weblogic
