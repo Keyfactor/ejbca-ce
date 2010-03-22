@@ -1,5 +1,5 @@
 --
--- These definitions should work for EJBCA 3.8.x, Derby 10.1 or 10.2.
+-- These definitions should work for EJBCA 3.10.x, Derby 10.1 or 10.2.
 --
 
 DROP TABLE AccessRulesData;
