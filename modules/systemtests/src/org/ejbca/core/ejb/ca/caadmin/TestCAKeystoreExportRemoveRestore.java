@@ -439,8 +439,12 @@ public class TestCAKeystoreExportRemoveRestore extends TestCase  {
 			String emptyFingerprint = caadminsession.getKeyFingerPrint(admin, caname);
 			log.error("Got fingerprint: " + emptyFingerprint);
 			fail("Should not have got a fingerprint");
-		} catch(Exception e) {
-			if(e.getCause() instanceof CATokenOfflineException) {
+		} catch (Exception e) {
+			Throwable root = e;
+			while (root.getCause() != null) {
+				root = root.getCause();
+			}
+			if(root instanceof CATokenOfflineException) { 
 				// OK
 			} else {
 				log.error("getKeyFingerPrint", e);

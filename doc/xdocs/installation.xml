@@ -438,6 +438,7 @@ Running on weblogic has some limited functionality compared to JBoss though:
 <ul>
 <li>The CMP tcp listener, which runs as a JBoss MBean and does not work</li>
 <li>Web service interface (includes xkms), which uses JaxWS and does not work (yet)</li>
+<li>The timer service does not Weblogic 10.3, so EJBCA services will not work.</li>
 </ul>
 Note: After installing Weblogic, don't forget to install the "Unlimited Strenth Crypto" jce files
 in Weblogics jre and jrockit. It's the same way as for a regular installation, see User's Guide.
