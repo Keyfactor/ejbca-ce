@@ -74,7 +74,7 @@ public class ApprovalNotificationParamGen extends NotificationParamGen {
 		paramPut("approvalRequest.APPROVALCOMMENT", approveComment);	      
 		paramPut("requestAdmin.USERNAME", requestAdminUsername);	  
 
-		if (requestAdminDN != null) {
+		if (requestAdminDN == null) {
 			requestAdminDN = "";
 		}
 		DNFieldExtractor dnfields = new DNFieldExtractor(requestAdminDN, DNFieldExtractor.TYPE_SUBJECTDN);	      
@@ -85,7 +85,7 @@ public class ApprovalNotificationParamGen extends NotificationParamGen {
 		paramPut("requestAdmin.C", dnfields.getField(DNFieldExtractor.C, 0));
 		paramPut("requestAdmin.E", dnfields.getField(DNFieldExtractor.E, 0));
 
-		paramPut("requestAdmin.USERNAME", approvalAdminUsername);
+		paramPut("approvalAdmin.USERNAME", approvalAdminUsername);
 
 		populateWithApprovalAdminDN(approvalAdminDN);
 	}
