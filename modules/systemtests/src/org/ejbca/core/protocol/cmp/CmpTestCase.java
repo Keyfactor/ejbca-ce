@@ -384,7 +384,7 @@ public class CmpTestCase extends TestCase {
         os.write(message);
         os.close();
 
-        assertEquals(con.getResponseCode(), 200);
+        assertEquals("Unexpected HTTP response code.", 200, con.getResponseCode());
         // Some appserver (Weblogic) responds with "application/pkixcmp; charset=UTF-8"
 		assertNotNull("No content type in response.", con.getContentType());
         assertTrue(con.getContentType().startsWith("application/pkixcmp"));
