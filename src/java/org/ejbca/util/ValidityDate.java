@@ -84,7 +84,7 @@ public class ValidityDate {
 			log.debug("Locale '"+locale.getDisplayName()+"' can not decode the date string '"+sDate+"'.");
 		}
 		final Date exampleDate=new Date();
-		log.error("Not possible to decode the date '"+sDate+"'. Example: The date '"+exampleDate+"' should be encoded as '"+defaultDateFormat.format(exampleDate)+"' in the default local '"+defaultLocale.getDisplayName()+"'.");
+		log.info("Not possible to decode the date '"+sDate+"'. Example: The date '"+exampleDate+"' should be encoded as '"+defaultDateFormat.format(exampleDate)+"' in the default local '"+defaultLocale.getDisplayName()+"'.");
 		return null;
 	}
 	/**
