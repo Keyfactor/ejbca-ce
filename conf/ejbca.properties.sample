@@ -40,7 +40,7 @@
 # Set to true to allow dynamic re-configuration using properties files in the file 
 # system. Using this you can place a file /etc/ejbca/conf/ocsp.properties in the file system and
 # override default values compiled into ejbca.ear.
-# Currently this only works for some values on ocsp.properties.
+# Currently this works for most values in ejbca.properties, web.properties, cmp.properties, externalra-caservice.properties, ocsp.properties, extendedkeyusage.properties, jaxws.properties, xkms.properties, log.properties
 #
 # Default: false
 #allow.external-dynamic.configuration=false
