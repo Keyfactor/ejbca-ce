@@ -195,6 +195,7 @@
            	<include name="org/ejbca/core/model/ca/catoken/HardCATokenInfo.java"/>
            	<include name="org/ejbca/core/model/ca/catoken/KeyStrings.java"/>
            	<include name="org/ejbca/core/model/ca/catoken/NFastCAToken.java"/>
+        	<include name="org/ejbca/core/model/ca/certificateprofiles/EndUserCertificateProfile.java"/>
            	<include name="org/ejbca/util/keystore/KeyStoreContainerFactory.java"/>
         	<!-- From EJBCA External SCEP RA (including some of the classes above) -->
            	<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
