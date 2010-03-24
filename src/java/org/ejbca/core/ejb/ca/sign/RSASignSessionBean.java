@@ -1197,15 +1197,17 @@ public class RSASignSessionBean extends BaseSessionBean {
             if ( ca.isDoEnforceUniqueDistinguishedName() ){
                 final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectDN(admin, caSubjectDN, data.getDN());
                 if ( users.size()>0 && !users.contains(data.getUsername()) ) {
-                    throw new EjbcaException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER,
-                                             intres.getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users)));
+                	String msg = intres.getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users));
+                	log.info(msg);
+                    throw new EjbcaException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
                 }
             }
             if ( ca.isDoEnforceUniquePublicKeys() ){
                 final Set users = certificateStore.findUsernamesByIssuerDNAndSubjectKeyId(admin, caSubjectDN, KeyTools.createSubjectKeyId(pk).getKeyIdentifier());
                 if ( users.size()>0 && !users.contains(data.getUsername()) ) {
-                    throw new EjbcaException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER,
-                                             intres.getLocalizedMessage("signsession.key_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users)));
+                	String msg = intres.getLocalizedMessage("signsession.key_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users));
+                	log.info(msg);
+                    throw new EjbcaException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
                 }
             }
             // Retrieve the certificate profile this user should have
