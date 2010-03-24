@@ -23,6 +23,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Imports a keystore and creates a new X509 CA from it
@@ -48,6 +49,8 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     		getLogger().info(" ca-certificate-file: a file with the CA-certificates in. One or more CA-certificates, with this CAs certificate first, and others following in certificate chain order.");
     		return;
         }
+    	
+    	CryptoProviderTools.installBCProvider();
         try {
         	String caName = args[1];
         	if (args.length < 6) {
