@@ -1,0 +1,13 @@
+<cmp-field>
+  <field-name>primKey</field-name>
+  <column-name>pK</column-name>
+</cmp-field>
+<cmp-field>
+  <field-name>accessRule</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>rule</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>isRecursiveNumeric</field-name>
+</cmp-field>
