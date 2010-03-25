@@ -2038,8 +2038,8 @@ $ bin/ejbca.sh encryptpwd foo123
 Using JBoss JNDI provider...
 Please note that this encryption does not provide absolute security, ....
 Enter word to encrypt:
-foo123
-Encrypting pwd 'foo123'
+hidden
+Encrypting pwd...
 6bc841b2745e2c95e042a68b4777b34c
 </source>
 <p>
@@ -2061,7 +2061,7 @@ You have to check if that support is available.
 <subsection name="Generic PKCS#11 provider">
 <p>
 A PKCS#11 wrapper has been used to implement support for tokens with PKCS#11 libraries. The PKCS#11 provider have been 
-tested with Utimaco Cryptoserver and nCipher nShield/netHSM and SafeNet ProtectServer and SafeNet Luna and AEP Keyper and ARX CoSign and Bull TrustWay.
+tested with Utimaco CryptoServer and nCipher nShield/netHSM and SafeNet ProtectServer and SafeNet Luna and AEP Keyper and ARX CoSign and Bull TrustWay.
 </p>
 <p>
 Besides the keys previously described the property field of the administration GUI should contain the following properties:
@@ -2175,7 +2175,7 @@ iaikPkcs11Provider.jar, iaikPkcs11Wrapper.jar and iaik_jce.jar.</li>
 </subsubsection>
 </subsection>
 
-<subsection name="Utimaco PKCS#11">
+<subsection name="Utimaco CryptoServer">
 <p>
 The Utimaco PKCS11 module have a configurable timeout (AppTimeout) that clears all session information if you do not use the keys for some time.
 The default time-out is 30 minutes, which may be way too short if your CA is not very very active.
@@ -2247,6 +2247,33 @@ You can check the status of a CryptoServer LAN device, for example the emulator 
 <source>
 ./csadm Device=TCP:3001@172.16.175.128 GetState
 </source>
+<subsubsection name="Import a PKCS#12 file in Utimaco CryptoServer">
+<p>Although not recommended it is possible to import keys from a p12 file to CryptoServer. These steps were contributed by Philipp Vogt and Helmut Edlhaimb-Rexeis.
+The tools used are a combination of p11tool that ships with Utimaco HSMs and "ejbcaClientToolBox.sh PKCS11HSMKeyTool".
+</p>
+<ul>
+<li>Import the .p12 file with p11Tool from Utimaco (into slot 20 in this example).
+<br/>p11tool Slot=22 AuthRSASign=GenPKIAd,:cs2:cyb:/dev/ttyS0 Login=123456 ID=TestCA2XYID ImportP12=mycert.p12,1234 
+<br/>It is absolutely necessary to set an unique id (ID=...) at import time.
+<br/>The key alias for the imported key is set to "X509 Certificate" (taken from the imported certificate) and cannot be change at import time. 
+</li>
+<li>Rename the key alias to an unique key alias with "PKCS11HSMKeyTool rename" from ejbcaClientToolbox.
+<br/>ejbcaClientToolBox.sh PKCS11HSMKeyTool rename /etc/utimaco/libcs2_pkcs11.so 20 "X509 Certificate" "TestCA2Key" 
+<br/>The new key alias is set to the label and the id of the CKO_CERTIFICATE and the id of the CKO_PRIVATE_KEY.
+</li>
+<li>
+Optional: Delete the public key with p11Tool using Label="RSA Public Key".
+<br/>p11tool Slot=20 Login=123456 Label="RSA Public Key" DeleteObject
+</li>
+<li>Test the keys, to make sure they are usable from EJBCA.
+<br/>ejbcaClientToolBox.sh PKCS11HSMKeyTool test ./libcs2_pkcs11.so 20 1 
+</li>
+</ul>
+<p>Make sure no other public keys using this label are present in the HSM.
+Even if more than one .p12 file needs to be imported only one at a time can be imported and renamed.
+The import and the rename process are tied together and cannot be separated.
+</p>
+</subsubsection>
 </subsection>
 
 <subsection name="nCipher nShield/netHSM">
