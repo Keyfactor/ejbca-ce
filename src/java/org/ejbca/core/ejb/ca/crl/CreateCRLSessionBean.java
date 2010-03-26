@@ -815,23 +815,28 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @param caCert           The certificate for the CA to publish CRLs for
      * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
      * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
+     * @param doPublishDeltaCRL should delta CRLs be published?
      * @ejb.interface-method view-type="both"
      */
-    public void publishCRL(Admin admin, Certificate caCert, Collection usedpublishers, String caDataDN) {
-        if (usedpublishers != null) {
-        	String issuerDN = CertTools.getSubjectDN(caCert);
-        	String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
-        	final byte crl[] = getLastCRL(admin, issuerDN, false);
-        	if ( crl!=null ) {
-        		final int nr = getLastCRLNumber(admin, issuerDN, false);
-        		publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
-        	}
-        	final byte deltaCrl[] = getLastCRL(admin, issuerDN, true);
-        	if ( deltaCrl!=null ) {
-        		final int nr = getLastCRLNumber(admin, issuerDN, true);
-        		publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
-        	}
-        }
+    public void publishCRL(Admin admin, Certificate caCert, Collection usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
+    	if ( usedpublishers==null ) {
+    		return;
+    	}
+    	final String issuerDN = CertTools.getSubjectDN(caCert);
+    	final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
+    	final byte crl[] = getLastCRL(admin, issuerDN, false);
+    	if ( crl!=null ) {
+    		final int nr = getLastCRLNumber(admin, issuerDN, false);
+    		publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
+    	}
+    	if ( !doPublishDeltaCRL ) {
+    		return;
+    	}
+    	final byte deltaCrl[] = getLastCRL(admin, issuerDN, true);
+    	if ( deltaCrl!=null ) {
+    		final int nr = getLastCRLNumber(admin, issuerDN, true);
+    		publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
+    	}
     }
 }
 
