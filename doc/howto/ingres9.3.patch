@@ -1,0 +1,80 @@
+Index: src/java/org/ejbca/core/ejb/authorization/AccessRulesDataBean.java
+===================================================================
+--- src/java/org/ejbca/core/ejb/authorization/AccessRulesDataBean.java	(revision 8583)
++++ src/java/org/ejbca/core/ejb/authorization/AccessRulesDataBean.java	(working copy)
+@@ -96,13 +96,23 @@
+     public abstract void setRule(int rule);
+ 
+ 	/**
+-	 * @ejb.persistence column-name="isRecursive"
+      * @ejb.interface-method view-type="local"
+ 	 */
+-    public abstract boolean getIsRecursive();
+-    public abstract void setIsRecursive(boolean isrecursive);
++    public boolean getIsRecursive() {
++	return getIsRecursiveNumeric() == 1;
++    }
++    public void setIsRecursive(boolean isrecursive) {
++	setIsRecursiveNumeric(isrecursive?1:0);
++    }
+ 
+ 	/**
++	 * @ejb.persistence column-name="isRecursiveNumeric"
++ * @ejb.interface-method view-type="local"
++	 */
++public abstract int getIsRecursiveNumeric();
++public abstract void setIsRecursiveNumeric(int isrecursive);
++    
++	/**
+      * Return the access rule transfer object
+      * @return the access rule transfer object
+      * @ejb.interface-method
+Index: src/java/org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataBean.java
+===================================================================
+--- src/java/org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataBean.java	(revision 8583)
++++ src/java/org/ejbca/core/ejb/keyrecovery/KeyRecoveryDataBean.java	(working copy)
+@@ -75,7 +75,7 @@
+  * @ejb.finder
+  *   description="findByUserMark"
+  *   signature="Collection findByUserMark(java.lang.String usermark)"
+- *   query="SELECT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1 AND a.markedAsRecoverable=TRUE"
++ *   query="SELECT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1 AND a.markedAsRecoverableNumeric=1"
+  *
+  * @ejb.transaction type="Required"
+  *
+@@ -125,15 +125,32 @@
+     public abstract void setUsername(String username);
+ 
+     /**
+-     * @ejb.persistence column-name="markedAsRecoverable"
++     * @ejb.interface-method view-type="local"
++     */
++    public boolean getMarkedAsRecoverable() {
++	return getMarkedAsRecoverableNumeric() == 1;
++    }
++    
++    /**
++     * @ejb.persistence column-name="markedAsRecoverableNumeric"
+      * @ejb.interface-method view-type="local"
+      */
+-    public abstract boolean getMarkedAsRecoverable();
++    public abstract int getMarkedAsRecoverableNumeric();
+ 
+     /**
+      * @ejb.interface-method view-type="local"
+      */
+-    public abstract void setMarkedAsRecoverable(boolean markedasrecoverable);
++    public void setMarkedAsRecoverable(boolean markedasrecoverable) {
++	setMarkedAsRecoverableNumeric(markedasrecoverable?1:0);
++    }
++    
++    /**
++     * @ejb.interface-method view-type="local"
++     */
++    public abstract void setMarkedAsRecoverableNumeric(int markedasrecoverable);
++    /**
++     * @ejb.interface-method view-type="local"
++     */
+ 
+     /**
+      * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="keyData"
