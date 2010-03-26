@@ -707,7 +707,7 @@ public class X509CA extends CA implements Serializable {
         // If we have a CA-certificate, verify that we have all path verification stuff correct
         if (cacert != null) {
         	byte[] aki = CertTools.getAuthorityKeyId(cert);
-        	byte[] ski = CertTools.getSubjectKeyId(cacert);
+        	byte[] ski = CertTools.getSubjectKeyId( isRootCA ? cert : cacert);
         	if ( (aki != null) && (ski != null) ) {
             	boolean eq = Arrays.equals(aki, ski);
             	if (!eq) {
