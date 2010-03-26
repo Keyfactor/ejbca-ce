@@ -1,3 +1,57 @@
+3.10.0, 2010-03-26
+---
+** New Feature
+    * [ECA-1530] - Support signing NewWithOld after CA key rollover
+    * [ECA-1557] - Enforcement of Unique Public keys
+    * [ECA-1566] - External RA: Web based GUI for enrolling entites
+    * [ECA-1567] - Enforcement of Unique Distinguished Name
+    * [ECA-1589] - Support for Ingres 9.3
+
+** Task
+    * [ECA-1465] - Preparations for EJBCA 4
+    * [ECA-1466] - Build ejbca-util with a minimal number of classes
+    * [ECA-1467] - Move the ejbca-ws build to modules
+    * [ECA-1468] - Move the ejbca-xkms build to modules
+    * [ECA-1470] - Deprecate ProtectedLog
+    * [ECA-1476] - Move external RA to modules
+    * [ECA-1482] - Update JavaDoc build
+    * [ECA-1484] - Disable XKMS service by default
+    * [ECA-1531] - Restructure documentation into separate admin and user guides
+    * [ECA-1550] - Internal OCSP responder should always use the CA signing certificate to sign responses
+    * [ECA-1582] - Upgrade bouncycastle to 1.45
+
+** Improvement
+    * [ECA-668] - Possibility to change keyStorePassword in an already installed setup
+    * [ECA-892] - WS-cli should work with pkcs12 file as well in addition to jks files.
+    * [ECA-1237] - External RA: possibility to deploy to other deploy directory
+    * [ECA-1239] - Build ClientToolBox without application server present
+    * [ECA-1251] - Name returned certificates from public web after the username
+    * [ECA-1336] - Add Spanish commonly used OID's NIF/CIF
+    * [ECA-1380] - Use commons configuration for all configuration
+    * [ECA-1381] - Use JPA in ExtRA client library
+    * [ECA-1383] - Separate system and functional JUnit tests
+    * [ECA-1396] - Create new WS and bean method that creates/edits user and issues a certificate in a single transaction
+    * [ECA-1428] - More effective stress test.
+    * [ECA-1432] - Refactor and create new module for EJBCA's remote EJB CLI
+    * [ECA-1469] - Rename LogEntryDataBean comment and comment_ column to logComment for all database types
+    * [ECA-1488] - Property in mail.properties for setting SMTP port missing
+    * [ECA-1495] - Enforce dependency check for all components of the EJBCA core and improve structure
+    * [ECA-1505] - Optimize isRevoked method in CertificateStoreSessionbean
+    * [ECA-1537] - Display min and max time for stress test jobs
+    * [ECA-1575] - Get length of message from ASN1 length value.
+    * [ECA-1576] - Default certificate profile should not allow key usage override
+    * [ECA-1596] - Possibility to run SCEPTest directly against EJBCA.
+    * [ECA-1599] - EJBCA EJB CLI subcommand 'encryptpwd' should not echo password
+
+** Bug
+    * [ECA-1050] - Revoke and renew button on OCSP/XKMS/CMS extended services only revokes and does not renew
+    * [ECA-1536] - Extra test client does not compile with JBoss 5
+    * [ECA-1578] - Use of DN from CA data when searching for last CRL number.
+    * [ECA-1579] - Root CA certificate could have different subject and issuer DN.
+    * [ECA-1583] - EJBCA EJB CLI is not working with JBoss 5
+    * [ECA-1584] - PublisherQueue process service does not work in PostgreSQL
+    * [ECA-1590] - Hash of a CA certificates can not be used to get "CA" if the subject DN of the certificate is not the same as the subject DN of the CA data.
+
 3.9.5, 2010-03-05
 ---
 Improvement
