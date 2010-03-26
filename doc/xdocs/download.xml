@@ -10,12 +10,12 @@
     <note>
     If you have problems with any of the download links below, try to download through the Sourceforge <a href="http://sourceforge.net/projects/ejbca/files/">download page</a>.
     <br/><br/>
-    EJBCA 3.10 is now available for <a
-    href="http://downloads.sourceforge.net/ejbca/ejbca_3_10.zip">download</a>.
+    EJBCA 3.10.0 is now available for <a
+    href="http://downloads.sourceforge.net/ejbca/ejbca_3_10_0.zip">download</a>.
     <br/>
-    SHA1 checksum: 7641b4ceeb7206b632e77d50117cd82262106955
+    SHA1 checksum: 5d39849c20cfee5c1f38a89ab6211edc18139f6c
     <br/><br/>
-    External RA API 3.10 is now a part of the EJBCA bundle.
+    External RA API 3.10.0 is now a part of the EJBCA bundle.
     <br/>
     SHA1 checksum: a67c3e8e1be4f93dcfec67f167293018d7b04361
     <br/><br/>
