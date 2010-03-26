@@ -12,6 +12,7 @@ The following databases have in some stage been tested with EJBCA:
 * DB2
 * Informix 9.2
 * Derby
+* Ingres 9.3
 
 Unless you are adventurous and know what you're doing, it is recommended to define
 another datasource for ejbca and not reconfigure DefaultDS with another database
@@ -355,6 +356,26 @@ UserDataSourceData
 ... some SYS tables ...
 42 rows selected
 ij> exit;
+
+
+Ingres specifics
+------------------
+EJBCA has been tested with JBoss 4.2.3 together with Ingres DB 9.3
+
+Since Ingres 9.3 and earlier versions do not support boolean you will have to apply the patch 
+'ingres9.3.patch' before you build and install EJBCA. Ingres 10 and later will support boolean
+so it may work unpatched.
+
+Look in http://community.ingres.com/wiki/Using_JBoss_with_Ingres for a good guide on how to
+configure Ingres with JBoss. But rather than using the mapping file refered to in that guide
+(standardjbosscmp-jdbc.xml) unzip ingres_jbosscmp-jdbc.zip from this directory and copy the
+extracted file to: {JBOSS_HOME}/server/default/conf
+
+We also recommend setting DBMS cache on 16k pages to on.
+Also make 16k pages default before creating the ejbca database or set it manually when creating
+the database by using the command:
+  > createdb ejbca -page_size=16384
+
 
 
 Indexes for higher performance
