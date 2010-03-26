@@ -8,7 +8,11 @@ certificate. If this will result in any problem in your installation you may dis
 more about it in the user guide.
 
 Noteworthy changes:
-- todo
+- Restructuring and refactoring to improve maintainability, prepare for the EJBCA 4 release and Common Criteria certification.
+- Web Service method for creation or update of a user and creation of a certificate in a single transaction.
+- Enforcement of unique public keys and subject DNs.
+- New External RA API GUI for browser enrollment without ingoing traffic to the CA.
+- Support for Ingres 9.3.
 
 Read the full changelog for details.
 
