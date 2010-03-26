@@ -368,8 +368,8 @@ so it may work unpatched.
 
 Look in http://community.ingres.com/wiki/Using_JBoss_with_Ingres for a good guide on how to
 configure Ingres with JBoss. But rather than using the mapping file refered to in that guide
-(standardjbosscmp-jdbc.xml) unzip ingres_jbosscmp-jdbc.zip from this directory and copy the
-extracted file to: {JBOSS_HOME}/server/default/conf
+use standardjbosscmp-jdbc.xml_ingres from the ejbca/doc/howto directory and copy the
+extracted file to: {$JBOSS_HOME}/server/default/conf
 
 We also recommend setting DBMS cache on 16k pages to on.
 Also make 16k pages default before creating the ejbca database or set it manually when creating
