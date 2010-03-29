@@ -44,6 +44,7 @@ public class AuditLogger {
 		pl.paramPut(IAuditLogger.OCSPREQUEST, "0");
 		pl.paramPut(IAuditLogger.OCSPRESPONSE, "0");
 		pl.paramPut(IOCSPLogger.STATUS, "-1");
+		pl.paramPut(IAuditLogger.PROCESS_TIME, "-1");
         return pl;
 	}
 	

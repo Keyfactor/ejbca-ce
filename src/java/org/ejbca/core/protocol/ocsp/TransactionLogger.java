@@ -55,6 +55,7 @@ public class TransactionLogger {
         pl.paramPut(ITransactionLogger.DIGEST_ALGOR,"0");
         pl.paramPut(IOCSPLogger.SERIAL_NOHEX,"0");
         pl.paramPut(ITransactionLogger.CERT_STATUS,"0");
+        pl.paramPut(ITransactionLogger.PROCESS_TIME, "-1");
         return pl;
 	}
 
