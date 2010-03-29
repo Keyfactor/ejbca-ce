@@ -933,18 +933,20 @@ public class TestCAs extends TestCase {
         CardVerifiableCertificate cvcert1 = (CardVerifiableCertificate)cert1;
         assertEquals("SETESTCVCA00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
         byte[] request = TestTools.getCAAdminSession().makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
-		Certificate req = CertTools.getCertfromByteArray(request);
-		CardVerifiableCertificate cardcert = (CardVerifiableCertificate)req;
-		CVCertificate reqcert = cardcert.getCVCertificate();
+        CVCObject obj = CertificateParser.parseCVCObject(request);
+        // We should have created an authenticated request signed by the old certificate
+		CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)obj;
+		CVCertificate reqcert = authreq.getRequest();
         assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getHolderReference().getConcatenated());
         assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
 
         // Make a certificate request from a DV, regenerating keys
         cachain = dvdcainfo.getCertificateChain();
         request = TestTools.getCAAdminSession().makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
-		req = CertTools.getCertfromByteArray(request);
-		cardcert = (CardVerifiableCertificate)req;
-		reqcert = cardcert.getCVCertificate();
+        obj = CertificateParser.parseCVCObject(request);
+        // We should have created an authenticated request signed by the old certificate
+		authreq = (CVCAuthenticatedRequest)obj;
+		reqcert = authreq.getRequest();
         assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getHolderReference().getConcatenated());
         // This request is made from the DV targeted for the DV, so the old DV certificate will be the holder ref.
         // Normally you would target an external CA, and thus send in it's cachain. The caRef would be the external CAs holderRef.
@@ -953,7 +955,7 @@ public class TestCAs extends TestCase {
         // Get the DVs certificate request signed by the CVCA
         byte[] authrequest = TestTools.getCAAdminSession().signRequest(admin, cvcainfo.getCAId(), request, false, false);
 		CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
-        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
+        authreq = (CVCAuthenticatedRequest)parsedObject;
         assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getHolderReference().getConcatenated());
         assertEquals("SETESTDV-D00001", authreq.getRequest().getCertificateBody().getAuthorityReference().getConcatenated());
         assertEquals("SETESTCVCA00001", authreq.getAuthorityReference().getConcatenated());
