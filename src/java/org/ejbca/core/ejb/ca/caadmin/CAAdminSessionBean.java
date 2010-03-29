@@ -1566,16 +1566,22 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		if (log.isDebugEnabled()) {
         		log.debug("Old castatus="+oldcadata.getStatus()+", oldcaid="+oldcadata.getCaId().intValue()+", caid="+cainfo.getCAId()+", oldcaname="+oldcadata.getName()+", name="+cainfo.getName());    			
     		}
-    		if ( ((oldcadata.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) || (oldcadata.getStatus() == SecConst.CA_ACTIVE))
-    			&& (oldcadata.getCaId().intValue() == cainfo.getCAId()) && (oldcadata.getName().equals(cainfo.getName())) ) {
+    		if ( ((oldcadata.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) || (oldcadata.getStatus() == SecConst.CA_ACTIVE) || (oldcadata.getStatus() == SecConst.CA_EXTERNAL))
+    				&& (oldcadata.getCaId().intValue() == cainfo.getCAId()) && (oldcadata.getName().equals(cainfo.getName())) ) {
     			// Yes, we have all the same DN, CAName and the old CA is either waiting for a certificate response or is active
     			// (new CA or active CA that we want to renew)
+    			// or it is an external CA that we want to issue a new certificate to
     			processinternalca = true;
-    			log.debug("Processing an internal CA, as an external.");
+    			if (oldcadata.getStatus() == SecConst.CA_EXTERNAL) {
+    				log.debug("Renewing an external CA.");
+    			} else {
+    				log.debug("Processing an internal CA, as an external.");
+    			}
     		} else {
-        		String msg = intres.getLocalizedMessage("caadmin.errorcaexists", cainfo.getName());            	
-        		throw new CAExistsException(msg);    			
-    		}
+    			String msg = intres.getLocalizedMessage("caadmin.errorcaexists", cainfo.getName());
+    			log.info(msg);
+    			throw new CAExistsException(msg);
+    		} 
     	}
 
     	//get signing CA
@@ -1643,9 +1649,24 @@ public class CAAdminSessionBean extends BaseSessionBean {
         				// set status to active
         				cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					
     				} else {
-    					ca = null;
-    				}
-
+    					if (oldcadata.getStatus() == SecConst.CA_EXTERNAL) {
+    						// If it is an external CA we will not import the certificate later on here, so we want to
+    						// update the CA in this instance with the new certificate so it is visible
+    						ca = oldcadata.getCA();
+    						ca.setCertificateChain(certchain);
+    						if (log.isDebugEnabled()) {
+    							log.debug("Storing new certificate chain for external CA "+cainfo.getName()+", CA token type: "+ca.getCAToken().getCATokenType());
+    						}
+    						oldcadata.setCA(ca);
+    					} else {
+    						// If it is an internal CA so we are "simulating" signing a real external CA we don't do anything
+    						// because that CA is waiting to import a certificate
+    						if (log.isDebugEnabled()) {
+    							log.debug("Not storing new certificate chain or updating CA for internal CA, simulating external: "+cainfo.getName());
+    						}
+    						ca = null;
+    					}
+    				} 
     				// Publish CA certificates.
     			    publishCACertificate(admin, certchain, signca.getCRLPublishers(), ca!=null ? ca.getSubjectDN() : null);
     				getCRLCreateSession().publishCRL(admin, cacertificate, signca.getCRLPublishers(), ca!=null ? ca.getSubjectDN() : null, ca!=null && ca.getDeltaCRLPeriod()>0);
