@@ -367,11 +367,12 @@ public abstract class BaseCAToken implements ICAToken {
     public PrivateKey getPrivateKey(int purpose)
         throws CATokenOfflineException {
     	autoActivate();
+    	String keystring = this.keyStrings.getString(purpose);
         KeyPair keyPair = this.mKeys!=null ?
-            (KeyPair)this.mKeys.get(this.keyStrings.getString(purpose)) :
+            (KeyPair)this.mKeys.get(keystring) :
             null;
         if ( keyPair==null ) {
-            throw new CATokenOfflineException("no such key");
+            throw new CATokenOfflineException("No such key for purpose "+purpose+": "+keystring);
         }
         return keyPair.getPrivate();
     }

@@ -146,6 +146,8 @@ public class SecConst extends Object {
     public static final int CAKEYPURPOSE_HARDTOKENENCRYPT    = 5;
     /** The CAs previous signing key, if any exists */
     public static final int CAKEYPURPOSE_CERTSIGN_PREVIOUS   = 6;
+    /** The CAs next signing key, if any exists */
+    public static final int CAKEYPURPOSE_CERTSIGN_NEXT       = 7;
 
     // Certificate request types
     public static final int CERT_REQ_TYPE_PKCS10	= 0;

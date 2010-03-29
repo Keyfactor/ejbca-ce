@@ -32,22 +32,26 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.ws.WebServiceContext;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.ws.handler.MessageContext;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
-
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
+import org.ejbca.core.ejb.ServiceLocatorException;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
@@ -55,8 +59,11 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.EjbRemoteHelper;
+import org.ejbca.core.protocol.ws.logger.TransactionTags;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
@@ -64,6 +71,7 @@ import org.ejbca.core.protocol.ws.objects.PinDataWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.query.Query;
 
 /** Helper class for other classes that wants to call remote EJBs.
@@ -74,6 +82,8 @@ import org.ejbca.util.query.Query;
 public class EjbcaWSHelper extends EjbRemoteHelper {
 
 	private static final Logger log = Logger.getLogger(EjbcaWSHelper.class);				
+
+	private static final InternalResources intres = InternalResources.getInstance();
 	
 	//
 	// Helper methods for various tasks done from the WS interface
@@ -579,6 +589,68 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 		return ret;
 	}
 
+	protected void resetUserPasswordAndStatus(Admin admin, String username, int status) {
+		try {
+			getUserAdminSession().setPassword(admin, username, null);
+			getUserAdminSession().setUserStatus(admin, username, status);	
+			log.debug("Reset user password to null and status to "+status);
+		} catch (Exception e) {
+			// Catch all because this reset method will be called from withing other catch clauses
+			log.error(e);
+		}
+	}
 
+	protected boolean checkValidityAndSetUserPassword(Admin admin, java.security.cert.Certificate cert, String username, String password) 
+	throws RemoteException, ServiceLocatorException, CertificateNotYetValidException, CertificateExpiredException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, CreateException, ApprovalException, WaitingForApprovalException {
+		boolean ret = false;
+		try {
+			// Check validity of the certificate after verifying the signature
+			CertTools.checkValidity(cert, new Date());
+			log.debug("The verifying certificate was valid");
+			// Verification succeeded, lets set user status to new, the password as passed in and proceed
+			String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
+			log.info(msg);
+			getUserAdminSession().setPassword(admin, username, password);
+			getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+			// If we managed to verify the certificate we will break out of the loop									
+			ret = true;															
+		} catch (CertificateNotYetValidException e) {
+			// If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request  
+			log.debug("Certificate we try to verify outer signature with is not yet valid");
+			throw e;
+		} catch (CertificateExpiredException e) {									
+			log.debug("Certificate we try to verify outer signature with has expired");
+			throw e;
+		}
+		return ret;
+	}
+
+	protected  static EjbcaException getInternalException(Throwable t, IPatternLogger logger) {
+        return getEjbcaException( t, logger, ErrorCode.INTERNAL_ERROR, Level.ERROR);
+	}
+
+	protected static EjbcaException getEjbcaException(Throwable t, IPatternLogger logger, ErrorCode errorCode, Priority p) {
+        log.log(p, "EJBCA WebService error", t);
+        if (logger != null) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorCode.toString());        	
+        }
+        return new EjbcaException(errorCode, t.getMessage());
+	}
+
+	protected  static EjbcaException getEjbcaException(String s, IPatternLogger logger, ErrorCode errorCode, Priority p) {
+        if ( p!=null ) {
+            log.log(p, s);
+        }
+        if (logger != null) {
+        	logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), s);
+        }
+        if ( errorCode!=null ) {
+            if (logger != null) {
+            	logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorCode.toString());
+            }
+            return new EjbcaException(errorCode, s);
+        }
+        return new EjbcaException(s);
+    }
 
 }

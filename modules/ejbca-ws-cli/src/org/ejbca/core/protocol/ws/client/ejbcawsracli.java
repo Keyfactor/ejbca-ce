@@ -13,6 +13,8 @@
  
 package org.ejbca.core.protocol.ws.client;
 
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.IAdminCommand;
 
 /**
@@ -34,11 +36,18 @@ public class ejbcawsracli  {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | getpublisherqueuelength | revoketoken | revokeuser | checkrevokationstatus | generatenewuser | createcrl | stress");
+                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | getpublisherqueuelength | revoketoken | revokeuser | checkrevokationstatus | generatenewuser | createcrl | cacertrequest | cacertresponse | stress");
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+        	Throwable cause = e.getCause();
+        	if (cause instanceof EjbcaException_Exception) {
+        		EjbcaException_Exception ejbcaex = (EjbcaException_Exception)cause;
+        		EjbcaException ee = ejbcaex.getFaultInfo();
+        		System.out.println("Error: "+ee.getErrorCode().getInternalErrorCode()+": "+ee.getMessage());
+			} else {
+	            System.out.println(e.getMessage());
+			}
+            e.printStackTrace();				
             System.exit(-1);
         }
     }

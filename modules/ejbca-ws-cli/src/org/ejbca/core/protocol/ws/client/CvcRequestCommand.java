@@ -38,6 +38,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -110,7 +111,7 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			getPrintStream().println("Key spec: "+keySpec);                        
 
 			try{
-				CertTools.installBCProvider();
+				CryptoProviderTools.installBCProvider();
 				
 				String cvcreq = null;
 				if (genrequest) {

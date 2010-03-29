@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
@@ -415,6 +416,27 @@ public class TestCertTools extends TestCase {
 			"woLvPKz+s2iaoTigNwZZ/ojxL9GRfqkTPuPtgWP73dC5E9wPgDEzsORnm7mooprJ"+
 			"FDNTBZWv96kf9grOhA==").getBytes());
 
+		private static byte[] pemcert = ("-----BEGIN CERTIFICATE-----\n"+
+				"MIIDUzCCAjugAwIBAgIIMK64QB5XErowDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE\n"+
+				"AwwIQWRtaW5DQTExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw\n"+
+				"HhcNMTAwMTI5MTI0NDIwWhcNMjAwMTI3MTI0NDIwWjA3MREwDwYDVQQDDAhBZG1p\n"+
+				"bkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRTCCASIwDQYJ\n"+
+				"KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJQNal//KwRHhBg7BLsuclOpH7xyb1AP\n"+
+				"Mc5RsEQANOtCBoRlgEDh7tQUfRnPxvmHM+HH9osEV2c+9L23K2l8EVjZRlo2vltJ\n"+
+				"duzbBGIo7swdCWGvFxE6W0lkv/YsGVmmt/dL2lO4V4YTuu5CX3PU2LrBR6mxtEsM\n"+
+				"mM/YgHo/QWN4/YDWfnXkNpDDjRxLzdsSqvcoLrZavqrMS1Avv2utY6ECyl6PTBG+\n"+
+				"qPpozenPRi2QKbiKOpeCgT+2Y4JbMqm+d7go0KKu6wxKE16R/tX9OwT4ObJaKJ/W\n"+
+				"j0mm5deJHNDEvgWi2beTVcc16LVZUiyKmZXlYLEdV+CH0NrRc4ck6WsCAwEAAaNj\n"+
+				"MGEwHQYDVR0OBBYEFLGsC1OtcOyAklW2b3eN678a6wsZMA8GA1UdEwEB/wQFMAMB\n"+
+				"Af8wHwYDVR0jBBgwFoAUsawLU61w7ICSVbZvd43rvxrrCxkwDgYDVR0PAQH/BAQD\n"+
+				"AgGGMA0GCSqGSIb3DQEBBQUAA4IBAQBHCJ3ZQEtpfYBHnrwKuNzMykH+yKIkO2mj\n"+
+				"c/65e8r7tMjV/9YEb2pAYaix7WAdJ46KcE2ldKl+MHJx8Ev1ZbLPbLYcwPkP+8Ll\n"+
+				"pCrhc6riSTaUBZrIA2uuXPPREKj+e8CnnMdCfLy4x6uIMDVAa4mb0akEmLvqFR2X\n"+
+				"J4Z8eEhwf6EPRniie6GKcBOWSP0podlWkn8SCLzd+eJZ9H0YMTN7nfLfUdENznuO\n"+
+				"5DKfkfT4rOyAGFs+KVwigq1kbSNZJC4Kjo7diMBtWRiXSXTQKE+JgrQbFCdVYQos\n"+
+				"VvSwSiSMW5Rs5ZCtRXMmXz2HdxpbTayCAYPBh6XKfvq4x06gxfll\n"+
+		        "-----END CERTIFICATE-----").getBytes();
+		
 	/**
 	 * Creates a new TestCertTools object.
 	 * 
@@ -1425,4 +1447,11 @@ public class TestCertTools extends TestCase {
 		assertEquals(271610737, serno.intValue());
 
 	}
+	
+	public void testReadPEMCertificate() throws Exception {
+		X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(pemcert);
+		assertNotNull(cert);
+		assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", cert.getSubjectDN().toString());
+	}
+
 }

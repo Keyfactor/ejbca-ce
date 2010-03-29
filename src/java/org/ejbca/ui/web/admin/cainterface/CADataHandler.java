@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -192,10 +193,12 @@ public class CADataHandler implements Serializable {
   }
   
   /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
+   *  @throws CATokenAuthenticationFailedException 
+   * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public byte[] makeRequest(int caid, Collection cachain, boolean setstatustowaiting, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-	  byte[] result = caadminsession.makeRequest(administrator, caid,cachain,setstatustowaiting,keystorepass,regenerateKeys);
+  public byte[] makeRequest(int caid, Collection cachain, boolean activatekey, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException, CATokenAuthenticationFailedException{
+	  // usenextkey is not available as an option here
+	  byte[] result = caadminsession.makeRequest(administrator, caid, cachain, regenerateKeys, false, activatekey, keystorepass);
 	  return result;    
   }	    
 
@@ -208,9 +211,9 @@ public class CADataHandler implements Serializable {
   }	    
   
   /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
+   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean#receiveResponse()
    */  
-  public void receiveResponse(int caid, InputStream is) throws Exception{
+  public void receiveResponse(int caid, String tokenAuthenticationCode, InputStream is) throws Exception{
 	  try {
 		  Certificate cert = null;
 		  byte[] certbytes = FileTools.readInputStreamtoBuffer(is);
@@ -234,7 +237,11 @@ public class CADataHandler implements Serializable {
 		  }
 		  X509ResponseMessage resmes = new X509ResponseMessage();
 		  resmes.setCertificate(cert);
-		  caadminsession.receiveResponse(administrator, caid, resmes, cachain);
+		  if (StringUtils.equals(tokenAuthenticationCode, "null")) {
+			  // The value null can be converted to string "null" by the jsp layer
+			  tokenAuthenticationCode = null;
+		  }
+		  caadminsession.receiveResponse(administrator, caid, resmes, cachain, tokenAuthenticationCode);
 		  info.cAsEdited(); 		  
 	  } catch (Exception e) {
 	      // log the error here, since otherwise it may be hidden by web pages...
@@ -258,9 +265,10 @@ public class CADataHandler implements Serializable {
   }
 
   /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
+   *  @throws CATokenAuthenticationFailedException 
+ * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public void renewCA(int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+  public void renewCA(int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException, CATokenAuthenticationFailedException{
       caadminsession.renewCA(administrator, caid, keystorepass, regenerateKeys );
       info.cAsEdited();
   }

@@ -1127,7 +1127,7 @@ public class CertTools {
     /**
      * Creates Certificate from byte[], can be either an X509 certificate or a CVCCertificate
      *
-     * @param cert byte array containing certificate in binary (DER) format
+     * @param cert byte array containing certificate in binary (DER) format, or PEM encoded X.509 certificate
      * @param provider provider for example "SUN" or "BC", use null for the default provider (BC)
      *
      * @return Certificate
@@ -2765,6 +2765,7 @@ public class CertTools {
      *
      * @param certlist
      * @return the certificatepath with the root CA at the end
+     * @throws CertPathValidatorException if the certificate chain can not be constructed
      * @throws InvalidAlgorithmParameterException 
      * @throws NoSuchProviderException 
      * @throws NoSuchAlgorithmException 
@@ -2847,7 +2848,19 @@ public class CertTools {
     	 HashMap cacertmap = new HashMap();
     	 Iterator iter = certlist.iterator();
     	 while(iter.hasNext()){
-    	 	Certificate cert = (Certificate) iter.next();
+    	 	Certificate cert = null;
+    	 	Object o = iter.next();
+    	 	try {
+    	 		cert = (Certificate)o;
+    	 	} catch (ClassCastException e) {
+    	 		// This was not a certificate, is it byte encoded?
+    	 		byte[] certBytes = (byte[])o;
+    	 		try {
+					cert = CertTools.getCertfromByteArray(certBytes);
+				} catch (CertificateException e1) {
+					throw new CertPathValidatorException(e1);
+				}
+    	 	}
     	    if(CertTools.isSelfSigned(cert)) {
     	      rootca = cert;
     	    } else {

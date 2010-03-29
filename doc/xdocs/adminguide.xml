@@ -1999,19 +1999,21 @@ You may omit defaultKey if you want to be sure that the right key is used, but t
 </p><p>
 When implementing support for a new HSM the 'KeyStrings' class could be used to manage the key properties described above. When it is an JCA/JCE API for the HSM it could also be wise to extend the BaseCAToken class.
 </p><p>
-Same activation code must be used for all keys used by a CA. 
+The same activation code must be used for all keys used by a CA. 
 </p><p>
-EJBCA 3.1 and later has build-in support for the nCipher nShield HSM.
+There are four additional key properties that can (optionally) be used when renewing CA keys and to produce roll-over certificates..
+<ul>
+  <li>previousCertSignKey - this is the alias of the previous signature key, as opposed to 'certSignKey' which is the current signature key.</li>
+  <li>previousSequence - this is the sequence identifying the previous signature key, as opposed to the current sequence that is held in the CA token.
+  This sequence will replace the current sequence in the caRef field when signing a request with the CAs previous key.</li>
+  <li>nextCertSigningKey - this is the alias of a new generated key on the HSM. When updating a CA signed by an external CA this is used to send a request, 
+  but the CA is still active using the old key. When the certificate response is received this key is activate and moved to certSignKey/crlSignKey.</li>
+  <li>nextSequence - this is the sequence identifying the next signature key.</li>
+</ul>
 </p><p>
-EJBCA 3.2 and later also has an implementation for the Eracom HSM (now SafeNet ProtectServer). The configuration was changed to 3.3.
+Supported and tested HSMs are described below, with sample configurations and HSM specific documentation.
 </p><p>
-EJBCA 3.3 and later has an implementation for the SafeNet Luna HSM.
-</p><p>
-EJBCA 3.5 and later has an implementation for a generic PKCS#11 provider, tested with Utimaco and nCipher.
-</p><p>
-EJBCA 3.6 adds tested support for AEP KeyPer and ARX CoSign and Bull TrustWay.
-</p><p>
-Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. Any old jce implementations still exists but are no longer developed. 
+Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. Older jce implementations will gradually be deprecated and removed. 
 </p>
 <p>
 PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 

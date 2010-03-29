@@ -51,11 +51,14 @@ import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
+import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
+import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
@@ -127,21 +130,41 @@ public class CVCCA extends CA implements Serializable {
 	}    
 
 	/**
-	 * @see CA#createRequest(Collection, String)
+	 * @see CA#createRequest(Collection, String, Certificate, int)
 	 */
-	public byte[] createRequest(Collection attributes, String signAlg, Certificate cacert) throws CATokenOfflineException {
-
+	public byte[] createRequest(Collection attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CATokenOfflineException {
+		log.trace(">createRequest: "+signAlg+", "+CertTools.getSubjectDN(cacert)+", "+signatureKeyPurpose);
 		byte[] ret = null;
 		// Create a CVC request. 
 		// No outer signature on this self signed request
 		KeyPair keyPair;
 		try {
 			CATokenContainer catoken = getCAToken();
-			keyPair = new KeyPair(catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+			keyPair = new KeyPair(catoken.getPublicKey(signatureKeyPurpose), catoken.getPrivateKey(signatureKeyPurpose));
+			if (keyPair == null) {
+				throw new IllegalArgumentException("Keys for key purpose "+signatureKeyPurpose+" does not exist.");
+			}
 			String subject = getCAInfo().getSubjectDN();
 			String country = CertTools.getPartFromDN(subject, "C");
 			String mnemonic = CertTools.getPartFromDN(subject, "CN");
 			String seq = getCAToken().getCATokenInfo().getKeySequence(); 
+			if (signatureKeyPurpose == SecConst.CAKEYPURPOSE_CERTSIGN_NEXT) {
+				// See if we have a next sequence to put in the holder reference instead of the current one, 
+				// since we are using the next key we should use the next sequence
+				String propdata = catoken.getCATokenInfo().getProperties();
+				Properties prop = new Properties();
+				if (propdata != null) {
+					prop.load(new ByteArrayInputStream(propdata.getBytes()));					
+				}
+				String nextSequence = (String)prop.get(ICAToken.NEXT_SEQUENCE_PROPERTY);
+				// Only use next sequence if we also use previous key
+				if (nextSequence != null) {
+					seq = nextSequence;
+					log.debug("Using next sequence in holderRef: "+seq);
+				} else {
+					log.debug("Using current sequence in holderRef, although we are using the next key...no next sequence was found: "+seq);				
+				}
+			}
 			if (seq == null) {
 				log.info("No sequence found in ca token info, using random 5 number sequence.");
 				seq = RandomStringUtils.randomNumeric(5);
@@ -190,18 +213,24 @@ public class CVCCA extends CA implements Serializable {
 		} catch (ConstructionException e) {
             throw new RuntimeException(e);
 		}
-
+		log.trace("<createRequest");
 		return ret;
 	}
 
 	/** If the request is a CVC request, this method adds an outer signature to the request.
 	 * If this request is a CVCA certificate and this is the same CVCA, this method creates a CVCA link certificate.
+	 * If not creating a link certificate this means that an authenticated request, CVCAuthenticatedRequest is created.
 	 * 
-	 * @see CA#signRequest(Collection, String)
+	 * @see CA#signRequest(byte[], boolean, boolean)
 	 */
 	public byte[] signRequest(byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CATokenOfflineException {
 		byte[] ret = request;
 		try {
+			CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
+			if (cacert == null) {
+				// if we don't have a CA certificate, we can't sign any request, just return it
+				return request;
+			}
 			CATokenContainer catoken = getCAToken();
 			// Get either the current or the previous signing key for signing this request
 			int key = SecConst.CAKEYPURPOSE_CERTSIGN;
@@ -214,7 +243,6 @@ public class CVCCA extends CA implements Serializable {
 			KeyPair keyPair = new KeyPair(catoken.getPublicKey(key), catoken.getPrivateKey(key));
 			String signAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
 			// Create the CA reference, should be from signing certificates holder field
-			CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
 			HolderReferenceField caHolder = cacert.getCVCertificate().getCertificateBody().getHolderReference();
 			String sequence = caHolder.getSequence();
 			// See if we have a previous sequence to put in the CA reference instead of the same as we have from the request
@@ -253,17 +281,25 @@ public class CVCCA extends CA implements Serializable {
 						log.debug("This is not a PEM request?: "+e2.getMessage());						
 					}
 				}
-				Certificate cert = CertTools.getCertfromByteArray(binbytes);
-				CardVerifiableCertificate cardcert = (CardVerifiableCertificate)cert;
-				cvcert = cardcert.getCVCertificate();
+				// This can be either a CV certificate, a CV certificate request, or an authenticated request that we should re-sign
+				CVCObject parsedObject;
+				parsedObject = CertificateParser.parseCVCObject(binbytes);
+				if (parsedObject instanceof CVCertificate) {
+					cvcert = (CVCertificate) parsedObject;
+					log.debug("This is a reqular CV request, or cert.");					
+				} else if (parsedObject instanceof CVCAuthenticatedRequest) {
+					CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
+					cvcert = authreq.getRequest();
+					log.debug("This is an authenticated CV request, we will overwrite the old authentication with a new.");					
+				}
+			} catch (ParseException e) {
+            	String msg = intres.getLocalizedMessage("cvc.error.notcvcrequest");
+				log.info(msg, e);
+				return request;
 			} catch (ClassCastException e) {
             	String msg = intres.getLocalizedMessage("cvc.error.notcvcrequest");
 				log.info(msg, e);
 				return request;
-			} catch (CertificateException e) {
-            	String msg = intres.getLocalizedMessage("cvc.error.notcvcrequest");
-				log.info(msg, e);
-				return request;			
 			}
 			// Check if the input was a CVCA certificate, which is the same CVCA as this. If all is true we should create a CVCA link certificate
 			// instead of an authenticated request

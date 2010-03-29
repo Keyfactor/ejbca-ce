@@ -123,7 +123,7 @@ public class P11Slot {
         }
     }
     /**
-     * Get P11 slot instance. Only one instance will ever be created for each slot regardles of how many times this method is called.
+     * Get P11 slot instance. Only one instance (provider) will ever be created for each slot regardless of how many times this method is called.
      * @param slotNr number of the slot
      * @param sharedLibrary file path of shared
      * @param isIndex true if not slot number but index in slot list

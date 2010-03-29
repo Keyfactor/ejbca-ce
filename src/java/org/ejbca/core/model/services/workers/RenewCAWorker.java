@@ -27,6 +27,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
@@ -91,6 +92,8 @@ public class RenewCAWorker extends BaseWorker {
 							log.debug("Not trying to renew CA because CA and token status are not on-line.");
 						}
 					} catch (CADoesntExistsException e) {
+						log.error("Error renewing CA: ", e);
+					} catch (CATokenAuthenticationFailedException e) {
 						log.error("Error renewing CA: ", e);
 					} catch (CertPathValidatorException e) {
 						log.error("Error renewing CA: ", e);

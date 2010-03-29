@@ -21,6 +21,26 @@ The usage of PKCS11 CA tokens is well documented in the Admin Guide.
  
 For upgrade instructions, please see UPGRADE. 
 
+EJBCA 3.9.6
+-----------
+This is a maintenance release with two new features, and five minor fixes.
+
+Changes:
+- New WS-API methods for renewing CAs. This enables the possibility for automated SPoCs in an EAC ePassport PKI.
+- When renewing CA keys for CAs signed by external CAs you can now choose to not activate the new keys. 
+  This enables your CAs to continue working uninterrupted until a certificate response is received and imported. 
+- Errors when using approval notifications are fixed.
+- The getcrl cli command can now also retrieve delta CRLs.
+- Two other minor fixes for CA renewal.
+
+Note that there is a new access rule for "Renew CA". An administrator with renew CA privileges is authorized to renew CA and 
+import certificate response (from an external CA). Previously only super administrator was allowed to to this.
+CA administrators bye default has this new privilege. If you do not want them to have this privilege you can disable it in 
+Advanced mode in the edit privileges section of the admin GUI. 
+The new privileges can be used together with the new WS-API functions and CLI to renew specified CAs. 
+To be authorized the administrator need both the new "Renew CA" privilege and and be authorized to the specific CAs.
+The methods in CAAdminSessionBean that have changed privileges are renewCA, makeRequest and receiveResponse.     
+
 EJBCA 3.9.5
 -----------
 This is a maintenance release with minor fixes and improvements. 

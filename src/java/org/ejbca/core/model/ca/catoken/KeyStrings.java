@@ -43,6 +43,7 @@ public class KeyStrings {
     final static public String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
     final static public String CAKEYPURPOSE_HARDTOKENENCRYPT_STRING = "hardTokenEncrypt";
     final static public String CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS = "previousCertSignKey";
+    final static public String CAKEYPURPOSE_CERTSIGN_STRING_NEXT = "nextCertSignKey";
     final private Map map;
     final private Map keymap;
     final String defaultKeyS;
@@ -73,6 +74,9 @@ public class KeyStrings {
     			properties);    		
     	addKey(CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS,
     			SecConst.CAKEYPURPOSE_CERTSIGN_PREVIOUS,
+    			properties);    		
+    	addKey(CAKEYPURPOSE_CERTSIGN_STRING_NEXT,
+    			SecConst.CAKEYPURPOSE_CERTSIGN_NEXT,
     			properties);    		
     } 
     private void addKey(String keyS, int keyI,
