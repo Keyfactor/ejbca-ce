@@ -52,6 +52,21 @@
     * [ECA-1584] - PublisherQueue process service does not work in PostgreSQL
     * [ECA-1590] - Hash of a CA certificates can not be used to get "CA" if the subject DN of the certificate is not the same as the subject DN of the CA data.
 
+3.9.6, 2010-03-29
+---
+New Feature
+    * [ECA-1542] - New WS API methods for caRenewCertRequest and caCertResponse
+
+Improvement
+    * [ECA-958] - Allow DVCA renewal of keys without activating them immediately
+    * [ECA-1585] - Renew CA signed by external does not accept binary CA certificate input
+
+Bug
+    * [ECA-1587] - CLI for getting delta CRL does not work
+    * [ECA-1602] - A Root CA can not renew certificate of an External CA
+    * [ECA-1603] - Approval Notifications gives nullpointerexception
+    * [ECA-1608] - Approval notification does not include requestAdmin
+
 3.9.5, 2010-03-05
 ---
 Improvement
