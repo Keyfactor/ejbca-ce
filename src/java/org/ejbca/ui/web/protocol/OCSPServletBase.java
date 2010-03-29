@@ -862,6 +862,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					throw new ServletException(errMsg);
 				}
 			} catch (MalformedRequestException e) {
+			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg);
 				if (m_log.isDebugEnabled()) {
@@ -872,6 +874,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
 			} catch (SignRequestException e) {
+			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg); // No need to log the full exception here
 				ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, null);	// RFC 2560: responseBytes are not set on error.
@@ -879,6 +883,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
 			} catch (SignRequestSignatureException e) {
+			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg); // No need to log the full exception here
 				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, null);	// RFC 2560: responseBytes are not set on error.
@@ -886,6 +892,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 			} catch (InvalidKeyException e) {
+			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.UNAUTHORIZED, null);	// RFC 2560: responseBytes are not set on error.
@@ -893,6 +901,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 			} catch (Throwable e) {
+			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.error(errMsg, e);
 				ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, null);	// RFC 2560: responseBytes are not set on error.
