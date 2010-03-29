@@ -907,6 +907,24 @@ truststore is in use</li>
 web.reqcertindb=false in conf/web.properties.</li>
 </ol>
 </p>
+<subsubsection name="Installing EJBCA with external administrators">
+<p>
+You can even install an EJBCA instance from scratch, with a certificate from an external CA as the initial SuperAdmin certificate. 
+Start with bootstrapping EJBCA as usual with 'ant bootstrap', but instead of running 'ant install' you run:
+</p>
+<source>
+bin/ejbca.sh ca importcacert AdminCA adminca.pem -initauthorization
+</source>
+<p>
+This command imports the certificate of the exteranl Administration CA and initializes the authorization system of EJBCA. 
+You need to configure SSL and the truststore of the application server yourself, of you have a p12/tomcat.jks and p12/truststore.jks this can be done for you on JBoss by 'ant deploy'.   
+</p><p>
+The initial administrator that is set up has DN 'DN=SuperAdmin', check the 'bin/ejbca.sh admins' command for information how to configure other admin names.
+</p>
+<p>
+After this command is run, and SSL configured correctly, you can log in to EJBCA and create your CAs in the admin GUI. No initial CA is created for you.
+</p>
+</subsubsection>
 </subsection>
 <subsection name="Renewing Superadmin">
 <p>

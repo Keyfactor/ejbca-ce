@@ -242,7 +242,12 @@ and can not be run again (it will give an error if you try).
 <li>truststore.jks is for the servlet container (don't bother with it)</li>
 <li>superadmin.p12 should be imported in your browser, that's your administration certificate.</li>
 </ul>
-</p><p>
+</p>
+<note>
+Instead of creating an initial Admin CA and issuing administrator certificates from that, you can install using administrator certificates from an already existing external CA.
+See <a href="userguide.html#Administrators%20issued%20by%20external%20CAs">Administrators issued by external CAs</a> for more information. This would replace step 4-8, but instead require other steps.
+</note>
+<p>
 5) Stop JBoss (ctrl+c or whatever)
 </p><p>
 6) Type:
