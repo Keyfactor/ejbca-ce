@@ -41,13 +41,16 @@ import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.CertTools;
 
 /**
- * Servlet used to distribute  CRLs.<br>
+ * Servlet used to handle certificate requests between CAs.<br>
  *
  * The servlet is called with method GET or POST and syntax
- * <code>command=&lt;command&gt;</code>.
- * <p>The follwing commands are supported:<br>
+ * <code>cmd=&lt;command&gt;</code>.
+ * <p>The following commands are supported:<br>
  * <ul>
- * <li>crl - gets the latest CRL.
+ * <li>certreq - receives a certificate request</li>
+ * <li>cert - sends a certificate</li>
+ * <li>certpkcs7 - sends a certificate in pkcs7 format</li>
+ * </ul>
  *
  * @version $Id$
  * 

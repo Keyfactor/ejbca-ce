@@ -3,7 +3,7 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.util.FileTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.caadmin.CVCCAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
-               org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
+               org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.protocol.CVCRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
                org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
                org.ejbca.util.SimpleTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.ejbca.util.StringTools, org.ejbca.core.model.AlgorithmConstants" %>
@@ -61,9 +61,12 @@
   static final String HIDDEN_CATOKENPATH                   = "hiddencatokenpath";
   static final String HIDDEN_CATOKENTYPE                   = "hiddencatokentype";
   static final String HIDDEN_RENEWKEYS                     = "hiddenrenewkeys";
+  static final String HIDDEN_ACTIVATEKEYS                  = "hiddenactivatekeys";
   static final String HIDDEN_RENEWAUTHCODE                 = "hiddenrenewauthcode";
+  static final String HIDDEN_ACTIVATEAUTHCODE              = "hiddenactivateauthcode";
   static final String HIDDEN_PROCESSREQUESTDN              = "hiddenprocessrequestdn";  
   static final String HIDDEN_PROCESSREQUEST                = "hiddenprocessrequest";  
+  static final String HIDDEN_PROCESSSEQUENCE               = "hiddenprocesssequence";
  
 // Buttons used in editcapage.jsp
   static final String BUTTON_SAVE                       = "buttonsave";
@@ -95,6 +98,7 @@
   static final String TEXTFIELD_HARDCATOKENPROPERTIES = "textfieldhardcatokenproperties";
   static final String TEXTFIELD_AUTHENTICATIONCODE    = "textfieldauthenticationcode";
   static final String TEXTFIELD_AUTHENTICATIONCODERENEW = "textfieldauthenticationcoderenew";
+  static final String TEXTFIELD_AUTHENTICATIONCODEACTIVATE = "textfieldauthenticationcodeactivate";
   static final String TEXTFIELD_DEFAULTCRLDISTPOINT   = "textfielddefaultcrldistpoint";
   static final String TEXTFIELD_DEFAULTCRLISSUER      = "textfielddefaultcrlissuer";
   static final String TEXTFIELD_DEFAULTOCSPLOCATOR    = "textfielddefaultocsplocator";
@@ -123,6 +127,7 @@
   static final String CHECKBOX_ACTIVATEXKMSSERVICE                = "checkboxactivatexkmsservice";
   static final String CHECKBOX_ACTIVATECMSSERVICE                 = "checkboxactivatecmsservice";
   static final String CHECKBOX_RENEWKEYS                          = "checkboxrenewkeys";  
+  static final String CHECKBOX_ACTIVATEKEYS                       = "checkboxactivatekeys";  
   static final String CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE     = "checkboxauthcodeautoactivate";
   
   /** Use previous key to sign requests by CA, primarily used to create authenticated CVC requests */
@@ -165,9 +170,12 @@
   int caid = 0;
   String caname = null;
   boolean reGenerateKeys = false;
+  boolean activateKeys = true;
   String renewauthenticationcode = null;
+  String activateauthenticationcode = null;
   String includefile = "choosecapage.jspf"; 
   String processedsubjectdn = "";
+  String processedsequence = "";
   int catype = CAInfo.CATYPE_X509;  // default
   int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC; // default
   int catokentype = CATokenConstants.CATOKENTYPE_P12; // default
@@ -250,8 +258,12 @@
            caname = item.getString();
          if(item.getFieldName().equals(HIDDEN_RENEWAUTHCODE))
              renewauthenticationcode = item.getString();
+         if(item.getFieldName().equals(HIDDEN_ACTIVATEAUTHCODE))
+        	 activateauthenticationcode = item.getString();
          if(item.getFieldName().equals(HIDDEN_RENEWKEYS))
              reGenerateKeys = Boolean.valueOf(item.getString()).booleanValue();
+         if(item.getFieldName().equals(HIDDEN_ACTIVATEKEYS))
+             activateKeys = Boolean.valueOf(item.getString()).booleanValue();
          if(item.getFieldName().equals(BUTTON_CANCEL))
            buttoncancel = true; 
          if(item.getFieldName().equals(TEXTFIELD_IMPORTCA_NAME))
@@ -1080,6 +1092,7 @@
                // BUTTON_RECEIVEREQUEST when action is EDIT_CA is actually when you receive a certificate from an external CA as a response from an external CA 
                if(request.getParameter(BUTTON_RECEIVEREQUEST) != null){  
                    filemode = RECIEVERESPONSEMODE;
+                   activateauthenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODEACTIVATE);
                    includefile="recievefile.jspf"; 
                }
 
@@ -1088,14 +1101,23 @@
                    if(request.getParameter(CHECKBOX_RENEWKEYS) != null){
                 	   reGenerateKeys = request.getParameter(CHECKBOX_RENEWKEYS).equals(CHECKBOX_VALUE);                	   
                    }
+                   activateKeys = false; // Used if signedBy == CAInfo.SIGNEDBYEXTERNALCA
+                   if(request.getParameter(CHECKBOX_ACTIVATEKEYS) != null){
+                	   activateKeys = request.getParameter(CHECKBOX_ACTIVATEKEYS).equals(CHECKBOX_VALUE);                	   
+                   }
                    renewauthenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODERENEW);
-                   int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
-                   if(signedby != CAInfo.SIGNEDBYEXTERNALCA){
-                       cadatahandler.renewCA(caid, renewauthenticationcode, reGenerateKeys);
-                       carenewed = true;
-                   }else{                   
-                       includefile="renewexternal.jspf"; 
-                   }  
+                   try {
+                       int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
+                       if(signedby != CAInfo.SIGNEDBYEXTERNALCA){
+                           cadatahandler.renewCA(caid, renewauthenticationcode, reGenerateKeys);
+                           carenewed = true;
+                       }else{                   
+                           includefile="renewexternal.jspf"; 
+                       }  
+                   } catch(EjbcaException e) { 
+         	           includefile="choosecapage.jspf"; 
+                       errormessage = e.getMessage(); 
+                   }
                }
                 
              if(request.getParameter(BUTTON_REVOKECA) != null){
@@ -1208,8 +1230,10 @@
         if(!buttoncancel){
           try{                                                                                     
             if (caid != 0) {                             
-              cadatahandler.receiveResponse(caid, file);   
-              caactivated = true;
+                // These parameters are set in 'if(FileUpload.isMultipartContent(request)){'            
+                //String authcode = request.getParameter(HIDDEN_ACTIVATEAUTHCODE);
+                cadatahandler.receiveResponse(caid, activateauthenticationcode, file);   
+                caactivated = true;
             }           
           }catch(CATokenOfflineException e){  
               throw e;
@@ -1261,6 +1285,11 @@
                  if (certreq != null) {    
                    cabean.saveRequestData(reqbytes);                                
                    processedsubjectdn = certreq.getRequestDN();
+                   processedsequence = null;
+                   if (certreq instanceof CVCRequestMessage) {
+                	   CVCRequestMessage cvcreq = (CVCRequestMessage)certreq;
+                	   processedsequence = cvcreq.getKeySequence();
+                   }
                    processrequest = true;
                    includefile="editcapage.jspf";
                  }            	 
@@ -1450,7 +1479,7 @@
            // These parameters are set in 'if(FileUpload.isMultipartContent(request)){'            
            //renewauthenticationcode = request.getParameter(HIDDEN_RENEWAUTHCODE);
            //reGenerateKeys = Boolean.valueOf(request.getParameter(HIDDEN_RENEWKEYS)).booleanValue();
-           byte[] certreq = cadatahandler.makeRequest(caid, certchain, false, renewauthenticationcode, reGenerateKeys);
+           byte[] certreq = cadatahandler.makeRequest(caid, certchain, activateKeys, renewauthenticationcode, reGenerateKeys);
            cabean.saveRequestData(certreq);   
                
            filemode = CERTREQGENMODE;
@@ -1462,6 +1491,7 @@
         	  includefile="choosecapage.jspf"; 
               errormessage = e.getMessage(); 
           } catch(Exception e){   
+        	  e.printStackTrace();
         	  includefile="choosecapage.jspf"; 
               errorrecievingfile = true; 
           }  
@@ -1473,7 +1503,9 @@
         if(!buttoncancel){
           try{                                                                                     
             if (caid != 0) {                             
-              cadatahandler.receiveResponse(caid, file);   
+                // These parameters are set in 'if(FileUpload.isMultipartContent(request)){'            
+                //String authcode = request.getParameter(HIDDEN_ACTIVATEAUTHCODE);
+              cadatahandler.receiveResponse(caid, activateauthenticationcode, file);   
               carenewed = true;
             }           
           }catch(CATokenOfflineException e){                       
@@ -1497,6 +1529,7 @@
           }
           editca = false;
           processedsubjectdn = request.getParameter(HIDDEN_PROCESSREQUESTDN);
+          processedsequence = request.getParameter(HIDDEN_PROCESSSEQUENCE);
           String processrequeststr = request.getParameter(HIDDEN_PROCESSREQUEST);
           if ( (processrequeststr != null) && (processrequeststr.length() > 0)) {
               processrequest = Boolean.valueOf(processrequeststr).booleanValue();        	  

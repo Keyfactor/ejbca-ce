@@ -401,6 +401,7 @@ function checkallfields(){
       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
       <input type="hidden" name='<%= HIDDEN_PROCESSREQUEST %>' value='<%= processrequest%>'>
       <input type="hidden" name='<%= HIDDEN_PROCESSREQUESTDN %>' value='<%= processedsubjectdn%>'>
+      <input type="hidden" name='<%= HIDDEN_PROCESSSEQUENCE %>' value='<%= processedsequence%>'>
       <% if(editca) { %>
       <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
@@ -506,7 +507,7 @@ function checkallfields(){
         <% String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
            if (catokeninfo != null) {
         	   sequence = catokeninfo.getKeySequence();
-           }%>
+           } else if (processrequest && (processedsequence != null)) { sequence = processedsequence; }%>
         <input type="text" name="<%=TEXTFIELD_KEYSEQUENCE%>" size="10" <% out.write(" value='"+sequence+"'"); %> maxlength="10">
       </td>
     </tr>
@@ -1125,21 +1126,25 @@ function checkallfields(){
         <% } %>   
        <% if(editca && !isexternal && !waitingresponse){ %>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="49%" valign="top" align="right"></td>
+      <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RENEWCA") %> <%= ejbcawebbean.getHelpReference("/manual.html#Renewing%20a%20SubCA%20signed%20by%20an%20external%20CA") %></td>
       <td width="51%" valign="top">             
         <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" > 
            &nbsp; <%= ejbcawebbean.getText("RENEWKEYS") %><input type="checkbox" name="<%=CHECKBOX_RENEWKEYS %>" value="<%=CHECKBOX_VALUE %>" >
+           &nbsp; <%= ejbcawebbean.getText("ACTIVATEKEYS") %><input type="checkbox" name="<%=CHECKBOX_ACTIVATEKEYS %>" value="<%=CHECKBOX_VALUE %>" CHECKED >
         <br/>
         <%= ejbcawebbean.getText("AUTHENTICATIONCODERENEW") %>
         <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODERENEW%>" size="20" maxlength="64">
       </td>
     </tr>
         <% } %>   
-       <% if(editca && waitingresponse){ %>
+       <% if(editca && !isexternal){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"></td>
       <td width="51%" valign="top">             
         <input type="submit" name="<%= BUTTON_RECEIVEREQUEST %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("RECIEVEREQUEST") %>" >
+        <br/>
+        <%= ejbcawebbean.getText("AUTHENTICATIONCODEACTIVATE") %>
+        <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODEACTIVATE%>" size="20" maxlength="64">
       </td>
     </tr>
         <% } %>   

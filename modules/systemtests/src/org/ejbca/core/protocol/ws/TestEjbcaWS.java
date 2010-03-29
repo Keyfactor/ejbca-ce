@@ -185,6 +185,14 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
 		test33checkQueueLength(true);
 	}
 
+	public void test34CaRenewCertRequest() throws Exception{
+		super.test34CaRenewCertRequest(true);
+	}
+
+	public void test35CleanUpCACertRequest() throws Exception{
+		super.test35CleanUpCACertRequest(true);
+	}
+
     public void test99cleanUpAdmins() throws Exception {
     	super.test99cleanUpAdmins();
     }

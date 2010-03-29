@@ -43,6 +43,7 @@ function check(file)
       <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%= caid %>'>
       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%= caname%>'>
       <input type="hidden" name='<%= HIDDEN_RENEWKEYS %>' value='<%= reGenerateKeys %>'>
+      <input type="hidden" name='<%= HIDDEN_ACTIVATEKEYS %>' value='<%= activateKeys %>'>
       <input type="hidden" name='<%= HIDDEN_RENEWAUTHCODE %>' value='<%= renewauthenticationcode %>'>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("MAKEREQUESTHELP") %></td>

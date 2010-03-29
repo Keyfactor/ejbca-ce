@@ -213,20 +213,74 @@ public interface IEjbcaWS {
 	 * @param password the password for initial enrollment, not used for renewal requests that can be authenticated using signatures with keys with valid certificates.
 	 * @param cvcreq Base64 encoded CVC request message.
 	 * @return the full certificate chain for the IS, with IS certificate in pos 0, DV in 1, CVCA in 2.
+	 * 
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if administrator is not authorized to edit end entity or if an authenticated request can not be verified
 	 * @throws SignRequestException if the provided request is invalid, for example not containing a username or password
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws NotFoundException
-	 * @throws EjbcaException
+	 * @throws EjbcaException for other errors, an error code like ErrorCode.SIGNATURE_ERROR (popo/inner signature verification failed) is set.
 	 * @throws ApprovalException
 	 * @throws WaitingForApprovalException
 	 * @throws CertificateExpiredException
+	 * @see org.ejbca.core.ErrorCode 
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
 	throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
 	EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException, CertificateExpiredException;
 	
+
+	/** Generates a certificate request (CSP) from a CA. The CSR can be sent to another CA to be signed, thus making the CA a sub CA of the signing CA.
+	 * Can also be used for cross-certification. The method can use an existing key pair of the CA or generate a new key pair. The new key pair does not have to be
+	 * activated and used as the CAs operational signature keys.
+	 * 
+	 * Authorization requirements: the client certificate must have the following privileges set<pre>
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /ca_functionality/renew_ca
+	 * - /ca/&lt;ca to renew&gt;
+	 * </pre>
+	 * @param caname The name in EJBCA for the CA that will create the CSR
+	 * @param cachain the certificate chain for the CA this request is targeted for, the signing CA is in pos 0, it's CA (if it exists) in pos 1 etc. Certificate format is the binary certificate bytes.
+     * @param regenerateKeys if renewing a CA this is used to also generate a new KeyPair, if this is true and activatekey is false, the new key will not be activated immediately, but added as "next" signingkey.
+     * @param usenextkey if regenerateKey is true this should be false. Otherwise it makes a request using an already existing "next" signing key, perhaps from a previous call with regenerateKeys true.
+     * @param activatekey if regenerateKey is true or usenextkey is true, setting this flag to true makes the new or "next" key be activated when the request is created.
+     * @param keystorepwd password used when regenerating keys or activating keys, can be null if regenerateKeys and activatekey is false.
+	 * 
+     * @return byte array with binary encoded certificate request to be sent to signing CA or null if CA does not exist or admin is not authorized to CA.
+     * 
+	 * @throws CADoesntExistsException if caname does not exist
+	 * @throws AuthorizationDeniedException if administrator is not authorized to create request, renew keys etc.
+	 * @throws ApprovalException if a non-expired approval for this action already exists, i.e. the same action has already been requested.
+	 * @throws WaitingForApprovalException if the operation requires approval from another CA administrator, in this case an approval request is created for another administrator to approve
+	 * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCade is set in the EjbcaException
+	 */
+	public byte[] caRenewCertRequest(String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException; 
+
+	/** Receives a certificate as a response to a CSR from the CA. The CSR might have been generated using the caRenewCertRequest. 
+	 * When the certificate is imported it is verified that the CA keys match the received certificate. 
+	 * This can be used to activate a new key pair on the CA. If the certificate does not match the existing key pair, but another key pair on the CAs token, this key pair can be activated and used as the CAs operational signature key pair.
+	 *   
+	 * Authorization requirements: the client certificate must have the following privileges set<pre>
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /ca_functionality/renew_ca
+	 * - /ca/&lt;ca to import certificate&gt;
+	 * </pre>
+	 * This method auto-senses if there is a new CA key that needs to be activated, it does this by comparing the public key in cert with public keys in the CAs token
+	 * @param caname The name in EJBCA for the CA that will create the CSR
+	 * @param cert the CA certificate to import. Certificate format is the binary certificate bytes.
+	 * @param cachain the certificate chain for the CA this request is targeted for, the signing CA is in pos 0, it's CA (if it exists) in pos 1 etc. Certificate format is the binary certificate bytes.
+	 * @param keystorepwd If there is a new CA key that must be activates the keystore password is needed. Set to null if the request was generated using the existing CA keys.
+	 * 
+	 * @throws CADoesntExistsException if caname does not exist
+	 * @throws AuthorizationDeniedException if administrator is not authorized to import certificate.
+	 * @throws ApprovalException if the operation requires approval from another CA administrator, in this case an approval request is created for another administrator to approve 
+	 * @throws WaitingForApprovalException if there is already a request waiting for approval
+	 * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCade is set in the EjbcaException
+	 */
+	public void caCertResponse(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException;
+
 	/**
 	 * Generates a certificate for a user.
 	 * 
@@ -246,7 +300,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
-	 * @param pkcs10 the PKCS10 (only the public key is used.)
+	 * @param pkcs10 the base64 encoded PKCS10 (only the public key is used.)
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
 	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.

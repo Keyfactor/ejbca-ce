@@ -75,6 +75,10 @@ public class EJBCAWSRACommandFactory {
             return new CvcPrintCommand(args);
         } else if (args[0].equals("cvcpem")) {
             return new CvcPemCommand(args);
+        } else if (args[0].equals("cacertrequest")) {
+            return new CaCertRequestCommand(args);
+        } else if (args[0].equals("cacertresponse")) {
+            return new CaCertResponseCommand(args);
 	    }
         
         else {

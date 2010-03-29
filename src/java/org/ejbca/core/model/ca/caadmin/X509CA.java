@@ -372,9 +372,10 @@ public class X509CA extends CA implements Serializable {
     }    
     
     /**
-     * @see CA#createRequest(Collection, String)
+     * @see CA#createRequest(Collection, String, Certificate, int)
      */
-    public byte[] createRequest(Collection attributes, String signAlg, Certificate cacert) throws CATokenOfflineException {
+    public byte[] createRequest(Collection attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CATokenOfflineException {
+		log.trace(">createRequest: "+signAlg+", "+CertTools.getSubjectDN(cacert)+", "+signatureKeyPurpose);
     	ASN1Set attrset = new DERSet();
     	if (attributes != null) {
     		log.debug("Adding attributes in the request");
@@ -396,8 +397,13 @@ public class X509CA extends CA implements Serializable {
         X509Name x509dn = CertTools.stringToBcX509Name(getSubjectDN(), converter, dnorder);
         PKCS10CertificationRequest req;
 		try {
-			req = new PKCS10CertificationRequest(signAlg,
-					x509dn, getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attrset, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getProvider());
+			CATokenContainer catoken = getCAToken();
+			KeyPair keyPair = new KeyPair(catoken.getPublicKey(signatureKeyPurpose), catoken.getPrivateKey(signatureKeyPurpose));
+			if (keyPair == null) {
+				throw new IllegalArgumentException("Keys for key purpose "+signatureKeyPurpose+" does not exist.");
+			}
+			req = new PKCS10CertificationRequest(signAlg, x509dn, keyPair.getPublic(), attrset, keyPair.getPrivate(), catoken.getProvider());
+			log.trace("<createRequest");
 	        return req.getEncoded();
 		} catch (CATokenOfflineException e) {
 			throw e;

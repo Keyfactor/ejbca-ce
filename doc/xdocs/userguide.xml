@@ -208,7 +208,7 @@ This file should be in PEM encoding. If there is more than one top CA certificat
 It should be in plain PEM format without blank lines before or after. An example is below.</li>
 <li>Next, after clicking 'Make Certificate Request' and if everything went successful, should the generated PKCS10 certificate request be displayed that you can copy and paste to the signing CA. There is also the option to download the PEM file if that approach is preferred.</li>
 <li>Now should the signing external CA sign the certificate request and return a certificate. Meanwhile will the newly created CA have a status of 'Waiting for Certificate Response' and will not appear anywhere in the system except in the 'Edit CA' page until it's activated.</li>
-<li>When the Certificate Response has arrived, it is time to activate the new CA. You mark the waiting CA and click on 'Edit' button in the 'Edit CA' page. Go to the bottom of the page and click on 'Receive Certificate Response'. Then upload the received certificate and click again on 'Receive Certificate Response'.</li>
+<li>When the Certificate Response has arrived, it is time to activate the new CA. You mark the waiting CA and click on 'Edit' button in the 'Edit CA' page. Go to the bottom of the page and click on 'Receive Certificate Response' (you can leave the password field blank). Then upload the received certificate and click again on 'Receive Certificate Response'.</li>
 <li>Now if the received certificate creates a valid certificate chain with the previously uploaded top CA certificates will the status of the CA be set to 'Active'.</li>
 <li>If you did no upload a certificate chain when the request was created, you can do so now by uploading the complete PEM formatted chain now. The CAs own certificate should be first in the file, followed by the issuing CAs certificate(s). 
 When uploading a chain, the certificates must be converted to PEM format if it isn't already so. This can be accomplished with OpenSSL among other tools with the following command if you have received a file in DER encoding (.cer ending):<br/>
@@ -270,7 +270,16 @@ the PKI but with only one CA active at a time.
 </subsection> 
 <subsection name="Signing an External CA">
 <p>
-In some cases you might want to have one of your CA:s signing another external CA. This is done in the following way:
+In some cases you might want to have one of your CA:s signing another external CA. This can be done in two ways:
+<ol>
+<li>Create a certificate profile and an end entity profile for Sub CAs. The certificate profile must be of type 'Sub CA' (almost at the bottom of the edit certificate profile page).</li>
+<li>Create an End Entity where you select a SubCA certificate profile when adding the end entity.</li>
+<li>Issue the CA certificate as you would normally issue any end entity certificate.</li>
+<li>The SubCA can be managed and revoked conveniently just as other end entities.</li>
+</ol>
+Using an end entity is the recommended way to sign Sub CAs, because of the better management features.
+</p><p> 
+You can however also get the external Sub CA visible as a CA in EJBCA. 
 <ol>
 <li>In the 'Edit CA' page, choose a CA name of the external CA you are about to sign and click on 'Process Certificate Request'.</li>
 <li>Then you are requested to upload the certificate request sent from the external CA. This should be a file in PEM-encoding.</li>
@@ -280,6 +289,28 @@ In some cases you might want to have one of your CA:s signing another external C
 <li>In the 'Edit CA' page will the newly processed CA be displayed with the status 'External'. This processed CA will only be shown in the 'Edit CA' pages and nowhere else since the system cannot use it. If you want to view the processed certificate, go to the edit page and click on the 'View CA Certificate' link in the bottom of the page.</li>
 </ol>
 </p>
+</subsection>
+<subsection name="Renewing a SubCA signed by an external CA">
+<p>
+When you renew a SubCA signed by an external CA you create a new request that is sent to the external CA. The External CA issues a new certificate that you import in your SubCA.
+</p>
+<p>
+You can renew the SubCA in two ways:
+<ol>
+<li>Using the same CA signing keys.</li>
+<li>Generating new CA signing keys.</li>
+</ol>
+To renew a CA go to "Edit Certificate Authorities" select the SubCA and use the button "Renew CA" in the bottom of the page.
+When you use the same signing keys there is nothing in particular to consider. 
+When you also choose to renew the CA signing keys (check the checkbox "Renew keys") you must give the CA Token password as input to the renewal process, i.e. fill in the field "Authentication code for renewing keys".
+When you renew keys in an active SubCA you can choose:
+<ol>
+<li>Activate keys (default) - immediately activates the new keys. This makes the SubCA off-line waiting for the certificate response. The SubCA can not issue certificates until the response from the External CA is received.</li>
+<li>Do not activate keys - generates new keys and a request, but does not activate the new keys. The SubCA can continue to issue certificates with the old signing keys until the response is received from the External CA.</li>
+</ol>
+If you choose to not activate the new keys immediately you must give the CA Token password when receiving the response from the External CA.
+</p>
+<p>Not that how PKCS#11 works with sessions, once logged in to the session you are logged in and it does not matter which password you use in the GUI. Don't be surprised that it works with any password when using PKCS#11 CA tokens.</p>
 </subsection>
 <subsection name="Requesting a cross or bridge certificate">
 <p>
@@ -917,6 +948,7 @@ The current predefined administrator roles that exists in EJBCA are:
 <li>manages end entity profiles</li>
 <li>manages log configuration</li>
 <li>can create RA administrators</li>
+<li>can renew a CA with new certificate and new keys</li>
 </ul>
 <li>The RA administrator:</li>
 <ul>

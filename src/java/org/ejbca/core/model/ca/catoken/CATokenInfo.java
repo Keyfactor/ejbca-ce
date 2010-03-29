@@ -13,7 +13,10 @@
  
 package org.ejbca.core.model.ca.catoken;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Properties;
 
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.util.StringTools;
@@ -128,6 +131,20 @@ public abstract class CATokenInfo implements Serializable {
     public String getProperties(){
     	return properties;
     }
+
+    public Properties getPropertiesAsClass() {
+    	Properties prop = new Properties();
+    	String str = getProperties();
+    	if (str != null) {
+    		try {
+				prop.load(new ByteArrayInputStream(str.getBytes()));
+			} catch (IOException e) {
+				// do nothing
+			}					
+    	}
+    	return prop;
+    }
+
     
     public void setProperties(String properties){
     	this.properties = properties;

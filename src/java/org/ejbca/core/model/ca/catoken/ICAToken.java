@@ -34,6 +34,8 @@ public interface ICAToken {
     static final String AUTOACTIVATE_PIN_PROPERTY = "pin";
     /** Previous sequence (matching KeyString.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS key) that can be set in CA token properties */
     static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";
+    /** Next sequence (matching KeyString.CAKEYPURPOSE_CERTSIGN_STRING_NEXT key) that can be set in CA token properties */
+    static final String NEXT_SEQUENCE_PROPERTY = "nextSequence";
     /** Keyspec that is used as first choice when generating new keys in the GUI of form "1024" for RSA keys, "DSA1024" for DSA keys and secp256r1 for EC keys */
     static final String KEYSPEC_PROPERTY = "keyspec";
 

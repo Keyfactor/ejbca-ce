@@ -46,6 +46,7 @@ function check()
       <input type="hidden" name='<%= ACTION %>' value='<%=actions[filemode] %>'>
       <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%= caid %>'>
       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%= caname%>'>
+      <input type="hidden" name='<%= HIDDEN_ACTIVATEAUTHCODE %>' value='<%= activateauthenticationcode%>'>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText(helptexts[filemode]) %>
       <%= ejbcawebbean.getHelpReference("/userguide.html#Creating%20a%20SubCA%20signed%20by%20an%20external%20CA") %></td>

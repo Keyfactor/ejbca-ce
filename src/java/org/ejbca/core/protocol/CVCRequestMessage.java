@@ -408,6 +408,19 @@ public class CVCRequestMessage implements IRequestMessage {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, encPriv, provider);
     }
     
+    /** Specific to CVC request messages, EAC requests contains a sequence */
+    public String getKeySequence() {
+    	String ret = null;
+    	try {
+			if (cvcert.getCertificateBody().getHolderReference() != null) {
+				ret = cvcert.getCertificateBody().getHolderReference().getSequence();    		
+			}
+		} catch (NoSuchFieldException e) {
+			// No sequence found...
+		}
+    	return ret;
+    }
+    
     private CardVerifiableCertificate getCardVerifiableCertificate() {
     	try {
     		if (cvcert == null) {

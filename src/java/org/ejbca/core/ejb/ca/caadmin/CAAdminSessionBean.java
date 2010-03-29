@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,6 +36,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -57,6 +59,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
@@ -123,6 +126,8 @@ import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;
+import org.ejbca.cvc.AuthorizationRoleEnum;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -452,7 +457,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         		// 1. The user provided one when creating the CA on the create CA page
         		// 2. We use the system default password
         		boolean renew = false;
-        		catoken.generateKeys(authCode, renew);
+        		catoken.generateKeys(authCode, renew, true);
         	}catch(Exception e){
         		String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
         		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
@@ -1109,26 +1114,35 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
     /**
-     *  Creates a certificate request that should be sent to External Root CA for processing.
+     *  Creates a certificate request that should be sent to External Root CA for processing. To create a normal request using the CAs
+     *  currently active signature keys use false for all of regenerateKeys, usenextkey and activatekey.
+     *  
+     *  There are three paths: current key, new key or existing next key.
+     *  Down these paths there are first two choices activate or don't activate, not applicable for current key that is always active.
+     *  And lastly the choice if CA status should be set to waiting_for_certificate_response, can be automatically determined depending on if a new key has been activated, making the CA unable to continue issuing certificate until a response is received.
      *
      *  @param admin the administrator performing the action
      *  @param caid id of the CA that should create the request 
      *  @param cachain A Collection of CA-certificates.
-     *  @param setstatustowaiting should be set true when creating new CAs and false for renewing old CAs
-     *  @param keystorepass password used when regenerating keys, can be null if regenerateKeys is false.
-     *  @param regenerateKeys if renewing a CA this is used to also generate a new KeyPair.
+     *  @param regenerateKeys if renewing a CA this is used to also generate a new KeyPair, if this is true and activatekey is false, the new key will not be activated immediately, but added as "next" signingkey.
+     *  @param usenextkey if regenerateKey is true this should be false. Otherwise it makes a request using an already existing "next" signing key, perhaps from a previous call with regenerateKeys true.
+     *  @param activatekey if regenerateKey is true or usenextkey is true, setting this flag to true makes the new or "next" key be activated when the request is created.
+     *  @param keystorepass password used when regenerating keys or activating keys, can be null if regenerateKeys and activatekey is false.
      *  @return request message in binary format, can be a PKCS10 or CVC request
      *  
      * @ejb.interface-method
      */
-    public byte[] makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+    public byte[] makeRequest(Admin admin, int caid, Collection cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException, CATokenAuthenticationFailedException {
     	if (log.isTraceEnabled()) {
-        	log.trace(">makeRequest: "+caid);
+        	log.trace(">makeRequest: "+caid+", regenerateKeys="+regenerateKeys+", usenextkey="+usenextkey+", activatekey="+activatekey);
     	}
         byte[] returnval = null;
-        // Check authorization
-        try{
-            getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+    	// Check authorization
+    	try{
+    		getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA);
+            if (!authorizedToCA(admin,caid)) {
+            	throw new AuthorizationDeniedException("Not authorized to CA");
+            }
         }catch(AuthorizationDeniedException e){
     		String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertreq", new Integer(caid));            	
             getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,e);
@@ -1142,62 +1156,80 @@ public class CAAdminSessionBean extends BaseSessionBean {
             CA ca = cadata.getCA();
             String caname = ca.getName();
             
-            try{
-            	// Generate new certificate request.
-            	Collection chain = null;
-            	if (cachain.size() > 0) {
-                	chain = CertTools.createCertChain(cachain);
-                	log.debug("Setting request certificate chain of size: "+chain.size());
-                	ca.setRequestCertificateChain(chain);            		
-            	} else {
-            		log.debug("Empty request certificate chain parameter.");
-            		chain = new ArrayList();
-            	}
-            	String signAlg = "SHA1WithRSA"; // Default algorithm
-            	CATokenInfo tinfo = ca.getCAInfo().getCATokenInfo();
-            	if (tinfo != null) {
-            		signAlg = tinfo.getSignatureAlgorithm();
-            	}
-            	log.debug("Using signing algorithm: "+signAlg+" for the CSR.");
-            	
-        		CATokenContainer caToken = ca.getCAToken();
-        		if (regenerateKeys) {
-        			log.debug("Generating new keys.");
-            		boolean renew = true;
-                    keystorepass = getDefaultKeyStorePassIfSWAndEmpty(keystorepass, caToken.getCATokenInfo());
-            		caToken.generateKeys(keystorepass, renew);
-        			ca.setCAToken(caToken);
-        			// In order to generate a certificate with this keystore we must make sure it is activated
-        			ca.getCAToken().activate(keystorepass);
-        		}
-        		// The CA certificate signing this request is the first in the certificate chain
-        		Iterator iter = chain.iterator();
-        		Certificate cacert = null;
-        		if (iter.hasNext()) {
-            		cacert = (Certificate)iter.next();        			
-        		}
-            	returnval = ca.createRequest(null, signAlg, cacert);            	
-
-            	// Set statuses if it should be set.
-            	if (setstatustowaiting || regenerateKeys){
-            		cadata.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
-            		ca.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
-            	}
-
-            	cadata.setCA(ca);
-            	// Log information about the event
-            	String msg = intres.getLocalizedMessage("caadmin.certreqcreated", caname, new Integer(caid));            	
-            	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
-            }catch(CATokenOfflineException e) {                
-        		String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));            	
-                getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
-                throw e;
+            // Generate new certificate request.
+            Collection chain = null;
+            if (cachain.size() > 0) {
+            	chain = CertTools.createCertChain(cachain);
+            	log.debug("Setting request certificate chain of size: "+chain.size());
+            	ca.setRequestCertificateChain(chain);            		
+            } else {
+            	log.debug("Empty request certificate chain parameter.");
+            	chain = new ArrayList();
             }
-        }catch(CertPathValidatorException e) {
+            String signAlg = "SHA1WithRSA"; // Default algorithm
+            CATokenInfo tinfo = ca.getCAInfo().getCATokenInfo();
+            if (tinfo != null) {
+            	signAlg = tinfo.getSignatureAlgorithm();
+            }
+            log.debug("Using signing algorithm: "+signAlg+" for the CSR.");
+
+            CATokenContainer caToken = ca.getCAToken();
+            if (regenerateKeys) {
+            	log.debug("Generating new keys.");
+            	keystorepass = getDefaultKeyStorePassIfSWAndEmpty(keystorepass, caToken.getCATokenInfo());
+            	caToken.generateKeys(keystorepass, true, activatekey);
+            	ca.setCAToken(caToken);
+            	// In order to generate a certificate with this keystore we must make sure it is activated
+            	ca.getCAToken().activate(keystorepass);
+            }
+            // The CA certificate signing this request is the first in the certificate chain
+            Iterator iter = chain.iterator();
+            Certificate cacert = null;
+            if (iter.hasNext()) {
+            	cacert = (Certificate)iter.next();        			
+            }
+            // If we don't set status to waiting we want to use the next signature key pair
+            int keyPurpose = SecConst.CAKEYPURPOSE_CERTSIGN;
+            boolean usepreviouskey = true; // for creating an authenticated request we sign it with the previous key
+            if ( usenextkey || (regenerateKeys && !activatekey) ){
+            	keyPurpose = SecConst.CAKEYPURPOSE_CERTSIGN_NEXT;
+                usepreviouskey = false; // for creating an authenticated request we sign it with the current key, which will be the previous once we activate the new key
+            }
+            log.debug("Creating certificate request with key purpose: "+keyPurpose);
+            byte[] request = ca.createRequest(null, signAlg, cacert, keyPurpose);
+            if (ca.getCAType() == CAInfo.CATYPE_CVC) {
+                // If this is a CVC CA renewal request, we need to sign it to make an authenticated request
+                // The CVC CAs current signing certificate will always be the right one, because it is the "previous" signing certificate until lwe have imported a new one
+                // as response to the request we create here.
+                boolean createlinkcert = false; // this is not a link certificate, and never can be
+                returnval = ca.signRequest(request, usepreviouskey, createlinkcert);            	
+            } else {
+            	returnval = request;
+            }
+
+            // Set statuses if it should be set.
+            if ( (regenerateKeys || usenextkey) && activatekey ) {
+            	cadata.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+            	ca.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+            }
+
+            cadata.setCA(ca);
+            // Log information about the event
+            String msg = intres.getLocalizedMessage("caadmin.certreqcreated", caname, new Integer(caid));            	
+            getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
+        } catch (CertPathValidatorException e) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));            	
+        	getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
+            throw e;
+        } catch (CATokenOfflineException e) {                
     		String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));            	
             getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
             throw e;
-        }catch(Exception e){
+        } catch (CATokenAuthenticationFailedException e) {                
+    		String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));            	
+            getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
+            throw e;
+        } catch (Exception e){
     		String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));            	
             getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
             throw new EJBException(e);
@@ -1206,7 +1238,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		String msg = intres.getLocalizedMessage("caadmin.certreqcreated", new Integer(caid));            	
         getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED,msg);
     	if (log.isTraceEnabled()) {
-        	trace("<makeRequest: "+caid);
+    		log.trace("<makeRequest: "+caid);
     	}
         return returnval;
     } // makeRequest
@@ -1261,17 +1293,22 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @param caid  The caid (DN.hashCode()) of the CA that is receiving this response
      * @param responsemessage X509ResponseMessage with the certificate issued to this CA
      * @param chain an optional collection with the CA certificate(s), or null. If given the complete chain (except this CAs own certificate must be given)
+     * @param tokenAuthenticationCode the CA token authentication code, if we need to activate new CA keys. Otherwise this can be null. This is needed if we have generated 
+     * a request with new CA keys, but not activated the new keys immediately. See makeRequest method
      * 
      * @throws EjbcaException 
      *  
      * @ejb.interface-method
      */
-    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection cachain) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException{
+    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection cachain, String tokenAuthenticationCode) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException {
     	// check authorization
     	Certificate cacert = null;
     	// Check authorization
     	try{
-    		getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+    		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_RENEWCA);
+            if (!authorizedToCA(admin,caid)) {
+            	throw new AuthorizationDeniedException("Not authorized to CA");
+            }
     	}catch(AuthorizationDeniedException e){
     		String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", new Integer(caid));            	
     		getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,e);
@@ -1295,7 +1332,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     			// If signed by external CA, process the received certificate and store it, activating the CA
     			if(ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA){
-    				// Check that DN is the equals the request.
+    				// Check that CA DN is equal to the certificate response.
     				if(!CertTools.getSubjectDN(cacert).equals(CertTools.stringToBCDNString(ca.getSubjectDN()))){
         	    		String msg = intres.getLocalizedMessage("caadmin.errorcertrespwrongdn", CertTools.getSubjectDN(cacert), ca.getSubjectDN());            	
     					getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg);
@@ -1306,8 +1343,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				tmpchain.add(cacert);
     				// If we have a chain given as parameter, we will use that.
     				// If no parameter is given we assume that the request chain was stored when the request was created.
-    				Collection reqchain = cachain;
-    				if (reqchain == null) {
+                	Collection reqchain = null;
+                	if ((cachain != null) && (cachain.size() > 0)) {
+                		reqchain = CertTools.createCertChain(cachain);
+                    	log.debug("Using CA certificate chain from parameter of size: "+reqchain.size());
+                	} else {
         				reqchain = ca.getRequestCertificateChain();
     					log.debug("Using pre-stored CA certificate chain.");
         				if (reqchain == null) {
@@ -1315,13 +1355,64 @@ public class CAAdminSessionBean extends BaseSessionBean {
         					log.info(msg);
         					throw new CertPathValidatorException(msg);
         				}
-    				} else {
-    					log.debug("Using CA certificate chain from parameter.");
-    				}
+                	}
     				log.debug("Picked up request certificate chain of size: "+reqchain.size());    					
     				tmpchain.addAll(reqchain);
     				Collection chain = CertTools.createCertChain(tmpchain);
     				log.debug("Storing certificate chain of size: "+chain.size());
+    				// Before importing the certificate we want to make sure that the public key matches the CAs private key
+    				CATokenContainer catoken = ca.getCAToken();
+					// If it is a DV certificate signed by a CVCA, enrich the public key for EC parameters from the CVCA's certificate
+					PublicKey pk = cacert.getPublicKey();
+					if (StringUtils.equals(cacert.getType(), "CVC")) {
+						if (pk.getAlgorithm().equals("ECDSA")) {
+							CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cacert;
+							try {
+								if ( (cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole() == AuthorizationRoleEnum.DV_D) ||
+										(cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole() == AuthorizationRoleEnum.DV_F) ) {
+									log.debug("Enriching DV public key with EC parameters from CVCA");
+									Certificate cvcacert = (Certificate)reqchain.iterator().next();
+									pk = KeyTools.getECPublicKeyWithParams(pk, cvcacert.getPublicKey());							
+								}
+							} catch (InvalidKeySpecException e) {
+								log.debug("Strange CVCA certificate that we can't get the key from, continuing anyway...", e);
+							} catch (NoSuchFieldException e) {
+								log.debug("Strange DV certificate with no AutheorizationRole, continuing anyway...", e);
+							}
+						} else {
+							log.debug("Key is not ECDSA, don't try to enrich with EC parameters.");
+						}
+					} else {
+						log.debug("Cert is not CVC, no need to enrich with EC parameters.");
+					}
+    				try {
+						KeyTools.testKey(catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), pk, catoken.getProvider());
+					} catch (Exception e1) {
+						log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
+						if (e1 instanceof InvalidKeyException) {
+							log.trace(e1);
+						} else {
+							// If it's not invalid key, we want to see more of the error
+							log.debug("Error: ", e1);
+						}
+						try {
+							KeyTools.testKey(catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN_NEXT), pk, catoken.getProvider());
+							// This was OK, so we must also activate the next signing key when importing this certificate
+							catoken.activateNextSignKey(tokenAuthenticationCode);
+		        			ca.setCAToken(catoken);
+		        			// In order to generate a certificate with this keystore we must make sure it is activated
+		        			ca.getCAToken().activate(tokenAuthenticationCode);
+						} catch (Exception e2) {
+							log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
+							if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)){
+								log.trace(e2);
+							} else {
+								// If it's not invalid key or missing auth code, we want to see more of the error
+								log.debug("Error: ", e2);
+							}
+							throw new EjbcaException(ErrorCode.INVALID_KEY, e2);
+						}
+					}
     				ca.setCertificateChain(chain);
 
     				// Publish CA Cert
@@ -1735,7 +1826,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
     
     /**
-     *  Renews a existing CA certificate using the same keys as before. Data about new CA is taken
+     *  Renews a existing CA certificate using the same keys as before, or generating new keys. Data about new CA is taken
      *  from database. This method is used for renewing CAs internally in EJBCA. For renewing CAs signed by external CAs,
      *  makeRequest is used to generate a certificate request.
      *
@@ -1746,7 +1837,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @jboss.method-attributes transaction-timeout="900"
      */
-    public void renewCA(Admin admin, int caid, String keystorepass, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+    public void renewCA(Admin admin, int caid, String keystorepass, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException, CATokenAuthenticationFailedException {
     	if (log.isTraceEnabled()) {
         	log.trace(">CAAdminSession, renewCA(), caid=" + caid);
     	}
@@ -1754,7 +1845,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	Certificate cacertificate = null;
     	// check authorization
     	try{
-    		getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+    		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_RENEWCA);
+            if (!authorizedToCA(admin,caid)) {
+            	throw new AuthorizationDeniedException("Not authorized to CA");
+            }
     	}catch(AuthorizationDeniedException e){
     		String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorenew", new Integer(caid));            	
     		getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,e);
@@ -1766,26 +1860,27 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	try{
     		cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
     		CA ca = cadata.getCA();
-    		
-    		
+    		    		
     		if(ca.getStatus() == SecConst.CA_OFFLINE){
-        		String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getName());            	
+    			String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getName());            	
     			throw new CATokenOfflineException(msg);
     		}
     		
     		CATokenContainer caToken = ca.getCAToken();
     		if (regenerateKeys) {
-        		boolean renew = true;
-                keystorepass = getDefaultKeyStorePassIfSWAndEmpty(keystorepass, caToken.getCATokenInfo());
-        		caToken.generateKeys(keystorepass, renew);
-        		// We need to save all this
+    			boolean renew = true;
+    			keystorepass = getDefaultKeyStorePassIfSWAndEmpty(keystorepass, caToken.getCATokenInfo());
+    			caToken.generateKeys(keystorepass, renew, true); // for internal CAs the new keys are always activated
+    			// We need to save all this
     			ca.setCAToken(caToken);
     			cadata.setCA(ca);
     			// After this we need to reload all CAs? 
     			// Make sure we store the new CA and token and reload or update the caches
     			Provider prov = Security.getProvider(caToken.getProvider());
-    			log.debug("Provider classname: "+prov.getClass().getName());
-    			if (StringUtils.contains(prov.getClass().getName(), "iaik")) {
+    			if (log.isDebugEnabled() && (prov != null)) {
+        			log.debug("Provider classname: "+prov.getClass().getName());    				
+    			}
+    			if ((prov != null) && StringUtils.contains(prov.getClass().getName(), "iaik")) {
         			// This is because IAIK PKCS#11 provider cuts ALL PKCS#11 sessions when I generate new keys for one CA
         			CACacheManager.instance().removeAll();
         			CATokenManager.instance().removeAll();
@@ -1801,79 +1896,81 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			caToken.activate(keystorepass);
     		}
     		
-    		try{
-    			// if issuer is insystem CA or selfsigned, then generate new certificate.
-    			if(ca.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA){
-    				if(ca.getSignedBy() == CAInfo.SELFSIGNED){
-    					// create selfsigned certificate
+    		// if issuer is insystem CA or selfsigned, then generate new certificate.
+    		if(ca.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA){
+    			if(ca.getSignedBy() == CAInfo.SELFSIGNED){
+    				// create selfsigned certificate
+    				String subjectAltName = null;
+    				if (ca instanceof X509CA) {
+    					X509CA x509ca = (X509CA) ca;
+    					subjectAltName = x509ca.getSubjectAltName();
+    				}
+    				UserDataVO cainfodata = new UserDataVO("nobody",  ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null,
+    						0, 0, 0, ca.getCertificateProfileId(), null, null, 0, 0 ,null);
+
+    				CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
+    				String sequence = caToken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
+    				cacertificate = ca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, ca.getValidity(), certprofile, sequence);
+    				// Build Certificate Chain
+    				cachain = new ArrayList();
+    				cachain.add(cacertificate);
+
+    			}else{
+    				// Resign with CA above.
+    				if(ca.getSignedBy() > CAInfo.SPECIALCAIDBORDER || ca.getSignedBy() < 0){
+    					// Create CA signed by other internal CA.
+    					CADataLocal signcadata = cadatahome.findByPrimaryKey(new Integer(ca.getSignedBy()));
+    					CA signca = signcadata.getCA();
+    					//Check that the signer is valid
+    					checkSignerValidity(admin, signcadata);
+    					// Create cacertificate
     					String subjectAltName = null;
     					if (ca instanceof X509CA) {
-							X509CA x509ca = (X509CA) ca;
-							subjectAltName = x509ca.getSubjectAltName();
-						}
-    					UserDataVO cainfodata = new UserDataVO("nobody",  ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null,
-    							0, 0, 0, ca.getCertificateProfileId(), null, null, 0, 0 ,null);
+    						X509CA x509ca = (X509CA) ca;
+    						subjectAltName = x509ca.getSubjectAltName();
+    					}
+    					UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null,
+    							0,0,0, ca.getCertificateProfileId(), null, null, 0,0, null);
 
     					CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
     					String sequence = caToken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
-    					cacertificate = ca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, ca.getValidity(), certprofile, sequence);
+    					cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, ca.getValidity(), certprofile, sequence);
     					// Build Certificate Chain
+    					Collection rootcachain = signca.getCertificateChain();
     					cachain = new ArrayList();
     					cachain.add(cacertificate);
-
-    				}else{
-    					// Resign with CA above.
-    					if(ca.getSignedBy() > CAInfo.SPECIALCAIDBORDER || ca.getSignedBy() < 0){
-    						// Create CA signed by other internal CA.
-    						CADataLocal signcadata = cadatahome.findByPrimaryKey(new Integer(ca.getSignedBy()));
-    						CA signca = signcadata.getCA();
-    						//Check that the signer is valid
-    						checkSignerValidity(admin, signcadata);
-    						// Create cacertificate
-        					String subjectAltName = null;
-        					if (ca instanceof X509CA) {
-    							X509CA x509ca = (X509CA) ca;
-    							subjectAltName = x509ca.getSubjectAltName();
-    						}
-    						UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null,
-    								0,0,0, ca.getCertificateProfileId(), null, null, 0,0, null);
-
-    						CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
-        					String sequence = caToken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
-    						cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, ca.getValidity(), certprofile, sequence);
-    						// Build Certificate Chain
-    						Collection rootcachain = signca.getCertificateChain();
-    						cachain = new ArrayList();
-    						cachain.add(cacertificate);
-    						cachain.addAll(rootcachain);
-    					}
+    					cachain.addAll(rootcachain);
     				}
-    			} else {
-    				// We should never get here
-    				log.error("Directly renewing a CA signed by external can not be done");
-    				throw new NotSupportedException("Directly renewing a CA signed by external can not be done");
     			}
-    			// Set statuses and expire time
-    			cadata.setExpireTime(CertTools.getNotAfter(cacertificate).getTime());
-    			ca.setExpireTime(CertTools.getNotAfter(cacertificate));
-    			cadata.setStatus(SecConst.CA_ACTIVE);
-    			ca.setStatus(SecConst.CA_ACTIVE);
-
-    			ca.setCertificateChain(cachain);
-    			cadata.setCA(ca);
-
-    			// Publish the new CA certificate
-    			ArrayList cacert = new ArrayList();
-    			cacert.add(ca.getCACertificate());
-    			publishCACertificate(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
-    			createCRLs(admin, ca, ca.getCAInfo());
-    		    getCRLCreateSession().publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod()>0);
-    		}catch(CATokenOfflineException e){
-	    		String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));            	
-    			getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
-    			throw e;
+    		} else {
+    			// We should never get here
+    			log.error("Directly renewing a CA signed by external can not be done");
+    			throw new NotSupportedException("Directly renewing a CA signed by external can not be done");
     		}
-    	}catch(Exception e){
+    		// Set statuses and expire time
+    		cadata.setExpireTime(CertTools.getNotAfter(cacertificate).getTime());
+    		ca.setExpireTime(CertTools.getNotAfter(cacertificate));
+    		cadata.setStatus(SecConst.CA_ACTIVE);
+    		ca.setStatus(SecConst.CA_ACTIVE);
+
+    		ca.setCertificateChain(cachain);
+    		cadata.setCA(ca);
+
+			// Publish the new CA certificate
+			ArrayList cacert = new ArrayList();
+			cacert.add(ca.getCACertificate());
+			publishCACertificate(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
+			createCRLs(admin, ca, ca.getCAInfo());
+		    getCRLCreateSession().publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod()>0);
+    	} catch(CATokenOfflineException e) {
+    		String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));            	
+    		getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
+    		throw e;
+    	} catch(CATokenAuthenticationFailedException e) {
+    		String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));            	
+    		getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
+    		throw e;
+    	} catch(Exception e) {
     		String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));            	
     		getLogSession().log(admin, caid, LogConstants.MODULE_CA,  new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,msg,e);
     		throw new EJBException(e);

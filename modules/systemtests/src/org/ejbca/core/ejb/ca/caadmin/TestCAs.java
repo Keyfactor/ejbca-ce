@@ -50,8 +50,10 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.RequestMessageUtils;
 import org.ejbca.util.TestTools;
 
 /**
@@ -172,7 +174,7 @@ public class TestCAs extends TestCase {
             
             // Test to generate a certificate request from the CA
             Collection cachain = info.getCertificateChain();
-            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, null, false);
+            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TEST", msg.getRequestDN());
         } catch (CAExistsException pee) {
@@ -930,7 +932,7 @@ public class TestCAs extends TestCase {
         Certificate cert1 = (Certificate)cachain.iterator().next();
         CardVerifiableCertificate cvcert1 = (CardVerifiableCertificate)cert1;
         assertEquals("SETESTCVCA00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
-        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, cvcainfo.getCAId(), cachain, false, null, false);
+        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
 		Certificate req = CertTools.getCertfromByteArray(request);
 		CardVerifiableCertificate cardcert = (CardVerifiableCertificate)req;
 		CVCertificate reqcert = cardcert.getCVCertificate();
@@ -939,7 +941,7 @@ public class TestCAs extends TestCase {
 
         // Make a certificate request from a DV, regenerating keys
         cachain = dvdcainfo.getCertificateChain();
-        request = TestTools.getCAAdminSession().makeRequest(admin, dvdcainfo.getCAId(), cachain, false, "foo123", true);
+        request = TestTools.getCAAdminSession().makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
 		req = CertTools.getCertfromByteArray(request);
 		cardcert = (CardVerifiableCertificate)req;
 		reqcert = cardcert.getCVCertificate();
@@ -1065,7 +1067,7 @@ public class TestCAs extends TestCase {
             info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
 
             // Generate a certificate request from the CA and send to the TEST CA
-            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), rootcacertchain, false, null, false);
+            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), rootcacertchain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
@@ -1074,7 +1076,7 @@ public class TestCAs extends TestCase {
             IResponseMessage resp = TestTools.getCAAdminSession().processRequest(admin, info, msg);
             
             // Receive the signed certificate back on our SubCA
-            TestTools.getCAAdminSession().receiveResponse(admin, info.getCAId(), resp, null);
+            TestTools.getCAAdminSession().receiveResponse(admin, info.getCAId(), resp, null, null);
             
             // Check that the CA has the correct certificate chain now
             info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -1104,7 +1106,7 @@ public class TestCAs extends TestCase {
 
         // Make a certificate request from the CA
         Collection cachain = info.getCertificateChain();
-        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, null, false);
+        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
         PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
         assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
@@ -1203,7 +1205,7 @@ public class TestCAs extends TestCase {
             
             // Test to generate a certificate request from the CA
             Collection cachain = info.getCertificateChain();
-            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, null, false);
+            byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTDSA", msg.getRequestDN());
         } catch (CAExistsException pee) {
@@ -1225,7 +1227,7 @@ public class TestCAs extends TestCase {
     	X509Certificate cacert2 = (X509Certificate)certs.iterator().next();
     	assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
     	assertEquals(new String(CertTools.getSubjectKeyId(cacert1)), new String(CertTools.getSubjectKeyId(cacert2)));
-    	cacert2.verify(cacert1.getPublicKey()); // throws if it fails
+    	cacert2.verify(cacert1.getPublicKey()); // throws if it fails        
 
     	// Test renew CA keys
         TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", true);
@@ -1246,13 +1248,41 @@ public class TestCAs extends TestCase {
     	keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
     	keyid2 = new String(CertTools.getSubjectKeyId(cacert4));
     	assertTrue(keyid1.equals(keyid2));
-
     	// Same signer as for cacert2 -> same auth key id in cacert4 as subject key id in cacert2
     	keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
     	keyid2 = new String(CertTools.getAuthorityKeyId(cacert4));
     	assertTrue(keyid1.equals(keyid2));
-    	
     	cacert4.verify(cacert2.getPublicKey());
+    	
+    	// Test make request just making a request using the old keys
+        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, TestTools.getTestCAId(), new ArrayList(), false, false, false, "foo123");
+        assertNotNull(request);
+        PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
+        PublicKey pk1 = cacert3.getPublicKey();
+        PublicKey pk2 = msg.getRequestPublicKey();
+        String key1 = new String(Base64.encode(pk1.getEncoded()));
+        String key2 = new String(Base64.encode(pk2.getEncoded()));
+        // A plain request using the CAs key will have the same public key
+        assertEquals(key1, key2);
+    	// Test make request generating new keys
+        request = TestTools.getCAAdminSession().makeRequest(admin, TestTools.getTestCAId(), new ArrayList(), true, false, true, "foo123");
+        assertNotNull(request);
+        msg = RequestMessageUtils.genPKCS10RequestMessage(request);
+        pk1 = cacert3.getPublicKey();
+        pk2 = msg.getRequestPublicKey();
+        key1 = new String(Base64.encode(pk1.getEncoded()));
+        key2 = new String(Base64.encode(pk2.getEncoded()));
+        // A plain request using new CAs key can not have the same keys
+        assertFalse(key1.equals(key2));
+        // After this (new keys activated but no cert response received) status should be waiting...
+    	info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
+    	assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
+    	
+        // To clean up after us so the active key is not out of sync with the active certificate, we should simply renew the CA
+    	info.setStatus(SecConst.CA_ACTIVE);
+    	TestTools.getCAAdminSession().editCA(admin, info); // need active status in order to do renew
+        TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", false);
+
 
     }
 }

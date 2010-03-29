@@ -13,9 +13,16 @@
  
 package org.ejbca.core.model.ca.catoken;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
@@ -117,14 +124,39 @@ public abstract class CATokenContainer extends UpgradeableDataHashMap implements
 
 	/**
 	 * Method that generates the keys that will be used by the CAToken.
-	 * Only available for Soft CA Tokens so far.
+	 * The method can be used to generate keys for an initial CA token or to renew Certificate signing keys. 
+	 * If setstatustowaiting is true and you generate new keys, the new keys will be available as SecConst.CAKEYPURPOSE_CERTSIGN.
+	 * If setstatustowaiting is false and you generate new keys, the new keys will be available as SecConst.CAKEYPURPOSE_CERTSIGN_NEXT.
 	 * 
 	 * @param authenticationCode the password used to encrypt the keystore, laterneeded to activate CA Token
 	 * @param renew flag indicating if the keys are renewed instead of created fresh. Renewing keys does not 
 	 * create new encryption keys, since this would make it impossible to decrypt old stuff.
+	 * @param activate flag indicating if the new keys should be activated immediately or or they should be added as "next" signing key. 
+	 * Using true here makes it possible to generate certificate renewal requests for external CAs still using the old keys until the response is received. 
 	 */
-	public abstract void generateKeys(String authenticationCode, boolean renew) throws Exception;  
+	public abstract void generateKeys(String authenticationCode, boolean renew, boolean activate) throws Exception;  
 
+	/** Activating the "next" signing key means:
+	 * - move current signing key to previous signing to
+	 * - move current sequence to previous sequence
+	 * - move next signing key to current signing key
+	 * - move next sequence to current sequence
+	 * - remove next signing key mappings
+	 * - remove next sequence
+	 * 
+	 * @param authenticationCode
+	 * @throws CATokenOfflineException
+	 * @throws KeyStoreException
+	 * @throws NoSuchProviderException
+	 * @throws NoSuchAlgorithmException
+	 * @throws CertificateException
+	 * @throws IOException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 * @throws CATokenAuthenticationFailedException
+	 */
+	public abstract void activateNextSignKey(String authenticationCode) throws CATokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, InvalidKeyException, SignatureException, CATokenAuthenticationFailedException;
+	
 	/**
 	 * Method that import CA token keys from a P12 file. Was originally used when upgrading from 
 	 * old EJBCA versions. Only supports SHA1 and SHA256 with RSA or ECDSA.

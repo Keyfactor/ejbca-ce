@@ -936,12 +936,16 @@ public class KeyTools {
 
     /** Testing a key pair to verify that it is possible to first sign and then verify with it.
      * 
-     * @param priv
-     * @param pub
+     * @param priv private key to sign a string with
+     * @param pub public key to verify the signature with
      * @param provider A provider used for signing with the private key, or null if "BC" should be used.
-     * @throws Exception
+     * 
+     * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key.
+     * @throws NoSuchProviderException if the provider is not installed.
+     * @throws NoSuchAlgorithmException if a signature algorithm chosen by the class does not exist, SHA1WithRSA, SHA1WithDSA or SHA1withECDSA depending on the key type.
+     * @throws SignatureException if the signature of verification operation fails for unknown reasons
      */
-    public static void testKey(PrivateKey priv, PublicKey pub, String provider) throws Exception {
+    public static void testKey(PrivateKey priv, PublicKey pub, String provider) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
         final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
         String testSigAlg = (String)AlgorithmTools.getSignatureAlgorithms(pub).iterator().next();
@@ -957,7 +961,8 @@ public class KeyTools {
             signature.initSign( priv );
             signature.update( input );
             signBV = signature.sign();
-        }{
+        }
+        {
             Signature signature = Signature.getInstance(testSigAlg, "BC");
             signature.initVerify(pub);
             signature.update(input);
