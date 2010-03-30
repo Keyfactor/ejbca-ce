@@ -52,7 +52,7 @@
     * [ECA-1584] - PublisherQueue process service does not work in PostgreSQL
     * [ECA-1590] - Hash of a CA certificates can not be used to get "CA" if the subject DN of the certificate is not the same as the subject DN of the CA data.
 
-3.9.6, 2010-03-29
+3.9.6, 2010-03-30
 ---
 New Feature
     * [ECA-1542] - New WS API methods for caRenewCertRequest and caCertResponse
