@@ -20,7 +20,7 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 /**
  * ServerCertificateProfile is a class defining the fixed characteristics of a SSL/TLS server certificate type
  *
- * @version $Id: ServerCertificateProfile.java, dcarella $
+ * @version $Id$
  */
 public class ServerCertificateProfile extends CertificateProfile{
 
