@@ -656,7 +656,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             ps.setLong(1, currentdate);
             ps.setLong(2, expiretime.getTime());
             ps.setInt(3, SecConst.CERT_ACTIVE);
-            ps.setInt(3, SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+            ps.setInt(4, SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
             result = ps.executeQuery();
             while (result.next() && returnval.size() <= SecConst.MAXIMUM_QUERY_ROWCOUNT + 1) {
                 if (result.getString(1) != null && !result.getString(1).equals("")) {
