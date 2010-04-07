@@ -968,6 +968,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void addCaIssuer(String caIssuer) {
+    	caIssuer = caIssuer.trim();
+    	if ( caIssuer.length()<1 ) {
+    		return;
+    	}
         if (data.get(CAISSUERS) == null) {
             List caIssuers = new ArrayList();
             caIssuers.add(caIssuer);
