@@ -600,7 +600,7 @@
                   } 
                   // CA issuers
                   value = request.getParameter(TEXTFIELD_CAISSUERURI);
-               	  if((value != null) && (value.trim().length() > 0)) {
+               	  if( value != null ) {
                  	  certificateprofiledata.addCaIssuer(value);
                	  } 
            	  } else {
@@ -895,7 +895,7 @@
                for(int i = 0; i < certificateprofiledata.getCaIssuers().size(); i++) {
                    value = request.getParameter(BUTTON_DELETE_CAISSUERURI + i);
                    if(value != null) {
-                       certificateprofiledata.removeCaIssuer(request.getParameter(TEXTFIELD_CAISSUERURI + i).trim());                                                 
+                       certificateprofiledata.removeCaIssuer(request.getParameter(TEXTFIELD_CAISSUERURI + i));                                                 
                        cabean.setTempCertificateProfile(certificateprofiledata);
                        includefile = "certificateprofilepage.jspf";
                    }
