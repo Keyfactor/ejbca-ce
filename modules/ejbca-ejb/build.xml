@@ -55,6 +55,9 @@
     	<dirname file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.dir"/>
     	<mkdir dir="${mod.ejbca-util.lib.dir}" />
     	<jar destfile="${mod.ejbca-util.lib}">
+    		<manifest>
+				<attribute name="Implementation-Version" value="${app.version}"/>
+    		</manifest>
    			<fileset dir="${build-util.dir}" includes="**/*.class"/>
         	<fileset dir="${ejbca.home}/src/java">
         	    <include name="dncomponents.properties"/>
