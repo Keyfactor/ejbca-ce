@@ -10,15 +10,43 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ocsp;
+
+package org.ejbca.util;
+
+import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 
-/** class used from TestCertificateCache, depends on TestCertificateCache
- * @author tomas
+/**
+ * Tests the StringTools class .
+ *
  * @version $Id$
  */
-public class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
-	public void uncaughtException(Thread t, Throwable e) {
-		CertificateCacheTest.threadException = e;
-	}
+public class HTMLToolsTest extends TestCase {
+    private static Logger log = Logger.getLogger(HTMLToolsTest.class);
+
+    /**
+     * Creates a new TestStringTools object.
+     *
+     * @param name name
+     */
+    public HTMLToolsTest(String name) {
+        super(name);
+    }
+
+    protected void setUp() throws Exception {
+        log.trace(">setUp()");
+        log.trace("<setUp()");
+    }
+
+    protected void tearDown() throws Exception {
+        log.trace(">tearDown()");
+        log.trace("<tearDown()");
+    }
+
+    public void test01JavascriptEscape() throws Exception {
+        String test = "l'AC si vous l'avez";
+        assertEquals("l\\'AC si vous l\\'avez", HTMLTools.javascriptEscape(test));
+    }
 }

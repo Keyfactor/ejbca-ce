@@ -261,10 +261,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*Test*.class">			
-					<exclude name="**/InternalResourcesTestClass.class"/>
-					<exclude name="**/CacheTester.class"/>					
-				</fileset>
+				<fileset dir="${build-test.dir}" includes="**/*Test.class" />
 			</batchtest>
 		</junit>
 		<antcall target="createreport"/>

@@ -34,7 +34,7 @@ import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.approvalrequests.TestRevocationApproval;
+import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -338,7 +338,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		X509CAInfo cainfo = null;
 	    try {
 			// Generate CA with approvals for revocation enabled
-	    	int caID = TestRevocationApproval.createApprovalCA(admin, caname, CAInfo.REQ_APPROVAL_REVOCATION, TestTools.getCAAdminSession());
+	    	int caID = RevocationApprovalTest.createApprovalCA(admin, caname, CAInfo.REQ_APPROVAL_REVOCATION, TestTools.getCAAdminSession());
 			// Get CA cert
 			cainfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, caID);
 	        assertNotNull(cainfo);
@@ -397,7 +397,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 			// Approve revocation and verify success
 			Admin approvingAdmin = new Admin((X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(
 					admin, APPROVINGADMINNAME).iterator().next(), APPROVINGADMINNAME, null);
-			TestRevocationApproval.approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION,
+			RevocationApprovalTest.approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION,
 					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, TestTools.getCertificateStoreSession(), TestTools.getApprovalSession(), cainfo.getCAId());
 			// try to revoke the now revoked cert via CMP and verify error
 			nonce = CmpMessageHelper.createSenderNonce();

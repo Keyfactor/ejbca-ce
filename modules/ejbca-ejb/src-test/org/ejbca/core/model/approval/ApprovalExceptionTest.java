@@ -10,15 +10,25 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ocsp;
 
+package org.ejbca.core.model.approval;
 
-/** class used from TestCertificateCache, depends on TestCertificateCache
- * @author tomas
+import junit.framework.TestCase;
+
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ErrorCode;
+
+/**
  * @version $Id$
  */
-public class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
-	public void uncaughtException(Thread t, Throwable e) {
-		CertificateCacheTest.threadException = e;
+public class ApprovalExceptionTest extends TestCase {
+
+	/**
+	 * Verify that nested ApprovalExceptions propagate errorCode.
+	 */
+	public void testErrorCode() {
+		ApprovalException approvalException = new ApprovalException(ErrorCode.APPROVAL_ALREADY_EXISTS, "JUnit test message..");
+		EjbcaException ejbcaException = new EjbcaException(approvalException);
+		assertEquals("EjbcaException did not inherit ErrorCode.", ErrorCode.APPROVAL_ALREADY_EXISTS, ejbcaException.getErrorCode());
 	}
 }
