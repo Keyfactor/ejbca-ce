@@ -111,7 +111,7 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*.class">
+				<fileset dir="${build-test.dir}" includes="**/*Test.class">
 					...
 				</fileset>
 			</batchtest>
@@ -121,7 +121,7 @@ modules/{module name}/resources   Holds the module's meta-data and templates
     </target>
 
 	<target name="runone" depends="compile-tests">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=TestApprovalExecutorUtil" unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
     	<property name="reports.dir" location="${reports.base.dir}/runone"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>

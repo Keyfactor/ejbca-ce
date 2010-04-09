@@ -55,8 +55,6 @@ import org.ejbca.util.query.Query;
 
 public class RevocationApprovalTest extends TestCase {
 
-    //private static Logger log = Logger.getLogger(TestRevocationApproval.class);
-
     private static IApprovalSessionRemote approvalSession = TestTools.getApprovalSession();
     private static IAuthorizationSessionRemote authorizationSession = TestTools.getAuthorizationSession();
     private static IUserAdminSessionRemote userAdminSession = TestTools.getUserAdminSession();

@@ -269,7 +269,7 @@
     </target>
 	
 	<target name="runone" depends="compile-tests">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=TestApprovalExecutorUtil" unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
     	<property name="reports.dir" location="${reports.base.dir}/runone"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
