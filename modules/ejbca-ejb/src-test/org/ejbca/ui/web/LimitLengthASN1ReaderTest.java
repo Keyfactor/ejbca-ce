@@ -181,5 +181,38 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 			assertEquals("Value #" + i + " did not match expected output.", UNDEFINED_LENGTH_HAPPY[i], result[i]);
 		}
 	}
+	
+	/**
+	 * Private inner class which represents an input stream with controlled output.
+	 * 
+	 * TODO: When our test runner is reformed to only run tests matching
+	 * **\*Test.class, make this an inner class to LimitLengthASN1ReaderTest
+	 * 
+	 * @author mikek
+	 * @version $Id: LimitLengthASN1ReaderTest.java 8739 2010-03-12 12:01:49Z anatom
+	 *          $
+	 */
+	class InputStreamStub extends InputStream {
+
+		private int[] contents;
+		private int counter = 0;
+
+		public InputStreamStub(int[] contents) {
+			super();
+			this.contents = contents;
+		}
+
+		public int read() throws IOException {
+			if (contents == null) {
+				throw new NullPointerException(
+						"Class member contents must be set for anonymous inner class.");
+			}
+			if (counter < contents.length) {
+				return contents[counter++];
+			} else {
+				return -1;
+			}
+		}
+	}
 
 }

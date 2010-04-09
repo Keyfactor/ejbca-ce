@@ -140,28 +140,21 @@
 			<!-- Most system tests -->
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.dir}">
-					<include name="**/*Test*.class" />
+					<include name="**/*Test.class" />
 					<!-- Tests that require TestCAs to setup CAs -->
-					<exclude name="org/ejbca/core/ejb/ca/caadmin/TestCAs.class" />
-					<exclude name="org/ejbca/core/ejb/ca/sign/TestSignSession.class" />
-					<exclude name="org/ejbca/core/ejb/ca/caadmin/TestRemoveCA.class" />
-					<!-- Non-test classes -->
-					<exclude name="org/ejbca/core/protocol/ws/CommonEjbcaWSTest.class" />
-					<exclude name="org/ejbca/util/TestTools.class" />
-					<exclude name="org/ejbca/core/protocol/cmp/CmpTestCase.class" />
-					<exclude name="org/ejbca/ui/web/pub/cluster/WebEjbcaHealthRunner.class" />
-					<exclude name="org/ejbca/core/protocol/ocsp/OcspJunitHelper.class" />
-					<exclude name="org/ejbca/core/protocol/xkms/Constants.class" />
+					<exclude name="org/ejbca/core/ejb/ca/caadmin/CAsTest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/SignSessionTest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/caadmin/RemoveCATest.class" />
 					<!-- Tests that take a very long time to complete -->
-					<exclude name="org/ejbca/core/ejb/ca/sign/TestSignLotsOfCerts.class" />
-					<exclude name="org/ejbca/core/ejb/ca/sign/TestSignLotsOfCerts$SignTester.class" />
-					<exclude name="org/ejbca/core/ejb/ca/sign/TestSignLotsOfCerts$1.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsTest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsTest$SignTester.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsTest$1.class" />
 					<exclude name="org/ejbca/core/ejb/log/LoggingStressTest.class" />
 					<exclude name="org/ejbca/core/ejb/log/LoggingStressTest$LogTester.class" />
-					<exclude name="org/ejbca/core/ejb/ra/TestAddLotsofCertsPerUser.class" />
-					<exclude name="org/ejbca/core/ejb/ra/TestAddLotsofUsers.class" />
+					<exclude name="org/ejbca/core/ejb/ra/AddLotsofCertsPerUserTest.class" />
+					<exclude name="org/ejbca/core/ejb/ra/AddLotsofUsersTest.class" />
 					<!-- Tests that require special configuration to work -->
-					<exclude name="org/ejbca/ui/web/pub/TestAutoEnrollServlet.class" />
+					<exclude name="org/ejbca/ui/web/pub/AutoEnrollServletTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeMultipleKeyIdRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpTest$SimpleVerifier.class" />
@@ -169,8 +162,8 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$1.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
-					<exclude name="org/ejbca/core/protocol/xkms/TestXKMSSig.class" />
-                    <exclude name="org/ejbca/ui/cli/TestOcspMonitoringTool.class" />
+					<exclude name="org/ejbca/core/protocol/xkms/XKMSSigTest.class" />
+                    <exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspSignedHttpTest.class" />
@@ -377,7 +370,7 @@
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.dir}">
-                    <include name="org/ejbca/ui/cli/TestOcspMonitoringTool.class" />
+                    <include name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>

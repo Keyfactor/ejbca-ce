@@ -10,15 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ocsp;
 
+package org.ejbca.util;
 
-/** class used from TestCertificateCache, depends on TestCertificateCache
- * @author tomas
+import junit.framework.TestCase;
+
+/**
+ * Tests the simple object cache class .
+ * 
  * @version $Id$
  */
-public class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
-	public void uncaughtException(Thread t, Throwable e) {
-		CertificateCacheTest.threadException = e;
+public class ObjectCacheTest extends TestCase {
+	public void testObjectCache() throws Exception {
+		ObjectCache cache = new ObjectCache(200);
+		cache.put("foo", "bar");
+		cache.put("foo1", "bar1");
+		cache.put("foo2", "bar2");
+		Object o = cache.get("foo1");
+		assertNotNull(o);
+		String s = (String)o;
+		assertEquals("bar1", s);
+		Thread.sleep(250);
+		o = cache.get("foo1");
+		assertNull(o);
+		o = cache.get("foo");
+		assertNull(o);
+		o = cache.get("foo2");
+		assertNull(o);
 	}
 }
