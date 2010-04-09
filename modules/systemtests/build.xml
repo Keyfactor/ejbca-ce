@@ -126,16 +126,16 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/TestCAs.class"/>
+				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/CAsTest.class"/>
 			</batchtest>
-			<!-- Tests that require TestCAs to setup CAs -->
+			<!-- Tests that require CAsTest to setup CAs -->
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.dir}">
-					<include name="org/ejbca/core/ejb/ca/sign/TestSignSession.class" />
+					<include name="org/ejbca/core/ejb/ca/sign/SignSessionTest.class" />
 				</fileset>
 			</batchtest>
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/TestRemoveCA.class"/>
+				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/RemoveCATest.class"/>
 			</batchtest>
 			<!-- Most system tests -->
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -258,31 +258,31 @@
 	</target>
 
 	<target name="runws" description="Run Web Services system tests">
-    	<property name="test.runone" value="TestEjbcaWS*"/>
+    	<property name="test.runone" value="EjbcaWS*Test"/>
     	<property name="reports.dir" location="${reports.base.dir}/runws"/>
 		<antcall target="runone-internal"/>
 	</target>
 
 	<target name="runxkms" description="Run XKMS system tests">
-    	<property name="test.runone" value="TestXKMS*"/>
+    	<property name="test.runone" value="XKMS*Test"/>
     	<property name="reports.dir" location="${reports.base.dir}/runxkms"/>
 		<antcall target="runone-internal"/>
 	</target>
 
 	<target name="runlotsperuser" description="Run system tests that creates lots of users and certificates for each user">
-    	<property name="test.runone" value="TestAddLotsofCertsPerUser"/>
+    	<property name="test.runone" value="AddLotsofCertsPerUserTest"/>
     	<property name="reports.dir" location="${reports.base.dir}/runlotsperuser"/>
 		<antcall target="runone-internal"/>
 	</target>
 
 	<target name="runlotsofusers" description="Run system tests that creates lots of users">
-    	<property name="test.runone" value="TestAddLotsofUsers"/>
+    	<property name="test.runone" value="AddLotsofUsersTest"/>
     	<property name="reports.dir" location="${reports.base.dir}/runlotsperuser"/>
 		<antcall target="runone-internal"/>
 	</target>
 
 	<target name="runperf" description="Run system tests that creates lots of certificates">
-    	<property name="test.runone" value="TestSignLotsOfCerts"/>
+    	<property name="test.runone" value="SignLotsOfCertsTest"/>
     	<property name="reports.dir" location="${reports.base.dir}/runperf"/>
 		<antcall target="runone-internal"/>
 	</target>

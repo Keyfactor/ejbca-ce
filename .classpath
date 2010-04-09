@@ -47,7 +47,7 @@
 	<classpathentry kind="lib" path="lib/jline-0.9.94.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15.jar" sourcepath="/Users/mikek/Documents/workspace/external libs/bouncycastle/bcprov-jdk15-145"/>
 	<classpathentry kind="lib" path="lib/bcmail-jdk15.jar"/>
 	<classpathentry kind="lib" path="lib/bctsp-jdk15.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc.jar"/>
@@ -85,35 +85,13 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-logging-log4j.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system-jmx.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-j2se.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-kernel.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-javaee.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces.jar"/>
 	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces-comps.jar"/>
+	<classpathentry kind="lib" path="/Users/mikek/jboss/jboss-4.2.3.GA/client/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="/Users/mikek/jboss/jboss-4.2.3.GA/client/jboss-j2ee.jar"/>
+	<classpathentry kind="var" path="JBOSS_HOME"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>

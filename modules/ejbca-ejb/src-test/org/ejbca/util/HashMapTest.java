@@ -13,7 +13,6 @@ import org.apache.commons.lang.StringUtils;
  * @version $Id$
  */
 public class HashMapTest extends TestCase {
-    //private static final Logger log = Logger.getLogger(TestHashMap.class);
 
     public HashMapTest(String name) {
         super(name);
