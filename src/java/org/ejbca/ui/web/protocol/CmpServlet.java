@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.web.protocol;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.servlet.ServletConfig;
@@ -24,14 +23,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERObject;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
+import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
-import org.ejbca.util.Base64;
-
 
 /**
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
@@ -172,15 +171,20 @@ public class CmpServlet extends HttpServlet {
 		 POST
 		 <binary CMP message>
 		 */
-		ServletInputStream sin = request.getInputStream();
-		// This small code snippet is inspired/copied from apache IO utils by Tomas Gustavsson...
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		byte[] buf = new byte[1024];
-		int n = 0;
-		while (-1 != (n = sin.read(buf))) {
-			output.write(buf, 0, n);
+		final ServletInputStream sin = request.getInputStream();
+		final DERObject message;
+		final String eMsg = intres.getLocalizedMessage("cmp.errornoasn1");
+		try {
+			message = new LimitLengthASN1Reader(sin, request.getContentLength()).readObject();
+			if ( message==null ) {
+				throw new Exception(eMsg);
+			}
+		} catch ( Exception e ) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+			log.error( eMsg, e );
+			return;
 		}
-		service(output.toByteArray(), request.getRemoteAddr(), response);
+		service(message, request.getRemoteAddr(), response);
 		log.trace("<doPost()");
 	} //doPost
 	
@@ -202,37 +206,27 @@ public class CmpServlet extends HttpServlet {
 		
 		log.trace("<doGet()");
 	} // doGet
-	
-	private void service(byte[] message, String remoteAddr, HttpServletResponse response) throws IOException {
+
+	private void service(DERObject message, String remoteAddr, HttpServletResponse response) throws IOException {
 		try {
-			if ((message == null)) {
-				log.error("Got request missing message.");
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "A message must be supplied!");
+			// We must use an administrator with rights to create users
+			final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
+			log.info( intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr) );
+			final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator);
+			final IResponseMessage resp = dispatcher.dispatch(message);
+			if ( resp==null ) { // If resp is null, it means that the dispatcher failed to process the message.
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, intres.getLocalizedMessage("cmp.errornullresp"));
 				return;
 			}
-			
-			// We must use an administrator with rights to create users
-			Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
-			if (log.isDebugEnabled()) {
-				log.debug("Received a CMP message by HTTP: " + new String(Base64.encode(message)));
-			}
-    		String iMsg = intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr);
-			log.info(iMsg);
-			CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator);
-			IResponseMessage resp = dispatcher.dispatch(message);
-			// If resp is null, it means we have nothing to send back
-			if (resp != null) {
-				// Add no-cache headers as defined in draft-ietf-pkix-cmp-transport-protocols-05.txt
-				ServletUtils.addCacheHeaders(response);
-				// Send back CMP response
-				RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp", null);				
-	    		iMsg = intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr);
-    			log.info(iMsg);
-			} 
+			// Add no-cache headers as defined in draft-ietf-pkix-cmp-transport-protocols-05.txt
+			ServletUtils.addCacheHeaders(response);
+			// Send back CMP response
+			RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp", null);
+			log.info( intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr) );
 		} catch (Exception e) {
 			log.error("Error in CmpServlet:", e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
-	
-} // ScepServlet
+
+}
