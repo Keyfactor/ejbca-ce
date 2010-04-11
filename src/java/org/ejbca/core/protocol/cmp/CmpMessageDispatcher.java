@@ -13,19 +13,15 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayInputStream;
-import java.rmi.RemoteException;
-
-import javax.ejb.CreateException;
-
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DERObject;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
@@ -53,6 +49,8 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
+	/** Internal localization of logs and errors */
+	private static final InternalResources intres = InternalResources.getInstance();
 	
 	/** This defines if we allows messages that has a POPO setting of raVerify. 
 	 * If this variable is true, and raVerify is the POPO defined in the message, no POPO check will be done.
@@ -67,31 +65,33 @@ public class CmpMessageDispatcher {
 	public CmpMessageDispatcher(Admin adm) {
 		this.admin = adm;
 		// Install BouncyCastle provider
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 		
 		// Read parameters 
-		allowRaVerifyPopo = CmpConfiguration.getAllowRAVerifyPOPO();
-		defaultCA = CmpConfiguration.getDefaultCA();
-		extractUsernameComponent = CmpConfiguration.getExtractUsernameComponent();
+		this.allowRaVerifyPopo = CmpConfiguration.getAllowRAVerifyPOPO();
+		this.defaultCA = CmpConfiguration.getDefaultCA();
+		this.extractUsernameComponent = CmpConfiguration.getExtractUsernameComponent();
 	}
 	
 	/** The message may have been received by any transport protocol, and is passed here in it's binary asn.1 form.
 	 * 
 	 * @param message der encoded CMP message
-	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back
+	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occured
 	 */
-	public IResponseMessage dispatch(byte[] message) {
-		IResponseMessage ret = null;
+	public IResponseMessage dispatch(DERObject derObject) {
+		final PKIMessage req;
 		try {
-			PKIMessage req = null;
-			try {
-				req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(message)).readObject());				
-			} catch (Exception e) {
-				log.error("Error parsing CMP message: ", e);
-				// If we could not read the message, we should return an error BAD_REQUEST
-				ret = CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, "Can not parse request message");
-				return ret;
+			req = PKIMessage.getInstance(derObject);
+			if ( req==null ) {
+				throw new Exception("No CMP message could be parsed from received Der object.");
 			}
+		} catch (Throwable t) {
+			final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
+			log.error(eMsg, t);
+			// If we could not read the message, we should return an error BAD_REQUEST
+			return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, eMsg);
+		}
+		try {
 			PKIHeader header = req.getHeader();
 			PKIBody body = req.getBody();
 			
@@ -108,12 +108,12 @@ public class CmpMessageDispatcher {
 			switch (tagno) {
 			case 0:
 				// 0 and 2 are both certificate requests
-				handler = new CrmfMessageHandler(admin);
-				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
+				handler = new CrmfMessageHandler(this.admin);
+				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin);
-				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
+				handler = new CrmfMessageHandler(this.admin);
+				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
 				break;
 			case 19:
 				// PKI confirm
@@ -127,7 +127,7 @@ public class CmpMessageDispatcher {
 				break;
 			case 11:
 				// Revocation request
-				handler = new RevocationMessageHandler(admin);
+				handler = new RevocationMessageHandler(this.admin);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			default:
@@ -135,28 +135,24 @@ public class CmpMessageDispatcher {
 				log.info("Received an unknown message type, tagno="+tagno);
 				break;
 			}
-			if ( (handler != null) && (cmpMessage != null) ) {
-				ret  = handler.handleMessage(cmpMessage);
-				if (ret != null) {
-					log.debug("Received a response message from CmpMessageHandler.");
-				} else {
-					log.error("CmpMessageHandler returned a null message");
-				}
-			} else {
-				log.error("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
+			if ( handler==null || cmpMessage==null ) {
 				if (unknownMessageType > -1) {
-					log.error("Unknown message type "+unknownMessageType+" received, creating error message");
-					ret = CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, "Can not handle message type");					
+					final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", new Integer(unknownMessageType));
+					log.error(eMsg);
+					return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, eMsg);
 				}
-
+				throw new Exception("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
 			}
-		} catch (CreateException e) {
-			log.error("Exception during CMP processing: ", e);
-		} catch (RemoteException e) {
-			log.error("Exception during CMP processing: ", e);
+			final IResponseMessage ret  = handler.handleMessage(cmpMessage);
+			if (ret != null) {
+				log.debug("Received a response message from CmpMessageHandler.");
+			} else {
+				log.error( intres.getLocalizedMessage("cmp.errorresponsenull") );
+			}
+			return ret;
+		} catch (Exception e) {
+			log.error(intres.getLocalizedMessage("cmp.errorprocess"), e);
+			return null;
 		}
-
-		return ret;
 	}
-	
 }
