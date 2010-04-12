@@ -32,9 +32,9 @@ import org.ejbca.util.keystore.KeyTools;
  * @author tomas
  * @version $Id$
  */
-public class TestCATokenContainer extends TestCase {
+public class CATokenContainerTest extends TestCase {
 
-	public TestCATokenContainer() {
+	public CATokenContainerTest() {
 		CryptoProviderTools.installBCProvider();
 	}
 	
