@@ -14,66 +14,58 @@
 package org.ejbca.ui.tcp;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.security.cert.CertificateEncodingException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.Base64;
 
 /**
- * Encodes and decodes TCP messages to and from a client.
+ * Decodes a TCP messages from a client.
+ * 
  * @author lars
+ * @version $Id$
  *
  */
-public class TcpMessage {
-	private static final Logger log = Logger.getLogger(TcpMessage.class.getName());
+public class TcpReceivedMessage {
+	private static final Logger log = Logger.getLogger(TcpReceivedMessage.class.getName());
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
-	private final boolean close;
-	private final DERObject message;
+	/**
+	 * true if the session should be closed after returning to the client
+	 */
+	public final boolean doClose;
+	/**
+	 * the message from the client decoded from ASN1
+	 */
+	public final DERObject message;
 
-	private TcpMessage() { // this notifies an error
-		this.close = true;
+	private TcpReceivedMessage() { // this notifies an error
+		this.doClose = true;
 		this.message = null;
 	}
-	private TcpMessage( boolean close, DERObject message) { // message OK
-		this.close = close;
+	private TcpReceivedMessage( boolean close, DERObject message) { // message OK
+		this.doClose = close;
 		this.message = message;
-	}
-	/**
-	 * @return true if the session should be closed after returning to the client
-	 */
-	public boolean isClose() {
-		return this.close;
-	}
-	/**
-	 * @return the message from the client decoded from ASN1
-	 */
-	public DERObject getMessage() {
-		return this.message;
 	}
 	/**
 	 * @param command bytes from client. The payload of has to be ASN1 encoded
 	 * @return the message ASN1 decoded
 	 * @throws IOException
 	 */
-	static public TcpMessage getTcpMessage(byte command[]) throws IOException {
+	static public TcpReceivedMessage getTcpMessage(byte command[]) throws IOException {
 		if ( command==null || command.length==0 ) {
-			return new TcpMessage(); // this is something fishy
+			return new TcpReceivedMessage(); // this is something fishy
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("Got data of length "+command.length+": "+new String(Base64.encode(command)));			
 		}
 		final int cmpMessageStartOffset = 7;
 		if (command.length <= cmpMessageStartOffset) {
-			return new TcpMessage();
+			return new TcpReceivedMessage();
 		}
 		final ByteArrayInputStream bai = new ByteArrayInputStream(command);
 		final DataInputStream dis = new DataInputStream(bai);
@@ -100,70 +92,18 @@ public class TcpMessage {
 		// They should match
 		if ( len!=msgLen ) {
 			log.error( intres.getLocalizedMessage("cmp.errortcpwronglen", new Integer(msgLen), new Integer(len)) );
-			return new TcpMessage();// This is something malicious
+			return new TcpReceivedMessage();// This is something malicious
 		}
 		if ( msgLen>=5000 ) {
 			log.error( intres.getLocalizedMessage("cmp.errortcptoolongmsg", new Integer(msgLen)) );
-			return new TcpMessage();// This is something malicious
+			return new TcpReceivedMessage();// This is something malicious
 		}
 		// The CMP message is the rest of the stream that has not been read yet.
 		try {
-			return new TcpMessage( (flags&0xFE)==1, new LimitLengthASN1Reader(dis, command.length-cmpMessageStartOffset).readObject() );
+			return new TcpReceivedMessage( (flags&0x01)>0, new LimitLengthASN1Reader(dis, command.length-cmpMessageStartOffset).readObject() );
 		} catch( Throwable e ) {
 			log.error( intres.getLocalizedMessage("cmp.errornoasn1"), e );
-			return new TcpMessage();
+			return new TcpReceivedMessage();
 		}
-	}
-	/**
-	 * @param resp message to be returned to the client.
-	 * @param close true if the session to the client should be closed.
-	 * @return the bytes to be sent to the client
-	 * @throws IOException
-	 */
-	public static byte[] createReturnTcpMessage(IResponseMessage resp, boolean close) throws IOException {
-		final byte[] msg;
-		final int msgType;
-		final boolean doClose;
-		{
-			byte tmp[];
-			try {
-				tmp = resp.getResponseMessage();
-			} catch (CertificateEncodingException e) {
-				tmp = null;
-			}
-			if ( tmp!=null && tmp.length>0 ) {
-				msg = tmp;
-				doClose = close;
-				msgType = 5;
-			} else {
-				msg = new byte[1];
-				msg[0] = 0;
-				msgType = 3;
-				doClose = true;
-			}
-		}
-		// 5 is pkiRep, 6 is errorMsgRep, 3 is finRep
-		// errorMsgRep should only be used for TCP protocol errors, see 3.5.6 in cmp-transport-protocols
-		//if (resp.getStatus() != ResponseStatus.SUCCESS) {
-		//	msgType = 6;
-		//}
-		final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-		final DataOutputStream dos = new DataOutputStream(bao); 
-		// return msg length = msg.length + 3; 1 byte version, 1 byte flags and 1 byte message type
-		dos.writeInt(msg.length+3);
-		dos.writeByte(10);
-		final int flags = doClose ? 1 : 0; // 1 if we should close, 0 otherwise
-		dos.writeByte(flags); 
-		dos.writeByte(msgType); 
-		dos.write(msg);
-		dos.flush();
-		if (log.isDebugEnabled()) {
-			log.debug("Wrote length: "+msg.length+3);
-			log.debug("Wrote version: 10");
-			log.debug("Wrote flags: "+flags);
-			log.debug("Wrote msgType: "+msgType);
-			log.debug("Wrote msg with length: "+msg.length);
-		}
-		return bao.toByteArray();
 	}
 }
