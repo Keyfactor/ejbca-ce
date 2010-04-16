@@ -10,13 +10,11 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.cli;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -66,6 +64,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.ejbca.core.protocol.cmp.CMPSendTCP;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
@@ -112,10 +111,9 @@ class CMPTest extends ClientToolBox {
         final private String hostName;
         final private int port;
         final private boolean isHttp;
-        final private static int howOftenToGenerateSameUsername = 3;	// 0 = never, 1 = 100% chance, 2=50% chance etc.. 
         boolean isSign;
         boolean firstTime = true;
-    	private static int lastNextInt = 0;
+        //private int lastNextInt = 0;
 
         StressTest( final String _hostName,
                     final int _port,
@@ -308,82 +306,33 @@ class CMPTest extends ClientToolBox {
             return ret;
         }
         
-        private static byte[] createTcpMessage(final byte[] msg) throws IOException {
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(bao); 
-            // 0 is pkiReq
-            int msgType = 0;
-            int len = msg.length;
-            // return msg length = msg.length + 3; 1 byte version, 1 byte flags and 1 byte message type
-            dos.writeInt(len+3);
-            dos.writeByte(10);
-            dos.writeByte(0); // 1 if we should close, 0 otherwise
-            dos.writeByte(msgType); 
-            dos.write(msg);
-            dos.flush();
-            return bao.toByteArray();
-        }
         private byte[] sendCmpTcp(final byte[] message, final Socket socket) {
             try {
-                final byte msg[] = createTcpMessage(message);
-
-                final BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
-                os.write(msg);
-                os.flush();
-
-                final DataInputStream dis = new DataInputStream(socket.getInputStream());
-                // Read the length, 32 bits
-                int moreBytesToRead = dis.readInt();
-                // System.out.println("Got a message claiming to be of length: " + len);
-                // Read the version, 8 bits. Version should be 10 (protocol draft nr 5)
-                final int version = dis.readByte(); moreBytesToRead--;
-                if ( version!=10 ) {
-                    StressTest.this.performanceTest.getLog().error("Wrong version. Is "+version+" should be 10.");
+                final CMPSendTCP send = new CMPSendTCP( message, socket, false );
+                if ( send.version!=10 ) {
+                    StressTest.this.performanceTest.getLog().error("Wrong version. Is "+send.version+" should be 10.");
                 }
-
-                // Read flags, 8 bits for version 10
-                /*final int flags =*/ dis.readByte(); moreBytesToRead--;
-                // System.out.println("Got a message with flags (1 means close): " + flags);
-                // Check if the client wants us to close the connection (LSB is 1 in that case according to spec)
-
-                // Read message type, 8 bits
-                final int msgType = dis.readByte(); moreBytesToRead--;
-                //System.out.println("Got a message of type: " +msgType);
-                if ( msgType!=5 ) {
-                    StressTest.this.performanceTest.getLog().error("Wrong message type. Is "+msgType+" should be 5.");
+                if ( send.msgType!=5 ) {
+                    StressTest.this.performanceTest.getLog().error("Wrong message type. Is "+send.msgType+" should be 5.");
                 }
-
-                // Read message
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
-                while ( moreBytesToRead>0 ) {
-                    if ( dis.available()<=0 ) {
-                        final int nextByte = dis.read();
-                        if ( nextByte < 0 ) {
-                            break;
-                        }
-                        baos.write(nextByte);
-                        moreBytesToRead--;
-                    } else {
-                        final byte bytes[] = new byte[dis.available()];
-                        dis.read(bytes);
-                        baos.write(bytes);
-                        moreBytesToRead -= bytes.length;
-                    }
-                }
-                if ( moreBytesToRead!=0 ) {
-                    StressTest.this.performanceTest.getLog().error("More bytes to read happens to be "+moreBytesToRead);
-                }
-                os.close();
-                dis.close();
-                socket.close();
-                //System.out.println("Read "+baos.size()+" bytes");
-                final byte respBytes[] = baos.toByteArray();
-                if ( respBytes==null || respBytes.length<1 ) {
+                if ( send.response==null || send.response.length<=send.headerLength ) {
                     StressTest.this.performanceTest.getLog().error("Nothing received from host.");
                 }
-                return respBytes;
-            } catch( Exception e ) {
-                StressTest.this.performanceTest.getLog().error("Error when sending message to TCP port.", e);
+                if ( send.response!=null && send.response.length!=send.bytesRead ) {
+                    StressTest.this.performanceTest.getLog().error("Only "+send.bytesRead+" has been read when "+send.response.length+" should have been read." );
+                }
+                if ( (send.flags&0x01)>0 ) {
+                    socket.close();
+                    StressTest.this.performanceTest.getLog().error("Closing socket on request from host.");
+                }
+                return Arrays.copyOfRange(send.response, send.headerLength, send.response.length);
+            } catch( IOException e ) {
+                StressTest.this.performanceTest.getLog().error("Error when sending message to TCP port. Closing socket.", e);
+                try {
+                    socket.close();
+                } catch (IOException e1) {
+                    StressTest.this.performanceTest.getLog().error("Error when closing socket.", e);
+                }
                 return null;
             }
         }
@@ -576,6 +525,7 @@ class CMPTest extends ClientToolBox {
             }
             if ( body.getTagNo()!=1 ) {
                 StressTest.this.performanceTest.getLog().error("Cert body tag not 1.");
+                return null;
             }
             final CertRepMessage c = body.getIp();
             if ( c==null ) {
@@ -589,6 +539,7 @@ class CMPTest extends ClientToolBox {
             }
             if ( resp.getCertReqId().getValue().intValue()!=requestId ) {
                 StressTest.this.performanceTest.getLog().error("Received CertReqId is "+resp.getCertReqId().getValue().intValue()+" but should be "+requestId);
+                return null;
             }
             final PKIStatusInfo info = resp.getStatus();
             if ( info==null ) {
@@ -597,6 +548,7 @@ class CMPTest extends ClientToolBox {
             }
             if ( info.getStatus().getValue().intValue()!=0 ) {
                 StressTest.this.performanceTest.getLog().error("Received Status is "+info.getStatus().getValue().intValue()+" but should be 0");
+                return null;
             }
             final CertifiedKeyPair kp = resp.getCertifiedKeyPair();
             if ( kp==null ) {
@@ -625,14 +577,17 @@ class CMPTest extends ClientToolBox {
             }
             if ( cert.getSubjectDN().hashCode() != new X509Name(sessionData.getUserDN()).hashCode() ) {
                 StressTest.this.performanceTest.getLog().error("Subject is '"+cert.getSubjectDN()+"' but should be '"+sessionData.getUserDN()+'\'');
+                return null;
             }
             if ( cert.getIssuerX500Principal().hashCode() != this.cacert.getSubjectX500Principal().hashCode() ) {
                 StressTest.this.performanceTest.getLog().error("Issuer is '"+cert.getIssuerDN()+"' but should be '"+this.cacert.getSubjectDN()+'\'');
+                return null;
             }
             try {
                 cert.verify(this.cacert.getPublicKey());
             } catch (Exception e) {
                 StressTest.this.performanceTest.getLog().error("Certificate not verifying. See exception", e);
+                return null;
             }
             return cert;
         }
@@ -649,17 +604,20 @@ class CMPTest extends ClientToolBox {
             final PKIHeader header = respObject.getHeader();
             if ( header.getSender().getTagNo()!=4 ) {
                 StressTest.this.performanceTest.getLog().error("Wrong tag in respnse message header. Is "+header.getSender().getTagNo()+" should be 4.");
+                return false;
             }
             {
                 final X509Name name = X509Name.getInstance(header.getSender().getName());
                 if ( name.hashCode() != this.cacert.getSubjectDN().hashCode() ) {
                     StressTest.this.performanceTest.getLog().error("Wrong CA DN. Is '"+name+"' should be '"+this.cacert.getSubjectDN()+"'.");
+                    return false;
                 }
             }
             {
                 final X509Name name = X509Name.getInstance(header.getRecipient().getName());
                 if ( name.hashCode() != new X509Name(sessionData.userDN).hashCode() ) {
                     StressTest.this.performanceTest.getLog().error("Wrong recipient DN. Is '"+name+"' should be '"+sessionData.userDN+"'.");
+                    return false;
                 }
             }
             final PKIBody body = respObject.getBody();
@@ -669,10 +627,12 @@ class CMPTest extends ClientToolBox {
             }
             if ( body.getTagNo()!=19 ) {
                 StressTest.this.performanceTest.getLog().error("Cert body tag not 19.");
+                return false;
             }
             final DERNull n = body.getConf();
             if ( n==null ) {
                 StressTest.this.performanceTest.getLog().error("Confirmation is null.");
+                return false;
             }
             return true;
         }
@@ -706,7 +666,9 @@ class CMPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("No certificate request.");
                     return false;
                 }
-                final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
+                final String password = PBEPASSWORD;
+                //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
+                final PKIMessage req = protectPKIMessage(one, false,  password);
                 if ( req==null ) {
                     StressTest.this.performanceTest.getLog().error("No protected message.");
                     return false;
@@ -722,7 +684,9 @@ class CMPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("No response message.");
                     return false;
                 }
-                checkCmpResponseGeneral(resp, this.sessionData, true);
+                if ( !checkCmpResponseGeneral(resp, this.sessionData, true) ) {
+                    return false;
+                }
                 final X509Certificate cert = checkCmpCertRepMessage(this.sessionData, resp, this.sessionData.getReqId());
                 if ( cert==null ) {
                     return false;
@@ -741,13 +705,15 @@ class CMPTest extends ClientToolBox {
                 this.sessionData = sd;
             }
             public boolean doIt() throws Exception {
-                String hash = "foo123";
-                PKIMessage con = genCertConfirm(this.sessionData, hash);
+                final String hash = "foo123";
+                final PKIMessage con = genCertConfirm(this.sessionData, hash);
                 if ( con==null ) {
                     StressTest.this.performanceTest.getLog().error("Not possible to generate PKIMessage.");
                     return false;
                 }
-                PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD);
+                final String password = PBEPASSWORD;
+                //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
+                final PKIMessage confirm = protectPKIMessage(con, false, password);
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
                 final DEROutputStream out = new DEROutputStream(bao);
                 out.writeObject(confirm);
@@ -758,9 +724,13 @@ class CMPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("No response message.");
                     return false;
                 }
-                checkCmpResponseGeneral(resp, this.sessionData, false);
-                checkCmpPKIConfirmMessage(this.sessionData, resp);
-                StressTest.this.performanceTest.getLog().info("User with DN '"+this.sessionData.getUserDN()+"' finished.");
+                if ( !checkCmpResponseGeneral(resp, this.sessionData, false) ) {
+                    return false;
+                }
+                if ( !checkCmpPKIConfirmMessage(this.sessionData, resp) ) {
+                    return false;
+                }
+                //StressTest.this.performanceTest.getLog().info("User with DN '"+this.sessionData.getUserDN()+"' finished.");
                 return true;
             }
             public String getJobTimeDescription() {
@@ -787,51 +757,52 @@ class CMPTest extends ClientToolBox {
                 return "Revoke user";
             }
         }*/
-    	
-        private static synchronized int getRandomAndRepeated(PerformanceTest performanceTest) {
-        	// Initialize with some new value every time the test is started
-        	if (lastNextInt == 0) {
-        		lastNextInt = performanceTest.getRandom().nextInt();
-        	}
-        	// Return the same value once in a while so we have multiple requests for the same username
-    		if (howOftenToGenerateSameUsername == 0 || performanceTest.getRandom().nextInt() % howOftenToGenerateSameUsername != 0) {
-    			lastNextInt = performanceTest.getRandom().nextInt();
-    		}
-    		return lastNextInt;
-        }
-        
         class SessionData {
             final private byte[] nonce = new byte[16];
             final private byte[] transid = new byte[16];
+            private int lastNextInt = 0;
             private String userDN;
             private int reqId;
+            Socket socket;
+            final private static int howOftenToGenerateSameUsername = 3;	// 0 = never, 1 = 100% chance, 2=50% chance etc.. 
             SessionData() {
                 super();
             }
             Socket getSocket() throws UnknownHostException, IOException {
-            	Socket ret = null;
-                if ( !StressTest.this.isHttp ) {
-                    ret = new Socket(StressTest.this.hostName, StressTest.this.port);
-                }
-                return ret;
-            }
-            
-            HttpURLConnection getHttpURLConnection() throws IOException {
-            	HttpURLConnection ret = null;
                 if ( StressTest.this.isHttp ) {
-                    // POST the CMP request
-                    // we are going to do a POST
-                    final HttpURLConnection con = (HttpURLConnection)new URL("http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/" + resourceCmp).openConnection();
-                    con.setDoOutput(true);
-                    con.setRequestMethod("POST");
-                    con.setRequestProperty("Content-type", "application/pkixcmp");
-                    con.connect();
-                    ret = con;
+                    return null;
                 }
-                return ret;
+                if ( this.socket==null || this.socket.isClosed() || !this.socket.isBound() || !this.socket.isConnected() || this.socket.isInputShutdown() || this.socket.isOutputShutdown() ) {
+                    StressTest.this.performanceTest.getLog().info("New socket created for thread with '"+this.transid+"'.");
+                    this.socket = new Socket(StressTest.this.hostName, StressTest.this.port);
+                    this.socket.setKeepAlive(true);
+                }
+                return this.socket;
+            }
+
+            HttpURLConnection getHttpURLConnection() throws IOException {
+                if ( !StressTest.this.isHttp ) {
+                    return null;
+                }
+                // POST the CMP request
+                // we are going to do a POST
+                final HttpURLConnection con = (HttpURLConnection)new URL("http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/" + resourceCmp).openConnection();
+                con.setDoOutput(true);
+                con.setRequestMethod("POST");
+                con.setRequestProperty("Content-type", "application/pkixcmp");
+                con.connect();
+                return con;
+            }
+            private int getRandomAndRepeated() {
+                // Initialize with some new value every time the test is started
+                // Return the same value once in a while so we have multiple requests for the same username
+                if ( lastNextInt==0 || howOftenToGenerateSameUsername==0 || StressTest.this.performanceTest.getRandom().nextInt()%howOftenToGenerateSameUsername!=0 ) {
+                    lastNextInt = StressTest.this.performanceTest.getRandom().nextInt();
+                }
+                return lastNextInt;
             }
             void newSession() {
-                this.userDN = "CN=CMP Test User Nr "+StressTest.getRandomAndRepeated(performanceTest)+",O=CMP Test,C=SE";
+                this.userDN = "CN=CMP Test User Nr "+getRandomAndRepeated()+",O=CMP Test,C=SE";
                 StressTest.this.performanceTest.getRandom().nextBytes(this.nonce);
                 StressTest.this.performanceTest.getRandom().nextBytes(this.transid);
             }

@@ -625,6 +625,7 @@
            	<sourcepath location="modules/ejbca-ws/src"/>	<!-- ECA-1396 will probably change this.. -->
            	<sourcepath location="modules/ejbca-ejb-cli/src"/>
            	<sourcepath location="modules/clientToolBox/src"/>
+           	<sourcepath location="modules/cmpProxy/src"/>
            	<sourcepath location="modules/ejbca-entity/src"/>
         	<!-- Surpress XDoclet warnings. Thsi should be removed to EJBCA 4.0 -->
         	<tag name="ejb.bean" enabled="no"/>
@@ -973,6 +974,10 @@
 	
     <target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
     	<ant antfile="modules/build.xml" target="clientToolBox" />
+    </target>
+
+    <target name="cmpProxy" description="Builds a CMP proxy.">
+    	<ant antfile="modules/build.xml" target="cmpProxy" />
     </target>
 	
 	<target name="showtime" >

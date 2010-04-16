@@ -28,13 +28,13 @@ package org.ejbca.ui.tcp;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.security.cert.CertificateEncodingException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
-import org.ejbca.util.Base64;
 import org.quickserver.net.server.ClientBinaryHandler;
 import org.quickserver.net.server.ClientEventHandler;
 import org.quickserver.net.server.ClientHandler;
@@ -58,7 +58,6 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		handler.setDataMode(DataMode.BINARY, DataType.IN);
 		handler.setDataMode(DataMode.BINARY, DataType.OUT);
 	}
-	
 	public void lostConnection(ClientHandler handler) 
 	throws IOException {
 		log.debug("Connection lost: "+handler.getHostAddress());
@@ -71,8 +70,8 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 	public void handleBinary(ClientHandler handler, byte command[])
 	throws SocketTimeoutException, IOException {
 		log.info(intres.getLocalizedMessage("cmp.receivedmsg", handler.getHostAddress()));
-		final TcpMessage cmpTcpMessage = TcpMessage.getTcpMessage(command);
-		if ( cmpTcpMessage.getMessage()==null )  {
+		final TcpReceivedMessage cmpTcpMessage = TcpReceivedMessage.getTcpMessage(command);
+		if ( cmpTcpMessage.message==null )  {
 			log.error( intres.getLocalizedMessage("cmp.errornoasn1") );
 			handler.closeConnection();
 			return;
@@ -80,24 +79,24 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		// We must use an administrator with rights to create users
 		final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
 		final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator);
-		final IResponseMessage resp = dispatcher.dispatch(cmpTcpMessage.getMessage());
-		if ( resp==null) {
-			// unknown error?
-			handler.closeConnection();
-			return;
-		}
+		final IResponseMessage resp = dispatcher.dispatch(cmpTcpMessage.message);
 		log.debug("Sending back CMP response to client.");
 		// Send back reply
-		final byte[] sendBack = TcpMessage.createReturnTcpMessage(resp, cmpTcpMessage.isClose());
-		if ( sendBack==null ) {
-			handler.closeConnection();
-			return;
+		final TcpReturnMessage sendBack;
+		{
+			byte tmp[];
+			try {
+				tmp = resp!=null ? resp.getResponseMessage() : null;
+			} catch (CertificateEncodingException e) {
+				tmp = null;
+			}
+			sendBack = TcpReturnMessage.createMessage(tmp, cmpTcpMessage.doClose);
 		}
-		log.debug("Sending "+sendBack.length+" bytes to client");
-		handler.sendClientBinary(sendBack);			
+		log.debug("Sending "+sendBack.message.length+" bytes to client");
+		handler.sendClientBinary(sendBack.message);			
 		final String iMsg = intres.getLocalizedMessage("cmp.sentresponsemsg", handler.getHostAddress());
 		log.info(iMsg);
-		if (cmpTcpMessage.isClose()) {
+		if ( cmpTcpMessage.doClose || sendBack.doClose ) {
 			handler.closeConnection(); // It's time to say good bye			
 		}
 	}
