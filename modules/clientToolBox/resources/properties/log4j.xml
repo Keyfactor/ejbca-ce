@@ -25,27 +25,20 @@
 	</appender>
 
 	<!-- Make sure we get all to info when running tests. -->
-	<category name="org.ejbca.ui.cli.TestOcspMonitoringTool" additivity="true">
+	<category name="org.ejbca.ui.cli.TestOcspMonitoringTool">
 		<priority value="TRACE"/>
-		<appender-ref ref="full"/>
-	</category>
-
-	<!-- Use DEBUG for all EJBCA classes -->
-	<category name="org.ejbca" additivity="true">
-		<priority value="DEBUG"/>
-		<appender-ref ref="full"/>
 	</category>
 
 	<!-- Limit Hibernate's output to INFO and log-file only -->
-	<category name="org.hibernate" additivity="false">
+	<category name="org.hibernate">
 		<priority value="INFO"/>
-		<appender-ref ref="full"/>
 	</category>
 
 	<root> 
 		<!-- Set basic limit for console -->
-		<priority value="INFO" /> 
+		<priority value="DEBUG" /> 
 		<appender-ref ref="console"/>
+		<appender-ref ref="full"/>
 	</root> 
 
 </log4j:configuration>
