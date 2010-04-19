@@ -28,6 +28,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
@@ -47,6 +48,9 @@ public class UserDataTest extends TestCase {
     private static String pwd;
     private static String pwd1;
 
+    /** variable used to hold a flag value so we can reset it after we have done the tests */
+    private static boolean gcEELimitations;
+    
     /**
      * Creates a new TestUserData object.
      */
@@ -90,6 +94,16 @@ public class UserDataTest extends TestCase {
     } // genRandomPwd
 
 
+    public void test00SetEnableEndEntityProfileLimitations() throws Exception {
+        // Global configuration must have "Enable End Entity Profile Limitations" set to true in order for 
+    	// the request counter tests to pass, we check if we are allowed to set this value or not
+    	// The value is reset to whatever it was from the beginning in the last "clean up" test.
+        GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
+        gcEELimitations = gc.getEnableEndEntityProfileLimitations();
+        gc.setEnableEndEntityProfileLimitations(true);
+        TestTools.getRaAdminSession().saveGlobalConfiguration(admin, gc);
+    }
+    
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
         username = genRandomUserName();
@@ -447,13 +461,19 @@ public class UserDataTest extends TestCase {
     }
 
     /**
-     * DOCUMENT ME!
+     * Cleans up after test JUnit tests, i.e. deletes users and CAs that we created and resets any configuration changes.
      *
-     * @throws Exception DOCUMENT ME!
+     * @throws Exception on fatal error
      */
     public void test99CleanUp() throws Exception {
         log.trace(">test99CleanUp()");
 
+        // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
+        GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
+        gc.setEnableEndEntityProfileLimitations(gcEELimitations);
+        TestTools.getRaAdminSession().saveGlobalConfiguration(admin, gc);
+
+        // Delete test users we created
         try {        	
             TestTools.getUserAdminSession().deleteUser(admin,username);
         } catch (Exception e) { /* ignore */ }
@@ -463,7 +483,8 @@ public class UserDataTest extends TestCase {
         try {        	
             TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
         } catch (Exception e) { /* ignore */ }
-        log.debug("Removed it!");
+
+        // Delete any Test CA we created
         TestTools.removeTestCA();
         log.trace("<test99CleanUp()");
     }
