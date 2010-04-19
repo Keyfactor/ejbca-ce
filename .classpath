@@ -16,6 +16,7 @@
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
+	<classpathentry kind="src" path="modules/cmpProxy/src"/>
 	<classpathentry kind="src" path="tmp/bin/gensrc"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
