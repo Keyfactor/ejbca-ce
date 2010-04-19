@@ -85,11 +85,35 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-logging-log4j.jar">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system-jmx.jar">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-j2se.jar">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-kernel.jar">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-javaee.jar">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces.jar"/>
 	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces-comps.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
