@@ -19,10 +19,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -64,6 +63,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.ejbca.core.protocol.cmp.CMPSendHTTP;
 import org.ejbca.core.protocol.cmp.CMPSendTCP;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.PerformanceTest;
@@ -102,7 +102,6 @@ class CMPTest extends ClientToolBox {
         final PerformanceTest performanceTest;
 
         final private static String PBEPASSWORD = "password";
-        final private static String resourceCmp = "publicweb/cmp";
         final private KeyPair keyPair;
         final private X509Certificate cacert;
         final private CertificateFactory certificateFactory;
@@ -296,14 +295,10 @@ class CMPTest extends ClientToolBox {
         }
         
         private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws IOException {
-            final HttpURLConnection httpConnection = sessionData.getHttpURLConnection();
-            byte[] ret;
-            if ( httpConnection!=null ) {
-                ret = sendCmpHttp(message, httpConnection);
-            } else {
-            	ret = sendCmpTcp(message, sessionData.getSocket());
+            if ( StressTest.this.isHttp ) {
+                return sendCmpHttp(message);
             }
-            return ret;
+            return sendCmpTcp(message, sessionData.getSocket());
         }
         
         private byte[] sendCmpTcp(final byte[] message, final Socket socket) {
@@ -336,40 +331,21 @@ class CMPTest extends ClientToolBox {
                 return null;
             }
         }
-        private byte[] sendCmpHttp(final byte[] message, final HttpURLConnection con) throws IOException {
-            // POST it
-            final OutputStream os = con.getOutputStream();
-            os.write(message);
-            os.close();
-
-            if ( con.getResponseCode()!= 200 ) {
-                StressTest.this.performanceTest.getLog().error("Wrong http resonse code:"+con.getResponseCode());
+        private byte[] sendCmpHttp(final byte[] message) throws MalformedURLException, IOException {
+            final CMPSendHTTP send = CMPSendHTTP.doIt(message, "http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/publicweb/cmp", false);
+            if ( send.responseCode!=HttpURLConnection.HTTP_OK ) {
+                StressTest.this.performanceTest.getLog().error("Wrong http resonse code:"+send.responseCode);
                 return null;
             }
-            final String contentType = con.getContentType();
-            if ( contentType==null ) {
+            if ( send.contentType==null ) {
                 StressTest.this.performanceTest.getLog().error("No content type received.");
                 return null;
             }
             // Some appserver (Weblogic) responds with "application/pkixcmp; charset=UTF-8"
-            if ( !contentType.startsWith("application/pkixcmp") ) {
-                StressTest.this.performanceTest.getLog().info("wrong content type: "+con.getContentType());
+            if ( !send.contentType.startsWith("application/pkixcmp") ) {
+                StressTest.this.performanceTest.getLog().info("wrong content type: "+send.contentType);
             }
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            // This works for small requests, and CMP requests are small enough
-            final InputStream in = con.getInputStream();
-            int b = in.read();
-            while (b != -1) {
-                baos.write(b);
-                b = in.read();
-            }
-            baos.flush();
-            in.close();
-            final byte[] respBytes = baos.toByteArray();
-            if (respBytes.length <= 0) {
-                StressTest.this.performanceTest.getLog().error("No response.");                
-            }
-            return respBytes;
+            return send.response;
         }
         private boolean checkCmpResponseGeneral(final byte[] retMsg,
                                                 final SessionData sessionData,
@@ -778,20 +754,6 @@ class CMPTest extends ClientToolBox {
                     this.socket.setKeepAlive(true);
                 }
                 return this.socket;
-            }
-
-            HttpURLConnection getHttpURLConnection() throws IOException {
-                if ( !StressTest.this.isHttp ) {
-                    return null;
-                }
-                // POST the CMP request
-                // we are going to do a POST
-                final HttpURLConnection con = (HttpURLConnection)new URL("http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/" + resourceCmp).openConnection();
-                con.setDoOutput(true);
-                con.setRequestMethod("POST");
-                con.setRequestProperty("Content-type", "application/pkixcmp");
-                con.connect();
-                return con;
             }
             private int getRandomAndRepeated() {
                 // Initialize with some new value every time the test is started
