@@ -554,6 +554,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             String msg = intres.getLocalizedMessage("ra.errorentityexist", userdata.getUsername());            	
             logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
             throw e;
+        } catch (CreateException e) {
+            String msg = intres.getLocalizedMessage("ra.errorentityexist", userdata.getUsername());            	
+            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
+            throw new DuplicateKeyException(e.getMessage());
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("ra.erroraddentity", userdata.getUsername());            	
             logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg, e);
