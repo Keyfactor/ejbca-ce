@@ -173,15 +173,11 @@ public class CmpServlet extends HttpServlet {
 		 */
 		final ServletInputStream sin = request.getInputStream();
 		final DERObject message;
-		final String eMsg = intres.getLocalizedMessage("cmp.errornoasn1");
 		try {
 			message = new LimitLengthASN1Reader(sin, request.getContentLength()).readObject();
-			if ( message==null ) {
-				throw new Exception(eMsg);
-			}
 		} catch ( Exception e ) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-			log.error( eMsg, e );
+			log.error( intres.getLocalizedMessage("cmp.errornoasn1"), e );
 			return;
 		}
 		service(message, request.getRemoteAddr(), response);
