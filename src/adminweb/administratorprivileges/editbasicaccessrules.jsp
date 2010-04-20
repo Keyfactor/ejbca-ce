@@ -117,14 +117,13 @@ function roleupdated(){
     for( i=numofprofiles-1; i >= 0; i-- ){          
          selectendentityprofiles.options[i].selected=false;
     }
- 
-    numofother = selectother.length;
-    for( i=numofother-1; i >= 0; i-- ){
-       selectother.options[i]=null;
+     
+    if (selectother.length == 0) {
+	    selectother.options[0]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_VIEWLOG]) %>",<%= BasicAccessRuleSet.OTHER_VIEWLOG %>);
+	    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
+	      selectother.options[1]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS]) %>",<%= BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>);
+	    <% } %>
     }
-    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-    selectother.options[0]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS]) %>",<%= BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>);
-    <% } %>
   }
   if(currentrole == <%= BasicAccessRuleSet.ROLE_RAADMINISTRATOR%>){
     selectcas.disabled = false;
@@ -133,15 +132,13 @@ function roleupdated(){
     selectother.disabled = false;
 
     // Earlier there was a loop here that set some end entity rules to "selected", this made it impossible to edit the rules. ECA-1189.
-     
-    numofother = selectother.length;
-    for( i=numofother-1; i >= 0; i-- ){
-       selectother.options[i]=null;
+
+    if (selectother.length == 0) {
+	    selectother.options[0]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_VIEWLOG]) %>",<%= BasicAccessRuleSet.OTHER_VIEWLOG %>);
+	    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
+	      selectother.options[1]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS]) %>",<%= BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>);
+	    <% } %>
     }
-    selectother.options[0]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_VIEWLOG]) %>",<%= BasicAccessRuleSet.OTHER_VIEWLOG %>);
-    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-      selectother.options[1]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS]) %>",<%= BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>);
-    <% } %>
   }  
   if(currentrole == <%= BasicAccessRuleSet.ROLE_SUPERVISOR%>){
     selectcas.disabled = false;
