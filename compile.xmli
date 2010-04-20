@@ -407,12 +407,7 @@ xkms.serviceport                = ${xkms.serviceport}
 	<!--
 	  Preprocesses EJBCA by replacing tags with correct version and application texts.
 	-->
-    <target name="preprocess.luna" if="hsm.luna">
-    	<copy file="src/java/org/ejbca/core/model/ca/catoken/SafeNetLunaCAToken.java.luna" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/SafeNetLunaCAToken.java" overwrite="true" failonerror="false"/>
-    	<copy file="src/java/org/ejbca/ui/cli/LunaKeyTool.java.luna" tofile="${preprocessed}/java/org/ejbca/ui/cli/LunaKeyTool.java" overwrite="true" failonerror="false"/>
-    </target>
-
-	<target name="preprocess" depends="preprocess.luna" unless="precompiled">
+	<target name="preprocess" unless="precompiled">
         <copy todir="${preprocessed}" encoding="ISO-8859-1">
             <fileset dir="src">
               <include name="**"/>

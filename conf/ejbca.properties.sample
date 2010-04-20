@@ -213,12 +213,6 @@
 # Default: ./hwtoken
 #hwtoken_classes=../primecard/caTokenClasses-1.5-3.5
 
-# ----- Configuration for Luna JCE (java) interface, ignore if using PKCS#11 wich is the recommended way ----
-# Define this property when Luna HW token should be used.
-# You must have the Luna jars available in the build classpath (lib) when enabling this option.
-# Any value of the property will compile with Luna support. No Luna if undefined.
-#hsm.luna=X
-
 #------------------- EJBCA Healthcheck settings -------------
 # Specifies the basic settings of the EJBCA Healtcheck servlet
 # for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
