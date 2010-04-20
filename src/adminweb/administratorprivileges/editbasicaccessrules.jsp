@@ -131,20 +131,9 @@ function roleupdated(){
     selectendentityrules.disabled = false;
     selectendentityprofiles.disabled = false;
     selectother.disabled = false;
- 
-    numofendentity = selectendentityrules.length;
-    for( i=numofendentity-1; i >= 0; i-- ){
-       if(selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEW %> ||
-          selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_VIEWHISTORY %> ||
-          selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_CREATE %> ||
-          selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_EDIT %> ||
-          selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_DELETE %> ||
-          selectendentityrules.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_REVOKE %>)
-          selectendentityrules.options[i].selected=true;
-       else
-         selectendentityrules.options[i].selected=false;
-    }
- 
+
+    // Earlier there was a loop here that set some end entity rules to "selected", this made it impossible to edit the rules. ECA-1189.
+     
     numofother = selectother.length;
     for( i=numofother-1; i >= 0; i-- ){
        selectother.options[i]=null;
