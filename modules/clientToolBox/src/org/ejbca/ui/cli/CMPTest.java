@@ -19,8 +19,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
@@ -294,7 +292,7 @@ class CMPTest extends ClientToolBox {
             return ret;
         }
         
-        private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws IOException {
+        private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws Exception {
             if ( StressTest.this.isHttp ) {
                 return sendCmpHttp(message);
             }
@@ -331,12 +329,8 @@ class CMPTest extends ClientToolBox {
                 return null;
             }
         }
-        private byte[] sendCmpHttp(final byte[] message) throws MalformedURLException, IOException {
+        private byte[] sendCmpHttp(final byte[] message) throws Exception {
             final CMPSendHTTP send = CMPSendHTTP.doIt(message, "http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/publicweb/cmp", false);
-            if ( send.responseCode!=HttpURLConnection.HTTP_OK ) {
-                StressTest.this.performanceTest.getLog().error("Wrong http resonse code:"+send.responseCode);
-                return null;
-            }
             if ( send.contentType==null ) {
                 StressTest.this.performanceTest.getLog().error("No content type received.");
                 return null;
