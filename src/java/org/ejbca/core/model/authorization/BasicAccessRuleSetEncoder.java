@@ -253,7 +253,11 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		if(ar.getAccessRule().startsWith(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS) && ar.getRule() == AccessRule.RULE_ACCEPT) {
 			returnval = true;
 		}
-		
+
+		if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_VIEWLOG) && ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive()) {
+			returnval = true;
+		}
+
 		return returnval;
 	}
 	
