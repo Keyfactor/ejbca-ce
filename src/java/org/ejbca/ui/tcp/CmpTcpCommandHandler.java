@@ -72,7 +72,6 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		log.info(intres.getLocalizedMessage("cmp.receivedmsg", handler.getHostAddress()));
 		final TcpReceivedMessage cmpTcpMessage = TcpReceivedMessage.getTcpMessage(command);
 		if ( cmpTcpMessage.message==null )  {
-			log.error( intres.getLocalizedMessage("cmp.errornoasn1") );
 			handler.closeConnection();
 			return;
 		}
