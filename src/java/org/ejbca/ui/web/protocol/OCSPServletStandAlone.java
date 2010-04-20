@@ -20,6 +20,7 @@ import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
@@ -30,6 +31,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
 import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
@@ -65,6 +67,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 
     private static final long serialVersionUID = -7093480682721604160L;
 
+	private static final Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
+
     private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
     private OCSPServletStandAloneSession session;
 
@@ -76,11 +80,23 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+
+	    m_log.info("Init, "+GlobalConfiguration.EJBCA_VERSION+" OCSP startup");
+
         this.session = new OCSPServletStandAloneSession(this);
         // session must be crated before health check could be done
         ExtOCSPHealthCheck.setHealtChecker(this);
     }
     
+    /**
+     * Method used to log OCSP service shutdown.
+	 * @see javax.servlet.GenericServlet#destroy()
+	 */
+	public void destroy() {
+		super.destroy();
+	    m_log.info("Destroy, "+GlobalConfiguration.EJBCA_VERSION+" OCSP shutdown");
+	}
+
     /**
      * Returns the certificate data only session bean
      */
