@@ -235,16 +235,16 @@ public class UserDataVOWS implements Serializable{
 	public int getType() {
 		int type = 1;
 		
-    	if(sendNotification)
+    	if(sendNotification) {
     		type = type | SecConst.USER_SENDNOTIFICATION;
-    	else
+    	} else {
     		type = type & (~SecConst.USER_SENDNOTIFICATION);
-    	
-    	if(keyRecoverable)
+    	}
+    	if(keyRecoverable) {
     		type = type | SecConst.USER_KEYRECOVERABLE;
-    	else
+    	} else {
     		type = type & (~SecConst.USER_KEYRECOVERABLE);
-    			
+    	}
 		return type;
 	}
 
