@@ -235,7 +235,9 @@ public class JAXWSDocAndConvTools {
     
 
     void readSemicolon () throws Exception{
-    	if (scan ().getType () != Types.SEMICOLON) bad ("Semicolon expected");
+    	if (scan ().getType () != Types.SEMICOLON) {
+    		bad ("Semicolon expected");
+    	}
     }
 
     Token removeModifiers (Token start) throws Exception{
@@ -259,7 +261,9 @@ public class JAXWSDocAndConvTools {
 	        	changed = true;
 	    	}
 		}while (changed);
-		if (start.getType () != Types.IDENTIFIER) bad ("Identifier expected:" + start.getType ());
+		if (start.getType () != Types.IDENTIFIER) {
+			bad ("Identifier expected:" + start.getType ());
+		}
 		return start;
     }
 
@@ -269,18 +273,26 @@ public class JAXWSDocAndConvTools {
     }
 
     void implementsOrExtends (Token token) throws Exception{
-    	if (!token.equals("implements") && !token.equals("extends")) bad ("Expected implements/extend");
+    	if (!token.equals("implements") && !token.equals("extends")) {
+    		bad ("Expected implements/extend");
+    	}
     }
     
     void checkSource () throws Exception{
-    	if (ws_gen) bad ("Unexpected element for generated file:" + curr.getText());
+    	if (ws_gen) {
+    		bad ("Unexpected element for generated file:" + curr.getText());
+    	}
     }
     
     Token nameList (Token id) throws Exception{
     	while (true){
-    		if (id.getType() != Types.IDENTIFIER) bad ("Missing identifier in extend/impl");
+    		if (id.getType() != Types.IDENTIFIER) {
+    			bad ("Missing identifier in extend/impl");
+    		}
     		Token nxt = scan ();
-    		if (nxt.getType () != Types.COMMA) return nxt;
+    		if (nxt.getType () != Types.COMMA) {
+    			return nxt;
+    		}
     		id = scan ();
     	}
     }
@@ -292,23 +304,27 @@ public class JAXWSDocAndConvTools {
     	if (nxt.getType() == Types.LEFTBRACK){
     		do{
        			type_decl.append(nxt.getText());
-    			if (scan ().getType() != Types.IDENTIFIER) bad ("Missing <ID");
+    			if (scan ().getType() != Types.IDENTIFIER) {
+    				bad ("Missing <ID");
+    			}
        			type_decl.append(getTypeDeclaration (curr));
     		}
     		while ((nxt = curr).getType() == Types.COMMA);
-    	    if (nxt.getType() != Types.RIGHTBRACK) bad ("> expected");
+    	    if (nxt.getType() != Types.RIGHTBRACK) {
+    	    	bad ("> expected");
+    	    }
    			type_decl.append(nxt.getText());
    	    	scan ();
     	}
     	if (nxt.getType () == Types.LEFTARRAY){
     		boolean byte_array = type_decl.toString ().equals("byte");
-    		if (ws_gen && !byte_array) bad ("did not expect [] in WS-gen");
-    			while ((nxt = scan()).getType() != Types.RIGHTARRAY){
-    			}
-    		if (byte_array){
-    			type_decl.append("[]");
+    		if (ws_gen && !byte_array) {
+    			bad ("did not expect [] in WS-gen");
     		}
-    		else{
+    		while ((nxt = scan()).getType() != Types.RIGHTARRAY){}
+    		if (byte_array) {
+    			type_decl.append("[]");
+    		} else{
         		type_decl.insert(0, "List<").append('>');
     		}
    			scan ();
@@ -318,9 +334,13 @@ public class JAXWSDocAndConvTools {
     
     void decodeDeclaration (Token start, CompilationUnit compilation) throws Exception{
     	start = removeModifiers (start);
-    	if (!isInterfaceOrClass (start)) bad ("Expected class/interface declaration");
+    	if (!isInterfaceOrClass (start)) {
+    		bad ("Expected class/interface declaration");
+    	}
 		Token id;
-		if ((id = scan ()).getType() != Types.IDENTIFIER) bad ("class/interface identifier missing");
+		if ((id = scan ()).getType() != Types.IDENTIFIER) {
+			bad ("class/interface identifier missing");
+		}
 		compilation.class_name = id.getText();
 //		System.out.println ("Class:" + id.getText());
 		Token nxt;
@@ -329,21 +349,22 @@ public class JAXWSDocAndConvTools {
 			implementsOrExtends (nxt);
 			nxt = nameList(scan ());
 		}
-		if (nxt.getType() != Types.LEFTCURL) bad ("Missing {");
+		if (nxt.getType() != Types.LEFTCURL) {
+			bad ("Missing {");
+		}
 		String jdoc = null;
 		while (true){
 			nxt = scan ();
 			if (nxt.getType () == Types.RIGHTCURL){
 				break;
-			}
-			else if (nxt.getType () == Types.COMMENT){
+			} else if (nxt.getType () == Types.COMMENT){
 				jdoc = nxt.getText();
 //				System.out.println ("Comment");
-			}
-			else
-			{
+			} else {
 				nxt = removeModifiers (nxt);
-				if (isInterfaceOrClass (nxt)) bad ("Nested classes not implemented yet");
+				if (isInterfaceOrClass (nxt)) {
+					bad ("Nested classes not implemented yet");
+				}
 				String return_type = null;
 				String method_name = null;
 				if (compilation.class_name.equals (nxt.getText())){
@@ -377,13 +398,19 @@ public class JAXWSDocAndConvTools {
 					if (curr.equals ("throws")){
 						while (true){
 							scan ();
-							if (curr.getType() != Types.IDENTIFIER) bad ("exception id missing");
+							if (curr.getType() != Types.IDENTIFIER) {
+								bad ("exception id missing");
+							}
 							compilation.exceptions.put(curr.getText(), "YES");
 							method.exceptions.add(curr.getText());
-							if (scan ().getType () != Types.COMMA) break;
+							if (scan ().getType () != Types.COMMA) {
+								break;
+							}
 						}
 					}
-					if (compilation.methods.put(method.signature (), method) != null) bad ("Collision");
+					if (compilation.methods.put(method.signature (), method) != null) {
+						bad ("Collision");
+					}
 //					bad ("Done");
 				}
 				while (curr.getType() != Types.SEMICOLON && curr.getType() != Types.LEFTCURL){
@@ -435,21 +462,26 @@ public class JAXWSDocAndConvTools {
 			       if (packfound){
 			    	   if (curr.equals("import")){
 			    		   Token imp = scan ();
-			    		   if (imp.getType() != Types.IDENTIFIER) bad ("Misformed import");
+			    		   if (imp.getType() != Types.IDENTIFIER) {
+			    			   bad ("Misformed import");
+			    		   }
 //				    	   System.out.println ("Import:'" + imp.getText () + "'");
 			    		   readSemicolon ();
 			    		   compilation.imports.add(imp.getText ());
 					       class_jdoc = null;
-			    	   }
-			    	   else{
+			    	   } else {
 			    		   compilation.class_java_doc = class_jdoc;
 			    		   decodeDeclaration (curr, compilation);
 			    	   }
 			       }
 			       else{
-			    	   if (!curr.equals("package")) bad ("No package key-word found");
+			    	   if (!curr.equals("package")) {
+			    		   bad ("No package key-word found");
+			    	   }
 			    	   Token pack = scan ();
-			    	   if (pack.getType () != Types.IDENTIFIER) bad ("Package missing");
+			    	   if (pack.getType () != Types.IDENTIFIER) {
+			    		   bad ("Package missing");
+			    	   }
 			    	   compilation.package_name = pack.getText ();
 //			    	   System.out.println ("Package:'" + pack.getText () + "'");
 			    	   readSemicolon ();
@@ -482,8 +514,7 @@ public class JAXWSDocAndConvTools {
 		for (int i = 0; i < client.package_name.length (); i++){
 			if (client.package_name.charAt(i) == '.'){
 				ofile.append('/');
-			}
-			else {
+			} else {
 				ofile.append(client.package_name.charAt(i));
 			}
 		}
@@ -525,10 +556,9 @@ public class JAXWSDocAndConvTools {
 			if (jdoc == null) bad ("missing javadoc for " + s);
 			for (String e : client_method.exceptions){
 			    int i = jdoc.indexOf("@throws " + e.substring(0, e.length () - 10));
-			    if (i > 0){
+			    if (i > 0) {
 			    	jdoc = jdoc.substring (0, i) + "@throws " + e + jdoc.substring(i + e.length () - 2);
-			    }
-			    else{
+			    } else {
 			    	bad("You need to declare @throws for '" + e.substring(0, e.length () - 10) + "' in method:" + client_method.method_name);
 			    }
 			}
@@ -581,10 +611,9 @@ public class JAXWSDocAndConvTools {
 		server = parse (server_interface);
 		ws_gen = (gen_directory != null);
 		client = parse (client_interface);
-		if (gen_directory == null){
+		if (gen_directory == null) {
 			compareGeneratedWithWritten ();
-		}
-		else{
+		} else {
 			generateJDocFriendlyFile (gen_directory);
 		}
 		
