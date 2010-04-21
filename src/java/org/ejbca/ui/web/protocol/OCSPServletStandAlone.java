@@ -121,10 +121,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         return this.session.healthCheck();
     }
     /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(java.lang.String)
      */
-    void loadPrivateKeys(Admin adm, String password) throws Exception {
-        this.session.loadPrivateKeys(adm, password);
+    void loadPrivateKeys(String password) throws Exception {
+        this.session.loadPrivateKeys(password);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#findCertificateByIssuerAndSerno(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)

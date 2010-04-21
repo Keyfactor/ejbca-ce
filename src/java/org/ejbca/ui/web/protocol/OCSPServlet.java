@@ -128,9 +128,9 @@ public class OCSPServlet extends OCSPServletBase {
 	}
 
     /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(java.lang.String)
      */
-    protected void loadPrivateKeys(Admin adm, String password) {
+    protected void loadPrivateKeys(String password) {
         // not used by this servlet
     }
 } // OCSPServlet

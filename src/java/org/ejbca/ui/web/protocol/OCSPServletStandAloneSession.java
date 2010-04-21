@@ -179,8 +179,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     final Iterator<String> i = sError.iterator();
                     while( i.hasNext() ) {
                         pw.print(i.next());
-                        if ( i.hasNext() )
+                        if ( i.hasNext() ) {
                             pw.print("\" and \"");
+                        }
                     }
                     pw.println("\".");
                 }
@@ -267,7 +268,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 final String aKeyAlias[] = OcspConfiguration.getKeyAlias();
                 this.keyAlias = aKeyAlias!=null && aKeyAlias.length>0 ? new HashSet<String>(Arrays.asList(aKeyAlias)) : null;
             }
-            loadPrivateKeys(this.servlet.m_adm, null);
+            loadPrivateKeys(null);
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
@@ -835,8 +836,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         tmpCert = null;
                         continue;
                     }
-                    if ( keyPair.getPublic().equals(tmpCert.getPublicKey()) )
+                    if ( keyPair.getPublic().equals(tmpCert.getPublicKey()) ) {
                         break;
+                    }
                     tmpCert = null;
                 }
                 if ( tmpCert==null ) {
@@ -1071,11 +1073,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         /**
          * Test if all criterias for key loading is fulfilled.
          * If it is {@link #loadPrivateKeys2(Admin, String)} is called after calculating time fot new update.
-         * @param adm Administrator to be used when getting the certificate chain from the DB.
          * @param password This password is only set if passwords should not be stored in memory.
          * @throws Exception
          */
-        void loadPrivateKeys(final Admin adm, final String password ) throws Exception {
+        void loadPrivateKeys(final String password ) throws Exception {
             try {
                 this.mutex.getMutex();
                 final long currentTime = new Date().getTime();
@@ -1095,7 +1096,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     m_log.trace(">loadPrivateKeys2");
             	}
                 this.updating  = true; // stops new action on token
-                loadPrivateKeys2(adm, password);
+                loadPrivateKeys2(password);
             } finally {
                 this.lastTryOfKeyReload = new Date().getTime();
                 synchronized(this) {
@@ -1109,11 +1110,10 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
         /**
          * Create a {@link SigningEntity} for all OCSP signing keys that could be found.
-         * @param adm Administrator to be used when getting the certificate chain from the DB.
          * @param password This password is only set if passwords should not be stored in memory.
          * @throws Exception
          */
-        private void loadPrivateKeys2(Admin adm, String password ) throws Exception {
+        private void loadPrivateKeys2(String password ) throws Exception {
             if ( this.signEntityMap!=null ){
                 Collection<SigningEntity> values=this.signEntityMap.values();
                 if ( values!=null ) {
@@ -1142,15 +1142,15 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             synchronized(this) {
                 this.wait(500); // wait for actions on token to get ready
             }
-            loadFromP11HSM(adm, newSignEntity, password);
+            loadFromP11HSM(newSignEntity, password);
             final File dir = OCSPServletStandAloneSession.this.mKeystoreDirectoryName!=null ? new File(OCSPServletStandAloneSession.this.mKeystoreDirectoryName) : null;
             if ( dir!=null && dir.isDirectory() ) {
                 final File files[] = dir.listFiles();
                 if ( files!=null && files.length>0 ) {
                     for ( int i=0; i<files.length; i++ ) {
                         final String fileName = files[i].getCanonicalPath();
-                        if ( !loadFromSWKeyStore(adm, fileName, newSignEntity, password) ) {
-                            loadFromKeyCards(adm, fileName, newSignEntity);
+                        if ( !loadFromSWKeyStore(fileName, newSignEntity, password) ) {
+                            loadFromKeyCards(fileName, newSignEntity);
                         }
                     }
                 } else {
@@ -1203,13 +1203,12 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
         /**
          * Adds OCSP signing keys from the HSM to the newSignEntity (parameter).
-         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
          * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
          * @param password Used for activation.
          * @return true if keys where found on the HSM
          * @throws Exception
          */
-        private boolean loadFromP11HSM(Admin adm, Map<Integer, SigningEntity> newSignEntity,
+        private boolean loadFromP11HSM(Map<Integer, SigningEntity> newSignEntity,
                                        String password) {
             final PasswordProtection pwp = getP11Pwd(password);
             if ( !checkPassword( pwp, OcspConfiguration.P11_PASSWORD) ) {
@@ -1222,7 +1221,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             OCSPServletStandAloneSession.this.slot.reset();
             try {
                 final P11ProviderHandler providerHandler = new P11ProviderHandler();
-                loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null,
+                loadFromKeyStore(providerHandler.getKeyStore(pwp), null,
                                  OCSPServletStandAloneSession.this.slot.toString(),
                                  providerHandler, newSignEntity, null);
                 pwp.destroy();
@@ -1247,12 +1246,11 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
         /**
          * Adds the OCSP signing key from the java SW keystore to the newSignEntity (parameter).
-         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
          * @param fileName The name of a file with a SW java keystore.
          * @param newSignEntity The map where the signing entity should be stored for the key if the certificate is a valid OCSP certificate.
          * @return true if the key in the SW java keystore was valid.
          */
-        private boolean loadFromSWKeyStore(Admin adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity,
+        private boolean loadFromSWKeyStore(String fileName, HashMap<Integer, SigningEntity> newSignEntity,
                                            String password) {
             try {
                 final String storePassword = OCSPServletStandAloneSession.this.mStorePassword!=null ? OCSPServletStandAloneSession.this.mStorePassword : password;
@@ -1269,7 +1267,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                     keyStore.load(new FileInputStream(fileName), storePassword.toCharArray());
                 }
                 final String keyPassword = OCSPServletStandAloneSession.this.mKeyPassword!=null ? OCSPServletStandAloneSession.this.mKeyPassword : password;
-                loadFromKeyStore(adm, keyStore, keyPassword, fileName, new SWProviderHandler(), newSignEntity, fileName);
+                loadFromKeyStore(keyStore, keyPassword, fileName, new SWProviderHandler(), newSignEntity, fileName);
                 m_log.trace("<loadFromSWKeyStore OK");
                 return true;
             } catch( Exception e ) {
@@ -1295,7 +1293,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         }
         /**
          * Adds OCSP signing keys from a java keystore to the newSignEntity (parameter).
-         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
          * @param keyStore The keystore.
          * @param keyPassword Password for the key. Set to null if not protected.
          * @param errorComment Comment to be used in possible error message.
@@ -1304,7 +1301,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * @param fileName Name of the keystore file. Use null for P11
          * @throws KeyStoreException
          */
-        private void loadFromKeyStore(Admin adm, KeyStore keyStore, String keyPassword,
+        private void loadFromKeyStore(KeyStore keyStore, String keyPassword,
                                       String errorComment, ProviderHandler providerHandler,
                                       Map<Integer, SigningEntity> newSignEntity, String fileName) throws KeyStoreException {
             final Enumeration<String> eAlias = keyStore.aliases();
@@ -1337,7 +1334,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                             continue;
                         }
                         m_log.debug("Adding sign entity for '"+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'");
-                        putSignEntity(pkf, pkf.getCertificate(), adm, providerHandler, newSignEntity);
+                        putSignEntity(pkf, pkf.getCertificate(), providerHandler, newSignEntity);
                     } finally {
                         pkf.releaseKey();
                     }
@@ -1350,10 +1347,9 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         /**
          * Gets the chain for a certificate. The certificate must be valid and in the DB.
          * @param cert The certificate that should be first in the chain.
-         * @param adm  Administrator performing the operation. 
          * @return The chain of the certificate. Null if the certificate is not valid.
          */
-        private List<X509Certificate> getCertificateChain(X509Certificate cert, Admin adm) {
+        private List<X509Certificate> getCertificateChain(X509Certificate cert) {
             String issuerDN = CertTools.getIssuerDN(cert);
             final CertificateStatus status = OCSPServletStandAloneSession.this.servlet.getStatus(issuerDN, CertTools.getSerialNumber(cert));
             if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
@@ -1387,17 +1383,16 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * If 'newSignEntitys' allready contains a certificate for the same CA which is newer than 'cert' the one in the map is kept (nothing is done).
          * @param keyContainer The key.
          * @param cert The certificate of the key
-         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
          * @param providerHandler The provider.
          * @param newSignEntitys The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
          * @return true if the key and certificate are valid for OCSP signing for one of the EJBCA CAs.
          */
-        private boolean putSignEntity( PrivateKeyContainer keyContainer, X509Certificate cert, Admin adm, ProviderHandler providerHandler,
+        private boolean putSignEntity( PrivateKeyContainer keyContainer, X509Certificate cert, ProviderHandler providerHandler,
                                        final Map<Integer, SigningEntity> newSignEntitys) {
             if ( keyContainer==null || cert==null ) {
                 return false;
             }
-            final List<X509Certificate> chain = getCertificateChain(cert, adm);
+            final List<X509Certificate> chain = getCertificateChain(cert);
             if ( chain==null || chain.size()<1 ) {
                 return false;
             }
@@ -1418,26 +1413,23 @@ class OCSPServletStandAloneSession implements P11SlotUser {
          * Constructs a new {@link SigningEntity} and puts it in the map 'newSignEntitys'.
          * If 'newSignEntitys' allready contains a certificate for the same CA which is newer than 'cert' the one in the map is kept (nothing is done).
          * @param cert The certificate of the key
-         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
          * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
          * @return true if the key and certificate are valid for OCSP signing for one of the EJBCA CAs.
          */
-        private boolean putSignEntityCard( Certificate cert, Admin adm,
-                                           Map<Integer, SigningEntity> newSignEntity) {
+        private boolean putSignEntityCard( Certificate cert, Map<Integer, SigningEntity> newSignEntity) {
             if ( cert!=null &&  cert instanceof X509Certificate) {
                 final X509Certificate x509cert = (X509Certificate)cert;
                 final PrivateKeyContainer keyContainer = new PrivateKeyContainerCard(x509cert, this.cardKeys);
-                return putSignEntity( keyContainer, x509cert, adm, new CardProviderHandler(), newSignEntity );
+                return putSignEntity( keyContainer, x509cert, new CardProviderHandler(), newSignEntity );
             }
             return false;
         }
         /**
          * Adds OCSP signing keys from the card to the newSignEntity (parameter).
-         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
          * @param fileName The name of the file where the certificates are stored.
          * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
          */
-        private void loadFromKeyCards(Admin adm, String fileName, Map<Integer, SigningEntity> newSignEntity) {
+        private void loadFromKeyCards(String fileName, Map<Integer, SigningEntity> newSignEntity) {
             m_log.trace(">loadFromKeyCards");
             final CertificateFactory cf;
             try {
@@ -1451,7 +1443,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 if ( c!=null && !c.isEmpty() ) {
                     Iterator<? extends Certificate> i = c.iterator();
                     while (i.hasNext()) {
-                        if ( putSignEntityCard(i.next(), adm, newSignEntity) ) {
+                        if ( putSignEntityCard(i.next(), newSignEntity) ) {
                             fileType = "PKCS#7";
                         }
                     }
@@ -1463,7 +1455,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 try {// read concatenated certificate in PEM format
                     final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
                     while (bis.available() > 0) {
-                        if ( putSignEntityCard(cf.generateCertificate(bis), adm, newSignEntity) ) {
+                        if ( putSignEntityCard(cf.generateCertificate(bis), newSignEntity) ) {
                             fileType="PEM";
                         }
                     }
@@ -1481,20 +1473,19 @@ class OCSPServletStandAloneSession implements P11SlotUser {
     }
     /**
      * Adds {@link SigningEntity} to the {@link SigningEntityContainer} object for all OCSP signing keys that could be found.
-     * @param adm Adminstrator to be used when getting the certificate chain from the DB.
      * @param password Password for activation. If null then ust key loading.
      * @throws Exception
      */
-    void loadPrivateKeys(Admin adm, String password) throws Exception {
+    void loadPrivateKeys(String password) throws Exception {
         if ( this.doNotStorePasswordsInMemory ) {
             if ( password==null ) {
                 return; // can not load without password.
             }
-            this.signEntitycontainer.loadPrivateKeys(adm, password);
+            this.signEntitycontainer.loadPrivateKeys(password);
             return;
         }
         if ( password==null ) {
-            this.signEntitycontainer.loadPrivateKeys(adm, null);
+            this.signEntitycontainer.loadPrivateKeys(null);
             return;
         }
         if ( this.mKeyPassword==null ) {
@@ -1509,7 +1500,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
         if ( this.cardPassword==null ) {
             this.cardPassword = password;
         }
-        this.signEntitycontainer.loadPrivateKeys(adm, null);
+        this.signEntitycontainer.loadPrivateKeys(null);
     }
     /**
      * Set time for next key update.
