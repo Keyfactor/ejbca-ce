@@ -464,6 +464,91 @@ public class EjbcaWS implements IEjbcaWS {
         }
 	}
 
+	/** Method called from cvcRequest that simply verifies a CVCertificate with a public key and throws AuthorizationDeniedException
+	 * if verification works. Used to check if a request is sent containing the same public key.
+	 * this could be replaced by enforcing unique public key on the CA (from EJBCA 3.10) actually...
+	 * 
+	 * @param pk
+	 * @param innerreq
+	 * @param holderref
+	 * @throws AuthorizationDeniedException
+	 */
+	private void checkInnerCollision(PublicKey pk, CVCertificate innerreq, String holderref) throws AuthorizationDeniedException {
+		// Check to see that the inner signature does not verify using an old certificate (public key)
+		// because that means the same keys were used, and that is not allowed according to the EU policy
+		CardVerifiableCertificate innercert = new CardVerifiableCertificate(innerreq);
+		try {
+			innercert.verify(pk);										
+			String msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderref);            	
+			log.info(msg);
+			throw new AuthorizationDeniedException(msg);
+		} catch (SignatureException e) {
+			// It was good if the verification failed
+		} catch (NoSuchProviderException e) {
+			String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderref, e.getMessage());            	
+			log.warn(msg, e);
+			throw new AuthorizationDeniedException(msg);
+		} catch (InvalidKeyException e) {
+			String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderref, e.getMessage());            	
+			log.warn(msg, e);
+			throw new AuthorizationDeniedException(msg);
+		} catch (NoSuchAlgorithmException e) {
+			String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderref, e.getMessage());            	
+			log.info(msg, e);
+			throw new AuthorizationDeniedException(msg);
+		} catch (CertificateException e) {
+			String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderref, e.getMessage());            	
+			log.warn(msg, e);
+			throw new AuthorizationDeniedException(msg);
+		}
+	}
+
+	/** Method that gets the public key from a CV certificate, possibly enriching it with domain parameters from the CVCA certificate if it is an EC public key.
+	 * @param ejbhelper
+	 * @param admin
+	 * @param cert
+	 * @return
+	 * @throws CADoesntExistsException
+	 * @throws RemoteException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException
+	 * @throws InvalidKeySpecException
+	 */
+	private PublicKey getCVPublicKey(EjbcaWSHelper ejbhelper, Admin admin, java.security.cert.Certificate cert) throws CADoesntExistsException, RemoteException {
+		PublicKey pk = cert.getPublicKey();
+		if (pk instanceof PublicKeyEC) {
+			// The public key of IS and DV certificate do not have any EC parameters so we have to do some magic to get a complete EC public key
+			// First get to the CVCA certificate that has the parameters
+			CAInfo info = ejbhelper.getCAAdminSession().getCAInfoOrThrowException(admin, CertTools.getIssuerDN(cert).hashCode());
+			Collection cacerts = info.getCertificateChain();
+			if (cacerts != null) {
+				log.debug("Found CA certificate chain of length: "+cacerts.size());
+				// Get the last cert in the chain, it is the CVCA cert
+				Iterator i = cacerts.iterator();
+				java.security.cert.Certificate cvcacert = null;
+				while (i.hasNext()) {
+					cvcacert = (java.security.cert.Certificate)i.next();
+				}
+				if (cvcacert != null) {
+					// Do the magic adding of parameters, if they don't exist in the pk
+					try {
+						pk = KeyTools.getECPublicKeyWithParams(pk, cvcacert.getPublicKey());
+					} catch (InvalidKeySpecException e) {
+						String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(cert), e.getMessage());            	
+						log.warn(msg, e);
+					} catch (NoSuchProviderException e) {
+						String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(cert), e.getMessage());            	
+						log.warn(msg, e);
+					} catch (NoSuchAlgorithmException e) {
+						String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(cert), e.getMessage());            	
+						log.info(msg, e);
+					}
+				}
+			}											
+		}
+		return pk;
+	}
+
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#cvcRequest
 	 */
@@ -505,6 +590,22 @@ public class EjbcaWS implements IEjbcaWS {
 					log.debug("Received request has a public key with algorithm: "+algorithm);
 					HolderReferenceField holderRef = authreq.getRequest().getCertificateBody().getHolderReference();
 					CAReferenceField caRef = authreq.getAuthorityReference();
+
+					// Check to see that the inner signature does not also verify using an old certificate
+					// because that means the same keys were used, and that is not allowed according to the EU policy
+					// This must be done whether it is signed by CVCA or a renewal request
+					Collection oldcerts = ejbhelper.getCertStoreSession().findCertificatesByUsername(admin, username);
+					if (oldcerts != null) {
+						log.debug("Found "+oldcerts.size()+" old certificates for user "+username);
+						Iterator iterator = oldcerts.iterator(); 
+						while (iterator.hasNext()) {
+							java.security.cert.Certificate cert = (java.security.cert.Certificate)iterator.next();
+							PublicKey pk = getCVPublicKey(ejbhelper, admin, cert);
+							CVCertificate innerreq = authreq.getRequest();
+							checkInnerCollision(pk, innerreq, holderRef.getConcatenated()); // Throws AuthorizationDeniedException
+						}
+					}
+
 					boolean verifiedOuter = false; // So we can throw an error if we could not verify
 					if (StringUtils.equals(holderRef.getMnemonic(), caRef.getMnemonic()) && StringUtils.equals(holderRef.getCountry(), caRef.getCountry())) {
 						log.debug("Authenticated request is self signed, we will try to verify it using user's old certificate.");
@@ -520,38 +621,7 @@ public class EjbcaWS implements IEjbcaWS {
 								java.security.cert.Certificate cert = (java.security.cert.Certificate)iterator.next();
 								try {
 									// Only allow renewal if the old certificate is valid
-									// Check to see that the inner signature does not also verify using the old certificate
-									// because that means the same keys were used, and that is not allowed according to the EU policy
-									CVCertificate innerreq = authreq.getRequest();
-									CardVerifiableCertificate innercert = new CardVerifiableCertificate(innerreq);
-									PublicKey pk = cert.getPublicKey();
-									try {
-										if (pk instanceof PublicKeyEC) {
-											// The public key of IS and DV certificate do not have any EC parameters so we have to do some magic to get a complete EC public key
-											// First get to the CVCA certificate that has the parameters
-											CAInfo info = ejbhelper.getCAAdminSession().getCAInfoOrThrowException(admin, CertTools.getIssuerDN(cert).hashCode());
-											Collection cacerts = info.getCertificateChain();
-											if (cacerts != null) {
-												log.debug("Found CA certificate chain of length: "+cacerts.size());
-												// Get the last cert in the chain, it is the CVCA cert
-												Iterator i = cacerts.iterator();
-												java.security.cert.Certificate cvcacert = null;
-												while (i.hasNext()) {
-													cvcacert = (java.security.cert.Certificate)i.next();
-												}
-												if (cvcacert != null) {
-													// Do the magic adding of parameters, if they don't exist in the pk
-													pk = KeyTools.getECPublicKeyWithParams(pk, cvcacert.getPublicKey());
-												}
-											}											
-										}
-										innercert.verify(pk);										
-										String msg = intres.getLocalizedMessage("cvc.error.renewsamekeys", holderRef.getConcatenated());            	
-										log.info(msg);
-										throw new AuthorizationDeniedException(msg);
-									} catch (SignatureException e) {
-										// It was good if the verification failed
-									}
+									PublicKey pk = getCVPublicKey(ejbhelper, admin, cert);
 									if (log.isDebugEnabled()) {
 										log.debug("Trying to verify the outer signature with an old certificate, fp: "+CertTools.getFingerprintAsString(cert));										
 									}
@@ -565,9 +635,6 @@ public class EjbcaWS implements IEjbcaWS {
 									}
 									
 									// If verification of outer signature fails because the signature is invalid we will break and deny the request...with a message
-								} catch (InvalidKeySpecException e) {
-									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
-									log.warn(msg, e);
 								} catch (InvalidKeyException e) {
 									String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
 									log.warn(msg, e);
