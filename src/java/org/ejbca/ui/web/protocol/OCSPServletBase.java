@@ -186,7 +186,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 	}
 
-	abstract void loadPrivateKeys(Admin adm, String password) throws Exception;
+	abstract void loadPrivateKeys(String password) throws Exception;
 
 	abstract Certificate findCertificateByIssuerAndSerno(Admin adm, String issuerDN, BigInteger serno);
 
@@ -397,7 +397,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
             // Also reload signing keys
             this.mKeysValidTo = 0;
             try {
-                loadPrivateKeys(this.m_adm, password);
+                loadPrivateKeys(password);
             } catch (Exception e) {
                 m_log.error("Problem loading keys.", e);
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
@@ -422,7 +422,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				try {
 					// Also reload signing keys
 					this.mKeysValidTo = 0;
-					loadPrivateKeys(this.m_adm, null);
+					loadPrivateKeys(null);
 				} catch (Exception e) {
                     m_log.error("Problem loading keys.", e);
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
@@ -604,7 +604,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(ITransactionLogger.REQ_NAME, req.getRequestorName().toString());
 				}
 				// Make sure our signature keys are updated
-				loadPrivateKeys(m_adm, null);
+				loadPrivateKeys(null);
 
 				/**
 				 * check the signature if contained in request.
