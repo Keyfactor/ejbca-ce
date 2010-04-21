@@ -584,6 +584,7 @@ public class EjbcaWS implements IEjbcaWS {
 				}
 				CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(cvcreq.getBytes()));
 				if (parsedObject instanceof CVCAuthenticatedRequest) {
+					log.debug("Received an authenticated request, could be an initial DV request signed by CVCA or a renewal for DV or IS.");
 					CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
 					CVCPublicKey cvcKey = authreq.getRequest().getCertificateBody().getPublicKey();
 					String algorithm = AlgorithmUtil.getAlgorithmName(cvcKey.getObjectIdentifier());
