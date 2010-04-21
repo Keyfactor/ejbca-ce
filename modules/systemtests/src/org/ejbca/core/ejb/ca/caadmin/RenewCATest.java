@@ -58,7 +58,8 @@ public class RenewCATest extends TestCase {
 
         X509CAInfo info = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
-        
+        // Sleep at least for one second so we are not so fast that we create a new cert with the same time
+        Thread.sleep(2000);
         TestTools.getCAAdminSession().renewCA(admin,info.getCAId(),null,false);
         X509CAInfo newinfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
