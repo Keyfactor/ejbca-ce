@@ -30,17 +30,19 @@ import java.io.PrintWriter;
 public class Log4jHandler extends Handler {
 	static private boolean isStarted = false;
 	/**
-	 * Add handler to java sun logging that loggs to log4j
+	 * Add handler to java sun logging that logs to log4j
 	 */
 	public static void add() {
-		if ( isStarted )
+		if ( isStarted ) {
 			return;
+		}
 		isStarted = true;
 		final Level logLevel = Level.FINEST;
 		final Logger rootLogger = Logger.getLogger("");
 		final Handler handlers[] = rootLogger.getHandlers();
-		for ( int i=0; i<handlers.length; i++ )
+		for ( int i=0; i<handlers.length; i++ ) {
 			rootLogger.removeHandler(handlers[i]);
+		}
 		rootLogger.setLevel(logLevel);
 		final Handler handler = new Log4jHandler();
 		handler.setLevel(logLevel);
@@ -61,22 +63,23 @@ public class Log4jHandler extends Handler {
 		// do nothing
 	}
 	private org.apache.log4j.Level translateLevel( Level level ) {
-		if ( level.intValue() < Level.FINEST.intValue() )
+		if ( level.intValue() < Level.FINEST.intValue() ) {
 			return org.apache.log4j.Level.ALL;
-		else if ( level.intValue() <= Level.FINEST.intValue() )
+		} else if ( level.intValue() <= Level.FINEST.intValue() ) {
 			return org.apache.log4j.Level.TRACE;
-		else if ( level.intValue() <= Level.FINER.intValue() )
+		} else if ( level.intValue() <= Level.FINER.intValue() ) {
 			return org.apache.log4j.Level.DEBUG;
-		else if ( level.intValue() <= Level.FINE.intValue() )
+		} else if ( level.intValue() <= Level.FINE.intValue() ) {
 			return org.apache.log4j.Level.DEBUG;
-		else if ( level.intValue() <= Level.INFO.intValue() )
+		} else if ( level.intValue() <= Level.INFO.intValue() ) {
 			return org.apache.log4j.Level.INFO;
-		else if ( level.intValue() <= Level.WARNING.intValue() )
+		} else if ( level.intValue() <= Level.WARNING.intValue() ) {
 			return org.apache.log4j.Level.WARN;
-		else if ( level.intValue() <= Level.SEVERE.intValue() )
+		} else if ( level.intValue() <= Level.SEVERE.intValue() ) {
 			return org.apache.log4j.Level.FATAL;
-		else
+		} else {
 			return org.apache.log4j.Level.OFF;
+		}
 	}
 	/* (non-Javadoc)
 	 * @see java.util.logging.Handler#publish(java.util.logging.LogRecord)
