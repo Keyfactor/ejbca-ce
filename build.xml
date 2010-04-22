@@ -976,8 +976,12 @@
     	<ant antfile="modules/build.xml" target="clientToolBox" />
     </target>
 
-    <target name="cmpProxy" description="Builds a CMP proxy.">
-    	<ant antfile="modules/build.xml" target="cmpProxy" />
+    <target name="cmpTcpProxy" description="Builds a CMP TCP proxy.">
+    	<ant antfile="modules/build.xml" target="cmpTcpProxy" />
+    </target>
+	
+    <target name="cmpHttpProxy" description="Builds a CMP HTTP proxy.">
+    	<ant antfile="modules/build.xml" target="cmpHttpProxy" />
     </target>
 	
 	<target name="showtime" >
