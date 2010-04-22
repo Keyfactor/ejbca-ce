@@ -1202,6 +1202,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 // The CVC CAs current signing certificate will always be the right one, because it is the "previous" signing certificate until lwe have imported a new one
                 // as response to the request we create here.
                 boolean createlinkcert = false; // this is not a link certificate, and never can be
+                // If we try to sign an initial request there will be no CA certificate and signRequest will return the same as we pass in, i.e. do nothing.
                 returnval = ca.signRequest(request, usepreviouskey, createlinkcert);            	
             } else {
             	returnval = request;
