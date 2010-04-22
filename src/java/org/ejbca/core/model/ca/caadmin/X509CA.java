@@ -421,21 +421,14 @@ public class X509CA extends CA implements Serializable {
 	 * 
 	 * If request is a CSR (pkcs10) it returns null.
 	 * 
+     * @param usepreviouskey must be trust otherwise null is returned, this is because this method on an X509CA should only be used to create a NewWithOld.
+	 * 
 	 * @see CA#signRequest(Collection, String)
 	 */
 	public byte[] signRequest(byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CATokenOfflineException {
 		byte[] ret = null;
 		try {
-			// Get either the current or the previous signing key for signing this request
-			int key = SecConst.CAKEYPURPOSE_CERTSIGN;
-			if (usepreviouskey) {
-				log.debug("Using previous CertSign key to sign certificate");
-				key = SecConst.CAKEYPURPOSE_CERTSIGN_PREVIOUS;
-			} else {
-				log.debug("Using current CertSign key to sign certificate");
-			}
 			CATokenContainer catoken = getCAToken();
-
 			byte[] binbytes = request;
 			X509Certificate cert = null;
 			try {
