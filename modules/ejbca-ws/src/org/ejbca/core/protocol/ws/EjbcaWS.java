@@ -51,7 +51,6 @@ import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.jws.WebService;
-import javax.naming.NamingException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.ws.WebServiceContext;
 
@@ -1517,15 +1516,8 @@ public class EjbcaWS implements IEjbcaWS {
 	}		
 	
 	/**
-	 * @throws NamingException 
-	 * @throws CreateException 
-	 * @throws ApprovalException 
-	 * @throws UserDoesntFullfillEndEntityProfile 
-	 * @throws ApprovalRequestExpiredException 
-	 * @throws ClassCastException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#genTokenCertificates(org.ejbca.core.protocol.ws.objects.UserDataVOWS, java.util.List, org.ejbca.core.protocol.ws.objects.HardTokenDataWS)
 	 */
-	
 	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN, boolean revocePreviousCards)
 		throws CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
 		final ArrayList<TokenCertificateResponseWS> retval = new ArrayList<TokenCertificateResponseWS>();

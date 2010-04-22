@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -70,18 +69,6 @@ public class PublisherQueueProcessTest extends TestCase {
 
     protected void tearDown() throws Exception {
     }
-
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        return username;
-    } // genRandomUserName
-
 
     /** Add a new entry to the publisher queue and let the process service run, with no publisher.
      *

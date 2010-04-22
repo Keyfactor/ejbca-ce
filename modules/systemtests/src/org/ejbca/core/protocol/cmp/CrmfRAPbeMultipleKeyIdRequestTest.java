@@ -44,7 +44,6 @@ import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -107,7 +106,6 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     private KeyPair keys = null;  
 
     private static IUserAdminSessionRemote userAdminSession;
-	private ICertificateStoreSessionRemote certificateStoreSession = null;
     private static int caid1 = 0;
     private static int caid2 = 0;
     private static Admin admin;
@@ -154,7 +152,6 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             log.error("NO CACERT for CmpCA2: " + caid2);
         }
         userAdminSession = TestTools.getUserAdminSession();
-		certificateStoreSession = TestTools.getCertificateStoreSession();
         
         issuerDN1 = cacert1.getSubjectDN().getName();
         issuerDN2 = cacert2.getSubjectDN().getName();

@@ -30,7 +30,6 @@ import java.util.TreeMap;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -430,7 +429,6 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	 * @throws NumberFormatException
 	 * @throws ClassCastException
 	 * @throws CreateException
-	 * @throws NamingException
 	 */
 	protected Query convertUserMatch(Admin admin, UserMatch usermatch) throws NumberFormatException, ClassCastException, RemoteException{
 		Query retval = new Query(Query.TYPE_USERQUERY);		  		
@@ -463,7 +461,6 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	/**
 	 * Help metod returning a subset of certificates containing only valid certificates
 	 * expiredate and revokation status is checked.
-	 * @throws NamingException 
 	 * @throws CreateException 
 	 * @throws ClassCastException 
 	 */
