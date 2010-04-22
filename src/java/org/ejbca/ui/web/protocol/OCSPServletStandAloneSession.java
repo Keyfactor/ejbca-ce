@@ -1628,33 +1628,35 @@ class OCSPServletStandAloneSession implements P11SlotUser {
              */
             public void run() {
                 String errorMessage ="";
-                while ( true ) try {
-                    errorMessage = "";
-                    {
-                        final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyContainer.iterator();
-                        while ( i.hasNext() ) {
-                            i.next().clear(); // clear all not useable old keys
-                        }
-                    }
-                    OCSPServletStandAloneSession.this.slot.reset();
-                    synchronized( this ) {
-                        this.wait(10000); // wait 10 seconds to make system recover before trying again. all threads with ongoing operations has to stop
-                    }
-                    {
-                        final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyContainer.iterator();
-                        while ( i.hasNext() ) {
-                            PrivateKeyContainer pkf = i.next();
-                            errorMessage = pkf.toString();
-                            m_log.debug("Trying to reload: "+errorMessage);
-                            pkf.set(P11ProviderHandler.this.getKeyStore(getP11Pwd(null)));
-                            m_log.info("Reloaded: "+errorMessage);
-                        }
-                    }
-                    setNextKeyUpdate(new Date().getTime()); // since all keys are now reloaded we should wait an whole interval for next key update
-                    OCSPServletStandAloneSession.this.isNotReloadingP11Keys = true;
-                    return;
-                } catch ( Throwable t ) {
-                    m_log.debug("Failing to reload p11 keystore. "+errorMessage, t);
+                while ( true ) {
+                	try {
+                		errorMessage = "";
+                		{
+                			final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyContainer.iterator();
+                			while ( i.hasNext() ) {
+                				i.next().clear(); // clear all not useable old keys
+                			}
+                		}
+                		OCSPServletStandAloneSession.this.slot.reset();
+                		synchronized( this ) {
+                			this.wait(10000); // wait 10 seconds to make system recover before trying again. all threads with ongoing operations has to stop
+                		}
+                		{
+                			final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyContainer.iterator();
+                			while ( i.hasNext() ) {
+                				PrivateKeyContainer pkf = i.next();
+                				errorMessage = pkf.toString();
+                				m_log.debug("Trying to reload: "+errorMessage);
+                				pkf.set(P11ProviderHandler.this.getKeyStore(getP11Pwd(null)));
+                				m_log.info("Reloaded: "+errorMessage);
+                			}
+                		}
+                		setNextKeyUpdate(new Date().getTime()); // since all keys are now reloaded we should wait an whole interval for next key update
+                		OCSPServletStandAloneSession.this.isNotReloadingP11Keys = true;
+                		return;
+                	} catch ( Throwable t ) {
+                		m_log.debug("Failing to reload p11 keystore. "+errorMessage, t);
+                	}
                 }
             }
         }

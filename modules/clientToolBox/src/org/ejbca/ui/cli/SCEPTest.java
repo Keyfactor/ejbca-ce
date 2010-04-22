@@ -144,12 +144,6 @@ class SCEPTest extends ClientToolBox {
                     return false;
                 }
                 final CMSSignedData s = new CMSSignedData(con.getInputStream());
-                final SignerInformationStore signers = s.getSignerInfos();
-                final Collection<?> col = signers.getSigners();
-                /*if ( col.size() != 0) {
-                    StressTest.this.performanceTest.getLog().error("signers should be 0");
-                    return false;
-                }*/
                 final CertStore certstore = s.getCertificatesAndCRLs("Collection","BC");
                 final Collection<?> certs = certstore.getCertificates(null);
                 // Length two if the Scep RA server is signed directly by a Root CA

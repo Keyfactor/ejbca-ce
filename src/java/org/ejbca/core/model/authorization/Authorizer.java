@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;

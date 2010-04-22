@@ -241,17 +241,17 @@ public class UpgradeSessionBean extends BaseSessionBean {
     			oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
     		}
     		if ( isPost ) {
-    			return postUpgrade(admin, dbtype, oldVersion);
+    			return postUpgrade(oldVersion);
     		}
     		return upgrade(admin, dbtype, oldVersion);
     	} finally {
     		this.log.trace("<upgrade()");
     	}
     }
-    private boolean postUpgrade(Admin admin, String dbtype, int oldVersion) {
+    private boolean postUpgrade(int oldVersion) {
     	// Upgrade database change between ejbca 3.9.x and 3.10.x if needed
         if (oldVersion <= 309) {
-        	return postMigrateDatabase310(dbtype);
+        	return postMigrateDatabase310();
         }
     	return false;
     }
@@ -483,7 +483,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         error("(this is not an error) Finished migrating database.");
         return ret;
 	}
-	private boolean postMigrateDatabase310(String dbtype) {
+	private boolean postMigrateDatabase310() {
 		error("(this is not an error) Starting post upgrade from ejbca 3.9.x to ejbca 3.10.x");
 		final String lKeyID = "subjectKeyId";
 		final String lCert = "base64Cert";
