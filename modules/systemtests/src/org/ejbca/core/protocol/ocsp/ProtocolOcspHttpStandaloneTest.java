@@ -160,7 +160,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
         RevokedStatus rev = (RevokedStatus) status;
         assertTrue("Status does not have reason", rev.hasRevocationReason());
-        int reason = rev.getRevocationReason();
         log.trace("<test03OcspRevoked()");
     }
     

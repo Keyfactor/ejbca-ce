@@ -18,8 +18,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -420,10 +418,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      *
      * @return True if verification was successful, false if it failed.
      *
-     * @throws InvalidKeyException If the key used for verification is invalid.
-     * @throws NoSuchProviderException if there is an error with the Provider.
-     * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled
-     *         algorithm.
      */
     public boolean verify() {
         log.trace(">verify()");

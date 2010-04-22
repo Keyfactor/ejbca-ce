@@ -237,7 +237,9 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 
 	private String getAlias(X509Certificate userCert) {
         String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(userCert), "CN");
-        if (alias == null) alias = "myKey";
+        if (alias == null) {
+        	alias = "myKey";
+        }
 		return alias;
 	}
 
