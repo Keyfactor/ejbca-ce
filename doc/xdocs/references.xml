@@ -32,6 +32,12 @@
 	</p>
 	</subsection>
 	
+	<subsection name="Java">
+	<p>
+	The <a href="http://java.sun.com/javase/7/docs/technotes/guides/security/p11guide.html">Java PKCS#11 Reference Guide</a>.
+	</p>
+    </subsection>
+    	
 	<subsection name="MySQL">
 	<p>
 	MySQL:
