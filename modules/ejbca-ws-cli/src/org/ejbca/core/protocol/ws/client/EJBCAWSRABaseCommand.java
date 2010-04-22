@@ -206,13 +206,15 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
         return getEjbcaRAWS(true);
     }
     private EjbcaWS getEjbcaRAWS(boolean bForceNewReference) throws Exception {       
-        if ( this.exception!=null )
+        if ( this.exception!=null ) {
             throw this.exception;
+        }
         if(this.ejbcaraws==null || bForceNewReference){
             final QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
             final EjbcaWSService service = new EjbcaWSService(this.webServiceURL,qname);
-            if ( bForceNewReference )
+            if ( bForceNewReference ) {
                 return service.getEjbcaWSPort();
+            }
             this.ejbcaraws = service.getEjbcaWSPort();
         }
         return this.ejbcaraws;

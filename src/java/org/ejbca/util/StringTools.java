@@ -501,8 +501,9 @@ public class StringTools {
         // Parse to int and increment by 1
         int incrSeq = Integer.parseInt(s, 10) + 1;
         // Reset if the maximum value is exceeded
-        if (incrSeq == Math.pow(10, len))
+        if (incrSeq == Math.pow(10, len)) {
             incrSeq = 0;
+        }
         // Make a nice String again
         String newSeq = "00000" + Integer.toString(incrSeq, 10);
         newSeq = newSeq.substring(newSeq.length()-len);
@@ -518,8 +519,9 @@ public class StringTools {
         // Parse to int and increment by 1
         int incrSeq = Integer.parseInt(s, 36) + 1;
         // Reset if the maximum value is exceeded
-        if (incrSeq == Math.pow(36, len))
+        if (incrSeq == Math.pow(36, len)) {
             incrSeq = 0;
+        }
         // Make a nice String again
         String newSeq = "00000" + Integer.toString(incrSeq, 36);
         newSeq = newSeq.substring(newSeq.length()-len);

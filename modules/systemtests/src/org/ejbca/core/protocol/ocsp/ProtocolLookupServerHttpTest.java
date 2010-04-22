@@ -406,7 +406,9 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         log.trace(">getSSLFactory()");
 
         String trustp12 = "/lookup-kstrust.p12";
-        if (!trust) trustp12 = "/lookup-ksnotrust.p12";
+        if (!trust) {
+        	trustp12 = "/lookup-ksnotrust.p12";
+        }
         char[] passphrase = "lookup".toCharArray();
         
         SSLContext ctx = SSLContext.getInstance("TLS");
@@ -451,8 +453,9 @@ public class ProtocolLookupServerHttpTest extends TestCase {
             HttpsURLConnection con = (HttpsURLConnection) orgcon;
             con.setHostnameVerifier(new SimpleVerifier());
             con.setSSLSocketFactory(getSSLFactory(trust));
-        } else
+        } else {
             log.debug("getUrlConnection(): Ingen HttpsUrlConnection!");
+        }
         log.trace("<getUrlConnection() --> " + orgcon);
         return orgcon;
     }

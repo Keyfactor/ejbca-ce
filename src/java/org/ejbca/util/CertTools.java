@@ -255,9 +255,9 @@ public class CertTools {
     	/*if (log.isTraceEnabled()) {
     		log.trace(">stringToBcX509Name: " + dn);
     	}*/
-      if (dn == null)
+      if (dn == null) {
         return null;
-
+      }
       Vector defaultOrdering = new Vector();
       Vector values = new Vector();
       X509NameTokenizer xt = new X509NameTokenizer(dn);
