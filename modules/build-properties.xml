@@ -92,8 +92,8 @@
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
-    <property name="mod.cmpProxy.dist" location="${ejbca.dist.path}/cmpProxy" />
-    <property name="mod.cmpTcpProxy.lib" location="${mod.cmpProxy.dist}/cmpTcpProxy.jar" />
+    <property name="mod.cmpTcpProxy.dist" location="${ejbca.dist.path}/cmpTcpProxy" />
+    <property name="mod.cmpHttpProxy.dist" location="${ejbca.dist.path}/cmpHttpProxy" />
     <property name="mod.cmpProxy.path" location="${mod.path}/cmpProxy" />
     <property name="mod.externalra.path" location="${mod.path}/externalra" />
     <property name="mod.externalra.lib" location="${mod.dist.path}/externalra.jar" />
