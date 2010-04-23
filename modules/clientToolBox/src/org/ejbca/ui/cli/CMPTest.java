@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
@@ -61,6 +62,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.protocol.cmp.CMPSendHTTP;
 import org.ejbca.core.protocol.cmp.CMPSendTCP;
 import org.ejbca.util.CertTools;
@@ -96,6 +98,8 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  *
  */
 class CMPTest extends ClientToolBox {
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
     static private class StressTest {
         final PerformanceTest performanceTest;
 
@@ -108,6 +112,7 @@ class CMPTest extends ClientToolBox {
         final private String hostName;
         final private int port;
         final private boolean isHttp;
+        final String urlPath;
         boolean isSign;
         boolean firstTime = true;
         //private int lastNextInt = 0;
@@ -118,13 +123,15 @@ class CMPTest extends ClientToolBox {
                     final InputStream certInputStream,
                     final int numberOfThreads,
                     final int waitTime,
-                    final String _keyId) throws Exception {
+                    final String _keyId,
+                    final String _urlPath) throws Exception {
             this.hostName = _hostName;
             this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
             this.cacert = (X509Certificate)this.certificateFactory.generateCertificate(certInputStream);
             this.keyId = _keyId;
             this.port = _port;
             this.isHttp = _isHttp;
+            this.urlPath = _urlPath;
 
             final KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
             keygen.initialize(2048);
@@ -330,7 +337,11 @@ class CMPTest extends ClientToolBox {
             }
         }
         private byte[] sendCmpHttp(final byte[] message) throws Exception {
-            final CMPSendHTTP send = CMPSendHTTP.doIt(message, "http://"+StressTest.this.hostName+":"+StressTest.this.port+"/ejbca/publicweb/cmp", false);
+            final CMPSendHTTP send = CMPSendHTTP.doIt(message, StressTest.this.hostName, StressTest.this.port, StressTest.this.urlPath, false);
+            if ( send.responseCode!=HttpURLConnection.HTTP_OK ) {
+            	StressTest.this.performanceTest.getLog().error(intres.getLocalizedMessage("cmp.responsecodenotok", new Integer(send.responseCode)));
+            	return null;
+            }
             if ( send.contentType==null ) {
                 StressTest.this.performanceTest.getLog().error("No content type received.");
                 return null;
@@ -799,6 +810,7 @@ class CMPTest extends ClientToolBox {
         final String keyId;
         final int port;
         final boolean isHttp;
+        final String urlPath;
         if ( args.length < 3 ) {
             System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>] [<KeyId to be sent to server>] [<port>] [<protocol, http default, write tcp if you want socket.>]");
             System.out.println("EJBCA build configutation requirements: cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password");
@@ -813,6 +825,7 @@ class CMPTest extends ClientToolBox {
         keyId = args.length>5 ? args[5].trim():"EMPTY";
         port = args.length>6 ? Integer.parseInt(args[6].trim()):8080;
         isHttp = args.length>7 ? args[7].toLowerCase().indexOf("tcp", 0)<0 : true;
+        urlPath = args.length>8 ? args[8].trim():null;
 
         try {
             if ( !certFile.canRead() ) {
@@ -820,7 +833,7 @@ class CMPTest extends ClientToolBox {
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), numberOfThreads, waitTime, keyId);
+            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), numberOfThreads, waitTime, keyId, urlPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
