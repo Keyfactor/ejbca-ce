@@ -193,7 +193,7 @@ xkms.serviceport                = ${xkms.serviceport}
     <!-- =================================================================== -->
     <!-- Postprocessing if there are any tasks that we must do after deployment descriptors have been created by XDoclet -->
     <!-- =================================================================== -->
-    <target name="dd-postprocess" depends="wls-dd-postprocess">
+    <target name="dd-postprocess" depends="wls-dd-postprocess, jboss-eap-5-dd-postprocess">
          <!-- This is only a placeholder target, create a new target and add to the depends for this target -->
     </target>
     
@@ -210,6 +210,25 @@ xkms.serviceport                = ${xkms.serviceport}
          <!-- If we are using weblogic 9.x, we must replace the generated cmp-mappings file with a manually created one -->
 		<copy  file="${mainsrc}/deploy/weblogic/weblogic-cmp-rdbms-jar.xml" tofile="${src.dd}/META-INF/weblogic-cmp-rdbms-jar.xml" overwrite="true" failonerror="true"/>
 		<copy  file="${mainsrc}/deploy/weblogic/weblogic-ejb-jar.xml" tofile="${src.dd}/META-INF/weblogic-ejb-jar.xml" overwrite="true" failonerror="true"/>
+    </target>
+    
+    <target name="jboss-eap-5-dd-postprocess">
+    	<!-- Try to detect a file that is unique to JBoss EAP 5.0 -->
+    	<available file="${appserver.home}/server/production/deploy/ejb2-container-jboss-beans.xml" property="is-jboss-eap-5"/>
+    	<antcall target="jboss-eap-5-dd-postprocess-sub"/>
+    </target>
+
+    <target name="jboss-eap-5-dd-postprocess-sub" if="is-jboss-eap-5">
+    	<!-- Automate workaround for ECA-1563 -->
+		<copy file="${src.dd}/META-INF/jboss.xml" tofile="${src.dd}/META-INF/jboss.xml-new" encoding="ISO-8859-1" overwrite="true">
+			<filterchain>
+    			<tokenfilter>			    
+    		    	<replacestring from="&lt;jboss&gt;" to='&lt;jboss&gt;&lt;jmx-name&gt;jboss.j2ee:module="ejbca-ejb.jar",service=EjbModule&lt;/jmx-name&gt;'/>
+    			</tokenfilter>
+    		</filterchain>
+		</copy>
+		<copy file="${src.dd}/META-INF/jboss.xml-new" tofile="${src.dd}/META-INF/jboss.xml" encoding="ISO-8859-1" overwrite="true"/>
+		<delete file="${src.dd}/META-INF/jboss.xml-new"/>
     </target>
     
     <!-- =================================================================== -->
