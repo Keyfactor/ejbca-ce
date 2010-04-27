@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -36,6 +37,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CliTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.SimpleTime;
 import org.ejbca.util.StringTools;
@@ -54,9 +56,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         // Create new CA.
-        if (args.length < 7) {
+        if (args.length < 10) {
     		getLogger().info("Description: " + getDescription());
-    		getLogger().info("Usage: " + getCommand() + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [<catokenproperties> or null] [<signed by caid>]");
+    		getLogger().info("Usage: " + getCommand() + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [-certprofile profileName] [<catokenproperties> or null] [<signed by caid>]");
     		getLogger().info(" catokentype defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.ejbca.core.model.ca.catoken.PKCS11CAToken' for PKCS#11 HSMs.");
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal.");
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs");
@@ -70,13 +72,25 @@ public class CaInitCommand extends BaseCaAdminCommand {
     			availableSignAlgs += (availableSignAlgs.length()==0?"":", ") + algorithm;
     		}
     		getLogger().info(" signalgorithm is on of " + availableSignAlgs);
+    		getLogger().info(" adding the parameters '-certprofile profileName' makes the CA use the certificate profile 'profileName' instead of the default ROOTCA or SUBCA. Optional parameter that can be completely left out.");
     		getLogger().info(" catokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in admin gui.");
     		getLogger().info(" signed by caid is the CA id of a CA that will sign this CA. If this is omitted the new CA will be self signed (i.e. a root CA).");
     		return;
         }
             
         try {             	
-            final String caname = args[1];
+    		// Get and remove optional switches
+    		List<String> argsList = CliTools.getAsModifyableList(args);
+    		int profileInd = argsList.indexOf("-certprofile");
+    		String profileName = null;
+    		if (profileInd > -1) {
+    			profileName = argsList.get(profileInd+1);
+    			argsList.remove(profileName);
+    			argsList.remove("-certprofile");
+    		} 
+    		args = argsList.toArray(new String[0]); // new args array without the optional switches
+
+    		final String caname = args[1];
             final String dn = StringTools.strip(CertTools.stringToBCDNString(args[2]));
             final String catokentype = args[3];
             String catokenpassword = StringTools.passwordDecryption(args[4], "ca.tokenpassword");
@@ -118,8 +132,21 @@ public class CaInitCommand extends BaseCaAdminCommand {
             int signedByCAId = CAInfo.SELFSIGNED; 
             if (args.length > 11) {
             	String caid = args[11];
-            	signedByCAId= Integer.valueOf(caid);
+            	signedByCAId = Integer.valueOf(caid);
             }
+            // Get the profile ID from the name if we specified a certain profile name
+            int profileId = SecConst.CERTPROFILE_FIXED_ROOTCA;
+            if (profileName == null) {
+            	if (signedByCAId == CAInfo.SELFSIGNED) {
+            		profileName = "ROOTCA";
+            	} else {
+            		profileName = "SUBCA";
+                    profileId = SecConst.CERTPROFILE_FIXED_SUBCA;
+            	}
+            } else {
+            	profileId = getCertificateStoreSession().getCertificateProfileId(getAdmin(), profileName);
+            }
+            
             if (KeyTools.isUsingExportableCryptography()) {
             	getLogger().warn("WARNING!");
             	getLogger().warn("WARNING: Using exportable strength crypto!");
@@ -142,6 +169,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("Validity (days): "+validity);
             getLogger().info("Policy ID: "+policyId);
             getLogger().info("Signature alg: "+signAlg);
+            getLogger().info("Certificate profile: "+profileName);
+            //getLogger().info("Certificate profile id: "+profileId);
             getLogger().info("CA token properties: "+catokenproperties);
             getLogger().info("Signed by: "+(signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
             if (signedByCAId != CAInfo.SELFSIGNED) {
@@ -204,7 +233,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             
             X509CAInfo cainfo = new X509CAInfo(dn, 
                                              caname, SecConst.CA_ACTIVE, new Date(),
-                                             "", SecConst.CERTPROFILE_FIXED_ROOTCA,
+                                             "", profileId,
                                              validity, 
                                              null, // Expiretime                                             
                                              CAInfo.CATYPE_X509,
