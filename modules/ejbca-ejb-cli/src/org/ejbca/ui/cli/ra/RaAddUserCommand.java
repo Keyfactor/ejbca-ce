@@ -20,6 +20,8 @@ import java.util.Iterator;
 
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
@@ -259,6 +261,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             	  getLogger().error(e.getMessage());
               }catch(UserDoesntFullfillEndEntityProfile e){
             	  getLogger().info("Given userdata doesn't fullfill end entity profile. : " +  e.getMessage());
+              }catch(WaitingForApprovalException e){
+            	  getLogger().info("\nOperation pending, waiting for approval: " +  e.getMessage());
+              }catch(ApprovalException e){
+            	  getLogger().info("\nApproval exception: " +  e.getMessage());
               }
             }
         } catch (Exception e) {
