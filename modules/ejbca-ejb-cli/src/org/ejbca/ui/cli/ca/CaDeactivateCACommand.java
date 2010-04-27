@@ -44,6 +44,7 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             }
             if(cainfo.getStatus() == SecConst.CA_ACTIVE){
               getCAAdminSession().deactivateCAToken(getAdmin(), cainfo.getCAId());                        
+              getLogger().info("CA token deactivated.");
             }else{
             	getLogger().error("CA or CAToken must be active to be put offline.");
             }

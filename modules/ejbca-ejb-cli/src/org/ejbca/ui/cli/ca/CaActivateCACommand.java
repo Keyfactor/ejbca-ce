@@ -15,10 +15,13 @@ package org.ejbca.ui.cli.ca;
 
 import java.rmi.UnmarshalException;
 
+import javax.security.auth.login.FailedLoginException;
+
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
@@ -59,15 +62,33 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             	return;            	
             }
             // Check that CA has correct status.
-            if ( (cainfo.getStatus() == SecConst.CA_OFFLINE) || 
-            		(cainfo.getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE) ) {
+            if ( (cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE) ) {
             	try {
                 	getCAAdminSession().activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode, getRaAdminSession().loadGlobalConfiguration(getAdmin()));            		
+                	getLogger().info("CA token activated.");
             	} catch (UnmarshalException e) {
             		// If we get a classnotfound we are probably getting an error back from the token, 
             		// with a class we don't have here at the CLI. It is probably invalid PIN
             		getLogger().error("Error returned, did you enter the correct PIN?");
             		getLogger().error(e.getMessage());
+            	} catch (CATokenAuthenticationFailedException e) {
+            		getLogger().error("CA Token authentication failed.");
+            		getLogger().error(e.getMessage());
+            		Throwable t = e.getCause();
+            		while (t != null) {
+            			if (t instanceof FailedLoginException) {
+            				// If it's an HSM the next exception will be a PKCS11 exception. We don't want to search directly for that though, because then we 
+            				// will import sun specific classes, and we don't want that.
+            				t = t.getCause();
+            				if (t != null) {
+                				getLogger().error(t.getMessage());
+                				break;
+            				}
+						} else {
+		            		t = t.getCause();
+						}
+            		}
+            		getLogger().debug("Exception: ", e);            		
             	} catch (ApprovalException e){
             		getLogger().error("CA Token activation approval request already exists.");
             	} catch (WaitingForApprovalException e){
