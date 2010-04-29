@@ -721,6 +721,14 @@ options as for jCert.
 </p>
 </subsection>
 
+<subsection name="Proxy">
+<p>
+You may build a proxy that could be installed on another host than the CA itself.
+</p><p>
+See '${EJBCA_HOME}/modules/cmpProxy/resources/README' for more information.
+</p>
+</subsection>
+
 </section>
 
 <section name="Ocsp">
