@@ -951,11 +951,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // getCAInfo
     
     /**
-     * Get the CA object. Does not perform any authorization check.
+     * Get the CA object. Does not perform any authorization check. 
+     * Checks if the CA has expired or the certificate isn't valid yet and in that case sets the correct CA status. 
      * @param admin is used for logging
      * @param caid identifies the CA
      * @return the CA object
-     * @throws CADoesntExistsException if no CA was found, the CA has expired or the certificate isn't valid yet
+     * @throws CADoesntExistsException if no CA was found
      * @ejb.interface-method
      */
     public CA getCA(Admin admin, int caid) throws CADoesntExistsException {
@@ -1005,17 +1006,20 @@ public class CAAdminSessionBean extends BaseSessionBean {
         	// Signers Certificate has expired.
         	cadata.setStatus(SecConst.CA_EXPIRED);
             String msg = intres.getLocalizedMessage("signsession.caexpired", cadata.getSubjectDN());
-            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, cee);
-            throw new CADoesntExistsException(msg);
+            log.warn(msg);
+            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_UNKNOWN, msg, cee);
         } catch (CertificateNotYetValidException e) {
-            throw new CADoesntExistsException(e);
+        	// Signers Certificate is not yet valid.
+            String msg = intres.getLocalizedMessage("signsession.canotyetvalid", cadata.getSubjectDN());
+            log.warn(msg);
+            getLogSession().log(admin, cadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_UNKNOWN, msg, e);
 		}
         return ca;
-    }
+    } // getCA
     
     /**
      * Verify that a CA exists. (This method does not check admin privileges
-     * and will leak the existance of a CA.)
+     * and will leak the existence of a CA.)
      * 
      * @param caid is the id of the CA
      * @throws CADoesntExistsException if the CA isn't found

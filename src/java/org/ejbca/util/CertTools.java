@@ -2075,40 +2075,42 @@ public class CertTools {
 	 * Checks that the given date is within the certificate's validity period. 
 	 * In other words, this determines whether the certificate would be valid at the given date/time.
 	 *
-	 * @param cert certificate to verify
+	 * @param cert certificate to verify, if null the method returns immediately, null does not have a validity to check.
 	 * @param date the Date to check against to see if this certificate is valid at that date/time.
-	 * @throws CertificateNotYetValidException 
 	 * @throws NoSuchFieldException 
 	 * @throws CertificateExpiredException - if the certificate has expired with respect to the date supplied. 
      * @throws CertificateNotYetValidException - if the certificate is not yet valid with respect to the date supplied.
      * @see java.security.cert.X509Certificate#checkValidity(Date)
 	 */
 	public static void checkValidity(Certificate cert, Date date) throws CertificateExpiredException, CertificateNotYetValidException {
-		if (cert instanceof X509Certificate) {
-			X509Certificate xcert = (X509Certificate) cert;
-			xcert.checkValidity(date);
-		} else if (StringUtils.equals(cert.getType(), "CVC")) {
-			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
-			try {
-				Date start = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
-				Date end = cvccert.getCVCertificate().getCertificateBody().getValidTo();
-				if (start.after(date)) {
-					String msg = "Certificate startDate '"+start+"' is after check date '"+date+"'";
-					log.error(msg);
-					throw new CertificateNotYetValidException(msg);
+		if (cert != null) {
+			if (cert instanceof X509Certificate) {
+				X509Certificate xcert = (X509Certificate) cert;
+				xcert.checkValidity(date);
+			} else if (StringUtils.equals(cert.getType(), "CVC")) {
+				CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
+				try {
+					Date start = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
+					Date end = cvccert.getCVCertificate().getCertificateBody().getValidTo();
+					if (start.after(date)) {
+						String msg = "Certificate startDate '"+start+"' is after check date '"+date+"'";
+						log.error(msg);
+						throw new CertificateNotYetValidException(msg);
+					}
+					if (end.before(date)) {
+						String msg = "Certificate endDate '"+end+"' is before check date '"+date+"'";
+						log.error(msg);
+						throw new CertificateExpiredException(msg);
+					}
+				} catch (NoSuchFieldException e) {
+		            log.error("NoSuchFieldException: ", e);
 				}
-				if (end.before(date)) {
-					String msg = "Certificate endDate '"+end+"' is before check date '"+date+"'";
-					log.error(msg);
-					throw new CertificateExpiredException(msg);
-				}
-			} catch (NoSuchFieldException e) {
-	            log.error("NoSuchFieldException: ", e);
-			}
-		}    		
+			}    		
+		}
 	}
+	
 	/**
-     * Return the CRL distribution point URL form a certificate.
+     * Return the CRL distribution point URL from a certificate.
      */
     public static URL getCrlDistributionPoint(Certificate certificate)
       throws CertificateParsingException {
