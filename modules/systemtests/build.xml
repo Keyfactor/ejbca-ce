@@ -168,14 +168,14 @@
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspSignedHttpTest.class" />
 					<!-- Tests that require the CMP TCP listener -->
-					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestTest.class" />
+					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
 				</fileset>
 			</batchtest>
 			<!-- Tests that require the CMP TCP listener -->
 			<batchtest fork="yes" todir="${reports.dir}" unless="cmptcplistener.notrunning">
 				<fileset dir="${build.dir}">
-					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
 				</fileset>
 			</batchtest>

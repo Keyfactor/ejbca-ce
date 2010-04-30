@@ -30,7 +30,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -48,7 +47,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
-import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
@@ -247,67 +245,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
 		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
-
 	}
 	
-	
-	public void test02CrmfTcpOkUser() throws Exception {
-
-		byte[] nonce = CmpMessageHelper.createSenderNonce();
-		byte[] transid = CmpMessageHelper.createSenderNonce();
-		
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
-		assertNotNull(req);
-
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-		ByteArrayOutputStream bao = new ByteArrayOutputStream();
-		DEROutputStream out = new DEROutputStream(bao);
-		out.writeObject(req);
-		byte[] ba = bao.toByteArray();
-		// Send request and receive response
-		byte[] resp = sendCmpTcp(ba, 5);
-		assertNotNull(resp);
-		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
-		X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
-		assertNotNull(cert);
-		
-		// Send a confirm message to the CA
-		String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
-		assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
-		bao = new ByteArrayOutputStream();
-		out = new DEROutputStream(bao);
-		out.writeObject(req1);
-		ba = bao.toByteArray();
-		// Send request and receive response
-		resp = sendCmpTcp(ba, 5);
-		assertNotNull(resp);
-		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
-		checkCmpPKIConfirmMessage(userDN, cacert, resp);
-		
-		// Now revoke the bastard using the CMPv2 CRL entry extension!
-		PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true);
-        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
-		assertNotNull(revReq);
-		bao = new ByteArrayOutputStream();
-		out = new DEROutputStream(bao);
-		out.writeObject(revReq);
-		ba = bao.toByteArray();
-		// Send request and receive response
-		resp = sendCmpTcp(ba, 5);
-		assertNotNull(resp);
-		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
-		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
-		int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
-		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION);
-
-	}
-
 	public void test03CrmfHttpTooManyIterations() throws Exception {
 
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -440,29 +379,4 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		TestTools.getConfigurationSession().restoreConfiguration();
 	}
 	
-
-    //
-    // Private helper methods
-    //
-	
-    private int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
-    	int ret = RevokedCertInfo.NOT_REVOKED;
-    	CertificateStatus info = TestTools.getCertificateStoreSession().getStatus(issuerDN, serno);
-    	ret = info.revocationReason;
-    	return ret;
-    }
-
-    static byte[] bluexir = Base64.decode(("MIICIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"+
-		"IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz"+
-		"dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"+
-		"AhoFAAICA+gwDAYIKwYBBQUIAQIFAKILBAlzc2xjbGllbnSkEgQQpFpBsonfhnW8"+
-		"ia1otGchraUSBBAyzd3nkKAzcJqGFrDw0jkYoIIBLjCCASowggEmMIIBIAIBADCC"+
-		"ARmkJqARGA8yMDA2MDkxOTE2MTEyNlqhERgPMjAwOTA2MTUxNjExMjZapR0wGzEZ"+
-		"MBcGA1UEAwwQU29tZSBDb21tb24gTmFtZaaBoDANBgkqhkiG9w0BAQEFAAOBjgAw"+
-		"gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/"+
-		"Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"+
-		"ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr"+
-		"BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"+
-		"FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
-
 }

@@ -643,17 +643,5 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 			// Ignore errors
 		}
 	}
-	
-
-    //
-    // Private helper methods
-    //
-
-    private int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
-    	int ret = RevokedCertInfo.NOT_REVOKED;
-    	CertificateStatus info = TestTools.getCertificateStoreSession().getStatus(issuerDN, serno);
-    	ret = info.revocationReason;
-    	return ret;
-    }
 
 }

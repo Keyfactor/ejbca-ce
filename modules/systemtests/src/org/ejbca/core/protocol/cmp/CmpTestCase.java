@@ -27,6 +27,7 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -70,9 +71,12 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.TestTools;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
@@ -759,6 +763,14 @@ public class CmpTestCase extends TestCase {
 		}
     }
 
+    protected int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
+    	int ret = RevokedCertInfo.NOT_REVOKED;
+    	CertificateStatus info = TestTools.getCertificateStoreSession().getStatus(issuerDN, serno);
+    	ret = info.revocationReason;
+    	return ret;
+    }
+
+    
 	//
 	// Private methods
 	// 
