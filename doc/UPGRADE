@@ -12,7 +12,7 @@ software. See doc/RELEASE_NOTES for info about such upgrades.
 If you use the patch file to upgrade use a command like:
 - Have old version of ejbca unzipped to directory ejbca.
 - Go to directory ejbca and apply patch with:
-- patch --strip=0 -u < ../patch-361_362.txt
+- patch --strip=0 -u < ../patch-396_397.txt
 (change name of patch file depending on which version you are upgrading)
 
 After this you must do:
@@ -22,6 +22,18 @@ After this you must do:
 All database upgrades require CREATE and ALTER TABLE privileges besides the regular SELECT, UPDATE,
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
+
+From EJBCA 3.10.x to EJBCA 3.10.x
+-------------------------------
+See release notes for details between certain versions. 
+Normally upgrades within a major release are plug-in upgrades.
+
+Simply copy conf/*.properties from the earlier installation (if not using ejbca-custom).
+Merge changes (if there are any) from *.properties.sample into your *.properties.
+Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
+
+Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. 
+See Admin Guide
 
 From EJBCA 3.9.x to EJBCA 3.10.x
 --------------------------------
@@ -124,7 +136,7 @@ From EJBCA 3.9.x to EJBCA 3.9.x
 See release notes for details between certain versions. 
 Normally upgrades within a major release are plug-in upgrades.
 
-Simply copy conf/*.pr)operties from the earlier installation (if not using ejbca-custom).
+Simply copy conf/*.properties from the earlier installation (if not using ejbca-custom).
 Merge changes (if there are any) from *.properties.sample into your *.properties.
 Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
 
