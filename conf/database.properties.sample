@@ -6,7 +6,7 @@
 
 # Prefix for the jndi name of the datasource to use in deployment descriptors of ejbs. 
 # JBoss requires 'java:/' as prefix, while Weblogic does not want anything (''), and Glassfish wants jdbc/
-# Oracle usually uses jdbc/ as well.
+# Oracle Application Server usually uses jdbc/ as well.
 # For Websphere use jdbc/.
 # default: java:/
 #datasource.jndi-name-prefix=java:/
