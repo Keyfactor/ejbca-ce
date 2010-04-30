@@ -52,7 +52,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * 'ant clean; ant bootstrap' to deploy configuration changes.
  * 
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java 8865 2010-04-09 15:14:51Z mikekushner $
+ * @version $Id$
  */
 public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 	
