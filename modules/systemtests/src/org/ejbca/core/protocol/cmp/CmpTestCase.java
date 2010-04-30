@@ -370,11 +370,12 @@ public class CmpTestCase extends TestCase {
 	protected byte[] sendCmpHttp(byte[] message) throws IOException, NoSuchProviderException {
         // POST the CMP request
         // we are going to do a POST
-    	String resource = resourceCmp;
-    	String urlString = httpReqPath + '/' + resource;
-        HttpURLConnection con = null;
+        final String resource = resourceCmp;
+        final String urlString = getProperty("httpCmpProxyURL", httpReqPath + '/' + resource);
+        log.info("http URL: "+urlString);
+        System.out.println("http URL: "+urlString);
         URL url = new URL(urlString);
-        con = (HttpURLConnection)url.openConnection();
+        final HttpURLConnection con = (HttpURLConnection)url.openConnection();
         con.setDoOutput(true);
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-type", "application/pkixcmp");
@@ -523,7 +524,20 @@ public class CmpTestCase extends TestCase {
 		assertEquals(new String(nonce), new String(transId));
                 
     }
-    
+	private String getProperty( String key, String defaultValue) {
+		final String result = System.getProperty(key);
+		if ( result==null || result.length()<1 || result.startsWith("$") ) {
+			return defaultValue;
+		}
+		return result;
+	}
+	private int getProperty( String key, int defaultValue ) {
+		final String sResult = getProperty( key, (String)null);
+		if ( sResult==null ) {
+			return defaultValue;
+		}
+		return Integer.parseInt(sResult);
+	}
 	/**
 	 * 
 	 * @param message
@@ -533,55 +547,55 @@ public class CmpTestCase extends TestCase {
 	 * @throws NoSuchProviderException
 	 */
 	protected byte[] sendCmpTcp(byte[] message, int type) throws IOException, NoSuchProviderException {
-		byte[] respBytes = null;
+		final String host = getProperty("tcpCmpProxyIP", CMP_HOST);
+		final int port = getProperty("tcpCmpProxyPort", PORT_NUMBER);
 		try {
-			int port = PORT_NUMBER;
-			String host = CMP_HOST;
-			Socket socket = new Socket(host, port);
+			final Socket socket = new Socket(host, port);
 
-			byte[] msg = createTcpMessage(message);
+			final byte[] msg = createTcpMessage(message);
 
-			BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
+			final BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
 			os.write(msg);
 			os.flush();
 
 			DataInputStream dis = new DataInputStream(socket.getInputStream());
 			// Read the length, 32 bits
-			int len = dis.readInt();
+			final int len = dis.readInt();
 			log.info("Got a message claiming to be of length: " + len);
 			// Read the version, 8 bits. Version should be 10 (protocol draft nr 5)
-			int ver = dis.readByte();
+			final int ver = dis.readByte();
 			log.info("Got a message with version: " + ver);
 			assertEquals(ver, 10);
 			
 			// Read flags, 8 bits for version 10
-			byte flags = dis.readByte();
+			final byte flags = dis.readByte();
 			log.info("Got a message with flags (1 means close): " + flags);
 			// Check if the client wants us to close the connection (LSB is 1 in that case according to spec)
 			
 			// Read message type, 8 bits
-			int msgType = dis.readByte();
+			final int msgType = dis.readByte();
 			log.info("Got a message of type: " +msgType);
 			assertEquals(msgType, type);
 			
 			// Read message
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
 			while (dis.available() > 0) {
 				baos.write(dis.read());
 			}
 			log.info("Read "+baos.size()+" bytes");
-			respBytes = baos.toByteArray();
+			final byte[] respBytes = baos.toByteArray();
+			assertNotNull(respBytes);
+			assertTrue(respBytes.length > 0);
+			return respBytes;
 		} catch(ConnectException e) {
-			assertTrue("This test requires a CMP TCP listener to be configured on " + CMP_HOST + ":" + PORT_NUMBER + ". Edit conf/cmp.properties and redeploy.", false);
+			assertTrue("This test requires a CMP TCP listener to be configured on " + host + ":" + port + ". Edit conf/cmp.properties and redeploy.", false);
 		} catch(EOFException e) {
 			assertTrue("Response was malformed.", false);
 		} catch(Exception e) {
 			e.printStackTrace();
 			assertTrue(false);
 		}
-		assertNotNull(respBytes);
-		assertTrue(respBytes.length > 0);
-        return respBytes;
+		return null;
     }
 
     protected X509Certificate checkCmpCertRepMessage(String userDN, X509Certificate cacert, byte[] retMsg, int requestId) throws IOException, CertificateException {
