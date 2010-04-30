@@ -67,7 +67,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 
     private static final long serialVersionUID = -7093480682721604160L;
 
-	private static final Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
+    /** Special logger only used to log version number. ejbca.version.log can be directed to a special logger, or have a special log level 
+     * in the log4j configuration. 
+     */
+	private static final Logger m_versionLog = Logger.getLogger("ejbca.version.log");
 
     private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
     private OCSPServletStandAloneSession session;
@@ -81,10 +84,11 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
-	    m_log.info("Init, "+GlobalConfiguration.EJBCA_VERSION+" OCSP startup");
+        // Log with warn priority so it will be visible in strict production configurations  
+	    m_versionLog.warn("Init, "+GlobalConfiguration.EJBCA_VERSION+" OCSP startup");
 
         this.session = new OCSPServletStandAloneSession(this);
-        // session must be crated before health check could be done
+        // session must be created before health check could be done
         ExtOCSPHealthCheck.setHealtChecker(this);
     }
     
@@ -94,7 +98,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 	 */
 	public void destroy() {
 		super.destroy();
-	    m_log.info("Destroy, "+GlobalConfiguration.EJBCA_VERSION+" OCSP shutdown");
+        // Log with warn priority so it will be visible in strict production configurations  
+	    m_versionLog.warn("Destroy, "+GlobalConfiguration.EJBCA_VERSION+" OCSP shutdown");
 	}
 
     /**
