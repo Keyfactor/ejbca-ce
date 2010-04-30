@@ -1,3 +1,56 @@
+3.10.1, 2010-05-02
+---
+New Feature
+    * [ECA-1542] - New WS API methods for caRenewCertRequest and caCertResponse
+    * [ECA-1622] - CMP Proxy
+    * [ECA-1630] - Support SHA384withECDSA signature algorithm
+
+Improvement
+    * [ECA-958] - Allow DVCA renewal of keys without activating them immediately
+    * [ECA-1585] - Renew CA signed by external does not accept binary CA certificate input
+    * [ECA-1616] - cvcRequest gives unclear error message when the exact same request is passed
+    * [ECA-1618] - OCSP responder, log startup, with version, and shutdown
+    * [ECA-1627] - Support DSA keys in ejbca.sh batch.
+    * [ECA-1635] - Specify a ca certificate profile when creating a ca with CLI
+
+Task
+    * [ECA-1346] - Write version information etc in ejbca-util.jar's manifest file
+    * [ECA-1529] - Remove the SafeNetLuna JCE CA token
+    * [ECA-1563] - EJBCA does not deploy on JBoss EAP 5.0.0.GA
+
+Bug
+    * [ECA-1058] - Multiple DCs in CA's sujectDN break CRL generation when LDAP DN order switched off
+    * [ECA-1072] - Got exception when adding an end entity from ejbcarawscli.sh when approval is enabled
+    * [ECA-1136] - User interface does not update correctly when changing Admingroup privileges
+    * [ECA-1189] - Error saving RA Admin access rules, End Entity Rules
+    * [ECA-1197] - Mail notifications does not work for CA's about to expire.
+    * [ECA-1541] - CMP servlet does not verify input length
+    * [ECA-1587] - CLI for getting delta CRL does not work
+    * [ECA-1602] - A Root CA can not renew certificate of an External CA
+    * [ECA-1603] - Approval Notifications gives nullpointerexception
+    * [ECA-1608] - Approval notification does not include requestAdmin
+    * [ECA-1609] - A new CRL is not created when a CA is renewed.
+    * [ECA-1610] - An error is logged when publishing CRL for a CA not using delta CRL.
+    * [ECA-1614] - ERROR logged erroneous when renewing root CA
+    * [ECA-1617] - Process time in OCSP logging fails when request fails
+    * [ECA-1619] - "CA issuer URI" can not be deleted on the "Edit Certificate Profile" page if the string start or ends with space.
+    * [ECA-1620] - Listing end entities with expiring certificates generates Exception
+    * [ECA-1626] - addUser ejb method does not always throw DuplicateKeyException if user exists
+    * [ECA-1629] - Error saving RA Admin access rules, Other Rules
+    * [ECA-1633] - document boolean usepreviouskey in X509CA.signRequest better
+    * [ECA-1638] - activateca cli does not work for expired CAs
+    * [ECA-1641] - Expired CAs makes CA cert download from public web fail
+
+3.9.7, 2010-05-02
+---
+Improvement
+    * [ECA-1616] - cvcRequest gives unclear error message when the exact same request is passed
+    * [ECA-1618] - OCSP responder, log startup, with version, and shutdown
+
+Bug
+    * [ECA-1636] - Error creating DVs signed by external CVCAs
+    * [ECA-1643] - Possible NullpointerException in EjbcaWS.getAvailableCertificateProfiles
+
 3.10.0, 2010-03-26
 ---
 ** New Feature

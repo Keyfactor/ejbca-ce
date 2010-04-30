@@ -1,3 +1,30 @@
+EJBCA 3.10.1
+-----------
+This is a maintenance release with a few new features, some improvements and several bug fixes. 33 issues in total have been resolved. 
+
+Changes:
+- New WS-API methods for renewing CAs. This enables the possibility for automated SPoCs in an EAC ePassport PKI.
+- New CMP proxy module letting you have a separate server terminating CMP connections and then forwarding them to the CA. 
+- Possibility to renew CAs without activating new keys, enabling the CA to continue working until a new certificate is imported.
+- Support for SHA384WithECDSA signature algorithm.
+- Fixed deployment on JBoss EAP 5.0.0.
+- Fixed admin GUI bug with problems selecting privileges for RA administrators.
+- Fixed some issues with cli and renewal of expired CAs.
+- Fixed a bug with cli for getting delta CRLs.
+- Other minor bug fixes.
+
+Note that there is a new access rule for "Renew CA". An administrator with renew CA privileges is authorized to renew CA and 
+import certificate response (from an external CA). Previously only super administrator was allowed to to this.
+CA administrators bye default has this new privilege. If you do not want them to have this privilege you can disable it in 
+Advanced mode in the edit privileges section of the admin GUI. 
+The new privileges can be used together with the new WS-API functions and CLI to renew specified CAs. 
+To be authorized the administrator need both the new "Renew CA" privilege and and be authorized to the specific CAs.
+The methods in CAAdminSessionBean that have changed privileges are renewCA, makeRequest and receiveResponse.     
+
+Read the full changelog for details.
+
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.10.0
 -----------
 This is a major release with lots of internal reorganisations, new features and fixes. 
@@ -19,6 +46,20 @@ Read the full changelog for details.
 This version removes the SafeNet Luna JCE class for use as a CA Token. You must now use the more generic, and well tested, PKCS#11 CA token type instead.
 The usage of PKCS11 CA tokens is well documented in the Admin Guide.
  
+For upgrade instructions, please see UPGRADE. 
+
+EJBCA 3.9.7
+-----------
+This is a maintenance release with only four fixes.
+
+Changes:
+- Fixed an error when creating DVs signed by external CVCAs (EAC ePassport only).
+- Give better error message when the same public key is passed in initial CVC request (EAC ePassport only).
+- Log OCSP responder startup and shutdown.
+- Fix possible NullpointerException in EjbcaWS.getAvailableCertificateProfiles.
+
+Read the full changelog for details.
+
 For upgrade instructions, please see UPGRADE. 
 
 EJBCA 3.9.6
