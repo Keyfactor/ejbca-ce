@@ -174,7 +174,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 							}					  
 						}
 					} else {
-						log.debug("Trying do send notification to user, but no UserData can be found for user '"+username+"', will only send to admin if admin notifications are defined.");
+						log.debug("Trying to send notification to user, but no UserData can be found for user '"+username+"', will only send to admin if admin notifications are defined.");
 					}
 					if(isSendToAdmins()){
 						// If we did not have any user for this, we will simply use empty values for substitution
