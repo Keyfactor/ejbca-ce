@@ -223,7 +223,10 @@
 		</waitfor>
     	<fail if="cmptcplistener.notrunning" message="This test requires a running CMP TCP listener"/>
 		<junit printsummary="yes" haltonfailure="no">
-			<classpath>
+		    <sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
+		    <sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
+		    <sysproperty key="tcpCmpProxyPort" value="${tcpCmpProxyPort}"/>
+		    <classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
 			</classpath>
