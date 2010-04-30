@@ -2351,10 +2351,13 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			EndEntityProfile profile = ejbhelper.getRAAdminSession().getEndEntityProfile(admin, entityProfileId);
-			String[] availablecertprofilesId = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0).split(EndEntityProfile.SPLITCHAR);
-			for (String id : availablecertprofilesId) {
-				int i = Integer.parseInt(id);
-				ret.put(ejbhelper.getCertStoreSession().getCertificateProfileName(admin,i), i);
+			String value = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0);
+			if (value != null) {
+				String[] availablecertprofilesId = value.split(EndEntityProfile.SPLITCHAR);				
+				for (String id : availablecertprofilesId) {
+					int i = Integer.parseInt(id);
+					ret.put(ejbhelper.getCertStoreSession().getCertificateProfileName(admin,i), i);
+				}
 			}
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
