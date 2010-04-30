@@ -32,8 +32,6 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	
 	public static final String NAME = "PUBLISHQUEUEWORKER";
 
-	private String publisherids = "";	
-
 	private List selectedPublisherIdsToCheck = new ArrayList();
 
 	public PublishQueueWorkerType(){

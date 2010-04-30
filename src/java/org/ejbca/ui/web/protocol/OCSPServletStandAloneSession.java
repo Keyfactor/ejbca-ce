@@ -66,7 +66,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceReque
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
@@ -1071,8 +1070,8 @@ class OCSPServletStandAloneSession implements P11SlotUser {
             }
         }
         /**
-         * Test if all criterias for key loading is fulfilled.
-         * If it is {@link #loadPrivateKeys2(Admin, String)} is called after calculating time fot new update.
+         * Test if all criteria for key loading is fulfilled.
+         * If it is {@link #loadPrivateKeys2(String)} is called after calculating time for new update.
          * @param password This password is only set if passwords should not be stored in memory.
          * @throws Exception
          */

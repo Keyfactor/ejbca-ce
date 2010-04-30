@@ -275,8 +275,9 @@ public class P11Slot {
             this.isSettingProvider = false;
             this.notifyAll();
         }
-        if ( tmpProvider==null )
+        if ( tmpProvider==null ) {
             throw new CATokenOfflineException("Provider is null");
+        }
         if ( Security.getProvider(tmpProvider.getName())!=null ) {
             Security.removeProvider(tmpProvider.getName());
         }

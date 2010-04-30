@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
@@ -94,7 +93,6 @@ public class CertDistServlet extends HttpServlet {
     private ICertificateStoreSessionLocal storesession = null;
 	private ICreateCRLSessionLocal createCRLSession = null;
     private ISignSessionLocal signsession = null;
-    private ICAAdminSessionLocal casession = null;
 
     private synchronized ISignSessionLocal getSignSession(){
     	if(signsession == null){	
