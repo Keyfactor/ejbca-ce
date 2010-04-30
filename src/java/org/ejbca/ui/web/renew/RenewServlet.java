@@ -31,7 +31,6 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
-import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.log.Admin;
@@ -50,9 +49,6 @@ public class RenewServlet extends HttpServlet {
     
 	private static final Logger log = Logger.getLogger(RenewServlet.class);
     
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
-
     /** Submit button on the web page */
 	public static final String BUTTONRENEW = "buttonrenew";
 

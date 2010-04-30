@@ -442,12 +442,11 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 * Can get request bytes both from a HTTP GET and POST request
 	 * 
 	 * @param request
-	 * @param response
 	 * @return the request bytes or null if an error occured.
 	 * @throws IOException In case there is no stream to read
 	 * @throws MalformedRequestException 
 	 */
-	private byte[] checkAndGetRequestBytes(HttpServletRequest request, HttpServletResponse response) throws IOException, MalformedRequestException {
+	private byte[] checkAndGetRequestBytes(HttpServletRequest request) throws IOException, MalformedRequestException {
 		final byte[] ret;
 		// Get the request data
 		String method = request.getMethod();
@@ -583,7 +582,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			OCSPRespGenerator res = new OCSPRespGenerator();
 			X509Certificate cacert = null; // CA-certificate used to sign response
 			try {
-				byte[] reqBytes = checkAndGetRequestBytes(request, response);
+				byte[] reqBytes = checkAndGetRequestBytes(request);
 				// Start logging process time after we have received the request
 				transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);

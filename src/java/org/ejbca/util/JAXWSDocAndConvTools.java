@@ -20,7 +20,7 @@ import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.File;
 
-/*
+/**
  * JAX-WS Support.
  * Utility for supporting JavaDoc creation of JAX-WS objects as well
  * as supporting an option for securely reusing server-objects on the client
@@ -553,7 +553,9 @@ public class JAXWSDocAndConvTools {
 				}
 			}
 			String jdoc = server.methods.get(s).java_doc;
-			if (jdoc == null) bad ("missing javadoc for " + s);
+			if (jdoc == null) { 
+				bad ("missing javadoc for " + s);
+			}
 			for (String e : client_method.exceptions){
 			    int i = jdoc.indexOf("@throws " + e.substring(0, e.length () - 10));
 			    if (i > 0) {
