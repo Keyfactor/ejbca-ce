@@ -70,7 +70,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     /** Special logger only used to log version number. ejbca.version.log can be directed to a special logger, or have a special log level 
      * in the log4j configuration. 
      */
-	private static final Logger m_versionLog = Logger.getLogger("ejbca.version.log");
+	private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
 
     private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
     private OCSPServletStandAloneSession session;
