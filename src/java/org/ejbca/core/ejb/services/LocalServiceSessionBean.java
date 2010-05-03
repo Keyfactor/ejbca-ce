@@ -649,7 +649,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     
     
     /**
-     * Activates the timer for a named service. The service must alrteady be previously added.
+     * Activates the timer for a named service. The service must already be previously added.
      *
      * @param admin The administrator performing the action
      * @param name the name of the service for which to activate the timer
