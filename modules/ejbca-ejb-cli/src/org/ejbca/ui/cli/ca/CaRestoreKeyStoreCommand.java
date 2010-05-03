@@ -31,7 +31,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "restorekeystore"; }
-	public String getDescription() { return "Re-publishes the certificates of all users belonging to a particular CA"; }
+	public String getDescription() { return "Restore a CA token keystore from a PKCS12 file."; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
 		if (args.length < 3 || args.length > 5) {

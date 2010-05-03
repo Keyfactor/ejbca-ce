@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Issues a new CRL from the CA.
@@ -51,6 +52,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
               		deltaCRL = true;
               	}
               }
+              CryptoProviderTools.installBCProvider();
               // createCRL prints info about crl generation
               String issuerName = getIssuerDN(caname);
               if (issuerName != null) {

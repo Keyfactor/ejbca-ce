@@ -12,6 +12,7 @@ import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Imports a PEM file and creates a new external CA representation from it.
@@ -34,6 +35,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean initAuth = argsList.remove("-initauthorization");
 		try {
+			CryptoProviderTools.installBCProvider();
 			Collection certs = CertTools.getCertsFromPEM(pemFile);
 			if (certs.size() != 1) {
 				throw new ErrorAdminCommandException("PEM file must only contain one CA certificate, this PEM file contains "+certs.size()+".");

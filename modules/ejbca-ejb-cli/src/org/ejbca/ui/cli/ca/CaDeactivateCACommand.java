@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Makes the specified HSM CA offline.
@@ -36,6 +37,7 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
                 return;
             }
             String caname = args[1];
+            CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
             CAInfo cainfo = getCAAdminSession().getCAInfo(getAdmin(), caname);
             if(cainfo == null){

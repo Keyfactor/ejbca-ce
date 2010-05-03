@@ -21,6 +21,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -40,7 +41,8 @@ public class CaInfoCommand extends BaseCaAdminCommand {
     		getLogger().info("Usage: " + getCommand() + " <caname>");
     		return;
         }
-        try {            
+        try {
+        	CryptoProviderTools.installBCProvider();
             String caname = args[1];
             ArrayList chain = new ArrayList(getCertChain(caname));
             CAInfo cainfo = getCAInfo(caname);

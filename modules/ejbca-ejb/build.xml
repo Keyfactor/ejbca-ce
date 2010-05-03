@@ -186,6 +186,8 @@
            	<include name="org/ejbca/util/CliTools.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/X509CA.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/X509CAInfo.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/CVCCA.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/CVCCAInfo.java"/>
            	<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
            	<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
            	<include name="org/ejbca/core/model/log/ProtectedLogConstants.java"/>

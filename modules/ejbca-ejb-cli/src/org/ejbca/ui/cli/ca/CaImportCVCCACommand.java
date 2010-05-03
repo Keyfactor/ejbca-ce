@@ -36,6 +36,7 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -67,7 +68,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
         	String certFile = args[3];
         	
         	// Import key and certificate
-			CertTools.installBCProvider();
+        	CryptoProviderTools.installBCProvider();
 			byte[] pkbytes = FileTools.readFiletoBuffer(pkFile);
 	        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(pkbytes);
 	        KeyFactory keyfact = KeyFactory.getInstance("RSA", "BC"); // Doesn't matter if we say RSA here, it will fix an EC key as well

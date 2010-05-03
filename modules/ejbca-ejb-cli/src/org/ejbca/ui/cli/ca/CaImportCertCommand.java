@@ -25,6 +25,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 
 /**
@@ -46,6 +47,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			return;
 		}
 		try {
+			CryptoProviderTools.installBCProvider();
 			String username = args[1];
 			String password = args[2];
 			String caname = args[3];
