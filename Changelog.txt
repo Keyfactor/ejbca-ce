@@ -1,4 +1,4 @@
-3.10.1, 2010-05-02
+3.10.1, 2010-05-03
 ---
 New Feature
     * [ECA-1542] - New WS API methods for caRenewCertRequest and caCertResponse
@@ -40,8 +40,9 @@ Bug
     * [ECA-1633] - document boolean usepreviouskey in X509CA.signRequest better
     * [ECA-1638] - activateca cli does not work for expired CAs
     * [ECA-1641] - Expired CAs makes CA cert download from public web fail
-
-3.9.7, 2010-05-02
+ 	* [ECA-1644] - ejbca.sh listcas does not work with CVCAs
+ 	  
+3.9.7, 2010-05-03
 ---
 Improvement
     * [ECA-1616] - cvcRequest gives unclear error message when the exact same request is passed

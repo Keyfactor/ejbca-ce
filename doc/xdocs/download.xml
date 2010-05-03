@@ -10,19 +10,17 @@
     <note>
     If you have problems with any of the download links below, try to download through the Sourceforge <a href="http://sourceforge.net/projects/ejbca/files/">download page</a>.
     <br/><br/>
-    EJBCA 3.10.0 is now available for <a
-    href="http://downloads.sourceforge.net/ejbca/ejbca_3_10_0.zip">download</a>.
+    EJBCA 3.10.1 is now available for <a
+    href="http://downloads.sourceforge.net/ejbca/ejbca_3_10_1.zip">download</a>.
     <br/>
-    SHA1 checksum: 5d39849c20cfee5c1f38a89ab6211edc18139f6c
-    <br/><br/>
-    External RA API 3.10.0 is now a part of the EJBCA bundle.
-    <br/>
-    SHA1 checksum: a67c3e8e1be4f93dcfec67f167293018d7b04361
+    SHA1 checksum:
     <br/><br/>
     Cert-cvc library 1.2.11 with full RSA and ECC support is now available for <a
     href="http://downloads.sourceforge.net/ejbca/cert-cvc-1.2.11.zip">download</a>.
     <br/>
     SHA1 checksum: 4ac55246e272b8450e56748dca732cce11203c6d
+    <br/><br/>
+    External RA API is now a part of the EJBCA bundle. The old separate download bundle is only used with EJBCA 3.9.x and earlier.
     </note>
   </section>
   <section name="Main source packages">
