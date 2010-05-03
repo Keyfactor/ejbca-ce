@@ -25,6 +25,7 @@ import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Activates the specified HSM CA.
@@ -55,6 +56,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
                 ConsolePasswordReader r = new ConsolePasswordReader();
                 authorizationcode = String.valueOf(r.readPassword());            	
             }
+            CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
             CAInfo cainfo = getCAAdminSession().getCAInfo(getAdmin(), caname);
             if(cainfo == null){

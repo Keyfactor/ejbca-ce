@@ -22,6 +22,7 @@ import java.util.Iterator;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * List certificates that will expire within the given number of days.
@@ -40,7 +41,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
     		getLogger().info("Usage: " + getCommand() + " <days>");
             return;
         }
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         try {
             long days = Long.parseLong(args[1]);
             Date findDate = new Date();

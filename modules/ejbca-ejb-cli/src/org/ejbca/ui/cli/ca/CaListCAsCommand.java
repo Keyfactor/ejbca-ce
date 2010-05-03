@@ -20,6 +20,7 @@ import java.util.Iterator;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Lists the names of all available CAs.
@@ -34,6 +35,7 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
+        	CryptoProviderTools.installBCProvider();
             Collection caids = getCAAdminSession().getAvailableCAs(getAdmin());
             Iterator iter = caids.iterator();
             while (iter.hasNext()) {

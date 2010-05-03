@@ -21,6 +21,7 @@ import java.util.List;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Export root CA certificate.
@@ -48,6 +49,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
         String caname = args[1];
         String filename = args[2];
         try {
+        	CryptoProviderTools.installBCProvider();
             ArrayList chain = new ArrayList(getCertChain(caname));
             if (chain.size() > 0) {
                 Certificate rootcert = (Certificate)chain.get(chain.size()-1);

@@ -19,6 +19,7 @@ import java.util.List;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Retrieves the latest CRL from a CA.
@@ -46,6 +47,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 			return;
 		}
 		try {
+			CryptoProviderTools.installBCProvider();
 			// Perform CRL fetch
 			String caname = args[1];
 			String outfile = args[2];
