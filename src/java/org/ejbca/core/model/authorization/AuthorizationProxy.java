@@ -45,8 +45,8 @@ public class AuthorizationProxy implements Serializable {
     /**
      * Method that first checks in hashmap if administrator already have been checked in accesstree.
      * If not it looks in the accesstree.
+     * @return true if authorized, false if not
      */
-  
     public boolean isAuthorized(AdminInformation admin, String resource){
       Boolean returnval = null;
       int adm = 0;
