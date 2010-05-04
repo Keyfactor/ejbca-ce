@@ -2102,7 +2102,7 @@ public abstract class CommonEjbcaWS extends TestCase {
                 AuthorizationRoleEnum.CVCA);
         CardVerifiableCertificate cvcacert = new CardVerifiableCertificate(cvcert);
         // Create the DVCA signed by our external CVCA
-        String caname = createDVCCASignedByExternal(cvcacert);
+        String caname = createDVCCASignedByExternal();
         assertEquals(caname, "WSTESTDVCASIGNEDBYEXTERNAL");
         // Now test our WS API to generate a request, setting status to
         // "WAITING_FOR_CERTIFICATE_RESPONSE"
@@ -2509,7 +2509,7 @@ public abstract class CommonEjbcaWS extends TestCase {
      * Create a DVCA, signed by an external CVCA
      * 
      */
-    private String createDVCCASignedByExternal(CardVerifiableCertificate cvcacert) throws Exception {
+    private String createDVCCASignedByExternal() throws Exception {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec("1024");
         catokeninfo.setEncKeySpec("1024");
