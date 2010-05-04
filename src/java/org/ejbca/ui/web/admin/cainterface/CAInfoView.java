@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;

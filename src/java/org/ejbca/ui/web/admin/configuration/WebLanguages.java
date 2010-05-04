@@ -95,8 +95,9 @@ public class WebLanguages implements java.io.Serializable {
             returnvalue= intres.getLocalizedMessage(template);
         }        
       }catch(java.lang.NullPointerException e){}
-      if(returnvalue == null)
-        returnvalue= template;
+      if(returnvalue == null) {
+        returnvalue = template;
+      }
       return returnvalue;
     }
 

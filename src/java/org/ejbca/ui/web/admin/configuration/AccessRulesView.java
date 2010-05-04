@@ -25,7 +25,8 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 /**
  * A class used as a help class for displaying access rules
  *
- * @author  TomSelleck 
+ * @author  TomSelleck
+ * @version $Id$ 
  */
 public class AccessRulesView implements java.io.Serializable {
 
@@ -83,9 +84,9 @@ public class AccessRulesView implements java.io.Serializable {
         }
         
         // Otherwise it's a regular accessrule.
-        if(regular)
+        if(regular) {
           this.regularaccessrules.add(accessrule);  
-        
+        }
       } 
       
       Collections.sort(this.rolebasedaccessrules);

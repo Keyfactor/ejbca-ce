@@ -187,8 +187,9 @@ public class LanguageProperties extends java.util.Properties {
 					}                      
 					outBuffer.append(aChar);
 				}  
-			} else     
-				outBuffer.append(aChar); 
+			} else {     
+				outBuffer.append(aChar);
+			}
 		} 
 		return outBuffer.toString();
 	}

@@ -28,8 +28,6 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
@@ -72,7 +70,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private IAuthorizationSessionLocal         authorizationsession;
 	private IUserAdminSessionLocal             adminsession;
 	private IRaAdminSessionLocal               raadminsession;
-	private ISignSessionLocal                  signsession;
 	private InformationMemory                  informationmemory;
 	public static final String MAKEOFFLINE = "makeoffline";
 	public static final String ACTIVATE    = "activate";
@@ -108,9 +105,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 			IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
 			raadminsession = raadminsessionhome.create();               
-
-			ISignSessionLocalHome home = (ISignSessionLocalHome)locator.getLocalHome(ISignSessionLocalHome.COMP_NAME );
-			signsession = home.create();
 
 			IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome)locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
 			hardtokensessionhome.create();               

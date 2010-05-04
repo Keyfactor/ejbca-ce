@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -89,8 +88,6 @@ public class PKCS10RequestMessage implements IRequestMessage {
 
     /**
      * Constructs a new empty PKCS#10 message handler object.
-     *
-     * @throws IOException if the request can not be parsed.
      */
     public PKCS10RequestMessage() {
     	// No constructor
@@ -100,8 +97,6 @@ public class PKCS10RequestMessage implements IRequestMessage {
      * Constructs a new PKCS#10 message handler object.
      *
      * @param msg The DER encoded PKCS#10 request.
-     *
-     * @throws IOException if the request can not be parsed.
      */
     public PKCS10RequestMessage(byte[] msg) {
         log.trace(">PKCS10RequestMessage(byte[])");

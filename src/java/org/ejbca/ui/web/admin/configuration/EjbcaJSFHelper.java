@@ -60,8 +60,6 @@ public class EjbcaJSFHelper  {
 	private IPublisherSessionLocal publishersession;
 	private IAuthorizationSessionLocal authorizationsession;
 	
-	private FacesContext ctx = FacesContext.getCurrentInstance();
-	  
 	public EjbcaJSFHelper(){}
 	
     public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean){

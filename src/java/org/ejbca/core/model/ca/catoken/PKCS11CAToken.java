@@ -15,7 +15,6 @@ package org.ejbca.core.model.ca.catoken;
 import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
 import java.security.Provider;
-import java.security.Security;
 import java.security.KeyStore.PasswordProtection;
 import java.util.HashMap;
 import java.util.Properties;
