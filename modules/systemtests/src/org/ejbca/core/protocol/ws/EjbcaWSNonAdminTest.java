@@ -29,7 +29,6 @@ import java.util.Random;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.approval.ApprovalDataLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -59,8 +58,7 @@ import org.ejbca.util.TestTools;
 
 /**
  * 
- * @version $Id: EjbcaWSNonAdminTest.java 8865 2010-04-09 15:14:51Z mikekushner
- *          $
+ * @version $Id$
  */
 public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 

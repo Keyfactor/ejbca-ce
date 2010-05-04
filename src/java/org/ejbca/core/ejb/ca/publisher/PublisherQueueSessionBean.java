@@ -30,7 +30,6 @@ import javax.ejb.RemoveException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.util.JDBCUtil;
