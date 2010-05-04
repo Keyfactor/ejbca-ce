@@ -264,7 +264,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * Method implemented from the TimerObject and is the main method of this
      * session bean. It calls the work object for each object.
      * 
-     * @param timer
+     * @param timer timer whose expiration caused this notification.
      */
 	public void ejbTimeout(Timer timer) {
 		trace(">ejbTimeout");    		
@@ -301,12 +301,12 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 				Collection timers = getSessionContext().getTimerService().getTimers();
 				for (Iterator iterator = timers.iterator(); iterator.hasNext();) {
 					Timer t = (Timer) iterator.next();
-					Integer tInfo = (Integer) timer.getInfo();
+					Integer tInfo = (Integer) t.getInfo();
 					if (tInfo.intValue() == timerInfo.intValue()) {
-						Date nextTimeOut = timer.getNextTimeout();
+						Date nextTimeOut = t.getNextTimeout();
 						Date now = new Date();
 						if (log.isDebugEnabled()) {
-							log.debug("Next timeout for existing timer is '"+nextTimeOut+"' now is '"+now);
+							log.debug("Next timeout for existing timer is '"+nextTimeOut+"' now is '"+now+"'");
 						}
 						if (nextTimeOut.after(now)) {
 							// Yes we found a timer that is scheduled for this service
