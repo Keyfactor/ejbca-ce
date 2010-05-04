@@ -197,7 +197,8 @@ public class CertRequestHttpTest extends TestCase {
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
         log.info(errormsg);
-        assertEquals("Username: reqtestunknown\nNon existent username. To generate a certificate a valid username and password must be supplied.\n", errormsg);
+        String expectedErrormsg = "Username: reqtestunknown\nNon existent username. To generate a certificate a valid username and password must be supplied.\n";
+        assertEquals(expectedErrormsg.replaceAll("\\s",""), errormsg.replaceAll("\\s",""));
         log.trace("<test02RequestUnknownUser()");
     }
 
@@ -248,7 +249,8 @@ public class CertRequestHttpTest extends TestCase {
         int index = error.indexOf("<pre>");
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
-        assertEquals("Username: reqtest\nWrong username or password! To generate a certificate a valid username and password must be supplied.\n", errormsg);
+        String expectedErrormsg = "Username: reqtest\nWrong username or password! To generate a certificate a valid username and password must be supplied.\n";
+        assertEquals(expectedErrormsg.replaceAll("\\s",""), errormsg.replaceAll("\\s",""));
         log.info(errormsg);
         log.trace("<test03RequestWrongPwd()");
     }
@@ -301,7 +303,9 @@ public class CertRequestHttpTest extends TestCase {
         int index = error.indexOf("<pre>");
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index+5, index2);
-        assertEquals("Username: reqtest\nWrong user status! To generate a certificate for a user the user must have status New, Failed or In process.\n", errormsg);
+        String expectedErrormsg = "Username: reqtest\nWrong user status! To generate a certificate for a user the user must have status New, Failed or In process.\n";
+        
+        assertEquals(expectedErrormsg.replaceAll("\\s",""), errormsg.replaceAll("\\s",""));
         log.info(errormsg);
         log.trace("<test04RequestWrongStatus()");
     }
