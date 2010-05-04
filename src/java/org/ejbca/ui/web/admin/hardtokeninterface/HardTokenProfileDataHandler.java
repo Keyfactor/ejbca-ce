@@ -185,26 +185,27 @@ public class HardTokenProfileDataHandler implements Serializable {
      */    
     private boolean authorizedToProfile(HardTokenProfile profile, boolean editcheck){
       boolean returnval = false;  
-      try{          
-        try{
-          authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-          return true;  
-        }catch(AuthorizationDeniedException ade){}
+      try {
+    	  authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
+    	  return true; // yes authorized to everything  
+      }  catch(AuthorizationDeniedException ade){}
         
-        if(editcheck)        
-          authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
-	      HashSet authorizedcaids = new HashSet(caadminsession.getAvailableCAs(administrator));
-  	      HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
-		  if(profile instanceof EIDProfile){		  	
-		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds()) &&
-		  	   authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())){
-		  	  returnval = true;			  	   
-		  	}		  	
-		  }else{
-		  	//Implement for other profile types
-		  }		   		  	   	  	  
-        
-      }catch(AuthorizationDeniedException e){}
+      try {          
+    	  if(editcheck) { 
+    		  // throws exception if we are not authorized
+    		  authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
+    	  }
+    	  HashSet authorizedcaids = new HashSet(caadminsession.getAvailableCAs(administrator));
+    	  HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
+    	  if(profile instanceof EIDProfile){		  	
+    		  if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds()) &&
+    				  authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())){
+    			  returnval = true;			  	   
+    		  }		  	
+    	  } else {
+    		  //Implement for other profile types
+    	  }
+      } catch(AuthorizationDeniedException e) {}
           
       return returnval;  
     }    

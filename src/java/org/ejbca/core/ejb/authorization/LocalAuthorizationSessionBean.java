@@ -352,7 +352,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @param admin    the administrator about to be authorized, see org.ejbca.core.model.log.Admin class.
      * @param resource the resource to check authorization for.
-     * @return true if authorized
+     * @return true if authorized, but not false if not authorized, throws exception instead so return value can safely be ignored.
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */

@@ -98,7 +98,7 @@ public class Authorizer extends Object implements java.io.Serializable {
      *
      * @param AdminInformation information about the user to be authorized.
      * @param resource the resource to look up.
-     * @return true if authorized
+     * @return true if authorized, but not false if not authorized, throws exception instead so return value can safely be ignored.
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
@@ -108,7 +108,7 @@ public class Authorizer extends Object implements java.io.Serializable {
         
         // Check in accesstree.
         if(!authorizationproxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationproxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
-            throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+            throw new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
         }
         return true;
     }
