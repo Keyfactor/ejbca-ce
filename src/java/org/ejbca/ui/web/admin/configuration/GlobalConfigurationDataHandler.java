@@ -54,8 +54,9 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
     }
     
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws AuthorizationDeniedException {
-        if(this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator"))
+        if(this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator")) {
             raadminsession.saveGlobalConfiguration(administrator,  gc);
+        }
     }
     
     // private IRaAdminSessionHome  raadminsessionhome;

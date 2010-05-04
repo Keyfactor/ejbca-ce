@@ -13,8 +13,6 @@
 
 package org.ejbca.core.model.log;
 
-import java.util.Properties;
-
 
 /**
  * Factory for the old logging device.

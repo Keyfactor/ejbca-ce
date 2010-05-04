@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -75,8 +74,6 @@ public class CVCRequestMessage implements IRequestMessage {
 
     /**
      * Constructs a new empty message handler object.
-     *
-     * @throws IOException if the request can not be parsed.
      */
     public CVCRequestMessage() {
     	// No constructor
@@ -86,8 +83,6 @@ public class CVCRequestMessage implements IRequestMessage {
      * Constructs a new message handler object.
      *
      * @param msg The DER encoded request.
-     *
-     * @throws IOException if the request can not be parsed.
      */
     public CVCRequestMessage(byte[] msg) {
         this.cvcmsg = msg;
