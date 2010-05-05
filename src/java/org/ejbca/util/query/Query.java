@@ -213,7 +213,7 @@ public class Query implements java.io.Serializable {
 
         returnval = returnval && (matches.size() > 0);
 
-        return returnval;
+        return returnval && !hasIllegalSqlChars();
     }
 
     /**
