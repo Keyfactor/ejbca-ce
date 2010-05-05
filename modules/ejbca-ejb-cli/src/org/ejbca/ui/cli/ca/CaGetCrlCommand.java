@@ -53,14 +53,18 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 			String outfile = args[2];
 			String issuerdn = getIssuerDN(caname);
 			byte[] crl = getCreateCRLSession().getLastCRL(getAdmin(), issuerdn, deltaSelector);
-			FileOutputStream fos = new FileOutputStream(outfile);
-			if (pem) {		
-				fos.write(CertTools.getPEMFromCrl(crl));
-			} else {					
-				fos.write(crl);
+			if (crl != null) {
+				FileOutputStream fos = new FileOutputStream(outfile);
+				if (pem) {		
+					fos.write(CertTools.getPEMFromCrl(crl));
+				} else {					
+					fos.write(crl);
+				}
+				fos.close();				
+				getLogger().info("Wrote latest " + (deltaSelector?"delta ":"") + "CRL to " + outfile + " using " + (pem?"PEM":"DER") + " format");
+			} else {
+				getLogger().info("No " + (deltaSelector?"delta ":"") + "CRL exists for CA "+caname+".");				
 			}
-			fos.close();
-			getLogger().info("Wrote latest " + (deltaSelector?"delta ":"") + "CRL to " + outfile + " using " + (pem?"PEM":"DER") + " format");
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);
 		}
