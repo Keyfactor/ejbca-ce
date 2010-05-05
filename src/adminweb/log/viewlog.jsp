@@ -326,7 +326,7 @@
               }
 
 
-              if(query.isLegalQuery() && !query.hasIllegalSqlChars()){
+              if(query.isLegalQuery()){
                 logentries  = logbean.filterByQuery(request.getParameter(SELECT_VIEWLOGDEVICE), query,record,size);  
               }else{
                  illegalquery = true;
@@ -479,7 +479,7 @@
                    query.add(startdate, enddate);
               }
 
-              if(query.isLegalQuery() && !query.hasIllegalSqlChars()){
+              if(query.isLegalQuery()){
                 logentries  = logbean.filterByQuery(request.getParameter(SELECT_VIEWLOGDEVICE), query,record,size);  
               }else{
                  illegalquery = true;
