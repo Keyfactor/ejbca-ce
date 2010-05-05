@@ -196,6 +196,7 @@
 			<include name="client/concurrent.jar" />
 			<include name="client/jbosssx-client.jar" />
 			<include name="client/jboss-integration.jar" />
+			<include name="client/xmlsec.jar" />
 			<!-- glassfish v2 -->
 			<include name="lib/javaee.jar"/>
 			<include name="lib/appserv-rt.jar"/>
