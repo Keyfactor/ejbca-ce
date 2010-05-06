@@ -84,7 +84,7 @@ public class BatchMakeP12 extends BaseCommand {
                 	getLogger().info("   username: the name of the user to generate the key.");
                 	getLogger().info("             If omitted, keys will be generated for all users with status NEW or FAILED");
                 	getLogger().info("   directory: the name of the directory to store the keys to");
-                    System.exit(1);
+                    System.exit(1); // NOPMD
                 } else if ("-dir".equalsIgnoreCase(args[i])){
                     directory = args[++i];
                 } else {
@@ -115,7 +115,7 @@ public class BatchMakeP12 extends BaseCommand {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
+            System.exit(1); // NOPMD
         }
     }
 	

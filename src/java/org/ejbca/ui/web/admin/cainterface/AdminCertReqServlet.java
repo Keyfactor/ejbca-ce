@@ -387,7 +387,7 @@ public class AdminCertReqServlet extends HttpServlet {
         RAInterfaceBean rabean = (RAInterfaceBean) session.getAttribute("rabean");
         if (rabean == null) {
             try {
-                rabean = (RAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
+                rabean = (RAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
             } catch (ClassNotFoundException e) {
                 throw new ServletException(e);
             } catch (Exception e) {
@@ -414,7 +414,7 @@ public class AdminCertReqServlet extends HttpServlet {
         EjbcaWebBean ejbcawebbean= (EjbcaWebBean)session.getAttribute("ejbcawebbean");
         if ( ejbcawebbean == null ){
             try {
-                ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
+                ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
             } catch (ClassNotFoundException exc) {
                 throw new ServletException(exc.getMessage());
             }catch (Exception exc) {
@@ -434,7 +434,7 @@ public class AdminCertReqServlet extends HttpServlet {
         CAInterfaceBean cabean = (CAInterfaceBean) session.getAttribute("cabean");
         if (cabean == null) {
             try {
-                cabean = (CAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
+                cabean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
             } catch (ClassNotFoundException e) {
                 throw new ServletException(e);
             } catch (Exception e) {

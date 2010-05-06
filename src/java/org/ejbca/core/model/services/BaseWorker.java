@@ -59,7 +59,7 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		String actionClassPath = serviceConfiguration.getActionClassPath();
 		if(actionClassPath != null){
 			try {
-				action = (IAction) this.getClass().getClassLoader().loadClass(actionClassPath).newInstance();
+				action = (IAction) Thread.currentThread().getContextClassLoader().loadClass(actionClassPath).newInstance();
 				action.init(serviceConfiguration.getActionProperties(), serviceName);
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage("services.erroractionclasspath", serviceName);
@@ -72,7 +72,7 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		String intervalClassPath = serviceConfiguration.getIntervalClassPath();
 		if(intervalClassPath != null){
 			try {
-				interval = (IInterval) this.getClass().getClassLoader().loadClass(intervalClassPath).newInstance();
+				interval = (IInterval) Thread.currentThread().getContextClassLoader().loadClass(intervalClassPath).newInstance();
 				interval.init(serviceConfiguration.getIntervalProperties(), serviceName);
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage("services.errorintervalclasspath", serviceName);

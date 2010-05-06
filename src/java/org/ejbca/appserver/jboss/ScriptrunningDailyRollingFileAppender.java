@@ -33,7 +33,7 @@ public class ScriptrunningDailyRollingFileAppender extends FileAppender {
 	static final int TOP_OF_WEEK   = 4;
 	static final int TOP_OF_MONTH  = 5;
 
-	private Thread scriptThread;
+	private Thread scriptThread; // NOPMD this is not run in the ejb app
 
 	/**
 	     The date pattern. By default, the pattern is set to
@@ -242,7 +242,7 @@ public class ScriptrunningDailyRollingFileAppender extends FileAppender {
 					System.out.println("Stopping old hanging signerthread");
                     scriptThread.interrupt();
 				}
-                scriptThread = new Thread(new ScriptThread(script, scheduledFilename));
+                scriptThread = new Thread(new ScriptThread(script, scheduledFilename)); // NOPMD this is not run in the ejb app
                 scriptThread.start();							
 		}
 
@@ -282,7 +282,7 @@ public class ScriptrunningDailyRollingFileAppender extends FileAppender {
 
 }
 
-class ScriptThread implements Runnable {
+class ScriptThread implements Runnable { // NOPMD this is not run in the ejb app
 	private String script;
 	private String infile;
 	public ScriptThread(String script, String infile) {

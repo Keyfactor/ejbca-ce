@@ -40,7 +40,7 @@ public class EncryptPwd extends BaseCommand {
             getLogger().info(enc);
     	} catch (Exception e) {
     		getLogger().error(e.getMessage());
-    		System.exit(-1);
+    		System.exit(-1); // NOPMD
     	}
     }
 }

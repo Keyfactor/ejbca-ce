@@ -42,7 +42,7 @@ import org.ejbca.util.FileTools;
  */
 public class SigningDailyRollingFileAppender extends FileAppender {
 
-	private Thread signerThread;
+	private Thread signerThread; // NOPMD this is not run in the ejb app
 
 	/**
 	     The date pattern. By default, the pattern is set to
@@ -274,7 +274,7 @@ public class SigningDailyRollingFileAppender extends FileAppender {
 					System.out.println("Stopping old hanging signerthread");
 					signerThread.interrupt();
 				}
-				signerThread = new Thread(new SignerThread(tsaUrl, scheduledFilename, scheduledFilename+".tsp"));
+				signerThread = new Thread(new SignerThread(tsaUrl, scheduledFilename, scheduledFilename+".tsp")); // NOPMD this is not run in the ejb app
 				signerThread.start();							
 			} else {
 				System.out.println("No TsaUrl set, can not sign logs!");
@@ -309,7 +309,7 @@ public class SigningDailyRollingFileAppender extends FileAppender {
 
 }
 
-class SignerThread implements Runnable {
+class SignerThread implements Runnable { // NOPMD this is not run in the ejb app
 	private String urlstr;
 	private String infile;
 	private String outfile;

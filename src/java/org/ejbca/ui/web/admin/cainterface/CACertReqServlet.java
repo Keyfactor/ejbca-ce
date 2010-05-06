@@ -108,7 +108,7 @@ public class CACertReqServlet extends HttpServlet {
                                    req.getSession().getAttribute("ejbcawebbean");
         if ( ejbcawebbean == null ){
           try {
-            ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
+            ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
            } catch (ClassNotFoundException exc) {
                throw new ServletException(exc.getMessage());
            }catch (Exception exc) {
@@ -122,7 +122,7 @@ public class CACertReqServlet extends HttpServlet {
 								   req.getSession().getAttribute("cabean");
 		if ( cabean == null ){
 		  try {
-			cabean = (org.ejbca.ui.web.admin.cainterface.CAInterfaceBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
+			cabean = (org.ejbca.ui.web.admin.cainterface.CAInterfaceBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
 		   } catch (ClassNotFoundException exc) {
 			   throw new ServletException(exc.getMessage());
 		   }catch (Exception exc) {

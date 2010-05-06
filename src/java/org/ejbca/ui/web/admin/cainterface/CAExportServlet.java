@@ -68,7 +68,7 @@ public class CAExportServlet extends HttpServlet {
 	    EjbcaWebBean ejbcawebbean= (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
 	    if ( ejbcawebbean == null ) {
 	      try {
-	    	  ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), EjbcaWebBean.class.getName());
+	    	  ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBean.class.getName());
 	      } catch (ClassNotFoundException e) {
 	    	  throw new ServletException(e.getMessage());
 	      } catch (Exception e) {

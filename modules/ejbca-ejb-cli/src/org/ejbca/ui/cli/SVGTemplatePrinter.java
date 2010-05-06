@@ -77,7 +77,7 @@ public class SVGTemplatePrinter extends BaseCommand {
 			getLogger().info("Usage 1: " + getCommand() + " listprinters");
 			getLogger().info("Usage 2: " + getCommand() + " print <templatefilename> <printername>");
 			getLogger().info("User data is configured in  " + USERDATAFILENAME);
-			System.exit(-1);
+			System.exit(-1); // NOPMD
 		}
 	}
 }

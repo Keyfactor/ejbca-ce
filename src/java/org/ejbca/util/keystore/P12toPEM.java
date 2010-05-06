@@ -84,7 +84,7 @@ public class P12toPEM {
             } else {
                 System.out.println(
                     "Usage: P12toPEM <p12file> <p12password> [overwrite (true/false)(default false)]");
-                System.exit(0);
+                System.exit(0); // NOPMD this is a cli command
             }
 
             p12.createPEM();

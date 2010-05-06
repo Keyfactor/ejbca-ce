@@ -539,7 +539,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
     	try {
     		String clazz = serviceConfiguration.getWorkerClassPath();
     		if (StringUtils.isNotEmpty(clazz)) {
-    			worker = (IWorker) this.getClass().getClassLoader().loadClass(clazz).newInstance();
+    			worker = (IWorker) Thread.currentThread().getContextClassLoader().loadClass(clazz).newInstance();
     			worker.init(intAdmin, serviceConfiguration, serviceName);    			
     		} else {
     			log.info("Worker has empty classpath for service "+serviceName);

@@ -72,7 +72,7 @@ public class ImportDataCommand extends BaseCommand {
         	if(props.getProperty("importer.classpath") == null){
         		throw new IllegalAdminCommandException("Error, the property importer.classpath isn't set in the propertyfile " + args[1]);
         	}
-        	IHardTokenImporter importer =  (IHardTokenImporter) this.getClass().getClassLoader().loadClass(props.getProperty("importer.classpath")).newInstance();
+        	IHardTokenImporter importer =  (IHardTokenImporter) Thread.currentThread().getContextClassLoader().loadClass(props.getProperty("importer.classpath")).newInstance();
         	importer.startImport(props);
         	HardTokenData htd;
         	try{

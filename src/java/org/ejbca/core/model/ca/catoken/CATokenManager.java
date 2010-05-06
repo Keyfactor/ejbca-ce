@@ -156,7 +156,7 @@ public class CATokenManager {
      */
     private boolean loadClass(String classpath){
         try {           
-            CATokenManager.class.getClassLoader().loadClass(classpath).newInstance();       
+        	Thread.currentThread().getContextClassLoader().loadClass(classpath).newInstance();       
         } catch (ClassNotFoundException e) {
 			String msg = intres.getLocalizedMessage("catoken.classnotfound", classpath);
             log.info(msg); 

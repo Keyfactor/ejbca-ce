@@ -72,7 +72,7 @@ public class PerformanceTest {
 
         String getJobTimeDescription();
     }
-    private class JobRunner implements Runnable {
+    private class JobRunner implements Runnable { // NOPMD this is a standalone test, not run in jee app
         final private Command command;
         private boolean bIsFinished;
         private int time;
@@ -82,7 +82,7 @@ public class PerformanceTest {
             this.command = _command;
         }
         boolean execute() throws Exception {
-            final Thread thread = new Thread(this);
+            final Thread thread = new Thread(this); // NOPMD this is a standalone test, not run in jee app
             synchronized(this) {
                 thread.start();
                 if ( !this.bIsFinished ) {
@@ -113,7 +113,7 @@ public class PerformanceTest {
             return this.time;
         }
     }
-    private class TestInstance implements Runnable {
+    private class TestInstance implements Runnable { // NOPMD this is a standalone test, not run in jee app
         final private int nr;
         final private int maxWaitTime;
         final private Statistic statistic;
@@ -190,14 +190,14 @@ public class PerformanceTest {
     public void execute(CommandFactory commandFactory, int numberOfThreads, int waitTime, PrintStream printStream) throws Exception {
 
         final Statistic statistic = new Statistic(numberOfThreads, printStream);
-        final Thread threads[] = new Thread[numberOfThreads];
+        final Thread threads[] = new Thread[numberOfThreads]; // NOPMD this is a standalone test, not run in jee app
         for(int i=0; i < numberOfThreads;i++) {
-            threads[i] = new Thread(new TestInstance(i, waitTime, statistic, commandFactory));
+            threads[i] = new Thread(new TestInstance(i, waitTime, statistic, commandFactory)); // NOPMD this is a standalone test, not run in jee app
         }
         for(int i=0; i < numberOfThreads;i++) {
             threads[i].start();
         }
-        new Thread(statistic).start();
+        new Thread(statistic).start(); // NOPMD this is a standalone test, not run in jee app
         printStream.println("Test client started, tail info and error files in this directory for output.");
         printStream.println("Statistic will be written to standard output each "+this.STATISTIC_UPDATE_PERIOD_IN_SECONDS+" second.");
         printStream.println("The test was started at "+ new Date());
@@ -205,7 +205,7 @@ public class PerformanceTest {
             wait();
         }
     }
-    private class Statistic implements Runnable {
+    private class Statistic implements Runnable { // NOPMD this is a standalone test, not run in jee app
         private final int nr;
         private final Map<String, Job> jobs;
         private int nrOfSuccesses = 0;
@@ -357,12 +357,12 @@ public class PerformanceTest {
                 this.allPrinter = new PrintWriter(new FileWriter("all.log"));
                 this.resultObject = new ObjectOutputStream(new FileOutputStream("result.log", true));
                 this.thread = new LogThread();
-                final Thread t = new Thread(this.thread);
+                final Thread t = new Thread(this.thread); // NOPMD this is a standalone test, not run in jee app
                 t.setPriority(Thread.MIN_PRIORITY);
                 t.start();
             } catch (IOException e) {
                 System.out.println("Error opening log file. "+e.getMessage());
-                System.exit(-1);
+                System.exit(-1); // NOPMD this is a test cli command
                 throw new Error(e);
             }
         }
@@ -371,7 +371,7 @@ public class PerformanceTest {
             this.infoPrinter.close();
             this.allPrinter.close();
         }
-        private class LogThread implements Runnable {
+        private class LogThread implements Runnable { // NOPMD this is a standalone test, not run in jee app
             final List<Data> lData = new LinkedList<Data>();
             private class Data {
                 final Object msg;
@@ -406,7 +406,7 @@ public class PerformanceTest {
                                 this.wait();
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
-                                System.exit(-2);
+                                System.exit(-2); // NOPMD this is a test cli command
                                 throw new Error(e);
                             }
                         }

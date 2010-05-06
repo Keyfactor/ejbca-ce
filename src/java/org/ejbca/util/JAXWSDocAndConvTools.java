@@ -626,7 +626,7 @@ public class JAXWSDocAndConvTools {
 			System.out.println (JAXWSDocAndConvTools.class.getName() + " WS-server-interface-file  WS-generated-client-interface-file jdoc-\"gen\"-dir\n" +
 					            JAXWSDocAndConvTools.class.getName() + " WS-hand-written-file WS-generated-file\n\n" +
 					            "Generate JDoc\nCompare Declarations\n");
-			System.exit(2);
+			System.exit(2); // NOPMD this is a cli command
 		}
 		new JAXWSDocAndConvTools (args[0], args[1], args.length == 3 ? args[2] : null);
 	}

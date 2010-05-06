@@ -83,7 +83,7 @@ public class JKStoPEM {
             } else {
                 System.out.println(
                     "Usage: JKStoPEM <jksFile> <jkspassword> <keypassword> <outpath> [overwrite (true/false)(default false)]");
-                System.exit(0);
+                System.exit(0); // NOPMD this is a cli command
             }
 
             jks.createPEM();

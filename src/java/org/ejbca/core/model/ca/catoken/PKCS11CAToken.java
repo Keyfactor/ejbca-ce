@@ -50,7 +50,7 @@ public class PKCS11CAToken extends BaseCAToken implements P11Slot.P11SlotUser {
     public PKCS11CAToken() throws InstantiationException {
         super();
         try {
-        	PKCS11CAToken.class.getClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
+        	Thread.currentThread().getContextClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
         } catch (Throwable t) {
             throw new InstantiationException("Pkcs11 provider class "+KeyTools.SUNPKCS11CLASS+" not found.");
         }

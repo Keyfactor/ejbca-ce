@@ -188,7 +188,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     	try {
     		String cp = serviceConfiguration.getWorkerClassPath();
     		if (StringUtils.isNotEmpty(cp)) {
-    			worker = (IWorker) this.getClass().getClassLoader().loadClass(cp).newInstance();
+    			worker = (IWorker) Thread.currentThread().getContextClassLoader().loadClass(cp).newInstance();
     			worker.init(intAdmin, serviceConfiguration, serviceName);    			
     		} else {
     			String msg = intres.getLocalizedMessage("services.errorworkerconfig", "null", serviceName);
