@@ -38,6 +38,18 @@
       <res-auth>Container</res-auth>
    </resource-ref>
    
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>restricted methods</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint> 
+
   <ejb-local-ref id="EJBLocalRef_1">
     <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
