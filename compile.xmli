@@ -423,7 +423,9 @@ xkms.serviceport                = ${xkms.serviceport}
              sessiontimeout="30" 
              description="OCSP responder standalone" 
              distributable="false"            	
-             validatexml="false" />
+             validatexml="false"
+             mergedir="${deploy.src}/web/merge-webdoclet"
+             />
         </webdoclet>
     </target>
 	
