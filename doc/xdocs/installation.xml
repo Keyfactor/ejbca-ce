@@ -212,9 +212,9 @@ ANT_OPTS=-Xmx512m
 </source>
 <note>
 JBoss 5.x has a bug causing issues with the BC JCE provider when the Sun JVM is used. To work around this you can copy the files EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
-Remember this when it's time for upgrades!
+Remember this when it's time for upgrades! Tracked by JBoss as JBAS-7882.
 <br/>
-JBoss 5.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample for configuration instructions.
+JBoss 5.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample for configuration instructions. Tracked by JBoss as JBPAPP-3766.
 </note>
 <p>
 2) Open a console and type:
