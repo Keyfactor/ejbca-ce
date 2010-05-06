@@ -125,7 +125,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	        	cacert.verify(pubKey);
 	        } catch (SignatureException e) {
 	        	getLogger().info("Can not verify self signed certificate: "+e.getMessage());
-            	System.exit(3);
+            	System.exit(3); // NOPMD
             }
 
 	        Certificate[] chain = new Certificate[1];

@@ -26,7 +26,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.ui.web.pub.cluster.IHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthResponse;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 
 /**
@@ -66,14 +66,14 @@ public class HealthCheckServlet extends HttpServlet {
 
         try {
             // Install BouncyCastle provider
-            CertTools.installBCProvider();
+            CryptoProviderTools.installBCProviderIfNotAvailable();
 
         	authIPs = EjbcaConfiguration.getHealthCheckAuthorizedIps().split(";");
             
-            healthcheck = (IHealthCheck) HealthCheckServlet.class.getClassLoader().loadClass(config.getInitParameter("HealthCheckClassPath")).newInstance();
+            healthcheck = (IHealthCheck) Thread.currentThread().getContextClassLoader().loadClass(config.getInitParameter("HealthCheckClassPath")).newInstance();
             healthcheck.init(config);
             
-            healthresponse = (IHealthResponse) HealthCheckServlet.class.getClassLoader().loadClass(config.getInitParameter("HealthResponseClassPath")).newInstance();
+            healthresponse = (IHealthResponse) Thread.currentThread().getContextClassLoader().loadClass(config.getInitParameter("HealthResponseClassPath")).newInstance();
             healthresponse.init(config);
             
         } catch( Exception e ) {

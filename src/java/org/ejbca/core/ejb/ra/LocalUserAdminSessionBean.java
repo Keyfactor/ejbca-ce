@@ -2303,7 +2303,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     		} else {
                         		String cp = not.getNotificationRecipient().substring(7);
                         		if (StringUtils.isNotEmpty(cp)) {
-                        			ICustomNotificationRecipient plugin = (ICustomNotificationRecipient) this.getClass().getClassLoader().loadClass(cp).newInstance();
+                        			ICustomNotificationRecipient plugin = (ICustomNotificationRecipient) Thread.currentThread().getContextClassLoader().loadClass(cp).newInstance();
                         			rcptemail = plugin.getRecipientEmails(data);
                         			if (StringUtils.isEmpty(rcptemail)) {
                                 		String msg = intres.getLocalizedMessage("ra.errorcustomnoemail", not.getNotificationRecipient());

@@ -1126,7 +1126,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                 final String tmpPassword = password!=null ? password : OCSPServletStandAloneSession.this.cardPassword;
                 if ( tmpPassword!=null  ) {
                     try {
-                        this.cardKeys = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(OCSPServletStandAloneSession.this.hardTokenClassName).newInstance();
+                        this.cardKeys = (CardKeys)Thread.currentThread().getContextClassLoader().loadClass(OCSPServletStandAloneSession.this.hardTokenClassName).newInstance();
                         this.cardKeys.autenticate(tmpPassword);
                     } catch( ClassNotFoundException e) {
                         m_log.info(intres.getLocalizedMessage("ocsp.classnotfound", OCSPServletStandAloneSession.this.hardTokenClassName));
