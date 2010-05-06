@@ -781,6 +781,10 @@ public class ProtocolOcspHttpTest extends TestCase {
 			}
 		} catch(IOException e){
 			log.info("Socket wrote " + i + " bytes before throwing an IOException.");
+			
+			//Windows throws an IOException when trying to write more bytes to the server than it should. Linux does not.
+			assertTrue("Tried to write more than it should to the server.", i > 1000);
+			return;
 		}
 		//Reading the response.
 		InputStream ins = socket.getInputStream();
