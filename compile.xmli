@@ -335,7 +335,9 @@ xkms.serviceport                = ${xkms.serviceport}
              description="OCSP responder" 
              distributable="false" 	
              validatexml="false" 
-             useIds="true" >
+             useIds="true"
+             mergedir="${deploy.src}/web/merge-webdoclet"
+             >
              </deploymentdescriptor>
         </webdoclet>
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
@@ -348,7 +350,9 @@ xkms.serviceport                = ${xkms.serviceport}
              description="CMP server" 
              distributable="false" 	
              validatexml="false" 
-             useIds="true" >
+             useIds="true"
+             mergedir="${deploy.src}/web/merge-webdoclet"
+             >
              </deploymentdescriptor>
         </webdoclet>
         
