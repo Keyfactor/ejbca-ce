@@ -183,6 +183,8 @@
            	<include name="org/ejbca/util/PrinterManager.java"/>
            	<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
            	<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+        	<include name="org/ejbca/core/model/ra/raadmin/*Profile.java"/>
+        	<include name="org/ejbca/core/model/ra/raadmin/*Exception.java"/>
            	<include name="org/ejbca/util/CliTools.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/X509CA.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/X509CAInfo.java"/>
@@ -200,7 +202,8 @@
            	<include name="org/ejbca/core/model/ca/catoken/HardCATokenInfo.java"/>
            	<include name="org/ejbca/core/model/ca/catoken/KeyStrings.java"/>
            	<include name="org/ejbca/core/model/ca/catoken/NFastCAToken.java"/>
-        	<include name="org/ejbca/core/model/ca/certificateprofiles/EndUserCertificateProfile.java"/>
+        	<include name="org/ejbca/core/model/ca/certificateprofiles/*CertificateProfile.java"/>
+        	<include name="org/ejbca/core/model/ca/certificateprofiles/*Exception.java"/>
            	<include name="org/ejbca/util/keystore/KeyStoreContainerFactory.java"/>
         	<!-- From EJBCA External SCEP RA (including some of the classes above) -->
            	<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
