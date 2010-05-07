@@ -325,7 +325,11 @@ class CMPTest extends ClientToolBox {
                     socket.close();
                     StressTest.this.performanceTest.getLog().error("Closing socket on request from host.");
                 }
-                return Arrays.copyOfRange(send.response, send.headerLength, send.response.length);
+                final byte result[] = new byte[send.response.length];
+                System.arraycopy(send.response, send.headerLength, result, 0, result.length-send.headerLength);
+                return result;
+                // could be replaced by this in java6:
+                // return Arrays.copyOfRange(send.response, send.headerLength, send.response.length);
             } catch( IOException e ) {
                 StressTest.this.performanceTest.getLog().error("Error when sending message to TCP port. Closing socket.", e);
                 try {
