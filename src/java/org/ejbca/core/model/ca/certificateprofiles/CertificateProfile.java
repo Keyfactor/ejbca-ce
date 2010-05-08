@@ -1381,6 +1381,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             	}
             	if (ocsp || caissuers) {
             		setUseAuthorityInformationAccess(true); // v25
+            	} else {
+            		setUseAuthorityInformationAccess(false); // v25
             	}
             } else {
             	setUseAuthorityInformationAccess(false);
