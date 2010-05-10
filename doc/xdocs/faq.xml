@@ -5,6 +5,37 @@
     <title>FAQ</title>
   </properties>
   <faqsection title="General">
+    <faq id="certificateTypes">
+     <question>
+      What certificates does EJBCA support?
+      </question>
+      <answer>
+      <p>
+      EJBCA support X.509 v3 certificates and CVC certificates according to EAC 1.11 (BSI TR-03110).
+      </p>
+      </answer>    
+    </faq>
+    <faq id="netscapeExtensions">
+     <question>
+      Does EJBCA support Netscape certificate extensions?
+      </question>
+      <answer>
+      <p>
+      Yes through custom extensions, see admin guide and src/java/certextensions.properties for details. These extensions are old and should not be used. There are no common clients that needs them anymore and it is almost certain to cause you more trouble than they solve. Please don't use them.      
+      </p>
+      </answer>    
+    </faq>
+    <faq id="msExtensions">
+     <question>
+      Does EJBCA support Microsoft certificate extensions?
+      </question>
+      <answer>
+      <p>
+      Yes some through GUI and others through custom extensions, see admin guide, certificate profiles and src/java/certextensions.properties for details. many MS extended key usages are supported and all common (all we know at least) windows functions using certificates works with EJBCA certificates.      
+      </p>
+      </answer>    
+    </faq>
+
     <faq id="heapSpaceError">
      <question>
       I get an error with "Java heap space" when building EJBCA (during ant bootstrap).
