@@ -17,7 +17,7 @@
 <li>Supports DSA key algorithm with 1024 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
 <li>Support multiple hash algorithms for signatures, MD5, SHA-1, SHA-256.</li>
-<li>Support for X.509 certificates and Card Verifiable certificates (CVC used by EU EAC ePassports).</li> 
+<li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110 used by EU EAC ePassports).</li> 
 <li>Standalone or integrated in any J2EE application.</li>
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
@@ -38,6 +38,7 @@
 <li>Hard token module for integrating with hard token issuing system (smart cards).</li>
 <li>Multiple levels of administrators with specified privileges and user groups.</li>
 <li>Configurable certificate profiles for different types and contents of certificates.</li>
+<li>Standard and custom certificate extensions supported.</li>
 <li>Configurable entity profiles for different types of users.</li>
 <li>Supports the Simple Certificate Enrollment Protocol (SCEP).</li>
 <li>Follows X509 and PKIX (RFC5280) standards where applicable.</li>
