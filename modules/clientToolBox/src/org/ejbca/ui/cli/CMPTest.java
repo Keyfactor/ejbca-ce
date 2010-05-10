@@ -17,8 +17,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -113,6 +115,7 @@ class CMPTest extends ClientToolBox {
         final private int port;
         final private boolean isHttp;
         final String urlPath;
+        final String resultCertFilePrefix;
         boolean isSign;
         boolean firstTime = true;
         //private int lastNextInt = 0;
@@ -124,7 +127,8 @@ class CMPTest extends ClientToolBox {
                     final int numberOfThreads,
                     final int waitTime,
                     final String _keyId,
-                    final String _urlPath) throws Exception {
+                    final String _urlPath,
+                    final String _resultCertFilePrefix) throws Exception {
             this.hostName = _hostName;
             this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
             this.cacert = (X509Certificate)this.certificateFactory.generateCertificate(certInputStream);
@@ -132,6 +136,7 @@ class CMPTest extends ClientToolBox {
             this.port = _port;
             this.isHttp = _isHttp;
             this.urlPath = _urlPath;
+            this.resultCertFilePrefix = _resultCertFilePrefix;
 
             final KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
             keygen.initialize(2048);
@@ -140,9 +145,8 @@ class CMPTest extends ClientToolBox {
             this.performanceTest = new PerformanceTest();
             this.performanceTest.execute(new MyCommandFactory(), numberOfThreads, waitTime, System.out);
         }
-        private PKIMessage genCertReq(final SessionData sessionData,
-                                      final boolean raVerifiedPopo,
-                                      final X509Extensions extensions) throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
+        private CertRequest genCertReq(final String userDN,
+                                       final X509Extensions extensions) throws IOException {
             final OptionalValidity myOptionalValidity = new OptionalValidity();
             myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
             myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date()) );
@@ -150,7 +154,7 @@ class CMPTest extends ClientToolBox {
             final CertTemplate myCertTemplate = new CertTemplate();
             myCertTemplate.setValidity( myOptionalValidity );
             myCertTemplate.setIssuer(new X509Name(this.cacert.getSubjectDN().getName()));
-            myCertTemplate.setSubject(new X509Name(sessionData.getUserDN()));
+            myCertTemplate.setSubject(new X509Name(userDN));
             final byte[]                  bytes = this.keyPair.getPublic().getEncoded();
             final ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
             final ASN1InputStream         dIn = new ASN1InputStream(bIn);
@@ -163,7 +167,7 @@ class CMPTest extends ClientToolBox {
                 final Vector<X509Extension> values = new Vector<X509Extension>();
                 final Vector<DERObjectIdentifier> oids = new Vector<DERObjectIdentifier>();
                 {
-                    final GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com");
+                    final GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=rfc822Name@my.com");
                     final ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
                     final DEROutputStream         dOut = new DEROutputStream(bOut);
                     dOut.writeObject(san);
@@ -188,10 +192,13 @@ class CMPTest extends ClientToolBox {
             } else {
                 myCertTemplate.setExtensions(extensions);
             }
+            return new CertRequest(new DERInteger(4), myCertTemplate);
+        }
+        private PKIMessage genPKIMessage(final SessionData sessionData,
+                                      final boolean raVerifiedPopo,
+                                      final CertRequest certRequest) throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
 
-            final CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
-
-            final CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest);
+            final CertReqMsg myCertReqMsg = new CertReqMsg(certRequest);
 
             ProofOfPossession myProofOfPossession;
             if (raVerifiedPopo) {
@@ -200,7 +207,7 @@ class CMPTest extends ClientToolBox {
             } else {
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 final DEROutputStream mout = new DEROutputStream( baos );
-                mout.writeObject( myCertRequest );
+                mout.writeObject( certRequest );
                 mout.close();
                 final byte[] popoProtectionBytes = baos.toByteArray();
                 final Signature sig = Signature.getInstance( PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -646,7 +653,7 @@ class CMPTest extends ClientToolBox {
             }
             public boolean doIt() throws Exception {
                 this.sessionData.newSession();
-                final PKIMessage one = genCertReq(this.sessionData, true, null);
+                final PKIMessage one = genPKIMessage(this.sessionData, true, genCertReq(this.sessionData.getUserDN(), null));
                 if ( one==null ) {
                     StressTest.this.performanceTest.getLog().error("No certificate request.");
                     return false;
@@ -676,7 +683,11 @@ class CMPTest extends ClientToolBox {
                 if ( cert==null ) {
                     return false;
                 }
-                StressTest.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
+                final BigInteger serialNumber = CertTools.getSerialNumber(cert);
+                if ( StressTest.this.resultCertFilePrefix!=null ) {
+                	new FileOutputStream(StressTest.this.resultCertFilePrefix+serialNumber+".dat").write(cert.getEncoded());
+                }
+                StressTest.this.performanceTest.getLog().result(serialNumber);
 
                 return true;
             }
@@ -773,7 +784,7 @@ class CMPTest extends ClientToolBox {
                 return lastNextInt;
             }
             void newSession() {
-                this.userDN = "CN=CMP Test User Nr "+getRandomAndRepeated()+",O=CMP Test,C=SE";
+                this.userDN = "CN=CMP Test User Nr "+getRandomAndRepeated()+",O=CMP Test,C=SE,E=email.address@my.com";
                 StressTest.this.performanceTest.getRandom().nextBytes(this.nonce);
                 StressTest.this.performanceTest.getRandom().nextBytes(this.transid);
             }
@@ -815,8 +826,9 @@ class CMPTest extends ClientToolBox {
         final int port;
         final boolean isHttp;
         final String urlPath;
+        final String resultFilePrefix;
         if ( args.length < 3 ) {
-            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>] [<KeyId to be sent to server>] [<port>] [<protocol, http default, write tcp if you want socket.>]");
+            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>] [<KeyId to be sent to server>] [<port>] [<protocol, http default, write tcp if you want socket.>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
             System.out.println("EJBCA build configutation requirements: cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password");
             System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
             return;
@@ -828,8 +840,9 @@ class CMPTest extends ClientToolBox {
         waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
         keyId = args.length>5 ? args[5].trim():"EMPTY";
         port = args.length>6 ? Integer.parseInt(args[6].trim()):8080;
-        isHttp = args.length>7 ? args[7].toLowerCase().indexOf("tcp", 0)<0 : true;
-        urlPath = args.length>8 ? args[8].trim():null;
+        isHttp = args.length>7 ? args[7].toLowerCase().indexOf("tcp")<0 : true;
+        urlPath = args.length>8 && args[8].toLowerCase().indexOf("null")<0 ? args[8].trim():null;
+        resultFilePrefix = args.length>9 ? args[9].trim() : null;
 
         try {
             if ( !certFile.canRead() ) {
@@ -837,7 +850,7 @@ class CMPTest extends ClientToolBox {
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), numberOfThreads, waitTime, keyId, urlPath);
+            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), numberOfThreads, waitTime, keyId, urlPath, resultFilePrefix);
         } catch (Exception e) {
             e.printStackTrace();
         }
