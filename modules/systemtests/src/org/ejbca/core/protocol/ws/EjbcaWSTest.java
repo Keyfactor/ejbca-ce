@@ -14,15 +14,21 @@ package org.ejbca.core.protocol.ws;
 
 import java.io.File;
 import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
+import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.util.CryptoProviderTools;
 import org.jboss.logging.Logger;
 
@@ -276,9 +282,83 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 	    }
 	}
     
+	/** Use single transaction method for requesting KeyStore with special characters in the certificate SubjectDN. */
+	public void testCertificateRequestWithSpecialChars01() throws Exception{
+		setUpAdmin();
+		long rnd = new SecureRandom().nextLong();
+		testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo\\+bar\\\"\\,, C=SE", "CN=test" + rnd + ",O=foo\\+bar\\\"\\,,C=SE");
+	}
+	
+	/** Use single transaction method for requesting KeyStore with special characters in the certificate SubjectDN. */
+	public void testCertificateRequestWithSpecialChars02() throws Exception{
+		setUpAdmin();
+		long rnd = new SecureRandom().nextLong();
+		testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo;bar\\;123, C=SE", "CN=test" + rnd + ",O=foo/bar\\;123,C=SE");
+	}
+	
+	/** Use single transaction method for requesting KeyStore with special characters in the certificate SubjectDN. */
+	public void testCertificateRequestWithSpecialChars03() throws Exception{
+		setUpAdmin();
+		long rnd = new SecureRandom().nextLong();
+		testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo+bar\\+123, C=SE", "CN=test" + rnd + ",O=foo\\+bar\\+123,C=SE");
+	}
+	
+	/** Use single transaction method for requesting KeyStore with special characters in the certificate SubjectDN. */
+	public void testCertificateRequestWithSpecialChars04() throws Exception{
+		setUpAdmin();
+		long rnd = new SecureRandom().nextLong();
+		testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo\\=bar, C=SE", "CN=test" + rnd + ",O=foo\\=bar,C=SE");
+	}
+	
+	/** Use single transaction method for requesting KeyStore with special characters in the certificate SubjectDN. */
+	public void testCertificateRequestWithSpecialChars05() throws Exception{
+		setUpAdmin();
+		long rnd = new SecureRandom().nextLong();
+		testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\"foo=bar, C=SE\"", "CN=test" + rnd + ",O=foo\\=bar\\, C\\=SE");
+	}
+	
+	/** Use single transaction method for requesting KeyStore with special characters in the certificate SubjectDN. */
+	public void testCertificateRequestWithSpecialChars06() throws Exception{
+		setUpAdmin();
+		long rnd = new SecureRandom().nextLong();
+		testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\"foo+b\\+ar, C=SE\"", "CN=test" + rnd + ",O=foo\\+b\\\\\\+ar\\, C\\=SE");
+	}
+	
+	/** Use single transaction method for requesting KeyStore with special characters in the certificate SubjectDN. */
+	public void testCertificateRequestWithSpecialChars07() throws Exception{
+		setUpAdmin();
+		long rnd = new SecureRandom().nextLong();
+		testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"", "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
+	}
+	
     public void test99cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins();
+    	super.cleanUpAdmins();
     }
 
+	private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {
+		String userName = "wsSpecialChars" + new SecureRandom().nextLong();
+		final UserDataVOWS userData = new UserDataVOWS();
+		userData.setUsername(userName);
+		userData.setPassword("foo123");
+		userData.setClearPwd(true);
+		userData.setSubjectDN(requestedSubjectDN);
+		userData.setCaName(getAdminCAName());
+		userData.setEmail(null);
+		userData.setSubjectAltName(null);
+		userData.setStatus(UserDataVOWS.STATUS_NEW);
+		userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+		userData.setEndEntityProfileName("EMPTY");
+		userData.setCertificateProfileName("ENDUSER");
+
+        KeyStore ksenv = ejbcaraws.softTokenRequest(userData,null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(),"PKCS12","foo123");
+        assertNotNull(keyStore);
+        Enumeration en = keyStore.aliases();
+        String alias = (String) en.nextElement();
+        X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
+        
+        String resultingSubjectDN = cert.getSubjectDN().toString();
+        assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")", expectedSubjectDN, resultingSubjectDN);
+	}
 
 }

@@ -57,7 +57,7 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
 
         try {             	
             final String caname = args[5];
-            final String dn = StringTools.strip(CertTools.stringToBCDNString(args[6]));
+            final String dn = CertTools.stringToBCDNString(StringTools.strip(args[6]));
             final int validity = Integer.parseInt(args[7]);
             HardCATokenInfo catokeninfo = new HardCATokenInfo();
             byte keyStoreID[];{

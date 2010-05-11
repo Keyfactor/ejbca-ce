@@ -79,12 +79,23 @@ public class StringToolsTest extends TestCase {
         String strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/\\<\\>bar";
         String stripped = StringTools.strip(strip1);
         assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
-        assertEquals("String not stripped correctly!", stripped, "CN=foo, O=Acme\\, Inc, OU=/\\/\\<\\>bar");
+        assertEquals("String not stripped correctly! " + stripped, "CN=foo, O=Acme\\, Inc, OU=//\\<\\>bar", stripped);
 
         strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/<>\"bar";
         stripped = StringTools.strip(strip1);
         assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
-        assertEquals("String not stripped correctly!", stripped, "CN=foo, O=Acme\\, Inc, OU=/\\/<>\"bar");
+        assertEquals("String not stripped correctly! " + stripped, "CN=foo, O=Acme\\, Inc, OU=//<>\"bar", stripped);
+
+        strip1 = "CN=foo\\+bar, O=Acme\\, Inc";
+        stripped = StringTools.strip(strip1);
+        assertFalse("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertEquals("String not stripped correctly! " + stripped, "CN=foo\\+bar, O=Acme\\, Inc", stripped);
+
+        // Multi-valued.. not supported by EJBCA yet.. let it through for backwards compatibility.
+        strip1 = "CN=foo+CN=bar, O=Acme\\, Inc";
+        stripped = StringTools.strip(strip1);
+        assertFalse("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertEquals("String not stripped correctly! "+stripped, "CN=foo+CN=bar, O=Acme\\, Inc", stripped);
 
         log.trace("<test04Strip()");
     }
@@ -159,16 +170,20 @@ public class StringToolsTest extends TestCase {
     	ret = StringTools.hasSqlStripChars(str);
     	assertFalse(ret);
 
-    	// Check that escaping does not work for other characters
     	str = "foo\\;";
     	ret = StringTools.hasSqlStripChars(str);
-    	assertTrue(ret);
+    	assertFalse(ret);
 
-    	str = "foo\\;bar";
+    	// Check that escaping does not work for other characters
+    	str = "foo\\?";
     	ret = StringTools.hasSqlStripChars(str);
     	assertTrue(ret);
 
-    	str = "\\;bar";
+    	str = "foo\\?bar";
+    	ret = StringTools.hasSqlStripChars(str);
+    	assertTrue(ret);
+
+    	str = "\\?bar";
     	ret = StringTools.hasSqlStripChars(str);
     	assertTrue(ret);
 

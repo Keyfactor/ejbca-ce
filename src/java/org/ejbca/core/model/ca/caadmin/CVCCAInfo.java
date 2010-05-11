@@ -41,7 +41,7 @@ public class CVCCAInfo extends CAInfo {
 			Collection approvalSettings, int numOfReqApprovals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName) {
-		this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
+		this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
 		this.caid = this.subjectdn.hashCode();
 		this.name = name;
 		this.status = status;

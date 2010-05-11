@@ -2388,7 +2388,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			CATokenOfflineException, IllegalKeyStoreException, CreateException {
 		// Transform into token
 		SoftCATokenInfo sinfo = new SoftCATokenInfo();
-		CATokenContainer catoken = new CATokenContainerImpl(sinfo, StringTools.strip(CertTools.stringToBCDNString(CertTools.getSubjectDN(signatureCertChain[0]))).hashCode());
+		CATokenContainer catoken = new CATokenContainerImpl(sinfo, CertTools.stringToBCDNString(StringTools.strip(CertTools.getSubjectDN(signatureCertChain[0]))).hashCode());
 		catoken.importKeys(keystorepass, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
 					p12PublicEncryptionKey, signatureCertChain);
 		log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + catoken.getCATokenInfo().getEncryptionAlgorithm());
@@ -2428,7 +2428,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	hardcatokeninfo.setSignatureAlgorithm(signatureAlgorithm);
 
         CATokenInfo catokeninfo = hardcatokeninfo;
-        CATokenContainer catoken = new CATokenContainerImpl(catokeninfo, StringTools.strip(CertTools.stringToBCDNString(CertTools.getSubjectDN(signatureCertChain[0]))).hashCode());
+        CATokenContainer catoken = new CATokenContainerImpl(catokeninfo, CertTools.stringToBCDNString(StringTools.strip(CertTools.getSubjectDN(signatureCertChain[0]))).hashCode());
         catoken.activate(catokenpassword);
 
         String keyAlgorithm = AlgorithmConstants.KEYALGORITHM_RSA;
