@@ -449,9 +449,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, ApprovalException, WaitingForApprovalException {
-        // String used in SQL so strip it
-        String dn = CertTools.stringToBCDNString(userdata.getDN());
-        dn = StringTools.strip(dn);
+        String dn = CertTools.stringToBCDNString(StringTools.strip(userdata.getDN()));
     	String altName = StringTools.strip(userdata.getSubjectAltName());
     	String username = StringTools.strip(userdata.getUsername());
     	String email = StringTools.strip(userdata.getEmail());
@@ -678,9 +676,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      */
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromWebService)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
-        // String used in SQL so strip it
-        String dn = CertTools.stringToBCDNString(userdata.getDN());
-        dn = StringTools.strip(dn);
+        String dn = CertTools.stringToBCDNString(StringTools.strip(userdata.getDN()));
         String altName = userdata.getSubjectAltName();    
         String newpassword = userdata.getPassword();
         int type = userdata.getType();
@@ -1679,9 +1675,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         if (log.isTraceEnabled()) {
             log.trace(">findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
         }
-        String bcdn = CertTools.stringToBCDNString(subjectdn);
         // String used in SQL so strip it
-        String dn = StringTools.strip(bcdn);
+        String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerdn);
         UserDataVO returnval = null;
 
@@ -1712,9 +1707,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         if (log.isTraceEnabled()) {
             log.trace(">findUserBySubjectDN(" + subjectdn + ")");
         }
-        String bcdn = CertTools.stringToBCDNString(subjectdn);
         // String used in SQL so strip it
-        String dn = StringTools.strip(bcdn);
+        String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         debug("Looking for users with subjectdn: " + dn);
         UserDataVO returnval = null;
 

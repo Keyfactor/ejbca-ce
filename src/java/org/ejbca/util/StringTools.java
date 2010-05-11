@@ -52,19 +52,20 @@ import org.bouncycastle.util.encoders.Hex;
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
 
-    // Characters that are not allowed in strings that may be stored in the db
+    // Characters that are not allowed in strings that may be stored in the db.
     private static final char[] stripChars = {
-        '\n', '\r', ';', '!', '\0', '%', '`', '?',
-        '$', '~'
+        '\n', '\r', ';', '!', '\0', '%', '`', '?', '$', '~'
     };
     // Characters that are not allowed in strings that may be used in db queries
     private static final char[] stripSqlChars = {
         '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?',
         '$', '~'
     };
-    // Characters that are allowed to escape in strings
+    // Characters that are allowed to escape in strings.
+    // RFC 2253, section 2.4 lists ',' '"' '\' '+' '<' '>' ';' as valid escaped chars.
+    // Also allow '=' to be escaped.
     private static final char[] allowedEscapeChars = {
-        ',', '<', '>', '\"'
+        ',', '\"', '\\', '+','<', '>', ';', '='  
     };
     
     private static final Pattern WS = Pattern.compile("\\s+");
@@ -76,6 +77,7 @@ public class StringTools {
 
     /**
      * Strips all special characters from a string by replacing them with a forward slash, '/'.
+     * This method is used for various Strings, like SubjectDNs and usernames.
      *
      * @param str the string whose contents will be stripped.
      *
@@ -85,28 +87,36 @@ public class StringTools {
         if (str == null) {
             return null;
         }
-        String ret = str;
-        for (int i = 0; i < stripChars.length; i++) {
-            if (ret.indexOf(stripChars[i]) > -1) {
-                // If it is an escape char, we have to process manually
-                if (stripChars[i] == '\\') {
-                    // If it is an escaped char, allow it if it is an allowed escapechar
-                    int index = ret.indexOf('\\');
-                    while (index > -1) {
-                    	if (!isAllowed(ret.charAt(index+1))) {
-                            ret = StringUtils.overlay(ret,"/",index,index+1);
-                        }
-                        index = ret.indexOf('\\',index+1);
-                    }
-                } else {
-                    ret = ret.replace(stripChars[i], '/');
-                }
-            }
-        }
-        return ret;
-    } // strip
+    	StringBuffer buf = new StringBuffer(str);
+		for (int i = 0; i< stripChars.length; i++) {
+			int index = 0;
+			int end = buf.length();
+			while (index < end) {
+				if (buf.charAt(index) == stripChars[i]) {
+					// Found an illegal character. Replace it with a '/'.
+					buf.setCharAt(index, '/');
+				} else if (buf.charAt(index) == '\\') {
+					// Found an escape character.
+					if (index + 1 == end) {
+						// If this is the last character we should remove it.
+						buf.setCharAt(index, '/');
+					} else if (!isAllowed(buf.charAt(index+1))) {
+						// We did not allow this character to be escaped. Replace both the \ and the character with a single '/'.
+						buf.setCharAt(index, '/');
+						buf.deleteCharAt(index+1);
+						end--;
+					} else {
+						index++;
+					}
+				}
+				index++;
+			}
+		}
+        return buf.toString();
+    }
+    
     /**
-     * Checks if a string contains characters that would be stripped by 'strip'
+     * Checks if a string contains characters that would be potentially dangerous to use in an SQL query.
      *
      * @param str the string whose contents would be stripped.
      * @return true if some chars in the string would be stripped, false if not.
@@ -116,30 +126,29 @@ public class StringTools {
         if (str == null) {
             return false;
         }
-        String ret = str;
-        for (int i = 0; i < stripSqlChars.length; i++) {
-            if (ret.indexOf(stripSqlChars[i]) > -1) {
-                // If it is an escape char, we have to process manually
-                if (stripSqlChars[i] == '\\') {
-                    // If it is an escaped char, allow it if it is an allowed escapechar
-                    int index = ret.indexOf('\\');
-                    // Handle special case where this is the last character
-                    if ((index+1) == ret.length()) {
-                    	return true;
-                    }
-                    while ( (index > -1) && ((index+1) < ret.length()) ) {
-                        if (isAllowed(ret.charAt(index+1))) {
-                            break; // If the escape character is allowed we want to continue in the outer for loop cheking the rest of the string
-                        }
-                        index = ret.indexOf('\\',index+1);
-                    }
-                } else {
-                    return true;
-                }
-            }
-        }
-        return false;
-    } // hasSqlStripChars
+		for (int i = 0; i< stripSqlChars.length; i++) {
+			int index = 0;
+			int end = str.length();
+			while (index < end) {
+				if (str.charAt(index) == stripSqlChars[i] && stripSqlChars[i] != '\\') {
+					// Found an illegal character.
+					return true;
+				} else if (str.charAt(index) == '\\') {
+					// Found an escape character.
+					if (index + 1 == end) {
+						// If this is the last character.
+						return true;
+					} else if (!isAllowed(str.charAt(index+1))) {
+						// We did not allow this character to be escaped.
+						return true;
+					}
+					index++;	// Skip one extra..
+				}
+				index++;
+			}
+		}
+		return false;
+    }
 
     /** Checks if a character is an allowed escape character according to allowedEscapeChars
      * 

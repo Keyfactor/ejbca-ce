@@ -85,8 +85,7 @@ public class CertificateDataUtil {
         	adapter.getLogger().trace(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(issuerDN);
-        dn = StringTools.strip(dn);
+        String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
         if (adapter.getLogger().isDebugEnabled()) {
         	adapter.debug("Looking for cert with (transformed)DN: " + dn);
         }

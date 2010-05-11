@@ -368,8 +368,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
-        String dn = CertTools.stringToBCDNString(issuerdn);
-        dn = StringTools.strip(dn);
+        String dn = CertTools.stringToBCDNString(StringTools.strip(issuerdn));
         try {
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select fingerprint, expireDate from CertificateData where issuerDN=? ORDER BY expireDate DESC");
@@ -405,8 +404,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     	Connection con = null;
     	PreparedStatement ps = null;
     	ResultSet result = null;
-    	String dn = CertTools.stringToBCDNString(issuerdn);
-    	dn = StringTools.strip(dn);
+    	String dn = CertTools.stringToBCDNString(StringTools.strip(issuerdn));
     	try {
     		// TODO:
     		// This should only list a few thousand certificates at a time, in case there
@@ -476,10 +474,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         	log.trace(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
     	}
         // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(subjectDN);
-        dn = StringTools.strip(dn);
-        String issuerdn = CertTools.stringToBCDNString(issuerDN);
-        issuerdn = StringTools.strip(issuerdn);
+        String dn = StringTools.strip(subjectDN);
+        dn = CertTools.stringToBCDNString(dn);
+        String issuerdn = StringTools.strip(issuerDN);
+        issuerdn = CertTools.stringToBCDNString(issuerdn);
         debug("Looking for cert with (transformed)DN: " + dn);
         try {
             Collection coll = certHome.findBySubjectDNAndIssuerDN(dn, issuerdn);
@@ -521,8 +519,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             log.trace(">findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
         }
         // First make a DN in our well-known format
-        final String transformedIssuerDN = StringTools.strip(CertTools.stringToBCDNString(issuerDN));
-        final String transformedSubjectDN = StringTools.strip(CertTools.stringToBCDNString(subjectDN));
+        final String transformedIssuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final String transformedSubjectDN = CertTools.stringToBCDNString(StringTools.strip(subjectDN));
         if ( log.isDebugEnabled() ) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and subject DN(transformed) '"+transformedSubjectDN+"'.");
         }
@@ -549,7 +547,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             log.trace(">findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
         }
         // First make a DN in our well-known format
-        final String transformedIssuerDN = StringTools.strip(CertTools.stringToBCDNString(issuerDN));
+        final String transformedIssuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
         final String sSubjectKeyId = new String(Base64.encode(subjectKeyId, false));
         if ( log.isDebugEnabled() ) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"+sSubjectKeyId+"'.");
@@ -577,8 +575,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         	log.trace(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "'");
     	}
         // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(subjectDN);
-        dn = StringTools.strip(dn);
+        String dn = StringTools.strip(subjectDN);
+        dn = CertTools.stringToBCDNString(dn);
         debug("Looking for cert with (transformed)DN: " + dn);
         try {
             Collection coll = certHome.findBySubjectDN(dn);

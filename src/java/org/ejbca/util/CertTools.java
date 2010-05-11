@@ -264,7 +264,7 @@ public class CertTools {
 
       while (xt.hasMoreTokens()) {
         // This is a pair key=val (CN=xx)
-        String pair = xt.nextToken();
+        String pair = xt.nextToken();	// Will escape '+' and initial '#' chars
         int ix = pair.indexOf("=");
 
         if (ix != -1) {
@@ -285,7 +285,7 @@ public class CertTools {
                 oid = new DERObjectIdentifier(key);
               }
               defaultOrdering.add(oid);
-              values.add(val);              
+              values.add(getUnescapedPlus(val));              
           } catch (IllegalArgumentException e) {
               // If it is not an OID we will ignore it
               log.warn("Unknown DN component ignored and silently dropped: " + key);
@@ -305,7 +305,50 @@ public class CertTools {
       return orderedX509Name;
     } // stringToBcX509Name
     
+    // Remove extra '+' character escaping
+    private static String getUnescapedPlus(String value) {
+    	StringBuffer buf = new StringBuffer(value);
+    	int index = 0;
+    	int end = buf.length();
+    	while (index < end) {
+        	if (buf.charAt(index) == '\\' && index + 1 != end) {
+        		char c = buf.charAt(index+1);
+        		if (c == '+') {
+            		buf.deleteCharAt(index);
+            		end--;
+        		}
+        	}
+    		index++;
+    	}
+    	return buf.toString();
+    }
 
+	/**
+	 *  Check if the String contains any unescaped '+'. RFC 2253, section 2.2
+	 *  states that '+' is used for multi-valued RelativeDistinguishedName. BC (version 1.45)
+	 *  currently does not support multi-valued RelativeDistinguishedName, and automatically
+	 *  escapes it instead. We want to detect unescaped '+' chars and warn that this might not
+	 *  be supported in the future if support for multi-valued RDNs is implemented.
+	 */
+    private static void detectUnescapedPlus(String dn) {
+        if (dn == null) {
+            return;
+        }
+    	StringBuffer buf = new StringBuffer(dn);
+		int index = 0;
+		int end = buf.length();
+		while (index < end) {
+			if (buf.charAt(index) == '+') {
+				// Found an unescaped '+' character.
+				log.warn("DN \"" + dn + "\" contains an unescaped '+'-character that will be automatically escaped. RFC 2253 reservs this " +
+						"for multi-valued RelativeDistinguishedNames. Encourage clients to use '\\+' instead, since future behaviour might change.");
+			} else if (buf.charAt(index) == '\\') {
+				// Found an escape character.
+				index++;
+			}
+			index++;
+		}
+    }
 
     /**
      * Every DN-string should look the same. Creates a name string ordered and looking like we want
@@ -319,6 +362,7 @@ public class CertTools {
     	/*if (log.isTraceEnabled()) {
     		log.trace(">stringToBcDNString: "+dn);
     	}*/
+        detectUnescapedPlus(dn);	// Log warning if dn contains unescaped '+'
     	if (isDNReversed(dn)) {
     		dn = reverseDN(dn);
     	}

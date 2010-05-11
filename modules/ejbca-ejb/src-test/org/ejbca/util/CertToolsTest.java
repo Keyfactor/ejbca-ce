@@ -649,11 +649,12 @@ public class CertToolsTest extends TestCase {
 		assertEquals(CertTools.stringToBCDNString(dn24),
 				"TelephoneNumber=08555-666,PostalAddress=Stockholm,BusinessCategory=Surf boards,PostalCode=11122,CN=foo,CN=bar,O=CN,O=C,C=CN");
 
+		// This isn't a legal SubjectDN. Since BC does not seem to support multivalues, we assume that the user meant \+.
 		String dn25 = "CN=user+name, C=CN";
 		assertEquals(CertTools.stringToBCDNString(dn25),"CN=user\\+name,C=CN");
 
 		String dn26 = "CN=user\\+name, C=CN";
-		assertEquals(CertTools.stringToBCDNString(dn26),"CN=user\\\\\\+name,C=CN");
+		assertEquals(CertTools.stringToBCDNString(dn26),"CN=user\\+name,C=CN");
 
 		log.trace("<test02StringToBCDNString()");
 	}
