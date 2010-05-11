@@ -75,6 +75,8 @@ public class StringTools {
     public static final int KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC      = 4; 
     public static final int KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC = 8; 
 
+    private StringTools() { }
+    
     /**
      * Strips all special characters from a string by replacing them with a forward slash, '/'.
      * This method is used for various Strings, like SubjectDNs and usernames.
