@@ -260,16 +260,16 @@ public class CertTools {
       }
       Vector defaultOrdering = new Vector();
       Vector values = new Vector();
-      X509NameTokenizer xt = new X509NameTokenizer(dn);
+      X509NameTokenizer x509NameTokenizer = new X509NameTokenizer(dn);
 
-      while (xt.hasMoreTokens()) {
+      while (x509NameTokenizer.hasMoreTokens()) {
         // This is a pair key=val (CN=xx)
-        String pair = xt.nextToken();	// Will escape '+' and initial '#' chars
-        int ix = pair.indexOf("=");
+    	String pair = x509NameTokenizer.nextToken();	// Will escape '+' and initial '#' chars
+        int index = pair.indexOf('=');
 
-        if (ix != -1) {
-          String key = pair.substring(0, ix).toLowerCase().trim();
-          String val = pair.substring(ix + 1);
+        if (index != -1) {
+          String key = pair.substring(0, index).toLowerCase().trim();
+          String val = pair.substring(index + 1);
           if (val != null) {
         	  // String whitespace from the beginning of the value, to handle the case
         	  // where someone type CN = Foo Bar
@@ -399,7 +399,7 @@ public class CertTools {
         ArrayList ret = new ArrayList();
         for (int i = 0; i < EMAILIDS.length ; i++) {
             ArrayList emails = getPartsFromDN(dn, EMAILIDS[i]);
-            if (emails.size() > 0) {
+            if (!emails.isEmpty()) {
             	ret.addAll(emails);
             }
             
@@ -442,7 +442,7 @@ public class CertTools {
 	        }
 	        log.debug("Searching for EMail Address in Subject DN");
 	        ArrayList emails = CertTools.getEmailFromDN(x509cert.getSubjectDN().getName());
-	        if (emails.size() > 0) {
+	        if (!emails.isEmpty()) {
 	        	return (String)emails.get(0);
 	        }			
 		}
@@ -1053,7 +1053,7 @@ public class CertTools {
 					continue;
 				}
 				if (temp == null) {
-					if (ret.size() == 0) {
+					if (ret.isEmpty()) {
 						// There was no certificate in the file
 						throw new IOException("Error in " + certstream.toString() + ", missing " + CertTools.BEGIN_CERTIFICATE + " boundary");											
 					} else {
@@ -1408,9 +1408,9 @@ public class CertTools {
         // bean is created.
         byte[] serno = new byte[8];
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed((new Date().getTime()));
+        random.setSeed(new Date().getTime());
         random.nextBytes(serno);
-        certgen.setSerialNumber((new java.math.BigInteger(serno)).abs());
+        certgen.setSerialNumber(new java.math.BigInteger(serno).abs());
         certgen.setNotBefore(firstDate);
         certgen.setNotAfter(lastDate);
         certgen.setSignatureAlgorithm(sigAlg);
@@ -1423,14 +1423,14 @@ public class CertTools {
         certgen.addExtension(X509Extensions.BasicConstraints.getId(), true, bc);
 
         // Put critical KeyUsage in CA-certificates
-        if (isCA == true) {
+        if (isCA) {
             X509KeyUsage ku = new X509KeyUsage(keyusage);
             certgen.addExtension(X509Extensions.KeyUsage.getId(), true, ku);
         }
 
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
-            if (isCA == true) {
+            if (isCA) {
                 SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(
                             new ByteArrayInputStream(publicKey.getEncoded())).readObject());
                 SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
@@ -2381,31 +2381,31 @@ public class CertTools {
     		return -1;
     	}
         int bcku = 0;
-        if (sku[0] == true) {
+        if (sku[0]) {
             bcku = bcku | X509KeyUsage.digitalSignature;
         }
-        if (sku[1] == true) {
+        if (sku[1]) {
             bcku = bcku | X509KeyUsage.nonRepudiation;
         }
-        if (sku[2] == true) {
+        if (sku[2]) {
             bcku = bcku | X509KeyUsage.keyEncipherment;
         }
-        if (sku[3] == true) {
+        if (sku[3]) {
             bcku = bcku | X509KeyUsage.dataEncipherment;
         }
-        if (sku[4] == true) {
+        if (sku[4]) {
             bcku = bcku | X509KeyUsage.keyAgreement;
         }
-        if (sku[5] == true) {
+        if (sku[5]) {
             bcku = bcku | X509KeyUsage.keyCertSign;
         }
-        if (sku[6] == true) {
+        if (sku[6]) {
             bcku = bcku | X509KeyUsage.cRLSign;
         }
-        if (sku[7] == true) {
+        if (sku[7]) {
             bcku = bcku | X509KeyUsage.encipherOnly;
         }
-        if (sku[8] == true) {
+        if (sku[8]) {
             bcku = bcku | X509KeyUsage.decipherOnly;
         }
         return bcku;
@@ -2623,7 +2623,7 @@ public class CertTools {
                     if (!escaped)
                     {
                         buf.append(c);
-                        quoted = !quoted;
+                        quoted ^= true;	// Faster than "quoted = !quoted;"
                     }
                     else
                     {
@@ -2835,7 +2835,7 @@ public class CertTools {
     		}
     	}
 
-    	if(calist.size() == 0){
+    	if(calist.isEmpty()){
     		// only one root cert, no certchain
     		returnval.add(rootcert);
     	} else {
