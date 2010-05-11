@@ -152,7 +152,11 @@ public class EjbcaWebBean implements java.io.Serializable {
         IUserDataSourceSessionLocalHome userdatasourcesessionhome = (IUserDataSourceSessionLocalHome) locator.getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
     	IUserDataSourceSessionLocal userdatasourcesession = userdatasourcesessionhome.create();
 
-		administrator = userAdminSession.getAdmin(certificates[0]);
+    	if ((administrator == null) && (certificates == null)) {
+    		throw new AuthenticationFailedException("Client certificate required.");
+    	} else if (certificates != null) {
+    		administrator = userAdminSession.getAdmin(certificates[0]);    		
+    	} // else we have already defined an administrator, for example in initialize_errorpage
 
     	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
