@@ -30,10 +30,10 @@ From EJBCA 3.10 the External RA API is bundled as a part of EJBCA and can be ena
 <p>
 External RA Service Workers are configured in the Admin GUI.
 Each worker will poll a DataSource in the application server.
-The DataSource should point to a database outside the CA's network security zone.
-Currently only soft PKCS#12 keystores for decryption and signing responses are supported.
+The DataSource should point to a database outside the CA's network security zone. this means pure database connections are used. Depending on your database and configuration these connections can be protected in various ways, for example using SSL. 
 </p><p>
 A message in the database can contain one or more submessages.
+The messages in the database can be signed and encrypted. Currently only soft PKCS#12 keystores for decryption and signing responses are supported.
 If a worker find a new requests message it changes the status of the message to 'in process' and
 extracts all sub-messages. For each submessage the worker will:
 <ol>
