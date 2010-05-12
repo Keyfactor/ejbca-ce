@@ -1,13 +1,15 @@
 
-This Howto describes steps needed when developing for different application servers. 
-This document is only targeted for EJBCA developers.
+For information how to configure EJBCA for different application servers, see the Installation
+documentation at ejbca.org, or build it with 'ant doc'. It will be located under ejbca/tmp/htdocs.
+
+This document describes the steps developers need to take when updating EJBCA for different application servers. 
 
 Glassfish
 =========
 
-Creating deployment descriptors for Glassfish:
-----------------------------------------------
-Whan a new release of EJBCA should be running on glassfish, the deployment descriptors may have to be updated.
+Creating deployment descriptors for Glassfish
+---------------------------------------------
+When a new release of EJBCA should be running on Glassfish, the deployment descriptors may have to be updated.
 Uncomment the section in compile.xmli to generate sun ejb deployment descriptors. 
 Compare the generated one with src/deploy/sun/sun-ejb-jar.xml, and merge if needed.
 
@@ -32,58 +34,29 @@ sun-web.xml
 
 * sun-cmp-mapping.xml must be updated with database changes.
 
-* database schema must be updated.
-Example for MySQL:
-export CLASSPATH=../lib/mysql-connector-java-5.0.4-bin.jar:$CLASSPATH 
-./capture-schema -username ejbca -password ejbca -dburl jdbc:mysql://127.0.0.1/ejbca -driver com.mysql.jdbc.Driver -out ejbca-ejb
+* database schema must be updated:
 
-Example for Derby:
-export CLASSPATH=/home/user/glassfish/javadb/lib/derbyclient.jar:$CLASSPATH 
-./capture-schema -username ejbca -password ejbca -dburl jdbc:derby://127.0.0.1/ejbca -driver org.apache.derby.jdbc.ClientDriver -out ejbca-ejb
+ Example for MySQL:
+ export CLASSPATH=../lib/mysql-connector-java-5.0.4-bin.jar:$CLASSPATH 
+ ./capture-schema -username ejbca -password ejbca -dburl jdbc:mysql://127.0.0.1/ejbca -driver com.mysql.jdbc.Driver -out ejbca-ejb
 
-Example for PostgreSQL:
-export CLASSPATH=../lib/postgresql-8.4-701.jdbc4.jar:$CLASSPATH 
-./capture-schema -username ejbca -password ejbca -dburl jdbc:postgresql://127.0.0.1/ejbca -driver org.postgresql.Driver -out ejbca-ejb
+ Example for Derby (for Glassfish v1 use ../lib/derbyclient.jar):
+ export CLASSPATH=../javadb/lib/derbyclient.jar:$CLASSPATH 
+ ./capture-schema -username ejbca -password ejbca -dburl jdbc:derby://127.0.0.1/ejbca -driver org.apache.derby.jdbc.ClientDriver -out ejbca-ejb
 
-Copy the generated ejbca-ejb.dbcschema file to src/deploy/sun/schema/<database>
+ Example for PostgreSQL:
+ export CLASSPATH=../lib/postgresql-8.4-701.jdbc4.jar:$CLASSPATH 
+ ./capture-schema -username ejbca -password ejbca -dburl jdbc:postgresql://127.0.0.1/ejbca -driver org.postgresql.Driver -out ejbca-ejb
 
-Weblogic
-========
+ Copy the generated ejbca-ejb.dbcschema file to src/deploy/sun/schema/<database>
 
-Creating deployment descriptors for Weblogic 9:
-----------------------------------------------
-
-XDoclet can only make descriptors for Weblogic 8.x, not 9.x.
-In the generated tmp/bin/dd/META-INF/weblogic-cmp-rdbms-jar.xml, remove the DTD line and replace:
-  <weblogic-rdbms-jar>
-with:
-  <weblogic-rdbms-jar xmlns="http://www.bea.com/ns/weblogic/90"
-                    xmlns:j2ee="http://java.sun.com/xml/ns/j2ee"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://www.bea.com/ns/weblogic/90
-                                        http://www.bea.com/ns/weblogic/90/weblogic-rdbms20-persistence.xsd">
-
-After this you remove all sections:
-  <weblogic-query>
-  ...
-  </weblogic-query>
-
-Last you remove the options in the end:
-   <order-database-operations>True</order-database-operations>
-   <enable-batch-operations>True</enable-batch-operations>
-   <create-default-dbms-tables>Disabled</create-default-dbms-tables>
-
-And put in the end instead:
-   <database-type>Oracle</database-type>
-
-Voila. Now you have a new file you can put in src/deploy/weblogic.
 
 JBOSS
 =====
 
 JBoss commonly have problems with class loading if several applications are run in one instance of JBoss.
 This will typically manifest itself as ClassCast-, IllegalAccess- or VerifyError Exceptions. 
-The reason is usually that mora than one application is using an external jar file, for example commons-fileupload.jar
+The reason is usually that more than one application is using an external jar file, for example commons-fileupload.jar
 or ldap.jar, possibly using different versions as well.
 
 These links describe how to configure jboss-app.xml, etc and also describe how
@@ -98,3 +71,116 @@ and CreateCRLSessionBean to allow the transaction to run for one hour before tim
 done by using XDoclet tags in the source-code:
  @jboss.method-attributes pattern="*" transaction-timeout="3600"
 that ends up in ejbca.ear/ejbca-ejb.jar/META-INF/jboss.xml in the compiled application. 
+
+
+OC4J
+====
+
+Creating deployment descriptors for Oracle oc4j 10
+--------------------------------------------------
+
+1. Rename the directory src/deploy/oracle so that EJBCA will not build with the provided oc4j deployment descriptors.
+2. Deploy EJBCA without the orion-ejb-jar.xml and toplink-ejb-jar.xml deployment descriptor. Note: Make sure you disable the automatic table generation feature by setting the 
+   autocreate-tables=”false” parameter in the <orion-application> tag in $OC4J_HOME/j2ee/home/config/application.xml.
+3. Copy the auto-generated orion-ejb-jar.xml file located in $OC4J_HOME/j2ee/home/application-deployments/<application>/<ejb-module> to your 
+   development environment.
+4. Modify the orion-ejb-jar.xml file based on your database schema, use the old one (the one you renamed) as template.
+5. Copy the auto-generated toplink-ejb-jar.xml file located in $OC4J_HOME/j2ee/home/application-deployments/<application>/<ejb-module> to your development environment.
+6. Modify the toplink-ejb-jar.xml file based on your database schema, use the old one (the one you renamed) as template.
+   Normal changes: PRIMKEY -> PK	
+                   ADMINGROUPDATA_ACCESSRULES_FK -> ADMINGROUPDATA_ACCESSRULES
+                   ADMINGROUPDATA_ADMINENTITIS_FK -> ADMINGROUPDATA_ADMINENTITIS
+                   toplink:version-locking-policy -> remove all these items completely
+                   TL_<tablename> -> <tablename>
+                   the whole <toplink:login> section
+
+
+Weblogic
+========
+
+Creating deployment descriptors for Weblogic 9:
+----------------------------------------------
+
+XDoclet can only make descriptors for Weblogic 8.x, not 9.x. To generate this decriptor enable the 
+'weblogic' task in target 'run-xdoc' in compile.xmli, and then do ant.
+
+When new beans have been added or data fields have been changed in data beans, the two Weblogic xml files 
+in src/deploy/weblogic must be generated:
+- weblogic-ejb-jar.xml
+- weblogic-cmp-rdbms-jar.xml
+Only the rdbms file need manual editing, the XDoclet generated weblogic-ejb-jar.xml can be used without modifications.
+
+In the generated tmp/bin/dd/META-INF/weblogic-cmp-rdbms-jar.xml, remove the DTD line and replace:
+  <weblogic-rdbms-jar>
+with:
+  <weblogic-rdbms-jar xmlns="http://www.bea.com/ns/weblogic/90"
+                    xmlns:j2ee="http://java.sun.com/xml/ns/j2ee"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.bea.com/ns/weblogic/90
+                                        http://www.bea.com/ns/weblogic/90/weblogic-rdbms20-persistence.xsd">
+
+After this you remove all sections:
+  <weblogic-query>
+  ...
+  </weblogic-query>
+
+Replace all:
+<data-source-name>EjbcaDS</data-source-name>
+with:
+<data-source-jndi-name>EjbcaDS</data-source-jndi-name>
+
+For LogEntryData:
+<dbms-column>comment</dbms-column>
+must be:
+<dbms-column>comment_</dbms-column>
+
+Last you remove the options in the end:
+   <order-database-operations>True</order-database-operations>
+   <enable-batch-operations>True</enable-batch-operations>
+   <create-default-dbms-tables>Disabled</create-default-dbms-tables>
+
+And put in the end instead:
+   <database-type>Oracle</database-type>
+
+Voila. Now you have a new file you can put in src/deploy/weblogic.
+
+
+Websphere
+=========
+
+Creating deployment descriptors for Websphere
+---------------------------------------------
+
+Websphere has a tendancy to get StackOverflowExceptions. I add some more memory by adding
+-Xmx512m -Xms256m
+To Servers->Application servers->server1->Java and Process management->Process Definition->Java Virtual Machine->Generic JVM arguments.
+
+Configure EJBCA as when installing normally on Websphere.
+
+Generating deployment descriptors:
+- Compile EJBCA with the IBM JVM from Websphere. It also works to compile with Sun JDK5 though, as log as the major version matches.
+- Enable XDoclet generation of ibm specific deployment descriptors in compile.xmli.
+  Basically you need to hand create the ibm deployment descriptors, the generated ones are kind of a skeleton.
+- Edit the generated ibm-ejb-jar-bnd.xml and add <ejbRefBindings>:
+            <ejbRefBindings xmi:id="EJBLocalRef_1" jndiName="ejb/CADataLocal">
+                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_1"/>
+            </ejbRefBindings>
+  In the end of the file add:
+  <defaultCMPConnectionFactory xmi:id="CMPConnectionFactoryBinding_1200574366244" 
+           jndiName="@datasource.jndi-name-prefix@@datasource.jndi-name@" 
+           resAuth="Per_Connection_Factory"/>
+- Copy the edited ibm-*.xml files to src/deploy/websphere.
+- Create/edit ibm-web-bnd.xml for all web apps with ejbRef and resRef.
+- Unforturnately even the ejb-jar.xml is extemely tighly integrated due to the requirements for id's.
+  the generated, working ejbca-jar.xml also have to be copied to src/deploy/websphere. 
+  Some parameters that must change must be altered in the generated file, look for @xxx@ replacement parameters. 
+
+- Create database mappings to put in src/deploy/websphere/backends with for example:
+./ejbdeploy.sh /home/dev/workspace/ejbca/dist/ejbca.ear /tmp/ejbca /tmp/ejbca/ejbca.ear -codegen -dbvendor ORACLE_V10G
+The column names in the generated database mappings file must be altered to be correct. It sets some weird things like DATA1 etc.
+
+To create database mappings for other databases (postgres) you have to install RAD and import ejbca-ejb.jar and do EJB-RDB mapping from 
+there by right-clicking on the project and selecting to create EJB-RDB mapping.
+  
+Deploy EJBCA as when deploying normally on Websphere.
+
