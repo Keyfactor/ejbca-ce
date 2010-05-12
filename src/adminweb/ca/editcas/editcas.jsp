@@ -1608,6 +1608,7 @@
     }
   }catch(CATokenOfflineException ctoe){
     catokenoffline = true;
+    errormessage = ctoe.getMessage();
     includefile="choosecapage.jspf";
   }   
 

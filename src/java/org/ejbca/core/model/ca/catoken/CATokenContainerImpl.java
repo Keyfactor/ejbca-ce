@@ -323,15 +323,27 @@ public class CATokenContainerImpl extends CATokenContainer {
 	/**
 	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#getPrivateKey()
 	 */
-	public PrivateKey getPrivateKey(int purpose) throws CATokenOfflineException{		
-		return getCAToken().getPrivateKey(purpose);
+	public PrivateKey getPrivateKey(int purpose) throws CATokenOfflineException{
+		ICAToken token = getCAToken();
+		if (token == null) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
+        	log.warn(msg+" CA token is null.");
+			throw new CATokenOfflineException(msg);
+		}
+		return token.getPrivateKey(purpose);
 	}
 
 	/**
 	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#getPublicKey()
 	 */
 	public PublicKey getPublicKey(int purpose) throws CATokenOfflineException{
-		return getCAToken().getPublicKey(purpose);
+		ICAToken token = getCAToken();
+		if (token == null) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
+        	log.warn(msg+" CA token is null.");
+			throw new CATokenOfflineException(msg);
+		}
+		return token.getPublicKey(purpose);
 	}
 
 
