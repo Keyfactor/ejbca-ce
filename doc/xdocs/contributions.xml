@@ -10,9 +10,13 @@
     <p>
     EJBCA is an open source project and appreciates community contributions:
     <ul>
-    <li>Contribute code, joint the EJBCA Team!<br></br>We are generous with CVS access once you have proven yourself with a few patches and have longer-term intentions.</li>
+    <li>Contribute code - we love patches! If you have a new feature or bug-fix, this is the absolute fastest way get it implemented.<br/>
+        A well written feature or bug-fix with proper JUnit tests have a very high probability of living on,
+        thus removing the maintenance burden of patching EJBCA every time you upgrade.</li>
     <li>Contribute documentation. Documentation can always be improved.</li>
+    <li>Contribute translations. Translations can always be improved.</li>
     <li>Report bugs, suggest new features and improvements. You can do it all through the <a href="http://jira.primekey.se/">Bug Database</a>.</li>
+    <li>Join the EJBCA Team! We can provide SVN access if you prove yourself and have long-term intentions.</li>
     </ul>
     See <a href="contact.html">contact &amp; support</a> for ways to contact EJBCA.
     </p>  
