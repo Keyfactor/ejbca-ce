@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <jboss-app>
 	  
-	  <!-- Configure class loading isolation for ejbca, for JBoss 4.2.x and later
+	  <!-- Configure class loading isolation for ejbca, for JBoss 4.2.x and later.
+	  In order for this to work you need to delete lib/batik/xerces.jar from EJBCA befor building and deploying, otherwise JBoss will give errors.
 	<loader-repository>ejbca:archive=ejbca.ear</loader-repository>
 	  -->
 
