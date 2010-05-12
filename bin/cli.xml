@@ -99,10 +99,27 @@ appserver.home         : ${appserver.home}
     </target>
 
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
-        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..."/>
-        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
+        <condition property="isPrompt">
+            <equals arg1="${ca.tokenpassword}" arg2="prompt" />
+        </condition>
+        <antcall target="ejbca:initPromptCA" />
+        <antcall target="ejbca:initCA" />
+        
         <antcall target="ejbca:adminweb"/>
     	<antcall target="ejbca:javatruststore"/>
+    </target>
+
+    <target name="ejbca:initPromptCA" if="isPrompt">
+        <input message="Enter password: " addproperty="password">
+            <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+        </input>
+        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${password} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..." />
+        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${password} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
+    </target>
+
+    <target name="ejbca:initCA" unless="isPrompt">
+        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..." />
+        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
     </target>
 
 	<target name="ejbca:adminweb">
