@@ -18,10 +18,10 @@
     <li>Report bugs, suggest new features and improvements. You can do it all through the <a href="http://jira.primekey.se/">Bug Database</a>.</li>
     <li>Join the EJBCA Team! We can provide SVN access if you prove yourself and have long-term intentions.</li>
     </ul>
-    See <a href="contact.html">contact &amp; support</a> for ways to contact EJBCA.
+    See <a href="contact.html">contact &amp; support</a> for ways to contact the EJBCA Team.
     </p>  
     <p>
-    If you contribute code, read the file doc/developer/DEVELOP in the distribution for developer information.
+    The <a href="http://wiki.ejbca.org/developers">EJBCA Wiki</a> have all the information you need to get started developing EJBCA.
     </p>
   </section>
   <section name="Donations">
