@@ -16,18 +16,19 @@
 	<subsection name="RFCs">
 	<p>
 	<ul>
-		<li> <a href="http://www.ietf.org/rfc/rfc5280.txt">RFC 5280</a> - Certificate and CRL profile, replaces RFC 3280</li>
-		<li> <a href="http://www.faqs.org/rfcs/rfc3280.html">RFC 3280</a> - Certificate and CRL profile</li>
-		<li> <a href="http://www.faqs.org/rfcs/rfc2253.html">RFC 2253</a> - DN string representation</li>
-		<li> <a href="http://www.faqs.org/rfcs/rfc2560.html">RFC 2560</a> - OCSP</li>
-		<li> <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC 5019</a> - Lightweight OCSP Profile</li>
-		<li> <a href="http://www.faqs.org/rfcs/rfc2256.html">RFC 2256</a> - X.500(96) User Schema for use with LDAPv3</li>
-		<li> <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> - HTTP/1.1</li>
-		<li> <a href="http://www.faqs.org/rfcs/rfc2818.html">RFC 2818</a> - HTTP Over TLS</li>
-		<li> <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a> - URI Generic Syntax</li>
-		<li> <a href="http://www.faqs.org/rfcs/rfc2595.html">RFC 2595</a> - Using TLS with IMAP, POP3 and ACAP</li>
-		<li> <a href="http://www.ietf.org/rfc/rfc4945.txt">RFC 4945</a> - IP Security PKI Profile</li>
-		<li> <a href="http://www.ietf.org/rfc/rfc5055.txt">RFC 5055</a> - Server-Based Certificate Validation Protocol (SCVP)</li>
+		<li><a href="http://www.ietf.org/rfc/rfc5280.txt">RFC 5280</a> - Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile, replaces <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC 3280</a></li>
+		<li><a href="http://www.ietf.org/rfc/rfc2253.txt">RFC 2253</a> - Lightweight Directory Access Protocol (v3): UTF-8 String Representation of Distinguished Names</li>
+		<li><a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> - X.509 Internet Public Key Infrastructure Online Certificate Status Protocol (OCSP)</li>
+		<li><a href="http://www.ietf.org/rfc/rfc5019.txt">RFC 5019</a> - The Lightweight Online Certificate Status Protocol (OCSP) Profile for High-Volume Environments</li>
+		<li><a href="http://www.ietf.org/rfc/rfc2256.txt">RFC 2256</a> - A Summary of the X.500(96) User Schema for use with LDAPv3</li>
+		<li><a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> - Hypertext Transfer Protocol -- HTTP/1.1</li>
+		<li><a href="http://www.ietf.org/rfc/rfc2818.txt">RFC 2818</a> - HTTP Over TLS</li>
+		<li><a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a> - Uniform Resource Identifiers (URI): Generic Syntax</li>
+		<li><a href="http://www.ietf.org/rfc/rfc2595.txt">RFC 2595</a> - Using TLS with IMAP, POP3 and ACAP</li>
+		<li><a href="http://www.ietf.org/rfc/rfc4945.txt">RFC 4945</a> - The Internet IP Security PKI Profile of IKEv1/ISAKMP, IKEv2, and PKIX</li>
+		<li><a href="http://www.ietf.org/rfc/rfc5055.txt">RFC 5055</a> - Server-Based Certificate Validation Protocol (SCVP)</li>
+		<li><a href="http://www.ietf.org/rfc/rfc4210.txt">RFC 4210</a> - Internet X.509 Public Key Infrastructure Certificate Management Protocol (CMP)</li>
+		<li><a href="http://www.ietf.org/rfc/rfc4211.txt">RFC 4211</a> - Internet X.509 Public Key Infrastructure Certificate Request Message Format (CRMF)</li>
 	</ul>
 	</p>
 	</subsection>
