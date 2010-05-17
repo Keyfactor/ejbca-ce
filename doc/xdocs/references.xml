@@ -32,6 +32,14 @@
 	</ul>
 	</p>
 	</subsection>
+
+	<subsection name="Internet-Drafts">
+	<p>
+	<ul>
+		<li><a href="http://tools.ietf.org/id/draft-nourse-scep-20.txt">draft-nourse-scep-20</a> - Cisco Systems' Simple Certificate Enrollment Protocol (SCEP) draft-nourse-scep-20</li>
+	</ul>
+	</p>
+	</subsection>
 	
 	<subsection name="Java">
 	<p>
