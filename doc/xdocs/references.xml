@@ -13,8 +13,9 @@
 	</p>
 	</subsection>
 
-	<subsection name="RFCs">
+	<subsection name="IETF Request For Comments and Internet-Drafts">
 	<p>
+	IETF is the Internet Engineering Task Force.
 	<ul>
 		<li><a href="http://www.ietf.org/rfc/rfc5280.txt">RFC 5280</a> - Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile, replaces <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC 3280</a></li>
 		<li><a href="http://www.ietf.org/rfc/rfc2253.txt">RFC 2253</a> - Lightweight Directory Access Protocol (v3): UTF-8 String Representation of Distinguished Names</li>
@@ -31,12 +32,18 @@
 		<li><a href="http://www.ietf.org/rfc/rfc4211.txt">RFC 4211</a> - Internet X.509 Public Key Infrastructure Certificate Request Message Format (CRMF)</li>
 	</ul>
 	</p>
-	</subsection>
-
-	<subsection name="Internet-Drafts">
 	<p>
 	<ul>
 		<li><a href="http://tools.ietf.org/id/draft-nourse-scep-20.txt">draft-nourse-scep-20</a> - Cisco Systems' Simple Certificate Enrollment Protocol (SCEP) draft-nourse-scep-20</li>
+	</ul>
+	</p>
+	</subsection>
+
+	<subsection name="W3C Standards and Specifications">
+	<p>
+	W3C is the World Wide Web Consortium.
+	<ul>
+		<li><a href="http://www.w3.org/TR/xkms2/">xkms2</a> - XML Key Management Specification (XKMS 2.0)</li>
 	</ul>
 	</p>
 	</subsection>
