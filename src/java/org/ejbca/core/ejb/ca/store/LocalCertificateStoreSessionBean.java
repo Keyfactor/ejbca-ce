@@ -1562,6 +1562,57 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }
         }
     } // addCertificateProfile
+    
+    /**
+     * Imports a certificate profile to the database
+     * 
+     * @param admin					adminstrator performing the task
+     * @param certificateProfile	the profile to be imported
+     * @ejb.transaction type="Required"
+     * @ejb.interface-method
+     */
+    public void importCertificateProfile(Admin admin, Object xmlFileContent, String profilename, int profileid){
+    	log.info(">importCertificateProfile()");
+    	CertificateProfile cprofile = new CertificateProfile();
+    	cprofile.loadData(xmlFileContent);
+    	
+    	//Sets the certificate profile to work with any CA
+        ArrayList availablecas = new ArrayList();
+        availablecas.add(new Integer(CertificateProfile.ANYCA));
+        cprofile.setAvailableCAs(availablecas);    	
+        
+        // Remove and warn about unknown publishers
+        Collection publishers = cprofile.getPublisherList(); //Integer
+        ArrayList allToRemove = new ArrayList(); //Integer
+        
+        //for (Integer publisher : publishers) {
+        Iterator pubItr = allToRemove.iterator();
+        Integer publisher = null;
+        while(pubItr.hasNext()){
+        	publisher = (Integer) pubItr.next();
+        	if (getPublisherSession().getPublisher(admin, publisher) == null) {
+        		allToRemove.add(publisher);
+        	}
+        }
+      
+        Iterator remItr = allToRemove.iterator();
+        Integer toRemove = null;
+        while(remItr.hasNext()){
+        	toRemove = (Integer) remItr.next();
+        	log.warn("Warning: Publisher with id " + toRemove + " was not found and will not be used in certificate profile '" + profilename + "'.");
+        	publishers.remove(toRemove);
+        }
+        cprofile.setPublisherList(publishers);
+        
+        // Add profile
+        try{
+            addCertificateProfile(admin,profileid,profilename,cprofile);
+            log.info("Imported certificate profile '"+profilename+"' to database.");
+        }catch(CertificateProfileExistsException cpee){
+        	log.error("Error adding certificate profile '"+profilename+"' to database.");
+        }     
+    	log.info("<importCertificateProfile()");    	
+    }
 
     /**
      * Adds a certificateprofile  with the same content as the original certificateprofile,
