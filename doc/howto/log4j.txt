@@ -4,6 +4,30 @@ Log4j logging in JBoss
 
 On JBoss Log4j is configured in the file JBOSS_HOME/server/Default/conf/jboss-log4j.xml.
 
+Limiting log level
+------------------
+You can limit the priority level of logging for everything in the server.log. You can do this by adding the line 
+
+      <priority value="ERROR"/>
+      
+to the <root> element last in the configuration file. It will then look like:
+
+   <root>
+      <priority value="ERROR"/>
+      <appender-ref ref="FILE"/>
+   </root>
+
+This will limit logging to only log entries with priority ERROR. 
+In addition to this you can choose to log only EJBCA entries with a lower priority than error, but still only log for example JBoss 
+entries with priority ERROR. You do this by adding a new category for org.ejbca (add this before the org.jboss category):
+ 
+<category name="org.ejbca">
+    <priority value="INFO"/>
+</category>
+
+
+Using a separate log file for EJBCA
+-----------------------------------
 
 If you want to log all EJBCA messages to a separate log file, you can add the following to the log4j.xml file.
 The order of entries is important in log4j.xml so you must add this AFTER the CONSOLE appender.
