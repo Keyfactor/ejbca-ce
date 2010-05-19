@@ -1659,7 +1659,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
     
     /**
-     * Verifies that non-modifyable data is available in profile.
+     * Verifies that non-modifiable data is available in profile.
      * @throws UserDoesntFullfillEndEntityProfile
      */
     private void checkIfDataFullfillProfile(String field, int number, String data, String text, String email) throws UserDoesntFullfillEndEntityProfile {
