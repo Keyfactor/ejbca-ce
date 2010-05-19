@@ -3807,15 +3807,15 @@ publisher "GPCP" and then "Edit" the same. Choose
 </li>
 </ul>
 <source>
-	crl.application /fullpathname/exportscript.sh
-	crl.failOnStandardError &lt;true | false&gt;
-	crl.failOnErrorCode &lt;true | false&gt;
-	cert.application /fullpathname/exportscript.sh
-	cert.failOnStandardError &lt;true | false&gt;
-	cert.failOnErrorCode &lt;true | false&gt;
-	revoke.application /fullpathname/exportscript.sh
-	revoke.failOnStandardError &lt;true | false&gt;
-	revoke.failOnErrorCode &lt;true | false&gt;
+crl.application /fullpathname/exportscript.sh
+crl.failOnStandardError &lt;true | false&gt;
+crl.failOnErrorCode &lt;true | false&gt;
+cert.application /fullpathname/exportscript.sh
+cert.failOnStandardError &lt;true | false&gt;
+cert.failOnErrorCode &lt;true | false&gt;
+revoke.application /fullpathname/exportscript.sh
+revoke.failOnStandardError &lt;true | false&gt;
+revoke.failOnErrorCode &lt;true | false&gt;
 </source>
 <p>
 and click "Save and Test Connection" to save the entered information and validate
