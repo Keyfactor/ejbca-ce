@@ -372,7 +372,8 @@ public abstract class BaseCAToken implements ICAToken {
             (KeyPair)this.mKeys.get(keystring) :
             null;
         if ( keyPair==null ) {
-            throw new CATokenOfflineException("No such key for purpose "+purpose+": "+keystring);
+    		String msg = intres.getLocalizedMessage("catoken.errornosuchkey", keystring, purpose);
+            throw new CATokenOfflineException(msg);
         }
         return keyPair.getPrivate();
     }
@@ -383,11 +384,13 @@ public abstract class BaseCAToken implements ICAToken {
     public PublicKey getPublicKey(int purpose)
         throws CATokenOfflineException {
     	autoActivate();
+    	String keystring = this.keyStrings.getString(purpose);
         KeyPair keyPair = this.mKeys!=null ?
-            (KeyPair)this.mKeys.get(this.keyStrings.getString(purpose)) :
+            (KeyPair)this.mKeys.get(keystring) :
             null;
         if ( keyPair==null ) {
-            throw new CATokenOfflineException();
+    		String msg = intres.getLocalizedMessage("catoken.errornosuchkey", keystring, purpose);
+            throw new CATokenOfflineException(msg);
         }
         return keyPair.getPublic();
     }

@@ -369,7 +369,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 	 * @param activate flag indicating if the new keys should be activated immediately or or they should be added as "next" signing key. 
 	 * Using true here makes it possible to generate certificate renewal requests for external CAs still using the old keys until the response is received. 
 	 */
-	public void generateKeys(String authenticationCode, boolean renew, boolean activate) throws Exception {  
+	public void generateKeys(final String authenticationCode, final boolean renew, final boolean activate) throws Exception {  
     	if (log.isTraceEnabled()) {
     		log.trace(">generateKeys: "+(authenticationCode == null ? "null":"hidden")+", renew="+renew+", activate="+activate);
     	}
@@ -379,10 +379,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		String oldSequence = getKeySequence();
 		log.debug("Current sequence: "+oldSequence);
 		String newSequence = StringTools.incrementKeySequence(getCATokenInfo().getKeySequenceFormat(), oldSequence);
-		if (activate) {
-			log.debug("Setting new sequence: "+newSequence);
-			setKeySequence(newSequence);			
-		}
+		// We store the sequence permanently in the object last, when we know everything went well
 		
 		// If we don't give an authentication code, perhaps we have autoactivation enabled
 		char[] authCode = getAuthCodeOrAutoactivationPin(authenticationCode);
@@ -573,6 +570,11 @@ public class CATokenContainerImpl extends CATokenContainer {
 			String msg = intres.getLocalizedMessage("catoken.genkeysnotavail");
 			log.error(msg);
 			return;
+		}
+		// Store the new sequence permanently. We should not do this earlier, because if an error is thrown generating keys we should not have updated the CA token object
+		if (activate) {
+			log.debug("Setting new sequence: "+newSequence);
+			setKeySequence(newSequence);			
 		}
 		// Finally reset the token so it will be re-read when we want to use it
 		this.catoken = null;
