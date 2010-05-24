@@ -126,6 +126,10 @@ If you want to contribute to EJBCA, please see <i><a href="donations.html">Contr
     EJBCA 3.7 contains support for CVC CAs used for EU EAC ePassports. 
     This development was sponsored and contributed by the <a href="http://www.polisen.se/">Swedish National Police Board</a>.
     </p>
+    <p>
+    EJBCA 3.10 contains an enrollment Web GUI for the External RA. 
+    This development was sponsored by <a href="http://www.apnic.net/">APNIC</a>.
+    </p>
 </section>
 </body>
 </document>
