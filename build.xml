@@ -128,7 +128,7 @@
 	</target>
 	
     <!-- =================================================================== -->
-	<!-- Dont allow deploy of the wrong thing i production                   -->
+	<!-- Dont allow deploy of the wrong thing in production                   -->
     <!-- =================================================================== -->
     <target name="failinproduction-ca">
 		<fail message="You cannot deploy EJBCA as a CA reponder in a OCSP production environment.">
