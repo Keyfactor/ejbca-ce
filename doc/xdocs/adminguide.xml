@@ -3514,6 +3514,8 @@ they do not already exist.</li>
 Default only one certificate is added to a user entry in LDAP and if the user gets a new certificate the old one is deleted and replaced with the new one.
 If this checkbox is checked certificates are instead appended in LDAP so each user can have multiple certificate entries in LDAP.
 Make sure your applications can handle this before enabling this option. Revoking a user will remove all certificates entries for the user.</li>
+<li>'Remove certificates when revoked' if checked causes the publisher to remove a certificate from LDAP when the certificate is revoked or suspended.</li>
+<li>'Remove ldap user when certificate revoked' if checked causes the publisher to remove the whole LDAP user entry when a certificate is revoked or suspended. </li>
 <li>'Set userPassword attribute' specifies if the LDAP publisher should set the userPassword attribute in the LDAP object. If a user entry with a non-null password is published, 
 and this checkbox is checked, the userPassword attribute will be populated with the user's password.</li>
 <li>'User Object Class' is the objectclass for the LDAP entries for users,
