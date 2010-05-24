@@ -18,9 +18,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -324,7 +326,7 @@ public class CertToolsTest extends TestCase {
 			"NzhSmH1c7YJhbLTRzwuSozUd9hlBHKEIfFqSUE9/FrbWXEtR+rHRYKAGu/nw8PAH"+
 			"oM+HPMzMVVLDVg==").getBytes());
 
-		private static byte[] cvcreq = Base64.decode(("fyGCAWZ/ToIBJl8pAQBCDlNFSVNCUE9PTDAwMDA1f0mB/QYKBAB/AAcCAgICAoEc"+
+	private static byte[] cvcreq = Base64.decode(("fyGCAWZ/ToIBJl8pAQBCDlNFSVNCUE9PTDAwMDA1f0mB/QYKBAB/AAcCAgICAoEc"+
 			"18E0qiZDZoYqGDAlddHXh7CfB1eX2on1fsjA/4IcaKXmLKnObBwpmAOmwVMLUU4Y"+
 			"KtiwBCpZytKfQ4McJYD2PM/kQTiHBxOxqSNp4z4hNdJm27NyOGxAC4Q5BA2QKa0s"+
 			"flz0NAgjsqh9xoyeTOMXTB5u/e4SwH1Yqlb3csBybyTGuJ5OzawkNUuemcqj9tN2"+
@@ -333,7 +335,7 @@ public class CertToolsTest extends TestCase {
 			"IA5TRUlTQlBPT0wwMDAwNV83OEnwL+XYDhXqK/0fBuZ6lZV0HncoZyn3oo8MmaUL"+
 			"2mNzpezLAoZMux0l5aYperrSDsuHw0zrf0yo").getBytes());
 	
-		private static byte[] cvccertchainroot = Base64
+	private static byte[] cvccertchainroot = Base64
 		.decode(("fyGCAmx/ToIBYl8pAQBCDlNFSFNNQ1ZDQTAwMDAxf0mCARUGCgQAfwAHAgICAQKB"+
 			"ggEAyGju6NHTACB+pl2x27/VJVKuGBTgf98j3gQOyW5vDzXI7PkiwR1/ObPjFiuW"+
 			"iBRH0WsPzHX7A3jysZr7IohLjy4oQMdP5z282/ZT4mBwlVu5pAEcHt2eHbpILwIJ"+
@@ -349,7 +351,7 @@ public class CertToolsTest extends TestCase {
 			"8z8Hpvx1QcB2maOVn6IFAyq/X71p9Zb626YLhjaFO6v80SYnlefVu5Uir5n/HzpW"+
 			"kg==").getBytes());
 
-		private static byte[] cvccertchainsub = Base64
+	private static byte[] cvccertchainsub = Base64
 		.decode(("fyGCAeV/ToHcXykBAEIOU0VIU01DVkNBMDAwMDF/SYGUBgoEAH8ABwICAgECgYGA"+
 			"rdRouw7ksS6M5kw28YkWAD350vbDlnPCmqsKPfKiNvDxowviWDUTn9Ai3xpTIzGO"+
 			"cl40DqxYPA2X4XO52+r5ZUazsVyyx6F6XwznHdjUpDff4QFyG74Vjq7DDrCCKOzH"+
@@ -362,7 +364,7 @@ public class CertToolsTest extends TestCase {
 			"DWq7GeCFr6wCMg2jPuK9Kqvl06tqylVy4ravVHv58WvAxWFgyuezdRbyV7YAfVF3"+
 			"tlcVDXa3R+mfYg==").getBytes());
 
-		private static byte[] x509certchainsubsub = Base64
+	private static byte[] x509certchainsubsub = Base64
 		.decode(("MIICSzCCAbSgAwIBAgIILiuXZS09/bQwDQYJKoZIhvcNAQEFBQAwNDEOMAwGA1UE"+
 			"AwwFU3ViQ0ExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0UwHhcN"+
 			"MDgwNjA1MTEyMTE4WhcNMTAwNjA1MTEyMDU0WjA3MREwDwYDVQQDDAhTdWJTdWJD"+
@@ -377,7 +379,7 @@ public class CertToolsTest extends TestCase {
 			"PexpDDZTuzpGVWvb5FW31RN+e/4fUozUBK+xExJVZ7xfpbO7JGcognAUUpstJzvO"+
 			"Gd6Hb8EUQJnQuIfUjny4").getBytes());
 
-		private static byte[] x509certchainsub = Base64
+	private static byte[] x509certchainsub = Base64
 		.decode(("MIIC1zCCAb+gAwIBAgIISS6X7IKkCbYwDQYJKoZIhvcNAQEFBQAwQjERMA8GA1UE"+
 			"AwwIQWRtaW5DQTExIDAeBgNVBAoMF0VKQkNBIFRvbWFzTGFwdG9wIE15U1FMMQsw"+
 			"CQYDVQQGEwJTRTAeFw0wODA2MDUxMTIwNTRaFw0xMDA2MDUxMTIwNTRaMDQxDjAM"+
@@ -395,7 +397,7 @@ public class CertToolsTest extends TestCase {
 			"jojskDzqeQ5kEkUWkV9AuNE9RIB6RcFVJhcAWdjWGCNsvxsByhdNsVIWXZ2oOi8x"+
 			"nYD8LhXhCvDE6Tc=").getBytes());
 
-		private static byte[] x509certchainroot = Base64
+	private static byte[] x509certchainroot = Base64
 		.decode(("MIIDaTCCAlGgAwIBAgIIa10wLePiLM8wDQYJKoZIhvcNAQEFBQAwQjERMA8GA1UE"+
 			"AwwIQWRtaW5DQTExIDAeBgNVBAoMF0VKQkNBIFRvbWFzTGFwdG9wIE15U1FMMQsw"+
 			"CQYDVQQGEwJTRTAeFw0wNzEyMjcxNjM4NDdaFw0xNzEyMjQxNjM4NDdaMEIxETAP"+
@@ -416,7 +418,7 @@ public class CertToolsTest extends TestCase {
 			"woLvPKz+s2iaoTigNwZZ/ojxL9GRfqkTPuPtgWP73dC5E9wPgDEzsORnm7mooprJ"+
 			"FDNTBZWv96kf9grOhA==").getBytes());
 
-		private static byte[] pemcert = ("-----BEGIN CERTIFICATE-----\n"+
+	private static byte[] pemcert = ("-----BEGIN CERTIFICATE-----\n"+
 				"MIIDUzCCAjugAwIBAgIIMK64QB5XErowDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE\n"+
 				"AwwIQWRtaW5DQTExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw\n"+
 				"HhcNMTAwMTI5MTI0NDIwWhcNMjAwMTI3MTI0NDIwWjA3MREwDwYDVQQDDAhBZG1p\n"+
@@ -436,6 +438,186 @@ public class CertToolsTest extends TestCase {
 				"5DKfkfT4rOyAGFs+KVwigq1kbSNZJC4Kjo7diMBtWRiXSXTQKE+JgrQbFCdVYQos\n"+
 				"VvSwSiSMW5Rs5ZCtRXMmXz2HdxpbTayCAYPBh6XKfvq4x06gxfll\n"+
 		        "-----END CERTIFICATE-----").getBytes();
+		
+	/** Cert with CDP with URI */
+	/*
+     * Cert with CDP with URI.
+     * <pre>
+     * Certificate:
+        Data:
+            Version: 3 (0x2)
+            Serial Number:
+                52:32:6f:be:9d:3c:4d:d7
+            Signature Algorithm: sha1WithRSAEncryption
+            Issuer: CN=DemoSubCA11, O=Demo Organization 10, C=SE
+            Validity
+                Not Before: Apr  3 22:17:41 2010 GMT
+                Not After : Apr  2 22:17:41 2012 GMT
+            Subject: CN=pdfsigner12-2testcrl-with-subca
+            Subject Public Key Info:
+                Public Key Algorithm: rsaEncryption
+                RSA Public Key: (1024 bit)
+                    Modulus (1024 bit):
+                        00:de:99:da:80:ad:03:21:3c:18:cc:41:1f:ad:4a:
+                        fc:2d:69:21:3d:34:52:7c:a4:9c:33:df:a8:36:5a:
+                        ee:bd:74:f6:0b:b1:93:79:3c:e7:66:a1:72:d4:1f:
+                        08:b6:43:a3:0a:1a:94:8c:64:e4:10:71:32:be:4b:
+                        00:08:a3:25:11:85:2a:d3:af:fa:dc:d4:ac:7a:48:
+                        e8:d3:63:d0:06:4a:cf:ce:84:0e:a5:88:6e:1f:44:
+                        c1:9f:ad:89:1e:8b:d0:17:53:20:40:b5:e9:b3:7d:
+                        16:74:e0:22:a7:43:44:99:6a:ba:5c:26:ed:f8:c7:
+                        8c:a5:14:a2:40:83:d6:52:75
+                    Exponent: 65537 (0x10001)
+            X509v3 extensions:
+                X509v3 Subject Key Identifier:
+                    8F:23:26:05:9D:03:57:4F:66:08:F5:E3:34:D3:AA:70:76:9C:99:B2
+                X509v3 Basic Constraints: critical
+                    CA:FALSE
+                X509v3 Authority Key Identifier:
+                    keyid:90:FD:A7:F6:EC:98:47:56:4C:10:96:C2:AD:85:2F:50:EB:26:E9:34
+
+                X509v3 CRL Distribution Points:
+                    URI:http://vmserver1:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN=DemoSubCA11,O=Demo%20Organization%2010,C=SE
+
+                X509v3 Key Usage: critical
+                    Digital Signature
+        Signature Algorithm: sha1WithRSAEncryption
+            6e:f0:b9:26:b8:7d:eb:b2:ab:ec:e7:1b:a5:97:5c:5b:88:fe:
+            8a:ec:bb:3d:7a:f5:00:4c:72:38:36:19:53:d4:47:21:30:4c:
+            62:7c:02:69:00:8c:ac:57:3c:f2:bf:38:57:13:0b:4b:7e:92:
+            74:56:4c:1b:9c:04:9d:08:e8:8e:20:4d:bc:ec:bc:13:c7:55:
+            80:da:1a:01:9f:9f:be:96:11:d4:7c:64:f2:37:91:01:9f:c0:
+            91:af:b6:8a:62:80:71:75:e6:34:f5:57:85:79:d8:7d:e3:71:
+            71:fa:7c:ca:c8:03:13:d5:0c:12:f5:f6:27:29:36:99:e4:ec:
+            8b:b1
+     * </pre>
+     */
+    private static final String CERT_WITH_URI =
+    "-----BEGIN CERTIFICATE-----\n"
+    +"MIIC0zCCAjygAwIBAgIIUjJvvp08TdcwDQYJKoZIhvcNAQEFBQAwQjEUMBIGA1UE"
+    +"AwwLRGVtb1N1YkNBMTExHTAbBgNVBAoMFERlbW8gT3JnYW5pemF0aW9uIDEwMQsw"
+    +"CQYDVQQGEwJTRTAeFw0xMDA0MDMyMjE3NDFaFw0xMjA0MDIyMjE3NDFaMCoxKDAm"
+    +"BgNVBAMMH3BkZnNpZ25lcjEyLTJ0ZXN0Y3JsLXdpdGgtc3ViY2EwgZ8wDQYJKoZI"
+    +"hvcNAQEBBQADgY0AMIGJAoGBAN6Z2oCtAyE8GMxBH61K/C1pIT00UnyknDPfqDZa"
+    +"7r109guxk3k852ahctQfCLZDowoalIxk5BBxMr5LAAijJRGFKtOv+tzUrHpI6NNj"
+    +"0AZKz86EDqWIbh9EwZ+tiR6L0BdTIEC16bN9FnTgIqdDRJlqulwm7fjHjKUUokCD"
+    +"1lJ1AgMBAAGjgekwgeYwHQYDVR0OBBYEFI8jJgWdA1dPZgj14zTTqnB2nJmyMAwG"
+    +"A1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUkP2n9uyYR1ZMEJbCrYUvUOsm6TQwgYUG"
+    +"A1UdHwR+MHwweqB4oHaGdGh0dHA6Ly92bXNlcnZlcjE6ODA4MC9lamJjYS9wdWJs"
+    +"aWN3ZWIvd2ViZGlzdC9jZXJ0ZGlzdD9jbWQ9Y3JsJmlzc3Vlcj1DTj1EZW1vU3Vi"
+    +"Q0ExMSxPPURlbW8lMjBPcmdhbml6YXRpb24lMjAxMCxDPVNFMA4GA1UdDwEB/wQE"
+    +"AwIHgDANBgkqhkiG9w0BAQUFAAOBgQBu8LkmuH3rsqvs5xull1xbiP6K7Ls9evUA"
+    +"THI4NhlT1EchMExifAJpAIysVzzyvzhXEwtLfpJ0VkwbnASdCOiOIE287LwTx1WA"
+    +"2hoBn5++lhHUfGTyN5EBn8CRr7aKYoBxdeY09VeFedh943Fx+nzKyAMT1QwS9fYn"
+    +"KTaZ5OyLsQ=="
+    +"\n-----END CERTIFICATE-----";
+
+    
+    /** Cert with CDP without URI. */
+    /*
+     * Cert with CDP without URI.
+     * <pre>
+     * Certificate:
+        Data:
+            Version: 3 (0x2)
+            Serial Number: 1042070824 (0x3e1cbd28)
+            Signature Algorithm: sha1WithRSAEncryption
+            Issuer: C=US, O=Adobe Systems Incorporated, OU=Adobe Trust Services, CN=Adobe Root CA
+            Validity
+                Not Before: Jan  8 23:37:23 2003 GMT
+                Not After : Jan  9 00:07:23 2023 GMT
+            Subject: C=US, O=Adobe Systems Incorporated, OU=Adobe Trust Services, CN=Adobe Root CA
+            Subject Public Key Info:
+                Public Key Algorithm: rsaEncryption
+                RSA Public Key: (2048 bit)
+                    Modulus (2048 bit):
+                        00:cc:4f:54:84:f7:a7:a2:e7:33:53:7f:3f:9c:12:
+                        88:6b:2c:99:47:67:7e:0f:1e:b9:ad:14:88:f9:c3:
+                        10:d8:1d:f0:f0:d5:9f:69:0a:2f:59:35:b0:cc:6c:
+                        a9:4c:9c:15:a0:9f:ce:20:bf:a0:cf:54:e2:e0:20:
+                        66:45:3f:39:86:38:7e:9c:c4:8e:07:22:c6:24:f6:
+                        01:12:b0:35:df:55:ea:69:90:b0:db:85:37:1e:e2:
+                        4e:07:b2:42:a1:6a:13:69:a0:66:ea:80:91:11:59:
+                        2a:9b:08:79:5a:20:44:2d:c9:bd:73:38:8b:3c:2f:
+                        e0:43:1b:5d:b3:0b:f0:af:35:1a:29:fe:ef:a6:92:
+                        dd:81:4c:9d:3d:59:8e:ad:31:3c:40:7e:9b:91:36:
+                        06:fc:e2:5c:8d:d1:8d:26:d5:5c:45:cf:af:65:3f:
+                        b1:aa:d2:62:96:f4:a8:38:ea:ba:60:42:f4:f4:1c:
+                        4a:35:15:ce:f8:4e:22:56:0f:95:18:c5:f8:96:9f:
+                        9f:fb:b0:b7:78:25:e9:80:6b:bd:d6:0a:f0:c6:74:
+                        94:9d:f3:0f:50:db:9a:77:ce:4b:70:83:23:8d:a0:
+                        ca:78:20:44:5c:3c:54:64:f1:ea:a2:30:19:9f:ea:
+                        4c:06:4d:06:78:4b:5e:92:df:22:d2:c9:67:b3:7a:
+                        d2:01
+                    Exponent: 65537 (0x10001)
+            X509v3 extensions:
+                Netscape Cert Type:
+                    SSL CA, S/MIME CA, Object Signing CA
+                X509v3 CRL Distribution Points:
+                    DirName:/C=US/O=Adobe Systems Incorporated/OU=Adobe Trust Services/CN=Adobe Root CA/CN=CRL1
+
+                X509v3 Private Key Usage Period:
+                    Not Before: Jan  8 23:37:23 2003 GMT, Not After: Jan  9 00:07:23 2023 GMT
+                X509v3 Key Usage:
+                    Certificate Sign, CRL Sign
+                X509v3 Authority Key Identifier:
+                    keyid:82:B7:38:4A:93:AA:9B:10:EF:80:BB:D9:54:E2:F1:0F:FB:80:9C:DE
+
+                X509v3 Subject Key Identifier:
+                    82:B7:38:4A:93:AA:9B:10:EF:80:BB:D9:54:E2:F1:0F:FB:80:9C:DE
+                X509v3 Basic Constraints:
+                    CA:TRUE
+                1.2.840.113533.7.65.0:
+                    0...V6.0:4.0....
+        Signature Algorithm: sha1WithRSAEncryption
+            32:da:9f:43:75:c1:fa:6f:c9:6f:db:ab:1d:36:37:3e:bc:61:
+            19:36:b7:02:3c:1d:23:59:98:6c:9e:ee:4d:85:e7:54:c8:20:
+            1f:a7:d4:bb:e2:bf:00:77:7d:24:6b:70:2f:5c:c1:3a:76:49:
+            b5:d3:e0:23:84:2a:71:6a:22:f3:c1:27:29:98:15:f6:35:90:
+            e4:04:4c:c3:8d:bc:9f:61:1c:e7:fd:24:8c:d1:44:43:8c:16:
+            ba:9b:4d:a5:d4:35:2f:bc:11:ce:bd:f7:51:37:8d:9f:90:e4:
+            14:f1:18:3f:be:e9:59:12:35:f9:33:92:f3:9e:e0:d5:6b:9a:
+            71:9b:99:4b:c8:71:c3:e1:b1:61:09:c4:e5:fa:91:f0:42:3a:
+            37:7d:34:f9:72:e8:cd:aa:62:1c:21:e9:d5:f4:82:10:e3:7b:
+            05:b6:2d:68:56:0b:7e:7e:92:2c:6f:4d:72:82:0c:ed:56:74:
+            b2:9d:b9:ab:2d:2b:1d:10:5f:db:27:75:70:8f:fd:1d:d7:e2:
+            02:a0:79:e5:1c:e5:ff:af:64:40:51:2d:9e:9b:47:db:42:a5:
+            7c:1f:c2:a6:48:b0:d7:be:92:69:4d:a4:f6:29:57:c5:78:11:
+            18:dc:87:51:ca:13:b2:62:9d:4f:2b:32:bd:31:a5:c1:fa:52:
+            ab:05:88:c8
+        </pre>
+     */
+    private static final String CERT_WITHOUT_URI =
+        "-----BEGIN CERTIFICATE-----\n"
+        +"MIIEoTCCA4mgAwIBAgIEPhy9KDANBgkqhkiG9w0BAQUFADBpMQswCQYDVQQGEwJV"
+        +"UzEjMCEGA1UEChMaQWRvYmUgU3lzdGVtcyBJbmNvcnBvcmF0ZWQxHTAbBgNVBAsT"
+        +"FEFkb2JlIFRydXN0IFNlcnZpY2VzMRYwFAYDVQQDEw1BZG9iZSBSb290IENBMB4X"
+        +"DTAzMDEwODIzMzcyM1oXDTIzMDEwOTAwMDcyM1owaTELMAkGA1UEBhMCVVMxIzAh"
+        +"BgNVBAoTGkFkb2JlIFN5c3RlbXMgSW5jb3Jwb3JhdGVkMR0wGwYDVQQLExRBZG9i"
+        +"ZSBUcnVzdCBTZXJ2aWNlczEWMBQGA1UEAxMNQWRvYmUgUm9vdCBDQTCCASIwDQYJ"
+        +"KoZIhvcNAQEBBQADggEPADCCAQoCggEBAMxPVIT3p6LnM1N/P5wSiGssmUdnfg8e"
+        +"ua0UiPnDENgd8PDVn2kKL1k1sMxsqUycFaCfziC/oM9U4uAgZkU/OYY4fpzEjgci"
+        +"xiT2ARKwNd9V6mmQsNuFNx7iTgeyQqFqE2mgZuqAkRFZKpsIeVogRC3JvXM4izwv"
+        +"4EMbXbML8K81Gin+76aS3YFMnT1Zjq0xPEB+m5E2BvziXI3RjSbVXEXPr2U/sarS"
+        +"Ypb0qDjqumBC9PQcSjUVzvhOIlYPlRjF+Jafn/uwt3gl6YBrvdYK8MZ0lJ3zD1Db"
+        +"mnfOS3CDI42gynggRFw8VGTx6qIwGZ/qTAZNBnhLXpLfItLJZ7N60gECAwEAAaOC"
+        +"AU8wggFLMBEGCWCGSAGG+EIBAQQEAwIABzCBjgYDVR0fBIGGMIGDMIGAoH6gfKR6"
+        +"MHgxCzAJBgNVBAYTAlVTMSMwIQYDVQQKExpBZG9iZSBTeXN0ZW1zIEluY29ycG9y"
+        +"YXRlZDEdMBsGA1UECxMUQWRvYmUgVHJ1c3QgU2VydmljZXMxFjAUBgNVBAMTDUFk"
+        +"b2JlIFJvb3QgQ0ExDTALBgNVBAMTBENSTDEwKwYDVR0QBCQwIoAPMjAwMzAxMDgy"
+        +"MzM3MjNagQ8yMDIzMDEwOTAwMDcyM1owCwYDVR0PBAQDAgEGMB8GA1UdIwQYMBaA"
+        +"FIK3OEqTqpsQ74C72VTi8Q/7gJzeMB0GA1UdDgQWBBSCtzhKk6qbEO+Au9lU4vEP"
+        +"+4Cc3jAMBgNVHRMEBTADAQH/MB0GCSqGSIb2fQdBAAQQMA4bCFY2LjA6NC4wAwIE"
+        +"kDANBgkqhkiG9w0BAQUFAAOCAQEAMtqfQ3XB+m/Jb9urHTY3PrxhGTa3AjwdI1mY"
+        +"bJ7uTYXnVMggH6fUu+K/AHd9JGtwL1zBOnZJtdPgI4QqcWoi88EnKZgV9jWQ5ARM"
+        +"w428n2Ec5/0kjNFEQ4wWuptNpdQ1L7wRzr33UTeNn5DkFPEYP77pWRI1+TOS857g"
+        +"1WuacZuZS8hxw+GxYQnE5fqR8EI6N300+XLozapiHCHp1fSCEON7BbYtaFYLfn6S"
+        +"LG9NcoIM7VZ0sp25qy0rHRBf2yd1cI/9HdfiAqB55Rzl/69kQFEtnptH20KlfB/C"
+        +"pkiw176SaU2k9ilXxXgRGNyHUcoTsmKdTysyvTGlwfpSqwWIyA=="
+        +"\n-----END CERTIFICATE-----";
+
+		
+		
 		
 	/**
 	 * Creates a new TestCertTools object.
@@ -1381,6 +1563,35 @@ public class CertToolsTest extends TestCase {
 		String issuerdn = CertTools.getIssuerDN(cert);
 		assertEquals("CN=foo1", issuerdn);
 	}
+	
+    public void test24GetCrlDistributionPoint() throws Exception {
+    	log.trace(">test24GetCrlDistributionPoint()");
+
+        Collection<Certificate> certs;
+        URL url;
+
+        // Test with normal cert
+        try {
+            certs = CertTools.getCertsFromPEM(
+                    new ByteArrayInputStream(CERT_WITH_URI.getBytes()));
+            url = CertTools.getCrlDistributionPoint(certs.iterator().next());
+            assertNotNull(url);
+        } catch (CertificateParsingException ex) {
+            fail("Exception: " + ex.getMessage());
+        }
+
+        // Test with cert that contains CDP without URI
+        try {
+            certs = CertTools.getCertsFromPEM(
+                    new ByteArrayInputStream(CERT_WITHOUT_URI.getBytes()));
+            url = CertTools.getCrlDistributionPoint(certs.iterator().next());
+            assertNull(url);
+        } catch (CertificateParsingException ex) {
+            fail("Exception: " + ex.getMessage());
+        }
+        
+    	log.trace("<test24GetCrlDistributionPoint()");
+    }
 	
 	public void testKrb5PrincipalName() throws Exception {
 		String altName =  "krb5principal=foo/bar@P.SE, upn=upn@u.com";

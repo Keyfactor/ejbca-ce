@@ -2252,6 +2252,9 @@ public class CertTools {
          }
          DERTaggedObject taggedObject
            = (DERTaggedObject)namesSequence.getObjectAt(0);
+         if (taggedObject.getTagNo() != 6) { // uniformResourceIdentifier  [6]  IA5String,
+             return null;
+         }
          return new String(ASN1OctetString.getInstance(taggedObject, false).getOctets());
      } //getStringFromGeneralNames
     
