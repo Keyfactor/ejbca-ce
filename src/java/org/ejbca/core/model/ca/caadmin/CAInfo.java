@@ -161,7 +161,7 @@ public class CAInfo implements Serializable {
 	public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}
 	
 	public boolean getIncludeInHealthCheck() {return this.includeInHealthCheck;}
-	public void setincludeInHealthCheck(boolean includeInHealthCheck) {this.includeInHealthCheck = includeInHealthCheck;}
+	public void setIncludeInHealthCheck(boolean includeInHealthCheck) {this.includeInHealthCheck = includeInHealthCheck;}
 	
 	/** Lists the extended CA services.
 	 * 

@@ -110,9 +110,9 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
         	  }
         	  String value = request.getParameter(CHECKBOX_INCLUDEINHEALTHCHECK);
         	  if(value != null) {
-        		  cainfo.getCAInfo().setincludeInHealthCheck( true );
+        		  cainfo.getCAInfo().setIncludeInHealthCheck( true );
         	  } else {
-        		  cainfo.getCAInfo().setincludeInHealthCheck( false );
+        		  cainfo.getCAInfo().setIncludeInHealthCheck( false );
         	  }
         	  // persist to database
         	  cabean.getCADataHandler().editCA(cainfo.getCAInfo());

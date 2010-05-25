@@ -190,7 +190,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		CAInfoView cv = caBean.getCAInfo(caid);
 		if (cv != null) {
 			CAInfo cainfo = cv.getCAInfo();
-			cainfo.setincludeInHealthCheck(monitored);
+			cainfo.setIncludeInHealthCheck(monitored);
 			cadatahandler.editCA(cainfo);
 			return cainfo;			
 		} else {
