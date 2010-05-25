@@ -2245,6 +2245,11 @@ public class CertTools {
         return aIn.readObject();
     } //getExtensionValue
 
+    /** Gets a URI string from a GeneralNames structure. 
+     * 
+     * @param names DER GeneralNames object, that is a sequence of DERTaggedObject
+     * @return String with URI if tagNo is 6 (uniformResourceIdentifier), null otherwise
+     */
     private static String getStringFromGeneralNames(DERObject names) {
          ASN1Sequence namesSequence = ASN1Sequence.getInstance((ASN1TaggedObject)names, false);
          if (namesSequence.size() == 0) {
