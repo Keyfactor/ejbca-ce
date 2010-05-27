@@ -1358,6 +1358,15 @@ The same can be accomplished using a browser:
 <li>Public Web - Create Keystore - Enter username and password - Fetch the keystore</li>
 </ul>
 </p>
+<subsection name="Technical details">
+<p>
+What the operation "bin/ejbca.sh ra keyrecovernewest", or "recover key" in the admin GUI, or keyRecoverNewest in the WS API actually does is 
+that it <strong>marks</strong> the user/certificate for key recovery. This means that the next time you make a call to generate a keystore (p12/jks/pem) 
+for the user the CA will get the private key, held encrypted in the recovery database, and the existing user certificate or a new certificate, and 
+create a keystore for the user with this old key pair. 
+The actual recovery would then happen when you make a call to i.e. pkcs12Req in the WS API, or if keystore type is P12, JKS or PEM in the admin GUI. 
+</p>
+</subsection>
 </section>
 
 <section name="Email notifications">
