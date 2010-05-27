@@ -41,6 +41,7 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	private static IHealtChecker healthChecker;
 
 	private boolean doSignTest = OcspConfiguration.getHealthCheckSignTest();
+	private boolean doValidityTest = OcspConfiguration.getHealthCheckCertificateValidity();
 
 	static public void setHealtChecker(IHealtChecker hc) {
 		healthChecker = hc;
@@ -48,7 +49,7 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	
 	public void init(ServletConfig config) {
 		super.init(config);
-        log.debug("OCSPSignTest: "+this.doSignTest);
+		log.debug("OCSPSignTest: '"+this.doSignTest+"'. OCSCertificateValidityTest: '"+this.doValidityTest+"'.");
 	}
 	
 	public String checkHealth(HttpServletRequest request) {
@@ -73,16 +74,12 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 		
 		return errormessage;
 	}
-	
-	
+
+
 	private String checkOCSPSignTokens(){
-		if ( healthChecker!=null ) {
-		    if ( this.doSignTest ) {
-		        return healthChecker.healthCheck();
-		    }
-		} else {
+		if ( healthChecker==null ) {
 			return "No OCSP token health checker set";
 		}
-        return "";
+		return healthChecker.healthCheck(this.doSignTest, this.doValidityTest);
 	}
 }

@@ -157,7 +157,45 @@ public class OCSPUtil {
     	}
     	return returnval;
     }
-    
+
+    /**
+     * Checks if a certificate is valid
+     * Does also print a WARN if the certificate is about to expire.
+     * @param signerCert the certificate to be tested
+     * @return true if the certificate is valid
+     */
+    public static boolean isCertificateValid( X509Certificate signerCert ) {
+    	try {
+    		signerCert.checkValidity();
+    	} catch (CertificateExpiredException e) {
+    		m_log.error(intres.getLocalizedMessage("ocsp.errorcerthasexpired",
+    		                                       signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+    		return false;
+    	} catch (CertificateNotYetValidException e) {
+    		m_log.error(intres.getLocalizedMessage("ocsp.errornotyetvalid",
+    		                                       signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+    		return false;
+    	}
+    	final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+    	if ( warnBeforeExpirationTime<1 ) {
+    		return true;
+    	}
+    	final Date warnDate = new Date(new Date().getTime()+warnBeforeExpirationTime);
+    	try {
+    		signerCert.checkValidity( warnDate );
+    	} catch (CertificateExpiredException e) {
+    		m_log.warn(intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber(),
+    		                                      signerCert.getIssuerDN(), signerCert.getNotAfter()));
+    	} catch (CertificateNotYetValidException e) {
+    		throw new Error("This should never happen.", e);
+    	}
+		if ( !m_log.isDebugEnabled() ) {
+			return true;
+		}
+		m_log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "+
+		            new Date(signerCert.getNotAfter().getTime()-warnBeforeExpirationTime));
+    	return true;
+    }
     /**
      * Method generates an ExtendedCAServiceResponse which is a OCSPCAServiceResponse wrapping the BasicOCSPRespfor usage 
      * internally in EJBCA.
@@ -172,15 +210,14 @@ public class OCSPUtil {
      */
     public static OCSPCAServiceResponse createOCSPCAServiceResponse(OCSPCAServiceRequest ocspServiceReq, PrivateKey privKey, String providerName, X509Certificate[] certChain)
     throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceRequestException {
-    	OCSPCAServiceResponse returnval = null;
-    	X509Certificate signerCert = certChain[0];
-    	String sigAlgs = ocspServiceReq.getSigAlg();
-    	PublicKey pk = signerCert.getPublicKey();
-    	String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
+    	final X509Certificate signerCert = certChain[0];
+    	final String sigAlgs = ocspServiceReq.getSigAlg();
+    	final PublicKey pk = signerCert.getPublicKey();
+    	final String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
     	m_log.debug("Signing algorithm: "+sigAlg);
-    	boolean includeChain = ocspServiceReq.includeChain();
+    	final boolean includeChain = ocspServiceReq.includeChain();
     	m_log.debug("Include chain: "+includeChain);
-    	X509Certificate[] chain = null;
+    	final X509Certificate[] chain;
     	if (includeChain) {
     		chain = certChain;
     	} else {
@@ -188,9 +225,11 @@ public class OCSPUtil {
     		chain[0] = signerCert;
     	}
     	try {
-    		int respIdType = ocspServiceReq.getRespIdType();
-    		BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, providerName, chain, respIdType);
-    		returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
+    		final int respIdType = ocspServiceReq.getRespIdType();
+    		final BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, providerName, chain, respIdType);
+    		final OCSPCAServiceResponse result = new OCSPCAServiceResponse(ocspresp, Arrays.asList(chain));
+    		isCertificateValid(signerCert);
+    		return result;
     	} catch (OCSPException ocspe) {
     		throw new ExtendedCAServiceRequestException(ocspe);
     	} catch (NoSuchProviderException nspe) {
@@ -202,7 +241,6 @@ public class OCSPUtil {
     		m_log.error("IllegalArgumentException: ", e);
     		throw new IllegalExtendedCAServiceRequestException(e);
     	}
-    	return returnval;
     } // createOCSPCAServiceResponse
 
 

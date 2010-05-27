@@ -122,8 +122,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.IHealtChecker#healthCheck()
      */
-    public String healthCheck() {
-        return this.session.healthCheck();
+    public String healthCheck(boolean doSignTest, boolean doValidityTest) {
+        return this.session.healthCheck(doSignTest, doValidityTest);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(java.lang.String)

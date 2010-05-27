@@ -34,7 +34,9 @@ import java.security.Security;
 import java.security.Signature;
 import java.security.KeyStore.PasswordProtection;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -311,7 +313,7 @@ class OCSPServletStandAloneSession implements P11SlotUser {
      * Fixes the answer for the call to {@link OCSPServletStandAlone#healthCheck()}
      * @return The answer to be returned by the health-check servlet.
      */
-    String healthCheck() {
+    String healthCheck( boolean doSignTest, boolean doValidityTest) {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
         try {
@@ -333,8 +335,6 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         continue;
                     }
                     final PrivateKey privKey = signingEntity.keyContainer.getKey();
-                    final String providerName = signingEntity.providerHandler.getProviderName();
-                    final X509Certificate entityCert = signingEntity.keyContainer.getCertificate(); // must be after getKey
                     if ( privKey==null ) {
                         pw.println();
                         pw.print(errMsg);
@@ -342,8 +342,15 @@ class OCSPServletStandAloneSession implements P11SlotUser {
                         continue;
                     }
                     try {
-                        final boolean isOK = signTest(privKey, entityCert.getPublicKey(),
-                                                      entityCert.getSubjectDN().toString(), providerName);
+                        final String providerName = signingEntity.providerHandler.getProviderName();
+                        final X509Certificate entityCert = signingEntity.keyContainer.getCertificate(); // must be after getKey
+                        if ( doValidityTest && !OCSPUtil.isCertificateValid(entityCert) ) {
+                            pw.println();
+                            pw.print(errMsg);
+                            continue;
+                        }
+                        final boolean isOK = !doSignTest || signTest(privKey, entityCert.getPublicKey(),
+                                                                     entityCert.getSubjectDN().toString(), providerName);
                         if ( !isOK ) {
                             pw.println();
                             pw.print(errMsg);

@@ -32,6 +32,13 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Default: 300
 #ocsp.signingCertsValidTime=0
 
+# When a signing certificate is about to expire a WARN message could be written to log4j each time the key of the certificate is used.
+# This property defines when this message is started to be written.
+# The property is set to the number of seconds before the expiration that the WARN message starts to be written.
+# If set to 0 the warning is disabled.
+# Default: 604800 (1 week)
+#ocsp.warningBeforeExpirationTime=10000
+
 # Specifies if the OCSP-responder should require signed requests or not.
 # If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
 #
@@ -304,6 +311,13 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # The test will fail if any of the available signing keys is not working or if there are no available signing keys.
 # Default: true
 #ocsphealthcheck.signtest=false
+
+# True if the healthcheck should check the validity of all signing certificates.
+# If your cluster of responders have the same expiration time for all signing certificates it could be better not to check since
+# it might be better to sign with an old certificate than not signing at all. Otherwise it is usually a good idea to do this check
+# and exclude a responder with no valid signing certificate.
+# Default: true
+#ocsphealthcheck.checkSigningCertificateValidity=false
 
 #------------------- OCSP Logging settings -------------
 # Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
