@@ -20,8 +20,10 @@ public interface IHealtChecker {
 	/**
      * To be called by healthcheck servlet.
      * 
+     * @param doSignTest true if the a sign test should be done with the key.
+     * @param doValidityTest true if the validity of the signing certificates should be checked
 	 * @return health check answer. "" means everything OK.
 	 */
-	String healthCheck();
+	String healthCheck(boolean doSignTest, boolean doValidityTest);
 
 }
