@@ -1203,11 +1203,23 @@ public class CAAdminSessionBean extends BaseSessionBean {
             byte[] request = ca.createRequest(null, signAlg, cacert, keyPurpose);
             if (ca.getCAType() == CAInfo.CATYPE_CVC) {
                 // If this is a CVC CA renewal request, we need to sign it to make an authenticated request
-                // The CVC CAs current signing certificate will always be the right one, because it is the "previous" signing certificate until lwe have imported a new one
+                // The CVC CAs current signing certificate will always be the right one, because it is the "previous" signing certificate until we have imported a new one
                 // as response to the request we create here.
                 boolean createlinkcert = false; // this is not a link certificate, and never can be
                 // If we try to sign an initial request there will be no CA certificate and signRequest will return the same as we pass in, i.e. do nothing.
-                returnval = ca.signRequest(request, usepreviouskey, createlinkcert);            	
+                try {
+                	returnval = ca.signRequest(request, usepreviouskey, createlinkcert);
+                } catch (RuntimeException e) {
+                	Throwable cause = e.getCause();
+                	// If this is an IllegalKeyException we it's possible that we did not have a previous key, then just skip and make it authenticated
+                	// and return the request message as is
+                	if (cause instanceof InvalidKeyException) {
+                		log.info("Failed to sign CVC request with previous key (does it exist?). Returning unauthenticated request.");
+                		returnval = request;
+					} else {
+						throw e;
+					}
+                }
             } else {
             	returnval = request;
             }
