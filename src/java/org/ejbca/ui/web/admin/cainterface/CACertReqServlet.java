@@ -181,29 +181,25 @@ public class CACertReqServlet extends HttpServlet {
                 } catch (ParseException ex) {
                     // Apparently it wasn't a CVC request, ignore
                 } catch (IllegalArgumentException ex) {
-                    // Apparently it wasn't a CVC request, see if it was an X.509 certificate
-                	try {
-                		Certificate cert = CertTools.getCertfromByteArray(request);
-                		filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-                		if (filename == null) {
-                			filename = "cert";
-                		}
-                		isx509cert = true;
-                	} catch (CertificateException e) {
-                        // Apparently it wasn't a X.509 certificate, was it a certificate request?
-                		try {
-                    		PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
-                    		filename = CertTools.getPartFromDN(p10.getRequestX509Name().toString(), "CN");
-                		} catch (Exception e1) { // NOPMD
-                			// Nope, not a certificate request either, ignore
-                		}
-                	}
+                    // Apparently it wasn't a X.509 certificate, was it a certificate request?
+            		try {
+                		PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
+                		filename = CertTools.getPartFromDN(p10.getRequestX509Name().toString(), "CN");
+            		} catch (Exception e1) { // NOPMD
+            			// Nope, not a certificate request either, see if it was an X.509 certificate
+            			Certificate cert = CertTools.getCertfromByteArray(request);
+            			filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+            			if (filename == null) {
+            				filename = "cert";
+            			}
+            			isx509cert = true;
+            		}
                 }
 
                 if (filename == null) {
                     filename = "certificaterequest";
                 } else {
-        			filename = StringUtils.strip(filename, " ");                	
+        	    	filename = filename.replaceAll("\\W", "");
                 }
                 int length = request.length;
                 byte[] outbytes = request;
