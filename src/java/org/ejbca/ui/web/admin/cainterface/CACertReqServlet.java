@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
@@ -29,6 +30,7 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -39,6 +41,7 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.RequestMessageUtils;
 
 /**
  * Servlet used to handle certificate requests between CAs.<br>
@@ -179,18 +182,28 @@ public class CACertReqServlet extends HttpServlet {
                     // Apparently it wasn't a CVC request, ignore
                 } catch (IllegalArgumentException ex) {
                     // Apparently it wasn't a CVC request, see if it was an X.509 certificate
-                	Certificate cert = CertTools.getCertfromByteArray(request);
-                	filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-                	if (filename == null) {
-                		filename = "cert";
-                	} else {
-                		filename = StringUtils.strip(filename, " ");
+                	try {
+                		Certificate cert = CertTools.getCertfromByteArray(request);
+                		filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+                		if (filename == null) {
+                			filename = "cert";
+                		}
+                		isx509cert = true;
+                	} catch (CertificateException e) {
+                        // Apparently it wasn't a X.509 certificate, was it a certificate request?
+                		try {
+                    		PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
+                    		filename = CertTools.getPartFromDN(p10.getRequestX509Name().toString(), "CN");
+                		} catch (Exception e1) { // NOPMD
+                			// Nope, not a certificate request either, ignore
+                		}
                 	}
-                	isx509cert = true;
                 }
 
                 if (filename == null) {
                     filename = "certificaterequest";
+                } else {
+        			filename = StringUtils.strip(filename, " ");                	
                 }
                 int length = request.length;
                 byte[] outbytes = request;
