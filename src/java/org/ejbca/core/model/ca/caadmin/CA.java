@@ -428,14 +428,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	}
 
 	public boolean isDoEnforceUniquePublicKeys() {
-		return getBoolean(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, true);
+		return getBoolean(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, false);
 	}
     private void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
     	data.put(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, new Boolean(doEnforceUniquePublicKeys));
 	}
     
 	public boolean isDoEnforceUniqueDistinguishedName() {
-		return getBoolean(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, true);
+		return getBoolean(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, false);
 	}
     private void setDoEnforceUniqueDistinguishedName(boolean doEnforceUniqueDistinguishedName) {
     	data.put(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, new Boolean(doEnforceUniqueDistinguishedName));
