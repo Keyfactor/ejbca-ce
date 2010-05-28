@@ -129,7 +129,8 @@ public class GetCRLServlet extends HttpServlet {
                 byte[] crl = getCreateCRLSessionHome().create().getLastCRL(admin, issuerdn, false);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
-                String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
+        		String basename = getBaseFileName(dn);
+                String filename = basename+".crl";
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
@@ -151,7 +152,8 @@ public class GetCRLServlet extends HttpServlet {
         		byte[] crl = getCreateCRLSessionHome().create().getLastCRL(admin, issuerdn, true);
         		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         		String dn = CertTools.getIssuerDN(x509crl);
-        		String filename = "delta_" + CertTools.getPartFromDN(dn,"CN")+".crl";
+        		String basename = getBaseFileName(dn);
+        		String filename = basename+"_delta.crl";
         		// We must remove cache headers for IE
         		ServletUtils.removeCacheHeaders(res);
         		res.setHeader("Content-disposition", "attachment; filename=" +  filename);
@@ -166,4 +168,21 @@ public class GetCRLServlet extends HttpServlet {
         	}
         }
     } // doGet
+
+
+	/**
+	 * @param dn
+	 * @return base filename, without extension, with CN, or SN (of CN is null) or O, with spaces removed so name is compacted.
+	 */
+	private String getBaseFileName(String dn) {
+		String dnpart = CertTools.getPartFromDN(dn, "CN");
+		if (dnpart == null) {
+			dnpart = CertTools.getPartFromDN(dn, "SN");
+		}
+		if (dnpart == null) {
+			dnpart = CertTools.getPartFromDN(dn, "O");
+		}
+		String basename = dnpart.replaceAll("\\W", "");
+		return basename;
+	}
 }
