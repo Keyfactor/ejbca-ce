@@ -173,21 +173,26 @@ function isExternalX509(){
 	   subjectaltname.disabled = false; 
 	   policyidfield.disabled = false; 
 	   activateocsp.disabled = false;
-	   activatexkms.disabled = false;
-	   activatecms.disabled = false;
 	   activateocsp.checked = true;   
-	   activatexkms.checked = false;   
+	   activatecms.disabled = false;
 	   activatecms.checked = false;   
+       if (typeof activatexkms != "undefined") {
+	   	activatexkms.disabled = false;
+	   	activatexkms.checked = false;
+       }   
 	
 	   if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
 	      subjectaltname.disabled = true; 
 	      policyidfield.disabled = true;   
 	      activateocsp.disabled = true;
 	      activateocsp.checked = false;
-	      activatexkms.disabled = true;
-	      activatexkms.checked = false;    
 	      activatecms.disabled = true;
-	      activatecms.checked = false;    
+	      activatecms.checked = false;
+	      if (typeof activatexkms != "undefined") {
+		      activatexkms.disabled = true;
+		      activatexkms.checked = false;    
+		  }
+	    		      
 	   } 
    }
 }
@@ -1155,6 +1160,7 @@ function checkallfields(){
         <input type="submit" name="<%= BUTTON_PUBLISHCA %>"  value="<%= ejbcawebbean.getText("REPUBLISHCA") %>" >
       </td>
     </tr>
+    <!-- close CA form -->
 	</form>
 	<%
 	if ( caname == null ) {
@@ -1173,6 +1179,9 @@ function checkallfields(){
     </tr>
 	</form>
 	<% } %>
-        <% } %>   
+    <% } else { // if(editca && !isexternal && !waitingresponse)%>
+    <!-- close CA form -->
+          </form>
+    <% } %> 
   </table>
   
