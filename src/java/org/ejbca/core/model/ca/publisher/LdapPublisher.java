@@ -432,7 +432,7 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
+	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException{
     	log.trace(">storeCRL");
 		int ldapVersion = LDAPConnection.LDAP_V3;
 
@@ -545,7 +545,7 @@ public class LdapPublisher extends BasePublisher {
     	log.trace("<storeCRL");
 		return true;
 	}
-	protected boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
+	protected boolean storeCRL(Admin admin, byte[] incrl, String cafp ) {
 		throw new Error("This method should never be called since the method with 'userDN' is implemented.");
 	}
 

@@ -265,7 +265,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     /* Does nothing, this publisher only publishes Certificates.
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#storeCRL(se.anatom.ejbca.log.Admin, byte[], java.lang.String, int)
      */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp)
     throws PublisherException {
         return true;
     }

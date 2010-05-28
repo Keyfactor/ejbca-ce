@@ -158,7 +158,6 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         	defaultCertProfile = availableCertProfiles.split(";")[0];	// Use first available profile from list as default if original default was missing
                                         }
                                         
-                                    	//getOutputStream().println("Debug: New - AVAILCERTPROFILES " + availableCertProfiles + " DEFAULTCERTPROFILE "+defaultCertProfile);
                                         eprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles);
                                         eprofile.setValue(EndEntityProfile.DEFAULTCERTPROFILE,0, defaultCertProfile);
                                         

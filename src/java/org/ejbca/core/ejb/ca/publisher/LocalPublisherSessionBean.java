@@ -306,7 +306,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCRL(Admin admin, Collection publisherids, byte[] incrl, String cafp, int number, String userDN) {
+    public boolean storeCRL(Admin admin, Collection publisherids, byte[] incrl, String cafp, String userDN) {
     	log.trace(">storeCRL");
         Iterator iter = publisherids.iterator();
         boolean returnval = true;
@@ -318,7 +318,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             	// If it should be published directly
                 if (!pdl.getPublisher().getOnlyUseQueue()) {
                 	try {
-	            		if (pdl.getPublisher().storeCRL(admin, incrl, cafp, number, userDN)) {
+	            		if (pdl.getPublisher().storeCRL(admin, incrl, cafp, userDN)) {
 	            			publishStatus = PublisherQueueData.STATUS_SUCCESS;
 	            		}
                 		String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());            	

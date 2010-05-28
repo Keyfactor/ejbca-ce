@@ -63,8 +63,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             Collection cachain = cainfo.getCertificateChain();
             Iterator caiter = cachain.iterator();
             if (caiter.hasNext()) {
-                X509Certificate cacert = (X509Certificate)caiter.next();
-                int crlNumber = getCreateCRLSession().getLastCRLNumber(getAdmin(), cainfo.getSubjectDN(), false);
+                X509Certificate cacert = (X509Certificate)caiter.next();           
                 byte[] crlbytes = getCreateCRLSession().getLastCRL(getAdmin(), cainfo.getSubjectDN(), false);
                 Collection capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
@@ -74,8 +73,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
         		    CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(getAdmin(), fingerprint);
         		    getPublisherSession().storeCertificate(getAdmin(), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);                                
         		    getLogger().info("Certificate published for "+caname);
-                    if ( (crlbytes != null) && (crlbytes.length > 0) && (crlNumber > 0) ) {
-                        getPublisherSession().storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
+                    if ( (crlbytes != null) && (crlbytes.length > 0) ) {
+                        getPublisherSession().storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, cainfo.getSubjectDN());
                         getLogger().info("CRL published for "+caname);
                     } else {
                     	getLogger().info("CRL not published, no CRL createed for CA?");

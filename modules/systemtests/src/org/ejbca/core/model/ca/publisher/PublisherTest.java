@@ -260,7 +260,7 @@ public class PublisherTest extends TestCase {
         
         ArrayList publishers = new ArrayList();
         publishers.add(new Integer(TestTools.getPublisherSession().getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
-        boolean ret = TestTools.getPublisherSession().storeCRL(admin, publishers, testcrl, null, 1, null);
+        boolean ret = TestTools.getPublisherSession().storeCRL(admin, publishers, testcrl, null, null);
         assertTrue("Storing CRL to dummy publisher failed", ret);
         
         log.trace("<test08storeCRLToDummy()");
@@ -295,7 +295,7 @@ public class PublisherTest extends TestCase {
 	    try {
 	        props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, "");
 	        gpcPublisher.init(props);
-			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null);
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Store CRL with GeneralPurposeCustomPublisher did not failed with invalid properties.", ret);
@@ -304,7 +304,7 @@ public class PublisherTest extends TestCase {
 	    try {
 	        props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, externalCommand);
 	        gpcPublisher.init(props);
-			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null);
 		} catch (PublisherException e) {
 			e.printStackTrace();
 		}
@@ -343,7 +343,7 @@ public class PublisherTest extends TestCase {
 	        props.setProperty(GeneralPurposeCustomPublisher.crlFailOnErrorCodePropertyName, "true");
 	        props.setProperty(GeneralPurposeCustomPublisher.crlFailOnStandardErrorPropertyName, "false");
 	        gpcPublisher.init(props);
-			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null);
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Store CRL with GeneralPurposeCustomPublisher did not fail on errorcode.", ret);
@@ -353,7 +353,7 @@ public class PublisherTest extends TestCase {
 	        props.setProperty(GeneralPurposeCustomPublisher.certFailOnErrorCodePropertyName, "true");
 	        props.setProperty(GeneralPurposeCustomPublisher.certFailOnStandardErrorPropertyName, "false");
 	        gpcPublisher.init(props);
-			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null);
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Store cert with GeneralPurposeCustomPublisher did not fail on errorcode.", ret);
@@ -363,7 +363,7 @@ public class PublisherTest extends TestCase {
 	        props.setProperty(GeneralPurposeCustomPublisher.revokeFailOnErrorCodePropertyName, "true");
 	        props.setProperty(GeneralPurposeCustomPublisher.revokeFailOnStandardErrorPropertyName, "false");
 	        gpcPublisher.init(props);
-			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null);
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Revoke cert with GeneralPurposeCustomPublisher did not fail on errorcode.", ret);
@@ -401,7 +401,7 @@ public class PublisherTest extends TestCase {
 	        props.setProperty(GeneralPurposeCustomPublisher.crlFailOnErrorCodePropertyName, "false");
 	        props.setProperty(GeneralPurposeCustomPublisher.crlFailOnStandardErrorPropertyName, "true");
 	        gpcPublisher.init(props);
-			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null);
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Store CRL with GeneralPurposeCustomPublisher did not fail on standard error.", ret);
@@ -411,7 +411,7 @@ public class PublisherTest extends TestCase {
 	        props.setProperty(GeneralPurposeCustomPublisher.certFailOnErrorCodePropertyName, "false");
 	        props.setProperty(GeneralPurposeCustomPublisher.certFailOnStandardErrorPropertyName, "true");
 	        gpcPublisher.init(props);
-			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null);
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Store cert with GeneralPurposeCustomPublisher did not fail on standard error.", ret);
@@ -421,7 +421,7 @@ public class PublisherTest extends TestCase {
 	        props.setProperty(GeneralPurposeCustomPublisher.revokeFailOnErrorCodePropertyName, "false");
 	        props.setProperty(GeneralPurposeCustomPublisher.revokeFailOnStandardErrorPropertyName, "true");
 	        gpcPublisher.init(props);
-			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null);
 		} catch (PublisherException e) {
 		}
 	    assertFalse("Revoke cert with GeneralPurposeCustomPublisher did not fail on standard error.", ret);

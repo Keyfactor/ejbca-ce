@@ -46,7 +46,7 @@ public interface ICustomPublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL
 	 */ 
-	public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)throws PublisherException;
+	public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp)throws PublisherException;
 	
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection

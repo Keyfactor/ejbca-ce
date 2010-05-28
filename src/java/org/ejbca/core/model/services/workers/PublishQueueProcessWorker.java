@@ -218,7 +218,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 						log.debug("Publishing CRL");
 					}
 					CRLDataLocal crllocal = getCRLDataHome().findByPrimaryKey(new CRLDataPK(fingerprint));
-					published = publisher.storeCRL(getAdmin(), crllocal.getCRLBytes(), crllocal.getCaFingerprint(), crllocal.getCrlNumber(), userDataDN);
+					published = publisher.storeCRL(getAdmin(), crllocal.getCRLBytes(), crllocal.getCaFingerprint(), userDataDN);
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);            	
 					log.error(msg);					
