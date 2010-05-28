@@ -1214,7 +1214,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 	// If this is an IllegalKeyException we it's possible that we did not have a previous key, then just skip and make it authenticated
                 	// and return the request message as is
                 	if (cause instanceof InvalidKeyException) {
-                		log.info("Failed to sign CVC request with previous key (does it exist?). Returning unauthenticated request.");
+                		log.info("Failed to sign CVC request with previous key (does it exist?). Returning unauthenticated request.", e);
                 		returnval = request;
 					} else {
 						throw e;
