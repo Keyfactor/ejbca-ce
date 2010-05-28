@@ -6,14 +6,14 @@
 <body>
 <section name="EJBCA SECURITY">
 <p>
-Security is CRITICAL for a CA. Protection of the CAs private key is essential,
- since compromise of the CAs private key will let anyone issue false
- certificates, which can be used to gain access to systems relying on the CA for
- authentication and other security services.
+Security is CRITICAL for a CA. Protection of the CA's private key is essential,
+since compromise of the CA's private key will let anyone issue false
+certificates, which can then be used to gain access to systems relying on the CA for
+authentication and other security services.
  </p>
  <p>
-After realizing this, please read on and take a pragmatic approach to security
- suitable for your policy, application and environment.
+After realizing this, please read on and take a pragmatic approach to security,
+suitable for your policy, application and environment.
 </p></section>
 
 <section name="Firewall ports">
@@ -22,17 +22,17 @@ After realizing this, please read on and take a pragmatic approach to security
 <li>8080 - the public HTTP port of you application server, used for clients to access the public web for enrollment.</li>
 <li>8443 - the SSL protected HTTPS port used to access the admin GUI of EJBCA. This port requires client certificate for access.</li>
 </ul>
-Additional ports that you may need to open are SSH, outgoing SMTP, outgoing LDAP etc. Which additional ports that needs to be open depends on your specific setup and which 
-services you use. You do not need outgoing SMTP if you don't use email notification for example.
+Additional ports that you may need to open are SSH, outgoing SMTP, outgoing LDAP, etc. Which additional ports that need to be opened depends on your specific setup and which 
+services you use. You do not need outgoing SMTP if you don't use email notification, for example.
 </p>
 <p>
-Locally on the host a number of ports are used in order for your application server to function.
+Locally on the host, a number of ports are used in order for your application server to function.
 </p>
 </section>
 
 <section name="Securing JBoss">
 <p>
-JBoss has description how to secure a default installation of JBoss. You should read this document before putting
+JBoss has a description how to secure a default installation of JBoss. You should read this document before putting
 your application in production.
 </p><p>
 Check out: <a href="http://community.jboss.org/wiki/SecureJBoss">SecureJBoss</a>
@@ -142,7 +142,7 @@ they are stored and the generated files should be protected in the same way.
 Default user authentication for enrollment in EJBCA is done with a one-time
 password scheme. When a user has enrolled for a certificate his status is
 set to GENERATED and the password can not be used again to enroll for a new
-certificate. An administrator must re-set the users status and preferably
+certificate. An administrator must re-set the user's status and preferably
 set a new password.
 </p><p>
 
@@ -150,24 +150,22 @@ If implementing other user authentication scenarios you should remember
 that certificate authentication is stronger than password based
 authentication (for example LDAP). If EJBCA users authenticate 
 with some other (not one-time) password instead of usual one-time password, 
-a strong authentication mechanism will be build on a weaker one.
+a strong authentication mechanism will be built on a weaker one.
 </p></section>
 
 <section name="Passwords defined when configuring EJBCA.">
 <p>
-The configuration files (in $EJBCA_HOME/conf) contains some passwords.
+The configuration files (in $EJBCA_HOME/conf) contain some passwords.
 It is not considered to be a security risk to declare all these passwords
-in clear text. Anyone that could log on to the server with EJBCA could apart from
-reading these files also do anything he wants with the CLI of EJBCA. If an unauthorized
-person could use the CLI this is severe security risk. But reading the passwords is not
-much of a problem since the passwords in any case can not be used to anything outside
-the server.
+in clear text. Anyone that can log on to the server with EJBCA can, apart from
+reading these files, also do anything he wants with the CLI of EJBCA. If an unauthorized
+person can use the CLI, then this is a severe security risk. Access to these passwords
+is itself not much of a problem, since they have no use outside of the server
 </p><p>
-It is very important to restrict the access to the server only to a very few trust-able
-persons.
+It is very important to restrict the access to the server to only a very few trusted individuals.
 </p><p>
-If you anyway want to do something about these passwords the subsections of these section
-is describing what could be done:
+If you anyway want to do something about these passwords the subsections of this section
+describes what should be done:
 </p>
 <subsection name="Passwords used by EJBCA taken from property files">
 <p>
@@ -189,29 +187,29 @@ List of these passwords in protectedlog.properties :
 </subsection>
 <subsection name="Passwords used by the application server">
 <p>
-Some of the passwords is not used by EJBCA but by the application server. If this passwords
-should be encrypted it must be in a way so that they could be decrypted by the application
+Some of the passwords are not used by EJBCA but by the application server. If these passwords
+should be encrypted, it must be in a way so that they can be decrypted by the application
 server. You have to consult the documentation of the application server to find out how to
 encrypt them (example: <a href="#Datasource passwords">datasource password in jboss</a>).
 </p><p>
-This are these passwords:
+These passwords are:
 <br/>mail.password in mail.properties
 <br/>database.password in database.properties
 </p>
 </subsection>
 <subsection name="Passwords prompted for by 'ant install'">
 <p>
-If you don't define superadmin.password in web.properties then 'ant install' will prompt for it.
-Since this password does not has to be known by EJBCA after the super admin token has been created
+If you don't define superadmin.password in web.properties, then 'ant install' will prompt for it.
+Since this password does not has to be known by EJBCA after the super admin token has been created,
 it will not exist in any file after the installation.
 </p>
 <p>
-The passwords java.trustpassword and httpsserver.password also in web.properties are used to generate
+The passwords java.trustpassword and httpsserver.password, also in web.properties, are used to generate
 keystore files at 'ant install'. These passwords must later on be specified in the application server
 configuration. If these passwords are not specified and the property 'web.promptForPassword' is set to
-'true' then these passwords are also prompted for.
+'true', then these passwords are also prompted for.
 </p><p>
-But if you let 'ant install' prompt for these passwords you must set them (maybe encrypted if possible)
+If you let 'ant install' prompt for these passwords you must set them (encrypted, if possible)
 in the application server configuration. The file for the application server is copied to the application
 server at 'ant deploy' (in jboss 4.2.3 the file is called $JBOSS_HOME/server/default/deploy/jboss-web.deployer/server.xml)
 You must then manually substitute the strings 'changeThisToThePassword' in the configuration file with clear
