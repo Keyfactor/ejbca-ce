@@ -529,12 +529,13 @@ public class RequestHelper {
     		}
     		dnpart = car + "_" + chr;
     	} else {
-    		dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
+    		String dn = CertTools.getSubjectDN(cacert);
+    		dnpart = CertTools.getPartFromDN(dn, "CN");
     		if (dnpart == null) {
-    			dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "SN");
+    			dnpart = CertTools.getPartFromDN(dn, "SN");
     		}
     		if (dnpart == null) {
-    			dnpart = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+    			dnpart = CertTools.getPartFromDN(dn, "O");
     		}
     	}
     	if (dnpart == null) {
