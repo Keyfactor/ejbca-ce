@@ -596,7 +596,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                 storeCRL(admin, crlBytes, fingerprint, nextCrlNumber, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
                 // Store crl in ca CRL publishers.
                 log.debug("Storing CRL in publishers");
-                publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, nextCrlNumber, ca.getSubjectDN());
+                publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, ca.getSubjectDN());
             }
         } catch (CATokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
@@ -826,16 +826,14 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     	final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
     	final byte crl[] = getLastCRL(admin, issuerDN, false);
     	if ( crl!=null ) {
-    		final int nr = getLastCRLNumber(admin, issuerDN, false);
-    		publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
+    		publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, caDataDN);
     	}
     	if ( !doPublishDeltaCRL ) {
     		return;
     	}
     	final byte deltaCrl[] = getLastCRL(admin, issuerDN, true);
     	if ( deltaCrl!=null ) {
-    		final int nr = getLastCRLNumber(admin, issuerDN, true);
-    		publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
+    		publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, caDataDN);
     	}
     }
 }

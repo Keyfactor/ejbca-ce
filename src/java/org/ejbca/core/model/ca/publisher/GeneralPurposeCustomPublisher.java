@@ -136,7 +136,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * 
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin, byte[], java.lang.String, int)
 	 */
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException {
+	public boolean storeCRL(Admin admin, byte[] incrl, String cafp) throws PublisherException {
         log.trace(">storeCRL, Storing CRL");
         // Verify initialization 
 		if ( crlExternalCommandFileName == null ) {
