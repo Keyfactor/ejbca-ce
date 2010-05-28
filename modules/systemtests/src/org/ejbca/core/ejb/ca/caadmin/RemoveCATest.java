@@ -184,4 +184,18 @@ public class RemoveCATest extends TestCase {
 
         log.trace("<test10removeDSACA()");
     }
+
+    public void test11removeRevokeCA() throws Exception {
+        log.trace(">test11removeRevokeCA()");
+        boolean ret = false;
+        try {
+            TestTools.getCAAdminSession().removeCA(admin, "CN=TestRevokeCA".hashCode());
+            ret = true;
+        } catch (Exception pee) {
+        }
+        assertTrue("Removing Revoke CA failed", ret);
+
+        log.trace("<test11removeRevokeCA()");
+    }
+
 }
