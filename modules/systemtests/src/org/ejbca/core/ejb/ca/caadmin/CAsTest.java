@@ -42,6 +42,7 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
@@ -1284,7 +1285,22 @@ public class CAsTest extends TestCase {
     	info.setStatus(SecConst.CA_ACTIVE);
     	TestTools.getCAAdminSession().editCA(admin, info); // need active status in order to do renew
         TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", false);
-
-
+    }
+    
+    public void test13RevokeCA() throws Exception {
+    	final String caname = "TestRevokeCA";
+    	TestTools.createTestCA(caname);
+        CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, caname);
+        assertEquals(SecConst.CA_ACTIVE, info.getStatus());
+        assertEquals(RevokedCertInfo.NOT_REVOKED, info.getRevokationReason());
+        assertNull(info.getRevokationDate());
+        
+        // Revoke the CA
+        TestTools.getCAAdminSession().revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+        
+        info = TestTools.getCAAdminSession().getCAInfo(admin, caname);
+        assertEquals(SecConst.CA_REVOKED, info.getStatus());
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, info.getRevokationReason());
+        assertTrue(info.getRevokationDate().getTime() > 0);
     }
 }

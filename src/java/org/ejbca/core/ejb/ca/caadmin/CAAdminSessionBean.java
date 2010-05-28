@@ -2079,7 +2079,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			cadata.setRevokationReason(reason);
 			cadata.setRevokationDate(new Date());
 			if(cadata.getStatus() != SecConst.CA_EXTERNAL){
-		  	  ca.setStatus(SecConst.CA_REVOKED);
+		  	  cadata.setStatus(SecConst.CA_REVOKED);
 			}
 			ca.setCA(cadata);
 
