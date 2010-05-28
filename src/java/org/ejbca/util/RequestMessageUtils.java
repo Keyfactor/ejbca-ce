@@ -107,7 +107,7 @@ public class RequestMessageUtils {
 		return ret;
 	}
 
-	public static PKCS10RequestMessage genPKCS10RequestMessage(byte[] bytes) throws IOException {
+	public static PKCS10RequestMessage genPKCS10RequestMessage(byte[] bytes) {
 		byte[] buffer = getDecodedBytes(bytes);
 		if (buffer == null) {
 			return null;
@@ -115,7 +115,7 @@ public class RequestMessageUtils {
 		return new PKCS10RequestMessage(buffer);
 	} // genPKCS10RequestMessageFromPEM
 
-	public static CVCRequestMessage genCVCRequestMessage(byte[] bytes) throws IOException { 
+	public static CVCRequestMessage genCVCRequestMessage(byte[] bytes) { 
 		byte[] buffer = getDecodedBytes(bytes);
 		if (buffer == null) {
 			return null;
