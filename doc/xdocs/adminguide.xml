@@ -163,6 +163,17 @@ to use the new key. After the new key has been configured you can simply press "
 </p>
 </subsection>
 
+<subsection name="Revoke CAs">
+<p>
+If you want to revoke a CA you can do so by going to "Edit Certificate Authorities" in the admin GUI. There is a button "Revoke CA".
+<ul>
+<li>If you revoke a Root CA it will revoke all certificates in the database issued by the root CA, and create a CRL.</li>
+<li>If you revoke a Sub CA it will revoke all certificates in the database issued by the sub CA, and to the sub CA, and create a CRL.
+This works automatically if the sub CA and root CA is handled by the same EJBCA instance. If the Sub CA is signed by an external CA, the sub CA's certificate must be revoked by the external CA.</li>
+</ul>
+</p> 
+</subsection>
+
 </section>
 
 
