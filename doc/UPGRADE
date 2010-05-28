@@ -23,6 +23,12 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 3.10.x to EJBCA 3.11.x
+-------------------------------
+Interface ICustomPublisher has been modified, via removal of the number parameter from the storeCRL
+method. Any custom classes implementing this interface need to be modified in turn.
+
+
 From EJBCA 3.10.x to EJBCA 3.10.x
 -------------------------------
 See release notes for details between certain versions. 
