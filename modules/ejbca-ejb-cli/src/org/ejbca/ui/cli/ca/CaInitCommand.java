@@ -109,14 +109,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	policyId = null;
             } else {
             	String[] array = policyId.split(" ");
-            	String id = array[0];
-            	String cpsurl;
-            	if(array.length > 1) {
-            		cpsurl = array[1];
-            	} else {
-            		cpsurl = "";
+            	for (int i=0; i<array.length; i+=2) {
+                	String id = array[i+0];
+                	String cpsurl = "";
+                	if(array.length > i+1) {
+                		cpsurl = array[i+1];
+                	}
+                	policies.add(new CertificatePolicy(id, CertificatePolicy.id_qt_cps, cpsurl));
             	}
-            	policies.add(new CertificatePolicy(id, CertificatePolicy.id_qt_cps, cpsurl));
             }
             String signAlg = args[9];
             String catokenproperties = null;
