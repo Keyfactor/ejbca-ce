@@ -828,7 +828,7 @@ class CMPTest extends ClientToolBox {
         final String urlPath;
         final String resultFilePrefix;
         if ( args.length < 3 ) {
-            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time between eash thread is started>] [<KeyId to be sent to server>] [<port>] [<protocol, http default, write tcp if you want socket.>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
+            System.out.println(args[0]+" <host name> <CA certificate file name> [<number of threads>] [<wait time (ms) between each thread is started>] [<KeyId to be sent to server>] [<port>] [<protocol, http default, write tcp if you want socket.>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
             System.out.println("EJBCA build configutation requirements: cmp.operationmode=ra, cmp.allowraverifypopo=true, cmp.responseprotection=signature, cmp.ra.authenticationsecret=password");
             System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
             return;

@@ -99,7 +99,7 @@ class HealthCheckTest extends ClientToolBox {
         final int numberOfThreads;
         final int waitTime;
         if ( args.length < 2 ) {
-            System.out.println(args[0]+" <http URL> [<number of threads>] [<wait time between eash thread is started>]");
+            System.out.println(args[0]+" <http URL> [<number of threads>] [<wait time (ms) between each thread is started>]");
             System.out.println("Example: ");
             return;
         }
