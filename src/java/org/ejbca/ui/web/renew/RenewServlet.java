@@ -37,7 +37,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Servlet used for requesting browser certificate renewals.
@@ -66,7 +66,7 @@ public class RenewServlet extends HttpServlet {
         super.init(config);
         try {
             // Install BouncyCastle provider
-            CertTools.installBCProvider();
+            CryptoProviderTools.installBCProviderIfNotAvailable();
 
             // Get EJB context and home interfaces
             ServiceLocator locator = ServiceLocator.getInstance();
