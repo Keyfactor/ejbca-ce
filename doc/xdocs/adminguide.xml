@@ -1008,13 +1008,13 @@ Example checking the revocation status of a certificate:
 
 <subsection name="Sample code">
 <p>
-See the file src/java/org/ejbca/core/protocol/ws/common/IEjbcaWS
+See the file modules/ejbca-ws/src/org/ejbca/core/protocol/ws/common/IEjbcaWS
 for more detailed instructions of the API. 
 
 Sample code can be taken from:
 <ul>
-<li>The JUnit tests for the WS-API: src/test/java/org/ejbca/core/protocol/ws/TestEjbcaWS</li>
-<li>The WS-API CLI: src/java/org/ejbca/core/protocol/ws/client/*.java</li>
+<li>The JUnit tests for the WS-API: modules/systemtests/src/org/ejbca/core/protocol/ws/EjbcaWSTest.java</li>
+<li>The WS-API CLI: modules/ejbca-ws-cli/src/org/ejbca/core/protocol/ws/client/*.java</li>
 </ul>
 </p>
 </subsection>
@@ -1144,6 +1144,12 @@ no requirement of the '/administrator' flag
 </p>
 <ul>
 <li>/ca_functionality/view_certificate</li>
+</ul>
+<p>
+caCertResponse, caRenewCertRequest:
+</p>
+<ul>
+<li>/ca_functionality/renew_ca</li>
 </ul>
 </subsection>
 <subsection name="Error codes on web services">
