@@ -25,6 +25,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.approval.Approval;
@@ -36,6 +37,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Entity bean should not be used directly, use though Session beans.
@@ -452,12 +454,13 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * If the number of required approvals have been reached will
      * the request be executed and expiredate set.
      * @throws ApprovalRequestExpiredException 
+     * @throws IllegalQueryException 
      * @throws ApprovalRequestExecutionException 
-     * @throws ApprovalException 
+     * @throws EjbcaException 
      *
      * @ejb.interface-method view-type="local"
      */
-    public void approve(Approval approval) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, ApprovalException {
+    public void approve(Approval approval) throws ApprovalRequestExpiredException, IllegalQueryException, ApprovalRequestExecutionException, EjbcaException{
     	if(haveRequestOrApprovalExpired()){
     		throw new ApprovalRequestExpiredException();
     	}

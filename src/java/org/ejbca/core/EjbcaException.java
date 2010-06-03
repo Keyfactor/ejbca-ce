@@ -16,7 +16,7 @@ package org.ejbca.core;
 
 /**
  * Base for all specific application exceptions thrown by EJBCA. Can be used to catch any
- * non-crititcal application exceptions thay may be possible to handle: <code> try { . . . } catch
+ * non-crititcal application exceptions they may be possible to handle: <code> try { . . . } catch
  * (EjbcaException e) { error("Error: blahblah", e); ... }</code>
  *
  * @version $Id$
@@ -98,7 +98,7 @@ public class EjbcaException extends Exception {
      * Constructor used to create exception with an errormessage. Calls the same constructor in
      * baseclass <code>Exception</code>.
      *
-     * @param message Human redable error message, can not be NULL.
+     * @param message Human readable error message, can not be NULL.
      */
     public EjbcaException(String message, Throwable cause) {
 		super(message, cause);

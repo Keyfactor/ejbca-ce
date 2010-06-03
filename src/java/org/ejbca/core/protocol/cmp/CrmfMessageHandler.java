@@ -158,7 +158,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		}
 	}
 
-	public IResponseMessage handleMessage(BaseCmpMessage msg) {
+	public IResponseMessage handleMessage(BaseCmpMessage msg) throws NumberFormatException {
 		log.trace(">handleMessage");
 		IResponseMessage resp = null;
 		try {
@@ -273,12 +273,14 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 											usersession.addUser(admin, username, pwd, dnname.toString(), altNames, email, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
 										} catch (CreateException e) {
 											// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
-											// This was veery strange, we didn't find it before, but now it exists?
+											// This was very strange, we didn't find it before, but now it exists?
 											// This will happen if we get virtually parallel requests for the same user
 											String updateMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
 											log.info(updateMsg);
 											// If the user already exists, we will change him instead and go for that
 											usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, email, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
+										} catch (FinderException e){
+											e.printStackTrace();
 										}
 									} else {
 										// If the user already exists, we will change him instead and go for that

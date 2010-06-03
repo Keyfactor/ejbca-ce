@@ -215,7 +215,8 @@ public class CAImportExportTest extends TestCase  {
                 false,  // CRL Distribution Point on CRL critical
                 true, // include in health check
                 true, // isDoEnforceUniquePublicKeys
-                true // isDoEnforceUniqueDistinguishedName
+                true, // isDoEnforceUniqueDistinguishedName
+                false // isDoEnforceUniqueSubjectDNSerialnumber
         );
 		return cainfo;
 	}

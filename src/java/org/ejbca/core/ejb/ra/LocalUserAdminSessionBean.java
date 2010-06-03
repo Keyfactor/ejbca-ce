@@ -37,6 +37,8 @@ import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
@@ -66,6 +68,7 @@ import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalReque
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -388,13 +391,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param hardwaretokenissuerid , if token should be hard, the id of the hard token issuer,
      *                              else 0.
      * @param caid					the CA the user should be issued from.
+     * @throws EjbcaException 
+     * @throws FinderException 
      * @throws WaitingForApprovalException 
-     * @throws ApprovalException 
+     * @throws UserDoesntFullfillEndEntityProfile 
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     * @throws DuplicateKeyException 
      * @ejb.interface-method
      */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
-                        int type, int tokentype, int hardwaretokenissuerid, int caid)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, ApprovalException, WaitingForApprovalException {
+                        int type, int tokentype, int hardwaretokenissuerid, int caid) throws DuplicateKeyException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, FinderException, EjbcaException {
     	
     	UserDataVO userdata = new UserDataVO(username, subjectdn, caid, subjectaltname, 
     			                             email, UserDataConstants.STATUS_NEW, type, endentityprofileid, certificateprofileid,
@@ -417,14 +424,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws AuthorizationDeniedException if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws DuplicateKeyException if user already exists
-     * @throws ApprovalException if an approval already is waiting for specified action 
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  
+	 * @throws EjbcaException 
+	 * @throws FinderException 
+	 * @throws CADoesntExistsException 
      * 
      * @ejb.interface-method
      */
 	public void addUserFromWS(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, DuplicateKeyException,
-			ApprovalException, WaitingForApprovalException {
+			WaitingForApprovalException, CADoesntExistsException, FinderException, EjbcaException {
 		int profileId = userdata.getEndEntityProfileId();
 		EndEntityProfile profile = raadminsession.getEndEntityProfile(admin,profileId);
 		if (profile.getAllowMergeDnWebServices()) {
@@ -443,12 +452,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws AuthorizationDeniedException if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws DuplicateKeyException if user already exists
-     * @throws ApprovalException if an approval already is waiting for specified action 
-     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  
-     * 
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  	
+     * @throws EjbcaException 
+     * @throws FinderException 
+     * @throws CADoesntExistsException 
      * @ejb.interface-method
      */
-    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, ApprovalException, WaitingForApprovalException {
+    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, WaitingForApprovalException, CADoesntExistsException, FinderException, EjbcaException {
         String dn = CertTools.stringToBCDNString(StringTools.strip(userdata.getDN()));
     	String altName = StringTools.strip(userdata.getSubjectAltName());
     	String username = StringTools.strip(userdata.getUsername());
@@ -465,6 +475,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
         String profileName = raadminsession.getEndEntityProfileName(admin, profileId);
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
+        
 
         if (profile.useAutoGeneratedPasswd() && userdata.getPassword() == null) {
             // special case used to signal regeneraton of password
@@ -507,6 +518,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             String msg = intres.getLocalizedMessage("ra.approvalad");            	
         	throw new WaitingForApprovalException(msg);
         }
+        
+        if(caadminsession.getCA(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
+            String serialnumber = getSerialnumber(userdata.getDN());
+            if(serialnumber != null){
+            	if(!serialnumberIsUnique(admin, userdata.getCAId(), serialnumber)){
+   		 			throw new EjbcaException(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, "Error: SubjectDN Serialnumber already exists.");
+            	}
+            }
+        }    
         
         try {
             UserDataLocal data1 = home.create(userdata.getUsername(), newpassword, dn, userdata.getCAId(), userdata.getCardNumber());
@@ -566,6 +586,35 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             log.trace("<addUser(" + userdata.getUsername() + ", password, " + dn + ", " + userdata.getEmail() + ")");
         }
     } // addUser
+    
+    private String getSerialnumber(String subjectDN){
+    	String elements[] = subjectDN.split(",");
+    	for(int i=0; i<elements.length; i++){
+    		if(elements[i].trim().startsWith("SN=")){
+    			String parts[] = elements[i].split("=");
+    			if(parts.length == 2){
+    				return parts[1];
+    			} else {
+    				return null;
+    			}
+    		}
+    	}
+    	return null;
+    }
+    
+    private boolean serialnumberIsUnique(Admin admin, int caid, String serialnumber) throws FinderException{
+    	UserDataVO user = null;
+    	String sn = null;
+    	Iterator itr = findAllUsersByCaId(admin, caid).iterator();
+    	while(itr.hasNext()){
+    		user = (UserDataVO) itr.next();
+    		sn = getSerialnumber(user.getDN());
+    		if(sn != null){
+    			if(sn.equals(serialnumber))	return false;
+    		}
+    	}
+    	return true;
+    }
 
     /**
      * Help method that checks the CA data config if specified action 

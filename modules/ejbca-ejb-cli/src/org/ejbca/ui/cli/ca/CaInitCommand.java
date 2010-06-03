@@ -267,7 +267,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 false,  // CRL Distribution Point on CRL critical
 			                                 true, // include in health check
 			                                 true, // isDoEnforceUniquePublicKeys
-			                                 true // isDoEnforceUniqueDistinguishedName
+			                                 true, // isDoEnforceUniqueDistinguishedName
+			                                 false // isDoEnforceUniqueSubjectDNSerialnumber
 			                                 );
             
             getLogger().info("Creating CA...");

@@ -12,6 +12,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -30,6 +31,7 @@ import org.ejbca.util.TestTools;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
+import org.hibernate.validator.AssertTrue;
 
 public class ApprovalSessionTest extends TestCase {
     
@@ -265,6 +267,7 @@ public class ApprovalSessionTest extends TestCase {
 
 	
 	public void testReject() throws Exception {
+		log.trace(">testReject()");
 		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		TestTools.getApprovalSession().addApprovalRequest(reqadmin, nonExecutableRequest, gc);
 		
@@ -300,7 +303,9 @@ public class ApprovalSessionTest extends TestCase {
 		try{
 		  TestTools.getApprovalSession().approve(admin2, nonExecutableRequest.generateApprovalId(), approval1, gc);
 		  fail("It shouldn't be possible to approve a rejected request");
-		}catch(ApprovalException e){}
+		}catch(ApprovalException e){log.info("ApprovalException: " + e.getErrorCode() + ". " + e.getMessage());}
+		 catch(EjbcaException e){log.info("EjbcaException: " + e.getErrorCode() + ". " + e.getMessage());}
+		
 		
 		// Test that the approval exipres as it should
 		Thread.sleep(5000);
@@ -318,7 +323,7 @@ public class ApprovalSessionTest extends TestCase {
 		
 		
 		TestTools.getApprovalSession().removeApprovalRequest(admin1, next.getId());
-
+		log.trace("<testReject()");
 	}
  
 	public void testIsApproved() throws Exception {

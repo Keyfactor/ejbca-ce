@@ -454,7 +454,8 @@ public class TestTools {
         		false,  // CRL Distribution Point on CRL critical
         		true,
                 true, // isDoEnforceUniquePublicKeys
-                true // isDoEnforceUniqueDistinguishedName
+                true, // isDoEnforceUniqueDistinguishedName
+                false // isDoEnforceUniqueSubjectDNSerialnumber
         		);
 
         try {

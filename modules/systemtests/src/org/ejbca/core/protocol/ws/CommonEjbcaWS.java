@@ -2457,7 +2457,8 @@ public abstract class CommonEjbcaWS extends TestCase {
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
-                    true // isDoEnforceUniqueDistinguishedName
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false // isDoEnforceUniqueSibjectDNSerialnumber
             );
 
             getCAAdminSession().createCA(intAdmin, cvccainfo);
@@ -2488,7 +2489,8 @@ public abstract class CommonEjbcaWS extends TestCase {
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
-                    true // isDoEnforceUniqueDistinguishedName
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false // isDoEnforceUniqueSubjectDNSerialnumber
             );
 
             getCAAdminSession().createCA(intAdmin, cvcdvinfo);
@@ -2533,9 +2535,10 @@ public abstract class CommonEjbcaWS extends TestCase {
                     true, // Finish User
                     extendedcaservices, new ArrayList(), // Approvals Settings
                     1, // Number of Req approvals
+                    true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    true // Include in health check
+                    false // isDoEnforceUniqueSubjectDNSerialnumber
             );
 
             getCAAdminSession().createCA(intAdmin, cvcdvinfo);

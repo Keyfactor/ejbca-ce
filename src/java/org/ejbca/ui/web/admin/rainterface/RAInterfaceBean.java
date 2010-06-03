@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -55,6 +56,9 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.caadmin.CA;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -62,12 +66,15 @@ import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.cert.CertificateNotBeforeComparator;
+import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.query.Query;
+import org.ejbca.util.query.UserMatch;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
@@ -93,7 +100,6 @@ public class RAInterfaceBean implements java.io.Serializable {
     // Public methods.
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
       log.trace(">initialize()");
-
       if(!initialized){
         if(request.getAttribute( "javax.servlet.request.X509Certificate" ) != null) {
           administrator = ejbcawebbean.getAdminObject();
@@ -140,18 +146,18 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
     
     /* Adds a user to the database, the string array must be in format defined in class UserView. */
-    public void addUser(UserView userdata) throws Exception{
+    public void addUser(UserView userdata) throws NumberFormatException, Exception {
         log.trace(">addUser()");
-        
         if(userdata.getEndEntityProfileId() != 0){
-        	UserDataVO uservo = new UserDataVO(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
-        			userdata.getEmail(), UserDataConstants.STATUS_NEW, userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
-        			null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
-        	uservo.setPassword(userdata.getPassword());
-        	uservo.setExtendedinformation(userdata.getExtendedInformation());
-        	uservo.setCardNumber(userdata.getCardNumber());
-        	adminsession.addUser(administrator, uservo, userdata.getClearTextPassword());
-        	addedusermemory.addUser(userdata);
+            UserDataVO uservo = new UserDataVO(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
+        		userdata.getEmail(), UserDataConstants.STATUS_NEW, userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
+        		null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
+            uservo.setPassword(userdata.getPassword());
+            uservo.setExtendedinformation(userdata.getExtendedInformation());
+            uservo.setCardNumber(userdata.getCardNumber());
+            adminsession.addUser(administrator, uservo, userdata.getClearTextPassword());
+            addedusermemory.addUser(userdata);
+
         } else {
             log.debug("=addUser(): profile id not set, user not created");
         }
@@ -310,6 +316,19 @@ public class RAInterfaceBean implements java.io.Serializable {
     /* Method used to check if user exists */
     public boolean userExist(String username) throws Exception{
        return adminsession.existsUser(administrator, username);
+    }
+    
+    /* Method used to check if user exists in a specific End Entity Profile */
+    public boolean serialnumberExist(UserView user) throws Exception{
+    	if(getEndEntityProfile(user.getEndEntityProfileId()).getEnforceUniqueSerialNumber()){
+    		Query query = new Query(Query.TYPE_USERQUERY);
+   		 	query.add(UserMatch.MATCH_WITH_DNSERIALNUMBER, 1, user.getSubjectDNField(DNFieldExtractor.SN, 0));
+   		 	UserView[] users = filterByQuery(query,0,-1);
+   		 	if(users.length > 0){
+   		 		return true;
+   		 	}
+    	}
+    	return false;
     }
     
     /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/

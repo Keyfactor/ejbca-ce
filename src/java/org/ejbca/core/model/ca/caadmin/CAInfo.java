@@ -105,6 +105,7 @@ public class CAInfo implements Serializable {
 	protected boolean includeInHealthCheck;
 	protected boolean doEnforceUniquePublicKeys;
 	protected boolean doEnforceUniqueDistinguishedName;
+	protected boolean doEnforceUniqueSubjectDNSerialnumber;
     
     public CAInfo(){}
     
@@ -214,6 +215,20 @@ public class CAInfo implements Serializable {
 	 */
 	public void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
 		this.doEnforceUniquePublicKeys = doEnforceUniquePublicKeys;
+	}
+
+    /**
+	 * @return answer this: should this CA issue certificates to only one user of a specific subjectDN serialnumber.
+     */
+    public boolean isDoEnforceUniqueSubjectDNSerialnumber() {
+		return this.doEnforceUniqueSubjectDNSerialnumber;
+	}
+
+	/**
+	 * @param doEnforceUniqueSubjectDNSerialnumber
+	 */
+	public void setDoEnforceUniqueSubjectDNSerialnumber(boolean doEnforceUniqueSubjectDNSN) {
+		this.doEnforceUniqueSubjectDNSerialnumber = doEnforceUniqueSubjectDNSN;
 	}
 
 	/**

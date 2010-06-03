@@ -4,16 +4,16 @@
             This file builds all the internal dependencies of the EJBCA core.
 
     		To enforce proper dependencies between different core components of the EJBCA core
-    		should be able to compile each component with only the current components dependecies
+    		should be able to compile each component with only the current components dependencies
     		in the classpath. To make sure this happens we need to isolate the source files first.
     		
     		New valid dependencies can be added by <include ...>-ing the appropriate source-code
-    		for each 'javac' or dependecy in the
+    		for each 'javac' or dependency in the
     			<classpath><pathelement location="${build-temp.dir}/......"/>...</classpath>
     		element. However, please double-check that you do not introduce any new circular or
     		otherwise undesired dependencies.
     		
-    		The code below are mainly a temporary help to be able to devide the components into new
+    		The code below are mainly a temporary help to be able to divide the components into new
     		packages more easily. Ideally each include should only be
     		"org/ejbca/<component>/**/*.java" and each check could be placed in proper reusable
     		sub-targets.
