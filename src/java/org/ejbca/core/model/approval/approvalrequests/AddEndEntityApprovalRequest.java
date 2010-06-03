@@ -97,12 +97,11 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		} catch (WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (CADoesntExistsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.debug(e.getMessage());
 		} catch (EjbcaException e){
-			e.printStackTrace();
+			log.debug(e.getMessage());
 		} catch (FinderException e){
-			e.printStackTrace();
+			log.debug(e.getMessage());
 		}
 	}
 
