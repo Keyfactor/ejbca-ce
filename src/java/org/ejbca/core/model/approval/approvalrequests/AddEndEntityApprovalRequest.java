@@ -97,11 +97,11 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		} catch (WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (CADoesntExistsException e) {
-			log.debug(e.getMessage());
+			throw new ApprovalRequestExecutionException("CA does not exist :" + e.getMessage(), e);
 		} catch (EjbcaException e){
-			log.debug(e.getMessage());
+			throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
 		} catch (FinderException e){
-			log.debug(e.getMessage());
+			throw new ApprovalRequestExecutionException("Error finding users :" + e.getMessage(), e);
 		}
 	}
 
