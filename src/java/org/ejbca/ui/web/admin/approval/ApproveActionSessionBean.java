@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -27,6 +28,7 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -127,7 +129,7 @@ public List getApprovalViews(){
    
    public void setApprobalViews(List list){}
    
-   public String approve(){
+   public String approve() throws CADoesntExistsException, IllegalQueryException, EjbcaException {
 	   Approval approval = new Approval(comment);
 	   try {		   
 		   Admin admin = EjbcaJSFHelper.getBean().getAdmin();
@@ -144,7 +146,6 @@ public List getApprovalViews(){
 	   } catch (AdminAlreadyApprovedRequestException e) {
 		   addErrorMessage("ADMINALREADYPROCESSED");
 	   }
-
 	   return "approveaction";
    }
    

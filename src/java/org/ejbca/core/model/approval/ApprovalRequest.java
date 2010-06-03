@@ -28,6 +28,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.query.IllegalQueryException;
 
 
 
@@ -149,8 +150,9 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * 
 	 * execute should perform the action or nothing if the requesting admin
 	 * is supposed to try his action again.
+	 * @throws IllegalQueryException 
 	 */
-	public abstract void execute() throws ApprovalRequestExecutionException;
+	public abstract void execute() throws ApprovalRequestExecutionException, IllegalQueryException;
 	
 	/**
 	 * Method that should generate an approval id for this type of
@@ -162,7 +164,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	/**
 	 * This method should return the request data in text representation.
 	 * This text is presented for the approving administrator in order
-	 * for him to make a desition about the request.
+	 * for him to make a decision about the request.
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */

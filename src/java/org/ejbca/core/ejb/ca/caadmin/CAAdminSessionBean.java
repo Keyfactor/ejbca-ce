@@ -1791,7 +1791,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				crldistpointoncrlcritical,
     				false,
                     true, // isDoEnforceUniquePublicKeys
-                    true // isDoEnforceUniqueDistinguishedName
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false // isDoEnforceUniqueSubjectDNSerialnumber
     				);
     	} else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
     		cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
@@ -1804,7 +1805,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				numofreqapprovals,
     				false,
                     true, // isDoEnforceUniquePublicKeys
-                    true // isDoEnforceUniqueDistinguishedName
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false // isDoEnforceUniqueSubjectDNSerialnumber
                     );
     	}
     	if(cainfo instanceof X509CAInfo){
@@ -2574,7 +2576,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                                   false,  // CRL Distribution Point on CRL critical,
 			                                   true, // Include in HealthCheck
 			                                   true, // isDoEnforceUniquePublicKeys
-			                                   true // isDoEnforceUniqueDistinguishedName
+			                                   true, // isDoEnforceUniqueDistinguishedName
+			                                   false // isDoEnforceUniqueSubjectDNSerialnumber
 			                                   );
 			ca = new X509CA((X509CAInfo)cainfo);
 		} else if (caSignatureCertificate.getType().equals("CVC")) {
@@ -2593,7 +2596,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
                     1, // Number of Req approvals
                     true, // Include in HealthCheck
                     true, // isDoEnforceUniquePublicKeys
-                    true // isDoEnforceUniqueDistinguishedName
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false // isDoEnforceUniqueSubjectDNSerialnumber
                     );
 			ca = new CVCCA((CVCCAInfo)cainfo);
 		}

@@ -32,6 +32,7 @@ import javax.ejb.RemoveException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
@@ -293,14 +294,13 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @throws ApprovalRequestExecutionException 
      * @throws AuthorizationDeniedException 
      * @throws ApprovalRequestDoesntExistException 
-     * @throws ApprovalException 
      * @throws AdminAlreadyApprovedRequestException 
-     * 
-    *   
-    * @ejb.interface-method view-type="both"
+     * @throws IllegalQueryException 
+     * @throws EjbcaException 
+     * @ejb.interface-method view-type="both"
      */
     public void approve(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, 
-                                                                               AuthorizationDeniedException,  ApprovalException, AdminAlreadyApprovedRequestException{
+                                                                               AuthorizationDeniedException,  AdminAlreadyApprovedRequestException, IllegalQueryException, EjbcaException{
     	log.trace(">approve");
     	ApprovalDataLocal adl;
 		try {
@@ -365,12 +365,14 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		} catch (ApprovalRequestExecutionException e) {
 			getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALAPPROVED,"Approval with id : " +approvalId +" couldn't execute properly");
 			throw e;
+		} catch (EjbcaException e){
+			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e.getMessage());
 		}
 		log.trace("<approve");
     }
     
     /**
-     * Method used to reject a approval requests.
+     * Method used to reject an approval requests.
      * 
      * It does the follwing
      *  1. checks if the approval with the status waiting exists, throws an ApprovalRequestDoesntExistException otherwise

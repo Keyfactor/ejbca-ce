@@ -85,11 +85,12 @@ public interface IEjbcaWS {
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
+	 * @throws IllegalQueryException 
 	 */
 	public abstract void editUser(UserDataVOWS userdata)
 			throws CADoesntExistsException, AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, EjbcaException,
-			ApprovalException, WaitingForApprovalException;
+			ApprovalException, WaitingForApprovalException, IllegalQueryException;
 
 	/**
 	 * Retrieves information about users in the database.
@@ -877,11 +878,12 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
+	 * @throws IllegalQueryException 
 	 * @see #editUser(UserDataVOWS)
 	 */
 	public abstract KeyStore softTokenRequest(UserDataVOWS userData, String hardTokenSN, String keyspec, String keyalg)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException;
+	ApprovalException, WaitingForApprovalException, EjbcaException, IllegalQueryException;
 	/**
 	 * Generates a certificate for a user.
 	 * If the user is not already present in the database, the user is added.<br>
@@ -911,11 +913,12 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
+	 * @throws IllegalQueryException 
 	 * @see #editUser(UserDataVOWS)
 	 */
 	public abstract CertificateResponse certificateRequest(UserDataVOWS userData, String requestData, int requestType, String hardTokenSN, String responseType)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException;
+	ApprovalException, WaitingForApprovalException, EjbcaException, IllegalQueryException;
 
 
     /**

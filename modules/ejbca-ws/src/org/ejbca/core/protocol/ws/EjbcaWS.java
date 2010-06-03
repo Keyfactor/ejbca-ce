@@ -194,10 +194,11 @@ public class EjbcaWS implements IEjbcaWS {
         logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerDN().toString());
     }
     /**
-	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#editUser(org.ejbca.core.protocol.ws.objects.UserDataVOWS)
+	 * @throws IllegalQueryException 
+     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#editUser(org.ejbca.core.protocol.ws.objects.UserDataVOWS)
 	 */	
 	public void editUser(UserDataVOWS userdata)
-			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
+			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException, IllegalQueryException {
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
@@ -2481,11 +2482,12 @@ public class EjbcaWS implements IEjbcaWS {
     }
 
 	/**
+	 * @throws IllegalQueryException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest(org.ejbca.core.protocol.ws.objects.UserDataVOWS, String, int, String, String)
 	 */
 	public CertificateResponse certificateRequest(UserDataVOWS userdata, String requestData, int requestType, String hardTokenSN, String responseType)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException {
+	ApprovalException, WaitingForApprovalException, EjbcaException, IllegalQueryException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        log.debug("CertReq for user '" + userdata.getUsername() + "'.");
@@ -2556,11 +2558,12 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
 	/**
+	 * @throws IllegalQueryException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#softTokenRequest(org.ejbca.core.protocol.ws.objects.UserDataVOWS, String, String, String)
 	 */
 	public KeyStore softTokenRequest(UserDataVOWS userdata, String hardTokenSN, String keyspec, String keyalg)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException {
+	ApprovalException, WaitingForApprovalException, EjbcaException, IllegalQueryException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        log.debug("Soft token req for user '" + userdata.getUsername() + "'.");

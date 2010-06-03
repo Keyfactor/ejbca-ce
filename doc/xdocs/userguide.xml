@@ -175,6 +175,14 @@ when new certificates are issued.
 </p>
 </subsubsection>
 
+<subsubsection name="Enforce unique Subject DN serialNumber">
+<p>
+'Enforce unique Subject DN SerialNumber' guarantees that only one user with a specific Subject DN SerialNumber can be issued
+from this CA. This means that each of the users issued from this CA has a unique Subject DN SerialNumber. Note that users issued from 
+other CAs can have the same Subject DN SerialNumber as the users issued from this CA.
+</p>
+</subsubsection>
+
 <subsubsection name="CRL Period">
 <p>
 There are four settings in CA configuration dictating the times when CRL generation is done:

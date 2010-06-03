@@ -74,6 +74,8 @@
   static final String CHECKBOX_MODIFYABLE_ENDTIME         = "checkboxmodifyableendtime";
   static final String CHECKBOX_ALLOW_MERGEDN_WEBSERVICES = "checkboxallowmergednwebservices";
   
+  static final String CHECKBOX_ENFORCE_UNIQUE_SERIAL_NUMBER = "checkboxenforceuniqueserialnumber";
+  
   
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
   static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
@@ -379,7 +381,8 @@
              profiledata.setModifyable(EndEntityProfile.MAXFAILEDLOGINS, 0, ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_MAXFAILEDLOGINS)));
              
              profiledata.setReverseFieldChecks(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REVERSEFIELDCHECKS)));
-
+             profiledata.setEnforceUniqueSerialNumber(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_ENFORCE_UNIQUE_SERIAL_NUMBER)));
+             
              numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
 
              for(int i=0; i < numberofsubjectdnfields; i ++){

@@ -21,8 +21,10 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
+import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
@@ -34,6 +36,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -81,7 +84,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			IUserAdminSessionLocal usersession = userdatahome.create();
 		
 		    usersession.addUser(getRequestAdmin(), userdata, clearpwd);
-		}catch( DuplicateKeyException e){
+		} catch( DuplicateKeyException e){
 			throw new ApprovalRequestExecutionException("Error, user already exists", e);
 		} catch (CreateException e) {
 			throw new ApprovalRequestExecutionException("Error creating userdata session", e);
@@ -93,8 +96,14 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
-		} 
-
+		} catch (CADoesntExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (EjbcaException e){
+			e.printStackTrace();
+		} catch (FinderException e){
+			e.printStackTrace();
+		}
 	}
 
     /**

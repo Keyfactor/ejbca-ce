@@ -115,6 +115,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	protected static final String INCLUDEINHEALTHCHECK			 = "includeinhealthcheck";
 	private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS    = "doEnforceUniquePublicKeys";
 	private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
+	private static final String DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER = "doEnforceUniqueSubjectDNSerialnumber";
     
     // Public Methods
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
@@ -137,6 +138,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
        setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
        setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
+       setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
 	   
 	   Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	   ArrayList extendedservicetypes = new ArrayList(); 
@@ -441,6 +443,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	data.put(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, new Boolean(doEnforceUniqueDistinguishedName));
 	}
     
+	public boolean isDoEnforceUniqueSubjectDNSerialnumber() {
+		return getBoolean(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, false);
+	}
+    private void setDoEnforceUniqueSubjectDNSerialnumber(boolean doEnforceUniqueSubjectDNSerialnumber) {
+    	data.put(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, new Boolean(doEnforceUniqueSubjectDNSerialnumber));
+	}
+    
 	/**
 	 * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
 	 * action that requires approvals, default none 
@@ -504,6 +513,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
         setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
+        setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
     	
     	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
     	while(iter.hasNext()){

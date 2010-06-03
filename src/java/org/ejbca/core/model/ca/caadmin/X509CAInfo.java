@@ -61,7 +61,7 @@ public class X509CAInfo extends CAInfo{
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
                     boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
-                    boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName) {
+                    boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -119,6 +119,7 @@ public class X509CAInfo extends CAInfo{
         this.includeInHealthCheck = includeInHealthCheck;
         this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
         this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
+        this.doEnforceUniqueSubjectDNSerialnumber = _doEnforceUniqueSubjectDNSerialnumber;
     }
 
     /**
@@ -133,7 +134,7 @@ public class X509CAInfo extends CAInfo{
                       boolean finishuser, Collection extendedcaserviceinfos, 
                       boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
                       boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
-                      boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName) {        
+                      boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -163,6 +164,7 @@ public class X509CAInfo extends CAInfo{
         this.includeInHealthCheck = includeInHealthCheck;
         this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
         this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
+        this.doEnforceUniqueSubjectDNSerialnumber = _doEnforceUniqueSubjectDNSerialnumber;
     }  
   
   
