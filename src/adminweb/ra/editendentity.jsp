@@ -533,7 +533,11 @@
       if(profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
         authcas = ejbcawebbean.getAuthorizedCAIds();
       } else {
-        authcas = profile.getAvailableCAs();
+    	  if (profile != null) {
+            authcas = profile.getAvailableCAs();
+    	  } else {
+    		authcas = new ArrayList();
+    	  }
         // If we have selected 'Any CA' we will display all authorized CAs (wich should be all for a superadmin)
         if (authcas.contains(String.valueOf(SecConst.ALLCAS))) {
             authcas = ejbcawebbean.getAuthorizedCAIds();
