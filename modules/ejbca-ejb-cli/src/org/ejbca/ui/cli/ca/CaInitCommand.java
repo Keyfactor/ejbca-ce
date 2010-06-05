@@ -58,7 +58,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         // Create new CA.
         if (args.length < 10) {
     		getLogger().info("Description: " + getDescription());
-    		getLogger().info("Usage: " + getCommand() + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [-certprofile profileName] [<catokenproperties> or null] [<signed by caid>]");
+    		getLogger().info("Usage: " + getCommand() + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [-certprofile profileName] [-superadmincn SuperAdmin] [<catokenproperties> or null] [<signed by caid>]");
     		getLogger().info(" catokentype defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.ejbca.core.model.ca.catoken.PKCS11CAToken' for PKCS#11 HSMs.");
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal.");
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs");
@@ -73,6 +73,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     		}
     		getLogger().info(" signalgorithm is on of " + availableSignAlgs);
     		getLogger().info(" adding the parameters '-certprofile profileName' makes the CA use the certificate profile 'profileName' instead of the default ROOTCA or SUBCA. Optional parameter that can be completely left out.");
+    		getLogger().info(" adding the parameters '-superadmincn SuperAdmin' makes an initial CA use the common name SuperAdmin when initializing the authorization module with an initial super administrator. Note only used when creating initial CA.");
     		getLogger().info(" catokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in admin gui.");
     		getLogger().info(" signed by caid is the CA id of a CA that will sign this CA. If this is omitted the new CA will be self signed (i.e. a root CA).");
     		return;
@@ -87,7 +88,15 @@ public class CaInitCommand extends BaseCaAdminCommand {
     			profileName = argsList.get(profileInd+1);
     			argsList.remove(profileName);
     			argsList.remove("-certprofile");
-    		} 
+    		}
+    		int superAdminCNInd = argsList.indexOf("-superadmincn");
+    		String superAdminCN = BaseCaAdminCommand.defaultSuperAdminCN;
+    		if (superAdminCNInd > -1) {
+    			superAdminCN = argsList.get(superAdminCNInd+1);
+    			argsList.remove(superAdminCN);
+    			argsList.remove("-superadmincn");
+    		}
+    		
     		args = argsList.toArray(new String[0]); // new args array without the optional switches
 
     		final String caname = args[1];
@@ -145,6 +154,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	}
             } else {
             	profileId = getCertificateStoreSession().getCertificateProfileId(getAdmin(), profileName);
+            	if (profileId == 0) {
+            		getLogger().info("Error: Certificate profile with name '"+profileName+"' does not exist.");
+            		return;
+            	}
             }
             
             if (KeyTools.isUsingExportableCryptography()) {
@@ -161,6 +174,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             
             getLogger().info("Generating rootCA keystore:");
             getLogger().info("CA name: "+caname);
+            getLogger().info("SuperAdmin CN: "+superAdminCN);
             getLogger().info("DN: "+dn);
             getLogger().info("CA token type: "+catokentype);
             getLogger().info("CA token password: "+(catokenpassword == null ? "null" : "hidden"));
@@ -180,7 +194,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	}
             }
                             
-            initAuthorizationModule(dn.hashCode());
+            initAuthorizationModule(dn.hashCode(), superAdminCN);
             // Define CAToken type (soft token or hsm).
             CATokenInfo catokeninfo = null;
             if ( catokentype.equals("soft")) {

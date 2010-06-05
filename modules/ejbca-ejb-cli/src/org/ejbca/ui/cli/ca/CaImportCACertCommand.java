@@ -26,14 +26,28 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
 		if (args.length < 3) {
         	getLogger().info("Description: " + getDescription());
-        	getLogger().info("Usage: " + getCommand() + " <CA name> <PEM file> [-initauthorization]\n");
+        	getLogger().info("Usage: " + getCommand() + " <CA name> <PEM file> [-initauthorization] [-superadmincn SuperAdmin]\n");
 			getLogger().info("Add the argument initauthorization if you are importing an initial administration CA, and this will be the first CA in your system. Only used during installation when there is no local AdminCA on the EJBCA instance, but an external CA is used for administration.\n");
+    		getLogger().info("Adding the parameters '-superadmincn SuperAdmin' makes an initial CA use the common name SuperAdmin when initializing the authorization module with an initial super administrator. Note only used together with -initauthorization when creating initial CA.");
 			return;
 		}
 		String caName = args[1];
 		String pemFile = args[2];
 		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean initAuth = argsList.remove("-initauthorization");
+
+		int superAdminCNInd = argsList.indexOf("-superadmincn");
+		String superAdminCN = BaseCaAdminCommand.defaultSuperAdminCN;
+		if (superAdminCNInd > -1) {
+			if (argsList.size() <= (superAdminCNInd+1)) {
+				getLogger().info("Use -superadmincn SuperAdminCN");
+				return;
+			}
+			superAdminCN = argsList.get(superAdminCNInd+1);
+			argsList.remove(superAdminCN);
+			argsList.remove("-superadmincn");
+		}
+
 		try {
 			CryptoProviderTools.installBCProvider();
 			Collection certs = CertTools.getCertsFromPEM(pemFile);
@@ -44,7 +58,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 				String subjectdn = CertTools.getSubjectDN((Certificate)certs.iterator().next());
 				Integer caid = new Integer(subjectdn.hashCode());
 				getLogger().info("Initializing authorization module for caid: "+caid);
-				initAuthorizationModule(caid.intValue());
+				initAuthorizationModule(caid.intValue(), superAdminCN);
 			}
 			getCAAdminSession().importCACertificate(getAdmin(), caName, certs);
 			getLogger().info("Imported CA "+caName);			

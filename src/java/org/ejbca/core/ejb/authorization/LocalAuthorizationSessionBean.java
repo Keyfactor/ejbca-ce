@@ -222,9 +222,9 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      *
      * @ejb.interface-method view-type="both"
      */
-    public void initialize(Admin admin, int caid) throws AdminGroupExistsException {
+    public void initialize(Admin admin, int caid, String superAdminCN) throws AdminGroupExistsException {
     	if (log.isTraceEnabled()) {
-    		log.trace(">initialize, caid: "+caid);
+    		log.trace(">initialize, caid: "+caid+", superAdminCN="+superAdminCN);
     	}
         // Check if admingroup table is empty, if so insert default superuser
         // and create "special edit accessrules count group"
@@ -234,7 +234,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 // Authorization table is empty, fill with default and special admingroups.
                 addAdminGroup(admin, AdminGroup.TEMPSUPERADMINGROUP);
                 ArrayList adminentities = new ArrayList();
-                adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, "SuperAdmin", caid));
+                adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, superAdminCN, caid));
                 addAdminEntities(admin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
                 ArrayList accessrules = new ArrayList();
                 accessrules.add(new AccessRule(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));

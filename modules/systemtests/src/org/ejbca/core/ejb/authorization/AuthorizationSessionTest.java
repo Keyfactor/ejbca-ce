@@ -61,7 +61,7 @@ public class AuthorizationSessionTest extends TestCase {
         log.trace(">test01Initialize()");
         
         // Initialize with a new CA
-        TestTools.getAuthorizationSession().initialize(admin, caid);
+        TestTools.getAuthorizationSession().initialize(admin, caid, TestTools.defaultSuperAdminCN);
 
         // Retrieve access rules and check that they were added
         AdminGroup ag = TestTools.getAuthorizationSession().getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
@@ -93,7 +93,7 @@ public class AuthorizationSessionTest extends TestCase {
         
         // Initialize the same CA again, this will remove old default Public Web rules and create new ones.
         // This had some troubles with glassfish before, hence the creation of this test
-        TestTools.getAuthorizationSession().initialize(admin, caid);
+        TestTools.getAuthorizationSession().initialize(admin, caid, TestTools.defaultSuperAdminCN);
         // Retrieve access rules and check that we only have the default ones
         ag = TestTools.getAuthorizationSession().getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
