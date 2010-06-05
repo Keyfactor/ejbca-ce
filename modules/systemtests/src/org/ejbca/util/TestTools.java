@@ -82,6 +82,7 @@ public class TestTools {
 
 	private static final Logger log = Logger.getLogger(TestTools.class);
 	private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+	public static final String defaultSuperAdminCN = "SuperAdmin";
 
 	private static IApprovalSessionRemote approvalSession;
     private static IAuthenticationSessionRemote authenticationSession;
@@ -379,7 +380,7 @@ public class TestTools {
 	public static boolean createTestCA(String caName, int keyStrength) {
         log.trace(">createTestCA");
     	try {
-			getAuthorizationSession().initialize(admin, ("CN="+caName).hashCode());
+			getAuthorizationSession().initialize(admin, ("CN="+caName).hashCode(), TestTools.defaultSuperAdminCN);
 		} catch (RemoteException e) {
 			log.error("",e);
 		} catch (AdminGroupExistsException e) {

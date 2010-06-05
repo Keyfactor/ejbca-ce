@@ -927,7 +927,8 @@ bin/ejbca.sh ca importcacert AdminCA adminca.pem -initauthorization
 This command imports the certificate of the exteranl Administration CA and initializes the authorization system of EJBCA. 
 You need to configure SSL and the truststore of the application server yourself, of you have a p12/tomcat.jks and p12/truststore.jks this can be done for you on JBoss by 'ant deploy'.   
 </p><p>
-The initial administrator that is set up has DN 'DN=SuperAdmin', check the 'bin/ejbca.sh admins' command for information how to configure other admin names.
+The initial administrator that is set up has DN 'CN=SuperAdmin', but you can change this using the -superadmincn (run 'bin/ejbca.sh ca importcacert' for documentation).
+Also check the 'bin/ejbca.sh admins' command for information how to configure other admins.
 </p>
 <p>
 After this command is run, and SSL configured correctly, you can log in to EJBCA and create your CAs in the admin GUI. No initial CA is created for you.

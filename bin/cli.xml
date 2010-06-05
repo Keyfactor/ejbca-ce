@@ -33,7 +33,8 @@
         <property name="ca.policy" value="null"/>
         <property name="httpsserver.hostname" value="localhost"/>
         <property name="httpsserver.dn" value="CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE"/>
-		<property name="superadmin.dn" value="CN=SuperAdmin"/>
+		<property name="superadmin.cn" value="SuperAdmin"/>
+		<property name="superadmin.dn" value="CN=${superadmin.cn}"/>
 		<property name="superadmin.password" value="ejbca"/>
 		<property name="superadmin.batch" value="true"/>
         <property name="java.trustpassword" value="changeit"/>
@@ -49,7 +50,8 @@
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
         <input message="Please enter the server hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
         <input message="Please enter the server dn (default: CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE"/>
-        <input message="Please enter the superadmin dn (default: CN=SuperAdmin) ?" addproperty="superadmin.dn" defaultvalue="CN=SuperAdmin"/>
+        <input message="Please enter the superadmin cn (default: SuperAdmin) ?" addproperty="superadmin.cn" defaultvalue="SuperAdmin"/>
+        <input message="Please enter the superadmin dn (default: CN=${superadmin.cn}) ?" addproperty="superadmin.dn" defaultvalue="CN=${superadmin.cn}"/>
         <input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}"/>
         <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>
         <input message="Please enter the password of the keystore with the TLS key for https (default: serverpwd) ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
@@ -72,6 +74,7 @@ ca.tokenproperties     : ${ca.tokenproperties}
 httpsserver.hostname   : ${httpsserver.hostname}
 httpsserver.dn         : ${httpsserver.dn}
 httpsserver.password   : ${httpsserver.password}
+superadmin.cn          : ${superadmin.cn}
 superadmin.dn          : ${superadmin.dn}
 superadmin.password    : ${superadmin.password}
 superadmin.batch       : ${superadmin.batch}
@@ -110,16 +113,16 @@ appserver.home         : ${appserver.home}
     </target>
 
     <target name="ejbca:initPromptCA" if="isPrompt">
-        <input message="Enter password: " addproperty="password">
+        <input message="Enter ca token password: " addproperty="password">
             <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
         </input>
-        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${password} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..." />
-        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${password} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
+        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${password} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}..." />
+        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${password} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}'/>
     </target>
 
     <target name="ejbca:initCA" unless="isPrompt">
-        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..." />
-        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
+        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}..." />
+        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}'/>
     </target>
 
 	<target name="ejbca:adminweb">

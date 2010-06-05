@@ -103,7 +103,7 @@ public class SignLotsOfCertsTest extends TestCase {
     }
     
     public void test00AddRSACA() throws Exception {
-        TestTools.getAuthorizationSession().initialize(admin, TestTools.getTestCAId(CANAME));
+        TestTools.getAuthorizationSession().initialize(admin, TestTools.getTestCAId(CANAME), TestTools.defaultSuperAdminCN);
         TestTools.createTestCA(CANAME, 2048);
         CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, CANAME);
         X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();

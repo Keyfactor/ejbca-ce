@@ -1066,7 +1066,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         boolean ret = false;
         X509Certificate cacert = null;
         try {
-        	TestTools.getAuthorizationSession().initialize(admin, dn.hashCode());
+        	TestTools.getAuthorizationSession().initialize(admin, dn.hashCode(), TestTools.defaultSuperAdminCN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec(keySpec);
@@ -1169,7 +1169,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         boolean ret = false;
         X509Certificate cacert = null;
         try {
-        	TestTools.getAuthorizationSession().initialize(admin, dn.hashCode());
+        	TestTools.getAuthorizationSession().initialize(admin, dn.hashCode(), TestTools.defaultSuperAdminCN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec(keySpec);

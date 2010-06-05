@@ -43,6 +43,8 @@ import org.ejbca.util.CertTools;
 public abstract class BaseCaAdminCommand extends BaseCommand {
 
 	protected static final String MAINCOMMAND = "ca";
+
+	protected static final String defaultSuperAdminCN = "SuperAdmin";
 	
 	/** Private key alias in PKCS12 keystores */
     protected String privKeyAlias = "privateKey";
@@ -153,8 +155,8 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 	   return result;
    }
    
-   protected void initAuthorizationModule(int caid) throws RemoteException, AdminGroupExistsException {
+   protected void initAuthorizationModule(int caid, String superAdminCN) throws RemoteException, AdminGroupExistsException {
 	   getLogger().info("Initalizing Temporary Authorization Module.");  
-	   getAuthorizationSession().initialize(getAdmin(), caid);
+	   getAuthorizationSession().initialize(getAdmin(), caid, superAdminCN);
    } // initAuthorizationModule
 }
