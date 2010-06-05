@@ -365,58 +365,43 @@ public class CertToolsTest extends TestCase {
 			"tlcVDXa3R+mfYg==").getBytes());
 
 	private static byte[] x509certchainsubsub = Base64
-		.decode(("MIICSzCCAbSgAwIBAgIILiuXZS09/bQwDQYJKoZIhvcNAQEFBQAwNDEOMAwGA1UE"+
-			"AwwFU3ViQ0ExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0UwHhcN"+
-			"MDgwNjA1MTEyMTE4WhcNMTAwNjA1MTEyMDU0WjA3MREwDwYDVQQDDAhTdWJTdWJD"+
-			"QTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRTCBnzANBgkqhkiG"+
-			"9w0BAQEFAAOBjQAwgYkCgYEAq/bznrOJ/65Fmf2jFHq4wHrhbAuxl/SqwjGYsO+8"+
-			"F2/DzdBYLEl5Ma0j+Nyrf1fF5/18MEGOjfdQvmkPGBs+k6IzErpLepR0hOufQTCS"+
-			"+A74iEO9sNCm+r6MMFH/2JTIFC7r25YhXAagaw9yHDnc7H6gJZ9CpQ6dy+rv8Eks"+
-			"6X0CAwEAAaNjMGEwHQYDVR0OBBYEFOC1jBwHPF+KoXDLytg5dvySL6bAMA8GA1Ud"+
-			"EwEB/wQFMAMBAf8wHwYDVR0jBBgwFoAUhyBsMvIXwRH0mDjLOv8i8H2VOVowDgYD"+
-			"VR0PAQH/BAQDAgEGMA0GCSqGSIb3DQEBBQUAA4GBADJKlJcndLXJPl6HFg52IiXy"+
-			"nLcco+rIGx12vdBKk46tzVt883NZhypub5y21Qu5jFkArjr3sG2V3OuE4xdt1cy6"+
-			"PexpDDZTuzpGVWvb5FW31RN+e/4fUozUBK+xExJVZ7xfpbO7JGcognAUUpstJzvO"+
-			"Gd6Hb8EUQJnQuIfUjny4").getBytes());
+	.decode(("MIICAzCCAWygAwIBAgIINrHHHchdmfMwDQYJKoZIhvcNAQEFBQAwEDEOMAwGA1UE"+
+			"AwwFU3ViQ0EwHhcNMTAwNjA1MTIwNzMxWhcNMzAwNjA1MTIwNjUyWjATMREwDwYD"+
+			"VQQDDAhTdWJTdWJDQTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAiySbgP2A"+
+			"QuZXWZk9C1pOrpVhzWNDAFc4ttVGgh5TS1/wA6Y6nf2ci8gfxkQx1rhR784QUap4"+
+			"id6mwGV/af3WFj34YsTXdozsO/SFi7vvOGA/jU6ZUuQPYpmsSDQ3ZNLcx/MkgkrP"+
+			"WDlFhD7b079oVva5zZsF8w91KlX+KG9usXECAwEAAaNjMGEwHQYDVR0OBBYEFJ9y"+
+			"tRy1CFwUavq8OP25jRybKyElMA8GA1UdEwEB/wQFMAMBAf8wHwYDVR0jBBgwFoAU"+
+			"2GDNoIpTVxc9y953THJoWkS5wjAwDgYDVR0PAQH/BAQDAgGGMA0GCSqGSIb3DQEB"+
+			"BQUAA4GBAE0vHf3iyJ0EqOyN+LUfBkCBTPHl6sEV1bwdgkdVwj9cBbmSEDCOlmYA"+
+			"K0bvAY/1qbgEjkn+Sc32PP/3dmHX5EUKliAodguAu8vK/Rp7kefdUQHnJHwRUMF5"+
+	"9YJDdGtDZx+WLBihYhnTzGVzuP6Qaff3aNyY69O+rwSDm06Au8Zc").getBytes());
 
 	private static byte[] x509certchainsub = Base64
-		.decode(("MIIC1zCCAb+gAwIBAgIISS6X7IKkCbYwDQYJKoZIhvcNAQEFBQAwQjERMA8GA1UE"+
-			"AwwIQWRtaW5DQTExIDAeBgNVBAoMF0VKQkNBIFRvbWFzTGFwdG9wIE15U1FMMQsw"+
-			"CQYDVQQGEwJTRTAeFw0wODA2MDUxMTIwNTRaFw0xMDA2MDUxMTIwNTRaMDQxDjAM"+
-			"BgNVBAMMBVN1YkNBMRUwEwYDVQQKDAxFSkJDQSBTYW1wbGUxCzAJBgNVBAYTAlNF"+
-			"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCCPW8wrgDDD0UCtr2AOl/3EDXV"+
-			"AezYQFdeerdJactX8o8G/ORbgt8XiLp8n2SLYEUbsIxt6pYX4/eCudxeAUNDBap7"+
-			"T7S5kgd8B+QytJi0uWvTdK7i0tjvx6Zudzn1ATk3JwiMFFUSsEEE/2bbMsTNMlC8"+
-			"I8PgyRgrrBWiXXtDtQIDAQABo2MwYTAdBgNVHQ4EFgQUhyBsMvIXwRH0mDjLOv8i"+
-			"8H2VOVowDwYDVR0TAQH/BAUwAwEB/zAfBgNVHSMEGDAWgBSnW4ik+/9kkwub9avi"+
-			"r63Lqvgv7jAOBgNVHQ8BAf8EBAMCAQYwDQYJKoZIhvcNAQEFBQADggEBACGGuToj"+
-			"vmRXBQh5xcGwcYGrEFdL2zBJe6BwIrZWIPkjTcjY8ZAtMaaJBcPV8HJT1u4HmbUt"+
-			"cYJ3E3V+zwfqMlSzJpk4YaMTup8lfsjg1AZUX3JXIkqN6ITyoJ80TqiinWWKA8i6"+
-			"ueIyDegX3Z00ZWQo3CIy0rvbaejoncscsDOvcj1TusdAmQTQpUi5o0CTzxhwVtzL"+
-			"yGQoMaoRi5QQzkC2M3LwIenIm+PbpMgmrCnD/4RldJe6eZl85ZlsrS5Y8PZkH/kb"+
-			"jojskDzqeQ5kEkUWkV9AuNE9RIB6RcFVJhcAWdjWGCNsvxsByhdNsVIWXZ2oOi8x"+
-			"nYD8LhXhCvDE6Tc=").getBytes());
+	.decode(("MIICATCCAWqgAwIBAgIIRzc+cItydm0wDQYJKoZIhvcNAQEFBQAwETEPMA0GA1UE"+
+			"AwwGUm9vdENBMB4XDTEwMDYwNTEyMDcxMVoXDTMwMDYwNTEyMDY1MlowEDEOMAwG"+
+			"A1UEAwwFU3ViQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMl3EN+V1M39"+
+			"OVrmHp7PncZ16AkffAtgLk+gIgk+cHZYIGPPN1V/AtCmzteYRrPwGM9Vs2nJ4OZ7"+
+			"F8cJ1MDpyjRdjKC6sVlhkdNq+s1Q/yNtG0AxvlH2KyIZkHU02UNnJGARMaRpZipe"+
+			"VonnAD8D+FkhTt8BM2T7/Grck5QYgJUhAgMBAAGjYzBhMB0GA1UdDgQWBBTYYM2g"+
+			"ilNXFz3L3ndMcmhaRLnCMDAPBgNVHRMBAf8EBTADAQH/MB8GA1UdIwQYMBaAFCua"+
+			"Xc8f/BC8CeBLOVaC5N0Zb4BqMA4GA1UdDwEB/wQEAwIBhjANBgkqhkiG9w0BAQUF"+
+			"AAOBgQBM2lvlZmEJdFXsfoHSt2h4XN6q8Z+sIHDXyuyanNCoQx+9lM2liY+tXAUq"+
+			"Sj1fZAzqjdptIgvG5APnFrnWHeEYjYpYsROs//xF6CUKo8iJEIyRpmx9pSmwA8Rb"+
+	"U0RmY/62tBLr758ZzRGKKoX7znxsXZ5/bouT6g+IxmNuM2EiyA==").getBytes());
 
 	private static byte[] x509certchainroot = Base64
-		.decode(("MIIDaTCCAlGgAwIBAgIIa10wLePiLM8wDQYJKoZIhvcNAQEFBQAwQjERMA8GA1UE"+
-			"AwwIQWRtaW5DQTExIDAeBgNVBAoMF0VKQkNBIFRvbWFzTGFwdG9wIE15U1FMMQsw"+
-			"CQYDVQQGEwJTRTAeFw0wNzEyMjcxNjM4NDdaFw0xNzEyMjQxNjM4NDdaMEIxETAP"+
-			"BgNVBAMMCEFkbWluQ0ExMSAwHgYDVQQKDBdFSkJDQSBUb21hc0xhcHRvcCBNeVNR"+
-			"TDELMAkGA1UEBhMCU0UwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCN"+
-			"HlBg12X4INZ/XuXsLAI/mLRgNNm68I95pjK0pqIwLht4/cNUYXS7+WRrG8XWJAJt"+
-			"oo+vYzQmYtlwk115oA/y4T1bsLDARqEOmdmhywevp7IgEF66+6+Bf07pv3X/g68n"+
-			"NiemAzZq16aEj5CTt+OXuC0i5zHIDOog4gcmQIMfbeMWL9brqnnEM0fVEXztJN+A"+
-			"yWJeeYbtx8sCpNXI/v7yLNYynSUVBsQOYaORYUsEOQJfmBCC633sVN/0OXSXKpSK"+
-			"dhEnpEEcN19knsBDWUWQbUuVs2FGRmHqsWTr5O4/ORqB59tgOtfPp+6/K3SGlKty"+
-			"DEUyO9d4sR/665oha4GNAgMBAAGjYzBhMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0P"+
-			"AQH/BAQDAgGGMB0GA1UdDgQWBBSnW4ik+/9kkwub9avir63Lqvgv7jAfBgNVHSME"+
-			"GDAWgBSnW4ik+/9kkwub9avir63Lqvgv7jANBgkqhkiG9w0BAQUFAAOCAQEARHIp"+
-			"C13zA9hBn6zo/Bv68KFRlu5lOmF1B8O2Hv6rw/dcB7JP9nX8TfMVN+Ax8EG+Put2"+
-			"yFmcJ6X8oZQgnpJhR5u7plK46YeAHWU9Hkw2LoHzAjZoKCYY9J+/ETbwBRkXYVjs"+
-			"fnFEz721qExO96t3V5oKDcM0SHwrTPUIQ8XiupEGUgoHQ9IK/cYhm9pdZOb7z5nY"+
-			"8BUXd66IQBOqNyZjb2pCqHXKUo1ELS+MZmmdJdO696jhkt+VsX1LWptMTZlYmiaW"+
-			"woLvPKz+s2iaoTigNwZZ/ojxL9GRfqkTPuPtgWP73dC5E9wPgDEzsORnm7mooprJ"+
-			"FDNTBZWv96kf9grOhA==").getBytes());
+	.decode(("MIICAjCCAWugAwIBAgIIPXgH6TfNMlYwDQYJKoZIhvcNAQEFBQAwETEPMA0GA1UE"+
+			"AwwGUm9vdENBMB4XDTEwMDYwNTEyMDY1MloXDTMwMDYwNTEyMDY1MlowETEPMA0G"+
+			"A1UEAwwGUm9vdENBMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCK+F3eOoGI"+
+			"Kwa1g68vD6aZlkTCMbbEyoa9Wr4baapdCHvO8YHwVC9UDh8snDtEQT9yZKLlU4nM"+
+			"n05O7yL8FfvgB2j3xN6In1fLq8JizrYVpL49C3ewTwaKMTFjde3BtWDZ4ufJdFuZ"+
+			"+LSw98dM2zhQWme7LnrJQou85LbNt2v6XQIDAQABo2MwYTAdBgNVHQ4EFgQUK5pd"+
+			"zx/8ELwJ4Es5VoLk3RlvgGowDwYDVR0TAQH/BAUwAwEB/zAfBgNVHSMEGDAWgBQr"+
+			"ml3PH/wQvAngSzlWguTdGW+AajAOBgNVHQ8BAf8EBAMCAYYwDQYJKoZIhvcNAQEF"+
+			"BQADgYEAYB5munksWVndUxStBZmsg5uwryu8bf/esxYLlxkO8rG/UnJ9DNw4tJsh"+
+			"YxwGeslPeG9+y8O8MsXKSjdNw3I3avMpj+QqzmqD/MVlHX6+CSyUbhFGPR2TRQCp"+
+			"m+VsfwOl8/INVAySpBf3Uk2rUYhvdUqhCOcE67d0tYdJAqiIDvc=").getBytes());
 
 	private static byte[] pemcert = ("-----BEGIN CERTIFICATE-----\n"+
 				"MIIDUzCCAjugAwIBAgIIMK64QB5XErowDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE\n"+
@@ -1529,8 +1514,11 @@ public class CertToolsTest extends TestCase {
 		
 		// Test creating a certificate chain for X509CAs
 		Certificate x509certsubsub = CertTools.getCertfromByteArray(x509certchainsubsub);
+		System.out.println(x509certsubsub.toString());
 		Certificate x509certsub = CertTools.getCertfromByteArray(x509certchainsub);
+		System.out.println(x509certsub.toString());
 		Certificate x509certroot = CertTools.getCertfromByteArray(x509certchainroot);
+		System.out.println(x509certroot.toString());
 		certlist = new ArrayList();
 		certlist.add(x509certsub);
 		certlist.add(x509certroot);
@@ -1539,11 +1527,11 @@ public class CertToolsTest extends TestCase {
 		assertEquals(3, col.size());
 		iter = col.iterator();
 		Certificate certsubsub = (Certificate)iter.next();
-		assertEquals("CN=SubSubCA,O=EJBCA Sample,C=SE", CertTools.getSubjectDN(certsubsub));
+		assertEquals("CN=SubSubCA", CertTools.getSubjectDN(certsubsub));
 		certsub = (Certificate)iter.next();
-		assertEquals("CN=SubCA,O=EJBCA Sample,C=SE", CertTools.getSubjectDN(certsub));
+		assertEquals("CN=SubCA", CertTools.getSubjectDN(certsub));
 		certroot = (Certificate)iter.next();
-		assertEquals("CN=AdminCA1,O=EJBCA TomasLaptop MySQL,C=SE", CertTools.getSubjectDN(certroot));
+		assertEquals("CN=RootCA", CertTools.getSubjectDN(certroot));
 		
 	}
 	
