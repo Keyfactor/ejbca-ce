@@ -33,6 +33,8 @@ import org.ejbca.util.TestTools;
 /**
  * Test the combined function for editing and requesting a keystore/certificate
  * in a single transaction.
+ * 
+ * Note that the rollback tests requires a transactional database, if using MySQL this means InnoDB and not MyISAM.
  *   
  * @version $Id$
  */
@@ -77,6 +79,7 @@ public class CertificateRequestSessionTest extends TestCase {
 		String username2 = "softTokenRequestTest-" + new Random().nextInt();
     	userdata.setUsername(username2);	// Still the same Subject DN
 		userdata.setPassword(password);
+		assertFalse(username2+" already exists.", TestTools.getUserAdminSession().existsUser(admin, username2));
 		try {
 			TestTools.getCertificateRequestSession().processSoftTokenReq(admin, userdata, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA, true);
 			fail("Certificate creation did not fail as expected.");
