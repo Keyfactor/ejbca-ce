@@ -1464,7 +1464,7 @@ public abstract class CommonEjbcaWS extends TestCase {
         } catch (NotFoundException_Exception e) {
             trows = true;
             // e.printStackTrace();
-            assertEquals(e.getMessage(), "Error: Entity sdfjhdiuwerw43768754### does not exist.");
+            assertEquals(e.getMessage(), "Entity sdfjhdiuwerw43768754### does not exist.");
         }
         assertTrue(trows);
 
