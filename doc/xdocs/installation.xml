@@ -71,7 +71,7 @@ Needed to build and run are:
 <li>JDK 1.5.x or 1.6.x (support for 1.4.x was dropped in EJBCA 3.5).</li>
 <li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
 <li>JBOSS >=4.2.x (support for JBoss 4.0.x was dropped in EJBCA 3.8).</li>
-<li>Ant >= 1.6.5 to build (http://jakarta.apache.org/ant/)</li>
+<li>Ant >= 1.7.1 to build (http://jakarta.apache.org/ant/)</li>
 </ul>
 <p>Note that JBoss 5 contains bugs not present in JBoss 4. EJBCA works on some version of JBoss 5 but not others.
 Therefore we recommend the latest version of JBoss 4 for running EJBCA.</p>
