@@ -205,11 +205,9 @@ it will not exist in any file after the installation.
 </p>
 <p>
 The passwords java.trustpassword and httpsserver.password, also in web.properties, are used to generate
-keystore files at 'ant install'. These passwords must later on be specified in the application server
-configuration. If these passwords are not specified and the property 'web.promptForPassword' is set to
-'true', then these passwords are also prompted for.
-</p><p>
-If you let 'ant install' prompt for these passwords you must set them (encrypted, if possible)
+keystore files at 'ant install'. If either of these passwords are not predefined, then they will be
+prompted for during bootstrap, install, and deploy. </p><p>
+If you let 'ant' prompt for these passwords you must set them (encrypted, if possible)
 in the application server configuration. The file for the application server is copied to the application
 server at 'ant deploy' (in jboss 4.2.3 the file is called $JBOSS_HOME/server/default/deploy/jboss-web.deployer/server.xml)
 You must then manually substitute the strings 'changeThisToThePassword' in the configuration file with clear

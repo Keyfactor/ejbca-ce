@@ -85,8 +85,11 @@
 	
 	<target name="deploytomcat" depends="detect-tomcatdir">
         <!-- Set dummy value if password is not defined. If defined the old value is kept -->
-        <property name="java.trustpassword" value="changeThisToThePassword"/>
+    
+
+		<property name="java.trustpassword" value="changeThisToThePassword"/>
         <property name="httpsserver.password" value="changeThisToThePassword"/>
+        
         <copy todir="${tomcat.dir}" overwrite="true">
 			<fileset dir="src/appserver/jboss/${jboss.web}"/>
 			<filterchain>

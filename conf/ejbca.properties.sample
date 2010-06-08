@@ -77,7 +77,7 @@
 
 # Password for the administrative CA token.
 # With soft token, use password null.
-# To prompt for the password on the terminal, use password prompt.
+# To prompt for the password on the terminal, don't set.
 # If no password should be used (for example nCipher module protected), use password '' (nothing).
 #ca.tokenpassword=null
 
