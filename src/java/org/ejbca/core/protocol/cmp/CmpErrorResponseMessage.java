@@ -41,7 +41,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 
 
 /**
- * A very simple error message, no protection
+ * A very simple error message, no protection, or PBE protection
  * @author tomas
  * @version $Id$
  */
