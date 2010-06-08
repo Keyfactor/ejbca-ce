@@ -29,6 +29,6 @@ public interface ICmpMessageHandler {
 	 * @throws IllegalQueryException 
 	 * @throws NumberFormatException 
 	 */
-	public IResponseMessage handleMessage(BaseCmpMessage msg) throws NumberFormatException;
+	public IResponseMessage handleMessage(BaseCmpMessage msg);
 
 }

@@ -46,7 +46,6 @@
    }
 
    boolean emailfieldexists = false;
-   boolean serialnumberfieldexists = false;
    int row = 0;
 %>
 <SCRIPT language="JavaScript">
@@ -541,7 +540,6 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %> <br>&nbsp;
       </td>
       <td width="70%"> 
-        <% if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.SN) )     serialnumberfieldexists=true;  %>
         <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL) ){ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN + i%>" size="40" maxlength="1024"
            value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br> 
@@ -579,20 +577,6 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         &nbsp;&nbsp;
       </td> 
     </tr>
-
-    <% if(serialnumberfieldexists) { %>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="5%" valign="top">
-        &nbsp
-      </td>
-      <td width="25%"  align="right"> 
-            <%= ejbcawebbean.getText("ENFORCEUNIQUESERIALNUMBER") %>
-      </td>
-      <td width="70%">                   
-        <input type="checkbox" name="<%=CHECKBOX_ENFORCE_UNIQUE_SERIAL_NUMBER %>" value="<%=CHECKBOX_VALUE %>"   <% if(profiledata.getEnforceUniqueSerialNumber()) out.write("CHECKED"); %>>          
-      </td> 
-    </tr>
-    <% } %>
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">

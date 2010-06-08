@@ -425,9 +425,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws DuplicateKeyException if user already exists
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  
-	 * @throws EjbcaException 
-	 * @throws FinderException 
-	 * @throws CADoesntExistsException 
+	 * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
+	 * @throws FinderException if the SQL query of finding all users issued from a certain CA goes wrong.
+	 * @throws CADoesntExistsException if the admin CA does not exist.
      * 
      * @ejb.interface-method
      */
@@ -453,9 +453,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws DuplicateKeyException if user already exists
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  	
-     * @throws EjbcaException 
-     * @throws FinderException 
-     * @throws CADoesntExistsException 
+     * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
+     * @throws FinderException if the SQL query of finding all users issued from a certain CA goes wrong.
+     * @throws CADoesntExistsException if the admin CA does not exist.
      * @ejb.interface-method
      */
     public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, WaitingForApprovalException, CADoesntExistsException, FinderException, EjbcaException {

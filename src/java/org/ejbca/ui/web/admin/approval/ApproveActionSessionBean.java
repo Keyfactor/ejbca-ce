@@ -129,7 +129,7 @@ public List getApprovalViews(){
    
    public void setApprobalViews(List list){}
    
-   public String approve() throws CADoesntExistsException, IllegalQueryException, EjbcaException {
+   public String approve() {
 	   Approval approval = new Approval(comment);
 	   try {		   
 		   Admin admin = EjbcaJSFHelper.getBean().getAdmin();
@@ -145,7 +145,9 @@ public List getApprovalViews(){
 		   addErrorMessage("ERRORHAPPENDWHENAPPROVING");
 	   } catch (AdminAlreadyApprovedRequestException e) {
 		   addErrorMessage("ADMINALREADYPROCESSED");
-	   }
+	   } catch (EjbcaException e) {
+		   addErrorMessage(e.getErrorCode() + e.getMessage());
+	}
 	   return "approveaction";
    }
    

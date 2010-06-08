@@ -146,7 +146,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
     
     /* Adds a user to the database, the string array must be in format defined in class UserView. */
-    public void addUser(UserView userdata) throws NumberFormatException, Exception {
+    public void addUser(UserView userdata) throws Exception {
         log.trace(">addUser()");
         if(userdata.getEndEntityProfileId() != 0){
             UserDataVO uservo = new UserDataVO(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
@@ -317,20 +317,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     public boolean userExist(String username) throws Exception{
        return adminsession.existsUser(administrator, username);
     }
-    
-    /* Method used to check if user exists in a specific End Entity Profile */
-    public boolean serialnumberExist(UserView user) throws Exception{
-    	if(getEndEntityProfile(user.getEndEntityProfileId()).getEnforceUniqueSerialNumber()){
-    		Query query = new Query(Query.TYPE_USERQUERY);
-   		 	query.add(UserMatch.MATCH_WITH_DNSERIALNUMBER, 1, user.getSubjectDNField(DNFieldExtractor.SN, 0));
-   		 	UserView[] users = filterByQuery(query,0,-1);
-   		 	if(users.length > 0){
-   		 		return true;
-   		 	}
-    	}
-    	return false;
-    }
-    
+        
     /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/
     public UserView findUser(String username) throws Exception{
     	if (log.isTraceEnabled()) {
