@@ -811,8 +811,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     public CAInfo getCAInfoOrThrowException(Admin admin, String name) throws CADoesntExistsException {
     	CAInfo caInfo = getCAInfo(admin, name);
     	if (caInfo == null) {
-    		String msg = "No CA with name " + name + " was found.";
-    		log.debug(msg);
+    		String msg = intres.getLocalizedMessage("caadmin.canotexistsname", name);            	
+            log.debug(msg);
     		throw new CADoesntExistsException(msg);
     	}
     	return caInfo;

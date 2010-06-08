@@ -13,9 +13,6 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.util.Date;
-import java.util.Random;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -24,6 +21,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.util.TestTools;
 
 /**
  * Tests the admin preference entity bean.
@@ -41,7 +39,7 @@ public class AdminPreferenceTest extends TestCase {
     /** Handle to AdminSessionHome */
     private static IRaAdminSessionHome cacheHome;
 
-    private static final String user = genRandomUserName();
+    private static final String user = TestTools.genRandomUserName();
 
     /**
      * Creates a new AdminPreference object.
@@ -109,22 +107,10 @@ public class AdminPreferenceTest extends TestCase {
         assertTrue("Adminpref for "+user+" should exist", ret);
         pref = this.cacheAdmin.getAdminPreference(administrator, user);
         assertEquals(pref.getPreferedLanguage(), 2);
-        String newuser = genRandomUserName();
+        String newuser = TestTools.genRandomUserName();
         ret = this.cacheAdmin.changeAdminPreference(administrator, newuser, pref);
         assertFalse("Adminpref for "+newuser+" should not exist", ret);
         log.trace("<test02ModifyAdminPreference()");
     }
-
-    private static String genRandomUserName() {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        //log.debug("Generated random username: username =" + username);
-        return username;
-    } // genRandomUserName
 
 }

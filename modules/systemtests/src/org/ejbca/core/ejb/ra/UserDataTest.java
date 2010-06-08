@@ -14,9 +14,7 @@
 package org.ejbca.core.ejb.ra;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -65,35 +63,6 @@ public class UserDataTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random username: username =" + username);
-
-        return username;
-    } // genRandomUserName
-
-    private String genRandomPwd() throws Exception {
-        // Gen random pwd
-        Random rand = new Random(new Date().getTime() + 4812);
-        String password = "";
-
-        for (int i = 0; i < 8; i++) {
-            int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
-        }
-
-        log.debug("Generated random pwd: password=" + password);
-
-        return password;
-    } // genRandomPwd
-
-
     public void test00SetEnableEndEntityProfileLimitations() throws Exception {
         // Global configuration must have "Enable End Entity Profile Limitations" set to true in order for 
     	// the request counter tests to pass, we check if we are allowed to set this value or not
@@ -106,8 +75,8 @@ public class UserDataTest extends TestCase {
     
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
-        username = genRandomUserName();
-        pwd = genRandomPwd();
+        username = TestTools.genRandomUserName();
+        pwd = TestTools.genRandomPwd();
         TestTools.getUserAdminSession().addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it!");
         log.trace("<test01CreateNewUser()");
@@ -190,8 +159,8 @@ public class UserDataTest extends TestCase {
 
     public void test04CreateNewUser() throws Exception {
         log.trace(">test04CreateNewUser()");
-        username1 = genRandomUserName();
-        pwd1 = genRandomPwd();
+        username1 = TestTools.genRandomUserName();
+        pwd1 = TestTools.genRandomPwd();
         TestTools.getUserAdminSession().addUser(admin,username1,pwd1,"C=SE,O=AnaTom,CN="+username1,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it again!");
         log.trace("<test04CreateNewUser()");

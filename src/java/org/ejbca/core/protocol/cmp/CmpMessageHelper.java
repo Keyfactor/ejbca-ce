@@ -276,9 +276,8 @@ public class CmpMessageHelper {
 		// Create a failure message
 		if (log.isDebugEnabled()) {
 			log.debug("Creating a cert request rejection message");
+			log.debug("Creating a CertRepMessage 'rejected'");
 		}
-
-		log.debug("Creating a CertRepMessage 'rejected'");
 
 		/*
 		String senderNonce = new String(Base64.encode(CmpMessageHelper.createSenderNonce()));
@@ -292,9 +291,10 @@ public class CmpMessageHelper {
 		CertResponse myCertResponse = new CertResponse(new DERInteger(requestId), info);
 		CertRepMessage myCertRepMessage = new CertRepMessage(myCertResponse);
 
-
 		int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
-		log.debug("Creating response body of type respType.");
+		if (log.isDebugEnabled()) {
+			log.debug("Creating response body of type "+respType);
+		}
 		PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType); 
 		
 		return myPKIBody;

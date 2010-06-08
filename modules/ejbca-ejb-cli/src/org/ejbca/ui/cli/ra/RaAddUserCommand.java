@@ -222,14 +222,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
 
             // Check if username already exists.
-            try {
-                if (getUserAdminSession().findUser(getAdmin(), username) != null) {
-                	getLogger().error("User already exists in the database.");
-                    error = true;
-                }
-            } catch (Exception e) {	// FinderException
+            if (getUserAdminSession().existsUser(getAdmin(), username)) {
+            	getLogger().error("User already exists in the database.");
+            	error = true;
             }
-
 
             if(!error){
               getLogger().info("Trying to add user:");

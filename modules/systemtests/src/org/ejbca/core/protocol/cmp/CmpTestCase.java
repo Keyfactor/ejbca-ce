@@ -371,7 +371,7 @@ public class CmpTestCase extends TestCase {
 		return ret;
 	}
 
-	protected byte[] sendCmpHttp(byte[] message) throws IOException, NoSuchProviderException {
+	protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException, NoSuchProviderException {
         // POST the CMP request
         // we are going to do a POST
         final String resource = resourceCmp;
@@ -389,24 +389,29 @@ public class CmpTestCase extends TestCase {
         os.write(message);
         os.close();
 
-        assertEquals("Unexpected HTTP response code.", 200, con.getResponseCode());
-        // Some appserver (Weblogic) responds with "application/pkixcmp; charset=UTF-8"
-		assertNotNull("No content type in response.", con.getContentType());
-        assertTrue(con.getContentType().startsWith("application/pkixcmp"));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and CMP requests are small enough
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
+        assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
+        // Only try to read the response if we expected a 200 (ok) response
+        if (httpRespCode == 200) {
+            // Some appserver (Weblogic) responds with "application/pkixcmp; charset=UTF-8"
+    		assertNotNull("No content type in response.", con.getContentType());
+            assertTrue(con.getContentType().startsWith("application/pkixcmp"));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // This works for small requests, and CMP requests are small enough
+            InputStream in = con.getInputStream();
+            int b = in.read();
+            while (b != -1) {
+                baos.write(b);
+                b = in.read();
+            }
+            baos.flush();
+            in.close();
+            byte[] respBytes = baos.toByteArray();
+            assertNotNull(respBytes);
+            assertTrue(respBytes.length > 0);
+            return respBytes;        	
+        } else {
+        	return null;
         }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        assertNotNull(respBytes);
-        assertTrue(respBytes.length > 0);
-        return respBytes;
     }
 
 	
@@ -424,12 +429,12 @@ public class CmpTestCase extends TestCase {
 		if (signed) {
 			AlgorithmIdentifier algId = header.getProtectionAlg();
 			assertNotNull("The AlgorithmIdentifier in the response signature could not be read.", algId);
-			assertEquals(algId.getObjectId().getId(), PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());			
+			assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), algId.getObjectId().getId());			
 		}
 		if (pbe) {
 			AlgorithmIdentifier algId = header.getProtectionAlg();
 			assertNotNull(algId);
-			assertEquals(algId.getObjectId().getId(), CMPObjectIdentifiers.passwordBasedMac.getId());						
+			assertEquals(CMPObjectIdentifiers.passwordBasedMac.getId(), algId.getObjectId().getId());						
 		}
 
     	// Check that the signer is the expected CA
@@ -725,7 +730,8 @@ public class CmpTestCase extends TestCase {
 			assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
 			info = resp.getStatus();
 			assertNotNull(info);
-			assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
+			int error = info.getStatus().getValue().intValue();
+			assertEquals(ResponseStatus.FAILURE.getIntValue(), error); // 2 is rejection
 			assertEquals(FailInfo.INCORRECT_DATA.getAsBitString(), info.getFailInfo());
 		}
 		log.debug("expected fail message: '"+failMsg+"'. received fail message: '"+info.getStatusString().getString(0).getString()+"'.");

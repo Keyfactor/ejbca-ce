@@ -21,7 +21,6 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
@@ -100,13 +99,11 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			throw new ApprovalRequestExecutionException("CA does not exist :" + e.getMessage(), e);
 		} catch (EjbcaException e){
 			throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
-		} catch (FinderException e){
-			throw new ApprovalRequestExecutionException("Error finding users :" + e.getMessage(), e);
 		}
 	}
 
     /**
-     * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
+     * Approval Id is generated for this approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {		
 		return new String(getApprovalType() + ";" + userdata.getUsername()).hashCode();

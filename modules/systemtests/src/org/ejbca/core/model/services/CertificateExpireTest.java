@@ -17,7 +17,6 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Properties;
-import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -67,32 +66,6 @@ public class CertificateExpireTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random username: username =" + username);
-        return username;
-    } // genRandomUserName
-
-    private String genRandomPwd() throws Exception {
-        // Gen random pwd
-        Random rand = new Random(new Date().getTime() + 4812);
-        String password = "";
-
-        for (int i = 0; i < 8; i++) {
-            int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random pwd: password=" + password);
-        return password;
-    } // genRandomPwd
-
-
     /** Add a new user and an expire service. Test that the service expires the users password
      *
      */
@@ -100,8 +73,8 @@ public class CertificateExpireTest extends TestCase {
         log.trace(">test01CreateNewUser()");
         
         // Create a new user
-        username = genRandomUserName();
-        pwd = genRandomPwd();
+        username = TestTools.genRandomUserName();
+        pwd = TestTools.genRandomPwd();
         TestTools.getUserAdminSession().addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created user: "+username);
         

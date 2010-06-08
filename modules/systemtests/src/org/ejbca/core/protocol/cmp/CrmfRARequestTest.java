@@ -31,6 +31,7 @@ import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -144,7 +145,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 			out.writeObject(req);
 			final byte[] ba = bao.toByteArray();
 			// Send request and receive response
-			final byte[] resp = sendCmpHttp(ba);
+			final byte[] resp = sendCmpHttp(ba, 200);
 			assertNotNull(resp);
 			assertTrue(resp.length > 0);
 			// do not check signing if we expect a failure (sFailMessage==null)
@@ -166,7 +167,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 			out.writeObject(confirm);
 			final byte[] ba = bao.toByteArray();
 			// Send request and receive response
-			final byte[] resp = sendCmpHttp(ba);
+			final byte[] resp = sendCmpHttp(ba, 200);
 			assertNotNull(resp);
 			assertTrue(resp.length > 0);
 			checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
@@ -208,8 +209,12 @@ public class CrmfRARequestTest extends CmpTestCase {
 
 		TestTools.getUserAdminSession().deleteUser(admin, userName1);
 		TestTools.getUserAdminSession().deleteUser(admin, userName2);
-		TestTools.getUserAdminSession().deleteUser(admin, "AdminCA1");
-		TestTools.getUserAdminSession().deleteUser(admin, hostname);
+		try {
+			TestTools.getUserAdminSession().deleteUser(admin, "AdminCA1");
+		} catch (NotFoundException e) {}
+		try {
+			TestTools.getUserAdminSession().deleteUser(admin, hostname);
+		} catch (NotFoundException e) {}
 	}
 	
 	public void testZZZCleanUp() throws Exception {

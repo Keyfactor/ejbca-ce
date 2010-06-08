@@ -33,6 +33,7 @@ import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.ejb.CreateException;
+import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
@@ -247,11 +248,10 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 
 	/**
 	 * Edits or adds a user and generates a certificate for that user in a single transaction.
-     * Used from EjbcaWS.
      * 
 	 * @param admin is the requesting administrator
 	 * @param userdata contains information about the user that is about to get a certificate
-	 * @param req is the certificate request in the format specified in the reqType parameter
+	 * @param req is the certificate request, base64 encoded binary request, in the format specified in the reqType parameter
 	 * @param reqType is one of SecConst.CERT_REQ_TYPE_..
 	 * @param hardTokenSN is the hard token to associate this or null
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
@@ -265,40 +265,20 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
 			SignatureException, IOException, ObjectNotFoundException, CreateException,
 			CertificateException, UserDoesntFullfillEndEntityProfile,
-			ApprovalException, FinderException,
+			ApprovalException,
 			EjbcaException {
 		byte[] retval = null;
 
-		int caid = userdata.getCAId();
-		getCAAdminSession().verifyExistenceOfCA(caid);
-
-		String username = userdata.getUsername();
-		String password = userdata.getPassword();
-
-		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
-		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
-		
 		// Check tokentype
 		if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
 			throw new WrongTokenTypeException ("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
 		}
-		// Add or edit user
-		try {
-			if (getUserAdminSession().findUser(admin, username) != null) {
-				log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
-				getUserAdminSession().changeUser(admin,userdata, true, true);
-			} else {
-				log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
-				getUserAdminSession().addUserFromWS(admin,userdata,true);
-			}
-		} catch (WaitingForApprovalException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
-			String msg = "Single transaction enrollment request rejected since approvals are enabled for this CA ("+caid+") or Certificate Profile ("+userdata.getCertificateProfileId()+").";
-			log.info(msg);
-			throw new ApprovalException(msg);
-		}
+		// This is the secret sauce, do the end entity handling automagically here before we get the cert
+		addOrEditUser(admin, userdata);
 		// Process request
 		try {
+			String password = userdata.getPassword();
+			String username = userdata.getUsername();
 			IRequestMessage imsg = null;
 			if (reqType == SecConst.CERT_REQ_TYPE_PKCS10) {				
 				IRequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
@@ -378,6 +358,90 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	}
 
 	/**
+	 * Edits or adds a user and generates a certificate for that user in a single transaction.
+     * 
+	 * @param admin is the requesting administrator
+	 * @param userdata contains information about the user that is about to get a certificate
+	 * @param req is the certificate request, base64 encoded binary request, in the format specified in the reqType parameter
+	 * @param reqType is one of SecConst.CERT_REQ_TYPE_..
+	 * @param hardTokenSN is the hard token to associate this or null
+	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
+     * @return a encoded certificate of the type specified in responseType 
+	 * @throws EjbcaException 
+	 * @throws UserDoesntFullfillEndEntityProfile 
+	 * @throws AuthorizationDeniedException 
+	 * @throws DuplicateKeyException 
+	 * @throws EjbcaException 
+	 * @ejb.interface-method
+	 */
+	public IResponseMessage processCertReq(Admin admin, UserDataVO userdata, IRequestMessage req, Class responseClass) throws DuplicateKeyException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException {
+		
+		// Check tokentype
+		if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
+			throw new WrongTokenTypeException ("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
+		}
+		// This is the secret sauce, do the end entity handling automagically here before we get the cert
+		addOrEditUser(admin, userdata);
+		IResponseMessage retval = null;
+		try {
+			retval = getSignSession().createCertificate(admin, req, -1, responseClass);				
+		} catch (NotFoundException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		} catch (EjbcaException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			throw e;
+		}
+		return retval;
+	}
+	
+	/**
+	 * @param admin
+	 * @param userdata
+	 * @param caid
+	 * @param username
+	 * @throws AuthorizationDeniedException
+	 * @throws WrongTokenTypeException
+	 * @throws FinderException
+	 * @throws UserDoesntFullfillEndEntityProfile
+	 * @throws ApprovalException
+	 * @throws DuplicateKeyException
+	 * @throws CADoesntExistsException 
+	 * @throws EjbcaException 
+	 */
+	private void addOrEditUser(Admin admin, UserDataVO userdata) throws AuthorizationDeniedException,
+			UserDoesntFullfillEndEntityProfile, ApprovalException,
+			DuplicateKeyException, CADoesntExistsException, EjbcaException {
+		
+		int caid = userdata.getCAId();
+		getCAAdminSession().verifyExistenceOfCA(caid);
+
+		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
+		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+		
+		// Add or edit user
+		try {
+			String username = userdata.getUsername();
+			if (getUserAdminSession().existsUser(admin, username)) {
+				if (log.isDebugEnabled()) {
+					log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
+				}
+				getUserAdminSession().changeUser(admin,userdata, true, true);
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
+				}
+				getUserAdminSession().addUserFromWS(admin,userdata,true);
+			}
+		} catch (WaitingForApprovalException e) {
+			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			String msg = "Single transaction enrollment request rejected since approvals are enabled for this CA ("+caid+") or Certificate Profile ("+userdata.getCertificateProfileId()+").";
+			log.info(msg);
+			throw new ApprovalException(msg);
+		}
+	}
+
+	/**
 	 * Process a request in the CA module.
 	 * 
 	 * @param admin is the requesting administrator
@@ -425,48 +489,39 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException,
 	SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException,UserDoesntFullfillEndEntityProfile,
-	ApprovalException, FinderException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
+	ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
 	InvalidAlgorithmParameterException {
-		int caid = userdata.getCAId();
-		getCAAdminSession().verifyExistenceOfCA(caid);
-
-		String username = userdata.getUsername();
-		String password = userdata.getPassword();
-
-		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
-		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
-		try {
-			// Add or edit user  
-			if (getUserAdminSession().findUser(admin, username) != null) {
-				log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
-				getUserAdminSession().changeUser(admin,userdata, true, true);
-			} else {
-				log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
-				getUserAdminSession().addUserFromWS(admin,userdata,true);
-			}
-		} catch (WaitingForApprovalException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
-			String msg = "Single transaction keystore request rejected since approvals are enabled for this CA ("+caid+") or Certificate Profile ("+userdata.getCertificateProfileId()+").";
-			log.info(msg);
-			throw new ApprovalException(msg);
-		}
+		
+		// This is the secret sauce, do the end entity handling automagically here before we get the cert
+		addOrEditUser(admin, userdata);
 		// Process request
 		byte[] ret = null;
 		try {
 			// Get key recovery info
 			boolean usekeyrecovery = getRAAdminSession().loadGlobalConfiguration(admin).getEnableKeyRecovery();
-			log.debug("usekeyrecovery: "+usekeyrecovery);
+			if (log.isDebugEnabled()) {
+				log.debug("usekeyrecovery: "+usekeyrecovery);
+			}
 			boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery &&  (userdata.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
-			log.debug("userdata.getKeyRecoverable(): "+userdata.getKeyRecoverable());
-			log.debug("userdata.getStatus(): "+userdata.getStatus());
-			log.debug("savekeys: "+savekeys);
+			if (log.isDebugEnabled()) {
+				log.debug("userdata.getKeyRecoverable(): "+userdata.getKeyRecoverable());
+				log.debug("userdata.getStatus(): "+userdata.getStatus());
+				log.debug("savekeys: "+savekeys);
+			}
 			boolean loadkeys = (userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
-			log.debug("loadkeys: "+loadkeys);
+			if (log.isDebugEnabled()) {
+				log.debug("loadkeys: "+loadkeys);
+			}
 			int endEntityProfileId = userdata.getEndEntityProfileId();
 			EndEntityProfile endEntityProfile = getRAAdminSession().getEndEntityProfile(admin, endEntityProfileId);
 			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
-			log.debug("reusecertificate: "+reusecertificate);
+			if (log.isDebugEnabled()) {
+				log.debug("reusecertificate: "+reusecertificate);
+			}
 			// Generate keystore
+			String password = userdata.getPassword();
+			String username = userdata.getUsername();
+			int caid = userdata.getCAId();
 		    GenerateToken tgen = new GenerateToken(false);
 		    KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 			String alias = keyStore.aliases().nextElement();

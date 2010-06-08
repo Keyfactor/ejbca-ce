@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.keyrecovery;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Random;
 
 import junit.framework.TestCase;
@@ -38,7 +37,7 @@ import org.ejbca.util.keystore.KeyTools;
 public class KeyRecoveryTest extends TestCase {
     private final static Logger log = Logger.getLogger(KeyRecoveryTest.class);
     private final static Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-    private static final String user = genRandomUserName();
+    private static final String user = TestTools.genRandomUserName();
 
     private static KeyPair keypair = null;
     private static X509Certificate cert = null;
@@ -117,18 +116,6 @@ public class KeyRecoveryTest extends TestCase {
 
         log.trace("<test03RemoveKeyPair()");
     }
-
-    private static String genRandomUserName() {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        //log.debug("Generated random username: username =" + username);
-        return username;
-    } // genRandomUserName
 
 	public void test99RemoveTestCA() throws Exception {
 		TestTools.removeTestCA();

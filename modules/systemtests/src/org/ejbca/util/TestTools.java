@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -574,4 +575,29 @@ public class TestTools {
 		}
 		return cacert;
 	}
+	
+    public static final String genRandomUserName() {
+        // Generate random user
+        Random rand = new Random(new Date().getTime() + 4711);
+        String username = "";
+        for (int i = 0; i < 6; i++) {
+            int randint = rand.nextInt(9);
+            username += (new Integer(randint)).toString();
+        }
+        log.debug("Generated random username: username =" + username);
+        return username;
+    } // genRandomUserName
+
+    public static final String genRandomPwd() {
+        // Generate random password
+        Random rand = new Random(new Date().getTime() + 4812);
+        String password = "";
+        for (int i = 0; i < 8; i++) {
+            int randint = rand.nextInt(9);
+            password += (new Integer(randint)).toString();
+        }
+        log.debug("Generated random pwd: password=" + password);
+        return password;
+    } // genRandomPwd
+
 }

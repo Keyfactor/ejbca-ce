@@ -93,10 +93,7 @@ public class ApplyBean implements java.io.Serializable {
         IUserAdminSessionRemote useradminsession = useradminhome.create();
 
 		if(!username.equals(this.username) || this.useradmindata == null){        
-		  try {
 			this.useradmindata = useradminsession.findUser(administrator, username);
-		  } catch (FinderException fe) {
-		  }
 		}
 		
         if (useradmindata != null) {
@@ -124,10 +121,7 @@ public class ApplyBean implements java.io.Serializable {
 		IUserAdminSessionRemote useradminsession = useradminhome.create();
 
 		if(!username.equals(this.username) || this.useradmindata == null){        
-		  try {
 			this.useradmindata = useradminsession.findUser(administrator, username);
-		  } catch (FinderException fe) {
-		  }
 		}
 		
 		if (useradmindata != null) {
@@ -154,10 +148,7 @@ public class ApplyBean implements java.io.Serializable {
         IUserAdminSessionRemote useradminsession = useradminhome.create();
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-          try {
-            this.useradmindata = useradminsession.findUser(administrator, username);
-          } catch (FinderException fe) {
-          }
+        	this.useradmindata = useradminsession.findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
@@ -201,10 +192,7 @@ public class ApplyBean implements java.io.Serializable {
         IUserAdminSessionRemote useradminsession = useradminhome.create();
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-          try {
-            this.useradmindata = useradminsession.findUser(administrator, username);
-          } catch (FinderException fe) {
-          }
+        	this.useradmindata = useradminsession.findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
@@ -254,10 +242,7 @@ public class ApplyBean implements java.io.Serializable {
         IUserAdminSessionRemote useradminsession = useradminhome.create();
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-          try {
-            this.useradmindata = useradminsession.findUser(administrator, username);
-          } catch (FinderException fe) {
-          }
+        	this.useradmindata = useradminsession.findUser(administrator, username);
         }  
 
         if (useradmindata != null) {

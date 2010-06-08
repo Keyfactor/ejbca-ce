@@ -22,7 +22,7 @@ import java.security.NoSuchProviderException;
 import java.util.List;
 
 import javax.ejb.CreateException;
-import javax.ejb.FinderException;
+import javax.ejb.DuplicateKeyException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -37,6 +37,8 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.ICertificateRequestSessionHome;
+import org.ejbca.core.ejb.ra.ICertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
@@ -44,7 +46,6 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.SignRequestException;
@@ -103,6 +104,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private ICAAdminSessionRemote casession = null;
 	private IRaAdminSessionRemote rasession = null;
 	private ICertificateStoreSessionRemote storesession = null;
+	private ICertificateRequestSessionRemote reqsession = null;
 	
 	public CrmfMessageHandler(Admin admin) throws CreateException, RemoteException {
 		this.admin = admin;
@@ -112,11 +114,14 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		ICAAdminSessionHome caHome = (ICAAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class);
 		IRaAdminSessionHome raHome = (IRaAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IRaAdminSessionHome.JNDI_NAME, IRaAdminSessionHome.class);
 		ICertificateStoreSessionHome storeHome = (ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class);
+		ICertificateRequestSessionHome reqHome = (ICertificateRequestSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateRequestSessionHome.JNDI_NAME, ICertificateRequestSessionHome.class);
+
 		this.signsession = signHome.create();
 		this.usersession = userHome.create();
 		this.casession = caHome.create();
 		this.rasession = raHome.create();
 		this.storesession = storeHome.create();
+		this.reqsession = reqHome.create();
 
 		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams
@@ -153,13 +158,21 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			} else {
 				CAInfo info = casession.getCAInfo(admin, caName);
 				caId = info.getCAId();					
+				log.info("Using fixed caId when adding users in RA mode: "+caId);
 			}
 			responseProtection = CmpConfiguration.getResponseProtection();
+			if (log.isDebugEnabled()) {
+				log.debug("cmp.operationmode=ra");
+				log.debug("cmp.responseprotection="+responseProtection);
+			}
+
 		}
 	}
 
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
-		log.trace(">handleMessage");
+		if (log.isTraceEnabled()) {
+			log.trace(">handleMessage");
+		}
 		IResponseMessage resp = null;
 		try {
 			CrmfRequestMessage crmfreq = null;
@@ -182,7 +195,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							keyId = new String(os.getOctets());
 							log.info("UTF-8 not available, using platform default encoding for keyId.");
 						}
-						log.debug("Found a sender keyId: "+keyId);
+						if (log.isDebugEnabled()) {
+							log.debug("Found a sender keyId: "+keyId);
+						}
 						if (keyId == null) {
 							log.error("No KeyId contained in CMP request.");
 						}
@@ -197,15 +212,21 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								UsernameGenerator gen = UsernameGenerator.getInstance(usernameGeneratorParams);
 								// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
 								X509Name dnname = crmfreq.getRequestX509Name();
-								log.debug("Creating username from base dn: "+dnname.toString());
+								if (log.isDebugEnabled()) {
+									log.debug("Creating username from base dn: "+dnname.toString());
+								}
 								String username = gen.generateUsername(dnname.toString());
 								String pwd;
 								if (StringUtils.equals(userPasswordParams, "random")) {
-									log.debug("Setting 12 char random user password.");
+									if (log.isDebugEnabled()) {
+										log.debug("Setting 12 char random user password.");
+									}
 									IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
 									pwd = pwdgen.getNewPassword(12, 12);									
 								} else {
-									log.debug("Setting fixed user password from config.");
+									if (log.isDebugEnabled()) {
+										log.debug("Setting fixed user password from config.");
+									}
 									pwd = userPasswordParams;									
 								}
 								// AltNames may be in the request template
@@ -215,19 +236,23 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								FailInfo failInfo = null;
 								try {
 									if (eeProfileId == -1) {
-										log.debug("Using end entity profile with name: "+keyId);
+										if (log.isDebugEnabled()) {
+											log.debug("Using end entity profile with name: "+keyId);
+										}
 										eeProfileId = rasession.getEndEntityProfileId(admin, keyId);
 										if (eeProfileId == 0) {
 											log.info("No end entity profile found matching keyId: "+keyId);
-											throw new NotFoundException("End entity profile with name '"+keyId+"' not found");
+											throw new NotFoundException("End entity profile with name '"+keyId+"' not found.");
 										}
 									}
 									if (certProfileId == -1) {
-										log.debug("Using certificate profile with name: "+keyId);
+										if (log.isDebugEnabled()) {
+											log.debug("Using certificate profile with name: "+keyId);
+										}
 										certProfileId = storesession.getCertificateProfileId(admin, keyId);
 										if (certProfileId == 0) {
 											log.info("No certificate profile found matching keyId: "+keyId);
-											throw new NotFoundException("Certificate profile with name '"+keyId+"' not found");
+											throw new NotFoundException("Certificate profile with name '"+keyId+"' not found.");
 										}
 									}
 									if (caId == -1) {
@@ -239,7 +264,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 											log.error("No default CA id for end entity profile: "+name);
 										} else {
 											CAInfo info = casession.getCAInfo(admin, caId);													
-											log.debug("Using CA: "+info.getName());
+											if (log.isDebugEnabled()) {
+												log.debug("Using CA: "+info.getName());
+											}
 										}
 									} else if (caId == -2) {
 										// Use keyId as CA name
@@ -248,63 +275,62 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 											log.info("No CA found matching keyId: "+keyId);
 											throw new NotFoundException("CA with name '"+keyId+"' not found");
 										}
-										log.debug("Using CA: "+info.getName());
+										if (log.isDebugEnabled()) {
+											log.debug("Using CA: "+info.getName());
+										}
 										caId = info.getCAId();																	
 									}
 									
-									// See if the user already exists so we should change it or create it
-									UserDataVO user = null;
-									try {
-										user = usersession.findUser(admin, username);
-									} catch (FinderException e) {
-										// User can not be found, leave user as null
-									}
 									String email = null;
 									List emails = CertTools.getEmailFromDN(altNames);
 									emails.addAll(CertTools.getEmailFromDN(dnname.toString()));
 									if (!emails.isEmpty()) {
 										email = (String) emails.get(0);	// Use rfc822name or first SubjectDN email address as user email address if available
 									}
-									if (user == null) {
-										try {
-											if (log.isDebugEnabled()) {
-												log.debug("Creating new user with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
-											}
-											usersession.addUser(admin, username, pwd, dnname.toString(), altNames, email, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
-										} catch (CreateException e) {
-											// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
-											// This was very strange, we didn't find it before, but now it exists?
-											// This will happen if we get virtually parallel requests for the same user
-											String updateMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
-											log.info(updateMsg);
-											// If the user already exists, we will change him instead and go for that
-											usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, email, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
-										} catch (FinderException e){
-											e.printStackTrace();
-										}
-									} else {
-										// If the user already exists, we will change him instead and go for that
-										log.debug("User already exists, so we will update instead.");
-										if (log.isDebugEnabled()) {
-											log.debug("Changing user to eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
-										}
-										usersession.changeUser(admin, username, pwd, dnname.toString(), altNames, email, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
+									// Set all protection parameters
+									if (log.isDebugEnabled()) {
+										log.debug(responseProtection+", "+pbeDigestAlg+", "+pbeMacAlg+", "+keyId+", "+raAuthenticationSecret);
 									}
-									addedUser = true;
+									if (StringUtils.equals(responseProtection, "pbe")) {
+										crmfreq.setPbeParameters(keyId, raAuthenticationSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+									}
+									// Now we are all set to go ahead and generate a certificate for the poor bastard
+									crmfreq.setUsername(username); // so we have the right params in the call to processCertReq
+									crmfreq.setPassword(pwd);
+									UserDataVO userdata = new UserDataVO(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+									userdata.setPassword(pwd);
+									try {
+										if (log.isDebugEnabled()) {
+											log.debug("Creating new user with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
+										}
+										resp = reqsession.processCertReq(admin, userdata, crmfreq, Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));
+										addedUser = true;
+									} catch (CreateException e) {
+										// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
+										// This was very strange, we didn't find it before, but now it exists?
+										// This should never happen when using the "single transaction" request session??
+										String updateMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
+										log.info(updateMsg);
+										// Try again
+										resp = reqsession.processCertReq(admin, userdata, crmfreq, Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));
+										addedUser = true;
+									}
 								} catch (NotFoundException e) {
 									String errMsg = intres.getLocalizedMessage("cmp.errorgeneral", e.getMessage());
 									log.info(errMsg, e);
 									failText = e.getMessage();
+									failInfo = FailInfo.INCORRECT_DATA;
 								} catch (UserDoesntFullfillEndEntityProfile e) {
 									String errMsg = intres.getLocalizedMessage("cmp.erroradduser", username);
 									log.error(errMsg, e);
 									failText = e.getMessage();
+									failInfo = FailInfo.INCORRECT_DATA;
 								} catch (ApprovalException e) {
 									String errMsg = intres.getLocalizedMessage("cmp.erroradduser", username);
 									log.error(errMsg, e);
 									failText = e.getMessage();
 									failInfo = FailInfo.NOT_AUTHORIZED;
-								} catch (WaitingForApprovalException e) {
+								} catch (DuplicateKeyException e) {
 									String errMsg = intres.getLocalizedMessage("cmp.erroradduser", username);
 									log.error(errMsg, e);
 									failText = e.getMessage();
@@ -322,13 +348,13 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									cresp.setRequestId(requestId);
 									cresp.setRequestType(requestType);
 									
-									// Set all protection parameters
-									log.debug(responseProtection+", "+pbeDigestAlg+", "+pbeMacAlg+", "+keyId+", "+raAuthenticationSecret);
+									// Set all protection parameters, this is another message than if we generated a cert above
 									if (StringUtils.equals(responseProtection, "pbe") && (pbeDigestAlg != null) && (pbeMacAlg != null) && (keyId != null) && (raAuthenticationSecret != null) ) {
 										cresp.setPbeParameters(keyId, raAuthenticationSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
 									}
 									resp = cresp;
 									try {
+										// Here we need to create the response message, when coming from SignSession it has already been "created"
 										resp.create();
 									} catch (InvalidKeyException e1) {
 										String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
@@ -350,16 +376,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 										log.error(errMsg, e1);
 									}																
 								}
-								crmfreq.setUsername(username);
-								crmfreq.setPassword(pwd);
-								// Set all protection parameters
-								if (StringUtils.equals(responseProtection, "pbe")) {
-									crmfreq.setPbeParameters(keyId, raAuthenticationSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
-								}
-								// Now we are all set to go ahead and generate a certificate for the poor bastard
 							} else {
 								String errMsg = intres.getLocalizedMessage("cmp.errorauthmessage");
-								log.error(errMsg);
+								log.info(errMsg); // info because this is something we should expect and we handle it
 								if (verifyer.getErrMsg() != null) {
 									errMsg = verifyer.getErrMsg();
 								}
@@ -380,7 +399,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						}
 					} else {
 						String errMsg = intres.getLocalizedMessage("cmp.errorunauthmessagera");
-						log.error(errMsg);
+						log.info(errMsg); // info because this is something we should expect and we handle it
 						resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
 					}
 				} else {
@@ -389,10 +408,14 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 					// if not empty the message will find the username itself, in the getUsername method
 					if (StringUtils.isEmpty(extractUsernameComponent)) {
 						String dn = crmfreq.getSubjectDN();
-						log.debug("looking for user with dn: "+dn);
+						if (log.isDebugEnabled()) {
+							log.debug("looking for user with dn: "+dn);
+						}
 						UserDataVO data = usersession.findUserBySubjectDN(admin, dn);
 						if (data != null) {
-							log.debug("Found username: "+data.getUsername());
+							if (log.isDebugEnabled()) {
+								log.debug("Found username: "+data.getUsername());
+							}
 							crmfreq.setUsername(data.getUsername());
 						} else {
 							String errMsg = intres.getLocalizedMessage("cmp.infonouserfordn");
@@ -422,14 +445,15 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			log.error(errMsg, e);			
 		} catch (CADoesntExistsException e) {
 			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-			log.error(errMsg, e);			
+			log.info(errMsg, e); // info because this is something we should expect and we handle it	
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.WRONG_AUTHORITY, e.getMessage());
 		} catch (SignRequestException e) {
 			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
 			log.error(errMsg, e);			
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (SignRequestSignatureException e) {
 			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-			log.error(errMsg, e);			
+			log.info(errMsg, e); // info because this is something we should expect and we handle it
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_POP, e.getMessage());
         } catch (EjbcaException e) {
             String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
@@ -444,6 +468,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			log.error(errMsg, e);			
 			resp = null;
 		}							
+		if (log.isTraceEnabled()) {
+			log.trace("<handleMessage");
+		}
 		return resp;
 	}
 	
