@@ -7,9 +7,7 @@
 	<!-- those are the default values used within JBoss for easy startup -->
 	<property name="appserver.type" value="jboss"/>
 	<property name="ejbca.productionmode" value="true"/>
-    <property name="ca.name" value="AdminCA1"/>
 	<property name="ca.tokentype" value="soft"/>
-	<property name="ca.tokenpassword" value="null"/>
 	<property name="ca.tokenproperties" value=""/>
     <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
@@ -23,12 +21,10 @@
 	<property name="database.url" value="jdbc:hsqldb:$${jboss.server.data.dir}$${/}hypersonic$${/}localDB" />
 	<property name="database.driver" value="org.hsqldb.jdbcDriver" />
 	<property name="database.username" value="sa" />
-	<property name="database.password" value="" />
 	<property name="weblogic-oracle-columntype" value="" />
 	<property name="mail.jndi-name" value="java:/EjbcaMail" />
 	<property name="mail.from" value="ejbca-donotreply@domain.com" />
 	<property name="mail.user" value="ejbca_user" />
-	<property name="mail.password" value="primekey" />
 	<property name="mail.pop3.host" value="localhost" />
 	<property name="mail.smtp.host" value="localhost" />
 	<property name="mail.smtp.port" value="25" />
@@ -38,12 +34,6 @@
 	<property name="httpserver.pubhttp" value="8080" />
 	<property name="httpserver.pubhttps" value="8442" />
 	<property name="httpserver.privhttps" value="8443" />
-	<condition property="httpsserver.password" value="serverpwd" >
-		<isfalse value="${web.promptForPassword}"/>
-	</condition>
-	<condition property="java.trustpassword" value="changeit" >
-		<isfalse value="${web.promptForPassword}"/>
-	</condition>
 	<property name="httpsserver.bindaddress.pubhttp" value="0.0.0.0" />
 	<property name="httpsserver.bindaddress.pubhttps" value="0.0.0.0" />
 	<property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />

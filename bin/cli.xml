@@ -1,10 +1,5 @@
 <project name="cli" default="ejbca:install" basedir="." xmlns:ejbca="ejbca">
 
-    <!-- Set this to false if no prompting for requested CA, 
-         and Web configuration should be made
-    -->
-    <property name="ejbca.prompt" value="true"/>
-
     <property name="ejbca.home" location=".."/>
     <property environment="env"/>
 
@@ -22,25 +17,21 @@
         <available file="${ejbca.home}/dist/${app.name}.ear" property="bootstrap.done"/>
         <fail unless="bootstrap.done" message="Missing EJBCA_HOME/dist/${app.name}.ear. You must do 'ant bootstrap' to build the ${app.name}.ear file." />
 	</target>
+	
+    <!-- ======================================================================= -->
+    <!-- Promts for passwords required at deployment                             -->
+	<!-- Note: This code is duplicated in build.xml								 -->
+    <!-- ======================================================================= -->
+	<target name="ejbca:deployprompt">
+		<input message="Please enter the password of the truststore with the CA certificate for https?" addproperty="java.trustpassword" defaultvalue="changeit">
+			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+		</input>
+		<input message="Please enter the password of the keystore with the TLS key for https" addproperty="httpsserver.password" defaultvalue="serverpwd">
+			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+		</input>
+	</target>
 
-    <target name="ejbca:noprompt" unless="ejbca.prompt">
-        <property name="ca.name" value="AdminCA1"/>
-        <property name="ca.dn" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
-        <property name="ca.keyspec" value="2048"/>
-        <property name="ca.keytype" value="RSA"/>
-    	<property name="ca.signaturealgorithm" value="SHA1WithRSA"/>
-        <property name="ca.validity" value="3650"/>
-        <property name="ca.policy" value="null"/>
-        <property name="httpsserver.hostname" value="localhost"/>
-        <property name="httpsserver.dn" value="CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE"/>
-		<property name="superadmin.cn" value="SuperAdmin"/>
-		<property name="superadmin.dn" value="CN=${superadmin.cn}"/>
-		<property name="superadmin.password" value="ejbca"/>
-		<property name="superadmin.batch" value="true"/>
-        <property name="java.trustpassword" value="changeit"/>
-    </target>
-
-    <target name="ejbca:prompt" if="ejbca.prompt">
+    <target name="ejbca:prompt">
         <input message="Please enter the CA name (default: AdminCA1) ?" addproperty="ca.name" defaultvalue="AdminCA1"/>
         <input message="Please enter the CA dn (default: CN=AdminCA1,O=${app.name.cap} Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the CA key type (default: RSA) ?" addproperty="ca.keytype" defaultvalue="RSA" />
@@ -51,20 +42,28 @@
         <input message="Please enter the server hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
         <input message="Please enter the server dn (default: CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=${httpsserver.hostname},O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the superadmin cn (default: SuperAdmin) ?" addproperty="superadmin.cn" defaultvalue="SuperAdmin"/>
-        <input message="Please enter the superadmin dn (default: CN=${superadmin.cn}) ?" addproperty="superadmin.dn" defaultvalue="CN=${superadmin.cn}"/>
-        <input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}"/>
-        <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>
-        <input message="Please enter the password of the keystore with the TLS key for https (default: serverpwd) ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
-        <input message="Please enter the password of the truststore with the CA certificate for https (default: changeit) ?" addproperty="java.trustpassword" defaultvalue="changeit"/>
+         <input message="Please enter the superadmin dn (default: CN=${superadmin.cn}) ?" addproperty="superadmin.dn" defaultvalue="CN=${superadmin.cn}"/>
+        <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>      
+		<input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}">
+			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+		</input>
+		<input message="Please enter the password to the mail server?" addproperty="mail.password" defaultvalue="primekey">
+			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+		</input>
+		<input message="Please enter the password to the database. A blank password works for hsqldb." addproperty="database.password" defaultvalue="">
+			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+		</input>
+        <input message="Enter password CA token password: " addproperty="ca.tokenpassword" defaultvalue="null">
+            <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+        </input> 
     </target>
 
-    <target name="ejbca:init" depends="ejbca:noprompt,ejbca:prompt">
+    <target name="ejbca:init" depends="ejbca:prompt, ejbca:deployprompt">
         <echo>
 ------------------- CA Properties ----------------
 ca.name                : ${ca.name}
 ca.dn                  : ${ca.dn}
 ca.tokentype           : ${ca.tokentype}
-ca.tokenpassword       : ${ca.tokenpassword}
 ca.keytype             : ${ca.keytype}
 ca.keyspec             : ${ca.keyspec}
 ca.signaturealgorithm  : ${ca.signaturealgorithm}
@@ -73,12 +72,9 @@ ca.policy              : ${ca.policy}
 ca.tokenproperties     : ${ca.tokenproperties}
 httpsserver.hostname   : ${httpsserver.hostname}
 httpsserver.dn         : ${httpsserver.dn}
-httpsserver.password   : ${httpsserver.password}
 superadmin.cn          : ${superadmin.cn}
 superadmin.dn          : ${superadmin.dn}
-superadmin.password    : ${superadmin.password}
 superadmin.batch       : ${superadmin.batch}
-java.trustpassword     : ${java.trustpassword}
 appserver.home         : ${appserver.home}
         </echo>
     </target>
@@ -100,36 +96,26 @@ appserver.home         : ${appserver.home}
 	    <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
 	    <ejbca:keytool arg="-v -alias '${ca.name}' -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
     </target>
-
+	
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
-        <condition property="isPrompt">
-            <equals arg1="${ca.tokenpassword}" arg2="prompt" />
-        </condition>
-        <antcall target="ejbca:initPromptCA" />
         <antcall target="ejbca:initCA" />
         
         <antcall target="ejbca:adminweb"/>
     	<antcall target="ejbca:javatruststore"/>
     </target>
 
-    <target name="ejbca:initPromptCA" if="isPrompt">
-        <input message="Enter ca token password: " addproperty="password">
-            <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
-        </input>
-        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${password} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}..." />
-        <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${password} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}'/>
-    </target>
-
-    <target name="ejbca:initCA" unless="isPrompt">
-        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}..." />
+    <target name="ejbca:initCA" >
+       <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}..." />
         <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn ${superadmin.cn}'/>
-    </target>
+     </target>
 
 	<target name="ejbca:adminweb">
 		<!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost -->
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
 	    </condition>
+		
+		
 		<ejbca:cli arg='ra adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" "${ca.name}" null 1 JKS SERVER'/>
 		<ejbca:cli arg="ra setclearpwd tomcat ${httpsserver.password}"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
@@ -155,7 +141,7 @@ appserver.home         : ${appserver.home}
 		</fail>
 	</target>
     
-	<target name="ejbca:cli" depends="ejbca:noprompt" description="Handy hook to run a command">
+	<target name="ejbca:cli" description="Handy hook to run a command">
 		<ejbca:cli name="${cli.name}" arg="${cli.args}"/>
 	</target>
 
