@@ -198,7 +198,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#editUser(org.ejbca.core.protocol.ws.objects.UserDataVOWS)
 	 */	
 	public void editUser(UserDataVOWS userdata)
-			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException, IllegalQueryException {
+			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
@@ -249,7 +249,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#findUser(org.ejbca.core.protocol.ws.objects.UserMatch)
 	 */
 	
-	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException {		
+	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, EjbcaException {		
     	ArrayList<UserDataVOWS> retval = null;
         log.debug("Find user with match '"+usermatch.getMatchvalue()+"'.");
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -281,6 +281,8 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
+		} catch (IllegalQueryException e) {
+			throw EjbcaWSHelper.getInternalException(e, logger);
 		} finally {
             logger.writeln();
             logger.flush();
@@ -2487,7 +2489,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public CertificateResponse certificateRequest(UserDataVOWS userdata, String requestData, int requestType, String hardTokenSN, String responseType)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException, IllegalQueryException {
+	ApprovalException, WaitingForApprovalException, EjbcaException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        log.debug("CertReq for user '" + userdata.getUsername() + "'.");
@@ -2563,7 +2565,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public KeyStore softTokenRequest(UserDataVOWS userdata, String hardTokenSN, String keyspec, String keyalg)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException, IllegalQueryException {
+	ApprovalException, WaitingForApprovalException, EjbcaException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        log.debug("Soft token req for user '" + userdata.getUsername() + "'.");

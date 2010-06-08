@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
@@ -268,8 +269,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         super.cleanUpCACertRequest();
     }
 
-    /** Simulate a simple SQL injection by sending the illegal char "'". */
+    /** Simulate a simple SQL injection by sending the illegal char "'". 
+     * @throws Exception */
 	public void testEvilFind01() throws Exception {
+		log.trace(">testEvilFind01()");
         setUpAdmin();
 		UserMatch usermatch = new UserMatch();
 	    usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
@@ -279,7 +282,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 			List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 			fail("SQL injection did not cause an error! " + userdatas.size());
 	    } catch (IllegalQueryException_Exception e) {
-	    }
+	    } catch (Exception e){log.debug(e.getMessage());}
+	    log.trace("<testEvilFind01()");
 	}
     
 	/** Use single transaction method for requesting KeyStore with special characters in the certificate SubjectDN. */

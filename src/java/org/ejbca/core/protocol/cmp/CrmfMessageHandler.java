@@ -158,7 +158,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		}
 	}
 
-	public IResponseMessage handleMessage(BaseCmpMessage msg) throws NumberFormatException {
+	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		log.trace(">handleMessage");
 		IResponseMessage resp = null;
 		try {

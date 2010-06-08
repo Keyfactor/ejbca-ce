@@ -295,12 +295,11 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @throws AuthorizationDeniedException 
      * @throws ApprovalRequestDoesntExistException 
      * @throws AdminAlreadyApprovedRequestException 
-     * @throws IllegalQueryException 
      * @throws EjbcaException 
      * @ejb.interface-method view-type="both"
      */
     public void approve(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, 
-                                                                               AuthorizationDeniedException,  AdminAlreadyApprovedRequestException, IllegalQueryException, EjbcaException{
+                                                                               AuthorizationDeniedException,  AdminAlreadyApprovedRequestException, EjbcaException{
     	log.trace(">approve");
     	ApprovalDataLocal adl;
 		try {
@@ -365,8 +364,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		} catch (ApprovalRequestExecutionException e) {
 			getLogSession().log(admin,adl.getCaId(),LogConstants.MODULE_APPROVAL,new Date(),null,null,LogConstants.EVENT_ERROR_APPROVALAPPROVED,"Approval with id : " +approvalId +" couldn't execute properly");
 			throw e;
-		} catch (EjbcaException e){
-			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, e.getMessage());
 		}
 		log.trace("<approve");
     }
@@ -669,12 +666,13 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * objects only
      * @return a List of ApprovalDataVO, never null
      * @throws AuthorizationDeniedException 
+     * @throws IllegalQueryException 
      * 
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
     
-    public List query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString) throws IllegalQueryException, AuthorizationDeniedException {
+    public List query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString) throws AuthorizationDeniedException, IllegalQueryException {
         trace(">query()");
         ArrayList returnData = new ArrayList();
         String sqlquery = "select " + APPROVALDATA_COL + " from ApprovalData where ";

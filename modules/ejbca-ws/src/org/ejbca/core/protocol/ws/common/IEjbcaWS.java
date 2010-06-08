@@ -43,7 +43,6 @@ import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
-import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Primary interface to the EJBCA RA WebService.
@@ -90,7 +89,7 @@ public interface IEjbcaWS {
 	public abstract void editUser(UserDataVOWS userdata)
 			throws CADoesntExistsException, AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, EjbcaException,
-			ApprovalException, WaitingForApprovalException, IllegalQueryException;
+			ApprovalException, WaitingForApprovalException;
 
 	/**
 	 * Retrieves information about users in the database.
@@ -111,7 +110,7 @@ public interface IEjbcaWS {
 	 */
 
 	public abstract List<UserDataVOWS> findUser(UserMatch usermatch)
-			throws AuthorizationDeniedException, IllegalQueryException,
+			throws AuthorizationDeniedException,
 			EjbcaException;
 
 	/**
@@ -883,7 +882,7 @@ public interface IEjbcaWS {
 	 */
 	public abstract KeyStore softTokenRequest(UserDataVOWS userData, String hardTokenSN, String keyspec, String keyalg)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException, IllegalQueryException;
+	ApprovalException, WaitingForApprovalException, EjbcaException;
 	/**
 	 * Generates a certificate for a user.
 	 * If the user is not already present in the database, the user is added.<br>
@@ -918,7 +917,7 @@ public interface IEjbcaWS {
 	 */
 	public abstract CertificateResponse certificateRequest(UserDataVOWS userData, String requestData, int requestType, String hardTokenSN, String responseType)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException, IllegalQueryException;
+	ApprovalException, WaitingForApprovalException, EjbcaException;
 
 
     /**

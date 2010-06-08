@@ -740,22 +740,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public void setAllowMergeDnWebServices(boolean merge){
     	data.put(ALLOW_MERGEDN_WEBSERVICES, new Boolean(merge));
     }
-    
-    /**
-     * @return indication if Serial Number should be unique.
-     * default is false.
-     */
-    public boolean getEnforceUniqueSerialNumber(){
-    	if(data.get(ENFORCE_UNIQUE_SERIALNUMBER) == null){
-    		return false;
-    	}
-    	
-    	return ((Boolean) data.get(ENFORCE_UNIQUE_SERIALNUMBER)).booleanValue();
-    }
-    
-    public void setEnforceUniqueSerialNumber(boolean enforce){
-    	data.put(ENFORCE_UNIQUE_SERIALNUMBER, new Boolean(enforce));
-    }
 
     
     /**
@@ -1925,7 +1909,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     private static final String REUSECERTIFICATE = "REUSECERTIFICATE";
     private static final String REVERSEFFIELDCHECKS = "REVERSEFFIELDCHECKS"; 
     private static final String ALLOW_MERGEDN_WEBSERVICES = "ALLOW_MERGEDN_WEBSERVICES";
-    private static final String ENFORCE_UNIQUE_SERIALNUMBER = "ENFOURCE_UNIQUE_SERIALNUMBER";
     
     private static final String PRINTINGUSE            = "PRINTINGUSE";
     private static final String PRINTINGDEFAULT        = "PRINTINGDEFAULT";

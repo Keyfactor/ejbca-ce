@@ -74,7 +74,6 @@ import org.ejbca.core.protocol.SimpleRequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
-//import org.ejbca.util.query.IllegalQueryException;
 
 import com.novosec.pkix.asn1.crmf.CertRequest;
 
