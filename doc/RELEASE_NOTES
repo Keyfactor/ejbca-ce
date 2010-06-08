@@ -25,6 +25,10 @@ Read the full changelog for details.
 
 For upgrade instructions, please see UPGRADE. 
 
+EJBCA 3.11.0
+
+Ant 1.7.1 or higher is required from this version on.
+
 EJBCA 3.10.0
 -----------
 This is a major release with lots of internal reorganisations, new features and fixes. 
