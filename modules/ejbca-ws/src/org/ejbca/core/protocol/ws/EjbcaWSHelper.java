@@ -161,14 +161,10 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	protected void isAuthorizedToRepublish(Admin admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException, RemoteException{
 		try {
 			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
-			UserDataVO userdata = null;
-			try {
-				userdata = getUserAdminSession().findUser(admin, username);
-			} catch (FinderException e) {
-				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "Error the  user doesn't seem to exist.");
-			}
+			UserDataVO userdata = getUserAdminSession().findUser(admin, username);
 			if(userdata == null){
-				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "Error the  user doesn't seem to exist.");
+				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
 			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS);
 			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid );		
@@ -184,15 +180,10 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	protected void isAuthorizedToHardTokenData(Admin admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException, RemoteException {
 		try {
 			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
-			UserDataVO userdata = null;
-			boolean userExists = false;
-			try {
-				userdata = getUserAdminSession().findUser(admin, username);
-				if(userdata != null){
-					userExists = true;
-				}
-			} catch (FinderException e) {
-				// Do nothing
+			UserDataVO userdata = getUserAdminSession().findUser(admin, username);
+			if(userdata == null){
+				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
 
 			getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
@@ -200,7 +191,7 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWPUKS);
 			}
 
-			if(userExists){		
+			if(userdata != null){
 				getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS);
 				if(viewPUKData){
 					getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS);			

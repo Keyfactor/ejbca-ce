@@ -14,8 +14,6 @@
 package org.ejbca.ui.cli.batch;
 
 import java.io.File;
-import java.util.Date;
-import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -50,21 +48,6 @@ public class BatchMakeP12Test extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-
-        log.debug("Generated random username: username =" + username);
-
-        return username;
-    } // genRandomUserName
-
     /**
      * test creation of new user
      *
@@ -72,7 +55,7 @@ public class BatchMakeP12Test extends TestCase {
      */
     public void test01CreateNewUsers() throws Exception {
         log.trace(">test01CreateNewUser()");
-        String username = genRandomUserName();
+        String username = TestTools.genRandomUserName();
         Object o = null;
         try {
             TestTools.getUserAdminSession().addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN=" + username, "", username + "@anatom.se", false,
@@ -86,7 +69,7 @@ public class BatchMakeP12Test extends TestCase {
 
         log.debug("created " + username + ", pwd=foo123");
 
-        String username1 = genRandomUserName();
+        String username1 = TestTools.genRandomUserName();
         o = null;
         try {
         	TestTools.getUserAdminSession().addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,

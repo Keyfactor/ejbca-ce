@@ -1,3 +1,14 @@
+EJBCA 3.11
+-----------
+Interface ICustomPublisher has been modified, via removal of the number parameter from the storeCRL
+method. Any custom classes implementing this interface need to be modified in turn.
+
+EJBCA 3.10.2
+-----------
+In EJBCA 3.10.2 the Exception handling for NotFoundExceptions when a user does not exist was slightly overhauled. 
+This effected some WS-API calls (findCerts, getLastCertChain and getHardTokenData). The behavior of the methods are unchanged, but if 
+you have handling for such errors you should double check the error handling anyhow. Javadoc has been updated where it was previously not clear.
+
 EJBCA 3.10.1
 -----------
 This is a maintenance release with a few new features, some improvements and several bug fixes. 33 issues in total have been resolved. 

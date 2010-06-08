@@ -65,7 +65,7 @@ public class ApprovalSessionTest extends TestCase {
 		super.setUp();
 		
 		if (adminusername1 == null) {
-			adminusername1 = genRandomUserName();
+			adminusername1 = TestTools.genRandomUserName();
 			adminusername2 = adminusername1 + "2";
 			reqadminusername = "req" + adminusername1;
 			
@@ -113,19 +113,6 @@ public class ApprovalSessionTest extends TestCase {
 		super.tearDown();
 	}
 
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random username: username =" + username);
-
-        return username;
-    } // genRandomUserName
-	
 	public void testAddApprovalRequest() throws Exception {
 				
 		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);

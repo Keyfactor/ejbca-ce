@@ -78,18 +78,6 @@ public class AuthenticationSessionTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String name = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            name += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random username: username =" + name);
-        return name;
-    } // genRandomUserName
-
     private String genRandomPwd() throws Exception {
         // Gen random pwd
         Random rand = new Random(new Date().getTime() + 4812);
@@ -124,14 +112,14 @@ public class AuthenticationSessionTest extends TestCase {
         log.trace(">test01CreateNewUser()");
 
         // Make user that we know later...
-        username1 = genRandomUserName();
+        username1 = TestTools.genRandomUserName();
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
         TestTools.getUserAdminSession().addUser(admin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         log.debug("created user: " + username1 + ", " + pwd1 + ", C=SE, O=AnaTom, CN=" + username1);
         
         // Make another user that we know later...
-        username2 = genRandomUserName();
+        username2 = TestTools.genRandomUserName();
         pwd2 = genRandomPwd();
         createUser(admin, username2, pwd2, caid, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, MAXFAILEDLOGINS);
         log.debug("created user: " + username2 + ", " + pwd2 + ", C=SE, O=AnaTom, CN=" + username2);

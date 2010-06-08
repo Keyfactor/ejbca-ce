@@ -848,7 +848,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @param admin Administrator performing the operation
      * @param username the username of the certificate(s) that will be retrieved
      * @param status the status of the CertificateDataBean.CERT_ constants
-     * @return Collection of Certificates ordered by expire date, with last expire date first
+     * @return Collection of Certificates ordered by expire date, with last expire date first, or empty list if user can not be found
      * @ejb.interface-method
      */
     public Collection findCertificatesByUsernameAndStatus(Admin admin, String username, int status) {

@@ -165,7 +165,6 @@
 					<exclude name="org/ejbca/core/protocol/xkms/XKMSSigTest.class" />
                     <exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
-					<exclude name="org/ejbca/core/protocol/cmp/CrmfRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspSignedHttpTest.class" />
 					<!-- Tests that require the CMP TCP listener -->
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />

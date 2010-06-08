@@ -22,6 +22,7 @@ public class CmpConfiguration {
 	public static final String CONFIG_RA_ENDENTITYPROFILE     = "cmp.ra.endentityprofile";
 	public static final String CONFIG_RA_CERTIFICATEPROFILE   = "cmp.ra.certificateprofile";
 	public static final String CONFIG_RESPONSEPROTECTION      = "cmp.responseprotection";
+	public static final String CONFIG_RACANAME				  = "cmp.ra.caname";
 
 	public static boolean getAllowRAVerifyPOPO() {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getExpandedString(CONFIG_ALLOWRAVERIFYPOPO, "false"));
@@ -72,7 +73,7 @@ public class CmpConfiguration {
 	}
 	
 	public static String getRACAName() {
-		return ConfigurationHolder.getString("cmp.ra.caname", "AdminCA1");
+		return ConfigurationHolder.getString(CONFIG_RACANAME, "AdminCA1");
 	}
 	
 	public static String getResponseProtection() {

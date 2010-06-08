@@ -102,9 +102,8 @@ public class CrmfRequestTest extends CmpTestCase {
         }
         issuerDN = cacert.getIssuerDN().getName();
         TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
+		TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
         TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_DEFAULTCA, issuerDN);
-        // This one might be required for the BlueXTest..?
-        //TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
 	}
 	
 	protected void setUp() throws Exception {
@@ -137,11 +136,11 @@ public class CrmfRequestTest extends CmpTestCase {
 		fos.write(ba);
 		fos.close();
 		*/
-		byte[] resp = sendCmpHttp(ba);
+		byte[] resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
-		checkCmpFailMessage(resp, "User "+user+" not found.", 1, reqId, 7);
+		checkCmpFailMessage(resp, "User "+user+" not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
 	}
 	
 	public void test02CrmfHttpOkUser() throws Exception {
@@ -160,7 +159,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		out.writeObject(req);
 		byte[] ba = bao.toByteArray();
 		// Send request and receive response
-		byte[] resp = sendCmpHttp(ba);
+		byte[] resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
@@ -177,7 +176,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		out.writeObject(confirm);
 		ba = bao.toByteArray();
 		// Send request and receive response
-		resp = sendCmpHttp(ba);
+		resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
@@ -191,7 +190,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		out.writeObject(rev);
 		ba = bao.toByteArray();
 		// Send request and receive response
-		resp = sendCmpHttp(ba);
+		resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
@@ -199,9 +198,9 @@ public class CrmfRequestTest extends CmpTestCase {
 	}
 
 	public void test03BlueXCrmf() throws Exception {
-		byte[] resp = sendCmpHttp(bluexir);
+		byte[] resp = sendCmpHttp(bluexir, 200);
 		assertNotNull(resp);
-		checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 64, null); // 64 is WRONG_AUTHORITY
+		checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4 is BAD_REQUEST
 	}
 	
 	public void test04BadBytes() throws Exception {
@@ -212,9 +211,9 @@ public class CrmfRequestTest extends CmpTestCase {
 		msg[22] = 0;
 		msg[56] = 0;
 		msg[88] = 0;
-		byte[] resp = sendCmpHttp(msg);
-		assertNotNull(resp);
-		checkCmpPKIErrorMessage(resp, "CN=Failure Sender", "CN=Failure Recipient", 4, null); // 4 is BAD_REQUEST
+		// Bad request will return HTTP 400 (bad request)
+		byte[] resp = sendCmpHttp(msg, 400);
+		assertNull(resp);
 	}
 
 	public void testZZZCleanUp() throws Exception {

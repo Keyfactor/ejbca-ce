@@ -126,15 +126,13 @@ public interface IEjbcaWS {
 	 * 
 	 * @param username a unique username 
 	 * @param onlyValid only return valid certs not revoked or expired ones.
-	 * @return a collection of X509Certificates or null if no certificates could be found
+	 * @return a collection of X509Certificates or an empty list if no certificates, or no user, could be found
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
-	 * @throws NotFoundException if user cannot be found
 	 * @throws EjbcaException 
 	 */
 
 	public abstract List<Certificate> findCerts(String username,
-			boolean onlyValid) throws AuthorizationDeniedException,
-			NotFoundException, EjbcaException;
+			boolean onlyValid) throws AuthorizationDeniedException, EjbcaException;
 
 	/**
 	 * Retrieves the latest certificate issued to the user.
@@ -150,14 +148,13 @@ public interface IEjbcaWS {
 	 * </pre>
 	 * 
 	 * @param username a unique username 
-	 * @return a collection of X509Certificates or null if no certificates could be found with user certificate in pos 0, SubCA in 1, RootCA in 2 etc
+	 * @return a collection of X509Certificates or null if no certificates could be found with user certificate in pos 0, SubCA in 1, RootCA in 2 etc, or if user does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
-	 * @throws NotFoundException if user cannot be found
 	 * @throws EjbcaException 
 	 */
 
 	public abstract List<Certificate> getLastCertChain(String username) 
-	throws AuthorizationDeniedException, NotFoundException, EjbcaException;
+	throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
 	 *  Generates a certificate for a user.
@@ -602,16 +599,17 @@ public interface IEjbcaWS {
 	 * @return the HardTokenData
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws HardTokenDoesntExistsException if the hardtokensn don't exist in database.
-	 * @throws EjbcaException if an exception occurred on server side.
+	 * @throws NotFoundException if user for wich the hard token is registered does not exist
 	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
 	 * @throws ApprovalException  if error happened with the approval mechanisms
 	 * @throws WaitingForApprovalException if the request haven't been processed yet. 
 	 * @throws ApprovalRequestExecutionException if the approval request was rejected
 	 * @throws AuthorizationDeniedException 
+	 * @throws EjbcaException if an exception occurred on server side.
 	 */
 	public abstract HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
 			throws CADoesntExistsException, AuthorizationDeniedException,
-			HardTokenDoesntExistsException, EjbcaException, ApprovalException, ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException;
+			HardTokenDoesntExistsException, NotFoundException, ApprovalException, ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException, EjbcaException;
 
 	/**
 	 * Fetches all hard tokens for a given user.

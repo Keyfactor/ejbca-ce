@@ -20,11 +20,9 @@ import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import javax.xml.namespace.QName;
 
@@ -52,7 +50,6 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 
@@ -379,9 +376,9 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     // private helper functions
     //
     private void setupApprovals() throws Exception {
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
 
-        adminusername1 = genRandomUserName();
+        adminusername1 = TestTools.genRandomUserName();
 
         CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
         caid = cainfo.getCAId();
@@ -419,17 +416,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         admin1 = new Admin(admincert1, adminusername1, null);
         reqadmin = TestTools.getUserAdminSession().getAdmin(reqadmincert);
     }
-
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        return username;
-    } // genRandomUserName
 
     protected void removeApprovalAdmins() throws Exception {
         getUserAdminSession().deleteUser(intadmin, adminusername1);

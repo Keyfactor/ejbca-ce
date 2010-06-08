@@ -25,9 +25,8 @@ INSERT and DELETE. The SQL executed by database upgrades code is available in
 
 From EJBCA 3.10.x to EJBCA 3.11.x
 -------------------------------
-Interface ICustomPublisher has been modified, via removal of the number parameter from the storeCRL
-method. Any custom classes implementing this interface need to be modified in turn.
 
+Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
 
 From EJBCA 3.10.x to EJBCA 3.10.x
 -------------------------------
@@ -40,6 +39,8 @@ Copy the directory 'p12' from the earlier installation and do 'ant deploy' with 
 
 Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. 
 See Admin Guide
+
+Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
 
 From EJBCA 3.9.x to EJBCA 3.10.x
 --------------------------------

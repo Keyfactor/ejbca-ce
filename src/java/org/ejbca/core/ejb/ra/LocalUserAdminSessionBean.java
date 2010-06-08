@@ -391,17 +391,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param hardwaretokenissuerid , if token should be hard, the id of the hard token issuer,
      *                              else 0.
      * @param caid					the CA the user should be issued from.
-     * @throws EjbcaException 
-     * @throws FinderException 
      * @throws WaitingForApprovalException 
      * @throws UserDoesntFullfillEndEntityProfile 
      * @throws AuthorizationDeniedException 
      * @throws CADoesntExistsException 
      * @throws DuplicateKeyException 
+     * @throws EjbcaException 
      * @ejb.interface-method
      */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
-                        int type, int tokentype, int hardwaretokenissuerid, int caid) throws DuplicateKeyException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, FinderException, EjbcaException {
+                        int type, int tokentype, int hardwaretokenissuerid, int caid) throws DuplicateKeyException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
     	
     	UserDataVO userdata = new UserDataVO(username, subjectdn, caid, subjectaltname, 
     			                             email, UserDataConstants.STATUS_NEW, type, endentityprofileid, certificateprofileid,
@@ -425,15 +424,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws DuplicateKeyException if user already exists
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  
-	 * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
-	 * @throws FinderException if the SQL query of finding all users issued from a certain CA goes wrong.
-	 * @throws CADoesntExistsException if the admin CA does not exist.
+	 * @throws CADoesntExistsException 
+	 * @throws EjbcaException 
      * 
      * @ejb.interface-method
      */
 	public void addUserFromWS(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, DuplicateKeyException,
-			WaitingForApprovalException, CADoesntExistsException, FinderException, EjbcaException {
+			WaitingForApprovalException, CADoesntExistsException, EjbcaException {
 		int profileId = userdata.getEndEntityProfileId();
 		EndEntityProfile profile = raadminsession.getEndEntityProfile(admin,profileId);
 		if (profile.getAllowMergeDnWebServices()) {
@@ -453,12 +451,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws DuplicateKeyException if user already exists
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  	
-     * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
-     * @throws FinderException if the SQL query of finding all users issued from a certain CA goes wrong.
      * @throws CADoesntExistsException if the admin CA does not exist.
+     * @throws EjbcaException 
      * @ejb.interface-method
      */
-    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, WaitingForApprovalException, CADoesntExistsException, FinderException, EjbcaException {
+    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         String dn = CertTools.stringToBCDNString(StringTools.strip(userdata.getDN()));
     	String altName = StringTools.strip(userdata.getSubjectAltName());
     	String username = StringTools.strip(userdata.getUsername());
@@ -519,14 +516,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         	throw new WaitingForApprovalException(msg);
         }
         
-        if(caadminsession.getCA(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
-            String serialnumber = getSerialnumber(userdata.getDN());
-            if(serialnumber != null){
-            	if(!serialnumberIsUnique(admin, userdata.getCAId(), serialnumber)){
-   		 			throw new EjbcaException(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, "Error: SubjectDN Serialnumber already exists.");
-            	}
-            }
-        }    
+        // Check that the end entity not have the same serialNumber in DN as another end entity, if we should check it
+        CAInfo cainfo = caadminsession.getCAInfoOrThrowException(admin, userdata.getCAId());
+        if (cainfo.isDoEnforceUniqueSubjectDNSerialnumber()) {
+        	String serialnumber = getSerialnumber(userdata.getDN());
+        	if (serialnumber != null) {
+        		if (!serialnumberIsUnique(admin, userdata.getCAId(), serialnumber)) {
+        			throw new EjbcaException(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, "Error: SubjectDN Serialnumber already exists.");
+        		}
+        	}
+        }        	
         
         try {
             UserDataLocal data1 = home.create(userdata.getUsername(), newpassword, dn, userdata.getCAId(), userdata.getCardNumber());
@@ -602,7 +601,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     	return null;
     }
     
-    private boolean serialnumberIsUnique(Admin admin, int caid, String serialnumber) throws FinderException{
+    private boolean serialnumberIsUnique(Admin admin, int caid, String serialnumber) {
     	UserDataVO user = null;
     	String sn = null;
     	Iterator itr = findAllUsersByCaId(admin, caid).iterator();
@@ -720,7 +719,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws ApprovalException if an approval already is waiting for specified action 
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
-
+     * @throws EJBException if the user does not exist
+	 *
      * @ejb.interface-method
      */
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromWebService)
@@ -735,18 +735,18 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         int oldstatus;
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, userdata.getEndEntityProfileId());
         UserDataPK pk = new UserDataPK(userdata.getUsername());
+		UserDataLocal userDataLocal = null;
+		try {
+			userDataLocal = home.findByPrimaryKey(pk);
+		} catch (Exception e) {
+			String msg = intres.getLocalizedMessage("ra.erroreditentity", userdata.getUsername());
+			logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+			error("ChangeUser:", e);
+			throw new EJBException(e);
+		}
 
         // if required, we merge the existing user dn into the dn provided by the web service.
         if (fromWebService && profile.getAllowMergeDnWebServices()) {
-			UserDataLocal userDataLocal = null;
-			try {
-				userDataLocal = home.findByPrimaryKey(pk);
-			} catch (Exception e) {
-				String msg = intres.getLocalizedMessage("ra.erroreditentity", userdata.getUsername());
-				logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-				error("ChangeUser:", e);
-				throw new EJBException(e);
-			}
 
 			if (userDataLocal != null) {
                 if (userDataLocal.getSubjectDN() != null) {
@@ -813,36 +813,29 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         // Check if approvals is required.
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId(), userdata.getCertificateProfileId());
         if (numOfApprovalsRequired > 0){
-        	UserDataVO orguserdata;
-			try {
-				orguserdata = findUser(admin, userdata.getUsername());
-			} catch (FinderException e) {
-	            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", userdata.getUsername());            	
-				throw new ApprovalException(msg);
-			}        	        	
-			EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userdata, clearpwd, orguserdata, admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
-			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)){       		    		
-				getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
-	            String msg = intres.getLocalizedMessage("ra.approvaledit");            	
-				throw new WaitingForApprovalException(msg);
-			}
+        	UserDataVO orguserdata = userDataLocal.toUserDataVO();
+        	EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userdata, clearpwd, orguserdata, admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
+        	if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)){       		    		
+        		getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+        		String msg = intres.getLocalizedMessage("ra.approvaledit");            	
+        		throw new WaitingForApprovalException(msg);
+        	}
         }   
         
         try {
-            UserDataLocal data1 = home.findByPrimaryKey(pk);
-            data1.setDN(dn);
-            data1.setSubjectAltName(altName);
-            data1.setSubjectEmail(userdata.getEmail());
-            data1.setCaId(userdata.getCAId());
-            data1.setType(type);
-            data1.setEndEntityProfileId(userdata.getEndEntityProfileId());
-            data1.setCertificateProfileId(userdata.getCertificateProfileId());
-            data1.setTokenType(userdata.getTokenType());
-            data1.setHardTokenIssuerId(userdata.getHardTokenIssuerId());
-            data1.setCardNumber(userdata.getCardNumber());
+        	userDataLocal.setDN(dn);
+        	userDataLocal.setSubjectAltName(altName);
+        	userDataLocal.setSubjectEmail(userdata.getEmail());
+        	userDataLocal.setCaId(userdata.getCAId());
+        	userDataLocal.setType(type);
+        	userDataLocal.setEndEntityProfileId(userdata.getEndEntityProfileId());
+        	userDataLocal.setCertificateProfileId(userdata.getCertificateProfileId());
+        	userDataLocal.setTokenType(userdata.getTokenType());
+        	userDataLocal.setHardTokenIssuerId(userdata.getHardTokenIssuerId());
+        	userDataLocal.setCardNumber(userdata.getCardNumber());
             ExtendedInformation ei = userdata.getExtendedinformation();
-            data1.setExtendedInformation(ei);
-            oldstatus = data1.getStatus();
+            userDataLocal.setExtendedInformation(ei);
+            oldstatus = userDataLocal.getStatus();
             if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && !(userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INPROCESS)){
               getKeyRecoverySession().unmarkUser(admin,userdata.getUsername());	
             }
@@ -850,28 +843,28 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     		if ( StringUtils.equals(requestCounter, "0") && (userdata.getStatus() == UserDataConstants.STATUS_NEW) && (oldstatus != UserDataConstants.STATUS_NEW) ) {
                 // If status is set to new, we should re-set the allowed request counter to the default values
     			// But we only do this if no value is specified already, i.e. 0 or null
-    			resetRequestCounter(admin, data1, false);
+    			resetRequestCounter(admin, userDataLocal, false);
     		} else {
     			// If status is not new, we will only remove the counter if the profile does not use it
-    			resetRequestCounter(admin, data1, true);    			
+    			resetRequestCounter(admin, userDataLocal, true);    			
     		}
-            data1.setStatus(userdata.getStatus());
+    		userDataLocal.setStatus(userdata.getStatus());
             if(newpassword != null){
                 if(clearpwd) {
                     try {
-                        data1.setOpenPassword(newpassword);
+                    	userDataLocal.setOpenPassword(newpassword);
                     } catch (java.security.NoSuchAlgorithmException nsae) {
                         debug("NoSuchAlgorithmException while setting password for user "+userdata.getUsername());
                         throw new EJBException(nsae);
                     }
                 } else {
-                    data1.setPassword(newpassword);
+                	userDataLocal.setPassword(newpassword);
                 }
             }
             // We want to create this object before re-setting the time modified, because we may want to 
             // Use the old time modified in any notifications
-            UserDataVO udata = data1.toUserDataVO();
-            data1.setTimeModified((new java.util.Date()).getTime());
+            UserDataVO udata = userDataLocal.toUserDataVO();
+            userDataLocal.setTimeModified((new java.util.Date()).getTime());
 
         	// We also want to be able to handle non-clear generated passwords in the notifiction, although UserDataVO
             // should always have a null password for autogenerated end entities the notification framework expects it to
@@ -1673,39 +1666,42 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    public UserDataVO findUser(Admin admin, String username) throws FinderException, AuthorizationDeniedException {
+    public UserDataVO findUser(Admin admin, String username) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUser(" + username + ")");
         }
         UserDataPK pk = new UserDataPK(username);
-        UserDataLocal data;
+        UserDataVO ret = null;
         try {
-            data = home.findByPrimaryKey(pk);
-        } catch (ObjectNotFoundException oe) {
-            return null;
-        }
+            UserDataLocal data = home.findByPrimaryKey(pk);
+            if (data != null) {
+                if (!authorizedToCA(admin, data.getCaId())) {
+                    String msg = intres.getLocalizedMessage("ra.errorauthcaexist", new Integer(data.getCaId()), username);
+                    throw new AuthorizationDeniedException(msg);
+                }
 
-        if (!authorizedToCA(admin, data.getCaId())) {
-            String msg = intres.getLocalizedMessage("ra.errorauthcaexist", new Integer(data.getCaId()), username);
-            throw new AuthorizationDeniedException(msg);
-        }
+                if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+                    // Check if administrator is authorized to view user.
+                    if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)){
+                        String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", new Integer(data.getEndEntityProfileId()), username);
+                        throw new AuthorizationDeniedException(msg);            	
+                    }
+                }
 
-        if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-            // Check if administrator is authorized to view user.
-            if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)){
-                String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", new Integer(data.getEndEntityProfileId()), username);
-                throw new AuthorizationDeniedException(msg);            	
+                ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+                        , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
+                        , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
+                        , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
+                ret.setPassword(data.getClearPassword());
+                ret.setCardNumber(data.getCardNumber());        	
             }
+        } catch (ObjectNotFoundException oe) {
+            // NOPMD ignore will return null 
+        } catch (FinderException fe) {
+            // NOPMD ignore will return null
         }
-
-        UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
-                , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
-                , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
-                , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
-        ret.setPassword(data.getClearPassword());
-        ret.setCardNumber(data.getCardNumber());
         if (log.isTraceEnabled()) {
-            log.trace("<findUser(" + username + ")");
+            log.trace("<findUser(" + username + "): " + (ret == null ? "null":ret.getDN()));
         }
         return ret;
     } // findUser
@@ -1927,24 +1923,30 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * Finds all users registered to a specified ca.
      *
      * @param caid the caid of the CA, from 'UserData'.
-     * @return Collection of UserDataVO
+     * @return Collection of UserDataVO, or empty collection if the query is illegal or no users exist
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-     public Collection findAllUsersByCaId(Admin admin, int caid) throws FinderException {
+     public Collection findAllUsersByCaId(Admin admin, int caid) {
          if (log.isTraceEnabled()) {
              log.trace(">findAllUsersByCaId("+caid+")");
          }
-         debug("Looking for users with caid: " + caid);
-         
+         if (log.isDebugEnabled()) {
+        	 debug("Looking for users with caid: " + caid);
+         }
          Query query = new Query(Query.TYPE_USERQUERY);
          query.add(UserMatch.MATCH_WITH_CA, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(caid));
          Collection returnval = null;
-         
          try{
            returnval = query(admin, query, false, null, null, false,0);  
-         }catch(IllegalQueryException e){}
-         debug("found "+returnval.size()+" user(s) with caid="+caid);
+         }catch(IllegalQueryException e){
+        	 // Ignore ??
+        	 debug("Illegal query", e);
+        	 returnval = new ArrayList();
+         }
+         if (log.isDebugEnabled()) {
+             debug("found "+returnval.size()+" user(s) with caid="+caid);        	 
+         }
          if (log.isTraceEnabled()) {
              log.trace("<findAllUsersByCaId("+caid+")");
          }
@@ -2411,13 +2413,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      */
     public boolean existsUser(Admin admin, String username) {
         boolean returnval = true;
-
         try {
             home.findByPrimaryKey(new UserDataPK(username));
         } catch (FinderException fe) {
             returnval = false;
         }
-
         return returnval;
     }
 

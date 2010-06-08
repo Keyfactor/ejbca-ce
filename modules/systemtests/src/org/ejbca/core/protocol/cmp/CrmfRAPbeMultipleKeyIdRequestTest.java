@@ -66,7 +66,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * Two CAs: CmpCA1 with DN "CN=CmpCA1,O=EJBCA Sample,C=SE"
  *          CmpCA2 with DN "CN=CmpCA2,O=EJBCA Sample,C=SE"
  *          
- * There must be three end entity profiles and four certificate profiles.
+ * There must be four end entity profiles and four certificate profiles.
  * 
  * Cert Profile with name KeyId1 must have key usage "digital signature", non-overridable
  * Cert Profile with name KeyId2 must have key usage "non repudiation", non-overridable
@@ -183,10 +183,10 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		out.writeObject(req);
 		byte[] ba = bao.toByteArray();
 		// Send request and receive response
-		byte[] resp = sendCmpHttp(ba);
+		byte[] resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
-		checkCmpFailMessage(resp, "End entity profile with name 'foobarfoobar' not found.", 23, reqId, 2); // We'll get back a FailInfo.BAD_REQUEST
+		checkCmpFailMessage(resp, "End entity profile with name 'foobarfoobar' not found.", 1, reqId, 2); // We'll get back an InitializationResponse (but a reject) with FailInfo.BAD_REQUEST
 	}
 
 
@@ -205,7 +205,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		out.writeObject(req);
 		byte[] ba = bao.toByteArray();
 		// Send request and receive response
-		byte[] resp = sendCmpHttp(ba);
+		byte[] resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, true);
@@ -238,7 +238,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		out.writeObject(req1);
 		ba = bao.toByteArray();
 		// Send request and receive response
-		resp = sendCmpHttp(ba);
+		resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, true);
@@ -253,7 +253,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		out.writeObject(revReq);
 		ba = bao.toByteArray();
 		// Send request and receive response
-		resp = sendCmpHttp(ba);
+		resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, true);
@@ -270,7 +270,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		out.writeObject(revReq);
 		ba = bao.toByteArray();
 		// Send request and receive response
-		resp = sendCmpHttp(ba);
+		resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, true);
@@ -404,7 +404,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		out.writeObject(req);
 		byte[] ba = bao.toByteArray();
 		// Send request and receive response
-		byte[] resp = sendCmpHttp(ba);
+		byte[] resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
@@ -437,7 +437,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		out.writeObject(req1);
 		ba = bao.toByteArray();
 		// Send request and receive response
-		resp = sendCmpHttp(ba);
+		resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);
@@ -452,7 +452,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 		out.writeObject(revReq);
 		ba = bao.toByteArray();
 		// Send request and receive response
-		resp = sendCmpHttp(ba);
+		resp = sendCmpHttp(ba, 200);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, true);

@@ -27,11 +27,10 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.TestTools;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
@@ -64,34 +63,6 @@ public class UserAdminSessionTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random username: username =" + username);
-
-        return username;
-    } // genRandomUserName
-
-    private String genRandomPwd() throws Exception {
-        // Gen random pwd
-        Random rand = new Random(new Date().getTime() + 4812);
-        String password = "";
-
-        for (int i = 0; i < 8; i++) {
-            int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
-        }
-
-        log.debug("Generated random pwd: password=" + password);
-
-        return password;
-    } // genRandomPwd
-
     private String genRandomSerialnumber() throws Exception {
         // Gen random number
         Random rand = new Random(new Date().getTime() + 4913);
@@ -114,15 +85,16 @@ public class UserAdminSessionTest extends TestCase {
         log.trace(">test01AddUser()");
 
         // Make user that we know later...
-        username = genRandomUserName();
-        pwd = genRandomPwd();
+        username = TestTools.genRandomUserName();
+        pwd = TestTools.genRandomPwd();
         String email = username + "@anatom.se";
-        TestTools.getUserAdminSession().addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+        TestTools.getUserAdminSession().addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+		usernames.add(username);
         log.debug("created user: " + username + ", " + pwd + ", C=SE, O=AnaTom, CN=" + username);
         // Add the same user again
         boolean userexists = false;
         try {
-            TestTools.getUserAdminSession().addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+            TestTools.getUserAdminSession().addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         } catch (DuplicateKeyException e) {
             // This is what we want
             userexists = true;
@@ -150,16 +122,15 @@ public class UserAdminSessionTest extends TestCase {
         log.trace(">test02AddUserWithUniqueDNSerialnumber()");
 
         // Make user that we know later...
-        String thisusername = genRandomUserName();
-        pwd = genRandomPwd();
+        String thisusername = TestTools.genRandomUserName();
         String email = username + "@anatom.se";
         String serialnumber = genRandomSerialnumber();
         TestTools.getUserAdminSession().addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         if(TestTools.getUserAdminSession().existsUser(admin, thisusername)){
         		usernames.add(thisusername);
-                log.debug("Failed to create user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
+                log.debug("created user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
         } else {
-            log.debug("created user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
+            log.debug("Failed to create user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
         }
         
         //Set the CA to enforce unique subjectDN serialnumber
@@ -170,14 +141,14 @@ public class UserAdminSessionTest extends TestCase {
                
         // Add another user with the same serialnumber
         boolean uniqueserialnumber = false;
-        thisusername = genRandomUserName();
+        thisusername = TestTools.genRandomUserName();
         try {
         	TestTools.getUserAdminSession().addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
             if(TestTools.getUserAdminSession().existsUser(admin, thisusername)){
             	usernames.add(thisusername);
-                log.debug("Failed to create user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
-            } else {
                 log.debug("Created user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
+            } else {
+                log.debug("Failed to create user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
             }
         } catch (EjbcaException e){
         	//This is what we want
@@ -197,27 +168,62 @@ public class UserAdminSessionTest extends TestCase {
 		usernames.add(thisusername);
 
         log.trace("<test02AddUserWithUniqueDNSerialnumber()");
-    }    
+    }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    /**
+     * tests findUser and existsUser
+     *
+     * @throws Exception error
+     */
+    public void test03FindUser() throws Exception {
+        UserDataVO data = TestTools.getUserAdminSession().findUser(admin, username);
+        assertNotNull(data);
+        assertEquals(username, data.getUsername());
+        boolean exists = TestTools.getUserAdminSession().existsUser(admin, username);
+        assertTrue(exists);
+        
+        String notexistusername = TestTools.genRandomUserName();
+        exists = TestTools.getUserAdminSession().existsUser(admin, notexistusername);
+        assertFalse(exists);
+        data = TestTools.getUserAdminSession().findUser(admin, notexistusername);
+        assertNull(data);
+    }
+
+    /**
+     * tests changeUser
+     *
+     * @throws Exception error
+     */
+    public void test04ChangeUser() throws Exception {
+        UserDataVO data = TestTools.getUserAdminSession().findUser(admin, username);
+        assertNotNull(data);
+        assertEquals(username, data.getUsername());
+        assertNull(data.getCardNumber());
+        assertEquals(pwd, data.getPassword());
+        assertEquals("CN=" + username+",O=AnaTom,C=SE", data.getDN());
+        String email = username + "@anatom.se";
+        assertEquals("rfc822name=" + email, data.getSubjectAltName());
+        data.setCardNumber("123456");
+        data.setPassword("bar123");
+        data.setDN("C=SE, O=AnaTom1, CN=" + username);
+        data.setSubjectAltName("dnsName=a.b.se, rfc822name=" + email);
+
+        TestTools.getUserAdminSession().changeUser(admin, data, true);
+        UserDataVO data1 = TestTools.getUserAdminSession().findUser(admin, username);
+        assertNotNull(data1);
+        assertEquals(username, data1.getUsername());
+        assertEquals("123456", data1.getCardNumber());
+        assertEquals("bar123", data.getPassword());
+        assertEquals("C=SE, O=AnaTom1, CN="+username, data.getDN());
+        assertEquals("dnsName=a.b.se, rfc822name=" + email, data.getSubjectAltName());
+    }
+
     /**
      * tests deletion of user, and user that does not exist
      *
      * @throws Exception error
      */
-    public void test02DeleteUser() throws Exception {
-        log.trace(">test01DeleteUser()");
-
+    public void test05DeleteUser() throws Exception {
         TestTools.getUserAdminSession().deleteUser(admin, username);
         log.debug("deleted user: " + username);
         // Delete the the same user again
@@ -228,13 +234,13 @@ public class UserAdminSessionTest extends TestCase {
             removed = true;
         }
         assertTrue("User does not exist does not throw NotFoundException", removed);
-
-        log.trace("<test01DeleteUser()");
     }
 
 	public void test99RemoveTestCA() throws Exception {
 		for(int i=0; i<usernames.size(); i++){
-			TestTools.getUserAdminSession().deleteUser(admin, (String) usernames.get(i));
+			try {
+				TestTools.getUserAdminSession().deleteUser(admin, (String) usernames.get(i));				
+			} catch (Exception e) {} // NOPMD, ignore errors so we don't stop deleting users because one of them does not exist.
 		}
 		TestTools.removeTestCA();
 	}
