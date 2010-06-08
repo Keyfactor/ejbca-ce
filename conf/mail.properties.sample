@@ -21,7 +21,7 @@
 # user/password to connect to server for sending email notifications from EJBCA.
 # Default: ejbca_user, primekey
 #mail.user=ejbca_user
-#mail.password=primekey
+#mail.password=
 
 # SMTP server for sending mail.
 # Default: localhost

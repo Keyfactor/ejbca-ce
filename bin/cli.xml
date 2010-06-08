@@ -47,9 +47,6 @@
 		<input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
-		<input message="Please enter the password to the mail server?" addproperty="mail.password" defaultvalue="primekey">
-			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
-		</input>
 		<input message="Please enter the password to the database. A blank password works for hsqldb." addproperty="database.password" defaultvalue="">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
