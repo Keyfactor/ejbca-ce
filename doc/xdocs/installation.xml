@@ -222,7 +222,7 @@ JBoss 5.x also has a bug with multiple mail configurations. If you will be using
 <source>
 ant bootstrap
 </source>
-<p>it will compile, jar, war, ear everything and deploy it to JBoss. You will be prompted to enter the values httpserver.password and java.trustpassword if these have not already been defined in web.properties. 
+<p>it will compile, jar, war, ear everything and deploy it to JBoss. You will be prompted to enter the value for database.password if it has not already been defined in database.properties. 
 </p><p>
 3) Open a console (terminal) and start JBoss.
 You can start JBoss with the normal command 'run.sh/cmd' from APPSRV_HOME/bin. You should see JBoss
@@ -256,7 +256,7 @@ See <a href="userguide.html#Administrators%20issued%20by%20external%20CAs">Admin
 ant deploy
 </source>
 <p>this will deploy everything again and configure the servlet
-container with the keystore file (this is why we needed to stop the container). You will again be prompted for httpserver.password and java.trustpassword, if these are not predefined.
+container with the keystore file (this is why we needed to stop the container). You will again be prompted for httpserver.password, java.trustpassword and database.password, if these have not been predefined in web.properties and database.proprties respectively.
 </p><p>
 7) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
 This is the super administrators certificate used to access the admin GUI. 
