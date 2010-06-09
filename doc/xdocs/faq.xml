@@ -175,14 +175,28 @@ fi
 
     <faq id="SHA256inIE">
      <question>
-      SHA256 certs fails integrity check in IE
+      SHA256 certs fails integrity check in IE.
       </question>
       <answer>
       <p>
-      Internet Explorer (at least IE6) does not support SHA256. 
+      Internet Explorer (at least IE6) does not support SHA256. Windows Vista and later should support SHA256, but not Windows XP before SP3. 
       </p>
       <p>
-      You can have an AdminCA using SHA1 and CAs for other purposes using SHA256.
+      You can have an AdminCA using SHA1 and CAs for other purposes using SHA256. Read Microsofts <a href="http://support.microsoft.com/?scid=kb%3Ben-us%3B968730&amp;x=15&amp;y=16">support article</a> about the issue.
+      </p>
+      </answer>
+    </faq>
+
+    <faq id="Unique subject DN">
+     <question>
+      An error that a user can not have the same Subject DN as another user appears when issuing certificates.
+      </question>
+      <answer>
+      <p>
+      Since EJBCA 3.10 different end entities can not, by default, have the same subject DN issued from one CA. This is to enforces subject DN uniqueness. In some cases this is not convenient because one user can appear as multiple end entities. 
+      </p>
+      <p>
+      You can enable/disable this function in the "Edit Certificate Authorities" screen in the Admin GUI. In the CA configuration uncheck 'Enforce unique DN'.
       </p>
       </answer>
     </faq>
