@@ -209,6 +209,7 @@ public class UserDataTest extends TestCase {
         } catch (UserDoesntFullfillEndEntityProfile e) {
         	thrown = true;
         }
+        // This requires "Enable end entity profile limitations" to be checked in admin GUI->System configuration
         assertTrue(thrown);
         // decrease the value, since we use the empty end entity profile, the counter will not be used
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
