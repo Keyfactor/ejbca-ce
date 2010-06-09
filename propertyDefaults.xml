@@ -25,6 +25,7 @@
 	<property name="mail.jndi-name" value="java:/EjbcaMail" />
 	<property name="mail.from" value="ejbca-donotreply@domain.com" />
 	<property name="mail.user" value="ejbca_user" />
+	<property name="mail.password" value="" />
 	<property name="mail.pop3.host" value="localhost" />
 	<property name="mail.smtp.host" value="localhost" />
 	<property name="mail.smtp.port" value="25" />

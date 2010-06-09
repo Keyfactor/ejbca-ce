@@ -756,6 +756,18 @@
 	<!-- Note: This code is duplicated in cli.xml								 -->
 	<!-- Ask the following only at deploy, not at bootstrap						 -->
     <!-- ======================================================================= -->
+	<target name="inputBootstrapAndDeployPasswords" >
+		<input message="Please enter the password to the database. A blank password works for hsqldb." addproperty="database.password" defaultvalue="">
+			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+		</input>
+	</target>
+	
+	
+    <!-- ======================================================================= -->
+    <!-- Promts for password properties if not previously set.                   -->
+	<!-- Note: This code is duplicated in cli.xml								 -->
+	<!-- Ask the following only at deploy, not at bootstrap						 -->
+    <!-- ======================================================================= -->
 	<target name="inputDeployPasswords" unless="j2ee.web-noconfigure">
 		<input message="Please enter the password of the truststore with the CA certificate for https?" addproperty="java.trustpassword" defaultvalue="changeit">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
@@ -764,22 +776,15 @@
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
 	</target>
-
-	
-	<target name="inputMailPassword">
-		<input message="Please enter the password to the mail server?" addproperty="mail.password" defaultvalue="">
-			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
-		</input>
-	</target>
 	
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="failinproduction-ca,build, buildwithcmptcpservice,inputDeployPasswords,inputMailPassword" description="Deploy the main EJBCA application">
+    <target name="deploy" depends="failinproduction-ca,build, buildwithcmptcpservice,inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the main EJBCA application">
     	<antcall target="j2ee:deploy" />
         <antcall target="showtime" />
     </target>
-    <target name="ocsp-deploy" depends="failinproduction-ocsp,ocsp-ear,inputDeployPasswords,inputMailPassword" description="Deploy the standalone OCSP reponder" >
+    <target name="ocsp-deploy" depends="failinproduction-ocsp,ocsp-ear,inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the standalone OCSP reponder" >
         <antcall target="j2ee:deployocsp" />
         <antcall target="showtime" />
     </target>
