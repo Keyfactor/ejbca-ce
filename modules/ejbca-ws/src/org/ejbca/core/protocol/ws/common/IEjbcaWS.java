@@ -43,6 +43,7 @@ import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
+import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Primary interface to the EJBCA RA WebService.
@@ -110,8 +111,7 @@ public interface IEjbcaWS {
 	 */
 
 	public abstract List<UserDataVOWS> findUser(UserMatch usermatch)
-			throws AuthorizationDeniedException,
-			EjbcaException;
+			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException;
 
 	/**
 	 * Retrieves a collection of certificates generated for a user.

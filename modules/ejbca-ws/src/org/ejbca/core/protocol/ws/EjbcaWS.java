@@ -246,7 +246,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#findUser(org.ejbca.core.protocol.ws.objects.UserMatch)
 	 */
 	
-	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, EjbcaException {		
+	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException {		
     	ArrayList<UserDataVOWS> retval = null;
         log.debug("Find user with match '"+usermatch.getMatchvalue()+"'.");
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -278,8 +278,6 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
-		} catch (IllegalQueryException e) {
-			throw EjbcaWSHelper.getInternalException(e, logger);
 		} finally {
             logger.writeln();
             logger.flush();

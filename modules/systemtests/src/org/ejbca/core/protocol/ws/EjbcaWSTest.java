@@ -282,7 +282,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 			List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
 			fail("SQL injection did not cause an error! " + userdatas.size());
 	    } catch (IllegalQueryException_Exception e) {
-	    } catch (Exception e){log.debug(e.getMessage());}
+	    	// NOPMD, this should be thrown and we ignore it because we fail if it is not thrown
+	    } 
 	    log.trace("<testEvilFind01()");
 	}
     
