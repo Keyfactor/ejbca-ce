@@ -98,7 +98,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		} catch (CADoesntExistsException e) {
 			throw new ApprovalRequestExecutionException("CA does not exist :" + e.getMessage(), e);
 		} catch (EjbcaException e){
-			throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
+			throw new ApprovalRequestExecutionException("Failed adding user :" + e.getErrorCode() + e.getMessage(), e);
 		}
 	}
 

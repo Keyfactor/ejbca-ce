@@ -23,6 +23,7 @@ import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
@@ -93,7 +94,9 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
-		} 
+		} catch (EjbcaException e){
+			throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
+		}
 
 	}
 

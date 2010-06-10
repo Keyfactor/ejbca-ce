@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -227,7 +228,7 @@ public class CrmfRequestTest extends CmpTestCase {
     //
     // Private helper methods
     //
-    private void createCmpUser() throws RemoteException, AuthorizationDeniedException, FinderException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
+    private void createCmpUser() throws RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, FinderException {
         // Make user that we know...
         boolean userExists = false;
 		userDN = "C=SE,O=PrimeKey,CN=cmptest";
