@@ -305,6 +305,7 @@ public class UserAdminSessionTest extends TestCase {
         int profileId = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTMERGEWITHWS");
 
         UserDataVO addUser = new UserDataVO(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, profileId, SecConst.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+        addUser.setPassword("foo123");
         TestTools.getUserAdminSession().addUserFromWS(admin, addUser, false);
         UserDataVO data = TestTools.getUserAdminSession().findUser(admin, username);
         assertEquals("CN="+username+",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
