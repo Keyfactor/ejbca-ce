@@ -30,13 +30,16 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.TestTools;
+import org.ejbca.util.dn.DnComponents;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -114,6 +117,18 @@ public class UserAdminSessionTest extends TestCase {
         }
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 
+        // try to add user with non-existing CA-id
+        String username2 = TestTools.genRandomUserName();
+        int fakecaid = -1;
+        boolean thrown = false;
+        try {
+        	TestTools.getUserAdminSession().addUser(admin, username2, pwd, "C=SE, O=AnaTom, CN=" + username2, null, null, true, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, fakecaid);
+        	assertTrue(false);
+        } catch (CADoesntExistsException e) {
+        	thrown = true;
+        }
+    	assertTrue(thrown);
+        
         log.trace("<test01AddUser()");
     }
 
@@ -245,9 +260,9 @@ public class UserAdminSessionTest extends TestCase {
         assertNotNull(data1);
         assertEquals(username, data1.getUsername());
         assertEquals("123456", data1.getCardNumber());
-        assertEquals("bar123", data.getPassword());
-        assertEquals("C=SE, O=AnaTom1, CN="+username, data.getDN());
-        assertEquals("dnsName=a.b.se, rfc822name=" + email, data.getSubjectAltName());
+        assertEquals("bar123", data1.getPassword());
+        assertEquals("CN=" + username+",O=AnaTom1,C=SE", data1.getDN());
+        assertEquals("dnsName=a.b.se, rfc822name=" + email, data1.getSubjectAltName());
         log.trace("<test04ChangeUser()");
     }
 
@@ -271,12 +286,47 @@ public class UserAdminSessionTest extends TestCase {
         log.trace("<test05DeleteUser()");
     }
 
+    /**
+     * tests deletion of user, and user that does not exist
+     *
+     * @throws Exception error
+     */
+    public void test06MergeWithWS() throws Exception {
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.setUse(DnComponents.ORGANIZATIONUNIT, 0, true);
+        profile.setValue(DnComponents.ORGANIZATIONUNIT, 0, "FooOrgUnit");
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.COUNTRY);
+        profile.setAllowMergeDnWebServices(true);
+        
+        TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+        int profileId = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "TESTMERGEWITHWS");
+
+        UserDataVO addUser = new UserDataVO(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, profileId, SecConst.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+        TestTools.getUserAdminSession().addUserFromWS(admin, addUser, false);
+        UserDataVO data = TestTools.getUserAdminSession().findUser(admin, username);
+        assertEquals("CN="+username+",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
+
+        addUser.setDN("EMAIL=foo@bar.com, OU=hoho");
+        TestTools.getRaAdminSession().changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+        TestTools.getUserAdminSession().changeUser(admin, addUser, false, true);
+        data = TestTools.getUserAdminSession().findUser(admin, username);
+        //E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
+        assertEquals("E=foo@bar.com,CN="+username+",OU=hoho,O=AnaTom,C=SE", data.getDN());
+    }
+
 	public void test99RemoveTestCA() throws Exception {
 		for(int i=0; i<usernames.size(); i++){
 			try {
 				TestTools.getUserAdminSession().deleteUser(admin, (String) usernames.get(i));				
 			} catch (Exception e) {} // NOPMD, ignore errors so we don't stop deleting users because one of them does not exist.
 		}
+		try {
+			TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTMERGEWITHWS");				
+		} catch (Exception e) {} // NOPMD, ignore errors so we don't stop deleting users because one of them does not exist.
+		
 		TestTools.removeTestCA();
 	}
 }
