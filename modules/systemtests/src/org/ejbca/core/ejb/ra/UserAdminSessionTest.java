@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ra;
 
+import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,10 +28,14 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.TestTools;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
@@ -46,6 +51,7 @@ public class UserAdminSessionTest extends TestCase {
     private static String username;
     private static String pwd;
     private static ArrayList usernames = new ArrayList();
+    private static String serialnumber;
 
     /**
      * Creates a new TestUserData object.
@@ -63,17 +69,16 @@ public class UserAdminSessionTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    private String genRandomSerialnumber() throws Exception {
+    private void genRandomSerialnumber() throws Exception {
         // Gen random number
         Random rand = new Random(new Date().getTime() + 4913);
-        String serialnumber = "";
+        serialnumber = "";
         for (int i = 0; i < 8; i++) {
             int randint = rand.nextInt(9);
             serialnumber += (new Integer(randint)).toString();
         }
         log.debug("Generated random serialnumber: serialnumber =" + serialnumber);
 
-        return serialnumber;
     } // genRandomSerialnumber
 
     /**
@@ -123,15 +128,11 @@ public class UserAdminSessionTest extends TestCase {
 
         // Make user that we know later...
         String thisusername = TestTools.genRandomUserName();
-        String email = username + "@anatom.se";
-        String serialnumber = genRandomSerialnumber();
+        String email = thisusername + "@anatom.se";
+        genRandomSerialnumber();
         TestTools.getUserAdminSession().addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
-        if(TestTools.getUserAdminSession().existsUser(admin, thisusername)){
-        		usernames.add(thisusername);
-                log.debug("created user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
-        } else {
-            log.debug("Failed to create user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
-        }
+        assertTrue("User " + thisusername + " was not added to the database.", TestTools.getUserAdminSession().existsUser(admin, thisusername));
+        usernames.add(thisusername);
         
         //Set the CA to enforce unique subjectDN serialnumber
         CAInfo cainfo = TestTools.getCAAdminSession().getCA(admin, caid).getCAInfo();
@@ -140,34 +141,62 @@ public class UserAdminSessionTest extends TestCase {
         TestTools.getCAAdminSession().editCA(admin, cainfo);
                
         // Add another user with the same serialnumber
-        boolean uniqueserialnumber = false;
         thisusername = TestTools.genRandomUserName();
         try {
         	TestTools.getUserAdminSession().addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
-            if(TestTools.getUserAdminSession().existsUser(admin, thisusername)){
-            	usernames.add(thisusername);
-                log.debug("Created user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
-            } else {
-                log.debug("Failed to create user: " + thisusername + ", " + pwd + ", C=SE, CN=" + thisusername + ", SN=" + serialnumber);
-            }
+            usernames.add(thisusername);
         } catch (EjbcaException e){
-        	//This is what we want
-        	if(e.getErrorCode().equals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS)){
-        		uniqueserialnumber = true;
-        	}
+        	assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
+        assertFalse(TestTools.getUserAdminSession().existsUser(admin, thisusername));
         
-        //Set the CA back to its original settings of enforcing unique subjectDN serialnumber
+        //Set the CA to NOT enforcing unique subjectDN serialnumber
+		cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
+		TestTools.getCAAdminSession().editCA(admin, cainfo);
+		TestTools.getUserAdminSession().addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+		assertTrue(TestTools.getUserAdminSession().existsUser(admin, thisusername));
+		usernames.add(thisusername);
+		
+        //Set the CA back to its original settings of enforcing unique subjectDN serialnumber.
 		cainfo.setDoEnforceUniqueSubjectDNSerialnumber(requiredUniqueSerialnumber);
 		TestTools.getCAAdminSession().editCA(admin, cainfo);
-		
-        assertTrue("User with the same SubjectDN serialnumber already exist does not throw EjbcaException with the ErrorCode: " + ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, uniqueserialnumber);
-        
-		TestTools.getUserAdminSession().addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);	
-		assertTrue("User was not added eventhough the CA does not enforce unique SubjectDN Serialnumber.", TestTools.getUserAdminSession().existsUser(admin, thisusername));
-		usernames.add(thisusername);
 
         log.trace("<test02AddUserWithUniqueDNSerialnumber()");
+    }    
+    
+    public void test03ChangeUserWithUniqueDNSerialnumber() throws RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException{
+        log.trace(">test03ChangeUserWithUniqueDNSerialnumber()");
+
+        // Make user that we know later...
+        String thisusername;
+        if(usernames.size()>1)	thisusername = (String) usernames.get(1);
+        else					thisusername = username;
+        String email = thisusername + username + "@anatomanatom.se";
+        
+        CAInfo cainfo = TestTools.getCAAdminSession().getCA(admin, caid).getCAInfo();
+        boolean requiredUniqueSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
+        
+        //Set the CA to enforce unique serialnumber
+        cainfo.setDoEnforceUniqueSubjectDNSerialnumber(true);
+        TestTools.getCAAdminSession().editCA(admin, cainfo);
+        try{
+        	TestTools.getUserAdminSession().changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, UserDataConstants.STATUS_NEW, caid);
+        } catch(EjbcaException e){
+        	assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
+        }
+        assertTrue("The user '" + thisusername + "' was changed eventhough the serialnumber already exists.", TestTools.getUserAdminSession().findUserByEmail(admin, email).size()==0);
+        
+        //Set the CA to NOT enforcing unique subjectDN serialnumber
+		cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
+		TestTools.getCAAdminSession().editCA(admin, cainfo);
+		TestTools.getUserAdminSession().changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, UserDataConstants.STATUS_NEW, caid);
+		assertTrue("The user '" + thisusername + "' was not changed even though unique serialnumber is not enforced", TestTools.getUserAdminSession().findUserByEmail(admin, email).size()>0);
+		
+        //Set the CA back to its original settings of enforcing unique subjectDN serialnumber.
+		cainfo.setDoEnforceUniqueSubjectDNSerialnumber(requiredUniqueSerialnumber);
+		TestTools.getCAAdminSession().editCA(admin, cainfo);
+
+        log.trace("<test03ChangeUserWithUniqueDNSerialnumber()");
     }
     
     /**
@@ -176,6 +205,7 @@ public class UserAdminSessionTest extends TestCase {
      * @throws Exception error
      */
     public void test03FindUser() throws Exception {
+    	log.trace(">test03FindUser()");
         UserDataVO data = TestTools.getUserAdminSession().findUser(admin, username);
         assertNotNull(data);
         assertEquals(username, data.getUsername());
@@ -187,6 +217,7 @@ public class UserAdminSessionTest extends TestCase {
         assertFalse(exists);
         data = TestTools.getUserAdminSession().findUser(admin, notexistusername);
         assertNull(data);
+        log.trace("<test03FindUser()");
     }
 
     /**
@@ -195,11 +226,12 @@ public class UserAdminSessionTest extends TestCase {
      * @throws Exception error
      */
     public void test04ChangeUser() throws Exception {
+    	log.trace(">test04ChangeUser()");
         UserDataVO data = TestTools.getUserAdminSession().findUser(admin, username);
         assertNotNull(data);
         assertEquals(username, data.getUsername());
         assertNull(data.getCardNumber());
-        assertEquals(pwd, data.getPassword());
+        assertEquals(pwd, data.getPassword()); //Note that changing the user sets the password to null!!!
         assertEquals("CN=" + username+",O=AnaTom,C=SE", data.getDN());
         String email = username + "@anatom.se";
         assertEquals("rfc822name=" + email, data.getSubjectAltName());
@@ -216,6 +248,7 @@ public class UserAdminSessionTest extends TestCase {
         assertEquals("bar123", data.getPassword());
         assertEquals("C=SE, O=AnaTom1, CN="+username, data.getDN());
         assertEquals("dnsName=a.b.se, rfc822name=" + email, data.getSubjectAltName());
+        log.trace("<test04ChangeUser()");
     }
 
     /**
@@ -224,6 +257,7 @@ public class UserAdminSessionTest extends TestCase {
      * @throws Exception error
      */
     public void test05DeleteUser() throws Exception {
+    	log.trace(">test05DeleteUser()");
         TestTools.getUserAdminSession().deleteUser(admin, username);
         log.debug("deleted user: " + username);
         // Delete the the same user again
@@ -234,6 +268,7 @@ public class UserAdminSessionTest extends TestCase {
             removed = true;
         }
         assertTrue("User does not exist does not throw NotFoundException", removed);
+        log.trace("<test05DeleteUser()");
     }
 
 	public void test99RemoveTestCA() throws Exception {

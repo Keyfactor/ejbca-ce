@@ -294,7 +294,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     //
     // Private helper methods
     //
-    private void createCmpUser(String username, String userDN) throws RemoteException, AuthorizationDeniedException, FinderException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
+    private void createCmpUser(String username, String userDN) throws RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, EjbcaException, FinderException{
         // Make user that we know...
         boolean userExists = false;
 		userDN = "C=SE,O=PrimeKey,CN=cmptest";
