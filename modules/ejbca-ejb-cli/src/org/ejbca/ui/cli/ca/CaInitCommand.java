@@ -33,6 +33,7 @@ import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.ui.cli.util.ConsolePasswordReader;
@@ -152,12 +153,18 @@ public class CaInitCommand extends BaseCaAdminCommand {
             		profileName = "SUBCA";
                     profileId = SecConst.CERTPROFILE_FIXED_SUBCA;
             	}
-            } else {
-            	profileId = getCertificateStoreSession().getCertificateProfileId(getAdmin(), profileName);
+            } else {                
+                profileId = getCertificateStoreSession().getCertificateProfileId(getAdmin(), profileName);
             	if (profileId == 0) {
             		getLogger().info("Error: Certificate profile with name '"+profileName+"' does not exist.");
             		return;
             	}
+            	
+                CertificateProfile certificateProfile  = getCertificateStoreSession().getCertificateProfile(getAdmin(), profileName);
+                if(certificateProfile.getType() != CertificateProfile.TYPE_ROOTCA && certificateProfile.getType() != CertificateProfile.TYPE_SUBCA) {
+                    getLogger().info("Error: Certificate profile " + profileName + " is not of type ROOTCA or SUBCA.");
+                    return;
+                }
             }
             
             if (KeyTools.isUsingExportableCryptography()) {
