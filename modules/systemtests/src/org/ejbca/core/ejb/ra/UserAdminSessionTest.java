@@ -294,11 +294,13 @@ public class UserAdminSessionTest extends TestCase {
     public void test06MergeWithWS() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.DNEMAIL);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.setUse(DnComponents.ORGANIZATIONUNIT, 0, true);
         profile.setValue(DnComponents.ORGANIZATIONUNIT, 0, "FooOrgUnit");
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COUNTRY);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
         profile.setAllowMergeDnWebServices(true);
         
         TestTools.getRaAdminSession().addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);

@@ -13,15 +13,17 @@
 package org.ejbca.util.dn;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Collections;
 import java.util.Map;
+
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+
 import org.apache.log4j.Logger;
 
 /** This class aims to be DN representation.
@@ -78,7 +80,9 @@ public class DistinguishedName extends LdapName {
 
         boolean useEntityEmailField = (dnMap == null ? false : (dnMap.size() > 0));
 
-        logger.info("Trying to merge \n" + dn.toString() + "\n with \n" + this.toString());
+        if (logger.isDebugEnabled()) {
+        	logger.debug("Trying to merge \n" + dn.toString() + "\n with \n" + this.toString()+", useEntityEmailField="+useEntityEmailField);
+        }
 
         // This list will enclose the resulting list of RDNs.
         List localRdns = new ArrayList();
@@ -166,16 +170,20 @@ public class DistinguishedName extends LdapName {
                 }
                 if (!finded) {
                     String value = (String) dnMap.get(compName);
-                    try {
-                        localRdns.add(new Rdn(translateComponentName(compName), value));
-                    } catch (InvalidNameException e) { } // never occurs
+                    if (value != null) {
+                        try {
+                            localRdns.add(new Rdn(translateComponentName(compName), value));
+                        } catch (InvalidNameException e) { } // never occurs                    	
+                    }
                 }
             }
         }
 
         Collections.reverse(localRdns);
 
-        logger.info("result :\n" + localRdns);
+        if (logger.isDebugEnabled()) {
+        	logger.debug("result :\n" + localRdns);
+        }
 
         // Final step, create a new DN and return it.
         return new DistinguishedName(localRdns);
