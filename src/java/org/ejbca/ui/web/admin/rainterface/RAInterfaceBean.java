@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -56,9 +55,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -66,15 +62,12 @@ import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.cert.CertificateNotBeforeComparator;
-import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.query.Query;
-import org.ejbca.util.query.UserMatch;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.

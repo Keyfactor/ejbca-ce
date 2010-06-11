@@ -4,10 +4,8 @@ import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -31,7 +29,6 @@ import org.ejbca.util.TestTools;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
-import org.hibernate.validator.AssertTrue;
 
 public class ApprovalSessionTest extends TestCase {
     

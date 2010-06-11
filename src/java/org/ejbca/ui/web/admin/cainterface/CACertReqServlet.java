@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;

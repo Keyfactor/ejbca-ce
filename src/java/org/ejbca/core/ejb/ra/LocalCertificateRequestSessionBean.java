@@ -35,7 +35,6 @@ import java.security.spec.X509EncodedKeySpec;
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -402,7 +401,6 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	 * @param username
 	 * @throws AuthorizationDeniedException
 	 * @throws WrongTokenTypeException
-	 * @throws FinderException
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws ApprovalException
 	 * @throws DuplicateKeyException
