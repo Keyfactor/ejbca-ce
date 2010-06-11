@@ -184,8 +184,11 @@ public class UserAdminSessionTest extends TestCase {
 
         // Make user that we know later...
         String thisusername;
-        if(usernames.size()>1)	thisusername = (String) usernames.get(1);
-        else					thisusername = username;
+        if (usernames.size() > 1) {
+        	thisusername = (String) usernames.get(1);
+        } else {
+        	thisusername = username;
+        }
         String email = thisusername + username + "@anatomanatom.se";
         
         CAInfo cainfo = TestTools.getCAAdminSession().getCA(admin, caid).getCAInfo();

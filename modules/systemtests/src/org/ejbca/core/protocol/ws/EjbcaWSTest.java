@@ -21,7 +21,6 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;

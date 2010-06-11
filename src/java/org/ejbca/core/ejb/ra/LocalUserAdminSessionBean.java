@@ -68,7 +68,6 @@ import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalReque
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -605,7 +604,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     		user = (UserDataVO) itr.next();
     		sn = getSerialnumber(user.getDN());
     		if(sn != null){
-    			if(sn.equals(serialnumber))	return false;
+    			if(sn.equals(serialnumber)) {
+    				return false;
+    			}
     		}
     	}
     	return true;

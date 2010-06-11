@@ -68,8 +68,9 @@ public class CaInitCommandTest extends TestCase {
         }
         try {
             CertificateProfile apa = TestTools.getCertificateStoreSession().getCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
+            assertNotNull(apa);
             caInitCommand.execute(CUSTOM_PROFILE_ARGS);
-            assertNull("CA was created using created using non ROOTCA or SUBCS certificate profile.", caAdminSession.getCAInfo(admin, CA_NAME));
+            assertNull("CA was created using created using non ROOTCA or SUBCA certificate profile.", caAdminSession.getCAInfo(admin, CA_NAME));
         } finally {
             TestTools.getCertificateStoreSession().removeCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
         }

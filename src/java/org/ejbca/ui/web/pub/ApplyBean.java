@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.FinderException;
 import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
 
