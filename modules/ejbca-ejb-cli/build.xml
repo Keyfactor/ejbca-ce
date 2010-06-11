@@ -15,6 +15,7 @@
 		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>

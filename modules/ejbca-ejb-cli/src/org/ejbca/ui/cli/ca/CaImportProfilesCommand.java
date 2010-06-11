@@ -26,6 +26,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -229,7 +230,18 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         Collection<Integer> publishers = cprofile.getPublisherList();
                                         ArrayList<Integer> allToRemove = new ArrayList<Integer>();
                                         for (Integer publisher : publishers) {
-                                        	if (getPublisherSession().getPublisher(getAdmin(), publisher) == null) {
+                                        	BasePublisher pub = null;
+                                        	try {
+                                        		pub = getPublisherSession().getPublisher(getAdmin(), publisher);
+                                        	} catch (Exception e) {
+                                        		String msg = e.getMessage();
+                                        		if (e.getCause() != null) {
+                                        			msg += ": "+e.getCause().getMessage();
+                                        		}
+                                        		getLogger().warn("Warning: There was an error loading publisher with id " + publisher + ". Use debug logging to see stack trace: "+e.getMessage());
+                                        		getLogger().debug("Full stack trace: ", e);
+                                        	}
+                                        	if (pub == null) {
                                         		allToRemove.add(publisher);
                                         	}
                                         }
