@@ -39,6 +39,8 @@ import org.apache.log4j.Logger;
  * to be able to parse values containing ${property}
  * 
  * See in-line comments below for the sources added to the configuration.
+ * 
+ * @version $Id$
  */
 public class ConfigurationHolder {
 
@@ -118,7 +120,7 @@ public class ConfigurationHolder {
 				if (url != null) {
 					PropertiesConfiguration pc = new PropertiesConfiguration(url);
 					config.addConfiguration(pc);
-					log.info("Added url to configuration source: " + url);
+					log.debug("Added url to configuration source: " + url);
 				}
 			} catch (ConfigurationException e) {
 				log.error("Failed to load configuration from resource internal.properties", e);
@@ -157,7 +159,7 @@ public class ConfigurationHolder {
 			if (url != null) {
 				PropertiesConfiguration pc = new PropertiesConfiguration(url);
 				config.addConfiguration(pc);
-				log.info("Added url to configuration source: " + url);
+				log.debug("Added url to configuration source: " + url);
 			}
 		} catch (ConfigurationException e) {
 			log.error("Failed to load configuration from resource " + "/conf/" + resourcename, e);
@@ -286,5 +288,3 @@ public class ConfigurationHolder {
 	}
 
 }
-
-
