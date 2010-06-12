@@ -9,9 +9,6 @@ In EJBCA 3.10.2 the Exception handling for NotFoundExceptions when a user does n
 This effected some WS-API calls (findCerts, getLastCertChain and getHardTokenData). The behavior of the methods are unchanged, but if 
 you have handling for such errors you should double check the error handling anyhow. Javadoc has been updated where it was previously not clear.
 
-Some read access rights were not correctly checked in the WS-API, this meant that CA admins or Supervisors might be able to view information about 
-users that certain RA admins should only have access to view.
-
 EJBCA 3.10.1
 -----------
 This is a maintenance release with a few new features, some improvements and several bug fixes. 33 issues in total have been resolved. 

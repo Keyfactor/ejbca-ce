@@ -254,10 +254,8 @@ public class EjbcaWS implements IEjbcaWS {
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		  Admin admin = ejbhelper.getAdmin(wsContext);
           logAdminName(admin,logger);
-          // Check /ra_functionality/view_end_entity
-          ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_VIEWENDENTITY);		  
           Query query = ejbhelper.convertUserMatch(admin, usermatch);		  		  
-		  Collection result = ejbhelper.getUserAdminSession().query(admin, query, null,null, MAXNUMBEROFROWS);
+		  Collection result = ejbhelper.getUserAdminSession().query(admin, query, null,null, MAXNUMBEROFROWS); // also checks authorization
 		  
 		  if(result.size() > 0){
 		    retval = new ArrayList<UserDataVOWS>();
@@ -299,9 +297,7 @@ public class EjbcaWS implements IEjbcaWS {
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 			Admin admin = ejbhelper.getAdmin(wsContext);
             logAdminName(admin,logger);
-            // Check /ra_functionality/view_end_entity
-            ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_VIEWENDENTITY);
-			if (ejbhelper.getUserAdminSession().existsUser(admin,username)) {
+			if (ejbhelper.getUserAdminSession().findUser(admin,username) != null) {  // checks authorization on CA and profiles and view_end_entity
 				Collection<java.security.cert.Certificate> certs;
 				if (onlyValid) {
 					certs = ejbhelper.getCertStoreSession().findCertificatesByUsernameAndStatus(admin, username, SecConst.CERT_ACTIVE);
@@ -340,9 +336,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-	        // Check /ra_functionality/view_end_entity
-	        ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_VIEWENDENTITY);
-			if (ejbhelper.getUserAdminSession().existsUser(admin, username)) {
+			if (ejbhelper.getUserAdminSession().findUser(admin, username) != null) { // checks authorization on CA and profiles and view_end_entity
 				Collection certs = ejbhelper.getCertStoreSession().findCertificatesByUsername(admin,username);
 				if (certs.size() > 0) {
 					// The latest certificate will be first
