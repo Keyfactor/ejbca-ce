@@ -2415,6 +2415,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 
     /**
      * Method checking if username already exists in database.
+     * WARNING: do not use this method where an authorization check is needed, use findUser there instead.
      *
      * @return true if username already exists.
      * @ejb.interface-method
