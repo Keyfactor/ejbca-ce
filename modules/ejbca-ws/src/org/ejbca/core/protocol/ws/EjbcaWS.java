@@ -254,7 +254,9 @@ public class EjbcaWS implements IEjbcaWS {
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 		  Admin admin = ejbhelper.getAdmin(wsContext);
           logAdminName(admin,logger);
-		  Query query = ejbhelper.convertUserMatch(admin, usermatch);		  		  
+          // Check /ra_functionality/view_end_entity
+          ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_VIEWENDENTITY);		  
+          Query query = ejbhelper.convertUserMatch(admin, usermatch);		  		  
 		  Collection result = ejbhelper.getUserAdminSession().query(admin, query, null,null, MAXNUMBEROFROWS);
 		  
 		  if(result.size() > 0){
@@ -297,6 +299,8 @@ public class EjbcaWS implements IEjbcaWS {
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper();
 			Admin admin = ejbhelper.getAdmin(wsContext);
             logAdminName(admin,logger);
+            // Check /ra_functionality/view_end_entity
+            ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_VIEWENDENTITY);
 			if (ejbhelper.getUserAdminSession().existsUser(admin,username)) {
 				Collection<java.security.cert.Certificate> certs;
 				if (onlyValid) {
@@ -336,6 +340,8 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
+	        // Check /ra_functionality/view_end_entity
+	        ejbhelper.getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_VIEWENDENTITY);
 			if (ejbhelper.getUserAdminSession().existsUser(admin, username)) {
 				Collection certs = ejbhelper.getCertStoreSession().findCertificatesByUsername(admin,username);
 				if (certs.size() > 0) {
