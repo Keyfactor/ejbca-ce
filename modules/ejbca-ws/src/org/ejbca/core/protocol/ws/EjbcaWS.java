@@ -2121,6 +2121,9 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try{
+	        // Check authorization to perform custom logging
+			ejbhelper.getAuthorizationSession().isAuthorized(admin, AccessRulesConstants.REGULAR_LOG_CUSTOM_EVENTS);
+
 			int event = LogConstants.EVENT_ERROR_CUSTOMLOG;
 			switch (level) {
 			case IEjbcaWS.CUSTOMLOG_LEVEL_ERROR:
@@ -2129,8 +2132,7 @@ public class EjbcaWS implements IEjbcaWS {
 				event = LogConstants.EVENT_INFO_CUSTOMLOG;
 				break;
 			default:
-				throw EjbcaWSHelper.getEjbcaException("Illegal level "+ level + " sent to custonLog call.",
-                                        logger, ErrorCode.INVALID_LOG_LEVEL, null);
+				throw EjbcaWSHelper.getEjbcaException("Illegal level "+ level + " sent to custonLog call.", logger, ErrorCode.INVALID_LOG_LEVEL, null);
 			}
 
 			java.security.cert.Certificate logCert = null;

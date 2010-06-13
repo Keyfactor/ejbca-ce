@@ -675,7 +675,7 @@ public interface IEjbcaWS {
 	 * Authorization requirements: <pre>
 	 * - Administrator flag set
 	 * - /administrator
-	 * - /log_functionality/log_custom_events
+	 * - /log_functionality/log_custom_events (must be configured in advanced mode when editing access rules)
 	 * </pre>
 	 * 
 	 * @param level of the event, one of IEjbcaWS.CUSTOMLOG_LEVEL_ constants
