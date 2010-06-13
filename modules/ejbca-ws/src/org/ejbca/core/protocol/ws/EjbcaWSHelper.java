@@ -87,10 +87,30 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	//
 	// Helper methods for various tasks done from the WS interface
 	//
+
+	/**
+	 * Gets an Admin object for a WS-API administrator authenticated with client certificate SSL.
+	 * Also checks that the admin, if it exists in EJCBA, have access to /administrator, i.e. really is an administrator.
+	 * Does not check any other authorization though, other than that it is an administrator.
+	 * Also checks that the admin certificate is not revoked.
+	 * 
+	 * @param wsContext web service context that contains the SSL information
+	 * @return Admin object based on the SSL client certificate
+	 */
 	protected Admin getAdmin(WebServiceContext wsContext) throws AuthorizationDeniedException, EjbcaException{		  
 		  return getAdmin(false, wsContext);
 	}
 	
+	/**
+	 * Gets an Admin object for a WS-API administrator authenticated with client certificate SSL.
+	 * Also, optionally (if allowNonAdmin == false), checks that the admin, if it exists in EJCBA, have access to /administrator, i.e. really is an administrator.
+	 * Does not check any other authorization though, other than that it is an administrator.
+	 * Also checks that the admin certificate is not revoked.
+	 * 
+	 * @param allowNonAdmins true if we should verify that it is a real administrator, false only extracts the certificate and checks that it is not revoked.
+	 * @param wsContext web service context that contains the SSL information
+	 * @return Admin object based on the SSL client certificate
+	 */
 	protected Admin getAdmin(boolean allowNonAdmins, WebServiceContext wsContext) throws AuthorizationDeniedException, EjbcaException {
 		Admin admin = null;
 		try {
