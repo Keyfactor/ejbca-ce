@@ -36,7 +36,7 @@ public class ejbcawsracli  {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | getpublisherqueuelength | revoketoken | revokeuser | checkrevokationstatus | generatenewuser | createcrl | cacertrequest | cacertresponse | stress");
+                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | getpublisherqueuelength | revoketoken | revokeuser | checkrevokationstatus | generatenewuser | createcrl | cacertrequest | cacertresponse | customlog | stress");
             }
         } catch (Exception e) {
         	Throwable cause = e.getCause();
