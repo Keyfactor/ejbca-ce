@@ -65,6 +65,12 @@ public class EJBCAWSRACommandFactory {
             return new GenerateNewUserCommand(args);        
         }else if (args[0].equals("createcrl")) {
             return new CreateCRLCommand(args);        
+        } else if (args[0].equals("cacertrequest")) {
+            return new CaCertRequestCommand(args);
+        } else if (args[0].equals("cacertresponse")) {
+            return new CaCertResponseCommand(args);
+        } else if (args[0].equals("customlog")) {
+            return new CustomLogCommand(args);
         } else if (args[0].equals("stress")) {
             return new StressTestCommand(args);
         } else if (args[0].equals("cvcgetchain")) {
@@ -75,10 +81,6 @@ public class EJBCAWSRACommandFactory {
             return new CvcPrintCommand(args);
         } else if (args[0].equals("cvcpem")) {
             return new CvcPemCommand(args);
-        } else if (args[0].equals("cacertrequest")) {
-            return new CaCertRequestCommand(args);
-        } else if (args[0].equals("cacertresponse")) {
-            return new CaCertResponseCommand(args);
 	    }
         
         else {
