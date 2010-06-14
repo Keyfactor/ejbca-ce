@@ -635,7 +635,7 @@ function checkallfields(){
     </td>
     <td width="50%"> 
       <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER %>" value="<%=CHECKBOX_VALUE %>" 
-          <% if((editca && cainfo.isDoEnforceUniqueSubjectDNSerialnumber()) || !editca)
+          <% if((editca && cainfo.isDoEnforceUniqueSubjectDNSerialnumber()))
                out.write("CHECKED");%>>         
     </td>
     </tr>
