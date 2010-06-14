@@ -68,6 +68,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     		getLogger().info(" keyspec for DSA keys is size of DSA keys (1024).");
     		getLogger().info(" keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.");
     		getLogger().info(" policyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and cpsurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".");
+    		getLogger().info("    you can add multiple policies such as \"2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt\".");
     		String availableSignAlgs = "";
     		for (String algorithm : AlgorithmConstants.AVAILABLE_SIGALGS) {
     			availableSignAlgs += (availableSignAlgs.length()==0?"":", ") + algorithm;
