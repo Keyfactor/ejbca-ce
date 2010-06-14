@@ -583,6 +583,9 @@
             	   if(e.getErrorCode().equals(ErrorCode.CA_NOT_EXISTS)){
             		   approvalmessage = ejbcawebbean.getText("CADOESNTEXIST");
             	   }
+            	   if(e.getErrorCode().equals(ErrorCode.FIELD_VALUE_NOT_VALID)){
+            		   approvalmessage = e.getMessage();
+            	   }
                }
                
              }
