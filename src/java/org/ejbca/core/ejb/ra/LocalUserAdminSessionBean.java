@@ -450,7 +450,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws DuplicateKeyException if user already exists
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  	
-     * @throws EjbcaException 
+	 * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
      * @ejb.interface-method
      */
     public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, WaitingForApprovalException, EjbcaException {
@@ -520,7 +520,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
         
         // Check if the subjectDN serialnumber already exists.
-        if(caadminsession.getCA(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
+        if(caadminsession.getCAInfoOrThrowException(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
             String serialnumber = getSerialnumber(userdata.getDN());
             if(serialnumber != null){
             	if(!serialnumberIsUnique(admin, userdata.getCAId(), serialnumber)){
@@ -668,7 +668,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws ApprovalException if an approval already is waiting for specified action 
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
-     * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
+	 * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
      * @throws EJBException if a communication or other error occurs.
      * 
      * @deprecated use {@link #changeUser(Admin, UserDataVO, boolean)} instead
@@ -704,7 +704,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws ApprovalException if an approval already is waiting for specified action 
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
-     * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
+	 * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
      * @ejb.interface-method
      */
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd)
@@ -723,8 +723,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @throws AuthorizationDeniedException if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
-     * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
-	 *
+	 * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
      * @throws EJBException if the user does not exist
 	 *
      * @ejb.interface-method
@@ -834,7 +833,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         
         // Check if the subjectDN serialnumber already exists.
-        if(caadminsession.getCA(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
+        if(caadminsession.getCAInfoOrThrowException(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
             String serialnumber = getSerialnumber(userdata.getDN());
             if(serialnumber != null){
 				if(!serialnumberIsUnique(admin, userdata.getCAId(), serialnumber)){
