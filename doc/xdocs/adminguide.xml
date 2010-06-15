@@ -4577,6 +4577,22 @@ Modify the pages (directly or by using a separate tree), rebuild and redeploy. T
 changes should show on http://<i>ejbcahost</i>:8080/ejbca.
 </p>
 </subsection>
+<subsection name="Adding your own rules to regulate the values of End Entity Fields">
+<p>
+It is possible to define a set of rules to control the format of the End Entity fields. For example, it is possible to ensure that 
+the subject DN serial number is always a number of six digits, or should always end with the letter 'N'.
+</p>
+<p>
+Setting such rules is done by implementing the static function org.ejbca.core.model.ra.FieldValidator.validate(). In this function,
+you can define a rule that is applicable to a specific field in a specific End Entity profile. Should the field value not match
+the rule, a CustomFieldException should be thrown and the error message you set in the exception will be shown as the error message
+in the GUI. This rule will be checked each time an end entity is added or changed, whether is was added or changed by the GUI or otherwise.
+</p>
+<p>
+To avoid losing these rules when updating the EJBCA version, the new FieldValidator class should be stored in a ejbca-custom catalog. 
+Please see the "Handling changes in a separate tree" section above.
+</p>
+</subsection>
 </section>
 
 <section name="Using the demo servlet">
