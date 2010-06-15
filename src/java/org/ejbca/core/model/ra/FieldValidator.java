@@ -11,10 +11,8 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.ra.userdatasource;
+package org.ejbca.core.model.ra;
 
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.dn.DnComponents;
 
 /**
  * This class should be used to define rules to validate fields' values when adding and updating end entities.
@@ -22,7 +20,7 @@ import org.ejbca.util.dn.DnComponents;
  * otherwise a CustomFieldException should be thrown with a suitable error message that will appear on the GUI.
  * 
  * @author aveen
- * @version $Id$ 
+ * @version $Id: FieldValidator.java 9206 2010-06-15 07:55:06Z aveen4711 $ 
  *
  */
 public class FieldValidator {
