@@ -19,6 +19,7 @@ import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -678,6 +679,14 @@ public class EjbcaWebBean implements java.io.Serializable {
 	    	// Ignored
 	    }
 	    return hostname;
+    }
+    
+    /**
+     * @return The current time on the server
+     */
+    public String getServerTime(){
+    	SimpleDateFormat timeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz");
+    	return timeformat.format(new Date());
     }
 
     /**
