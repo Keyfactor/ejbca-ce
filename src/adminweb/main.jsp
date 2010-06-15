@@ -26,6 +26,7 @@
 
 <H3><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%> </H3> 
 <div align=left><i><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "+ejbcawebbean.getHostName()%></i></div> 
+<div align=left><i><%= ejbcawebbean.getText("SERVERTIME") + " : "+ejbcawebbean.getServerTime()%></i></div>
 
 <p>&nbsp;</p>
 
