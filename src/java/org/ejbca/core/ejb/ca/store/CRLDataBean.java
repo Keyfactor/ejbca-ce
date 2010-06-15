@@ -183,9 +183,6 @@ public abstract class CRLDataBean extends BaseEntityBean {
         try {
             String b64Crl = getBase64Crl();
             crl = CertTools.getCRLfromByteArray(Base64.decode(b64Crl.getBytes()));
-        } catch (IOException ioe) {
-            log.error("Can't decode CRL.", ioe);
-            return null;
         } catch (CRLException ce) {
             log.error("Can't decode CRL.", ce);
             return null;
