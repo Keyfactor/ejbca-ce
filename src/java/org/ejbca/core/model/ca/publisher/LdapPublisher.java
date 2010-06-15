@@ -1550,7 +1550,6 @@ public class LdapPublisher extends BasePublisher {
 			X509CRL crl = CertTools.getCRLfromByteArray(fakecrlbytes);
 			fakecrl = crl.getEncoded();
 		} catch (CRLException e) {}
-		catch (IOException e) {}
 		return fakecrl;
 	}
 

@@ -1235,13 +1235,8 @@ public class CertTools {
      * @throws CRLException if the byte array does not contain a correct CRL.
      */
     public static X509CRL getCRLfromByteArray(byte[] crl)
-        throws IOException, CRLException {
+        throws CRLException {
         log.trace(">getCRLfromByteArray");
-
-        if (crl == null) {
-            throw new IOException("Cannot read byte[] that is 'null'!");
-        }
-
         CertificateFactory cf = CertTools.getCertificateFactory();
         X509CRL x509crl = (X509CRL) cf.generateCRL(new ByteArrayInputStream(crl));
         log.trace("<getCRLfromByteArray");
