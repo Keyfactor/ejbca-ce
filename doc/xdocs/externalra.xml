@@ -243,7 +243,7 @@ pages.
 <subsection name="Configuration on the External RA GUI host">
 <p>
 <ol>
- <li>Install/setup a message database on the External RA GUI host.</li>
+ <li>Create a "messages" database on the External RA GUI host that can be accessed from both the EJBCA installation and locally.</li>
  <li>Issue a new JKS keystore with EJBCA to enable SSL (HTTPS) on the External RA GUI host.</li>
  <li>Issue a PKCS#12 keystore with EJBCA for signing and encrypting messages to the CA and copy it to the host. Don't forget to add the right administrator privileges to this certificate as described above in 'Security'.</li>
  <li>Download the certificate of the CA service's PKCS#12 keystore and copy it to the host.</li>
@@ -251,6 +251,7 @@ pages.
  <li>Configure conf/externalra-gui.properties to use the keystores, the certificates, the local database and the local application server.</li>
  <li>Make sure a database JDBC connector JAR is installed in the local application server for your database.</li>
  <li>Run 'ant externalra-gui-deploy' to deploy the DataSource and External RA GUI application.</li>
+ <li>Start JBoss and verify that the application is available at http://hostname:8080/externalra-gui/ (and https://hostname:8442/externalra-gui/)</li>
 </ol>
 </p>
 </subsection>
