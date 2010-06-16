@@ -4,7 +4,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents,
-                 java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode" %>
+                 java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode, org.ejbca.util.query.*" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -98,7 +98,8 @@
   EndEntityProfile  profile        = null;
   String[] profilenames            = null; 
   boolean noprofiles               = false; 
-  int profileid = 0;
+  int profileid                    = 0;
+  String serialnumber              = "";
 
 
   profilenames                  = (String[]) ejbcawebbean.getInformationMemory().getCreateAuthorizedEndEntityProfileNames().keySet().toArray(new String[0]);
@@ -304,6 +305,9 @@
              if(value !=null){
                value= value.trim(); 
                if(!value.equals("")){
+            	     if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.SN)) {
+            	    	 serialnumber = value;
+            	     }
             		 oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
             		 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value);  
             		 if(subjectdn.equals(""))
@@ -1082,9 +1086,13 @@ function checkallfields(){
   <% }else{
        if(userexists){ %>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("ENDENTITYALREADYEXISTS") %></h4></div>
+  <div align="center"><h4 id="alert"><% out.write("<a href=\"" + ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp?action=listusers&buttonfind=value&textfieldusername=" + request.getParameter(TEXTFIELD_USERNAME) + "\">See existing user</a>"); %></h4></div>
   <% } %>
     <% if(approvalmessage != null){ %>
   <div align="center"><h4 id="alert"><%= approvalmessage%></h4></div>
+  		<% if(approvalmessage.equals(ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS"))){ %>
+  <div align="center"><h4 id="alert"><% out.write("<a href=\"" + ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp?action=listusers&buttonadvancedlist=value&selectmatchwithrow1=" + UserMatch.MATCH_WITH_DNSERIALNUMBER + "&selectmatchtyperow1=" + BasicMatch.MATCH_TYPE_EQUALS + "&textfieldmatchvaluerow1=" + serialnumber + "\">See existing user</a>"); %></h4></div>
+  		<% } %>
   <% } %>
   <% if(useradded){ %>
   <div align="center"><h4 ><% out.write(ejbcawebbean.getText("ENDENTITY")+ " ");
