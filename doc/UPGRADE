@@ -138,6 +138,8 @@ You should be able to upgrade from EJBCA 3.2.x directly to 3.10.x, by following 
 as above (this upgrade is not thoroughly tested though). Also see instructions below for additional
 issues when upgrading all the way from a much older version.
 
+If you are using some databases, specifically an older version of Derby, you may have to manually upgrade your database. See src/upgrade/39_310/39_310-upgrade-derby.sql.
+
 From EJBCA 3.9.x to EJBCA 3.9.x
 -------------------------------
 See release notes for details between certain versions. 
