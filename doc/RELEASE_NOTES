@@ -3,8 +3,28 @@ EJBCA 3.11
 Interface ICustomPublisher has been modified, via removal of the number parameter from the storeCRL
 method. Any custom classes implementing this interface need to be modified in turn.
 
+Ant 1.7.1 or higher is required from this version on.
+
 EJBCA 3.10.2
 -----------
+This is a maintenance release with a new features, improvements and several bug fixes. 36 issues in total have been resolved. 
+With this release 3.10.2 is the preferred release for all installations. 
+We believe that most regressions resulting from the large restructuring in 3.10.0 is resolved. 
+  
+Noteworthy changes:
+- CMP proxy module.
+- Improved transaction isolation and performance in CMP.
+- Improvements for JBoss 5.
+- Possibility to Enforce unique SubjectDN Serial Number.
+- Fixed some regressions in the admin GUI related to cross certification and CV certificates. 
+- Possible to define custom CN of superadmin on install.
+- Update pre-defined windows smart card logon profiles.
+- Output the servers time to the first page of the Admin GUI.
+- Many minor bug fixes related to the big restructure in 3.10.0.
+- Minor security enhancements. 
+
+Read the full changelog for details.
+
 In EJBCA 3.10.2 the Exception handling for NotFoundExceptions when a user does not exist was slightly overhauled. 
 This effected some WS-API calls (findCerts, getLastCertChain and getHardTokenData). The behavior of the methods are unchanged, but if 
 you have handling for such errors you should double check the error handling anyhow. Javadoc has been updated where it was previously not clear.
@@ -36,10 +56,6 @@ Read the full changelog for details.
 
 For upgrade instructions, please see UPGRADE. 
 
-EJBCA 3.11.0
-
-Ant 1.7.1 or higher is required from this version on.
-
 EJBCA 3.10.0
 -----------
 This is a major release with lots of internal reorganisations, new features and fixes. 
@@ -61,6 +77,19 @@ Read the full changelog for details.
 This version removes the SafeNet Luna JCE class for use as a CA Token. You must now use the more generic, and well tested, PKCS#11 CA token type instead.
 The usage of PKCS11 CA tokens is well documented in the Admin Guide.
  
+For upgrade instructions, please see UPGRADE. 
+
+EJBCA 3.9.8
+-----------
+This is a maintenance release with only three fixes.
+
+Changes:
+- Supervision of the validity time of the signing certificates for the OCSP responder.
+- The CAR of a CV Certificate can hold an incorrect sequence number (which makes the CAR incorrect).
+- Upgrade may cause "use authority information access" to be enabled though it was not before in certificate profile.
+
+Read the full changelog for details.
+
 For upgrade instructions, please see UPGRADE. 
 
 EJBCA 3.9.7
