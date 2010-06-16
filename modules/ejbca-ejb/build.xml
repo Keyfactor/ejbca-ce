@@ -114,6 +114,8 @@
            	<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
            	<include name="org/ejbca/util/keystore/P11Slot.java"/>
            	<include name="org/ejbca/util/provider/TLSProvider.java"/>
+           	<include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java"/>
+           	<include name="org/ejbca/util/provider/X509TrustManagerAcceptAll.java"/>
            	<include name="org/ejbca/util/PerformanceTest.java"/>
            	<include name="org/ejbca/util/RequestMessageUtils.java"/>
         	<!-- From EJBCA XKMS CLI (including some of the classes above) -->
