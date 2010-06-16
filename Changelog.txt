@@ -88,25 +88,6 @@ Bug
     * [ECA-1641] - Expired CAs makes CA cert download from public web fail
  	* [ECA-1644] - ejbca.sh listcas does not work with CVCAs
  	  
-3.9.8, 2010-06-17
----
-Improvement
-    * [ECA-1658] - Supervision of the validity time of the signing certificates for the OCSP responder
-
-Bug
-    * [ECA-1266] - Upgrade may cause "use authority information access" to be enabled though it was not before in certificate profile
-    * [ECA-1639] - The CAR of a CV Certificate can hold an incorrect sequence number (which makes the CAR incorrect)
- 	  
-3.9.7, 2010-05-03
----
-Improvement
-    * [ECA-1616] - cvcRequest gives unclear error message when the exact same request is passed
-    * [ECA-1618] - OCSP responder, log startup, with version, and shutdown
-
-Bug
-    * [ECA-1636] - Error creating DVs signed by external CVCAs
-    * [ECA-1643] - Possible NullpointerException in EjbcaWS.getAvailableCertificateProfiles
-
 3.10.0, 2010-03-26
 ---
 ** New Feature
@@ -160,6 +141,25 @@ Bug
     * [ECA-1583] - EJBCA EJB CLI is not working with JBoss 5
     * [ECA-1584] - PublisherQueue process service does not work in PostgreSQL
     * [ECA-1590] - Hash of a CA certificates can not be used to get "CA" if the subject DN of the certificate is not the same as the subject DN of the CA data.
+
+3.9.8, 2010-06-17
+---
+Improvement
+    * [ECA-1658] - Supervision of the validity time of the signing certificates for the OCSP responder
+
+Bug
+    * [ECA-1266] - Upgrade may cause "use authority information access" to be enabled though it was not before in certificate profile
+    * [ECA-1639] - The CAR of a CV Certificate can hold an incorrect sequence number (which makes the CAR incorrect)
+ 	  
+3.9.7, 2010-05-03
+---
+Improvement
+    * [ECA-1616] - cvcRequest gives unclear error message when the exact same request is passed
+    * [ECA-1618] - OCSP responder, log startup, with version, and shutdown
+
+Bug
+    * [ECA-1636] - Error creating DVs signed by external CVCAs
+    * [ECA-1643] - Possible NullpointerException in EjbcaWS.getAvailableCertificateProfiles
 
 3.9.6, 2010-03-30
 ---
