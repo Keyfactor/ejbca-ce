@@ -25,7 +25,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * This is an class used for testing and example purposes.
- * I supposed to illustrat how to implement a custom userdata soruce to EJBCA.
+ * I supposed to illustrate how to implement a custom userdata source to EJBCA.
  *  
  *
  * @version $Id$
@@ -40,7 +40,7 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
     public DummyCustomUserDataSource() {}
 
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
+	 * @see org.ejbca.core.model.ra.userdatasource.ICustomUserDataSource#init(java.util.Properties)
 	 */
 	public void init(Properties properties) {
 	  // This method sets up the communication with the publisher	

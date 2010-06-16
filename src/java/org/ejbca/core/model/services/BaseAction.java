@@ -16,7 +16,7 @@ import java.util.Properties;
 
 /**
  * Help base class that manages that implements the init method of the interface
- * and manages the propertes.
+ * and manages the properties.
  * 
  * @author Philip Vendil 2006 sep 27
  *
