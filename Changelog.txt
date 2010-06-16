@@ -1,3 +1,49 @@
+3.10.2, 2010-06-17
+---
+New Feature
+    * [ECA-1622] - CMP Proxy
+    * [ECA-1677] - Enforce unique SubjectDN Serial Number
+    * [ECA-1693] - Validate content of End Entity Fields
+    * [ECA-1705] - Support MySQL 5.1 Cluster 7
+    * [ECA-1707] - Display a search-link when trying to add a user that already exists.
+
+Improvement
+    * [ECA-714] - Document how ROOT CA revocation works, and what to do
+    * [ECA-1655] - Restrict http methods other than get and post
+    * [ECA-1674] - Output the servers time to the first page of the Admin GUI.
+    * [ECA-1682] - Allow multiple CA policy OIDs and URLs when creating a CA from the EJB CLI
+    * [ECA-1683] - Use CertificateRequestSessionBean for CMP to make it transaction safe
+    * [ECA-1685] - Look over exception handling in UserAdminSessionBean findUser and optimize usage to existsUser where possible
+    * [ECA-1687] - LocalUserAdminSessionBean.findAllUsersByCaId method declares throws FinderException that it does not throw
+    * [ECA-1690] - Possible to define custom CN of superadmin on install
+
+Task
+    * [ECA-1631] - Update pre-defined windows smart card logon profiles
+
+Bug
+    * [ECA-715] - Possible to issue certificates from a revoked CA
+    * [ECA-1266] - Upgrade may cause "use authority information access" to be enabled though it was not before in certificate profile
+    * [ECA-1639] - The CAR of a CV Certificate can hold an incorrect sequence number (which makes the CAR incorrect)
+    * [ECA-1645] - Exception in CertTools parsing CRL Distribution Point with name but no URI
+    * [ECA-1646] - class isolation does not work with Jboss AS 4.2.3 GA : unable to "ant install" succesfully
+    * [ECA-1651] - Some cli commands does not work on JBoss 5
+    * [ECA-1652] - Trying to use plus sign in DN with WS-API results in double escaping
+    * [ECA-1653] - Trying to get delta CRL when none exists with cli gives ugly error message
+    * [ECA-1654] - Perform check for illegal SQL query characters from LocalUserAdminSession.query
+    * [ECA-1657] - export profiles cli gives error for CA certificate profiles
+    * [ECA-1660] - Visiting adminweb using port 442 for the first time gives NPE
+    * [ECA-1661] - Adding a CA with PKCS11 token but without HSM installed gives NPE
+    * [ECA-1662] - Password masking in "ant install" not working on Windows Server 2008
+    * [ECA-1666] - Not possible to use subject DN EMAIL field when creating certificate with CMP.
+    * [ECA-1668] - Tooltip title missing in Edit Administrator Privileges
+    * [ECA-1670] - Upgrade of existing CA should set EnforceUniqueDistinguishedName and PublicKey to false
+    * [ECA-1672] - /log_functionality/log_custom_events authorization not verified in WS API
+    * [ECA-1675] - Download CRL from Basic functions give ugly filename with space in CN
+    * [ECA-1676] - Error downloading certificate request created by X509 CA
+    * [ECA-1679] - Can not create a new certificate request from a CVC CA with no previous signing key
+    * [ECA-1680] - When superadmin.dn is modified, authentication on adminweb is impossible
+    * [ECA-1681] - MakeRequest button when SignedBy=External CA is not enabled
+
 3.10.1, 2010-05-03
 ---
 New Feature
@@ -41,6 +87,15 @@ Bug
     * [ECA-1638] - activateca cli does not work for expired CAs
     * [ECA-1641] - Expired CAs makes CA cert download from public web fail
  	* [ECA-1644] - ejbca.sh listcas does not work with CVCAs
+ 	  
+3.9.8, 2010-06-17
+---
+Improvement
+    * [ECA-1658] - Supervision of the validity time of the signing certificates for the OCSP responder
+
+Bug
+    * [ECA-1266] - Upgrade may cause "use authority information access" to be enabled though it was not before in certificate profile
+    * [ECA-1639] - The CAR of a CV Certificate can hold an incorrect sequence number (which makes the CAR incorrect)
  	  
 3.9.7, 2010-05-03
 ---
