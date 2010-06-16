@@ -1,7 +1,8 @@
 -- Note!
 -- If using UTF-8 character enoding in MySQL index length is limited to 1000 bytes, and UTF-8 characters take up 3 bytes.
 -- Some index rown needs to be changed because of this like:
--- create index protect_idx1 on TableProtectData (dbKey(150),dbType(150)); 
+-- create index protect_idx1 on TableProtectData (dbKey(150),dbType(150));
+-- For MySQL NDB 'using hash' should be added to all unique indexes and the protectedlog* indexes should be disabled.
  
 -- Selecting log entries when viewing logs:
 create index logentry_idx1 on LogEntryData (time);
@@ -42,7 +43,7 @@ create index userdata_idx9 on UserData (certificateProfileId);
 
 -- Indexes on CertReqHistoryData: for viewing history
 create index historydata_idx1 on CertReqHistoryData (username);
-create index historydata_idx2 on CertReqHistoryData (issuerDN,serialNumber);
+create unique index historydata_idx2 on CertReqHistoryData (issuerDN,serialNumber);
 
 -- Indexes on TableProtectData: searches when verifying, usually this is disabled
 create index protect_idx1 on TableProtectData (dbKey,dbType);
