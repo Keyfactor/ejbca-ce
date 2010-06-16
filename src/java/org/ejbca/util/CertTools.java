@@ -1230,7 +1230,6 @@ public class CertTools {
      *
      * @return X509CRL
      *
-     * @throws IOException if the byte array can not be read.
      * @throws CertificateException if the byte array does not contain a correct CRL.
      * @throws CRLException if the byte array does not contain a correct CRL.
      */
