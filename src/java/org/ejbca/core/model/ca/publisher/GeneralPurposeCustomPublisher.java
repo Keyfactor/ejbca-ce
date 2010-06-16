@@ -19,13 +19,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509CRL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
@@ -43,6 +46,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
     private static final InternalResources intres = InternalResources.getInstance();
 
     public static final String crlExternalCommandPropertyName = "crl.application";
+    public static final String calclulateDeltaCrlLocallyPropertyName = "crl.calclulateDeltaCrlLocally";
     public static final String certExternalCommandPropertyName = "cert.application";
     public static final String revokeExternalCommandPropertyName = "revoke.application";
     public static final String crlFailOnErrorCodePropertyName = "crl.failOnErrorCode";
@@ -55,6 +59,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
     private String crlExternalCommandFileName = null;
     private String certExternalCommandFileName = null;
     private String revokeExternalCommandFileName = null;
+    private boolean calclulateDeltaCrlLocally = false;
     private boolean crlFailOnErrorCode = true;
     private boolean certFailOnErrorCode = true;
     private boolean revokeFailOnErrorCode = true;
@@ -88,6 +93,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
         revokeFailOnErrorCode = properties.getProperty(revokeFailOnErrorCodePropertyName, "true").equalsIgnoreCase("true");
         revokeFailOnStandardError = properties.getProperty(revokeFailOnStandardErrorPropertyName, "true").equalsIgnoreCase("true");
         revokeExternalCommandFileName = properties.getProperty(revokeExternalCommandPropertyName);
+        calclulateDeltaCrlLocally = properties.getProperty(calclulateDeltaCrlLocallyPropertyName, "false").equalsIgnoreCase("true");
     } // init
 
     /**
@@ -158,8 +164,22 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             log.error(msg);
             throw new PublisherException(msg);
         }
+
+        List additionalArguments = new ArrayList();
+
+        if (calclulateDeltaCrlLocally) {
+            X509CRL crl;
+            try {
+                crl = CertTools.getCRLfromByteArray(incrl);
+                additionalArguments.add(Boolean.toString(crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId()) != null));
+            } catch (CRLException e) {
+                log.error("Byte array does not contain a correct CRL.", e);
+            }
+
+        }
+
         // Run internal method to create tempfile and run the command
-        runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError);
+        runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError, additionalArguments);
         return true;
     }
 
@@ -335,6 +355,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             tempFileName = tempFile.getCanonicalPath();
             String[] cmdcommand = (externalCommand).split("\\s");
             additionalArguments.add(0, tempFileName);
+
             String[] cmdargs = (String[]) additionalArguments.toArray(new String[0]);
             String[] cmdarray = new String[cmdcommand.length + cmdargs.length];
             System.arraycopy(cmdcommand, 0, cmdarray, 0, cmdcommand.length);
@@ -365,11 +386,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             }
         } catch (IOException e) {
             String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
-            log.error(msg, e);
             throw new PublisherException(msg);
         } catch (InterruptedException e) {
             String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
-            log.error(msg, e);
             throw new PublisherException(msg);
         } finally {
             try {

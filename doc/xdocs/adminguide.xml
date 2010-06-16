@@ -3843,6 +3843,7 @@ publisher "GPCP" and then "Edit" the same. Choose
 crl.application /fullpathname/exportscript.sh
 crl.failOnStandardError &lt;true | false&gt;
 crl.failOnErrorCode &lt;true | false&gt;
+crl.calclulateDeltaCrlLocally &lt;true | false&gt;
 cert.application /fullpathname/exportscript.sh
 cert.failOnStandardError &lt;true | false&gt;
 cert.failOnErrorCode &lt;true | false&gt;
@@ -3869,6 +3870,9 @@ More advanced scripts or applications have the ability to use the additional arg
 <li>cert.application fulltempfilepathname x509type certificateDN issuerDN certHexSerialNumber</li>
 <li>revoke.application fulltempfilepathname x509reason certificateDN issuerDN certHexSerialNumber</li>
 </ul>
+Depending on application, the GeneralPurposeCustomPublisher can calculate whether a CRL is a delta CRL. 
+Set the parameter crl.calclulateDeltaCrlLocally to true in order to do this, or false if you wish to check this in an external script (or not at all). 
+The result of this check, if run, will be last in the argument list to the script.
 </p>
 </subsubsection>
 </subsection>
