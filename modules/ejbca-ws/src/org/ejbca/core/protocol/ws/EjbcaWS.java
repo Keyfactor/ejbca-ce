@@ -2132,7 +2132,7 @@ public class EjbcaWS implements IEjbcaWS {
 				event = LogConstants.EVENT_INFO_CUSTOMLOG;
 				break;
 			default:
-				throw EjbcaWSHelper.getEjbcaException("Illegal level "+ level + " sent to custonLog call.", logger, ErrorCode.INVALID_LOG_LEVEL, null);
+				throw EjbcaWSHelper.getEjbcaException("Illegal level "+ level + " sent to customLog call.", logger, ErrorCode.INVALID_LOG_LEVEL, null);
 			}
 
 			java.security.cert.Certificate logCert = null;
