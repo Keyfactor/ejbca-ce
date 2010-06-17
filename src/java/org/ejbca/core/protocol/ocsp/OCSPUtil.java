@@ -189,11 +189,10 @@ public class OCSPUtil {
     	} catch (CertificateNotYetValidException e) {
     		throw new Error("This should never happen.", e);
     	}
-		if ( !m_log.isDebugEnabled() ) {
-			return true;
-		}
-		m_log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "+
+		if ( m_log.isDebugEnabled() ) {
+			m_log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "+
 		            new Date(signerCert.getNotAfter().getTime()-warnBeforeExpirationTime));
+		}
     	return true;
     }
     /**
