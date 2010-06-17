@@ -16,10 +16,12 @@ Noteworthy changes:
 - Improved transaction isolation and performance in CMP.
 - Improvements for JBoss 5.
 - Possibility to Enforce unique SubjectDN Serial Number.
+- Framework for validation of the contents of end entity fields. 
 - Fixed some regressions in the admin GUI related to cross certification and CV certificates. 
 - Possible to define custom CN of superadmin on install.
 - Update pre-defined windows smart card logon profiles.
 - Output the servers time to the first page of the Admin GUI.
+- Supervision of the OCSP responder certificate validity in the standalone OCSP responder.
 - Many minor bug fixes related to the big restructure in 3.10.0.
 - Minor security enhancements. 
 

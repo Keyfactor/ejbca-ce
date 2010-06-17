@@ -16,6 +16,7 @@ Improvement
     * [ECA-1685] - Look over exception handling in UserAdminSessionBean findUser and optimize usage to existsUser where possible
     * [ECA-1687] - LocalUserAdminSessionBean.findAllUsersByCaId method declares throws FinderException that it does not throw
     * [ECA-1690] - Possible to define custom CN of superadmin on install
+    * [ECA-1658] - Supervision of the validity time of the signing certificates for the OCSP responder
 
 Task
     * [ECA-1631] - Update pre-defined windows smart card logon profiles
