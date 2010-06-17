@@ -10,10 +10,10 @@
     <note>
     If you have problems with any of the download links below, try to download through the Sourceforge <a href="http://sourceforge.net/projects/ejbca/files/">download page</a>.
     <br/><br/>
-    EJBCA 3.10.1 is now available for <a
-    href="http://downloads.sourceforge.net/ejbca/ejbca_3_10_1.zip">download</a>.
+    EJBCA 3.10.2 is now available for <a
+    href="http://downloads.sourceforge.net/ejbca/ejbca_3_10_2.zip">download</a>.
     <br/>
-    SHA1 checksum: cb26d8ea830b1360e23d8752898acb1a7cd3e087
+    SHA1 checksum: 4b051eb6137a2e0a18ba4774c914b6a8e0eb3472
     <br/><br/>
     Cert-cvc library 1.2.11 with full RSA and ECC support is now available for <a
     href="http://downloads.sourceforge.net/ejbca/cert-cvc-1.2.11.zip">download</a>.
@@ -32,7 +32,7 @@
   <section name="Live CD">
     <p>
     Get a feeling for EJBCA easily by downloading and running our 
-    <a href="http://download.primekey.se/public/ejbca-live.iso">LiveCD</a>. Requires 1500M of memory to run.
+    <a href="http://download.primekey.se/public/ejbca-live.iso">LiveCD</a>. Requires 1500M of RAM to run.
     Technical details can be found <a href="http://wiki.ejbca.org/ejbcalivecd">here</a>. 
     </p>
   </section>
