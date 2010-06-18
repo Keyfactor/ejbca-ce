@@ -7,52 +7,61 @@
   <body>
 <section name="Support">
 <p>
-If you need commercial support or professional services contact the project admins below, or go directly to <a href="http://www.primekey.se/">PrimeKey</a>. 
-We have ready-made <a href="http://www.primekey.se/Services/Support/">support</a> programs available.
+<i>Ready-made commercial EJBCA PKI support</i><br/>
+<a href="http://www.primekey.se/Services/Support">Support programs</a> and other qualified 
+professional services are provided by <a href="http://www.primekey.se">PrimeKey Solutions AB</a>.
 </p>
 </section>
 
 <section name="Documentation">
     <p>
-    First you should look at the documentation resources on this site.
+First of all, have a look at the EJBCA documentation resources gathered below 
+"EJBCA PKI Docs", "EJBCA OCSP Docs" and "Other documentation" in the main menu.
+
     </p><p>
-    Second you should see if there is something interesting in the <a href="faq.html">FAQ</a>.
+Secondly, examine the EJBCA <a href="faq.html">FAQ</a>.
     </p>
 </section>
 
 <section name="Training">
 <p>
-If you need training, PrimeKey and Logica have an established course for EJBCA <a href="http://www.primekey.se/Services/Training/">Training</a>. 
+<i>Established EJBCA PKI Training</i><br/>
+<a href="http://www.primekey.se/Services/Training">Training Courses</a> for advanced users are held 
+internationally by PrimeKey and their partners.
 </p>
 </section>
 
 <section name="Mailing Lists">
 <p>
-EJBCA has two public mailing lists hosted on Sourceforge. To subscribe to any of the lists or
- browse archived messages, click the links below.
+There are two public EJBCA mailing lists hosted on Sourceforge. To subscribe to 
+either list, or browse archived messages, simply click optional link(s) below.
 </p>
 <p>
-<a href="http://lists.sourceforge.net/lists/listinfo/ejbca-news">ejbca-news</a> delivers
-news such as new releases or important features. This is a low traffic list.
+The <a href="http://lists.sourceforge.net/lists/listinfo/ejbca-news">ejbca-news</a> list 
+delivers information such as the most recent EJBCA releases and important EJBCA 
+features. This is a low traffic list.
 </p>
 <p>
-<a href="http://lists.sourceforge.net/lists/listinfo/ejbca-develop">ejbca-develop</a> is used for development
-discussions of a more technical nature. Almost anything regarding EJBCA can be posted on this list.
+The <a href="http://lists.sourceforge.net/lists/listinfo/ejbca-develop">ejbca-develop</a> list 
+is used for technical development discussions. Almost anything regarding EJBCA PKI can be posted on this list.
 </p>
     </section>
 
 <section name="Discussion Forums">
 <p>
- There are also several public <a href="http://sourceforge.net/projects/ejbca/support">discussion forums</a>
- that are used for discussions and requests for help etc. 
+There are several public <a href="http://sourceforge.net/projects/ejbca/support">discussion forums</a> 
+that are used for EJBCA PKI discussions and requests for help etc. 
 </p>
     </section>
 
 <section name="IRC">
 <p>
- There is an IRC channel, #ejbca, on irc.freenode.net where support questions can be asked.
- We are usually there during European office hours, and some other times as well.
- A nice free-of-charge web-based IRC client is available <a href="http://www.mibbit.com/chat/">here</a>. 
+EJBCA support questions can be asked on the IRC channel (#ejbca) on
+irc.freenode.net. A nice and free-of-charge, web-based IRC client is available 
+<a href="http://chat.mibbit.com/">here</a>. 
+PrimeKey is usually available on the IRC channel during European office hours, 
+and occasionally at other times too.
+
 </p>
 </section>
 
