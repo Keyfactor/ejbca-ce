@@ -273,7 +273,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			throw new WrongTokenTypeException ("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
 		}
 		// This is the secret sauce, do the end entity handling automagically here before we get the cert
-		addOrEditUser(admin, userdata);
+		addOrEditUser(admin, userdata, false, true);
 		// Process request
 		try {
 			String password = userdata.getPassword();
@@ -380,7 +380,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			throw new WrongTokenTypeException ("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
 		}
 		// This is the secret sauce, do the end entity handling automagically here before we get the cert
-		addOrEditUser(admin, userdata);
+		addOrEditUser(admin, userdata, false, true);
 		IResponseMessage retval = null;
 		try {
 			retval = getSignSession().createCertificate(admin, req, -1, responseClass);				
@@ -407,7 +407,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	 * @throws CADoesntExistsException 
 	 * @throws EjbcaException 
 	 */
-	private void addOrEditUser(Admin admin, UserDataVO userdata) throws AuthorizationDeniedException,
+	private void addOrEditUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromwebservice) throws AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, ApprovalException,
 			DuplicateKeyException, CADoesntExistsException, EjbcaException {
 		
@@ -424,7 +424,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 				if (log.isDebugEnabled()) {
 					log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
 				}
-				getUserAdminSession().changeUser(admin,userdata, true, true);
+				getUserAdminSession().changeUser(admin,userdata, clearpwd, fromwebservice);
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
@@ -491,7 +491,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	InvalidAlgorithmParameterException {
 		
 		// This is the secret sauce, do the end entity handling automagically here before we get the cert
-		addOrEditUser(admin, userdata);
+		addOrEditUser(admin, userdata, true, true);
 		// Process request
 		byte[] ret = null;
 		try {
