@@ -16,13 +16,10 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -31,7 +28,7 @@ import javax.swing.JTextField;
  * Cell editor with text field and button for browsing to a filename to save as.
  *
  * @author markus
- * @version $Id: BrowseCellEditor.java 1043 2010-06-02 11:21:01Z netmackan $
+ * @version $Id$
  */
 class CertCellEditor extends DefaultCellEditor implements ActionListener {
 

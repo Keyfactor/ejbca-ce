@@ -16,8 +16,10 @@ import java.io.File;
 import java.io.Serializable;
 
 /**
+ * Holds settings.
  *
  * @author markus
+ * @version $Id$
  */
 public class Settings implements Serializable {
 

@@ -121,6 +121,9 @@ import org.jdesktop.application.Application;
 
 /**
  * The application's main frame.
+ * 
+ * @author markus
+ * @version $Id$
  */
 public class BatchEnrollmentGUIView extends FrameView {
 

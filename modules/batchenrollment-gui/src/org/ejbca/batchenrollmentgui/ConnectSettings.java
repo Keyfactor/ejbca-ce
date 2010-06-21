@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.ejbca.batchenrollmentgui;
 
-import java.util.Properties;
-
 /**
- *
+ * Holds the connection settings.
+ * 
  * @author markus
+ * @version $Id$
  */
 public class ConnectSettings {
     

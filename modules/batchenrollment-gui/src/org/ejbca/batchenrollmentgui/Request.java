@@ -18,8 +18,10 @@ import java.util.List;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 
 /**
- *
+ * Represents a certificate signing request.
+ * 
  * @author markus
+ * @version $Id$
  */
 public class Request {
 

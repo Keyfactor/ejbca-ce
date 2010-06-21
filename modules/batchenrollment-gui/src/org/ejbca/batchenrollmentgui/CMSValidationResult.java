@@ -18,6 +18,7 @@ import java.util.List;
 /**
  *
  * @author markus
+ * @version $Id$
  */
 public class CMSValidationResult {
     
