@@ -1205,9 +1205,6 @@ From EJBCA 3.4 the XKMS protocol is supported as a service as a complement to th
 </p><p>
 It's disabled in the standard installation (from EJBCA 3.10) and have the Web Service URL http://"hostname":8080/ejbca/xkms/xkms
 </p>
-<p>
-<strong>NOTE:</strong> XKMS only works well with JDK 1.5, it does not work with JDK 6.
-</p>
 </subsection>
 <subsection name="How to configure the XKMS Service">
 <p>
