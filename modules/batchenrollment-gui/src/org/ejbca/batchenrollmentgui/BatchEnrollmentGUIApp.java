@@ -19,6 +19,9 @@ import org.jdesktop.application.SingleFrameApplication;
 
 /**
  * The main class of the application.
+ *
+ * @author markus
+ * @version $Id$
  */
 public class BatchEnrollmentGUIApp extends SingleFrameApplication {
 

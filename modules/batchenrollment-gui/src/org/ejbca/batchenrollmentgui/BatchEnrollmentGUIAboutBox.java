@@ -14,6 +14,12 @@ package org.ejbca.batchenrollmentgui;
 
 import org.jdesktop.application.Action;
 
+/**
+ * About box.
+ *
+ * @author markus
+ * @version $Id$
+ */
 public class BatchEnrollmentGUIAboutBox extends javax.swing.JDialog {
 
     public BatchEnrollmentGUIAboutBox(java.awt.Frame parent) {

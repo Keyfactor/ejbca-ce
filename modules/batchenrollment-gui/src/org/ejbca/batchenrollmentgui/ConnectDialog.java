@@ -29,7 +29,6 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import javax.net.ssl.HttpsURLConnection;
@@ -51,8 +50,10 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import sun.security.pkcs11.SunPKCS11;
 
 /**
- *
+ * Dialog for connection and authentication settings.
+ * 
  * @author markus
+ * @version $Id$
  */
 public class ConnectDialog extends javax.swing.JDialog {
 

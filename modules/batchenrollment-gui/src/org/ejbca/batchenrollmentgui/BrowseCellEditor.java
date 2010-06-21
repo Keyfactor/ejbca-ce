@@ -29,7 +29,7 @@ import javax.swing.JTextField;
  * Cell editor with text field and button for browsing to a filename to save as.
  *
  * @author markus
- * @version $Id: BrowseCellEditor.java 1043 2010-06-02 11:21:01Z netmackan $
+ * @version $Id$
  */
 class BrowseCellEditor extends DefaultCellEditor implements ActionListener {
 

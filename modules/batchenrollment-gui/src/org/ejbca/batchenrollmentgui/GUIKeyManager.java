@@ -19,6 +19,12 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.X509KeyManager;
 import javax.swing.JOptionPane;
 
+/**
+ * Key manager that prompts user for choosing which certificate to use.
+ *
+ * @author markus
+ * @version $id$
+ */
 public class GUIKeyManager implements X509KeyManager {
 
     private final X509KeyManager base;

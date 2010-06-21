@@ -13,12 +13,15 @@
 package org.ejbca.batchenrollmentgui;
 
 import java.io.File;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
 
 /**
+ * Dialog for settings.
  *
  * @author markus
+ * @version $Id$
  */
 public class SettingsDialog extends javax.swing.JDialog {
 
@@ -162,7 +165,13 @@ public class SettingsDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void truststoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_truststoreBrowseButtonActionPerformed
-        // TODO add your handling code here:
+        final JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File(truststorePath.getText()));
+        final int result  = chooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            truststorePath.setText(
+                    chooser.getSelectedFile().getAbsolutePath());
+        }
     }//GEN-LAST:event_truststoreBrowseButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
