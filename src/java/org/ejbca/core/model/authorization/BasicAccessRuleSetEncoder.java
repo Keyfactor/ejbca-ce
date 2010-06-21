@@ -121,7 +121,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	}
 
 	/**
-	 * @return a Collection of av	ailable EndEntityProfileIds or BasicAccessRuleSet.ENDENTITYPROFILE_ALL for all and entity profiles.
+	 * @return a Collection of available EndEntityProfileIds or BasicAccessRuleSet.ENDENTITYPROFILE_ALL for all and entity profiles.
 	 */ 		
 	public Collection getAvailableEndEntityProfiles(){
 	   return availableendentityprofiles;	
@@ -405,26 +405,22 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		Iterator iter = availableaccessrules.iterator();
 		while(iter.hasNext()){
 			String nextrule = (String) iter.next();
-			if(nextrule.equals(AccessRulesConstants.CABASE)){
+			if (nextrule.equals(AccessRulesConstants.CABASE)) {
 				this.availablecas.add(new Integer(BasicAccessRuleSet.CA_ALL));
-			}else
-		    if(nextrule.startsWith(AccessRulesConstants.CAPREFIX)){
-		    	this.availablecas.add(new Integer(nextrule.substring(AccessRulesConstants.CAPREFIX.length())));
-		    }else
-		    if(nextrule.equals(AccessRulesConstants.ENDENTITYPROFILEBASE)){
-		    	this.availableendentityprofiles.add(new Integer(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));	
-		    }else
-		    if(nextrule.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)){			    	
-		    	if(nextrule.lastIndexOf('/') <= AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()){
-		    	  this.availableendentityprofiles.add(new Integer(nextrule.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length())));
-		    	}else{	
-		    	  String tmpString = nextrule.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
-		    	  this.availableendentityprofiles.add(new Integer(tmpString.substring(0, tmpString.indexOf('/'))));
-		    	}
-		    }		    		    		    						
+			} else if(nextrule.startsWith(AccessRulesConstants.CAPREFIX)) {
+				this.availablecas.add(new Integer(nextrule.substring(AccessRulesConstants.CAPREFIX.length())));
+			} else if(nextrule.equals(AccessRulesConstants.ENDENTITYPROFILEBASE)) {
+				this.availableendentityprofiles.add(new Integer(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));	
+			} else if(nextrule.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
+				if (nextrule.lastIndexOf('/') <= AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
+					this.availableendentityprofiles.add(new Integer(nextrule.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length())));
+				} else {
+					String tmpString = nextrule.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
+					this.availableendentityprofiles.add(new Integer(tmpString.substring(0, tmpString.indexOf('/'))));
+				}
+			}		    		    		    						
 		}
-		
-		
+				
 		this.availableotherrules.add(new Integer(BasicAccessRuleSet.OTHER_VIEWLOG));
 		if(usehardtokens) {
 			this.availableotherrules.add(new Integer(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS));
