@@ -33,7 +33,6 @@ public class Request {
     private String result;
     private boolean done;
     private String requestedDN;
-    private boolean changeStatus;
 
     public Request() {
     }
@@ -100,14 +99,6 @@ public class Request {
 
     public void setRequestedDN(String requestedDN) {
         this.requestedDN = requestedDN;
-    }
-
-    public boolean isChangeStatus() {
-        return changeStatus;
-    }
-
-    public void setChangeStatus(boolean changeStatus) {
-        this.changeStatus = changeStatus;
     }
 
 }

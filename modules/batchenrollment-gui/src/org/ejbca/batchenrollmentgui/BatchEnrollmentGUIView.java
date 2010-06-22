@@ -137,7 +137,7 @@ public class BatchEnrollmentGUIView extends FrameView {
 
     private static final String[] COLUMN_NAMES = new String[] {
         "Status", "Request file", "Request signed by", "Requested DN", 
-        "End entity", "Change status", "Output file"
+        "End entity", "Output file"
     };
 
     private Collection<X509Certificate> trustedCerts;
@@ -174,16 +174,6 @@ public class BatchEnrollmentGUIView extends FrameView {
                 return COLUMN_NAMES[column];
             }
 
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 5) {
-                    return Boolean.class;
-                }
-                return super.getColumnClass(columnIndex);
-            }
-
-
-
             public Object getValueAt(final int rowIndex, int columnIndex) {
                 Object value;
                 final Request request = requests.get(rowIndex);
@@ -204,9 +194,6 @@ public class BatchEnrollmentGUIView extends FrameView {
                         value = request.getEndEntity();
                         break;
                     case 5:
-                        value = request.isChangeStatus();
-                        break;
-                    case 6:
                         value = request.getOutFile();
                         break;
                     default:
@@ -219,37 +206,18 @@ public class BatchEnrollmentGUIView extends FrameView {
             public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
                 final Request request = requests.get(rowIndex);
                 switch (columnIndex) {
-                    case 0:
-                        break;
-                    case 1:
-//                        value = requests.get(rowIndex).getInFile();
-                        break;
-                    case 2:
-//                        value = requests.get(rowIndex).getSignerChain();
-                        break;
                     case 4:
                         if (aValue instanceof UserDataVOWS) {
                             final UserDataVOWS endEntity = (UserDataVOWS) aValue;
                             request.setEndEntity(endEntity);
-//                            if (request.getOutFile() == null) {
-//                                request.setOutFile(new File(request.getInFile()
-//                                        .getParentFile(), endEntity + ".pem"));
-//                                fireTableCellUpdated(rowIndex, 5);
-//                            }
                         }
                         break;
                     case 5:
-                        if (aValue instanceof Boolean) {
-                            requests.get(rowIndex).setChangeStatus((Boolean) aValue);
-                        }
-                        break;
-                    case 6:
                         if (aValue instanceof String) {
                             requests.get(rowIndex).setOutFile(new File((String) aValue));
                         } else if (aValue instanceof File) {
                             requests.get(rowIndex).setOutFile((File) aValue);
                         }
-                    default:
                 }
                 fireTableRowsUpdated(rowIndex, rowIndex);
             }
@@ -259,8 +227,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                 return (columnIndex == 2
                         && requests.get(rowIndex).getSignerChain() != null)
                         || (!requests.get(rowIndex).isDone()
-                        && (columnIndex == 4 || columnIndex == 5
-                        || columnIndex == 6));
+                        && (columnIndex == 4 || columnIndex == 5));
             }
 
         });
@@ -281,8 +248,6 @@ public class BatchEnrollmentGUIView extends FrameView {
                     } else if (component instanceof JLabel) {
                         ((JLabel) component).setText(
                                 ((UserDataVOWS) value).getUsername());
-                    } else {
-                        System.out.println("component: " + component);
                     }
                 }
                 return component;
@@ -334,7 +299,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                 new BrowseCellEditor(new JTextField(),
                 JFileChooser.SAVE_DIALOG);
         browseCellEditor.setClickCountToStart(1);
-        jTable1.getColumnModel().getColumn(6).setCellEditor(
+        jTable1.getColumnModel().getColumn(5).setCellEditor(
                 browseCellEditor);
 
         final JTextField certTextField = new JTextField();
@@ -361,19 +326,9 @@ public class BatchEnrollmentGUIView extends FrameView {
 
         jTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
-            public void valueChanged(ListSelectionEvent e) {
+            public void valueChanged(final ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    removeButton.setEnabled(!jTable1.getSelectionModel()
-                            .isSelectionEmpty());
-                    
-                    boolean clearFinished = false;
-                    for (Request request : requests) {
-                        if (request.isDone()) {
-                            clearFinished = true;
-                            break;
-                        }
-                    }
-                    clearDoneButton.setEnabled(clearFinished);
+                    jTable1SelectionChanged(e);
                 }
             }
         });
@@ -880,8 +835,6 @@ public class BatchEnrollmentGUIView extends FrameView {
         }
         enrollButton.setEnabled(enable);
 
-        System.out.println(e.getColumn());
-
         // Update change status checkbox when user changed
 //        if (e.getColumn() == 5
 //                || e.getColumn() == TableModelEvent.ALL_COLUMNS) {
@@ -955,7 +908,7 @@ public class BatchEnrollmentGUIView extends FrameView {
             CMSSignedData signedData = null;
             try {
                 signedData = new CMSSignedData(bytes);
-            } catch (CMSException ex) {
+            } catch (Exception ex) {
                 LOG.debug("Not parsed as CMS: " + ex.getMessage());
             }
             
@@ -999,6 +952,10 @@ public class BatchEnrollmentGUIView extends FrameView {
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(getFrame(),
                     "Problem reading file:\n" + ex.getMessage(), "Add request",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(getFrame(),
+                    "Problem parsing request:\n" + ex.getMessage(), "Add request",
                     JOptionPane.ERROR_MESSAGE);
         } finally {
             if (in != null) {
@@ -1217,7 +1174,7 @@ public class BatchEnrollmentGUIView extends FrameView {
     }
 
     private PKCS10CertificationRequest getPkcs10Request(byte[] requestBytes)
-            throws IOException {
+            throws IOException, IllegalArgumentException {
         return new PKCS10CertificationRequest(
                 RequestMessageUtils.getRequestBytes(requestBytes));
     }
@@ -1251,8 +1208,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                     um.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
                     um.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_CA);
                     um.setMatchvalue(ca.getName());
-                    endEntities = new Vector<UserDataVOWS>(ejbcaWS.findUser(um));
-
+                    endEntities.addAll(ejbcaWS.findUser(um));
                 }
                 
                 System.out.println("list: " + endEntities);
@@ -1329,7 +1285,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                         out = new PrintWriter(new FileOutputStream(
                                 request.getOutFile()));
 
-                        if (request.isChangeStatus()) {
+                        if (request.getEndEntity().getStatus() != 10) {
                             final UserDataVOWS user = request.getEndEntity();
                             user.setPassword(new String(password));
                             user.setStatus(10);
@@ -1399,6 +1355,7 @@ public class BatchEnrollmentGUIView extends FrameView {
             }
 
             jTable1Changed(null);
+            jTable1SelectionChanged(null);
 
             int done = 0, failed = 0;
             for (Request request : requests) {
@@ -1428,6 +1385,20 @@ public class BatchEnrollmentGUIView extends FrameView {
             }
         }
         return endentity;
+    }
+
+    private void jTable1SelectionChanged(final ListSelectionEvent e) {
+        removeButton.setEnabled(!jTable1.getSelectionModel()
+                .isSelectionEmpty());
+
+        boolean clearFinished = false;
+        for (Request request : requests) {
+            if (request.isDone()) {
+                clearFinished = true;
+                break;
+            }
+        }
+        clearDoneButton.setEnabled(clearFinished);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
