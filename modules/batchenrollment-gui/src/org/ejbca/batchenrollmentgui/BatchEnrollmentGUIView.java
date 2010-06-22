@@ -22,7 +22,6 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.IOException;
-import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
@@ -94,7 +93,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.TransferHandler;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -147,8 +145,6 @@ public class BatchEnrollmentGUIView extends FrameView {
     private JComboBox endEntitiesComboBox = new JComboBox();
 
     private EjbcaWS ejbcaWS;
-
-    private static final String DEFAULT_URL = "https://localhost:8443/ejbca";
 
     public BatchEnrollmentGUIView(SingleFrameApplication app) {
         super(app);
@@ -333,68 +329,16 @@ public class BatchEnrollmentGUIView extends FrameView {
             }
         });
 
-//        jTable1.setDropTarget(new DropTarget() {
-//
-//        });
-
         jTable1.setDragEnabled(false);
 
-        TransferHandler th = new TransferHandler(null) {
-
-            @Override
-            public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
-                System.out.println("can import");
-                boolean can = true;
-                for (DataFlavor flavor : transferFlavors) {
-                    if (!DataFlavor.javaFileListFlavor.equals(flavor)) {
-                        can = false;
-                        break;
-                    }
-                }
-                return true;
-            }
-
-            @Override
-            public boolean importData(JComponent comp, Transferable t) {
-                System.out.println("impportData: " + t);
-                boolean result = false;
-
-                if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-                    try {
-                        final List<File> data = (List<File>) t.getTransferData(
-                            DataFlavor.javaFileListFlavor);
-                        for (File file : data) {
-                            addRequest(file);
-                        }
-                        result = true;
-                    } catch (UnsupportedFlavorException ex) {
-                        JOptionPane.showMessageDialog(getFrame(),
-                            "Adding files failed:\n" + ex.getMessage(),
-                            "Add files", JOptionPane.ERROR_MESSAGE);
-                    } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(getFrame(),
-                            "Adding files failed:\n" + ex.getMessage(),
-                            "Add files", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-                return result;
-            }
-
-        };
-
-//        jTable1.setTransferHandler(th);
-//        jScrollPane1.setTransferHandler(th);
-        DropTarget dt = new DropTarget();
+        final DropTarget dt = new DropTarget();
         try {
             dt.addDropTargetListener(new DropTargetAdapter() {
-//                private DataFlavor URI_LIST_FLAVOR = new DataFlavor(Reader.class, "text/uri-list", "java.io.Reader");
 
                 public void drop(DropTargetDropEvent dtde) {
-                    System.out.println("drop: " + dtde);
-                    Transferable tr = dtde.getTransferable();
-                    DataFlavor[] flavors = tr.getTransferDataFlavors();
+                    final Transferable tr = dtde.getTransferable();
+                    final DataFlavor[] flavors = tr.getTransferDataFlavors();
                     for (DataFlavor flavor : flavors) {
-                        System.out.println("flavor: " + flavor);
                         if (DataFlavor.javaFileListFlavor.equals(flavor)) {
                             try {
                                 dtde.acceptDrop(DnDConstants.ACTION_COPY);
@@ -424,9 +368,9 @@ public class BatchEnrollmentGUIView extends FrameView {
                                         URL url = new URL(uriStr);
                                         addRequest(url.openStream(), new File(url.toURI()));
                                     } catch (URISyntaxException ex) {
-                                        ex.printStackTrace();
+                                        LOG.error("Parsing URL", ex);
                                     } catch (IOException ex) {
-                                        ex.printStackTrace();
+                                        LOG.error("Parsing URL", ex);
                                     }
                                 }
                                 dtde.dropComplete(true);
@@ -435,12 +379,8 @@ public class BatchEnrollmentGUIView extends FrameView {
                             } catch (IOException ex) {
                                 throw new RuntimeException(ex);
                             }
-                        } else {
-                            System.out.println("def rep: " + flavor.getDefaultRepresentationClass());
-                            System.out.println("mime-type: " + flavor.getMimeType());
                         }
                     }
-
                 }
             });
         } catch (TooManyListenersException ex) {
@@ -448,6 +388,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         }
         jScrollPane1.setDropTarget(dt);
 
+        jTable1Changed(null);
 
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
@@ -834,19 +775,6 @@ public class BatchEnrollmentGUIView extends FrameView {
             }
         }
         enrollButton.setEnabled(enable);
-
-        // Update change status checkbox when user changed
-//        if (e.getColumn() == 5
-//                || e.getColumn() == TableModelEvent.ALL_COLUMNS) {
-//            for (int row = e.getFirstRow(); row <= e.getLastRow(); row++) {
-//                if (requests.get(row).getEndEntity() == null) {
-//                    requests.get(row).setChangeStatus(false);
-//                } else {
-//                    requests.get(row).setChangeStatus(
-//                            requests.get(row).getEndEntity().getStatus() != 10);
-//                }
-//            }
-//        }
     }
 
     private Collection<X509Certificate> getTrustedCerts() {
@@ -984,35 +912,38 @@ public class BatchEnrollmentGUIView extends FrameView {
         final CMSValidationResult result = new CMSValidationResult();
 
         try {
-
-
             final ContentInfo ci = signedData.getContentInfo();
-            System.out.println("ci.content: " + ci.getContent());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("ci.content: " + ci.getContent() + "\n"
+                    + "signedContent: " + signedData.getSignedContent());
+            }
 
-            System.out.println("signedContent: " + signedData.getSignedContent());
-
-            Object content = signedData.getSignedContent().getContent();
+            final Object content = signedData.getSignedContent().getContent();
 
             if (content instanceof byte[]) {
                 result.setContent((byte[]) content);
             }
 
-            CertStore certs = signedData.getCertificatesAndCRLs("Collection", "BC");
+            CertStore certs = signedData.getCertificatesAndCRLs("Collection",
+                    "BC");
 
             SignerInformationStore  signers = signedData.getSignerInfos();
             Collection c = signers.getSigners();
             for (Object o : signers.getSigners()) {
                 if (o instanceof SignerInformation) {
                     SignerInformation si = (SignerInformation) o;
-                    System.out.println("*** SIGNATURE ***");
-                    System.out.println("Version: " + si.getVersion());
-                    System.out.println("Alg OID: " + si.getDigestAlgOID());
-                    System.out.println(si.getSID());
+
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("*** SIGNATURE: " + "\n" + si.getSID());
+                    }
+                    
                     final Collection<? extends Certificate> signerCerts;
                     try {
                         signerCerts = certs.getCertificates(si.getSID());
 
-                        System.out.println("signerCerts: " + signerCerts);
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("signerCerts: " + signerCerts);
+                        }
 
                         for (Certificate signerCert : signerCerts) {
                             final X509Certificate signerX509Cert =
@@ -1022,14 +953,17 @@ public class BatchEnrollmentGUIView extends FrameView {
 
                             if (consistent) {
 
-                                System.out.println(
-                                        (consistent ? "Consistent" : "Inconsistent")
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug(
+                                        (consistent ? "Consistent"
+                                            : "Inconsistent")
                                         + " signature from " +
                                         signerX509Cert
                                         .getSubjectDN()
                                         + " issued by "
                                         + ((X509Certificate) signerCert)
                                         .getIssuerDN());
+                                }
 
                                 result.setValidSignature(consistent);
 
@@ -1086,7 +1020,6 @@ public class BatchEnrollmentGUIView extends FrameView {
                                         ex.getMessage(), "Certificate check",
                                     JOptionPane.ERROR_MESSAGE);
                     }
-                    System.out.println();
                 }
             }
 
@@ -1111,7 +1044,6 @@ public class BatchEnrollmentGUIView extends FrameView {
             anchors.add(new TrustAnchor(cert, null));
         }
 
-
         final CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
         X509CertSelector targetConstraints = new X509CertSelector();
         targetConstraints.setCertificate(signerCert);
@@ -1121,12 +1053,10 @@ public class BatchEnrollmentGUIView extends FrameView {
         cpbParams.addCertStore(certs);
         cpbParams.setRevocationEnabled(false);
 
-
         // Build path
         PKIXCertPathBuilderResult cpbResult =
             (PKIXCertPathBuilderResult) cpb.build(cpbParams);
         CertPath certPath = cpbResult.getCertPath();
-
 
         // Validate path
         final CertPathValidator cpv = CertPathValidator.getInstance("PKIX");
@@ -1141,8 +1071,9 @@ public class BatchEnrollmentGUIView extends FrameView {
             (PKIXCertPathValidatorResult) cpv.validate(certPath, params);
 //                PolicyNode policyTree = result.getPolicyTree();
 //                PublicKey subjectPublicKey = result.getPublicKey();
-        System.out.println("Found trust anchor: "
-                + result.getTrustAnchor());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found trust anchor: " + result.getTrustAnchor());
+        }
 
         List<X509Certificate> signerChain = new ArrayList<X509Certificate>();
 
@@ -1196,48 +1127,51 @@ public class BatchEnrollmentGUIView extends FrameView {
             // doInBackground() depends on from parameters
             // to RefreshEndEntitiesTask fields, here.
             super(app);
+        }
+        @Override protected Object doInBackground() {
+            // Your Task's code here.  This method runs
+            // on a background thread, so don't reference
+            // the Swing GUI from here.
+            Object result;
+            final Vector<UserDataVOWS> users = new Vector<UserDataVOWS>();
 
             try {
-                endEntities.clear();
-
-
-
                 List<NameAndId> cas = ejbcaWS.getAvailableCAs();
                 for (NameAndId ca : cas) {
                     UserMatch um = new UserMatch();
                     um.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
                     um.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_CA);
                     um.setMatchvalue(ca.getName());
-                    endEntities.addAll(ejbcaWS.findUser(um));
+                    users.addAll(ejbcaWS.findUser(um));
                 }
-                
-                System.out.println("list: " + endEntities);
-
-                endEntitiesComboBox.setModel(
-                        new DefaultComboBoxModel(endEntities));
-                endEntitiesComboBox.revalidate();
-
+                result = users;
             } catch (AuthorizationDeniedException_Exception ex) {
-                JOptionPane.showMessageDialog(getFrame(), ex.getMessage());
+                result = ex;
             } catch (IllegalQueryException_Exception ex) {
-                JOptionPane.showMessageDialog(getFrame(), ex.getMessage());
+                result = ex;
             } catch (EjbcaException_Exception ex) {
-                JOptionPane.showMessageDialog(getFrame(), ex.getMessage());
+                result = ex;
             }
-
-        }
-        @Override protected Object doInBackground() {
-            // Your Task's code here.  This method runs
-            // on a background thread, so don't reference
-            // the Swing GUI from here.
-
-
-
-            return null;  // return your result
+            return result;  // return your result
         }
         @Override protected void succeeded(Object result) {
             // Runs on the EDT.  Update the GUI based on
             // the result computed by doInBackground().
+            if (result instanceof Vector) {
+                final Vector<UserDataVOWS> newUsers = (Vector) result;
+                endEntities = newUsers;
+
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("list: " + endEntities);
+                }
+
+                endEntitiesComboBox.setModel(
+                        new DefaultComboBoxModel(endEntities));
+                endEntitiesComboBox.revalidate();
+            } else if (result instanceof Exception) {
+                final Exception ex = (Exception) result;
+                JOptionPane.showMessageDialog(getFrame(), ex.getMessage());
+            }
         }
     }
 
