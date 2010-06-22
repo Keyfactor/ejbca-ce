@@ -210,7 +210,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 
 	protected void usage() {
 		getPrintStream().println("Command used to generate a users certificate");
-		getPrintStream().println("Usage : certreq <username> <subjectdn> <caname> <endentityprofilename> <certificateprofilename> <regpath> <reqtype (PKCS10|SPKAC|CRMF)> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");       
+		getPrintStream().println("Usage : certreq <username> <subjectdn> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF)> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");       
         getPrintStream().println("outputpath : directory where certificate is written in form username+.cer|.pem ");
    }
 
