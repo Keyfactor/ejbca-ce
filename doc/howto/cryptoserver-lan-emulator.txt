@@ -23,7 +23,7 @@ Setup software and initialize pkcs11 slot:
 Generate keys (password is user1 as initialized above):
 - cd $EJBCA_HOME
 - ant clientToolBox
-- cd clientToolBox-dist
+- cd dist/clientToolBox
 - ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 2048 defaultKey 1
 - ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 2048 signKey 1
 - ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 512 testKey 1

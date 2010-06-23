@@ -149,11 +149,11 @@ $TOOLBOX_HOME/ejbcaClientToolBox.sh OCSP stress ...
 <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA ClientToolBox</a> contains a tool for monitoring
 OCSP databases. This tool is stand-alone and based on Java SE JPA that can be configured in
   </p>
-<source>clientToolBox-dist/properties/META-INF/persistence.xml.</source>
+<source>dist/clientToolBox/properties/META-INF/persistence.xml.</source>
   <p>
 Log4J is used for reporting an can be configured in
   </p>
-<source>clientToolBox-dist/properties/log4j.xml.</source>
+<source>dist/clientToolBox/properties/log4j.xml.</source>
   <p>
 The tool operates using Certificate Profile IDs that are the internal representations of different Certificate
 Profiles in EJBCA. When you run the tool it will output all the existing IDs in each OCSP. These IDs is also

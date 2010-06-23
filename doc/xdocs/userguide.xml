@@ -1092,7 +1092,7 @@ Build these tools with:
 </p><source>
 ant clientToolBox
 </source><p>
-The directory './clientToolBox-dist' is then created. You may then move this directory to any location.
+The directory './dist/clientToolBox' is then created. You may then move this directory to any location.
 </p><p>
 To use any of the tools just call 'ejbcaClientToolBox.sh' in this directory. You may call the script from any location.
 </p><p>

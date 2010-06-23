@@ -360,7 +360,7 @@
 	</target>
 	
     <target name="runctb" depends="build, clientToolBox" description="run JUnit ClientToolBox tests">
-		<echo message="Use ejbca-custom/clientToolBox-dist/lib for your JDBC driver and ejbca-custom/clientToolBox-dist/properties/META-INF/persistence.xml for your modified database config."/>
+		<echo message="Use ejbca-custom/dist/clientToolBox/lib for your JDBC driver and ejbca-custom/dist/clientToolBox/properties/META-INF/persistence.xml for your modified database config."/>
     	<property name="reports.dir" location="${reports.base.dir}/ctb"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>

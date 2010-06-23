@@ -29,7 +29,7 @@ fi
 # use this instead if you want build from eclipse
 #CLASSES=$CLASSES:$EJBCA_HOME/out/classes
 
-if [ ! -f $EJBCA_HOME/clientToolBox-dist/clientToolBox.jar ] ; then
+if [ ! -f $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar ] ; then
 	echo "You have to build the ClientToolBox before running this command."
 	exit 1
 fi
@@ -37,4 +37,4 @@ fi
 # Finally run java
 #set -x
 # -cp $CLASSES 
-$JAVACMD -jar $EJBCA_HOME/clientToolBox-dist/clientToolBox.jar PKCS11HSMKeyTool "${@}"
+$JAVACMD -jar $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar PKCS11HSMKeyTool "${@}"
