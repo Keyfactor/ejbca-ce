@@ -13,6 +13,7 @@
  
 package org.ejbca.core.ejb.ca.store;
 
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -523,12 +524,13 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * to default values (CERT_UNASSIGNED, USER_INVALID, null, null and
      * REVOKATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
      *
-     * @param incert the (X509)Certificate to be stored in the database.
+     * @param incert the Certificate (x.509 or cvc) to be stored in the database.
+     * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have parameters. Can be null if RSA or certificate public key contains all parameters.
      *
      * @return primary key
      * @ejb.create-method
      */
-    public CertificateDataPK ejbCreate(Certificate incert)
+    public CertificateDataPK ejbCreate(Certificate incert, PublicKey enrichedpubkey)
         throws CreateException {
         // Exctract all fields to store with the certificate.
         try {
@@ -555,10 +557,18 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(0);
             setCertificateProfileId(0);
-            setSubjectKeyId(new String(Base64.encode(KeyTools.createSubjectKeyId(incert.getPublicKey()).getKeyIdentifier(),false)));
+            // Create a key identifier
+            PublicKey pubk = incert.getPublicKey();
+            if (enrichedpubkey != null) {
+            	pubk = enrichedpubkey;
+            }
+            // Creating the KeyId may just throw an exception, but that should indicate a bug somewhere
+            String keyId = new String(Base64.encode(KeyTools.createSubjectKeyId(pubk).getKeyIdentifier(),false));
+            setSubjectKeyId(keyId);
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
-            // TODO should throw an exception
+            CreateException ce = new CreateException(cee.getMessage());
+            throw ce;
         }
         return null;
     }
@@ -568,7 +578,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      *
      * @param incert certificate
      */
-    public void ejbPostCreate(Certificate incert) {
+    public void ejbPostCreate(Certificate incert, PublicKey enrichedpubkey) {
         // Do nothing. Required.
     }
 }

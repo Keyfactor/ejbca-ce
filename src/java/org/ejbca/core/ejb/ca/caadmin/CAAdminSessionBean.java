@@ -1997,9 +1997,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		cadata.setCA(ca);
 
 			// Publish the new CA certificate
-			ArrayList cacert = new ArrayList();
-			cacert.add(ca.getCACertificate());
-			publishCACertificate(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN());
+			publishCACertificate(admin, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
 			createCRLs(admin, ca, ca.getCAInfo());
 		    getCRLCreateSession().publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod()>0);
     	} catch(CATokenOfflineException e) {

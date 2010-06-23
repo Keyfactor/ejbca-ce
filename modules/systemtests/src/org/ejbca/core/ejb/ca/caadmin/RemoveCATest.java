@@ -150,6 +150,29 @@ public class RemoveCATest extends TestCase {
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
+        // test10AddCVCCAECC
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=TCVCAEC,C=SE");
+            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            ret = true;
+        } catch (Exception e) {
+        	log.info("Remove failed: ", e);
+        }
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=TDVEC-D,C=SE");
+            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            ret = true;
+        } catch (Exception e) {
+        	log.info("Remove failed: ", e);
+        }
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=TDVEC-F,C=FI");
+            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            ret = true;
+        } catch (Exception e) {
+        	log.info("Remove failed: ", e);
+        }
+
         assertTrue("Removing CVC CA failed", ret);
 
         try {
