@@ -14,8 +14,10 @@
 package org.ejbca.core.ejb.ca.store;
 
 import java.math.BigInteger;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECParameterSpec;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,6 +36,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
@@ -68,10 +71,12 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
@@ -329,10 +334,44 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         // Strip dangerous chars
         username = StringTools.strip(username);
 
-        Certificate cert = incert;
+        // We need special handling here of CVC certificate with EC keys, because they lack EC parameters in all certs except the Root certificate (CVCA)
+    	PublicKey pubk = incert.getPublicKey();
+    	if ((pubk instanceof PublicKeyEC)) {
+    		PublicKeyEC pkec = (PublicKeyEC) pubk;
+    		// The public key of IS and DV certificate (CVC) do not have any parameters so we have to do some magic to get a complete EC public key
+    		ECParameterSpec spec = pkec.getParams();
+    		if (spec == null) {
+    			// We need to enrich this public key with parameters
+    			try {
+    				if (cafp != null) {
+    					String cafingerp = cafp;
+    					CertificateDataLocal cacert = certHome.findByPrimaryKey(new CertificateDataPK(cafp));
+    					String nextcafp = cacert.getCaFingerprint();
+    					int bar = 0; // never go more than 5 rounds, who knows what strange things can exist in the CAFingerprint column, make sure we never get stuck here
+    					while ((!StringUtils.equals(cafingerp, nextcafp)) && (bar++ < 5)) {
+    						cacert = certHome.findByPrimaryKey(new CertificateDataPK(nextcafp));
+    						cafingerp = nextcafp;
+    						nextcafp = cacert.getCaFingerprint();
+    					}
+						// We found a root CA certificate, hopefully ?
+						PublicKey pkwithparams = cacert.getCertificate().getPublicKey();
+						pubk = KeyTools.getECPublicKeyWithParams(pubk, pkwithparams);
+    				}
+				} catch (FinderException e) {
+					log.info("Can not find CA certificate with fingerprint: "+cafp);
+				} catch (Exception e) {
+					// This catches NoSuchAlgorithmException, NoSuchProviderException and InvalidKeySpecException and possibly something else (NPE?)
+					// because we want to continue anyway
+					if (log.isDebugEnabled()) {
+						log.debug("Can not enrich EC public key with missing parameters: ", e);
+					}
+				}
+    		}
+    	} // finished with ECC key special handling
+    	
         CertificateDataPK pk = new CertificateDataPK();
-        pk.fingerprint = CertTools.getFingerprintAsString(cert);            
-        final CertificateDataLocal data1 = certHome.create(cert);
+        pk.fingerprint = CertTools.getFingerprintAsString(incert);
+        final CertificateDataLocal data1 = certHome.create(incert, pubk);
         data1.setUsername(username);
         data1.setCaFingerprint(cafp);
         data1.setStatus(status);
@@ -341,7 +380,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         data1.setTag(tag);
         data1.setUpdateTime(updateTime);
         String msg = intres.getLocalizedMessage("store.storecert");            	
-        getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
+        getLogSession().log(admin, incert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
         if (protect) {
         	CertificateInfo entry = new CertificateInfo(pk.fingerprint, cafp, data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), status, type, data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), username, tag, certificateProfileId, updateTime);
         	TableProtectSessionLocal protect = protecthome.create();

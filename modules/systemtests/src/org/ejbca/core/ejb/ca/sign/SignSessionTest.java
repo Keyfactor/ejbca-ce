@@ -21,6 +21,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -156,6 +157,7 @@ public class SignSessionTest extends TestCase {
     private static KeyPair rsakeys=null;
     private static KeyPair rsakeys2=null;
     private static KeyPair ecdsakeys=null;
+    private static KeyPair ecdsasecpkeys=null;
     private static KeyPair ecdsaimplicitlyca=null;
     private static KeyPair dsakeys=null;
     private static int rsacaid = 0;
@@ -164,6 +166,7 @@ public class SignSessionTest extends TestCase {
     private static int ecdsaimplicitlycacaid = 0;
     private static int rsamgf1cacaid = 0;
     private static int cvccaid = 0;
+    private static int cvccaecid = 0;
     private static int dsacaid = 0;
     
     X509Certificate rsacacert = null;
@@ -172,6 +175,8 @@ public class SignSessionTest extends TestCase {
     X509Certificate ecdsaimplicitlycacacert = null;
     X509Certificate rsamgf1cacacert = null;
     Certificate cvccacert = null;
+    Certificate cvcdveccert = null;
+    Certificate cvcaeccert = null;
     X509Certificate dsacacert = null;
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
@@ -193,6 +198,9 @@ public class SignSessionTest extends TestCase {
         }
         if (ecdsakeys == null) {
         	ecdsakeys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        }
+        if (ecdsasecpkeys == null) {
+        	ecdsasecpkeys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         }
         if (ecdsaimplicitlyca == null) {
         	ecdsaimplicitlyca = KeyTools.genKeys("implicitlyCA", AlgorithmConstants.KEYALGORITHM_ECDSA);
@@ -220,6 +228,9 @@ public class SignSessionTest extends TestCase {
         CAInfo infocvcca = TestTools.getCAAdminSession().getCAInfo(admin, "TESTDV-D");
         assertTrue("No active CVC CA! Must have at least one active CA to run tests!", infocvcca != null);
         cvccaid = infocvcca.getCAId();
+        CAInfo infocvccaec = TestTools.getCAAdminSession().getCAInfo(admin, "TESTDVECC-D");
+        assertTrue("No active CVC EC CA! Must have at least one active CA to run tests!", infocvccaec != null);
+        cvccaecid = infocvccaec.getCAId();
         CAInfo infodsa = TestTools.getCAAdminSession().getCAInfo(admin, "TESTDSA");
         assertTrue("No active DSA CA! Must have at least one active CA to run tests!", infodsa != null);
         dsacaid = infodsa.getCAId();
@@ -241,6 +252,10 @@ public class SignSessionTest extends TestCase {
         coll = infocvcca.getCertificateChain();
         objs = coll.toArray();
         cvccacert = (Certificate)objs[0]; 
+        coll = infocvccaec.getCertificateChain();
+        objs = coll.toArray();
+        cvcdveccert = (Certificate)objs[0]; 
+        cvcaeccert = (Certificate)objs[1]; 
         coll = infodsa.getCertificateChain();
         objs = coll.toArray();
         dsacacert = (X509Certificate)objs[0];
@@ -1367,6 +1382,53 @@ public class SignSessionTest extends TestCase {
         CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
         String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
         assertEquals("IS", role);
+        PublicKey pk = cvcert.getPublicKey();
+        if (pk instanceof RSAPublicKey) {
+        	RSAPublicKey epk = (RSAPublicKey) pk;
+			assertEquals(epk.getAlgorithm(), "RSA");
+			int len = KeyTools.getKeyLength(epk);
+			assertEquals(1024, len);
+		} else {
+			assertTrue("Public key is not RSA", false);
+		}
+        
+        // 
+        // Same thing but with ECC keys
+        UserDataVO userec = new UserDataVO("cvcec", "C=SE,CN=TCVCEC", cvccaecid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+        userec.setPassword("cvc");
+        TestTools.getUserAdminSession().addUser(admin, userec, false);
+        TestTools.getUserAdminSession().setUserStatus(admin, "cvcec", UserDataConstants.STATUS_NEW);
+        TestTools.getUserAdminSession().setPassword(admin, "cvcec", "foo123");
+        log.debug("Reset status of 'cvcec' to NEW");
+        // user that we know exists...
+        Certificate certec = (Certificate) TestTools.getSignSession().createCertificate(admin, "cvcec", "foo123", ecdsasecpkeys.getPublic());
+        assertNotNull("Failed to create cert", certec);
+        log.debug("Cert=" + certec.toString());
+        // Normal DN order
+        assertEquals(CertTools.getSubjectDN(certec), "CN=TCVCEC,C=SE");
+        assertEquals("CVC", certec.getType());
+        assertEquals(CertTools.getIssuerDN(certec), CertTools.getSubjectDN(cvcdveccert));
+        try {
+        	// Here we need the CVCA certificate as well to enrich the DV public key with
+        	PublicKey pkec = cvcdveccert.getPublicKey();
+        	pkec = KeyTools.getECPublicKeyWithParams(pkec, cvcaeccert.getPublicKey());
+        	certec.verify(pkec);        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        cvcert = (CardVerifiableCertificate)certec;
+        role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+        assertEquals("IS", role);
+        pk = cvcert.getPublicKey();
+        if (pk instanceof ECPublicKey) {
+        	ECPublicKey epk = (ECPublicKey) pk;
+			assertEquals(epk.getAlgorithm(), "ECDSA");
+			int len = KeyTools.getKeyLength(epk);
+			assertEquals(0, len); // the DVCA does not include all EC parameters in the public key, so we don't know the key length
+		} else {
+			assertTrue("Public key is not ECC", false);
+		}
+
         log.trace("<test21CVCertificate()");
     }
 
@@ -1911,7 +1973,11 @@ public class SignSessionTest extends TestCase {
         } catch (Exception e) { /* ignore */ }
         try {        	
         	TestTools.getUserAdminSession().deleteUser(admin, "cvc");
-        	log.debug("deleted user: cvc, foo123, C=SE,O=RPS,CN=10001");
+        	log.debug("deleted user: cvc, foo123, C=SE,CN=TESTCVC");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+        	TestTools.getUserAdminSession().deleteUser(admin, "cvcec");
+        	log.debug("deleted user: cvcec, foo123, C=SE,CN=TCVCEC");
         } catch (Exception e) { /* ignore */ }
         try {        	
         	TestTools.getUserAdminSession().deleteUser(admin, "foodsa");

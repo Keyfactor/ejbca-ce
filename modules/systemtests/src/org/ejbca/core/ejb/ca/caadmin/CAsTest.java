@@ -18,6 +18,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +44,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
@@ -56,6 +58,7 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.RequestMessageUtils;
 import org.ejbca.util.TestTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Tests the ca data entity bean.
@@ -712,8 +715,7 @@ public class CAsTest extends TestCase {
         log.trace("<test08AddRSACAReverseDN()");
     }
     
-    public void test09AddCVCCA() throws Exception {
-        log.trace(">test09AddCVCCA()");
+    public void test09AddCVCCARSA() throws Exception {
         boolean ret = false;
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec("1024");
@@ -792,8 +794,10 @@ public class CAsTest extends TestCase {
         } catch (CAExistsException pee) {
             log.info("CA exists.");
         }
-
+        assertTrue(ret);
+        
         // Create a Sub DV domestic
+        ret = false;
         try {
         	TestTools.getAuthorizationSession().initialize(admin, dvddn.hashCode(), TestTools.defaultSuperAdminCN);
             // Create a Certificate profile
@@ -855,8 +859,10 @@ public class CAsTest extends TestCase {
         } catch (CAExistsException pee) {
             log.info("CA exists.");
         }
+        assertTrue(ret);
 
         // Create a Sub DV foreign
+        ret = false;
         try {
             TestTools.getAuthorizationSession().initialize(admin, dvfdn.hashCode(), TestTools.defaultSuperAdminCN);
 
@@ -944,7 +950,8 @@ public class CAsTest extends TestCase {
         assertEquals("SETESTCVCA00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
         byte[] request = TestTools.getCAAdminSession().makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
         CVCObject obj = CertificateParser.parseCVCObject(request);
-        // We should have created an authenticated request signed by the old certificate
+        // We should have created an authenticated request signed by the default key, we intended to have it signed by the old key, 
+        // but since the CVCA is not renewed, and no old key exists, it will be the "defaultKey", but we won't know the difference in this test.
 		CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)obj;
 		CVCertificate reqcert = authreq.getRequest();
         assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getHolderReference().getConcatenated());
@@ -999,16 +1006,320 @@ public class CAsTest extends TestCase {
         String holderRef = cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated();
         // Sequence must have been updated with 1
         assertEquals("SETESTDV-D00003", holderRef);
+    } // test09AddCVCCARSA
 
-        log.trace("<test09AddCVCCA()");
-    }
+    /**
+     * 
+     * @throws Exception
+     */
+    public void test10AddCVCCAECC() throws Exception {
+        boolean ret = false;
+        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+        catokeninfo.setSignKeySpec("secp256r1");
+        catokeninfo.setEncKeySpec("1024");
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        // No CA Services.
+        ArrayList extendedcaservices = new ArrayList();
+
+        String rootcadn = "CN=TCVCAEC,C=SE";
+    	String rootcaname = "TESTCVCAECC";
+        String dvddn = "CN=TDVEC-D,C=SE";
+    	String dvdcaname = "TESTDVECC-D";
+        String dvfdn = "CN=TDVEC-F,C=FI";
+    	String dvfcaname = "TESTDVECC-F";
+
+    	CAInfo dvdcainfo = null; // to be used for renewal
+    	CAInfo cvcainfo = null; // to be used for making request
+    	
+    	// Create a root CVCA
+        try {
+        	TestTools.getAuthorizationSession().initialize(admin, rootcadn.hashCode(), TestTools.defaultSuperAdminCN);
+
+            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(),
+            		SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, 
+                    null, // Expiretime 
+                    CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED,
+                    null, catokeninfo, "JUnit CVC CA", 
+                    -1, null,
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    10, // Delta CRL period
+                    new ArrayList(), // CRL publishers
+                    true, // Finish User
+                    extendedcaservices,
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    true, // Include in health check
+                    true, // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    );
+            
+            TestTools.getCAAdminSession().createCA(admin, cvccainfo);
+
+            cvcainfo = TestTools.getCAAdminSession().getCAInfo(admin, rootcaname);
+            assertEquals(CAInfo.CATYPE_CVC, cvcainfo.getCAType());
+
+            Certificate cert = (Certificate)cvcainfo.getCertificateChain().iterator().next();
+            String sigAlg = CertTools.getSignatureAlgorithm(cert);
+            assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, sigAlg);
+            assertEquals("CVC", cert.getType());
+            assertEquals(rootcadn, CertTools.getSubjectDN(cert));
+            assertEquals(rootcadn, CertTools.getIssuerDN(cert));
+            assertEquals(rootcadn, cvcainfo.getSubjectDN());
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof ECPublicKey) {
+            	ECPublicKey epk = (ECPublicKey) pk;
+				assertEquals(epk.getAlgorithm(), "ECDSA");
+				int len = KeyTools.getKeyLength(epk);
+				assertEquals(256, len);
+			} else {
+				assertTrue("Public key is not ECC", false);
+			}
+            assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
+            // Check role
+            CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+            String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+            assertEquals("SETCVCAEC00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
+            assertEquals("CVCA", role);
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+        assertTrue(ret);
+
+        // Create a Sub DV domestic
+        ret = false;
+        try {
+        	TestTools.getAuthorizationSession().initialize(admin, dvddn.hashCode(), TestTools.defaultSuperAdminCN);
+            CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(),
+            		SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
+                    null, // Expiretime 
+                    CAInfo.CATYPE_CVC, rootcadn.hashCode(),
+                    null, catokeninfo, "JUnit CVC CA", 
+                    -1, null,
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    10, // Delta CRL period
+                    new ArrayList(), // CRL publishers
+                    true, // Finish User
+                    extendedcaservices,
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    true, // Include in health check
+                    true, // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    );
+            
+            TestTools.getCAAdminSession().createCA(admin, cvccainfo);
+
+            dvdcainfo = TestTools.getCAAdminSession().getCAInfo(admin, dvdcaname);
+            assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
+
+            Certificate cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
+            assertEquals("CVC", cert.getType());
+            assertEquals(CertTools.getSubjectDN(cert), dvddn);
+            assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+            assertEquals(dvdcainfo.getSubjectDN(), dvddn);
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof ECPublicKey) {
+            	ECPublicKey epk = (ECPublicKey) pk;
+				assertEquals(epk.getAlgorithm(), "ECDSA");
+				int len = KeyTools.getKeyLength(epk);
+				assertEquals(0, len); // the DVCA does not include all EC parameters in the public key, so we don't know the key length
+			} else {
+				assertTrue("Public key is not ECC", false);
+			}
+            assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
+            // Check role
+            CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+            assertEquals("SETDVEC-D00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
+            String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+            assertEquals("DV_D", role);
+            String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
+            assertEquals("READ_ACCESS_DG3_AND_DG4", accessRights);
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+        assertTrue(ret);
+        // Create a Sub DV foreign
+        ret = false;
+        try {
+            TestTools.getAuthorizationSession().initialize(admin, dvfdn.hashCode(), TestTools.defaultSuperAdminCN);
+
+            CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(),
+            		SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
+                    null, // Expiretime 
+                    CAInfo.CATYPE_CVC, rootcadn.hashCode(),
+                    null, catokeninfo, "JUnit CVC CA", 
+                    -1, null,
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    10, // Delta CRL period
+                    new ArrayList(), // CRL publishers
+                    true, // Finish User
+                    extendedcaservices,
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    true, // Include in health check
+                    true, // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    );
+            
+            TestTools.getCAAdminSession().createCA(admin, cvccainfo);
+
+            CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, dvfcaname);
+            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+
+            Certificate cert = (Certificate)info.getCertificateChain().iterator().next();
+            assertEquals("CVC", cert.getType());
+            assertEquals(CertTools.getSubjectDN(cert), dvfdn);
+            assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+            assertEquals(info.getSubjectDN(), dvfdn);
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof ECPublicKey) {
+            	ECPublicKey epk = (ECPublicKey) pk;
+				assertEquals(epk.getAlgorithm(), "ECDSA");
+				int len = KeyTools.getKeyLength(epk);
+				assertEquals(0, len); // the DVCA does not include all EC parameters in the public key, so we don't know the key length
+			} else {
+				assertTrue("Public key is not ECC", false);
+			}
+            assertTrue("CA is not valid for the specified duration.",CertTools.getNotAfter(cert).after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && CertTools.getNotAfter(cert).before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
+            // Check role
+            CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+            assertEquals("FITDVEC-F00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
+            String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+            assertEquals("DV_F", role);
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+        assertTrue("Creating CVC CAs failed", ret);
+
+        // Test to renew a CVC CA
+        dvdcainfo = TestTools.getCAAdminSession().getCAInfo(admin, dvdcaname);
+        Certificate cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
+    	// Verify that fingerprint and CA fingerprint is handled correctly
+        CertificateInfo certInfo = TestTools.getCertificateStoreSession().getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+        assertFalse(certInfo.getFingerprint().equals(certInfo.getCAFingerprint()));
+        int caid = dvdcainfo.getCAId();
+        TestTools.getCAAdminSession().renewCA(admin, caid, null, false);
+        dvdcainfo = TestTools.getCAAdminSession().getCAInfo(admin, dvdcaname);
+        assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
+        cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
+        assertEquals("CVC", cert.getType());
+        assertEquals(CertTools.getSubjectDN(cert), dvddn);
+        assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+        assertEquals(dvdcainfo.getSubjectDN(), dvddn);
+    	// Verify that fingerprint and CA fingerprint is handled correctly
+        certInfo = TestTools.getCertificateStoreSession().getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+        assertFalse(certInfo.getFingerprint().equals(certInfo.getCAFingerprint()));
+        // It's not possible to check the time for renewal of a CVC CA since the resolution of validity is only days.
+        // The only way is to generate a certificate with different access rights in it
+        CardVerifiableCertificate cvcert = (CardVerifiableCertificate)cert;
+        String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+        assertEquals("DV_D", role);
+        String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
+        assertEquals("READ_ACCESS_DG3_AND_DG4", accessRights);
+
+
+        // Make a certificate request from a DV, regenerating keys
+        Collection cachain = dvdcainfo.getCertificateChain();
+        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
+        CVCObject obj = CertificateParser.parseCVCObject(request);
+        // We should have created an authenticated request signed by the old certificate
+        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)obj;
+        CVCertificate reqcert = authreq.getRequest();
+        assertEquals("SETDVEC-D00002", reqcert.getCertificateBody().getHolderReference().getConcatenated());
+        // This request is made from the DV targeted for the DV, so the old DV certificate will be the holder ref.
+        // Normally you would target an external CA, and thus send in it's cachain. The caRef would be the external CAs holderRef.
+        assertEquals("SETDVEC-D00001", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
+        
+        // Get the DVs certificate request signed by the CVCA
+        byte[] authrequest = TestTools.getCAAdminSession().signRequest(admin, cvcainfo.getCAId(), request, false, false);
+		CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
+        authreq = (CVCAuthenticatedRequest)parsedObject;
+        assertEquals("SETDVEC-D00002", authreq.getRequest().getCertificateBody().getHolderReference().getConcatenated());
+        assertEquals("SETDVEC-D00001", authreq.getRequest().getCertificateBody().getAuthorityReference().getConcatenated());
+        assertEquals("SETCVCAEC00001", authreq.getAuthorityReference().getConcatenated());
+
+        // Get the DVs certificate request signed by the CVCA creating a link certificate.
+        // Passing in a request without authrole should return a regular authenticated request though.
+        authrequest = TestTools.getCAAdminSession().signRequest(admin, cvcainfo.getCAId(), request, false, true);
+		parsedObject = CertificateParser.parseCVCObject(authrequest);
+		authreq = (CVCAuthenticatedRequest)parsedObject;
+		// Pass in a certificate instead
+		CardVerifiableCertificate dvdcert = (CardVerifiableCertificate)cachain.iterator().next();
+        authrequest = TestTools.getCAAdminSession().signRequest(admin, cvcainfo.getCAId(), dvdcert.getEncoded(), false, true);
+		parsedObject = CertificateParser.parseCVCObject(authrequest);
+		CVCertificate linkcert = (CVCertificate)parsedObject;
+        assertEquals("SETCVCAEC00001", linkcert.getCertificateBody().getAuthorityReference().getConcatenated());
+        assertEquals("SETDVEC-D00001", linkcert.getCertificateBody().getHolderReference().getConcatenated());
+
+        // Renew again but regenerate keys this time to make sure sequence is updated
+        caid = dvdcainfo.getCAId();
+        TestTools.getCAAdminSession().renewCA(admin, caid, "foo123", true);
+        dvdcainfo = TestTools.getCAAdminSession().getCAInfo(admin, dvdcaname);
+        assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
+        cert = (Certificate)dvdcainfo.getCertificateChain().iterator().next();
+        assertEquals("CVC", cert.getType());
+        assertEquals(CertTools.getSubjectDN(cert), dvddn);
+        assertEquals(CertTools.getIssuerDN(cert), rootcadn);
+        assertEquals(dvdcainfo.getSubjectDN(), dvddn);
+        cvcert = (CardVerifiableCertificate)cert;
+        role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+        assertEquals("DV_D", role);
+        String holderRef = cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated();
+        // Sequence must have been updated with 1
+        assertEquals("SETDVEC-D00003", holderRef);
+        
+        // Make a certificate request from a CVCA
+        cachain = cvcainfo.getCertificateChain();
+        assertEquals(1, cachain.size());
+        Certificate cert1 = (Certificate)cachain.iterator().next();
+        CardVerifiableCertificate cvcert1 = (CardVerifiableCertificate)cert1;
+        assertEquals("SETCVCAEC00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
+        request = TestTools.getCAAdminSession().makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
+        obj = CertificateParser.parseCVCObject(request);
+        // We should have created an un-authenticated request, because there does not exist any old key
+		CVCertificate cvcertreq = (CVCertificate)obj;
+        assertEquals("SETCVCAEC00001", cvcertreq.getCertificateBody().getHolderReference().getConcatenated());
+        assertEquals("SETCVCAEC00001", cvcertreq.getCertificateBody().getAuthorityReference().getConcatenated());
+        
+        // Renew the CVCA, generating new keys
+        TestTools.getCAAdminSession().renewCA(admin, cvcainfo.getCAId(), "foo123", true);
+
+        // Make a certificate request from a CVCA again
+        cvcainfo = TestTools.getCAAdminSession().getCAInfo(admin, rootcaname);
+        cachain = cvcainfo.getCertificateChain();
+        assertEquals(1, cachain.size());
+        Certificate cert2 = (Certificate)cachain.iterator().next();
+        CardVerifiableCertificate cvcert2 = (CardVerifiableCertificate)cert2;
+        assertEquals("SETCVCAEC00002", cvcert2.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
+        request = TestTools.getCAAdminSession().makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
+        obj = CertificateParser.parseCVCObject(request);
+        // We should have created an authenticated request signed by the old certificate
+		CVCAuthenticatedRequest authreq1 = (CVCAuthenticatedRequest)obj;
+		CVCertificate reqcert1 = authreq1.getRequest();
+        assertEquals("SETCVCAEC00002", reqcert1.getCertificateBody().getHolderReference().getConcatenated());
+        assertEquals("SETCVCAEC00002", reqcert1.getCertificateBody().getAuthorityReference().getConcatenated());
+    } // test10AddCVCCAECC
 
     /** Test that we can create a SubCA signed by an external RootCA.
      * The SubCA create a certificate request sent to the RootCA that creates a certificate which is then received on the SubCA again.
      * @throws Exception
      */
-    public void test10RSASignedByExternal() throws Exception {
-        log.trace(">test10RSASignedByExternal()");
+    public void test11RSASignedByExternal() throws Exception {
         boolean ret = false;
         CAInfo info =null;
         try {
@@ -1124,8 +1435,7 @@ public class CAsTest extends TestCase {
         assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
         assertTrue("Creating RSA CA (signed by external) failed", ret);
-        log.trace("<test10RSASignedByExternal");
-    }
+    } // test10RSASignedByExternal
     
     /**
      * adds a CA using DSA keys to the database.
@@ -1134,8 +1444,7 @@ public class CAsTest extends TestCase {
      *
      * @throws Exception error
      */
-    public void test11AddDSACA() throws Exception {
-        log.trace(">test11AddDSACA()");
+    public void test12AddDSACA() throws Exception {
         boolean ret = false;
         try {
         	TestTools.removeTestCA("TESTDSA");	// We cant be sure this CA was not left over from some other failed test
@@ -1227,10 +1536,9 @@ public class CAsTest extends TestCase {
         }
 
         assertTrue("Creating DSA CA failed", ret);
-        log.trace("<test11AddDSACA()");
-    }
+    } // test12AddDSACA
 
-    public void test12RenewCA() throws Exception {
+    public void test13RenewCA() throws Exception {
     	// Test renew cacert
     	CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
     	Collection certs = info.getCertificateChain();
@@ -1242,6 +1550,7 @@ public class CAsTest extends TestCase {
     	assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
     	assertEquals(new String(CertTools.getSubjectKeyId(cacert1)), new String(CertTools.getSubjectKeyId(cacert2)));
     	cacert2.verify(cacert1.getPublicKey()); // throws if it fails        
+
 
     	// Test renew CA keys
         TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", true);
@@ -1296,9 +1605,9 @@ public class CAsTest extends TestCase {
     	info.setStatus(SecConst.CA_ACTIVE);
     	TestTools.getCAAdminSession().editCA(admin, info); // need active status in order to do renew
         TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", false);
-    }
+    } // test13RenewCA
     
-    public void test13RevokeCA() throws Exception {
+    public void test14RevokeCA() throws Exception {
     	final String caname = "TestRevokeCA";
     	TestTools.createTestCA(caname);
         CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, caname);
@@ -1313,5 +1622,5 @@ public class CAsTest extends TestCase {
         assertEquals(SecConst.CA_REVOKED, info.getStatus());
         assertEquals(RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, info.getRevokationReason());
         assertTrue(info.getRevokationDate().getTime() > 0);
-    }
+    } // test14RevokeCA
 }
