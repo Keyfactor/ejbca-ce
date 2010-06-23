@@ -106,7 +106,7 @@
     <property name="test.src.dir" location="${src}/test" />
     <property name="dist.dir" location="dist" />
     <property name="ocsp-dist.dir" location="ocsp-dist" />
-    <property name="clientToolBox-dist.dir" location="clientToolBox-dist" />
+    <property name="clientToolBox-dist.dir" location="dist/clientToolBox" />
 	
     <property name="hwtoken_classes" value="hwtoken"/>
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />

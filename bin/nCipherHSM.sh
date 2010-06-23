@@ -38,12 +38,12 @@ do
         CLASSES="$CLASSES:$NFAST_JARS/$jar"
 done
 
-if [ ! -f $EJBCA_HOME/clientToolBox-dist/clientToolBox.jar ] ; then
+if [ ! -f $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar ] ; then
 	echo "You have to build the ClientToolBox before running this command."
 	exit 1
 fi
 
 # Finally run java
 #set -x
-$JAVACMD -cp $CLASSES -jar $EJBCA_HOME/clientToolBox-dist/clientToolBox.jar NCipherHSMKeyTool "${@}"
+$JAVACMD -cp $CLASSES -jar $EJBCA_HOME/dist/clientToolBox/clientToolBox.jar NCipherHSMKeyTool "${@}"
 

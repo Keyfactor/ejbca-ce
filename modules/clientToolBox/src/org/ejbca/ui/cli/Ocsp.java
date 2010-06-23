@@ -162,7 +162,7 @@ public class Ocsp extends ClientToolBox {
                 System.out.println("You should set each java system properties needed with a '-D' java parameter in the JAVA_OPT string.");
                 System.out.println("The name of all these system properties starts with javax.net.ssl and are described in http://java.sun.com/javase/6/docs/technotes/guides/security/jsse/JSSERefGuide.html .");
                 System.out.println("https is mandatory for the FNR option. An example:");
-                System.out.println("JAVA_OPT=\"-Djavax.net.ssl.keyStore=My-Lookup.p12 -Djavax.net.ssl.keyStorePassword=foo123 -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.trustStore=root.jks\" ${EJBCA_HOME}/clientToolBox-dist/ejbcaClientToolBox.sh ocsp stress https://ocsp.mysite.nu certs.txt cacert.pem 40 100 fnr");
+                System.out.println("JAVA_OPT=\"-Djavax.net.ssl.keyStore=My-Lookup.p12 -Djavax.net.ssl.keyStorePassword=foo123 -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.trustStore=root.jks\" ${EJBCA_HOME}/dist/clientToolBox/ejbcaClientToolBox.sh ocsp stress https://ocsp.mysite.nu certs.txt cacert.pem 40 100 fnr");
                 System.exit(1);
             }
             this.ocspurl = args[2];

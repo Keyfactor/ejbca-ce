@@ -14,12 +14,12 @@ if "%EJBCA_HOME%" == "" (
     goto end
 )
 
-if exist "%EJBCA_HOME%\clientToolBox-dist\clientToolBox.jar" goto exists
+if exist "%EJBCA_HOME%\dist\clientToolBox\clientToolBox.jar" goto exists
 	echo You have to build the ClientToolBox before running this command.
 	goto end
 :exists
 
 @echo on
-"%JAVA_HOME%\bin\java" -jar "%EJBCA_HOME%\clientToolBox-dist\clientToolBox.jar" PKCS11HSMKeyTool %1 %2 %3 %4 %5 %6
+"%JAVA_HOME%\bin\java" -jar "%EJBCA_HOME%\dist\clientToolBox\clientToolBox.jar" PKCS11HSMKeyTool %1 %2 %3 %4 %5 %6
 
 :end

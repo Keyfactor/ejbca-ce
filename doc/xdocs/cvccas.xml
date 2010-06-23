@@ -267,15 +267,15 @@ public void caCertResponse(String caname, byte[] cert, List&lt;byte[]&gt; cachai
   Type the command on the command line to get usage information. 
   </p>
   <source>
-ejbca> cd clientToolBox-dist
-ejbca/clientToolBox-dist> ./ejbcaClientToolBox.sh CvcWsRaCli
+ejbca> cd dist/clientToolBox
+ejbca/dist/clientToolBox> ./ejbcaClientToolBox.sh CvcWsRaCli
 Usage: cvcrequest cvcgetchain cvcprint cvcpem
   
-ejbca/dist/ejbcawscli> ./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest
+ejbca/dist/clientToolBox> ./ejbcaClientToolBox.sh CvcWsRaCli cvcrequest
 Usage : cvcrequest &lt;username&gt; &lt;password&gt; &lt;subjectdn&gt; &lt;sequence&gt; &lt;caname&gt; &lt;signatureAlg&gt; ...
 ...
   
-ejbca/dist/ejbcawscli> ./ejbcaClientToolBox.sh CvcWsRaCli
+ejbca/dist/clientToolBox> ./ejbcaClientToolBox.sh CvcWsRaCli cvcprint
 Usage : cvcprint &lt;filename&gt; [verifycert]
 ...
   </source>
@@ -298,7 +298,7 @@ Usage : cvcprint &lt;filename&gt; [verifycert]
   </p>
   <source>
 ant clientToolBox
-cd clientToolBox-dist  
+cd dist/clientToolBox  
   </source>  
   <p>
   <strong>1.</strong><br/>
@@ -414,8 +414,8 @@ bin/ejbca.sh ca importcvca importcvca1 GO_CVCA_RSA2008.pkcs8 GO_CVCA_RSA2008.cvc
   Generating keys on an HSM can be done with the tool <i>ejbcaClientToolBox.sh PKCS11HSMKeyTool</i>.
   </p>
 <source>
-cd clientToolBox-dist
-ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /etc/utimaco/libcs2_pkcs11.so secp256r1 signKey 1  
+cd dist/clientToolBox
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /etc/utimaco/libcs2_pkcs11.so secp256r1 signKey 1  
 </source>
   <p>See User Guide for more general information about generating keys.
   For supported curves, see your HSM documentation. For example for Utimaco it can be found in chapter 8 of CS_AdminGuide.pdf.</p>
@@ -424,7 +424,7 @@ ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /etc/utimaco/libcs2_pkcs11.so se
   <p>Note that generation command may be different for different HSMs, see the HSM section in the User Guide for more details. 
   For example on the SafeNet ProtectServer Gold you should use:</p>
 <source>
-ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /slot1.cfg secp256r1 signKey  
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /slot1.cfg secp256r1 signKey  
 </source>
   
   </subsection>
