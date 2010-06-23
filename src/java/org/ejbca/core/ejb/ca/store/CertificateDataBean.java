@@ -562,8 +562,13 @@ public abstract class CertificateDataBean extends BaseEntityBean {
             if (enrichedpubkey != null) {
             	pubk = enrichedpubkey;
             }
-            // Creating the KeyId may just throw an exception, but that should indicate a bug somewhere
-            String keyId = new String(Base64.encode(KeyTools.createSubjectKeyId(pubk).getKeyIdentifier(),false));
+            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
+            String keyId = null;
+            try {
+            	keyId = new String(Base64.encode(KeyTools.createSubjectKeyId(pubk).getKeyIdentifier(),false));
+            } catch (Exception e) {
+            	log.warn("Error creating subjectKeyId for certificate with fingerprint '"+fp+": ", e);
+            }
             setSubjectKeyId(keyId);
         } catch (CertificateEncodingException cee) {
             log.error("Can't extract DER encoded certificate information.", cee);
