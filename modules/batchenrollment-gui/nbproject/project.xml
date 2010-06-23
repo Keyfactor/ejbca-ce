@@ -15,6 +15,9 @@
         <libraries xmlns="http://www.netbeans.org/ns/ant-project-libraries/1">
             <definitions>./lib/nblibraries.properties</definitions>
         </libraries>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>netmackan</word>
+        </spellchecker-wordlist>
         <swingapp xmlns="http://www.netbeans.org/ns/form-swingapp/1">
             <application-class name="org.ejbca.batchenrollmentgui.BatchEnrollmentGUIApp"/>
         </swingapp>
