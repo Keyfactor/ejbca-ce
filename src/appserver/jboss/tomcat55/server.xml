@@ -13,7 +13,8 @@
          maxThreads="250" strategy="ms" maxHttpHeaderSize="8192"
          emptySessionPath="true"
          enableLookups="false" redirectPort="@httpserver.privhttps@" acceptCount="100"
-         connectionTimeout="20000" disableUploadTimeout="true"/>
+         connectionTimeout="20000" disableUploadTimeout="true"
+         URIEncoding="@web.contentencoding@"/>
 
       <!-- A AJP 1.3 Connector on port 8009 -->
       <Connector port="8009" address="${jboss.bind.address}"
