@@ -45,6 +45,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.xml.namespace.QName;
+import org.apache.log4j.Logger;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import sun.security.pkcs11.SunPKCS11;
@@ -56,6 +57,9 @@ import sun.security.pkcs11.SunPKCS11;
  * @version $Id$
  */
 public class ConnectDialog extends javax.swing.JDialog {
+
+    /** Logger for this class. */
+    private static final Logger LOG = Logger.getLogger(ConnectDialog.class);
 
     private static final String DEFAULT_URL = "https://localhost:8443/ejbca";
     private static final String WS_PATH = "/ejbcaws/ejbcaws?wsdl";
@@ -474,7 +478,9 @@ public class ConnectDialog extends javax.swing.JDialog {
     private void loadSettingsFromFile(final File file) {
         try {
             final Properties defaults = new Properties();
-            System.out.println("Trying to load from file " + file.getAbsolutePath());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Trying to load from file " + file.getAbsolutePath());
+            }
             defaults.load(new FileInputStream(file));
 
             ConnectSettings sett = new ConnectSettings();
@@ -489,7 +495,7 @@ public class ConnectDialog extends javax.swing.JDialog {
 
             loadSettings(sett);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LOG.error("Load settings failed", ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Reset defaults", JOptionPane.ERROR_MESSAGE);
         }
@@ -532,9 +538,12 @@ public class ConnectDialog extends javax.swing.JDialog {
         final Enumeration<String> e = keystore.aliases();
         while( e.hasMoreElements() ) {
             final String keyAlias = e.nextElement();
-            System.out.println("******* keyAlias: " + keyAlias);
-            System.out.println(((X509Certificate) keystore.getCertificate(keyAlias)).getSubjectDN().getName());
-
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("******* keyAlias: " + keyAlias
+                        + ", certificate: "
+                        + ((X509Certificate) keystore.getCertificate(keyAlias))
+                            .getSubjectDN().getName());
+            }
         }
         return keystore;
     }
@@ -551,8 +560,11 @@ public class ConnectDialog extends javax.swing.JDialog {
         final Enumeration<String> e = keystore.aliases();
         while( e.hasMoreElements() ) {
             final String keyAlias = e.nextElement();
-            System.out.println("******* keyAlias: " + keyAlias);
-            System.out.println(keystore.getCertificate(keyAlias));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("******* keyAlias: " + keyAlias
+                        + ", certificate: "
+                    + keystore.getCertificate(keyAlias));
+            }
 
         }
         return keystore;

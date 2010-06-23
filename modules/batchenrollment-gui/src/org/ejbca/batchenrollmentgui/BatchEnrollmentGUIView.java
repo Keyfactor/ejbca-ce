@@ -779,13 +779,21 @@ public class BatchEnrollmentGUIView extends FrameView {
 
     private Collection<X509Certificate> getTrustedCerts() {
         if (trustedCerts == null) {
-            try {
-                trustedCerts = new HashSet<X509Certificate>();
-                trustedCerts.addAll(CertTools.getCertsFromPEM(getApp().getSettings().getTruststorePath()));
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (CertificateException ex) {
-                ex.printStackTrace();
+            String truststore = getApp().getSettings().getTruststorePath();
+            if (truststore == null || !new File(truststore).exists()) {
+                LOG.error("Non-existing truststore: " + truststore);
+                JOptionPane.showMessageDialog(getFrame(),
+                        "Please configure the truststore first");
+            } else {
+                try {
+                    trustedCerts = new HashSet<X509Certificate>();
+                    trustedCerts.addAll(CertTools.getCertsFromPEM(
+                            getApp().getSettings().getTruststorePath()));
+                } catch (IOException ex) {
+                    LOG.error("Load trusted certificates failed", ex);
+                } catch (CertificateException ex) {
+                    LOG.error("Load trusted certificates failed", ex);
+                }
             }
         }
         return trustedCerts;
