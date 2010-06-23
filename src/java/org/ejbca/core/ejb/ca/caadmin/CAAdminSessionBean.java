@@ -1433,9 +1433,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				ca.setCertificateChain(chain);
 
     				// Publish CA Cert
-    		        ArrayList cacertcol = new ArrayList();
-    		        cacertcol.add(cacert);
-    				publishCACertificate(admin, cacertcol, ca.getCRLPublishers(), ca.getSubjectDN());
+    				publishCACertificate(admin, chain, ca.getCRLPublishers(), ca.getSubjectDN());
     				getCRLCreateSession().publishCRL(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod()>0);
 
     				// Set status to active, so we can sign certificates for the external services below.
