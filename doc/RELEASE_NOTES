@@ -5,6 +5,20 @@ method. Any custom classes implementing this interface need to be modified in tu
 
 Ant 1.7.1 or higher is required from this version on.
 
+EJBCA 3.10.3
+-----------
+This is a maintenance release with only 6 issues fixed. 
+The release was primarily done to fix a regression for EAC CVC CAs using ECC keys.  
+  
+Noteworthy changes:
+- EAC CVC Document Verifiers using ECC keys did not work properly. This was fixed and new test cases was added to the test suite.
+- Removed requirement to use “Batch generation” when using CMP RA mode.
+- Fixed issue that revocation in admin gui did not work with CAs using accented characters.
+- Added code to mitigate potential cross site scripting in admin gui. Note that client certificate authentication was still needed so it was not publicly exploitable.
+- Added UTF-8 URI encoding for the public http port (8080). It was previously only enabled for the https ports.
+
+Read the full changelog for details.
+
 EJBCA 3.10.2
 -----------
 This is a maintenance release with a new features, improvements and several bug fixes. 36 issues in total have been resolved. 
