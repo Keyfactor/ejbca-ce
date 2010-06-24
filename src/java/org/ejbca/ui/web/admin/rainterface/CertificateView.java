@@ -103,6 +103,10 @@ public class CertificateView implements java.io.Serializable {
       return HTMLTools.htmlescape(CertTools.getIssuerDN(certificate));
     }
 
+    public String getIssuerDNUnEscaped() {
+        return CertTools.getIssuerDN(certificate);
+      }
+
     public String getIssuerDNField(int field, int number) {
       return HTMLTools.htmlescape(issuerdnfieldextractor.getField(field, number));
     }

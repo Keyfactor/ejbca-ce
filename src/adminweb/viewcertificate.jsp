@@ -127,7 +127,7 @@
      if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
         && !certificatedata.isRevoked()) {
 		try {
-	    	rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername(),reason);
+	    	rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped(), certificatedata.getUsername(),reason);
 		} catch (org.ejbca.core.model.approval.ApprovalException e) {
 			message = "THEREALREADYEXISTSAPPOBJ";
 		} catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
@@ -162,7 +162,7 @@
 			&& "CERTIFICATEHOLD".equals(certificatedata.getRevokationReasons()[0])){
 				//-- call to unrevoke method
 				try {
-					rabean.unrevokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername());
+					rabean.unrevokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped(), certificatedata.getUsername());
 				} catch (org.ejbca.core.model.approval.ApprovalException e) {
 					message = "THEREALREADYEXISTSAPPOBJ";
 				} catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
