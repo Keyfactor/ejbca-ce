@@ -2387,6 +2387,16 @@ public abstract class CommonEjbcaWS extends TestCase {
             e.printStackTrace();
         }
         try {
+            getUserAdminSession().revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            getUserAdminSession().revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
             getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
             e.printStackTrace();
