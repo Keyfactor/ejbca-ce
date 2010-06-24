@@ -141,12 +141,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         utf8();
     }
 
-    public void test10RevokeUser() throws Exception {
+    public void test10GetLastCertChain() throws Exception {
+        setUpAdmin();
+        getLastCertChain();
+    }
+
+    public void test11RevokeUser() throws Exception {
         setUpAdmin();
         revokeUser();
     }
 
-    public void test11IsAuthorized() throws Exception {
+    public void test12IsAuthorized() throws Exception {
         setUpAdmin();
 
         // This is a superadmin keystore, improve in the future
@@ -241,11 +246,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test27EjbcaVersion() throws Exception {
         setUpAdmin();
         ejbcaVersion();
-    }
-
-    public void test28GetLastCertChain() throws Exception {
-        setUpAdmin();
-        getLastCertChain();
     }
 
     public void test29ErrorOnEditUser() throws Exception {
