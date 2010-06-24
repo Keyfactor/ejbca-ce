@@ -1,3 +1,15 @@
+3.10.3, 2010-06-24
+---
+Improvement
+    * [ECA-1709] - Typo in ejbca-ws-cli
+
+Bug
+    * [ECA-1704] - Tomcat's server.xml must have URIEncoding also for port 8080
+    * [ECA-1710] - Certrequest session (and now CMP) requires ee profile to use 'Batch', i.e. clear pwd
+    * [ECA-1713] - Mitigate Cross Site Scripting (XSS) in the error page of Admin GUI
+    * [ECA-1714] - Issuer CA DN is HTML escaped when revoking through Admin GUI
+    * [ECA-1715] - Error creating DVs using ECC
+
 3.10.2, 2010-06-17
 ---
 New Feature
