@@ -449,9 +449,9 @@
 					newuser.setExtendedInformation(ei);					
 				}
 			}
-			value = request.getParameter(TEXTFIELD_CERTSERIALNUMBER).trim();
+			value = request.getParameter(TEXTFIELD_CERTSERIALNUMBER);
 			if ( value!=null && value.length()>0 ) {
-				ei.setCertificateSerialNumber( new BigInteger(value) );
+				ei.setCertificateSerialNumber(new BigInteger(value.trim()));
 			} else {
 			    ei.setCertificateSerialNumber(null);
 			}
