@@ -226,40 +226,42 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 	}
 	
 	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException, RemoteException {
-		CAInfo cainfo = getCAAdminSession().getCAInfoOrThrowException(admin,userdata.getCaName());
-		int caid = cainfo.getCAId();
+		final CAInfo cainfo = getCAAdminSession().getCAInfoOrThrowException(admin,userdata.getCaName());
+		final int caid = cainfo.getCAId();
 		if (caid == 0) {
 			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
 		}
 		
-		int endentityprofileid = getRAAdminSession().getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
+		final int endentityprofileid = getRAAdminSession().getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
 		if(endentityprofileid == 0){
 			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, 
                 "Error End Entity profile " + userdata.getEndEntityProfileName() + " doesn't exists.");
 		}
 
-		int certificateprofileid = getCertStoreSession().getCertificateProfileId(admin,userdata.getCertificateProfileName());
+		final int certificateprofileid = getCertStoreSession().getCertificateProfileId(admin,userdata.getCertificateProfileName());
 		if(certificateprofileid == 0){
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
                 "Error Certificate profile " + userdata.getCertificateProfileName() + " doesn't exists.");
 		}
 		
-		int hardtokenissuerid = 0;
+		final int hardtokenissuerid;
 		if(userdata.getHardTokenIssuerName() != null){
          hardtokenissuerid = getHardTokenSession().getHardTokenIssuerId(admin,userdata.getHardTokenIssuerName());
 		   if(hardtokenissuerid == 0){
 			  throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS,
                   "Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " doesn't exists.");
 		   }
+		} else {
+			hardtokenissuerid = 0;
 		}
 		
-		int tokenid = getTokenId(admin,userdata.getTokenType());
+		final int tokenid = getTokenId(admin,userdata.getTokenType());
 		if(tokenid == 0){
 			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE,
                 "Error Token Type  " + userdata.getTokenType() + " doesn't exists.");
 		}
 
-		ExtendedInformation ei = new ExtendedInformation();
+		final ExtendedInformation ei = new ExtendedInformation();
 		boolean useEI = false;
 
 		if(userdata.getStartTime() != null) {
@@ -270,8 +272,12 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
             ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, userdata.getEndTime());
             useEI = true;
         }
+        if ( userdata.getCertificateSerialNumber()!=null) {
+            ei.setCertificateSerialNumber(userdata.getCertificateSerialNumber());
+            useEI = true;
+        }
 
-		UserDataVO userdatavo = new UserDataVO(userdata.getUsername(),
+		final UserDataVO userdatavo = new UserDataVO(userdata.getUsername(),
 				userdata.getSubjectDN(),
 				caid,
 				userdata.getSubjectAltName(),

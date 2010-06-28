@@ -231,45 +231,104 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
-    	if (log.isTraceEnabled()) {
-            log.trace(">finishUser(" + username + ", hiddenpwd)");
-    	}
         try {
             // Change status of the user with username username
         	UserDataVO data = getUserSession().findUser(admin, username);
         	if (data == null) {
         		throw new FinderException("User '"+username+"' can not be found.");
         	}
-        	// This admin can be the public web user, which may not be allowed to change status,
-        	// this is a bit ugly, but what can a man do...
-        	Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
-        	
-        	// See if we are allowed fo make more requests than this one
-    		int counter = getUserSession().decRequestCounter(statusadmin, username);
-    		if (counter <= 0) {
-    			getUserSession().setUserStatus(statusadmin, username, UserDataConstants.STATUS_GENERATED);
-    			String msg = intres.getLocalizedMessage("authentication.statuschanged", username);            	
-    			getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);        		
-    		} 
-        	if (log.isTraceEnabled()) {
-                log.trace("<finishUser("+username+", hiddenpwd)");
-        	}
+        	finishUser(data);
         } catch (FinderException e) {
-        	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
-        	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+            String msg = intres.getLocalizedMessage("authentication.usernotfound", username);               
+            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw new ObjectNotFoundException(e.getMessage());
-		} catch (AuthorizationDeniedException e) {
-			// Should never happen
+        } catch (AuthorizationDeniedException e) {
+            // Should never happen
             error("AuthorizationDeniedException: ", e);
             throw new EJBException(e);
+        }
+    }
+	/**
+	 * Cleans the certificate serial number from the user data. Should be called after the data has been used.
+	 * @param data
+	 * @throws ObjectNotFoundException if the user does not exist.
+	 * @ejb.interface-method
+	 */
+	public void cleanUserCertDataSN(UserDataVO data) throws ObjectNotFoundException {
+		if (log.isTraceEnabled()) {
+			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");
+		}
+		// This admin can be the public web user, which may not be allowed to change status,
+		// this is a bit ugly, but what can a man do...
+		Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
+		try {
+			getUserSession().cleanUserCertDataSN(statusadmin, data.getUsername());
+		} catch (FinderException e) {
+			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
+			getLogSession().log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+			throw new ObjectNotFoundException(e.getMessage());
+		} catch (AuthorizationDeniedException e) {
+			// Should never happen
+			error("AuthorizationDeniedException: ", e);
+			throw new EJBException(e);
 		} catch (ApprovalException e) {
 			// Should never happen
-            error("ApprovalException: ", e);
-            throw new EJBException(e);
+			error("ApprovalException: ", e);
+			throw new EJBException(e);
 		} catch (WaitingForApprovalException e) {
 			// Should never happen
-            error("ApprovalException: ", e);
-            throw new EJBException(e);
+			error("ApprovalException: ", e);
+			throw new EJBException(e);
 		}
-    } //finishUser
+		if (log.isTraceEnabled()) {
+			log.trace("<finishUser("+data.getUsername()+", hiddenpwd)");
+		}
+	} 
+	/**
+	 * Set the status of a user to finished, called when a user has been successfully processed. If
+	 * possible sets users status to UserData.STATUS_GENERATED, which means that the user cannot
+	 * be authenticated anymore. NOTE: May not have any effect of user database is remote.
+	 * User data may contain a counter with nr of requests before used should be set to generated. In this case
+	 * this counter will be decreased, and if it reaches 0 status will be generated. 
+	 *
+	 * @param data
+	 * @throws ObjectNotFoundException if the user does not exist.
+	 * @ejb.interface-method
+	 */
+	public void finishUser(UserDataVO data) throws ObjectNotFoundException {
+		if (log.isTraceEnabled()) {
+			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");
+		}
+		// This admin can be the public web user, which may not be allowed to change status,
+		// this is a bit ugly, but what can a man do...
+		Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
+		try {
+			
+			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter
+			int counter = getUserSession().decRequestCounter(statusadmin, data.getUsername());
+			if (counter <= 0) {
+				String msg = intres.getLocalizedMessage("authentication.statuschanged", data.getUsername());
+				getLogSession().log(statusadmin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);
+			} 
+			if (log.isTraceEnabled()) {
+				log.trace("<finishUser("+data.getUsername()+", hiddenpwd)");
+			}
+		} catch (FinderException e) {
+			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
+			getLogSession().log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+			throw new ObjectNotFoundException(e.getMessage());
+		} catch (AuthorizationDeniedException e) {
+			// Should never happen
+			error("AuthorizationDeniedException: ", e);
+			throw new EJBException(e);
+		} catch (ApprovalException e) {
+			// Should never happen
+			error("ApprovalException: ", e);
+			throw new EJBException(e);
+		} catch (WaitingForApprovalException e) {
+			// Should never happen
+			error("ApprovalException: ", e);
+			throw new EJBException(e);
+		}
+	} //finishUser
 }

@@ -1102,9 +1102,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      *
      * @param username the unique username.
      * @param status   the new status, from 'UserData'.
+     * @throws WaitingForApprovalException 
+     * @throws ApprovalException 
      * @ejb.interface-method
      */
-    public int decRequestCounter(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
+    public int decRequestCounter(Admin admin, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
         if (log.isTraceEnabled()) {
             log.trace(">decRequestCounter(" + username + ")");
         }
@@ -1113,9 +1115,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         int counter = 0;
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
+        UserDataLocal data1;
         try {
             UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);
+            data1 = home.findByPrimaryKey(pk);
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
@@ -1134,6 +1137,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         	ExtendedInformation ei = data1.getExtendedInformation();
         	if (ei != null) {
         		String counterstr = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+    			boolean serialNumberCleared = false;
         		if (StringUtils.isNotEmpty(counterstr)) {
         			try {
         				counter = Integer.valueOf(counterstr);
@@ -1142,8 +1146,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         				counter--;
         				if (counter >= 0) {
         					ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(counter));
+            				ei.setCertificateSerialNumber(null);// cert serial number should also be cleared after successfull command.
         					data1.setExtendedInformation(ei);
-        					data1.setTimeModified((new java.util.Date()).getTime());
+        					serialNumberCleared = true;
+        					if ( counter>0 ) { // if 0 then update when changing type
+        					    data1.setTimeModified((new java.util.Date()).getTime());
+        					}
         					String msg = intres.getLocalizedMessage("ra.decreasedentityrequestcounter", username, counter);            	
         					logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
         				} else {
@@ -1156,6 +1164,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         		} else {
         			log.debug("No (optional) request counter exists for end entity: "+username);
         		}
+				if ( !serialNumberCleared && ei.getCertificateSerialNumber()!=null ) {
+					ei.setCertificateSerialNumber(null);// cert serial number should also be cleared after successfull command.
+					data1.setExtendedInformation(ei);
+				}
         	} else {
         		debug("No extended information exists for user: "+data1.getUsername());
         	}
@@ -1164,11 +1176,62 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw e;
         }
+        if ( counter<=0 ) {
+            setUserStatus(admin, data1, UserDataConstants.STATUS_GENERATED);
+        }
         if (log.isTraceEnabled()) {
             log.trace("<decRequestCounter(" + username + "): "+counter);
         }
         return counter;
     } // decRequestCounter
+
+	/**
+	 * Removes the certificate serial number from the user data.
+	 * @param admin
+	 * @param username the unique username.
+	 * @throws AuthorizationDeniedException
+	 * @throws FinderException
+	 * @throws ApprovalException
+	 * @throws WaitingForApprovalException
+     * @ejb.interface-method
+	 */
+	public void cleanUserCertDataSN(Admin admin, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
+		if (log.isTraceEnabled()) {
+			log.trace(">cleanUserCertDataSN(" + username + ")");
+		}
+		final int caid = LogConstants.INTERNALCAID;
+		// Check if administrator is authorized to edit user.
+		try {
+			final UserDataPK pk = new UserDataPK(username);
+			final UserDataLocal data1 = home.findByPrimaryKey(pk);
+			if (!authorizedToCA(admin, caid)) {
+				String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+    			logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+    			throw new AuthorizationDeniedException(msg);
+    		}
+    		if ( getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations() &&
+    				!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS) ) {
+    			String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));
+				logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+				throw new AuthorizationDeniedException(msg);
+			}
+			final ExtendedInformation ei = data1.getExtendedInformation();
+			if ( ei==null) {
+				debug("No extended information exists for user: "+data1.getUsername());
+				return;
+			}
+			ei.setCertificateSerialNumber(null);
+			data1.setExtendedInformation(ei);
+		} catch (FinderException e) {
+			String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+			logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+			throw e;
+		} finally {
+			if (log.isTraceEnabled()) {
+				log.trace("<cleanUserCertDataSN(" + username + ")");
+			}
+		}
+	}
 
     /**
      * Changes status of a user.
@@ -1185,10 +1248,20 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
+        final UserDataLocal data1;
         try {
             UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);
-            caid = data1.getCaId();
+            data1 = home.findByPrimaryKey(pk);
+        } catch (FinderException e) {
+            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);                
+            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            throw e;
+        }
+        setUserStatus(admin, data1, status);
+    }
+    private void setUserStatus(Admin admin, UserDataLocal data1, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
+            final int caid = data1.getCaId();
+            final String username = data1.getUsername();
 
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
@@ -1234,11 +1307,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             UserDataVO userdata = data1.toUserDataVO();
             sendNotification(admin, userdata, status);
 
-        } catch (FinderException e) {
-            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            throw e;
-        }
         if (log.isTraceEnabled()) {
             log.trace("<setUserStatus(" + username + ", " + status + ")");
         }

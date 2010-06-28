@@ -3,7 +3,7 @@
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
-                 org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, 
+                 org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, java.math.BigInteger,
                  org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents, java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -32,6 +32,7 @@
   static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
   static final String TEXTFIELD_CARDNUMBER           = "textfieldcardnumber";
   static final String TEXTFIELD_MAXFAILEDLOGINS	  = "textfieldmaxfailedlogins";
+  static final String TEXTFIELD_CERTSERIALNUMBER  = "textfieldcertserialnumber";
 
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
@@ -73,6 +74,7 @@
   
   static final String CHECKBOX_RESETLOGINATTEMPTS	  	  = "checkboxresetloginattempts";
   static final String CHECKBOX_UNLIMITEDLOGINATTEMPTS	  = "checkboxunlimitedloginattempts";
+  static final String CHECKBOX_REQUIRED_CERTSERIALNUMBER  = "checkboxrequiredcertserialnumber";
 
   static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
   static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
@@ -138,11 +140,9 @@
              newuser.setEndEntityProfileId(profileid);
              newuser.setUsername(username);
              
-             ExtendedInformation ei = newuser.getExtendedInformation();
-			 if(ei == null) {
-				ei = new ExtendedInformation();
-			 }
-        	 ei.setRemainingLoginAttempts(userdata.getExtendedInformation().getRemainingLoginAttempts());
+             final ExtendedInformation ei = newuser.getExtendedInformation();
+
+             ei.setRemainingLoginAttempts(userdata.getExtendedInformation().getRemainingLoginAttempts());
 
 
              String value = request.getParameter(TEXTFIELD_PASSWORD);
@@ -449,6 +449,13 @@
 					newuser.setExtendedInformation(ei);					
 				}
 			}
+			value = request.getParameter(TEXTFIELD_CERTSERIALNUMBER).trim();
+			if ( value!=null && value.length()>0 ) {
+				ei.setCertificateSerialNumber( new BigInteger(value) );
+			} else {
+			    ei.setCertificateSerialNumber(null);
+			}
+			newuser.setExtendedInformation(ei);
 
               if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
                 int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
@@ -1375,6 +1382,28 @@ function checkUseInBatch(){
 						out.write(" CHECKED ");
 					} %>
 				/>
+			</td>
+		</tr>
+	<% }
+	if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<%= ejbcawebbean.getText("CERTSERIALNUMER") %> <br />
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> 1234567890 <%= ejbcawebbean.getText("OR").toLowerCase() %> 0x1234567890abcdef)
+			</td><td> 
+				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
+					<%	final ExtendedInformation ei = userdata.getExtendedInformation();
+						final BigInteger oldNr = ei!=null ? ei.getCertificateSerialNumber() : null;
+						final String certSerialNr = oldNr!=null ? oldNr.toString() : "";
+						%>
+					value="<%= certSerialNr %>"
+					/>
+			</td>
+			<td>
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMBER %>" value="<%= CHECKBOX_VALUE %>" disabled="true" />
+				<%	if ( profile.isRequired(EndEntityProfile.CERTSERIALNR, 0) ) {
+						out.write(" CHECKED ");
+					} %>
 			</td>
 		</tr>
 	<% } %> 

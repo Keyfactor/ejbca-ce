@@ -1,6 +1,6 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, java.math.BigInteger,
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
                  org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
                  org.ejbca.core.model.ra.ExtendedInformation, java.text.DateFormat, java.util.Locale, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo" %>
@@ -313,6 +313,16 @@
 		</td>
     </tr> 
 	<%	} %>
+	<%{
+		final ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
+		final BigInteger oldNr = ei!=null ? ei.getCertificateSerialNumber() : null;
+		final String certSerialNr = oldNr!=null ? oldNr.toString() : null;
+		if ( certSerialNr!=null ) { %>
+			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERTSERIALNUMER") %></td>
+			<td><%= certSerialNr %></td>
+			</tr> 
+	<%	} }%>
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td>&nbsp;</td>
       <td>&nbsp;</td>
