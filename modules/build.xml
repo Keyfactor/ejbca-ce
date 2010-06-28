@@ -33,6 +33,7 @@
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
 	
 	<target name="ejbca-entity" description="Build EJBCA JPA entity library">
@@ -118,6 +119,10 @@
 
 	<target name="admin-gui" description="Build the EJBCA Admin GUI WAR">
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="cmp-war" description="Build the CMP WAR">
+		<ant antfile="${mod.cmp-war.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
 	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->

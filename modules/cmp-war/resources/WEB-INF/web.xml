@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee" 
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+    http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="web-app_1" version="2.5">
+
+    <description><![CDATA[CMP server]]></description>
+
+    <servlet>
+        <description><![CDATA[Used to handle CMP (RFC4210) protocol messages]]></description>
+        <display-name>CmpServlet</display-name>
+        <servlet-name>CmpServlet</servlet-name>
+        <servlet-class>org.ejbca.ui.web.protocol.CmpServlet</servlet-class>
+        <load-on-startup>99</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CmpServlet</servlet-name>
+        <url-pattern>/cmp</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>restricted methods</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint> 
+
+    <env-entry>
+        <description><![CDATA[Allow the client/RA to specify that the CA should not verify POP, set to true to allow no POP (raVerify in the rfc). Default false.]]></description>
+        <env-entry-name>allowRaVerifyPopo</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>false</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[Enforce a particual CA instead of taking it from the request. Default empty.]]></description>
+        <env-entry-name>defaultCA</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value></env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[Defines which component from the DN should be used to look up username in EJBCA. Can be CN, UID or nothing. Nothing means that the DN will be used to look up the user. Default empty.]]></description>
+        <env-entry-name>extractUsernameComponent</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value></env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[If the CMP service should work in 'normal' or 'ra' mode (see docs). Default normal (or empty value means the same).]]></description>
+        <env-entry-name>operationMode</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>normal</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[Which sort of protection the response messages will have. Default signature.]]></description>
+        <env-entry-name>responseProtection</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>signature</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[Shared secret between the CA and the RA used to authenticate valid RA messages. Default empty.]]></description>
+        <env-entry-name>raAuthenticationSecret</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value></env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[Which generation scheme should be used, RANDOM or DN. Default DN.]]></description>
+        <env-entry-name>raModeNameGenerationScheme</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>DN</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[Parameters for name generation, for DN it can be CN or UID. Default CN.]]></description>
+        <env-entry-name>raModeNameGenerationParameters</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>CN</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[Prefix to generated name, a string that can contain the markup ${RANDOM} to inser random chars. Default empty.]]></description>
+        <env-entry-name>raModeNameGenerationPrefix</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value></env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[Postfix to generated name, a string that can contain the markup ${RANDOM} to inser random chars. Default empty.]]></description>
+        <env-entry-name>raModeNameGenerationPostfix</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value></env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[The endEntityProfile to be used when adding users in RA mode. Default EMPTY.]]></description>
+        <env-entry-name>endEntityProfile</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>EMPTY</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[The certificateProfile to be used when adding users in RA mode. Default ENDUSER.]]></description>
+        <env-entry-name>certificateProfile</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>ENDUSER</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <description><![CDATA[The CA to be used when adding users in RA mode. Default AdminCA1.]]></description>
+        <env-entry-name>caName</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>AdminCA1</env-entry-value>
+    </env-entry>
+
+    <ejb-local-ref id="EJBLocalRef_1">
+        <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
+        <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
+        <ejb-link>RSASignSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref id="EJBLocalRef_2">
+        <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
+        <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
+        <ejb-link>UserAdminSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref id="EJBLocalRef_3">
+        <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+        <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
+        <ejb-link>CAAdminSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref id="EJBLocalRef_4">
+        <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
+        <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
+        <ejb-link>CertificateStoreSession</ejb-link>
+    </ejb-local-ref>
+</web-app>

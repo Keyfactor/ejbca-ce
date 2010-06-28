@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="cmp-war" default="build">
+    <description>
+            Build file for the CMP Web component
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.cmp-war}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+
+	<path id="compile.classpath">
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-ejb.lib}"/>
+		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+	</path>
+	
+    <target name="build" description="Build this module" depends="compile">
+        <war destfile="${mod.cmp-war.war}" webxml="${resources.dir}/WEB-INF/web.xml">
+            <fileset dir="${build.dir}" excludes="WEB-INF/web.xml"/>
+        </war>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+    	<delete file="${mod.cmp-war.war}" />
+    </target>
+	
+    <target name="compile" depends="setup, ejbca-ejb-interface, ejbca-util, ejbca-ejb">
+    	<mkdir dir="${build.dir}/WEB-INF/classes" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        	</classpath>
+    	</javac>
+    </target>
+
+    <target name="setup">
+    	<mkdir dir="${build.dir}" />
+        <copy todir="${build.dir}">
+            <fileset dir="${resources.dir}" />
+        </copy>
+    </target>
+
+</project>

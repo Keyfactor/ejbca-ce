@@ -209,15 +209,6 @@
     </target>   
 
     <!-- =================================================================== -->
-    <!-- Build CMP part                                                                                                                             -->
-    <!-- =================================================================== -->
-    <target name="cmp.war" depends="compile">
-        <war destfile="${cmpwar}" webxml="${src.dd}/cmp/WEB-INF/web.xml">
-            <fileset dir="${cmp.src}" excludes="WEB-INF/web.xml" />
-        </war>
-    </target>
-	
-    <!-- =================================================================== -->
     <!-- Build health check part                                                                                                                             -->
     <!-- =================================================================== -->
     <target name="healthcheck.war" depends="compile">
@@ -522,6 +513,7 @@
                 <include name="ejbcaws.war" />
                 <include name="xkms.war" />
                 <include name="adminweb.war" />
+                <include name="cmp.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -952,8 +944,12 @@
     	<ant antfile="build.xml" dir="modules" target="ejbca-ejb-cli" />
     </target>
 	
-    <target name="adminweb.war" depends="compile">
+    <target name="adminweb.war">
     	<ant antfile="modules/build.xml" target="admin-gui" />
+    </target>
+
+    <target name="cmp.war">
+    	<ant antfile="modules/build.xml" target="cmp-war" />
     </target>
 
 	<target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
