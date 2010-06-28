@@ -237,6 +237,8 @@
            	<include name="org/ejbca/util/IPatternLogger.java"/>
         	<!-- General test helpers -->
            	<include name="org/ejbca/util/NonEjbTestTools.java"/>
+        	<!-- Dependencies from Admin GUI -->
+           	<include name="org/ejbca/util/HTMLTools.java"/>
     	</javac>
     </target>
 

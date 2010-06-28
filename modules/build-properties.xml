@@ -89,6 +89,8 @@
     <property name="mod.ejbca-xkms.path" location="${mod.path}/ejbca-xkms" />
     <property name="mod.ejbca-xkms.war" location="${mod.dist.path}/xkms.war" />
     <property name="mod.ejbca-xkms.lib" location="${mod.dist.path}/ejbca-xkms.jar" />
+    <property name="mod.admin-gui.path" location="${mod.path}/admin-gui" />
+    <property name="mod.admin-gui.war" location="${mod.dist.path}/adminweb.war" />
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
@@ -139,6 +141,8 @@
 	<path id="lib.commons-config.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-configuration-*.jar"/></path>
 	<path id="lib.commons-collections.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-collections-*.jar"/></path>
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
+	<path id="lib.commons-el.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-el-*.jar"/></path>
+	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
 	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
 	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
 	<path id="lib.mail.classpath">
@@ -146,6 +150,7 @@
 		<fileset dir="${ejbca.home}/lib/jaxws" includes="activation.jar"/> <!-- Apparently a dependency from JavaMail under Java 5 -->
 	</path>
 	<path id="lib.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/></path>
+	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.xmlsec.classpath"><fileset dir="${ejbca.home}/lib/xmlsign/" includes="xmlsec-*.jar"/></path>
@@ -240,6 +245,20 @@
 			<!-- jboss -->
 			<include name="server/default/deploy/jboss-web.deployer/jsf-libs/jsf-api.jar" /> <!-- 4.2.x -->
 			<include name="server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar" /> <!-- 5.x -->
+			<include name="server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar" /> <!-- 5.x -->
+			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.x -->
+			<include name="common/lib/el-api.jar" /> <!-- 5.x -->
+			<!-- glassfish ? -->
+			<!-- weblogic ? -->
+			<!-- oracle ? -->
+			<!-- websphere ? -->
+		</fileset>
+	</path>
+	
+	<path id="lib.jsp.classpath">
+		<fileset dir="${appserver.home}">
+			<!-- jboss -->
+			<include name="common/lib/jsp-api.jar" /> <!-- 5.x -->
 			<!-- glassfish ? -->
 			<!-- weblogic ? -->
 			<!-- oracle ? -->

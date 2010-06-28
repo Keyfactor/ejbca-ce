@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE faces-config PUBLIC
+  "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
+  "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
+
+<faces-config>
+    <managed-bean>
+    <managed-bean-name>web</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>listApproveActionSessionBean</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.approval.ListApproveActionSessionBean</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>approvalActionSession</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionSessionBean</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+    <managed-bean>
+    <managed-bean-name>approvalActionRequest</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionRequestBean</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>listServicesManagedBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.services.ListServicesManagedBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>editService</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.services.EditServiceManagedBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+    <managed-bean>
+    	<managed-bean-name>cAActivationMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.cainterface.CAActivationMBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>adminGroupsManagedBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.administratorprivileges.AdminGroupsManagedBean</managed-bean-class>
+    	<managed-bean-scope>request</managed-bean-scope>
+    	<managed-property>
+            <property-name>currentAdminGroup</property-name>
+            <value>#{param.currentAdminGroup}</value>
+        </managed-property>
+  </managed-bean>
+  
+  <validator>
+        <validator-id>legalCharsValidator</validator-id>
+        <validator-class>org.ejbca.ui.web.admin.LegalCharsValidator</validator-class>
+  </validator>
+  <validator>
+        <validator-id>hexSerialNumberValidator</validator-id>
+        <validator-class>org.ejbca.ui.web.admin.administratorprivileges.HexSerialNumberValidator</validator-class>
+  </validator>
+  
+  <navigation-rule>
+    <from-view-id>/approval/approveactionlist.jsp</from-view-id>
+    <navigation-case>
+      <from-outcome>viewApproveAction</from-outcome>
+      <to-view-id>/approval/approveaction.jsp</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+  	<from-view-id>/approval/approveaction.jsp</from-view-id>
+  	<navigation-case>
+  		<from-outcome>approveaction</from-outcome>
+  		<to-view-id>/approval/approveaction.jsp</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+    <from-view-id>/ca/caactivation.jsp</from-view-id>
+    <navigation-case>
+      <from-outcome>apply</from-outcome>
+      <to-view-id>/ca/caactivation.jsp</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  	
+  <navigation-rule>
+  	<from-view-id>/services/listservices.jsp</from-view-id>
+  	<navigation-case>
+  		<from-outcome>listservices</from-outcome>
+  		<to-view-id>/services/listservices.jsp</to-view-id>
+  	</navigation-case>
+  	<navigation-case>
+  		<from-outcome>editservice</from-outcome>
+  		<to-view-id>/services/editservice.jsp</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+  	<from-view-id>/services/editservice.jsp</from-view-id>
+  	<navigation-case>
+  		<from-outcome>listservices</from-outcome>
+  		<to-view-id>/services/listservices.jsp</to-view-id>
+  	</navigation-case>
+  	<navigation-case>
+  		<from-outcome>editservice</from-outcome>
+  		<to-view-id>/services/editservice.jsp</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  </faces-config>

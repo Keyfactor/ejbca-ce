@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee" 
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+    http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="web-app_1" version="2.5">
+
+
+   <description><![CDATA[EJBCA Administration web]]></description>
+
+   <servlet>
+      <description><![CDATA[Returns the specified CA certificate]]></description>
+      <display-name>CACertServlet</display-name>
+      <servlet-name>CACert</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.cainterface.CACertServlet</servlet-class>
+      <load-on-startup>99</load-on-startup>
+   </servlet>
+   <servlet>
+      <description><![CDATA[Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI]]></description>
+      <display-name>AdminCertReqServlet</display-name>
+      <servlet-name>AdminCertReq</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.cainterface.AdminCertReqServlet</servlet-class>
+      <load-on-startup>99</load-on-startup>
+   </servlet>
+   <servlet>
+      <description><![CDATA[Returns the CA as a PKCS#12 file.]]></description>
+      <display-name>CAExportServlet</display-name>
+      <servlet-name>CAExport</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.cainterface.CAExportServlet</servlet-class>
+      <load-on-startup>99</load-on-startup>
+   </servlet>
+   <servlet>
+      <description><![CDATA[Returns the specified end entity certificate]]></description>
+      <display-name>EndEntityCertServlet</display-name>
+      <servlet-name>EndEntityCert</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.cainterface.EndEntityCertServlet</servlet-class>
+      <load-on-startup>99</load-on-startup>
+   </servlet>
+   <servlet>
+      <description><![CDATA[Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI]]></description>
+      <display-name>CACertReqServlet</display-name>
+      <servlet-name>CACertReq</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.cainterface.CACertReqServlet</servlet-class>
+      <load-on-startup>99</load-on-startup>
+   </servlet>
+   <servlet>
+      <description><![CDATA[Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI]]></description>
+      <display-name>GetCRLServlet</display-name>
+      <servlet-name>GetCRL</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.cainterface.GetCRLServlet</servlet-class>
+      <load-on-startup>99</load-on-startup>
+   </servlet>
+   <servlet>
+      <description><![CDATA[Servlet used to start services by calling the ServiceSession.load()]]></description>
+      <display-name>StartServicesServlet</display-name>
+      <servlet-name>StartServices</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.configuration.StartServicesServlet</servlet-class>
+      <load-on-startup>1</load-on-startup>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>Faces Servlet</servlet-name>
+      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+      <load-on-startup>1</load-on-startup>
+   </servlet>
+    
+   <servlet-mapping>
+      <servlet-name>Faces Servlet</servlet-name>
+      <url-pattern>*.jsf</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>CACert</servlet-name>
+      <url-pattern>/ca/cacert</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>AdminCertReq</servlet-name>
+      <url-pattern>/ca/certreq</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>CAExport</servlet-name>
+      <url-pattern>/ca/exportca</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>EndEntityCert</servlet-name>
+      <url-pattern>/ca/endentitycert</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>CACertReq</servlet-name>
+      <url-pattern>/ca/editcas/cacertreq</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>GetCRL</servlet-name>
+      <url-pattern>/ca/getcrl/getcrl</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>StartServices</servlet-name>
+      <url-pattern>/configuration/startservices</url-pattern>
+   </servlet-mapping>
+
+   <session-config>
+      <session-timeout>30</session-timeout>
+   </session-config>
+
+   <!--
+   <!ELEMENT mime-mapping (extension, mime-type)>
+   -->
+
+   <!--
+   <!ELEMENT error-page ((error-code | exception-type), location)>
+   -->
+
+	<!-- Try without a DataSource..
+   <resource-ref id="ResRef_1">
+      <res-ref-name>java:/EjbcaDS</res-ref-name>
+      <res-type>javax.sql.DataSource</res-type>
+      <res-auth>Container</res-auth>
+   </resource-ref>
+   	-->
+
+   <!--
+   <!ELEMENT security-constraint (display-name?, web-resource-collection+, auth-constraint?, user-data-constraint?)>
+   <!ELEMENT web-resource-collection (web-resource-name, description?, url-pattern*, http-method*)>
+   <!ELEMENT web-resource-name (#PCDATA)>
+   <!ELEMENT url-pattern (#PCDATA)>
+   <!ELEMENT http-method (#PCDATA)>
+   <!ELEMENT user-data-constraint (description?, transport-guarantee)>
+   <!ELEMENT transport-guarantee (#PCDATA)>
+
+   <!ELEMENT login-config (auth-method?, realm-name?, form-login-config?)>
+   <!ELEMENT auth-method (#PCDATA)>
+   <!ELEMENT realm-name (#PCDATA)>
+   <!ELEMENT form-login-config (form-login-page, form-error-page)>
+   <!ELEMENT form-login-page (#PCDATA)>
+   <!ELEMENT form-error-page (#PCDATA)>
+   -->
+
+   <env-entry>
+      <description><![CDATA[Defines the admin directory]]></description>
+      <env-entry-name>ADMINDIRECTORY</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>adminweb</env-entry-value>
+   </env-entry>
+   <env-entry>
+      <description><![CDATA[Defines the available themes by css-filenames separated with a comma]]></description>
+      <env-entry-name>AVAILABLETHEMES</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>default_theme.css,second_theme.css</env-entry-value>
+   </env-entry>
+   <env-entry>
+      <description><![CDATA[Protocol used by EJBCA public webcomponents. i.e that doesn't require client authentication]]></description>
+      <env-entry-name>PUBLICPROTOCOL</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>http</env-entry-value>
+   </env-entry>
+   <env-entry>
+      <description><![CDATA[Protocol used by EJBCA private webcomponents. i.e that requires client authentication]]></description>
+      <env-entry-name>PRIVATEPROTOCOL</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>https</env-entry-value>
+   </env-entry>
+
+   <ejb-local-ref id="EJBLocalRef_1">
+      <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
+      <ejb-link>RSASignSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_2">
+      <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
+      <ejb-link>CertificateStoreSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_3">
+      <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
+      <ejb-link>CAAdminSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_4">
+      <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
+      <ejb-link>UserAdminSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_5">
+      <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal</local>
+      <ejb-link>RaAdminSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_6">
+      <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
+      <ejb-link>LogSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_7">
+      <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
+      <ejb-link>AuthorizationSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_8">
+      <ejb-ref-name>ejb/HardTokenSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal</local>
+      <ejb-link>HardTokenSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_9">
+      <ejb-ref-name>ejb/HardTokenBatchJobSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionLocal</local>
+      <ejb-link>HardTokenBatchJobSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_10">
+      <ejb-ref-name>ejb/KeyRecoverySessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal</local>
+      <ejb-link>KeyRecoverySession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_11">
+      <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>
+      <ejb-link>PublisherSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_12">
+      <ejb-ref-name>ejb/UserDataSourceSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal</local>
+      <ejb-link>UserDataSourceSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_13">
+      <ejb-ref-name>ejb/ApprovalSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.approval.IApprovalSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.approval.IApprovalSessionLocal</local>
+      <ejb-link>ApprovalSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_14">
+      <ejb-ref-name>ejb/ServiceSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.services.IServiceSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.services.IServiceSessionLocal</local>
+      <ejb-link>ServiceSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_15">
+      <ejb-ref-name>ejb/ServiceTimerSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.services.IServiceTimerSessionLocal</local>
+      <ejb-link>ServiceTimerSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_16">
+      <ejb-ref-name>ejb/PublisherQueueSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal</local>
+      <ejb-link>PublisherQueueSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_17">
+      <ejb-ref-name>ejb/CreateCRLSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal</local>
+      <ejb-link>CreateCRLSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref id="EJBLocalRef_18">
+      <ejb-ref-name>ejb/CertificateRequestSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ra.ICertificateRequestSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ra.ICertificateRequestSessionLocal</local>
+      <ejb-link>CertificateRequestSession</ejb-link>
+   </ejb-local-ref>
+</web-app>
