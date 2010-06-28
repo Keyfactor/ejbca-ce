@@ -137,7 +137,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     
     /** Cache for log configuration data with default cache time of 5 seconds.
      * 5 seconds is enough to not limit performance in high performance environments, but low enough so that 
-     * changes to configuration is visibale almost imemdiately.
+     * changes to configuration is visible almost immediately.
      */
     private static final ObjectCache logConfCache = new ObjectCache();
 
