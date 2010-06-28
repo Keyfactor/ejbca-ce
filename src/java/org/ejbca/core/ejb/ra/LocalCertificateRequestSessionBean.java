@@ -429,7 +429,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 				if (log.isDebugEnabled()) {
 					log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
 				}
-				getUserAdminSession().addUserFromWS(admin,userdata,true);
+				getUserAdminSession().addUserFromWS(admin,userdata,clearpwd);
 			}
 		} catch (WaitingForApprovalException e) {
 			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
