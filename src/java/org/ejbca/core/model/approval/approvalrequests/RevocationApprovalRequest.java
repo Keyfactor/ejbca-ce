@@ -29,7 +29,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
+import org.ejbca.ui.web.RevokedInfoView;
 
 public class RevocationApprovalRequest extends ApprovalRequest {
 

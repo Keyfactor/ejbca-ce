@@ -40,7 +40,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.ui.web.admin.rainterface.CertificateView;
+import org.ejbca.ui.web.CertificateView;
 import org.ejbca.util.CertTools;
 
 /**

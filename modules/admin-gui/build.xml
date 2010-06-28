@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="admin-gui" default="build">
+    <description>
+            Build file for the Administration GUI
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.admin-gui}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="jasper-temp.dir" location="${this.dir}/tmp-jasper"/>
+
+	<path id="compile.classpath">
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-ejb.lib}"/>
+		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.jsf.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-fileupload.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.jee.classpath"/>
+	</path>
+	
+    <target name="build" description="Build this module" depends="validate">
+        <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml">
+            <fileset dir="${build.dir}">
+                <exclude name="WEB-INF/web.xml"/>
+            </fileset>
+        </war>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+    	<delete file="${mod.admin-gui.war}" />
+    	<delete dir="${jasper-temp.dir}"/>
+    </target>
+	
+    <target name="compile" depends="setup, ejbca-ejb-interface, ejbca-util, ejbca-ejb">
+    	<mkdir dir="${build.dir}/WEB-INF/classes" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="compile.classpath"/>
+        	</classpath>
+    	</javac>
+    </target>
+	
+    <target name="validate" depends="compile">
+        <!--
+            Since Jasper might not be compatible with all application servers, we discard the compiled JSP when we are done.
+            This is just a compile-time validation that should be possible to disable if we are running in prod.
+            
+            Using runtime complilation is slower for the user during first access, but will use the latest libraries
+            from the used appserver. 
+        -->
+    	<mkdir dir="${jasper-temp.dir}/classes"/>
+        <mkdir dir="${jasper-temp.dir}/jspc"/>
+
+	    <path id="jasper.classpath">
+	        <fileset dir="${ejbca.home}/lib/jasper" includes="*.jar"/>
+	        <path refid="lib.commons-logging.classpath"/>
+	        <path refid="lib.commons-el.classpath"/>
+	        <path refid="lib.jsp.classpath"/>
+	        <path refid="lib.ldap.classpath"/>
+	        <path refid="compile.classpath"/>
+	        <path location="${build.dir}/WEB-INF/classes"/>
+	        <path refid="lib.tomahawk.classpath"/>
+	    </path>
+
+	    <property name="jasper.classpath" refid="jasper.classpath"/>
+		<taskdef name="jasper2" classname="org.apache.jasper.JspC" classpathref="jasper.classpath" loaderref="jasper"/>
+		<jasper2 uriroot="${build.dir}"
+			package="org.apache.jasper.jspc"
+			outputdir="${jasper-temp.dir}/jspc"
+			validatexml="false"
+			webXmlFragment="${build.dir}/WEB-INF/generated_web.xml"
+			addWebXmlMappings="true"
+            verbose="0"
+            classpath="${jasper.classpath}"/>
+		<depend srcdir="${jasper-temp.dir}/jspc" destdir="${jasper-temp.dir}/classes">
+			<classpath refid="jasper.classpath"/>
+		</depend>
+		<javac srcdir="${jasper-temp.dir}/jspc" destdir="${jasper-temp.dir}/classes" debug="on"
+            includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+            <classpath refid="jasper.classpath"/>
+        </javac>
+
+    </target>
+
+    <target name="setup" depends="">
+    	<mkdir dir="${build.dir}" />
+        <copy todir="${build.dir}">
+            <fileset dir="${resources.dir}" />
+        </copy>
+        <copy todir="${build.dir}/WEB-INF/lib" file="${ejbca.home}/lib/myfaces/tomahawk-1.1.6.jar" failonerror="true"/>
+		<delete>
+			<fileset dir="${build.dir}/languages/" includes="languagefile.*.properties"/>
+		</delete>
+    	<native2ascii encoding="UTF-8"
+    		src="${resources.dir}/languages"
+    		dest="${build.dir}/languages"
+    		includes="languagefile.*.properties" 
+    		excludes="languagefile.zh.properties" 
+    	/>
+    	<native2ascii encoding="GBK" 
+    		src="${resources.dir}/languages" 
+    		dest="${build.dir}/languages"
+    		includes="languagefile.zh.properties" 
+    	/>
+    </target>
+
+</project>
