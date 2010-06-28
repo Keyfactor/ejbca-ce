@@ -165,10 +165,10 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
         try {
-            // Find the user with username username
+            // Find the user with username username, or throw FinderException
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data = userHome.findByPrimaryKey(pk);
-            
+
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
            	getUserSession().decRemainingLoginAttempts(admin, data.getUsername());
 			

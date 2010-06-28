@@ -245,7 +245,9 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
         String fingerprint = CertTools.getFingerprintAsString(incert);
         setFingerprint(fingerprint);
         setIssuerDN(CertTools.getIssuerDN(incert));
-        log.debug("Creating certreqhistory data, serial=" + CertTools.getSerialNumberAsString(incert) + ", issuer=" + getIssuerDN());
+        if (log.isDebugEnabled()) {
+        	log.debug("Creating certreqhistory data, serial=" + CertTools.getSerialNumberAsString(incert) + ", issuer=" + getIssuerDN());
+        }
         setSerialNumber(CertTools.getSerialNumber(incert).toString());
         setTimestamp(new Date().getTime());
                 	

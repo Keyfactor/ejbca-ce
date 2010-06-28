@@ -1077,13 +1077,17 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 					resetRemainingLoginAttempts(admin, username);
     			}
     		} else if(counter != -1) {
-				log.debug("Found a remaining login counter with value "+counter);
+    			if (log.isDebugEnabled()) {
+    				log.debug("Found a remaining login counter with value "+counter);
+    			}
 				ei.setRemainingLoginAttempts(--counter);
 				data1.setExtendedInformation(ei);
 				String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);            	
 				logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
 			} else {
-				log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
+				if (log.isDebugEnabled()) {
+					log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
+				}
 				counter = Integer.MAX_VALUE;
 			}
         } catch (FinderException e) {
@@ -1141,7 +1145,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         		if (StringUtils.isNotEmpty(counterstr)) {
         			try {
         				counter = Integer.valueOf(counterstr);
-        				log.debug("Found a counter with value "+counter);
+        				if (log.isDebugEnabled()) {
+        					log.debug("Found a counter with value "+counter);
+        				}
         				// decrease the counter, if we get to 0 we must set status to generated
         				counter--;
         				if (counter >= 0) {
@@ -1155,21 +1161,27 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         					String msg = intres.getLocalizedMessage("ra.decreasedentityrequestcounter", username, counter);            	
         					logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
         				} else {
-        					log.debug("Counter value was already 0, not decreased in db.");
+            				if (log.isDebugEnabled()) {
+            					log.debug("Counter value was already 0, not decreased in db.");
+            				}
         				}
         			} catch (NumberFormatException e) {
         				String msg = intres.getLocalizedMessage("ra.errorrequestcounterinvalid", username, counterstr, e.getMessage());            	        		
         				log.error(msg, e);
         			}        		
         		} else {
-        			log.debug("No (optional) request counter exists for end entity: "+username);
+    				if (log.isDebugEnabled()) {
+    					log.debug("No (optional) request counter exists for end entity: "+username);
+    				}
         		}
 				if ( !serialNumberCleared && ei.getCertificateSerialNumber()!=null ) {
 					ei.setCertificateSerialNumber(null);// cert serial number should also be cleared after successfull command.
 					data1.setExtendedInformation(ei);
 				}
         	} else {
-        		debug("No extended information exists for user: "+data1.getUsername());
+				if (log.isDebugEnabled()) {
+					debug("No extended information exists for user: "+data1.getUsername());
+				}
         	}
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
@@ -1217,7 +1229,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 			}
 			final ExtendedInformation ei = data1.getExtendedInformation();
 			if ( ei==null) {
-				debug("No extended information exists for user: "+data1.getUsername());
+				if (log.isDebugEnabled()) {
+					debug("No extended information exists for user: "+data1.getUsername());
+				}
 				return;
 			}
 			ei.setCertificateSerialNumber(null);
@@ -1296,7 +1310,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
     			// Reset remaining login counter
     			resetRemainingLoginAttempts(admin, username);
     		} else {
-    			log.debug("Status not changing from something else to new, not resetting requestCounter.");
+				if (log.isDebugEnabled()) {
+					log.debug("Status not changing from something else to new, not resetting requestCounter.");
+				}
     		}
             data1.setStatus(status);
             data1.setTimeModified((new java.util.Date()).getTime());
@@ -1582,7 +1598,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 		}
         String msg = intres.getLocalizedMessage("ra.revokedentity", username);            	
         logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
-        log.trace("<revokeUser()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<revokeUser()");
+        }
     }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKECERT = {
@@ -1689,7 +1707,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         if (inf != null) {
             inf.setRevocationCodeIdentifier(null);        	
         }
-        log.trace("<revokeCert()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<revokeCert()");
+        }
     } // revokeCert
 
     /** 
@@ -1705,9 +1725,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      */
     public void unRevokeCert(Admin admin, BigInteger certserno, String issuerdn, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
-        log.trace(">unrevokeCert()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">unrevokeCert()");
+        }
         revokeCert(admin, certserno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
-        log.trace("<unrevokeCert()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<unrevokeCert()");
+        }
     }
 
     /**
@@ -1810,7 +1834,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-        debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerdn);
+        if (log.isDebugEnabled()) {
+        	debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerdn);
+        }
         UserDataVO returnval = null;
 
         UserDataLocal data = null;
@@ -1818,7 +1844,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         try {
             data = home.findBySubjectDNAndCAId(dn, issuerdn.hashCode());
         } catch (FinderException e) {
-            log.debug("Cannot find user with DN='" + dn + "'");
+            if (log.isDebugEnabled()) {
+            	log.debug("Cannot find user with DN='" + dn + "'");
+            }
         }
         returnval = returnUserDataVO(admin, returnval, data);
         if (log.isTraceEnabled()) {
@@ -1842,7 +1870,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-        debug("Looking for users with subjectdn: " + dn);
+        if (log.isDebugEnabled()) {
+        	debug("Looking for users with subjectdn: " + dn);
+        }
         UserDataVO returnval = null;
 
         UserDataLocal data = null;
@@ -1850,7 +1880,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         try {
             data = home.findBySubjectDN(dn);
         } catch (FinderException e) {
-            log.debug("Cannot find user with DN='" + dn + "'");
+            if (log.isDebugEnabled()) {
+            	log.debug("Cannot find user with DN='" + dn + "'");
+            }
         }
         returnval = returnUserDataVO(admin, returnval, data);
         if (log.isTraceEnabled()) {
@@ -1897,14 +1929,18 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         if (log.isTraceEnabled()) {
             log.trace(">findUserByEmail(" + email + ")");
         }
-        debug("Looking for user with email: " + email);
+        if (log.isDebugEnabled()) {
+        	debug("Looking for user with email: " + email);
+        }
         ArrayList returnval = new ArrayList();
 
         Collection result = null;
         try {
             result = home.findBySubjectEmail(email);
         } catch (FinderException e) {
-            log.debug("Cannot find user with Email='" + email + "'");
+            if (log.isDebugEnabled()) {
+            	log.debug("Cannot find user with Email='" + email + "'");
+            }
         }
 
         Iterator iter = result.iterator();
@@ -1962,7 +1998,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             log.trace(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
         }
         if (!WebConfiguration.getRequireAdminCertificateInDatabase()) {
-        	log.trace("<checkIfCertificateBelongToUser Configured to ignore if cert belongs to user.");
+            if (log.isTraceEnabled()) {
+            	log.trace("<checkIfCertificateBelongToUser Configured to ignore if cert belongs to user.");
+            }
         	return;
         }
         String username = certificatesession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
@@ -1976,7 +2014,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                 throw new AuthorizationDeniedException(msg);
             }
         }
-        log.trace("<checkIfCertificateBelongToUser()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<checkIfCertificateBelongToUser()");
+        }
     }
 
     /**
@@ -1991,7 +2031,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatus(" + status + ")");
         }
-        debug("Looking for users with status: " + status);
+        if (log.isDebugEnabled()) {
+        	debug("Looking for users with status: " + status);
+        }
 
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
@@ -2001,7 +2043,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             returnval = query(admin, query, false, null, null, false,0);
         } catch (IllegalQueryException e) {
         }
-        debug("found " + returnval.size() + " user(s) with status=" + status);
+        if (log.isDebugEnabled()) {
+        	debug("found " + returnval.size() + " user(s) with status=" + status);
+        }
         if (log.isTraceEnabled()) {
             log.trace("<findAllUsersByStatus(" + status + ")");
         }
@@ -2050,13 +2094,17 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.transaction type="Supports"
      */
     public Collection findAllUsersWithLimit(Admin admin) throws FinderException {
-        trace(">findAllUsersWithLimit()");
+        if (log.isTraceEnabled()) {
+        	trace(">findAllUsersWithLimit()");
+        }
         Collection returnval = null;
         try {
             returnval = query(admin, null, true, null, null, false, 0);
         } catch (IllegalQueryException e) {
         }
-        trace("<findAllUsersWithLimit()");
+        if (log.isTraceEnabled()) {
+        	trace("<findAllUsersWithLimit()");
+        }
         return returnval;
     }
 
@@ -2068,8 +2116,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.transaction type="Supports"
      */
     public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException {
-        trace(">findAllUsersByStatusWithLimit()");
-
+        if (log.isTraceEnabled()) {
+        	trace(">findAllUsersByStatusWithLimit()");
+        }
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
         Collection returnval = null;
@@ -2079,7 +2128,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         } catch (IllegalQueryException e) {
         }
 
-        trace("<findAllUsersByStatusWithLimit()");
+        if (log.isTraceEnabled()) {
+        	trace("<findAllUsersByStatusWithLimit()");
+        }
         return returnval;
     }
 
@@ -2213,7 +2264,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                     }
                 }
             }
-            log.trace("<query()");
+            if (log.isTraceEnabled()) {
+            	log.trace("<query()");
+            }
             return returnval;
 
         } catch (Exception e) {
@@ -2234,7 +2287,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.transaction type="Supports"
      */
     public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid) {
-        log.trace(">checkForEndEntityProfileId()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">checkForEndEntityProfileId()");
+        }
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -2253,7 +2308,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            log.trace("<checkForEndEntityProfileId()");
+            if (log.isTraceEnabled()) {
+            	log.trace("<checkForEndEntityProfileId()");
+            }
             return count > 0;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -2272,7 +2329,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.transaction type="Supports"
      */
     public boolean checkForCertificateProfileId(Admin admin, int certificateprofileid) {
-        log.trace(">checkForCertificateProfileId()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">checkForCertificateProfileId()");
+        }
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -2291,7 +2350,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            log.trace("<checkForCertificateProfileId()");
+            if (log.isTraceEnabled()) {
+            	log.trace("<checkForCertificateProfileId()");
+            }
             return count > 0;
 
         } catch (Exception e) {
@@ -2311,7 +2372,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.transaction type="Supports"
      */
     public boolean checkForCAId(Admin admin, int caid) {
-        log.trace(">checkForCAId()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">checkForCAId()");
+        }
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -2353,7 +2416,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.transaction type="Supports"
      */
     public boolean checkForHardTokenProfileId(Admin admin, int profileid) {
-        trace(">checkForHardTokenProfileId()");
+		if (log.isTraceEnabled()) {
+			trace(">checkForHardTokenProfileId()");
+		}
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -2372,9 +2437,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-            trace("<checkForHardTokenProfileId()");
+    		if (log.isTraceEnabled()) {
+    			trace("<checkForHardTokenProfileId()");
+    		}
             return count > 0;
-
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {
@@ -2403,7 +2469,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
     
     private void sendNotification(Admin admin, UserDataVO data, int newstatus) {
     	if (data == null) {
-        	log.debug("No UserData, no notification sent.");
+    		if (log.isDebugEnabled()) {
+    			log.debug("No UserData, no notification sent.");
+    		}
     		return;
     	}
         String useremail = data.getEmail();
@@ -2416,14 +2484,18 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             int profileId = data.getEndEntityProfileId();
             EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
             Collection l = profile.getUserNotifications();
-            debug("Number of user notifications: "+l.size()); 
+    		if (log.isDebugEnabled()) {
+    			debug("Number of user notifications: "+l.size());
+    		}
             Iterator i = l.iterator();
         	String rcptemail = useremail; // Default value
             while (i.hasNext()) {
             	UserNotification not = (UserNotification)i.next(); 
             	Collection events = not.getNotificationEventsCollection();
             	if (events.contains(String.valueOf(newstatus))) {
-                	debug("Status is "+newstatus+", notification sent for notificationevents: "+not.getNotificationEvents());
+            		if (log.isDebugEnabled()) {
+            			debug("Status is "+newstatus+", notification sent for notificationevents: "+not.getNotificationEvents());
+            		}
                     try {
                     	if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_USER)) {
                     		rcptemail = useremail;
@@ -2442,7 +2514,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                                 		String msg = intres.getLocalizedMessage("ra.errorcustomnoemail", not.getNotificationRecipient());
                             			error(msg);
                         			} else {
-                        				debug("Custom notification recipient plugin returned email: "+ rcptemail);
+                        	    		if (log.isDebugEnabled()) {
+                        	    			debug("Custom notification recipient plugin returned email: "+ rcptemail);
+                        	    		}
                         			}
                         		} else {
                             		String msg = intres.getLocalizedMessage("ra.errorcustomnoclasspath", not.getNotificationRecipient());
@@ -2461,7 +2535,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                         // When approvals is used, this will be the DN of the admin that approves the request
                         Certificate adminCert = admin.getAdminInformation().getX509Certificate();
                         String approvalAdminDN = CertTools.getSubjectDN(adminCert);
-                        log.debug("approvalAdminDN: "+approvalAdminDN);
+                		if (log.isDebugEnabled()) {
+                			log.debug("approvalAdminDN: "+approvalAdminDN);
+                		}
                         UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN);
                         /* substitute any $ fields in the receipient and from fields */
                         rcptemail = paramGen.interpolate(rcptemail);
@@ -2481,11 +2557,15 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                         }
                     }        		
             	} else { // if (events.contains(String.valueOf(newstatus)))
-                	log.debug("Status is "+newstatus+", no notification sent for notificationevents: "+not.getNotificationEvents());
+            		if (log.isDebugEnabled()) {
+            			log.debug("Status is "+newstatus+", no notification sent for notificationevents: "+not.getNotificationEvents());
+            		}
             	}
             }
         } else { // if ( ((data.getType() & SecConst.USER_SENDNOTIFICATION) != 0) )
-        	log.debug("Type does not contain SecConst.USER_SENDNOTIFICATION, no notification sent.");
+    		if (log.isDebugEnabled()) {
+    			log.debug("Type does not contain SecConst.USER_SENDNOTIFICATION, no notification sent.");
+    		}
         }
         if (log.isTraceEnabled()) {
             log.trace("<sendNotification: user="+data.getUsername()+", email="+useremail);
@@ -2562,27 +2642,39 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         		value = null;
         	}
     	} else {
-    		log.debug("Can not fetch entity profile with id "+epid);
+    		if (log.isDebugEnabled()) {
+    			log.debug("Can not fetch entity profile with id "+epid);
+    		}
     	}
     	ExtendedInformation ei = data1.getExtendedInformation();
     	if (ei != null) {
     		String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
-    		debug("Old counter is: "+counter+", new counter will be: "+value);
+    		if (log.isDebugEnabled()) {
+    			debug("Old counter is: "+counter+", new counter will be: "+value);
+    		}
     		// If this end entity profile does not use ALLOWEDREQUESTS, this value will be set to null
     		// We only re-set this value if the COUNTER was used in the first place, if never used, we will not fiddle with it
     		if (counter != null) {
     			if ( (!onlyRemoveNoUpdate) || (onlyRemoveNoUpdate && (value==null)) ) {
     				ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
     				data1.setExtendedInformation(ei);    			
-    				debug("Re-set request counter for user '"+data1.getUsername()+"' to:"+value);
+    	    		if (log.isDebugEnabled()) {
+    	    			debug("Re-set request counter for user '"+data1.getUsername()+"' to:"+value);
+    	    		}
     			} else {
-    				debug("No re-setting counter because we should only remove");
+    	    		if (log.isDebugEnabled()) {
+    	    			debug("No re-setting counter because we should only remove");
+    	    		}
     			}
     		} else {
-    			debug("Request counter not used, not re-setting it.");
+        		if (log.isDebugEnabled()) {
+        			debug("Request counter not used, not re-setting it.");
+        		}
     		}
     	} else {
-    		debug("No extended information exists for user: "+data1.getUsername());
+    		if (log.isDebugEnabled()) {
+    			debug("No extended information exists for user: "+data1.getUsername());
+    		}
     	}
     	if (log.isTraceEnabled()) {
         	log.trace("<resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		

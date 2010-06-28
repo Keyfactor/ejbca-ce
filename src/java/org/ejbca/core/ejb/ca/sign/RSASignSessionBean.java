@@ -736,7 +736,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws EjbcaException {
-        log.trace(">createCertificate(IRequestMessage)");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">createCertificate(IRequestMessage)");
+    	}
         // Get CA that will receive request
         UserDataVO data = null;
         IResponseMessage ret = null;            
@@ -793,7 +795,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                     	X509Extensions exts = req.getRequestExtensions(); // Optionally requested extensions
                     	int ku = keyUsage;
                     	if (ku < 0) {
-                    		debug("KeyUsage < 0, see if we can override KeyUsage");
+                        	if (log.isDebugEnabled()) {
+                        		debug("KeyUsage < 0, see if we can override KeyUsage");
+                        	}
                         	if (exts != null) {
                             	X509Extension ext = exts.getExtension(X509Extensions.KeyUsage);
                             	if (ext != null) {
@@ -803,7 +807,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                                     DERObject dob = dIs.readObject();
                                 	DERBitString bs = DERBitString.getInstance(dob);
                                 	ku = bs.intValue();                        		                            		
-                            		debug("We have a key usage request extension: "+ku);
+                                	if (log.isDebugEnabled()) {
+                                		debug("We have a key usage request extension: "+ku);
+                                	}
                             	}
                         	}
                     	}
@@ -865,7 +871,9 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         }
-        log.trace("<createCertificate(IRequestMessage)");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<createCertificate(IRequestMessage)");
+    	}
         return ret;
     }
     
@@ -1076,22 +1084,30 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
             	String dn = req.getIssuerDN();
-            	debug("Got an issuerDN: "+dn);
+            	if (log.isDebugEnabled()) {
+            		debug("Got an issuerDN: "+dn);
+            	}
             	// If we have issuer and serialNo, we must find the CA certificate, to get the CAs subject name
             	// If we don't have a serialNumber, we take a chance that it was actually the subjectDN (for example a RootCA)
             	BigInteger serno = req.getSerialNo();
             	if (serno != null) {
-            		debug("Got a serialNumber: "+serno.toString(16));
+            		if (log.isDebugEnabled()) {
+            			debug("Got a serialNumber: "+serno.toString(16));
+            		}
                     ICertificateStoreSessionLocal certificateStore = storeHome.create();
             		Certificate cert = certificateStore.findCertificateByIssuerAndSerno(admin, dn, serno);
             		if (cert != null) {
             			dn = CertTools.getSubjectDN(cert);
             		}
             	}
-            	debug("Using DN: "+dn);
+            	if (log.isDebugEnabled()) {
+            		debug("Using DN: "+dn);
+            	}
             	try {
             		ca = getCaAdminSession().getCA(admin, dn.hashCode());
-                    debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+            		if (log.isDebugEnabled()) {
+            			debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+            		}
             	} catch (CADoesntExistsException e) {
             		// We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
             		if (req.getUsername() != null) {
@@ -1131,7 +1147,9 @@ public class RSASignSessionBean extends BaseSessionBean {
 		String password = req.getPassword();
 		UserDataVO data = authUser(admin, username, password);
 		CA ca = getCaAdminSession().getCA(admin, data.getCAId());
-		debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+		if (log.isDebugEnabled()) {
+			debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+		}
 		return ca;
 	}
 
@@ -1222,12 +1240,18 @@ public class RSASignSessionBean extends BaseSessionBean {
      * 
      */
     private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
-    	log.trace(">createCertificate(pk, ku, date)");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">createCertificate(pk, ku, date)");
+    	}
         // Authorize user and get DN
 		final UserDataVO data = authUser(admin, username, password);
-        log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
+    	if (log.isDebugEnabled()) {
+    		log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
+    	}
         if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
-        	debug("Overriding user certificate profile with :" + certificateprofileid);
+        	if (log.isDebugEnabled()) {
+        		debug("Overriding user certificate profile with :" + certificateprofileid);
+        	}
         	data.setCertificateProfileId(certificateprofileid);
         }
         // Check if we should override the CAId
@@ -1257,7 +1281,9 @@ public class RSASignSessionBean extends BaseSessionBean {
         	cleanUserCertDataSN(data);
         	throw e.ejbcaException;
         }
-        log.trace("<createCertificate(pk, ku, date)");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<createCertificate(pk, ku, date)");
+    	}
         return cert;
     }
     private String listUsers(Set users) {
@@ -1294,14 +1320,18 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws EjbcaException if the public key given is invalid
      */
     private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws EjbcaException, NoUniqueCertSerialNumberIndexException {
-        trace(">createCertificate(pk, ku, notAfter)");
+    	if (log.isTraceEnabled()) {
+    		trace(">createCertificate(pk, ku, notAfter)");
+    	}
         try {
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType() == SecConst.USER_INVALID) {
             	String msg = intres.getLocalizedMessage("signsession.usertypeinvalid");
             	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                trace("<createCertificate(pk, ku)");
+            	if (log.isTraceEnabled()) {
+            		trace("<createCertificate(pk, ku)");
+            	}
                 log.error("Invalid user type for user " + data.getUsername());
                 throw new EJBException("Invalid user type for user " + data.getUsername());
             }
@@ -1363,14 +1393,18 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new EJBException(msg);
             }
 
-            log.debug("Using certificate profile with id " + certProfileId);
+        	if (log.isDebugEnabled()) {
+        		log.debug("Using certificate profile with id " + certProfileId);
+        	}
             int keyLength = KeyTools.getKeyLength(pk);
             if (keyLength == -1) {
                 String text = intres.getLocalizedMessage("signsession.unsupportedkeytype", pk.getClass().getName()); 
                 getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
                 throw new IllegalKeyException(text);
             }
-            log.debug("Keylength = " + keyLength); 
+        	if (log.isDebugEnabled()) {
+        		log.debug("Keylength = " + keyLength);
+        	}
             if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
                     || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
                 String text = intres.getLocalizedMessage("signsession.illegalkeylength", new Integer(keyLength)); 
@@ -1456,7 +1490,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                 certificateStore.revokeCertificate(admin, cert, publishers, revreason, data.getDN());
             }                
 
-            trace("<createCertificate(pk, ku, notAfter)");
+        	if (log.isTraceEnabled()) {
+        		trace("<createCertificate(pk, ku, notAfter)");
+        	}
             return cert;
         } catch (CATokenOfflineException ctoe) {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());

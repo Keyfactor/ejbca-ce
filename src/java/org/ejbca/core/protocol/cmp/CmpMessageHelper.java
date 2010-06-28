@@ -130,7 +130,9 @@ public class CmpMessageHelper {
 	}
 	
 	public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId, int iterationCount) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
-		log.trace(">protectPKIMessageWithPBE()");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">protectPKIMessageWithPBE()");
+    	}
 		// Create the PasswordBased protection of the message
 		PKIHeader head = msg.getHeader();
 		byte[] keyIdBytes;
@@ -191,7 +193,9 @@ public class CmpMessageHelper {
 		// Finally store the protection bytes in the msg
 		ret.setProtection(bs);
 		
-		log.trace("<protectPKIMessageWithPBE()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<protectPKIMessageWithPBE()");
+    	}
 		// Return response as byte array 
 		return CmpMessageHelper.pkiMessageToByteArray(ret);
 	}
@@ -203,7 +207,6 @@ public class CmpMessageHelper {
 		mout.writeObject( msg );
 		mout.close();
 		return baos.toByteArray();
-		
 	}
 
 	/** Creates a 16 bytes random sender nonce

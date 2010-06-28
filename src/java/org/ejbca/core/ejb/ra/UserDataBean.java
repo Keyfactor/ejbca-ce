@@ -517,8 +517,9 @@ public abstract class UserDataBean extends BaseEntityBean {
         setExtendedInformationData(null);
         setCardNumber(cardnumber);
         UserDataPK pk = new UserDataPK(username);
-        log.debug("Created user " + username);
-
+        if (log.isDebugEnabled()) {        
+        	log.debug("Created user " + username);
+        }
         return pk;
     }
 

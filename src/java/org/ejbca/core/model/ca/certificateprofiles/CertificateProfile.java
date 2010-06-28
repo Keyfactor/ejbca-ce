@@ -882,7 +882,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             	}
         	}
         }
-        log.debug("CertificateProfile: constructed DN or AltName: " + retval );
+        if (log.isDebugEnabled()) {        
+        	log.debug("CertificateProfile: constructed DN or AltName: " + retval );
+        }
         return retval;	
       }
       
@@ -1159,10 +1161,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	while (iter.hasNext()) {
     		String s = (String)iter.next();
             if ( (data.get(s) != null) && ((Boolean)data.get(s)).booleanValue() ) {
-                ret.add(useStandardCertificateExtensions.get(s)); 
-                log.debug("Using standard certificate extension: "+s);
+                ret.add(useStandardCertificateExtensions.get(s));
+                if (log.isDebugEnabled()) {
+                	log.debug("Using standard certificate extension: "+s);
+                }
             } else {
-            	log.debug("Not using standard certificate extensions: "+s);
+                if (log.isDebugEnabled()) {
+                	log.debug("Not using standard certificate extensions: "+s);
+                }
             }
     	}
     	return ret;
