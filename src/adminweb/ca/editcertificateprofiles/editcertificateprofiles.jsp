@@ -80,6 +80,7 @@
   static final String CHECKBOX_USECADEFINEDFRESHESTCRL            = "checkboxusecadefinedfreshestcrl";
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
   static final String CHECKBOX_ALLOWDNOVERRIDE                    = "checkallowdnoverride";
+  static final String CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE      = "allowcertserialnumberoverride";
   static final String CHECKBOX_ALLOWEXTENSIONOVERRIDE             = "checkallowextensionoverride";
   static final String CHECKBOX_ALLOWVALIDITYOVERRIDE              = "checkallowvalidityoverride";
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
@@ -292,6 +293,14 @@
                 certificateprofiledata.setAllowDNOverride(use);
              } else {
                 certificateprofiledata.setAllowDNOverride(false);
+             }
+
+             value = request.getParameter(CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE);
+             if( value!=null && cabean.isUniqueIndexForSerialNumber() ){
+                use = value.equals(CHECKBOX_VALUE);
+                certificateprofiledata.setAllowCertSerialNumberOverride(use);
+             } else {
+                certificateprofiledata.setAllowCertSerialNumberOverride(false);
              }
 
              value = request.getParameter(CHECKBOX_BASICCONSTRAINTS);

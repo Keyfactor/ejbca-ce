@@ -117,6 +117,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String ALLOWKEYUSAGEOVERRIDE          = "allowkeyusageoverride";
     protected static final String ALLOWEXTENSIONOVERRIDE         = "allowextensionoverride";
     protected static final String ALLOWDNOVERRIDE                = "allowdnoverride";
+    protected static final String ALLOWCERTSNOVERIDE             = "allowcertsnoverride";
     protected static final String AVAILABLEBITLENGTHS            = "availablebitlengths";
     protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH      = "maximumavailablebitlength";
@@ -405,6 +406,23 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     /** @see #getAllowDNOverride() */
     public void setAllowDNOverride(boolean allowdnoverride) {data.put(ALLOWDNOVERRIDE, Boolean.valueOf(allowdnoverride));}
+
+	/**
+	 * If override is allowed the serial number could be specified.
+	 * @return true if allowed
+	 */
+	public boolean getAllowCertSerialNumberOverride(){ 
+		Object d = data.get(ALLOWCERTSNOVERIDE);
+		if (d == null) {
+			return false;
+		}
+		return ((Boolean)d).booleanValue(); 
+	}
+	/**
+	 * @see #getAllowDNOverride()
+	 * @param allowdnoverride new value
+	 */
+	public void setAllowCertSerialNumberOverride(boolean allowdnoverride) {data.put(ALLOWCERTSNOVERIDE, Boolean.valueOf(allowdnoverride));}
 
     public boolean getUseBasicConstraints(){ return ((Boolean)data.get(USEBASICCONSTRAINTS)).booleanValue(); }
     public void setUseBasicConstraints(boolean usebasicconstraints) {data.put(USEBASICCONSTRAINTS, Boolean.valueOf(usebasicconstraints));}

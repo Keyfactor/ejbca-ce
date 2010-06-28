@@ -455,6 +455,25 @@ This option should only be used when you know that the request comes from a very
 normally an RA through CMP or webservice.
 </p>
 </subsubsection>
+<subsubsection name="Allow certificate serial number override">
+<p>
+If serial number override is allowed then the serial number of a certificate could be specified.
+</p><p>
+Please note that the row 'serialNumber' number in the table 'CertificateData' of the database must have an unique index if it should work.
+</p><p>
+Certificate serial number could be overridden if "Allow certificate serial number override" is enabled for the used certificate profile.
+</p><p>
+If the admin web GUI should be used for creating entities you must also add "Certificate serial number" to the used end entity profile.
+</p><p>
+With web services just use the 'setCertificateSerialNumber' for your 'UserDataVOWS' user.
+</p><p>
+If you run the WS stress test of clientToolBox you may specify that the test should use 'setCertificateSerialNumber'. A new random serial number will then be used for each created user.
+The java system property 'maxCertSN' specifies how many bits that should be in the serial number. Example:
+</p>
+<source>
+JAVA_OPT="-DmaxCertSN=16" $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh EjbcaWsRaCli stress WsCA1 20 2000 wsCreatedUser wsCreatedUser
+</source>
+</subsubsection>
 <subsubsection name="Path Length Constraints">
 <p>
 Note: this extension is only applicable for immediate CA certificates

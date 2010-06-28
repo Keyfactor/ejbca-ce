@@ -13,10 +13,12 @@
  
 package org.ejbca.core.model.ra;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
@@ -44,12 +46,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      */
     private static final long serialVersionUID = 3981761824188420320L;
     
-    public static final float LATEST_VERSION = 2;
+    private static final float LATEST_VERSION = 2;
 
     /** Different types of implementations of extended information, can be used to have different implementing classes of extended information */
-    public static final int TYPE_BASIC = 0;
+    static final int TYPE_BASIC = 0;
     
-    public static final String TYPE = "type";
+    static final String TYPE = "type";
 
     // protected fields.
     /** Used to store subject directory attributes, which are put in an extension in the certificate.
@@ -79,16 +81,19 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
     
     /** The counter is a counter for how many failed login attempts that can be performed before the userstatus is changed to GENERATED */
-    public static final String REMAININGLOGINATTEMPTS 			= "remainingloginattempts";
+    private static final String REMAININGLOGINATTEMPTS 			= "remainingloginattempts";
     
     /** The maximum number of login attempts before the user is locked by setting its status to GENERATED */
-    public static final String MAXFAILEDLOGINATTEMPTS 			= "maxfailedloginattempts";
+    private static final String MAXFAILEDLOGINATTEMPTS 			= "maxfailedloginattempts";
     
     /** Default value for how many failed login attempts are allow = -1 (unlimited) */
 	public static final int DEFAULT_MAXLOGINATTEMPTS 			= -1;
 	
 	/** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
-	public static final int DEFAULT_REMAININGLOGINATTEMPTS 		= -1;
+	private static final int DEFAULT_REMAININGLOGINATTEMPTS 		= -1;
+
+	/** Map key for certificate serial number */
+	private static final Object CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
     
     // Public constants
 
@@ -173,6 +178,29 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      */
     public void setMaxLoginAttempts(int maxLoginAttempts) {
     	data.put(MAXFAILEDLOGINATTEMPTS, new Integer(maxLoginAttempts));
+    }
+
+    /**
+     * @return the serial number to be used for the certificate or null if no number defined.
+     */
+    public BigInteger getCertificateSerialNumber() {
+        final String s = (String)this.data.get(CERTIFICATESERIALNUMBER);
+        if ( s==null ) {
+            return null;
+        }
+        return new BigInteger(Base64.decode(s));
+    }
+
+    /**
+     * @param sn the serial number to be used for the certificate
+     */
+    public void setCertificateSerialNumber( BigInteger sn ) {
+        if ( sn==null ) {
+            this.data.remove(CERTIFICATESERIALNUMBER);
+            return;
+        }
+        final String s = new String(Base64.encode(sn.toByteArray()));
+        this.data.put(CERTIFICATESERIALNUMBER, s);
     }
     
     /**

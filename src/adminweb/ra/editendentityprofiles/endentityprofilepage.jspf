@@ -846,7 +846,24 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         />
       </td> 
     </tr>
-
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%"  align="right"> 
+		<%= ejbcawebbean.getText("CERTSERIALNUMER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20certificate%20serial%20number%20override") %>
+      </td>
+      <td width="70%"> 
+        <%	used = profiledata.getUse(EndEntityProfile.CERTSERIALNR, 0); %>
+		<%= ejbcawebbean.getText("USE") %>
+		<input type="checkbox" name="<%=CHECKBOX_USE_CERTSERIALNR %>" value="<%=CHECKBOX_VALUE %>" 
+			onClick="checkusetextfield('<%=CHECKBOX_USE_CERTSERIALNR %>')"
+			<%	if ( used ) {
+				out.write(" CHECKED ");
+				} %>
+			/>
+      </td> 
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;

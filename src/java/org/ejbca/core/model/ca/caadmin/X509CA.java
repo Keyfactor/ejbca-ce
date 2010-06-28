@@ -105,6 +105,7 @@ import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.SimpleTime;
@@ -540,13 +541,17 @@ public class X509CA extends CA implements Serializable {
         final boolean isRootCA = certProfile.getType()==CertificateProfile.TYPE_ROOTCA;
 
         // Get certificate validity time notBefore and notAfter
-        CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
-        
-        X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
-        // Serialnumber is random bits, where random generator is initialized by the
-        // serno generator.
-        BigInteger serno = SernoGenerator.instance().getSerno();
-        certgen.setSerialNumber(serno);
+        final CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
+
+        final X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
+        {
+            final ExtendedInformation ei = subject.getExtendedinformation();
+            final BigInteger customSN = ei!=null ? ei.getCertificateSerialNumber() : null;
+            // Serialnumber is random bits, where random generator is initialized by the
+            // serno generator.
+            final BigInteger serno = customSN!=null ? customSN : SernoGenerator.instance().getSerno();
+            certgen.setSerialNumber(serno);
+        }
         certgen.setNotBefore(val.getNotBefore());
         certgen.setNotAfter(val.getNotAfter());
         certgen.setSignatureAlgorithm(sigAlg);

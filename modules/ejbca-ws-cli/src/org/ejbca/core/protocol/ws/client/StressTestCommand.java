@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.cert.CertificateFactory;
@@ -55,12 +56,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         final String endEntityProfileName;
         final String certificateProfileName;
         final TestType testType;
+        final int maxCertificateSN;
         MyCommandFactory( String _caName, String _endEntityProfileName, String _certificateProfileName,
-                          TestType _testType ) {
+                          TestType _testType, int _maxCertificateSN ) {
             this.testType = _testType;
             this.caName = _caName;
             this.endEntityProfileName = _endEntityProfileName;
             this.certificateProfileName = _certificateProfileName;
+            this.maxCertificateSN = _maxCertificateSN;
         }
         public Command[] getCommands() throws Exception {
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
@@ -70,16 +73,16 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             switch (this.testType) {
             case BASIC:
                 return new Command[]{
-                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true),
+                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
             case REVOKE:
                 return new Command[]{
-                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true),
+                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData),
                                      new FindUserCommand(ejbcaWS, jobData),
                                      new ListCertsCommand(ejbcaWS, jobData),
                                      new RevokeCertCommand(ejbcaWS, jobData),
-                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, false),
+                                     new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, false, -1),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
             case REVOKEALOT:
                 return new Command[]{
@@ -165,7 +168,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         public boolean doIt() throws Exception {
             boolean createUser = true;
             for (int i=0; i<50; i++) {
-                EditUserCommand editUserCommand = new EditUserCommand(this.ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, this.jobData, createUser);
+                EditUserCommand editUserCommand = new EditUserCommand(this.ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, this.jobData, createUser, -1);
                 if (!editUserCommand.doIt()) {
                     StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this.jobData.userName);
                     return false;
@@ -259,7 +262,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         final private EjbcaWS ejbcaWS;
         final private UserDataVOWS user;
         final private boolean doCreateNewUser;
-        EditUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName, JobData _jobData, boolean _doCreateNewUser) {
+        final private int bitsInCertificateSN;
+        EditUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName,
+                        JobData _jobData, boolean _doCreateNewUser, int _bitsInCertificateSN) {
             super(_jobData);
             this.doCreateNewUser = _doCreateNewUser;
             this.ejbcaWS = _ejbcaWS;
@@ -272,11 +277,15 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.user.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
             this.user.setEndEntityProfileName(endEntityProfileName);
             this.user.setCertificateProfileName(certificateProfileName);
+            this.bitsInCertificateSN = _bitsInCertificateSN;
         }
         public boolean doIt() throws Exception {
             if ( this.doCreateNewUser ) {
                 this.jobData.passWord = "foo123";
                 this.jobData.userName = "WSTESTUSER"+StressTestCommand.this.performanceTest.nextLong();
+            }
+            if ( this.bitsInCertificateSN>0 && this.doCreateNewUser ) {
+                this.user.setCertificateSerialNumber(new BigInteger(this.bitsInCertificateSN, StressTestCommand.this.performanceTest.getRandom()));
             }
             this.user.setSubjectDN(this.jobData.getDN());
             this.user.setUsername(this.jobData.userName);
@@ -337,7 +346,18 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             final String endEntityProfileName = this.args.length>4 ? this.args[4] : "EMPTY";
             final String certificateProfileName = this.args.length>5 ? this.args[5] : "ENDUSER";
             final TestType testType = this.args.length>6 ? TestType.valueOf(this.args[6]) : TestType.BASIC;
-            this.performanceTest.execute(new MyCommandFactory(caName, endEntityProfileName, certificateProfileName, testType),
+            final int maxCertificateSN;
+            {
+                final String sTmp = System.getProperty("maxCertSN");
+                int iTmp;
+                try {
+                	iTmp = sTmp!=null && sTmp.length()>0 ? Integer.parseInt(sTmp) : -1;
+                } catch ( NumberFormatException e ) {
+                	iTmp = -1;
+                }
+                maxCertificateSN = iTmp;
+            }
+            this.performanceTest.execute(new MyCommandFactory(caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN),
                                          numberOfThreads, waitTime, getPrintStream());
             getPrintStream().println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
             synchronized(this) {

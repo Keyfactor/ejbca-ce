@@ -26,6 +26,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,6 +45,7 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -208,8 +210,8 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-    
 
+	private boolean isUniqueCertificateSerialNumberIndex;
     /**
      * Default create for SessionBean without any creation Arguments.
      *
@@ -236,6 +238,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 SernoGenerator.instance().setAlgorithm(randomAlgorithm);
             }
             SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());            	
+            this.isUniqueCertificateSerialNumberIndex = testUniqueCertificateSerialNumberIndex();
         } catch (Exception e) {
             debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
@@ -243,6 +246,82 @@ public class RSASignSessionBean extends BaseSessionBean {
 
         trace("<ejbCreate()");
     }
+	/**
+	 * @return true if index could be generated
+	 * @ejb.interface-method view-type="both"
+	 */
+	public boolean isUniqueCertificateSerialNumberIndex() {
+		return this.isUniqueCertificateSerialNumberIndex;
+	}
+	private boolean testUniqueCertificateSerialNumberIndex() throws Exception {
+		final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
+		// Loading two dummy certificates. These certificates has same serial number and issuer.
+		// It should not be possible to store both of them in the DB.
+		final X509Certificate cert1;
+		final X509Certificate cert2;
+		{
+			final byte certEncoded1[];
+			final byte certEncoded2[];
+			{
+				final String certInBase64 =
+					"MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
+					"QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU0OTM2WhcN"+
+					"MjAwNjI2MDU0OTM2WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
+					"YWwgbnVtYmVyIG92ZXJyaWRlIDEwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAnnIj"+
+					"y8A6CJzASedM5MbZk/ld8R3P0aWfRSW2UUDaskm25oK5SsjwVZD3KEc3IJgyl1/D"+
+					"lWdywxEduWwc2nzGGQIDAQABo2AwXjAdBgNVHQ4EFgQUPL3Au/wYZbD3TpNGW1G4"+
+					"+Ck4A2swDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
+					"7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAPMWjE5hv3G5T"+
+					"q/fzPQlRMCQDoM5EgVwJYQu1S+wns/mKPI/bDv9s5nybKoro70LKpqLb1+f2TaD+"+
+					"W2Ro+ni8zYm5+H6okXRIc5Kd4LlD3tjsOF7bS7fixvMCSCUgLxQOt2creOqfDVjm"+
+					"i6MA48AhotWmx/rlzQXhnvuKnMI3m54=";
+				certEncoded1= Base64.decode(certInBase64);
+			}{
+				final String certInBase64 =
+					"MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
+					"QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU1MDA4WhcN"+
+					"MjAwNjI2MDU1MDA4WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
+					"YWwgbnVtYmVyIG92ZXJyaWRlIDIwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAn2H4"+
+					"IAMYZyXqkSTY4Slq9LKZ/qB5wc+3hbEHNawdOoMBBkhLGi2q49sbCdcI8AZi3med"+
+					"sm8+A8Q4NHFRKdOYuwIDAQABo2AwXjAdBgNVHQ4EFgQUhWVwIsv18DIYszvRzqDg"+
+					"AkGO8QkwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
+					"7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAM8laLm4bgMTz"+
+					"e9TLmwcmhwqevPrfea9jdiNafHCyb+JVppoLVHqAZjPs3Lvlxdt2d75au5+QcJ/Z"+
+					"9RgakF8Vq29Tz3xrYYIQe9VtlaUzw/dgsDfZi6V8W57uHLpU65fe5afwfi+5XDZk"+
+					"TaTsNgFz8NorE2f7ILSm2FcfIpC+GPI=";
+				certEncoded2 = Base64.decode(certInBase64);
+			}
+			try {
+				final CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
+				cert1 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded1));
+				cert2 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded2));
+			} catch( Exception e ) {
+				throw new Exception( "Not possible to generate predefined dummy certificate. Should never happen", e );
+			}
+		}
+		final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+		final ICertificateStoreSessionLocal certificateStore = this.storeHome.create();
+		final Collection c = certificateStore.findCertificatesByUsername(admin, userName);
+		if ( c.size()>1 ) {
+			this.log.warn( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
+			return false; // already proved that not checking index for serial number.
+		}
+		if ( c.size()<1 ) {// storing initial certificate if no test certificate created.
+			try {
+				certificateStore.storeCertificate(admin, cert1, userName, "abcdef0123456789", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
+			} catch (CreateException e) {
+				throw new Exception("It should always be possible to store initial dummy certificate.", e);
+			}
+		}
+		try { // storing a second certificate with same issuer 
+			certificateStore.storeCertificate(admin, cert2, userName, "fedcba9876543210", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
+		} catch (CreateException e) {
+			this.log.info("Unique index in CertificateData table for certificate serial number");
+			return true;// Exception is thrown when unique index is working and a certificate with same serial number is in the database.
+		}
+		this.log.warn( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
+		return false;// It was possible to store a second certificate with same serial number. Unique number not working.
+	}
 
 
     /**
@@ -761,20 +840,22 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             ret.create();
             // Call authentication session and tell that we are finished with this user
-            if ( ca.getCAInfo().getFinishUser() ) {
-            	finishUser(admin, req.getUsername(), req.getPassword());
+            if ( data!=null ) {
+        		finishUser(ca, data);
             }            	
-        } catch (NotFoundException oe) {
-            throw oe;
-        } catch (AuthStatusException se) {
-            throw se;
-        } catch (AuthLoginException le) {
-            throw le;
+        } catch (NoUniqueCertSerialNumberIndexException e) {
+    		cleanUserCertDataSN(data);
+            throw e.ejbcaException;
         } catch (IllegalKeyException ke) {
             log.error("Key is of unknown type: ", ke);
             throw ke;
         } catch (IllegalKeyStoreException e) {
             throw new IllegalKeyException(e);
+        } catch (CATokenOfflineException ctoe) {
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
+            throw new CADoesntExistsException(msg);
+        } catch (EjbcaException e) {
+            throw e;
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
@@ -783,15 +864,12 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("No such algorithm: ", e);
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
-        } catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            throw new CADoesntExistsException(msg);
         }
         log.trace("<createCertificate(IRequestMessage)");
         return ret;
     }
     
-    /**
+	/**
      * Method that generates a request failed response message. The request
      * should already have been decrypted and verified.
      *
@@ -1071,19 +1149,45 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     /** Finishes user, i.e. set status to generated, if it should do so.
      * The authentication session is responsible for determining if this should be done or not */ 
-    private void finishUser(Admin admin, String username, String password) {
-        // Finnish user and set new status
+	private void finishUser(CA ca, UserDataVO data) {
+		if ( data==null ) {
+			return;
+		}
+		if ( !ca.getCAInfo().getFinishUser()  ) {
+			cleanUserCertDataSN(data);
+			return;
+		}
         try {
-            IAuthenticationSessionLocal authSession = authHome.create();
-            authSession.finishUser(admin, username, password);
+            IAuthenticationSessionLocal authSession = this.authHome.create();
+            authSession.finishUser(data);
         } catch (CreateException e) {
             log.error(e);
             throw new EJBException(e);
         } catch (ObjectNotFoundException e) {
-            String msg = intres.getLocalizedMessage("signsession.finishnouser", username);        	
+            String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
         	log.info(msg);
         }
     } // finishUser
+	/**
+	 * Clean the certificate serial number of user from database
+	 * @param data of user
+	 */
+	private void cleanUserCertDataSN(UserDataVO data) {
+		if ( data==null || data.getExtendedinformation()==null ||
+				data.getExtendedinformation().getCertificateSerialNumber()==null ) {
+			return;
+		}
+		try {
+			IAuthenticationSessionLocal authSession = this.authHome.create();
+			authSession.cleanUserCertDataSN(data);
+		} catch (CreateException e) {
+			log.error(e);
+			throw new EJBException(e);
+		} catch (ObjectNotFoundException e) {
+			String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
+			log.info(msg);
+		}
+	}
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -1120,7 +1224,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
     	log.trace(">createCertificate(pk, ku, date)");
         // Authorize user and get DN
-        UserDataVO data = authUser(admin, username, password);
+		final UserDataVO data = authUser(admin, username, password);
         log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
         if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
         	debug("Overriding user certificate profile with :" + certificateprofileid);
@@ -1143,11 +1247,15 @@ public class RSASignSessionBean extends BaseSessionBean {
         	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
         	throw new EJBException(msg);
         }
-        // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-        Certificate cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
-        // Call authentication session and tell that we are finished with this user
-        if ( ca.getCAInfo().getFinishUser() ) {
-        	finishUser(admin, username, password);
+        Certificate cert;
+        try {
+        	// Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
+        	cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
+        	// Call authentication session and tell that we are finished with this user
+    		finishUser(ca, data);
+        } catch (NoUniqueCertSerialNumberIndexException e) {
+        	cleanUserCertDataSN(data);
+        	throw e.ejbcaException;
         }
         log.trace("<createCertificate(pk, ku, date)");
         return cert;
@@ -1162,6 +1270,12 @@ public class RSASignSessionBean extends BaseSessionBean {
             s += "'"+i.next()+"'";
         }
         return s;
+    }
+    private class NoUniqueCertSerialNumberIndexException extends Exception {
+    	final EjbcaException ejbcaException;
+    	public NoUniqueCertSerialNumberIndexException( EjbcaException e ) {
+    		this.ejbcaException = e;
+    	}
     }
     /**
      * Creates the certificate, does NOT check any authorization on user, profiles or CA!
@@ -1179,7 +1293,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return Certificate that has been generated and signed by the CA
      * @throws EjbcaException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws EjbcaException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws EjbcaException, NoUniqueCertSerialNumberIndexException {
         trace(">createCertificate(pk, ku, notAfter)");
         try {
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
@@ -1211,13 +1325,20 @@ public class RSASignSessionBean extends BaseSessionBean {
                 }
             }
             // Retrieve the certificate profile this user should have
-            int certProfileId = data.getCertificateProfileId();
-            CertificateProfile certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
-            // What if certProfile == null?
-            if (certProfile == null) {
-                certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
-                certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
-            }
+			final int certProfileId;
+			final CertificateProfile certProfile;
+			{
+				final int tmpCertProfileId = data.getCertificateProfileId();
+				final CertificateProfile tmpCertProfile = certificateStore.getCertificateProfile(admin, tmpCertProfileId);
+				// What if certProfile == null?
+				if (tmpCertProfile != null) {
+					certProfileId = tmpCertProfileId;
+					certProfile = tmpCertProfile;
+				} else {
+					certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
+					certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
+				}
+			}
 
             // Check that CAid is among available CAs
             boolean caauthorized = false;
@@ -1258,35 +1379,61 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
 
             // Below we have a small loop if it would happen that we generate the same serial number twice
-            int retrycounter = 0;
-            boolean stored = false;
-            Exception storeEx = null; // this will not be null if stored == false after the below passage
+			CreateException storeEx = null; // this will not be null if stored == false after the below passage
             Certificate cert = null;
             String cafingerprint = null;
             String serialNo = "unknown";
-            long updateTime = new Date().getTime();
+			final long updateTime = new Date().getTime();
             String tag = null;
-            while (!stored && retrycounter < 5) {
+			final boolean useCustomSN;
+			{
+				final ExtendedInformation ei = data.getExtendedinformation();
+				useCustomSN = ei!=null && ei.getCertificateSerialNumber()!=null;
+			}
+			final int maxRetrys;
+			if ( useCustomSN ) {
+				if ( !isUniqueCertificateSerialNumberIndex() ) {
+					final String msg = intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex");
+					this.log.error(msg);
+					throw new NoUniqueCertSerialNumberIndexException(new EjbcaException(msg));
+				}
+				if ( !certProfile.getAllowCertSerialNumberOverride() ) {
+					final String msg = intres.getLocalizedMessage("signsession.certprof_not_allowing_cert_sn_override", new Integer(certProfileId));
+					this.log.info(msg);
+					throw new NoUniqueCertSerialNumberIndexException(new EjbcaException(msg));
+				}
+				maxRetrys = 1;
+			} else {
+				maxRetrys = 5;
+			}
+            for ( int retrycounter=0; retrycounter<maxRetrys; retrycounter++ ) {
                 cert = ca.generateCertificate(data, requestX509Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 // Store certificate in the database
                 cafingerprint = CertTools.getFingerprintAsString(cacert);
                 try {
                     certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), certProfileId, tag, updateTime);                        
-                    stored = true;
+					storeEx = null;
+					break;
                 } catch (CreateException e) {
                     // If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
                     // get a CreateException here if we would happen to generate a certificate with the same serialNumber
                     // as one already existing certificate.
-                    log.info("Can not store certificate with serNo ("+serialNo+"), will retry (retrycounter="+retrycounter+") with a new certificate with new serialNo: "+e.getMessage());
+					if ( retrycounter+1<maxRetrys ) {
+						log.info("Can not store certificate with serNo ("+serialNo+"), will retry (retrycounter="+retrycounter+") with a new certificate with new serialNo: "+e.getMessage());
+					}
                     storeEx = e;
                 }
-                retrycounter++;
             }
-            if (!stored) {
-                log.error("Can not store certificate in database in 5 tries, aborting: ", storeEx);
-                throw storeEx;
-            }
+			if ( storeEx!=null ) {
+				if ( useCustomSN ) {
+					final String msg = intres.getLocalizedMessage("signsession.cert_serial_number_allready_in_database", serialNo);
+					this.log.info(msg);
+					throw new NoUniqueCertSerialNumberIndexException(new EjbcaException(msg));
+				}
+				this.log.error("Can not store certificate in database in 5 tries, aborting: ", storeEx);
+				throw storeEx;
+			}
 
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogConstants.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
             if (log.isDebugEnabled()) {
@@ -1317,6 +1464,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw ctoe;
         } catch (EjbcaException ke) {
             throw ke;
+        } catch( NoUniqueCertSerialNumberIndexException e ) {
+        	throw e;
         } catch (Exception e) {
             log.error(e);
             throw new EJBException(e);

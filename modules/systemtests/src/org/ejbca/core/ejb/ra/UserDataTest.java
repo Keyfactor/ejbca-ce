@@ -314,14 +314,17 @@ public class UserDataTest extends TestCase {
         // decrease the value again        
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(1, counter);
+        // test setuserstatus again it will not re-set the counter if it is already new
+        TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        assertEquals(1, counter);
         // decrease the value again
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
-        assertEquals(0, counter);        
+        assertEquals(0, counter); // sets status to generated
         // decrease the value again
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
         assertEquals(-1, counter);
         
-        // test setuserstatus again it will not re-set the counter if it is already new
+        // test setuserstatus again it will re-set the counter since status is generated
         ep = TestTools.getRaAdminSession().getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
@@ -329,7 +332,7 @@ public class UserDataTest extends TestCase {
         TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         // decrease the value        
         counter = TestTools.getUserAdminSession().decRequestCounter(admin, username);
-        assertEquals(-1, counter);
+        assertEquals(2, counter);
 
         // Also changeUser to new from something else will re-set status, if ei value is 0
         TestTools.getUserAdminSession().setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);

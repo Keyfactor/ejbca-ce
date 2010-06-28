@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.ws.client.gen;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -36,7 +37,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  *</pre>
  * 
  * @author Philip Vendil
- * @version $Id: UserDataVOWS.java 8282 2009-11-09 14:57:21Z jeklund $
+ * @version $Id: UserDataVOWS.java 8920 2010-04-21 09:58:36Z anatom $
  */
 public class UserDataVOWS implements Serializable{
 	
@@ -70,6 +71,7 @@ public class UserDataVOWS implements Serializable{
     private java.lang.String hardTokenIssuerName = null;
     private java.lang.String startTime = null;
     private java.lang.String endTime = null;
+    private BigInteger certificateSerialNumber;
 
     /**
      * Emtpy constructor used by internally by web services
@@ -235,16 +237,16 @@ public class UserDataVOWS implements Serializable{
 	public int getType() {
 		int type = 1;
 		
-    	if(sendNotification)
+    	if(sendNotification) {
     		type = type | SecConst.USER_SENDNOTIFICATION;
-    	else
+    	} else {
     		type = type & (~SecConst.USER_SENDNOTIFICATION);
-    	
-    	if(keyRecoverable)
+    	}
+    	if(keyRecoverable) {
     		type = type | SecConst.USER_KEYRECOVERABLE;
-    	else
+    	} else {
     		type = type & (~SecConst.USER_KEYRECOVERABLE);
-    			
+    	}
 		return type;
 	}
 
@@ -369,5 +371,19 @@ public class UserDataVOWS implements Serializable{
     public void setEndTime(String endTime) {
         this.endTime = endTime;
     }
+
+	/**
+	 * @return certificate serial number.
+	 */
+	public BigInteger getCertificateSerialNumber() {
+		return this.certificateSerialNumber;
+	}
+
+	/**
+	 * @param sn Serial number of the certificate to be generated. Only used if 'Allow certificate serial number override' in used certificate profile is enabled.
+	 */
+	public void setCertificateSerialNumber(BigInteger sn) {
+		this.certificateSerialNumber = sn;
+	}
 
 }

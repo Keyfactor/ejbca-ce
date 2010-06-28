@@ -28,6 +28,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
@@ -66,7 +67,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.ui.web.admin.rainterface.CertificateView;
 import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
-import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 
@@ -126,10 +126,10 @@ public class CAInterfaceBean implements java.io.Serializable {
           cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, createCRLSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, 
           		                                        caadminsession, certificatesession,  informationmemory);
+          isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
         }
       }
-    
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
     	initialize(ejbcawebbean);
     }
@@ -427,6 +427,13 @@ public class CAInterfaceBean implements java.io.Serializable {
 	   this.tempCertProfile = profile;
    }
    
+   /**
+    * @return true if serial number unique indexing is supported by DB.
+    */
+   public boolean isUniqueIndexForSerialNumber() {
+       return this.isUniqueIndex;
+   }
+   
    // Private methods
 
     // Private fields
@@ -451,4 +458,5 @@ public class CAInterfaceBean implements java.io.Serializable {
     transient private byte[]       request;
     private Certificate	                             processedcert;
     private CertificateProfile                 tempCertProfile = null;
+	private boolean isUniqueIndex;
 }

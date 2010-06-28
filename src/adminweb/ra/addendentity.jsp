@@ -4,7 +4,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents,
-                 java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode, org.ejbca.util.query.*" %>
+                 java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -31,6 +31,7 @@
   static final String TEXTFIELD_RFC822NAME        = "textfieldrfc822name";
   static final String TEXTFIELD_STARTTIME         = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
+  static final String TEXTFIELD_CERTSERIALNUMER   = "textfieldcertsn";
   static final String TEXTFIELD_CARDNUMBER        = "textfieldcardnumber";
   static final String TEXTFIELD_MAXFAILEDLOGINS	  = "textfieldmaxfailedlogins";
 
@@ -70,6 +71,7 @@
   static final String CHECKBOX_REQUIRED_STARTTIME         = "checkboxrequiredstarttime";
   static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrequiredendtime";
   static final String CHECKBOX_REQUIRED_MAXFAILEDLOGINS	  = "checkboxrequiredmaxfailedlogins";
+  static final String CHECKBOX_REQUIRED_CERTSERIALNUMER	  = "checkboxrequiredcertserialnumber";
 
   static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
   static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
@@ -563,6 +565,16 @@
 						oldprofile.setValue(EndEntityProfile.ENDTIME, 0, value);
 					}
 				}
+			}
+			if( oldprofile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) {
+				final ExtendedInformation ei = newuser.getExtendedInformation();
+				value = request.getParameter(TEXTFIELD_CERTSERIALNUMER).trim();
+				if ( value!=null && value.length()>0 ) {
+					ei.setCertificateSerialNumber( new BigInteger(value) );
+				} else {
+				    ei.setCertificateSerialNumber(null);
+				}
+				newuser.setExtendedInformation(ei);
 			}
 
            // See if user already exists
@@ -1508,6 +1520,22 @@ function checkallfields(){
 						out.write(" CHECKED ");
 					} %>
 				/>
+			</td>
+		</tr>
+	<% }
+	if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td></td><td align="right"> 
+				<%= ejbcawebbean.getText("CERTSERIALNUMER") %> <br />
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> 1234567890 <%= ejbcawebbean.getText("OR").toLowerCase() %> 0x1234567890abcdef)
+			</td><td> 
+				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMER %>" size="40" maxlength="40" tabindex="<%=tabindex++%>" value="" />
+			</td>
+			<td>
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMER %>" value="<%= CHECKBOX_VALUE %>" disabled="true" />
+				<%	if ( profile.isRequired(EndEntityProfile.CERTSERIALNR, 0) ) {
+						out.write(" CHECKED ");
+					} %>
 			</td>
 		</tr>
 	<% } %> 

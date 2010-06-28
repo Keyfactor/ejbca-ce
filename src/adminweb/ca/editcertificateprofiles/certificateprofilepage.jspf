@@ -492,6 +492,22 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("ALLOWCERTSERIALNUMBEROVERRIDE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20certificate%20serial%20number%20override") %>
+      </td>
+      <td width="50%">
+        <% if ( cabean.isUniqueIndexForSerialNumber() ) { %>
+           <input type="checkbox" name="<%=CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getAllowCertSerialNumberOverride()) {
+                 out.write("CHECKED");
+           }
+           %>> 
+        <%} else {%>
+           <%= ejbcawebbean.getText("CERTSERIALNOUNIQUEIX") %>
+        <%}%>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEBASICCONSTRAINTS") %> <br>  <%= ejbcawebbean.getText("BASICCONSTRAINTSCRITICAL") %>
 
       </td>
