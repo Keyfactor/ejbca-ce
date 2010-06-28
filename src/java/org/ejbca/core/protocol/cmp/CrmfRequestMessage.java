@@ -202,7 +202,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	public String getPassword() {
 		String ret = null;
 		if (password != null) {
-			log.debug("Returning a pre-set password in CRMF request");
+			if (log.isDebugEnabled()) {
+				log.debug("Returning a pre-set password in CRMF request");
+			}
 			ret = password;
 		} else {
 			// If there is "Registration Token Control" containing a password, we can use that
@@ -215,7 +217,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 						DEREncodable enc = av.getParameters();
 						DERUTF8String str = DERUTF8String.getInstance(enc);
 						ret = str.getString();
-						log.debug("Found a request password in CRMF request regCtrl_regToken");
+						if (log.isDebugEnabled()) {
+							log.debug("Found a request password in CRMF request regCtrl_regToken");
+						}
 					}
 				}
 				i++;
@@ -251,7 +255,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
             	ret = name;
             }
         }
-        log.debug("Username is: "+ret);
+		if (log.isDebugEnabled()) {
+			log.debug("Username is: "+ret);
+		}
         return ret;
 	}
 
@@ -267,7 +273,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		} else {
 			ret = defaultCA;
 		}
-		log.debug("Issuer DN is: "+ret);
+		if (log.isDebugEnabled()) {
+			log.debug("Issuer DN is: "+ret);
+		}
 		return ret;
 	}
 
@@ -292,7 +300,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
 		}
-		log.debug("Request DN is: "+ret);
+		if (log.isDebugEnabled()) {
+			log.debug("Request DN is: "+ret);
+		}
 		return ret;
 	}
 
@@ -302,7 +312,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	public X509Name getRequestX509Name() {
 		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		X509Name name = templ.getSubject();
-		log.debug("Request X509Name is: "+name);
+		if (log.isDebugEnabled()) {
+			log.debug("Request X509Name is: "+name);
+		}
 		return name;
 	}
 
@@ -316,7 +328,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 				ret = CertTools.getAltNameStringFromExtension(ext);
 			}
 		}
-		log.debug("Request altName is: "+ret);
+		if (log.isDebugEnabled()) {
+			log.debug("Request altName is: "+ret);
+		}
     	return ret;
     }
 
@@ -330,7 +344,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 				ret = time.getDate();
 			}
 		}
-		log.debug("Request validity notBefore is: "+(ret == null ? "null" : ret.toString()));
+		if (log.isDebugEnabled()) {
+			log.debug("Request validity notBefore is: "+(ret == null ? "null" : ret.toString()));
+		}
 		return ret;
 	}
 	
@@ -344,17 +360,21 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 				ret = time.getDate();
 			}
 		}
-		log.debug("Request validity notAfter is: "+(ret == null ? "null" : ret.toString()));
+		if (log.isDebugEnabled()) {
+			log.debug("Request validity notAfter is: "+(ret == null ? "null" : ret.toString()));
+		}
 		return ret;
 	}
 
 	public X509Extensions getRequestExtensions() {
 		CertTemplate templ = getReq().getCertReq().getCertTemplate();
 		X509Extensions exts = templ.getExtensions();
-		if (exts != null) {
-			log.debug("Request contains extensions");			
-		} else {
-			log.debug("Request does not contain extensions");						
+		if (log.isDebugEnabled()) {
+			if (exts != null) {
+				log.debug("Request contains extensions");			
+			} else {
+				log.debug("Request does not contain extensions");						
+			}
 		}
 		return exts;
 	}
@@ -373,14 +393,18 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 			try {
 				POPOSigningKey sk = pop.getSignature();
 				AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
-				log.debug("POP algorithm identifier is: "+algId.getObjectId().getId());
+				if (log.isDebugEnabled()) {
+					log.debug("POP algorithm identifier is: "+algId.getObjectId().getId());
+				}
 				DERBitString bs = sk.getSignature();
 				PublicKey pk = getRequestPublicKey();
 				ByteArrayOutputStream bao = new ByteArrayOutputStream();
 				DEROutputStream out = new DEROutputStream(bao);
 				out.writeObject(getReq().getCertReq());
 				byte[] protBytes = bao.toByteArray();	
-				log.debug("POP protection bytes length: "+protBytes.length);
+				if (log.isDebugEnabled()) {
+					log.debug("POP protection bytes length: "+protBytes.length);
+				}
 				Signature sig;
 				sig = Signature.getInstance(algId.getObjectId().getId(), "BC");
 				sig.initVerify(pk);

@@ -179,7 +179,9 @@ public class CmpResponseMessage implements IResponseMessage {
 		try {
 			if (status.equals(ResponseStatus.SUCCESS)) {
 				if (cert != null) {
-					log.debug("Creating a CertRepMessage 'accepted'");
+			    	if (log.isDebugEnabled()) {					
+			    		log.debug("Creating a CertRepMessage 'accepted'");
+			    	}
 					PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(0)); // 0 = accepted
 					CertResponse myCertResponse = new CertResponse(new DERInteger(requestId), myPKIStatusInfo);
 					
@@ -192,7 +194,9 @@ public class CmpResponseMessage implements IResponseMessage {
 					CertRepMessage myCertRepMessage = new CertRepMessage(myCertResponse);
 					
 					int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
-					log.debug("Creating response body of type respType.");
+			    	if (log.isDebugEnabled()) {
+			    		log.debug("Creating response body of type respType.");
+			    	}
 					PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType); 
 					PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
 					
@@ -204,7 +208,9 @@ public class CmpResponseMessage implements IResponseMessage {
 					ret = true;	
 				}
 			} else if (status.equals(ResponseStatus.FAILURE)) {
-				log.debug("Creating a CertRepMessage 'rejected'");
+		    	if (log.isDebugEnabled()) {
+		    		log.debug("Creating a CertRepMessage 'rejected'");
+		    	}
 				// Create a failure message
 				PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection
 				myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());
@@ -221,7 +227,9 @@ public class CmpResponseMessage implements IResponseMessage {
 				}
 				ret = true;	
 			} else {
-				log.debug("Creating a 'waiting' message?");
+		    	if (log.isDebugEnabled()) {
+		    		log.debug("Creating a 'waiting' message?");
+		    	}
 				// Not supported, lets create a PKIError failure instead
 				// Create a failure message
 				PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection
