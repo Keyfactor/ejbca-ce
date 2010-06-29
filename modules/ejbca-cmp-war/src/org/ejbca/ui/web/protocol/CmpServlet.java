@@ -36,7 +36,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id$
+ * @version $Id: CmpServlet.java 9308 2010-06-28 21:08:54Z jeklund $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
