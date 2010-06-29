@@ -95,6 +95,8 @@
     <property name="mod.cmp-war.war" location="${mod.dist.path}/cmp.war" />
     <property name="mod.publicweb-gui.path" location="${mod.path}/publicweb-gui" />
     <property name="mod.publicweb-gui.war" location="${mod.dist.path}/publicweb.war" />
+    <property name="mod.scep-war.path" location="${mod.path}/ejbca-scep-war" />
+    <property name="mod.scep-war.war" location="${mod.dist.path}/scep.war" />
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
