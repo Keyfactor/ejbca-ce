@@ -146,15 +146,6 @@
 		</fail>
     </target>
 
-	<!-- =================================================================== -->
-    <!-- Build SCEP part  (public web)                                                  -->
-    <!-- =================================================================== -->
-    <target name="scep.war" depends="compile">
-        <war destfile="${scepwar}" webxml="${scep.src}/WEB-INF/web.xml">
-            <fileset dir="${scep.src}" excludes="WEB-INF/web.xml" />
-        </war>
-    </target>
-
     <!-- =================================================================== -->
     <!-- Build status part                                                                                                                             -->
     <!-- =================================================================== -->
@@ -486,6 +477,7 @@
                 <include name="adminweb.war" />
                 <include name="cmp.war" />
                 <include name="publicweb.war" />
+                <include name="scep.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -926,6 +918,10 @@
 
     <target name="cmp.war">
     	<ant antfile="modules/build.xml" target="cmp-war" />
+    </target>
+
+    <target name="scep.war" depends="compile">
+    	<ant antfile="modules/build.xml" target="scep-war" />
     </target>
 
 	<target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
