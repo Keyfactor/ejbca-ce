@@ -33,6 +33,7 @@
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
 	
@@ -119,6 +120,10 @@
 
 	<target name="admin-gui" description="Build the EJBCA Admin GUI WAR">
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="publicweb-gui" description="Build the EJBCA Public Web GUI WAR">
+		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
 	<target name="cmp-war" description="Build the CMP WAR">

@@ -256,35 +256,6 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Build public web part                                               -->
-    <!-- =================================================================== -->
-    <target name="publicweb.war" depends="compile, ejbca-ejb.jar">
-	    <mkdir dir="${publicweb.build}/WEB-INF/lib"/>
-	    <copy todir="${publicweb.build}">
-	        <fileset dir="${publicweb.src}"/>
-	    </copy>
-        <copy todir="${publicweb.build}/WEB-INF/lib">
-            <fileset dir="${lib}/myfaces" >
-				<include name="jstl*.jar"/>
-				<include name="standard*.jar"/>
-            </fileset>
-        </copy>
-
-        <!-- Test compile the public pages to see it compiles ok -->
-    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled
-    	<jsp-compile uriroot="${publicweb.build}" />
-    	-->
-    	
-
-        <war destfile="${publicwebwar}" webxml="${publicweb.build}/WEB-INF/web.xml">
-            <fileset dir="${publicweb.build}">
-            	<exclude name="WEB-INF/web.xml"/>
-			</fileset>
-        </war>
-    </target>   
-
-	
-    <!-- =================================================================== -->
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
     <target name="ejbca-ejb.jar" depends="compile, jbosscmptcpclasspath">
@@ -514,6 +485,7 @@
                 <include name="xkms.war" />
                 <include name="adminweb.war" />
                 <include name="cmp.war" />
+                <include name="publicweb.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -946,6 +918,10 @@
 	
     <target name="adminweb.war">
     	<ant antfile="modules/build.xml" target="admin-gui" />
+    </target>
+
+    <target name="publicweb.war">
+    	<ant antfile="modules/build.xml" target="publicweb-gui" />
     </target>
 
     <target name="cmp.war">

@@ -18,7 +18,7 @@ import java.security.cert.Certificate;
 import org.ejbca.util.CertTools;
 
 /**
- * This bean wraps a certificate, to be able to use CertTools to get valutes from certs, 
+ * This bean wraps a certificate, to be able to use CertTools to get values from certs, 
  * instead of the direct X509Certificate methods. It's not certain that this is an X509Certificate.
  * 
  * To make it easy to use from JSTL pages, most methods take no arguments.

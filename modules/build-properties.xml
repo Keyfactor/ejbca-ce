@@ -93,6 +93,8 @@
     <property name="mod.admin-gui.war" location="${mod.dist.path}/adminweb.war" />
     <property name="mod.cmp-war.path" location="${mod.path}/cmp-war" />
     <property name="mod.cmp-war.war" location="${mod.dist.path}/cmp.war" />
+    <property name="mod.publicweb-gui.path" location="${mod.path}/publicweb-gui" />
+    <property name="mod.publicweb-gui.war" location="${mod.dist.path}/publicweb.war" />
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
@@ -258,9 +260,30 @@
 	</path>
 	
 	<path id="lib.jsp.classpath">
+		<!--
+		<fileset dir="${ejbca.home}/lib">
+			<include name="myfaces/standard-*.jar" />
+		</fileset>
+		-->
 		<fileset dir="${appserver.home}">
 			<!-- jboss -->
 			<include name="common/lib/jsp-api.jar" /> <!-- 5.x -->
+			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.x -->
+			<include name="common/lib/el-api.jar" /> <!-- 5.x -->
+			<!-- glassfish ? -->
+			<!-- weblogic ? -->
+			<!-- oracle ? -->
+			<!-- websphere ? -->
+		</fileset>
+	</path>
+	
+	<path id="lib.jasper.classpath">
+		<fileset dir="${appserver.home}">
+			<!-- jboss -->
+			<include name="server/default/deploy/jbossweb.sar/jasper-jdt.jar" /> <!-- 5.x -->
+			<include name="server/default/deploy/jbossweb.sar/jbossweb.jar" /> <!-- 5.x -->
+			<include name="common/lib/servlet-api.jar" /> <!-- 5.x -->
+			<include name="lib/jboss-logging-spi.jar" /> <!-- 5.x -->
 			<!-- glassfish ? -->
 			<!-- weblogic ? -->
 			<!-- oracle ? -->
