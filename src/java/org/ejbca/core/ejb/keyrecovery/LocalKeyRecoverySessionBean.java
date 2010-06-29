@@ -240,7 +240,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){
 				approvalsession.addApprovalRequest(admin, ar, gc);
 	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	
-				throw new WaitingForApprovalException(msg);
+				throw new WaitingForApprovalException(msg, ar.generateApprovalId());
 			}
 
         } 
