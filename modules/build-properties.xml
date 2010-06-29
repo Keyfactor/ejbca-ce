@@ -91,7 +91,7 @@
     <property name="mod.ejbca-xkms.lib" location="${mod.dist.path}/ejbca-xkms.jar" />
     <property name="mod.admin-gui.path" location="${mod.path}/admin-gui" />
     <property name="mod.admin-gui.war" location="${mod.dist.path}/adminweb.war" />
-    <property name="mod.cmp-war.path" location="${mod.path}/cmp-war" />
+    <property name="mod.cmp-war.path" location="${mod.path}/ejbca-cmp-war" />
     <property name="mod.cmp-war.war" location="${mod.dist.path}/cmp.war" />
     <property name="mod.publicweb-gui.path" location="${mod.path}/publicweb-gui" />
     <property name="mod.publicweb-gui.war" location="${mod.dist.path}/publicweb.war" />

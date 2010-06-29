@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="modules/ejbca-cmp-war/src"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
-	<classpathentry kind="src" path="modules/cmp-war/src"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
 	<classpathentry kind="src" path="modules/externalra-gui/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src-test"/>
