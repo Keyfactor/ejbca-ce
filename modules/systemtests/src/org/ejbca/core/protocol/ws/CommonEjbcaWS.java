@@ -1754,7 +1754,7 @@ public abstract class CommonEjbcaWS extends TestCase {
     protected void ejbcaVersion() throws Exception {
 
         String version = ejbcaraws.getEjbcaVersion();
-        assertTrue(version.contains("EJBCA 3")); // We don't know which specific
+        assertTrue(version.contains("EJBCA 4")); // We don't know which specific
         // version we are testing
     }
 
