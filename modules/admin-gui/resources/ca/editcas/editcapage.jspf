@@ -1120,9 +1120,9 @@ function checkallfields(){
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">         
         <select name="<%=SELECT_REVOKEREASONS %>" >
-          <% for(int i=0; i < RevokedInfoView.reasontexts.length; i++){ 
+          <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
                if(i!= 7){%>
-               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
+               <option value='<%= i%>'><%= ejbcawebbean.getText(SecConst.reasontexts[i]) %></option>
           <%   } 
              } %>
         </select>

@@ -225,5 +225,13 @@ public class SecConst extends Object {
     /** Certificate used for both encryption and signatures. */
     public static final int CERT_TYPE_ENCSIGN = 0x3;
 
+	// Revocation reasons identifiers
+    public static final String[] reasontexts = {
+        "UNSPECIFIED", "KEYCOMPROMISE", "CACOMPROMISE", "AFFILIATIONCHANGED", "SUPERSEDED",
+        "CESSATIONOFOPERATION", "CERTIFICATEHOLD", "UNUSED", "REMOVEFROMCRL", "PRIVILEGESWITHDRAWN",
+        "AACOMPROMISE"
+    };
+    public static final int HIGN_REASON_BOUNDRARY = 11;
+
 
 }

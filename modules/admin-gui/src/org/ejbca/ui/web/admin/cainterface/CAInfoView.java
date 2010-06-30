@@ -27,7 +27,6 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
-import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.SimpleTime;
 
@@ -167,7 +166,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
             case SecConst.CA_REVOKED :
               cainfodata[STATUS]     = ejbcawebbean.getText("CAREVOKED") + "<br>&nbsp;&nbsp;" + 
                                                     ejbcawebbean.getText("REASON") + " : <br>&nbsp;&nbsp;&nbsp;&nbsp;" + 
-                                                    ejbcawebbean.getText(RevokedInfoView.reasontexts[cainfo.getRevokationReason()]) + "<br>&nbsp;&nbsp;" +
+                                                    ejbcawebbean.getText(SecConst.reasontexts[cainfo.getRevokationReason()]) + "<br>&nbsp;&nbsp;" +
 			                                        ejbcawebbean.getText("REVOKATIONDATE") + "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + 
 			                                        ejbcawebbean.printDateTime(cainfo.getRevokationDate());
               break;
