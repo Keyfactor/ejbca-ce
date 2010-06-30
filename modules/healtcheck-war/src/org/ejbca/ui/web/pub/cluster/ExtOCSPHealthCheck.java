@@ -13,14 +13,17 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 import org.ejbca.ui.web.protocol.IHealtChecker;
-
-
+import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
 
 /**
  * External OCSP Health Checker. 
@@ -38,15 +41,11 @@ import org.ejbca.ui.web.protocol.IHealtChecker;
 public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	
 	private static final Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
-	private static IHealtChecker healthChecker;
+	private static IHealtChecker healthChecker = null;
 
 	private boolean doSignTest = OcspConfiguration.getHealthCheckSignTest();
 	private boolean doValidityTest = OcspConfiguration.getHealthCheckCertificateValidity();
 
-	static public void setHealtChecker(IHealtChecker hc) {
-		healthChecker = hc;
-	}
-	
 	public void init(ServletConfig config) {
 		super.init(config);
 		log.debug("OCSPSignTest: '"+this.doSignTest+"'. OCSCertificateValidityTest: '"+this.doValidityTest+"'.");
@@ -75,11 +74,29 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 		return errormessage;
 	}
 
+	private String checkDB(){
+		log.debug("Checking database connection.");
+		return getCertificateStoreSession().getDatabaseStatus();
+	}
 
 	private String checkOCSPSignTokens(){
-		if ( healthChecker==null ) {
-			return "No OCSP token health checker set";
+		if (healthChecker == null) {
+			healthChecker = OCSPServletStandAlone.getStandAloneOCSPHealthChecker();
+			if (healthChecker == null) {
+				return "No OCSP token health checker set";
+			}
 		}
 		return healthChecker.healthCheck(this.doSignTest, this.doValidityTest);
+	}
+
+	private ICertificateStoreOnlyDataSessionLocal getCertificateStoreSession() {
+		try {
+			ICertificateStoreOnlyDataSessionLocalHome home = (ICertificateStoreOnlyDataSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreOnlyDataSessionLocalHome.COMP_NAME);
+			ICertificateStoreOnlyDataSessionLocal session = home.create();
+			return session;
+		} catch (Exception e) {
+			log.error("Error getting CertificateStoreOnlyDataSession: ", e);
+			throw new EJBException(e);
+		} 
 	}
 }

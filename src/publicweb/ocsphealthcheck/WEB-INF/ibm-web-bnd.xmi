@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<webappbnd:WebAppBinding xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:webappbnd="webappbnd.xmi" xmi:id="WebAppBinding_1163849897296" virtualHostName="default_host">
-  <webapp href="WEB-INF/web.xml#web-app_1"/>
-  <ejbRefBindings xmi:id="EJBLocalRefBinding_1" jndiName="CertificateStoreOnlyDataSession">
-    <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_1"/>
-  </ejbRefBindings>
-</webappbnd:WebAppBinding>

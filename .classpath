@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="modules/healtcheck-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-war/src"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>

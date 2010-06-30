@@ -18,7 +18,7 @@
     </module>
     <module>
         <web>
-            <web-uri>ocsphealthcheck.war</web-uri>
+            <web-uri>healthcheck.war</web-uri>
             <context-root>/@ejbca@/publicweb/ocsphealthcheck</context-root>
         </web>
     </module>

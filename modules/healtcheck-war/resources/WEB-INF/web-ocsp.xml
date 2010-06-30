@@ -1,56 +1,52 @@
-<?xml version = '1.0' encoding = 'ISO-8859-1'?>
-<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
-<web-app id="web-app_1">
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app id="ohc_web_1" version="2.5"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee" 
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+    http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
     <display-name>OCSP Health Check Configuration</display-name>
+
     <servlet>
-        <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
         <display-name>ExtOCSPHealthCheckServlet</display-name>
+        <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
         <servlet-class>org.ejbca.ui.web.pub.HealthCheckServlet</servlet-class>
         <!-- Required parameters -->
         <init-param>
+            <description>Class performing the healthcheck. Must implement the IHealthCheck interface.</description>
             <param-name>HealthCheckClassPath</param-name>
             <param-value>org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck</param-value>
-            <description>Class performing the healthcheck. Must implement the IHealthCheck interface.</description>
         </init-param>
         <init-param>
+            <description>Class creating the response to the loadbalancer or monitor software. Must implement the IHealthResponse interface.</description>
             <param-name>HealthResponseClassPath</param-name>
             <param-value>org.ejbca.ui.web.pub.cluster.TextResponse</param-value>
-            <description>Class creating the response to the loadbalancer or monitor software. Must implement the IHealthResponse interface.</description>
         </init-param>
         <!-- TextResponse specific init parameters -->
         <init-param>
+            <description>Text string used to say that every thing is ok with this node.</description>
             <param-name>OKMessage</param-name>
             <param-value>ALLOK</param-value>
-            <description>
-                Text string used to say that every thing is ok with this node.
-            </description>
         </init-param>
         <init-param>
+            <description>Parameter saying if a errorcode 500 should be sent in case of error.</description>
             <param-name>SendServerError</param-name>
             <param-value>true</param-value>
-            <description>
-               Parameter saying if a errorcode 500 should be sent in case of error.
-            </description>
         </init-param>
-       <!-- 
+        <!-- 
         <init-param>
+            <description>Uncomment this parameter if you want a static error message instead of one generated´by the HealthChecker.</description>
             <param-name>CustomErrorMessage</param-name>
             <param-value>EJBCANOTOK</param-value>
-            <description>
-                Uncomment this parameter if you want a static error message instead of 
-                one generated´by the HealthChecker.
-            </description>
         </init-param> -->
     </servlet>
+
     <servlet-mapping>
         <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
         <url-pattern>/extocsphealth</url-pattern>
     </servlet-mapping>
-  <env-entry>
-    <env-entry-name>DataSource</env-entry-name>
-    <env-entry-value>@datasource.jndi-name-prefix@@datasource.jndi-name@</env-entry-value>
-    <env-entry-type>java.lang.String</env-entry-type>
-  </env-entry>
 
     <security-constraint>
         <web-resource-collection>
@@ -64,12 +60,12 @@
         <auth-constraint />
     </security-constraint> 
 
-  <ejb-local-ref id="EJBLocalRef_1">
-    <ejb-ref-name>ejb/CertificateStoreOnlyDataSessionLocal</ejb-ref-name>
-    <ejb-ref-type>Session</ejb-ref-type>
-	<local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome</local-home>
-	<local>org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal</local>
-    <ejb-link>CertificateStoreOnlyDataSession</ejb-link>
-  </ejb-local-ref>
+    <ejb-local-ref id="EJBLocalRef_1">
+        <ejb-ref-name>ejb/CertificateStoreOnlyDataSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+    	<local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome</local-home>
+    	<local>org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal</local>
+        <ejb-link>CertificateStoreOnlyDataSession</ejb-link>
+    </ejb-local-ref>
 
 </web-app>

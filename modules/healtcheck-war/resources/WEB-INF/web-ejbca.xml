@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app id="ehc_web_1" version="2.5"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee" 
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+    http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+    <display-name>EJBCA Health Check Configuration</display-name>
+
+    <servlet>
+        <display-name>EJBCAHealthCheckServlet</display-name>
+        <servlet-name>EJBCAHealthCheckServlet</servlet-name>
+        <servlet-class>org.ejbca.ui.web.pub.HealthCheckServlet</servlet-class>
+        <!-- Required parameters -->
+        <init-param>
+            <description>Class performing the healthcheck. Must implement the IHealthCheck interface.</description>
+            <param-name>HealthCheckClassPath</param-name>
+            <param-value>org.ejbca.ui.web.pub.cluster.EJBCAHealthCheck</param-value>
+        </init-param>
+        <init-param>
+            <description>Class creating the response to the loadbalancer or monitor software. Must implement the IHealthResponse interface.</description>
+            <param-name>HealthResponseClassPath</param-name>
+            <param-value>org.ejbca.ui.web.pub.cluster.TextResponse</param-value>
+        </init-param>
+        <!-- TextResponse specific init parameters -->
+        <init-param>
+            <description>Text string used to say that every thing is ok with this node.</description>
+            <param-name>OKMessage</param-name>
+            <param-value>ALLOK</param-value>
+        </init-param>
+        <init-param>
+            <description>Parameter saying if a errorcode 500 should be sent in case of error.</description>
+            <param-name>SendServerError</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <!-- 
+        <init-param>
+            <description>Uncomment this parameter if you want a static error message instead of one generated´by the HealthChecker.</description>
+            <param-name>CustomErrorMessage</param-name>
+            <param-value>EJBCANOTOK</param-value>
+        </init-param>
+        -->
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>EJBCAHealthCheckServlet</servlet-name>
+        <url-pattern>/ejbcahealth</url-pattern>
+    </servlet-mapping>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>restricted methods</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint> 
+
+    <ejb-local-ref id="EJBLocalRef_1">
+        <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+        <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
+        <ejb-link>CAAdminSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref id="EJBLocalRef_2">
+        <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
+        <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>
+        <ejb-link>PublisherSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref id="EJBLocalRef_3">
+        <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
+        <ejb-ref-type>Session</ejb-ref-type>
+        <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
+        <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
+        <ejb-link>CertificateStoreSession</ejb-link>
+    </ejb-local-ref>
+    
+</web-app>

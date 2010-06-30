@@ -200,26 +200,6 @@
     </target>   
 
     <!-- =================================================================== -->
-    <!-- Build health check part                                                                                                                             -->
-    <!-- =================================================================== -->
-    <target name="healthcheck.war" depends="compile">
-        <war destfile="${healthcheckwar}" webxml="${healthcheck.src}/WEB-INF/web.xml">
-            <fileset dir="${healthcheck.src}" excludes="WEB-INF/web.xml" />
-
-        </war>
-    </target>
-		
-    <!-- =================================================================== -->
-    <!-- Build ocsp health check part                                                                                                                             -->
-    <!-- =================================================================== -->
-    <target name="ocsphealthcheck.war" depends="ocsp-compile">
-        <war destfile="${ocsphealthcheckwar}" webxml="${ocsphealthcheck.src}/WEB-INF/web.xml">
-            <fileset dir="${ocsphealthcheck.src}" excludes="WEB-INF/web.xml" />
-
-        </war>
-    </target>	
-
-    <!-- =================================================================== -->
     <!-- Build standalone ocsp part                                          -->
     <!-- =================================================================== -->
     <target name="ocsp-war" depends="ocsp-compile">
@@ -478,6 +458,7 @@
                 <include name="cmp.war" />
                 <include name="publicweb.war" />
                 <include name="scep.war" />
+                <include name="healthcheck.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -509,6 +490,9 @@
             <fileset dir="${ocsp-dist.dir}">
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
+            </fileset>
+            <fileset dir="modules/dist">
+                <include name="healthcheck.war" />
             </fileset>
 	</ear>
     </target>
@@ -920,7 +904,15 @@
     	<ant antfile="modules/build.xml" target="cmp-war" />
     </target>
 
-    <target name="scep.war" depends="compile">
+    <target name="healthcheck.war">
+    	<ant antfile="modules/build.xml" target="healthcheck-ejbca-war" />
+    </target>
+		
+    <target name="ocsphealthcheck.war">
+    	<ant antfile="modules/build.xml" target="healthcheck-ocsp-war" />
+    </target>	
+
+    <target name="scep.war">
     	<ant antfile="modules/build.xml" target="scep-war" />
     </target>
 

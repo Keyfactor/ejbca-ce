@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 /**
- * Inteface used for health polling purposes to see that everything is alive and ok.
+ * Interface used for health polling purposes to see that everything is alive and ok.
  * 
  * @author Philip Vendil
  * @version $Id$

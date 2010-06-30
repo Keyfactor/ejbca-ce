@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="healthcheck-war" default="ejbca-build">
+    <description>
+            Build file for the SCEP Web component
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.healthcheck-war}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+
+	<path id="compile-ejbca.classpath">
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-ejb.lib}"/>
+		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.jee.classpath"/>
+	</path>
+	
+	<path id="compile-ocsp.classpath">
+		<path location="${mod.ocsp-ejb-interface.lib}"/>
+		<path location="${mod.ocsp-ejb.lib}"/>
+		<!--
+		<path refid="lib.ejbca-util.classpath"/>
+		-->
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.jee.classpath"/>
+	</path>
+		
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${build-ocsp.dir}" />
+    	<delete file="${mod.healthcheck-war.war}" />
+    </target>
+
+    <target name="ejbca-build" description="Build this module" depends="ejbca-compile">
+        <war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml">
+            <fileset dir="${build.dir}"/>
+        </war>
+    </target>
+
+	<target name="ocsp-build" description="Build this module" depends="ocsp-compile">
+		<war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml">
+			<fileset dir="${build-ocsp.dir}"/>
+		</war>
+	</target>
+
+    <target name="ejbca-compile" depends="ejbca-ejb-interface, ejbca-util, ejbca-ejb">
+    	<mkdir dir="${build.dir}/WEB-INF/classes" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java">
+        	<classpath>
+        		<path refid="compile-ejbca.classpath"/>
+        	</classpath>
+    	</javac>
+    </target>
+
+	<target name="ocsp-compile" depends="ocsp-ejb-interface, ocsp-ejb">
+		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
+		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java">
+			<classpath>
+				<path refid="compile-ocsp.classpath"/>
+			</classpath>
+		</javac>
+	</target>
+
+</project>

@@ -143,7 +143,7 @@ public class EjbcaConfiguration {
 	 * Parameter specifying database test query string. Used to check that the database is operational.
 	 */
 	public static String getHealthCheckDbQuery() {
-		return ConfigurationHolder.getExpandedString("healthcheck.dbquery", ConfigurationHolder.getExpandedString("ocsphealthcheck.dbquery", "Select 1 From CertificateData where fingerprint='XX'"));
+		return ConfigurationHolder.getExpandedString("healthcheck.dbquery", "Select 1 From CertificateData where fingerprint='XX'");
 	}
 	
 	/**
@@ -158,6 +158,13 @@ public class EjbcaConfiguration {
 	 */
 	public static boolean getHealthCheckCaTokenSignTest() {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getString("healthcheck.catokensigntest", "false"));
+	}
+
+	/**
+	 * Parameter to specify if a connection test of publishers should be performed.
+	 */
+	public static boolean getHealthCheckPublisherConnections() {
+		return "true".equalsIgnoreCase(ConfigurationHolder.getString("healthcheck.publisherconnections", "true"));
 	}
 
 	/**

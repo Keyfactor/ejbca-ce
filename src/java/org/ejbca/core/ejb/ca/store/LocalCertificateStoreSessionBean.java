@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -38,6 +39,7 @@ import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
@@ -310,6 +312,28 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return publishersession;
     } //getPublisherSession
 
+    /**
+     * Used by healthcheck. Validate database connection.
+     * @return an error message or an empty String if all are ok.
+     * 
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method view-type="local"
+     */
+    public String getDatabaseStatus() {
+		String returnval = "";
+		Connection con = null;
+		try {
+		  con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+		  Statement statement = con.createStatement();
+		  statement.execute(EjbcaConfiguration.getHealthCheckDbQuery());		  
+		} catch (Exception e) {
+			returnval = "\nDB: Error creating connection to database: " + e.getMessage();
+			log.error("Error creating connection to database.",e);
+		} finally {
+			JDBCUtil.close(con);
+		}
+		return returnval;
+    }
 
     /**
      * Stores a certificate.
