@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /** View of certificate revocation status
@@ -31,15 +32,6 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
  * @version $Id$
  */
 public class RevokedInfoView implements Serializable {
-
-	// Public constants.
-    public static final String[] reasontexts = {
-        "UNSPECIFIED", "KEYCOMPROMISE", "CACOMPROMISE", "AFFILIATIONCHANGED", "SUPERSEDED",
-        "CESSATIONOFOPERATION", "CERTIFICATEHOLD", "UNUSED", "REMOVEFROMCRL", "PRIVILEGESWITHDRAWN",
-        "AACOMPROMISE"
-    };
-    public static final int HIGN_REASON_BOUNDRARY = 11;
-
 
     /**
      * Creates a new instance of RevokedInfoView
@@ -84,9 +76,9 @@ public class RevokedInfoView implements Serializable {
         ArrayList reasons = new ArrayList();
         int reason = this.revokedcertinfo.revocationReason;
 
-        if ((reason >= 0) && (reason < HIGN_REASON_BOUNDRARY)) {
+        if ((reason >= 0) && (reason < SecConst.HIGN_REASON_BOUNDRARY)) {
             // Add this reason.
-            reasons.add(reasontexts[reason]);
+            reasons.add(SecConst.reasontexts[reason]);
         }
 
         return (String[]) reasons.toArray(dummy);

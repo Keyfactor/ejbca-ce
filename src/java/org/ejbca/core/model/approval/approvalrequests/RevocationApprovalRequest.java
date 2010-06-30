@@ -18,6 +18,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -29,7 +30,6 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.ui.web.RevokedInfoView;
 
 public class RevocationApprovalRequest extends ApprovalRequest {
 
@@ -183,7 +183,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		if ( reason == RevokedCertInfo.NOT_REVOKED) {
 			retval.add(new ApprovalDataText("REASON","UNREVOKE",true,true));
 		} else {
-			retval.add(new ApprovalDataText("REASON",RevokedInfoView.reasontexts[reason],true,true));
+			retval.add(new ApprovalDataText("REASON",SecConst.reasontexts[reason],true,true));
 		}
 		if ( certificateSerialNumber != null && issuerDN != null ) {
 			retval.add(new ApprovalDataText("CERTSERIALNUMBER",certificateSerialNumber.toString(16),true,false));

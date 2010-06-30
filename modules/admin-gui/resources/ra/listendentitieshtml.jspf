@@ -440,9 +440,9 @@ function confirmrevokation(){
           }catch(AuthorizationDeniedException ade){} %>        
          <br> <%= ejbcawebbean.getText("REVOKATIONREASON") %>&nbsp;
         <select name="<%=SELECT_REVOKE_REASON %>" >
-          <% for(int i=0; i < RevokedInfoView.reasontexts.length; i++){ 
+          <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
                if(i!= 7){%>
-               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
+               <option value='<%= i%>'><%= ejbcawebbean.getText(SecConst.reasontexts[i]) %></option>
           <%   } 
              } %>
          </select>
