@@ -66,7 +66,7 @@ import org.ejbca.util.keystore.KeyTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java 9211 2010-06-15 12:29:21Z aveen4711 $
+ * @version $Id$
  */
 public class EjbcaWebBean implements java.io.Serializable {
 

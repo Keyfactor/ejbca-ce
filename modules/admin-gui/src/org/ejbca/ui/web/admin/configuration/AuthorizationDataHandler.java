@@ -30,7 +30,7 @@ import org.ejbca.core.model.log.Admin;
  * A class handling the authorization data. 
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java 8669 2010-02-18 16:02:01Z anatom $
+ * @version $Id$
  */
 public class AuthorizationDataHandler implements java.io.Serializable {
 	

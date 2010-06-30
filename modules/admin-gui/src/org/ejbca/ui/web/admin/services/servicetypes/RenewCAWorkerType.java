@@ -26,7 +26,7 @@ import org.ejbca.core.model.services.workers.RenewCAWorker;
  * 
  * @author Tomas Gustavsson
  *
- * @version $Id: RenewCAWorkerType.java 5753 2008-06-18 10:05:58Z anatom $
+ * @version $Id$
  */
 public class RenewCAWorkerType extends BaseEmailNotifyingWorkerType {
 	private static final long serialVersionUID = 2L;

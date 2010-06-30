@@ -23,7 +23,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Shows the current server configuration
  *
- * @version $Id: $
+ * @version $Id$
  */
 public class ConfigDumpCommand extends BaseCommand {
 	

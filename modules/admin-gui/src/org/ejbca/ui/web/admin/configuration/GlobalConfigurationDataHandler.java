@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * By default all data are saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java 9005 2010-05-04 12:09:54Z anatom $
+ * @version $Id$
  */
 public class GlobalConfigurationDataHandler implements java.io.Serializable {
     

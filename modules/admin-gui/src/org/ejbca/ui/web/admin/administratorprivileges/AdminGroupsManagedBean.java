@@ -44,7 +44,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * Managed bean for editing administrative privileges.
  * 
  * @author Philip Vendil
- * @version $Id: AdminGroupsManagedBean.java 9186 2010-06-13 12:11:30Z anatom $
+ * @version $Id$
  */
 public class AdminGroupsManagedBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(AdminGroupsManagedBean.class);

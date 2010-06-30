@@ -22,7 +22,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * A class used to improve performance by proxying certificateprofile id to certificate name mappings by minimizing the number of needed lockups over rmi.
  * 
- * @version $Id: CertificateProfileNameProxy.java 6997 2009-02-20 12:03:58Z anatom $
+ * @version $Id$
  */
 public class CertificateProfileNameProxy implements java.io.Serializable {
     

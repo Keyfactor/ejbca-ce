@@ -41,7 +41,7 @@ import org.ejbca.util.CertTools;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java 9108 2010-05-28 11:55:37Z anatom $
+ * @version $Id$
  * 
  * @web.servlet name = "GetCRL"
  *              display-name = "GetCRLServlet"

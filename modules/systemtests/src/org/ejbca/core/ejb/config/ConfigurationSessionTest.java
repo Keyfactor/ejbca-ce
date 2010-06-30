@@ -20,7 +20,7 @@ import org.ejbca.util.TestTools;
 /**
  * Tests ConfigurationSessionBean
  * 
- * @version $Id: TestConfigurationSession.java 8781 2010-03-22 13:49:46Z anatom $
+ * @version $Id$
  */
 public class ConfigurationSessionTest extends TestCase {
 

@@ -23,7 +23,7 @@ import java.util.Collection;
  *
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: WorkerType.java 5585 2008-05-01 20:55:00Z anatom $
+ * @version $Id$
  */
 public abstract class WorkerType extends ServiceType {
 

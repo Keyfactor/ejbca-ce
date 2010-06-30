@@ -16,7 +16,7 @@ package org.ejbca.ui.web.admin;
 /**
  * Represents a link to another view. Used by approvals to link from approvals list to certificate views.
  * 
- * @version $Id: LinkView.java 7234 2009-04-03 05:08:33Z anatom $
+ * @version $Id$
  *
  */
 public class LinkView {

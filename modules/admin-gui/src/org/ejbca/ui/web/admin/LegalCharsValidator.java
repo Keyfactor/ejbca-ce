@@ -26,7 +26,7 @@ import org.ejbca.util.StringTools;
 /** JSF validator to check that input fields do not contain characters that might be dangerous for SQL queries 
  * (non parameterized queries that is).
  * 
- * @version $Id: LegalCharsValidator.java 8854 2010-03-30 15:55:35Z anatom $
+ * @version $Id$
  *
  */
 public class LegalCharsValidator implements Validator{

@@ -35,7 +35,7 @@ import org.ejbca.util.Base64PutHashMap;
  * A class handling the hardtoken profile data.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenProfileDataHandler.java 9004 2010-05-04 08:05:12Z anatom $
+ * @version $Id$
  */
 public class HardTokenProfileDataHandler implements Serializable {
 

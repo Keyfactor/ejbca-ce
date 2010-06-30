@@ -29,7 +29,7 @@ import org.ejbca.util.TestTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthorizationSession.java 8072 2009-10-05 14:17:12Z jeklund $
+ * @version $Id$
  */
 public class AuthorizationSessionTest extends TestCase {
     private static final Logger log = Logger.getLogger(AuthorizationSessionTest.class);

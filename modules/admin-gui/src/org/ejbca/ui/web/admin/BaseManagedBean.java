@@ -31,7 +31,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Base EJBCA JSF Managed Bean, all managed beans of EJBCA should inherit this class
  * 
  * @author Philip Vendil
- * @version $Id: BaseManagedBean.java 6244 2008-09-03 08:56:16Z jeklund $
+ * @version $Id$
  */
 public abstract class BaseManagedBean implements Serializable{
 

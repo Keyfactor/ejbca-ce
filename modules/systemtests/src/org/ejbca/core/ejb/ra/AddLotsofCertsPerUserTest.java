@@ -45,7 +45,7 @@ import org.ejbca.util.keystore.KeyTools;
 /**
  * Add a lot of users and a lot of certificates for each user 
  *
- * @version $Id: TestAddLotsofUsers.java 6668 2008-11-28 16:28:44Z jeklund $
+ * @version $Id$
  */
 public class AddLotsofCertsPerUserTest extends TestCase {
     private static final Logger log = Logger.getLogger(AddLotsofCertsPerUserTest.class);

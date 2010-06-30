@@ -20,7 +20,7 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
  * 
  * @author Philip Vendil, Tomas Gustavsson
  *
- * @version $Id: UserPasswordExpireWorkerType.java 5752 2008-06-18 10:02:49Z anatom $
+ * @version $Id$
  */
 public class UserPasswordExpireWorkerType extends BaseEmailNotifyingWorkerType {
 

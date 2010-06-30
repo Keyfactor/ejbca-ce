@@ -44,7 +44,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  *
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ServiceTypeManager.java 7338 2009-04-28 12:15:38Z anatom $
+ * @version $Id$
  */
 public class ServiceTypeManager implements java.io.Serializable {
 	

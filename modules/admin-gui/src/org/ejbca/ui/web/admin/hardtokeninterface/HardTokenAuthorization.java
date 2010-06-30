@@ -32,7 +32,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * A class that looks up the which Hard Token Issuers the administrator is authorized to view and edit
  * 
- * @version $Id: HardTokenAuthorization.java 8448 2009-12-17 16:34:37Z jeklund $
+ * @version $Id$
  */
 public class HardTokenAuthorization implements Serializable {
     

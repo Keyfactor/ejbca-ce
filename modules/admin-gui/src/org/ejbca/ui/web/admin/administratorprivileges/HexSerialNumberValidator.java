@@ -28,7 +28,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /** Validates hexadecimal serial numbers entered in the admin-GUI. Does it by constructing a biginteger.
  * 
- * @version $Id: HexSerialNumberValidator.java 7215 2009-03-31 19:55:14Z anatom $
+ * @version $Id$
  */
 public class HexSerialNumberValidator implements Validator{
 	private static final Logger log = Logger.getLogger(HexSerialNumberValidator.class);

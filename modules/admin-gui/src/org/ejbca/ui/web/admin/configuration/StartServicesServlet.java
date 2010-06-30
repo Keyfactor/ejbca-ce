@@ -71,7 +71,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java 8028 2009-09-25 17:20:37Z jeklund $
+ * @version $Id$
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -80,7 +80,7 @@ import org.ejbca.util.CertTools;
  *
  * @web.servlet-mapping url-pattern = "/configuration/startservices"
  * 
- * @version $Id: StartServicesServlet.java 8028 2009-09-25 17:20:37Z jeklund $
+ * @version $Id$
  */
 public class StartServicesServlet extends HttpServlet {
 

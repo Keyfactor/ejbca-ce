@@ -21,7 +21,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: NoActionType.java 7024 2009-02-24 11:27:33Z anatom $
+ * @version $Id$
  */
 public class NoActionType extends ActionType {
 	

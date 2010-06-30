@@ -63,7 +63,7 @@ import org.ejbca.util.FileTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java 8828 2010-03-29 08:10:51Z anatom $
+ * @version $Id$
  */
 public class CADataHandler implements Serializable {
     private static final Logger log = Logger.getLogger(CADataHandler.class);

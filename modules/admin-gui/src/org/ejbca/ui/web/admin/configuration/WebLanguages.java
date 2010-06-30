@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * the presented text in the users preferred language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java 9005 2010-05-04 12:09:54Z anatom $
+ * @version $Id$
  */
 public class WebLanguages implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(WebLanguages.class);

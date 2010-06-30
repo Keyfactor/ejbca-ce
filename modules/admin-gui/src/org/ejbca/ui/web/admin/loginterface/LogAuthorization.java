@@ -29,7 +29,7 @@ import org.ejbca.core.model.log.LogConstants;
  * A class that looks up the which modules a administrator have right to view.
  * This is done by looking up an administrators privileges in the tree and returning a string to be used in SQL-queries.
  * 
- * @version $Id: LogAuthorization.java 8667 2010-02-18 15:28:12Z anatom $
+ * @version $Id$
  */
 public class LogAuthorization implements Serializable {
     

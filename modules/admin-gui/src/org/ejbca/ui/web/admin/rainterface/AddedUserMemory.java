@@ -27,7 +27,7 @@ import java.util.Vector;
  * previously added users give the RA admins a better overlook of the his work.
  *
  * @author TomSelleck
- * @version $Id: AddedUserMemory.java 5585 2008-05-01 20:55:00Z anatom $
+ * @version $Id$
  */
 public class AddedUserMemory implements Serializable {
     // Public Constants

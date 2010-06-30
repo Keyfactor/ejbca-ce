@@ -25,7 +25,7 @@ import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
  * 
  * @author Tomas Gustavsson
  *
- * @version $Id: PublishQueueWorkerType.java 8981 2010-04-30 16:00:38Z anatom $
+ * @version $Id$
  */
 public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	private static final long serialVersionUID = 1L;

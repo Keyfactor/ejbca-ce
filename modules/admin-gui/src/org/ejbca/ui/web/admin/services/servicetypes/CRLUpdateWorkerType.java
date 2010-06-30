@@ -17,7 +17,7 @@ import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 /**
  * @author Philip Vendil
  *
- * @version $Id: CRLUpdateWorkerType.java 7338 2009-04-28 12:15:38Z anatom $
+ * @version $Id$
  */
 public class CRLUpdateWorkerType extends BaseWorkerType {
 	

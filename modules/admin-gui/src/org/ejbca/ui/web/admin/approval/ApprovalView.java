@@ -28,7 +28,7 @@ import org.ejbca.util.CertTools;
  * Class used to represent the view of an approval
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalView.java 8420 2009-12-09 18:30:54Z jeklund $
+ * @version $Id$
  */
 public class ApprovalView {
 	
