@@ -35,6 +35,7 @@
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
 	
@@ -44,6 +45,10 @@
 
 	<target name="ejbca-ejb-interface" description="Build EJBCA EJB interfaces library">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="ocsp-ejb-interface" description="Build OCSP EJB interfaces library">
+		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build-ocsp" inheritall="false"/>
 	</target>
 
 	<target name="ejbca-ejb-cli" description="Build EJBCA EJB CLI">
@@ -131,6 +136,14 @@
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
+	<target name="healthcheck-ejbca-war" description="Build the EJBCA Helthcheck WAR">
+		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="ejbca-build" inheritall="false"/>
+	</target>
+
+	<target name="healthcheck-ocsp-war" description="Build the OCSP Helthcheck WAR">
+		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="ocsp-build" inheritall="false"/>
+	</target>
+
 	<target name="scep-war" description="Build the SCEP WAR">
 		<ant antfile="${mod.scep-war.path}/build.xml" target="build" inheritall="false"/>
 	</target>
@@ -144,6 +157,14 @@
 		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-ejb.jar" inheritall="false"/>
 	</target>
 
+	<target name="ocsp-ejb" description="Build OCSP EJB module">
+		<available file="${mod.ocsp-ejb.lib}" property="mod.ocsp-ejb.lib.exists"/>
+		<antcall target="ocsp-ejb-internal"/>
+	</target>
+	<target name="ocsp-ejb-internal" unless="mod.ocsp-ejb.lib.exists">
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ocsp-jar" inheritall="false"/>
+	</target>
+
 	<target name="ejbca-ejb-interfaces-xdoclet">
 		<available file="${ejbca.home}/tmp/bin/gensrc" type="dir" property="ejbca-ejb-interfaces-xdoclet.ran"></available>
 		<antcall target="ejbca-ejb-interfaces-xdoclet-internal"/>
@@ -151,6 +172,16 @@
 	<target name="ejbca-ejb-interfaces-xdoclet-internal" unless="ejbca-ejb-interfaces-xdoclet.ran">
 		<ant dir="${ejbca.home}" antfile="build.xml" target="run-xdoc" inheritall="false"/>
 	</target>
+
+	<target name="ocsp-ejb-interfaces-xdoclet">
+		<available file="${ejbca.home}/tmp/bin/ocsp-gensrc" type="dir" property="ocsp-ejb-interfaces-xdoclet.ran"></available>
+		<antcall target="ocsp-ejb-interfaces-xdoclet-internal"/>
+	</target>
+	<target name="ocsp-ejb-interfaces-xdoclet-internal" unless="ocsp-ejb-interfaces-xdoclet.ran">
+		<ant dir="${ejbca.home}" antfile="build.xml" target="ocsp-run-xdoc" inheritall="false"/>
+	</target>
+	
+	<!-- Helper to execute the EJBCA EJB CLI -->
 	<target name="ejbca-cli" depends="ejbca-ejb-cli">
 		<fail message="ejbca-cli.arg is not set." unless="ejbca-cli.arg" />
 		<fail message="ejbca-ejb-cli.jar was never built">

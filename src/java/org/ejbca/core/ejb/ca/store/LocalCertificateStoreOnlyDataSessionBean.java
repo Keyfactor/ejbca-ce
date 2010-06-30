@@ -16,17 +16,22 @@ package org.ejbca.core.ejb.ca.store;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.OcspConfiguration;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.JDBCUtil;
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
@@ -90,8 +95,31 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
     
     public LocalCertificateStoreOnlyDataSessionBean() {
         super();
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         adapter = new MyAdapter();
+    }
+
+    /**
+     * Used by healthcheck. Validate database connection.
+     * @return an error message or an empty String if all are ok.
+     * 
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method view-type="local"
+     */
+    public String getDatabaseStatus() {
+		String returnval = "";
+		Connection con = null;
+		try {
+		  con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+		  Statement statement = con.createStatement();
+		  statement.execute(OcspConfiguration.getHealthCheckDbQuery());		  
+		} catch (Exception e) {
+			returnval = "\nDB: Error creating connection to database: " + e.getMessage();
+			log.error("Error creating connection to database.",e);
+		} finally {
+			JDBCUtil.close(con);
+		}
+		return returnval;
     }
 
     /**

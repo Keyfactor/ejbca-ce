@@ -60,6 +60,7 @@
     </condition>
 	
     <property name="ejbca.dist.path" location="${ejbca.home}/dist" />
+    <property name="ocsp.dist.path" location="${ejbca.home}/ocsp-dist" />
     <!-- Define the different modules -->
     <property name="mod.path" location="${ejbca.home}/modules" />
     <property name="mod.common.path" location="${mod.path}/common" />
@@ -68,12 +69,14 @@
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
     <property name="mod.ejbca-ejb.lib" location="${ejbca.dist.path}/ejbca-ejb.jar" />
+    <property name="mod.ocsp-ejb.lib" location="${ocsp.dist.path}/ejbca-ejb.jar" />
     <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
     <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.dist.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
     <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
     <property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-ejb-interface.jar" />
+    <property name="mod.ocsp-ejb-interface.lib" location="${mod.dist.path}/ocsp-ejb-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
     <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />
     <property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/ejbca-ws-cli.jar" />
@@ -93,6 +96,8 @@
     <property name="mod.admin-gui.war" location="${mod.dist.path}/adminweb.war" />
     <property name="mod.cmp-war.path" location="${mod.path}/ejbca-cmp-war" />
     <property name="mod.cmp-war.war" location="${mod.dist.path}/cmp.war" />
+    <property name="mod.healthcheck-war.path" location="${mod.path}/healtcheck-war" />
+    <property name="mod.healthcheck-war.war" location="${mod.dist.path}/healthcheck.war" />
     <property name="mod.publicweb-gui.path" location="${mod.path}/publicweb-gui" />
     <property name="mod.publicweb-gui.war" location="${mod.dist.path}/publicweb.war" />
     <property name="mod.scep-war.path" location="${mod.path}/ejbca-scep-war" />

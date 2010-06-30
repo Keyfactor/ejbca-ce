@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
-import java.util.Iterator;
-
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -26,13 +24,8 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.ICAToken;
-import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
-import org.ejbca.core.model.log.Admin;
-
-
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 
 /**
  * EJBCA Health Checker. 
@@ -55,18 +48,14 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	
 	private static Logger log = Logger.getLogger(EJBCAHealthCheck.class);
 
-	private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-	
-	private boolean checkPublishers = false;
-	private boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
+	private boolean checkPublishers = EjbcaConfiguration.getHealthCheckPublisherConnections();
 	
 	public void init(ServletConfig config) {
 		super.init(config);
 		if(config.getInitParameter("CheckPublishers") != null){
-			checkPublishers = config.getInitParameter("CheckPublishers").equalsIgnoreCase("TRUE");
+			log.warn("CheckPublishers servlet parameter has been dropped. Use \"healthcheck.publisherconnections\" property instead.");
 		}
 		log.debug("CheckPublishers: "+checkPublishers);
-		log.debug("CaTokenSignTest: "+caTokenSignTest);
 	}
 
 	public String checkHealth(HttpServletRequest request) {
@@ -96,39 +85,19 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		return errormessage;
 	}
 		
+	private String checkDB(){
+		log.debug("Checking database connection.");
+		return getCertificateStoreSession().getDatabaseStatus();
+	}
+
 	private String checkCAs(){
 		log.debug("Checking CAs.");
-		String retval = "";
-		Iterator iter = getCAAdminSession().getAvailableCAs().iterator();
-		while(iter.hasNext()){
-			int caid = ((Integer) iter.next()).intValue();
-			CAInfo cainfo = getCAAdminSession().getCAInfo(admin,caid,caTokenSignTest);
-			if((cainfo.getStatus() == SecConst.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()){
-				int tokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
-				if(tokenstatus == ICAToken.STATUS_OFFLINE){
-					retval +="\nCA: Error CA Token is disconnected, CA Name : " + cainfo.getName();
-					log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
-				}
-			}
-		}				
-		return retval;
+		return getCAAdminSession().healthCheck();
 	}
 	
 	private String checkPublishers(){
 		log.debug("Checking publishers.");
-		String retval = "";
-		Iterator iter = getCAAdminSession().getAuthorizedPublisherIds(admin).iterator();
-		while(iter.hasNext()){
-			Integer publisherId = (Integer) iter.next();
-			try {
-				getPublisherSession().testConnection(admin,publisherId.intValue());
-			} catch (PublisherConnectionException e) {
-				String publishername = getPublisherSession().getPublisherName(admin,publisherId.intValue());
-				retval +="\nPUBL: Cannot connect to publisher " + publishername;
-				log.error("Cannot connect to publisher " + publishername);
-			}
-		}
-		return retval;
+		return getPublisherSession().testAllConnections();
 	}
 	
 	private IPublisherSessionLocal getPublisherSession(){
@@ -149,6 +118,17 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 			return caadminsession;
 		} catch (Exception e) {
 			log.error("Error getting CAAdminSession: ", e);
+			throw new EJBException(e);
+		} 
+	}
+
+	private ICertificateStoreSessionLocal getCertificateStoreSession() {
+		try {
+			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+			ICertificateStoreSessionLocal session = home.create();
+			return session;
+		} catch (Exception e) {
+			log.error("Error getting CertificateStoreSession: ", e);
 			throw new EJBException(e);
 		} 
 	}

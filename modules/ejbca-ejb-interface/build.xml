@@ -11,7 +11,9 @@
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
 	<property name="src-xdoclet.dir" location="${ejbca.home}/tmp/bin/gensrc"/>
+	<property name="src-xdoclet-ocsp.dir" location="${ejbca.home}/tmp/bin/ocsp-gensrc"/>
 
 	<path id="compile.classpath">
 		<pathelement location="${mod.ejbca-util.lib}" />
@@ -22,9 +24,15 @@
     	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${build.dir}"/>
     </target>
 
+    <target name="build-ocsp" description="Build this module" depends="compile-ocsp">
+    	<jar destfile="${mod.ocsp-ejb-interface.lib}" basedir="${build-ocsp.dir}"/>
+    </target>
+
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
+		<delete dir="${build-ocsp.dir}" />
 		<delete file="${mod.ejbca-ejb-interface.lib}"/>
+		<delete file="${mod.ocsp-ejb-interface.lib}"/>
     </target>
 
     <target name="compile" depends="ejbca-util, ejbca-ejb-interfaces-xdoclet">
@@ -32,6 +40,16 @@
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
         	<src path="${src-xdoclet.dir}"/>
+			<exclude name="org/ejbca/core/ejb/**/*DataLocal*.java"/>
+			<exclude name="org/ejbca/core/ejb/**/*SessionSession.java"/>
+    	</javac>
+    </target>
+
+	<target name="compile-ocsp" depends="ejbca-util, ocsp-ejb-interfaces-xdoclet">
+    	<mkdir dir="${build-ocsp.dir}" />
+        <javac destdir="${build-ocsp.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
+        	<src path="${src-xdoclet-ocsp.dir}"/>
 			<exclude name="org/ejbca/core/ejb/**/*DataLocal*.java"/>
 			<exclude name="org/ejbca/core/ejb/**/*SessionSession.java"/>
     	</javac>

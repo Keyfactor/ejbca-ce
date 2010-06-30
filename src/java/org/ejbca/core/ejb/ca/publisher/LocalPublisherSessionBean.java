@@ -721,6 +721,37 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         return returnval;
     } // getPublisherName
 
+    /**
+     * Use from Healtcheck only! Test connection for all publishers. No authorization checks are performed.
+     *
+     * @return an error message or an empty String if all are ok.
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method view-type="local"
+     */
+    public String testAllConnections() {
+        log.trace(">testAllPublishers");
+        String returnval = "";
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+		try {
+			Collection allPublishers = this.publisherhome.findAll();;
+			Iterator i = allPublishers.iterator();
+			while (i.hasNext()) {
+				PublisherDataLocal pdl = (PublisherDataLocal) i.next();
+				String name = pdl.getName();
+				try {
+					pdl.getPublisher().testConnection(admin);
+				} catch (PublisherConnectionException pe) {
+					String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);            	
+					getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, pe);
+					returnval +="\n" + msg;
+				}
+			}
+		} catch (FinderException e) {
+			returnval += "Could not access publishers.";
+		}
+        log.trace("<testAllPublishers");
+        return returnval;
+    }
 
     private Integer findFreePublisherId() {
         Random ran = (new Random((new Date()).getTime()));

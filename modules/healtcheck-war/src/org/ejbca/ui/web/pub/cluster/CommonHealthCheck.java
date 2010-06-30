@@ -18,8 +18,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
@@ -28,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.util.JDBCUtil;
 
 /** Base class for health checkers with functionality that is common to at least
  * both EJBCA and External OCSP.
@@ -40,7 +36,6 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 	private static final Logger log = Logger.getLogger(CommonHealthCheck.class);
 
 	private long minfreememory = EjbcaConfiguration.getHealthCheckAmountFreeMem();
-	private String checkDBString = EjbcaConfiguration.getHealthCheckDbQuery();
 	private String maintenanceFile = EjbcaConfiguration.getHealthCheckMaintenanceFile();
 	private String maintenancePropertyName = EjbcaConfiguration.getHealthCheckMaintenancePropertyName();
 
@@ -61,23 +56,6 @@ public abstract class CommonHealthCheck implements IHealthCheck {
           retval = "\nMEM: Error Virtual Memory is about to run out, currently free memory :" + Runtime.getRuntime().freeMemory();	
         }		
 		
-		return retval;
-	}
-
-	protected String checkDB(){
-		log.debug("Checking database connection.");
-		String retval = "";
-		Connection con = null;
-		try{	
-		  con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-		  Statement statement = con.createStatement();
-		  statement.execute(checkDBString);		  
-		}catch(Exception e){
-			retval = "\nDB: Error creating connection to EJBCA Database: "+e.getMessage();
-			log.error("Error creating connection to EJBCA Database.",e);
-		} finally {
-			JDBCUtil.close(con);
-		}
 		return retval;
 	}
 

@@ -3254,6 +3254,33 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	}
     	return createddeltacrls;
     }
+    
+    /**
+     * Used by healthcheck. Validate that CAs are online and optionally performs a signature test.
+     * @return an error message or an empty String if all are ok.
+     * 
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method view-type="local"
+     */
+    public String healthCheck() {
+		String returnval = "";
+    	final Admin admin = new Admin(Admin.TYPE_INTERNALUSER); 
+    	boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
+		log.debug("CaTokenSignTest: "+caTokenSignTest);
+		Iterator iter = getAvailableCAs().iterator();
+		while(iter.hasNext()){
+			int caid = ((Integer) iter.next()).intValue();
+			CAInfo cainfo = getCAInfo(admin, caid, caTokenSignTest);
+			if((cainfo.getStatus() == SecConst.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()){
+				int tokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
+				if(tokenstatus == ICAToken.STATUS_OFFLINE){
+					returnval +="\nCA: Error CA Token is disconnected, CA Name : " + cainfo.getName();
+					log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
+				}
+			}
+		}				
+		return returnval;
+    }
 
     //
     // Private methods
