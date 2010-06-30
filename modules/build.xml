@@ -37,6 +37,7 @@
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
 	
 	<target name="ejbca-entity" description="Build EJBCA JPA entity library">
@@ -146,6 +147,10 @@
 
 	<target name="scep-war" description="Build the SCEP WAR">
 		<ant antfile="${mod.scep-war.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="webdist-war" description="Build the WebDist WAR">
+		<ant antfile="${mod.webdist-war.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
 	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->

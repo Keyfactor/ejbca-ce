@@ -218,15 +218,6 @@
     </target>
     
     <!-- =================================================================== -->
-    <!-- Build webdist part                                                  -->
-    <!-- =================================================================== -->
-    <target name="webdist.war" depends="compile">
-        <war destfile="${webdistwar}" webxml="${webdist.src}/WEB-INF/web.xml">
-            <fileset dir="${webdist.src}" excludes="WEB-INF/web.xml" />
-        </war>
-    </target>
-
-    <!-- =================================================================== -->
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
     <target name="ejbca-ejb.jar" depends="compile, jbosscmptcpclasspath">
@@ -459,6 +450,7 @@
                 <include name="publicweb.war" />
                 <include name="scep.war" />
                 <include name="healthcheck.war" />
+                <include name="webdist.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -914,6 +906,10 @@
 
     <target name="scep.war">
     	<ant antfile="modules/build.xml" target="scep-war" />
+    </target>
+
+    <target name="webdist.war">
+    	<ant antfile="modules/build.xml" target="webdist-war" />
     </target>
 
 	<target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
