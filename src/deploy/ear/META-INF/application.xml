@@ -26,7 +26,7 @@ applications for enrollment, distribution and administration.
     </module>
     <module>
         <web>
-            <web-uri>status.war</web-uri>
+            <web-uri>ocsp.war</web-uri>
             <context-root>/@ejbca@/publicweb/status</context-root>
         </web>
     </module>

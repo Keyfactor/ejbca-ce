@@ -147,15 +147,6 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Build status part                                                                                                                             -->
-    <!-- =================================================================== -->
-    <target name="status.war" depends="compile">
-        <war destfile="${statuswar}" webxml="${src.dd}/status/WEB-INF/web.xml">
-            <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
-        </war>
-    </target>
-	
-    <!-- =================================================================== -->
     <!-- Build doc part                                                                                                                             -->
     <!-- =================================================================== -->
     <target name="doc.war" if="doc.war.enabled">
@@ -198,15 +189,6 @@
 			</fileset>
         </war>
     </target>   
-
-    <!-- =================================================================== -->
-    <!-- Build standalone ocsp part                                          -->
-    <!-- =================================================================== -->
-    <target name="ocsp-war" depends="ocsp-compile">
-        <war destfile="${ocspwar}" webxml="${ocsp-src.dd}/status/WEB-INF/web.xml">
-            <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
-        </war>
-    </target>
 
     <!-- =================================================================== -->
     <!-- Build sampleauth part                                               -->
@@ -451,6 +433,7 @@
                 <include name="scep.war" />
                 <include name="healthcheck.war" />
                 <include name="webdist.war" />
+                <include name="ocsp.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -485,6 +468,7 @@
             </fileset>
             <fileset dir="modules/dist">
                 <include name="healthcheck.war" />
+                <include name="ocsp.war" />
             </fileset>
 	</ear>
     </target>
@@ -906,6 +890,14 @@
 
     <target name="scep.war">
     	<ant antfile="modules/build.xml" target="scep-war" />
+    </target>
+
+    <target name="status.war">
+    	<ant antfile="modules/build.xml" target="ocsp-ejbca-war" />
+    </target>
+	
+    <target name="ocsp-war">
+    	<ant antfile="modules/build.xml" target="ocsp-ocsp-war" />
     </target>
 
     <target name="webdist.war">

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="healthcheck-war" default="ejbca-build">
+<project name="ocsp-war" default="ejbca-build">
     <description>
-            Build file for the HealthCheck Web component
+            Build file for the OCSP Web component
     </description>
 
-	<dirname property="this.dir" file="${ant.file.healthcheck-war}"/>
+	<dirname property="this.dir" file="${ant.file.ocsp-war}"/>
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
@@ -37,17 +37,17 @@
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${build-ocsp.dir}" />
-    	<delete file="${mod.healthcheck-war.war}" />
+    	<delete file="${mod.ocsp-war.war}" />
     </target>
 
     <target name="ejbca-build" description="Build this module" depends="ejbca-compile">
-        <war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml">
+        <war destfile="${mod.ocsp-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml">
             <fileset dir="${build.dir}"/>
         </war>
     </target>
 
 	<target name="ocsp-build" description="Build this module" depends="ocsp-compile">
-		<war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml">
+		<war destfile="${mod.ocsp-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml">
 			<fileset dir="${build-ocsp.dir}"/>
 		</war>
 	</target>
@@ -55,7 +55,7 @@
     <target name="ejbca-compile" depends="ejbca-ejb-interface, ejbca-util, ejbca-ejb">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java">
+			excludes="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java">
         	<classpath>
         		<path refid="compile-ejbca.classpath"/>
         	</classpath>
@@ -65,7 +65,7 @@
 	<target name="ocsp-compile" depends="ocsp-ejb-interface, ocsp-ejb">
 		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
 		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java">
+			excludes="org/ejbca/ui/web/protocol/OCSPServlet.java">
 			<classpath>
 				<path refid="compile-ocsp.classpath"/>
 			</classpath>
