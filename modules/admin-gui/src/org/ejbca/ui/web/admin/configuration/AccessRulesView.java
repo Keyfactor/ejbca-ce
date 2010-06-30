@@ -26,7 +26,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * A class used as a help class for displaying access rules
  *
  * @author  TomSelleck
- * @version $Id: AccessRulesView.java 9005 2010-05-04 12:09:54Z anatom $ 
+ * @version $Id$ 
  */
 public class AccessRulesView implements java.io.Serializable {
 

@@ -28,7 +28,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java 8511 2010-01-07 08:42:04Z anatom $
+ * @version $Id$
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.

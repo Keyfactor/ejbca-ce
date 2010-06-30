@@ -44,7 +44,7 @@ import org.ejbca.util.Base64;
  * cert, nscert and iecert also takes  parameters issuer and certificate sn were issuer is the DN of issuer and certificate serienumber 
  * is in hex format.
  *
- * @version $Id: EndEntityCertServlet.java 9024 2010-05-06 14:09:14Z anatom $
+ * @version $Id$
  *
  * @web.servlet name = "EndEntityCert"
  *              display-name = "EndEntityCertServlet"

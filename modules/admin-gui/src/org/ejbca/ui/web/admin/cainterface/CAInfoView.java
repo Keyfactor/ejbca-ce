@@ -34,7 +34,7 @@ import org.ejbca.util.SimpleTime;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java 9005 2010-05-04 12:09:54Z anatom $
+ * @version $Id$
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
 

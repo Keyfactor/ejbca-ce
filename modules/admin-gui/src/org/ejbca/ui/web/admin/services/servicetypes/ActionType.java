@@ -19,7 +19,7 @@ package org.ejbca.ui.web.admin.services.servicetypes;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ActionType.java 5585 2008-05-01 20:55:00Z anatom $
+ * @version $Id$
  */
 public abstract class ActionType extends ServiceType {
 

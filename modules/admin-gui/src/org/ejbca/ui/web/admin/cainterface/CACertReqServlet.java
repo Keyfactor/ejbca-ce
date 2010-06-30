@@ -54,7 +54,7 @@ import org.ejbca.util.RequestMessageUtils;
  * <li>certpkcs7 - sends a certificate in pkcs7 format</li>
  * </ul>
  *
- * @version $Id: CACertReqServlet.java 9170 2010-06-11 08:25:20Z anatom $
+ * @version $Id$
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"

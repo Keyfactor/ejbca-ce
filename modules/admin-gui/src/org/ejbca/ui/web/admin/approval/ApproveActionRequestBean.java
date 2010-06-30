@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
  * from javascript
  * 
  * @author Philip Vendil
- * @version $Id: ApproveActionRequestBean.java 5585 2008-05-01 20:55:00Z anatom $
+ * @version $Id$
  */
 public class ApproveActionRequestBean {
   private int uniqueId;

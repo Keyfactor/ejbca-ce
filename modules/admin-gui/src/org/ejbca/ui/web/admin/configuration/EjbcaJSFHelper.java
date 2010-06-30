@@ -39,7 +39,7 @@ import org.ejbca.core.model.log.Admin;
  * Contains methods for such things as language, themes ext
  * 
  * @author Philip Vendil
- * $Id: EjbcaJSFHelper.java 9005 2010-05-04 12:09:54Z anatom $
+ * $Id$
  */
 
 public class EjbcaJSFHelper  {

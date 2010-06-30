@@ -49,7 +49,7 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
  * @author Tham Wickenberg
- * @version $Id: CAActivationMBean.java 9087 2010-05-25 11:31:33Z anatom $
+ * @version $Id$
  */
 public class CAActivationMBean extends BaseManagedBean implements Serializable {
 

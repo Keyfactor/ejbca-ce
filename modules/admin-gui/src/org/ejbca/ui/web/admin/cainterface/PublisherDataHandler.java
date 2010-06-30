@@ -31,7 +31,7 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  * A class handling the hardtoken profile data in the webinterface.
  *
  * @author  TomSelleck
- * @version $Id: PublisherDataHandler.java 8255 2009-11-05 13:32:22Z jeklund $
+ * @version $Id$
  */
 public class PublisherDataHandler implements Serializable {
 

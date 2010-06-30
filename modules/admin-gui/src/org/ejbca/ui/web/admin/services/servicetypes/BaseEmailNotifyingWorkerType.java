@@ -29,7 +29,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * 
  * @author Philip Vendil
  * 
- * @version $Id: BaseEmailNotifyingWorkerType.java 8347 2009-11-26 18:01:35Z jeklund $
+ * @version $Id$
  *
  */
 public class BaseEmailNotifyingWorkerType extends BaseWorkerType {

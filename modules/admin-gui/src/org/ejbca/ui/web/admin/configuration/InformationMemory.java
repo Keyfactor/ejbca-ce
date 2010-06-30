@@ -50,7 +50,7 @@ import org.ejbca.ui.web.admin.rainterface.EndEntityProfileNameProxy;
  * A class used to improve performance by proxying authorization information about the administrator.
  * It should be used in all jsp interface bean classes. 
  * @author  TomSelleck
- * @version $Id: InformationMemory.java 8666 2010-02-18 15:09:46Z anatom $
+ * @version $Id$
  */
 public class InformationMemory implements java.io.Serializable {
     

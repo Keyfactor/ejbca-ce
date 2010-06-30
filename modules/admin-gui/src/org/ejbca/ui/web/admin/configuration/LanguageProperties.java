@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 
 /** Properties bag that handles "double type encoding".
  * 
- * @version $Id: LanguageProperties.java 9005 2010-05-04 12:09:54Z anatom $
+ * @version $Id$
  */
 public class LanguageProperties extends java.util.Properties {  
     private static Logger log = Logger.getLogger(LanguageProperties.class);

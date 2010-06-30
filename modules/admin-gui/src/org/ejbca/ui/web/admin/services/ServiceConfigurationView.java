@@ -39,7 +39,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: ServiceConfigurationView.java 8311 2009-11-23 11:05:01Z jeklund $
+ * @version $Id$
  */
 public class ServiceConfigurationView implements Serializable{
 	private static final Logger log = Logger.getLogger(ServiceConfigurationView.class);

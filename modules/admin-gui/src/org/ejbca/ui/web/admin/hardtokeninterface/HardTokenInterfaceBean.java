@@ -50,7 +50,7 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
  * A java bean handling the interface between EJBCA hard token module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: HardTokenInterfaceBean.java 8420 2009-12-09 18:30:54Z jeklund $
+ * @version $Id$
  */
 public class HardTokenInterfaceBean implements java.io.Serializable {
 

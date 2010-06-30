@@ -74,7 +74,7 @@ import org.ejbca.util.CertTools;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java 9297 2010-06-28 09:35:24Z primelars $
+ * @version $Id$
  */
 public class CAInterfaceBean implements java.io.Serializable {
 

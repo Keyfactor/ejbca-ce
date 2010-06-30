@@ -23,7 +23,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ServiceType.java 5585 2008-05-01 20:55:00Z anatom $
+ * @version $Id$
  */
 public abstract class ServiceType implements Serializable{
 	

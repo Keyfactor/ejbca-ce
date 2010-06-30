@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java 9087 2010-05-25 11:31:33Z anatom $
+ * @version $Id$
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 

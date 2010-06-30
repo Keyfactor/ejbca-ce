@@ -28,7 +28,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * A class used as a help class for displaying LogEntries.
  *
  * @author  TomSelleck
- * @version $Id: LogEntryView.java 8444 2009-12-16 15:27:03Z anatom $
+ * @version $Id$
  */
 public class LogEntryView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
