@@ -36,6 +36,7 @@
 		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.ocsp-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
@@ -143,6 +144,14 @@
 
 	<target name="healthcheck-ocsp-war" description="Build the OCSP Helthcheck WAR">
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="ocsp-build" inheritall="false"/>
+	</target>
+
+	<target name="ocsp-ejbca-war" description="Build the EJBCA OCSP WAR">
+		<ant antfile="${mod.ocsp-war.path}/build.xml" target="ejbca-build" inheritall="false"/>
+	</target>
+
+	<target name="ocsp-ocsp-war" description="Build the External OCSP Responder OCSP WAR">
+		<ant antfile="${mod.ocsp-war.path}/build.xml" target="ocsp-build" inheritall="false"/>
 	</target>
 
 	<target name="scep-war" description="Build the SCEP WAR">
