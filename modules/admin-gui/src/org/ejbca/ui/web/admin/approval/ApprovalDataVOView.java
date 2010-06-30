@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
  * 
  * @author Philip Vendil
  *
- * $id$
+ * @version $Id$
  */
 public class ApprovalDataVOView  implements Serializable{
 	
