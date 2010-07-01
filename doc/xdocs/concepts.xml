@@ -54,7 +54,7 @@ An end-entity is a user, such as an e-mail client, a web server, a web browser o
 <section name="EJBCA specific concepts">
 <subsection name="Certificate Profile">
 <p>
-A certificate profile determines non uses specific content and behaviour of certificates. The largest part is extensions and here you decide if a specific extension is present and wether it is critical or not. Some extensions are populated with a value, where it is the same value for all certificates such as CRLDistributionPoint. For other extensions only the presence is determined, where the value is user- or cert-specific such as SubjectAlternativeName. Here is also determined if these certificates will be published and with which publisher.
+A certificate profile determines non user specific content and behavior of certificates. The largest part is extensions and here you decide if a specific extension is present and wether it is critical or not. Some extensions are populated with a value, where it is the same value for all certificates such as CRLDistributionPoint. For other extensions only the presence is determined, where the value is user- or cert-specific such as SubjectAlternativeName. Here is also determined if these certificates will be published and with which publisher.
 </p>
 </subsection>
 <subsection name="End Entity Profile">
@@ -62,7 +62,7 @@ A certificate profile determines non uses specific content and behaviour of cert
 End Entity Profiles determine what data can or must be present for users connected with this profile. Some values can also be pre-determined such as the organization, o in the dn.
 It contains all information, that is specific to each individual end entity, for issuance of certificates.
 <br/>
-When adding a user in the pki, the user must be conneted with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
+When adding a user in the pki, the user must be connected with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
 </p>
 </subsection>
 <subsection name="CA Token">
