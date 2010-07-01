@@ -154,7 +154,8 @@ public class CAsTest extends TestCase {
             		true,
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
             		);
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -297,7 +298,8 @@ public class CAsTest extends TestCase {
                     true, // include in Health Check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
 
 
@@ -400,7 +402,8 @@ public class CAsTest extends TestCase {
                     true, // Include in healthCheck
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
             );
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -500,7 +503,8 @@ public class CAsTest extends TestCase {
                     true, // Include in healthCheck
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
             TestTools.getCAAdminSession().createCA(admin, cainfo);
 
@@ -589,7 +593,8 @@ public class CAsTest extends TestCase {
                     true, // Include in HealthCheck
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -683,7 +688,8 @@ public class CAsTest extends TestCase {
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -759,7 +765,8 @@ public class CAsTest extends TestCase {
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -824,7 +831,8 @@ public class CAsTest extends TestCase {
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -884,7 +892,8 @@ public class CAsTest extends TestCase {
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -1056,7 +1065,8 @@ public class CAsTest extends TestCase {
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -1114,7 +1124,8 @@ public class CAsTest extends TestCase {
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -1172,7 +1183,8 @@ public class CAsTest extends TestCase {
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
             
             TestTools.getCAAdminSession().createCA(admin, cvccainfo);
@@ -1383,7 +1395,8 @@ public class CAsTest extends TestCase {
             		true,
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
             		);
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -1503,7 +1516,8 @@ public class CAsTest extends TestCase {
             		true,
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
             		);
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);

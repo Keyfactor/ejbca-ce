@@ -457,7 +457,8 @@ public class TestTools {
         		true,
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
-                false // isDoEnforceUniqueSubjectDNSerialnumber
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true // useCertReqHistory
         		);
 
         try {

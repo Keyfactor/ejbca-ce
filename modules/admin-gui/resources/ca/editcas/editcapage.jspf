@@ -608,7 +608,7 @@ function checkallfields(){
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DOENFORCEUNIQUEPUBLICKEYS") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce unique public keys") %> <br>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce%20unique%20public%20keys") %> <br>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS %>" value="<%=CHECKBOX_VALUE %>" 
@@ -619,7 +619,7 @@ function checkallfields(){
     <tr id="Row<%=row++%2%>">
     <td width="50%"  align="right"> 
       <%= ejbcawebbean.getText("DOENFORCEUNIQUEDN") %>
-      <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce unique DN") %> <br>
+      <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce%20unique%20DN") %> <br>
     </td>
     <td width="50%"> 
       <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEDN %>" value="<%=CHECKBOX_VALUE %>" 
@@ -631,11 +631,23 @@ function checkallfields(){
     <tr id="Row<%=row++%2%>">
     <td width="50%"  align="right"> 
       <%= ejbcawebbean.getText("DOENFORCEUNIQUESUBJECTDNSERIALNUMBER") %>
-      <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce unique Subject DN serialNumber") %> <br>
+      <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce%20unique%20Subject%20DN%20serialNumber") %> <br>
     </td>
     <td width="50%"> 
       <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER %>" value="<%=CHECKBOX_VALUE %>" 
           <% if((editca && cainfo.isDoEnforceUniqueSubjectDNSerialnumber()))
+               out.write("CHECKED");%>>         
+    </td>
+    </tr>
+
+    <tr id="Row<%=row++%2%>">
+    <td width="50%"  align="right"> 
+      <%= ejbcawebbean.getText("USECERTREQHISTORY") %>
+      <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20Certificate%20Request%20History") %> <br>
+    </td>
+    <td width="50%"> 
+      <input type="checkbox" name="<%=CHECKBOX_USECERTREQHISTORY %>" value="<%=CHECKBOX_VALUE %>" 
+          <% if((editca && cainfo.isUseCertReqHistory()))
                out.write("CHECKED");%>>         
     </td>
     </tr>

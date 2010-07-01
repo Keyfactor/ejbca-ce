@@ -1565,7 +1565,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		}
     		oldcadata = cadatahome.findByPrimaryKey(new Integer(caid));
     	}catch(javax.ejb.FinderException fe) {}
-
+    	// If it did not exist with a certain DN (caid) perhaps a CA with the same CA name exists?
     	if (oldcadata == null) {
         	try{
         		oldcadata = cadatahome.findByName(cainfo.getName());
@@ -1790,7 +1790,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				false,
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistoru
     				);
     	} else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
     		cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(),
@@ -1804,7 +1805,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				false,
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
     	}
     	if(cainfo instanceof X509CAInfo){
@@ -2573,7 +2575,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                                   true, // Include in HealthCheck
 			                                   true, // isDoEnforceUniquePublicKeys
 			                                   true, // isDoEnforceUniqueDistinguishedName
-			                                   false // isDoEnforceUniqueSubjectDNSerialnumber
+			                                   false, // isDoEnforceUniqueSubjectDNSerialnumber
+			                                   true // useCertReqHistory
 			                                   );
 			ca = new X509CA((X509CAInfo)cainfo);
 		} else if (caSignatureCertificate.getType().equals("CVC")) {
@@ -2593,7 +2596,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
                     true, // Include in HealthCheck
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
 			ca = new CVCCA((CVCCAInfo)cainfo);
 		}

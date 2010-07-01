@@ -1935,11 +1935,46 @@ public class SignSessionTest extends TestCase {
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
     } // test31TestProfileSignatureAlgorithm
     
-    /**
-     * creates new user
-     *
-     * @throws Exception if en error occurs...
-     */
+    public void test32TestCertReqHistory() throws Exception {
+
+        // Configure CA not to store certreq history
+        CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, rsacaid);
+        cainfo.setUseCertReqHistory(true);
+        cainfo.setDoEnforceUniquePublicKeys(false);
+        TestTools.getCAAdminSession().editCA(admin, cainfo);
+
+        // New random username and create cert
+    	String username = TestTools.genRandomUserName();
+        TestTools.getUserAdminSession().addUser(admin,username,"foo123","C=SE,O=AnaTom,CN="+username,null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+        X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, username, "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+
+        // Check that certreq history was created
+        List history = TestTools.getCertificateStoreSession().getCertReqHistory(admin, username);
+        assertEquals(1, history.size());
+
+    	TestTools.getUserAdminSession().deleteUser(admin, username);
+
+        // Configure CA not to store certreq history
+        cainfo.setUseCertReqHistory(false);
+        TestTools.getCAAdminSession().editCA(admin, cainfo);
+    	// New random username and create cert
+    	username = TestTools.genRandomUserName();
+        TestTools.getUserAdminSession().addUser(admin,username,"foo123","C=SE,O=AnaTom,CN="+username,null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+        cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, username, "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+
+        // Check that certreq history was not created
+        history = TestTools.getCertificateStoreSession().getCertReqHistory(admin, username);
+        assertEquals(0, history.size());
+
+    	TestTools.getUserAdminSession().deleteUser(admin, username);
+
+        // Reset CA info
+        cainfo.setUseCertReqHistory(true);
+        TestTools.getCAAdminSession().editCA(admin, cainfo);
+    } // test32TestCertReqHistory
+    
     public void test99CleanUp() throws Exception {
         log.trace(">test99CleanUp()");
 

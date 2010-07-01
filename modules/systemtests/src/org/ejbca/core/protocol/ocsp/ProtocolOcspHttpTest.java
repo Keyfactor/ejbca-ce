@@ -1119,7 +1119,8 @@ public class ProtocolOcspHttpTest extends TestCase {
                     true, // Include in Health Check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
@@ -1222,7 +1223,8 @@ public class ProtocolOcspHttpTest extends TestCase {
                     true, // Include in Health Check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
-                    false // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true // useCertReqHistory
                     );
 
             TestTools.getCAAdminSession().createCA(admin, cainfo);
