@@ -39,27 +39,20 @@
         <path refid="lib.tomahawk.classpath"/>
     </path>
 
-    <target name="build" description="Build this module" depends="validate">
-        <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml">
-            <fileset dir="${build.dir}">
-                <exclude name="WEB-INF/web.xml"/>
-            </fileset>
-        </war>
-    </target>
-
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
     	<delete file="${mod.admin-gui.war}" />
     	<delete dir="${jasper-temp.dir}"/>
     </target>
 	
+    <target name="build" description="Build this module" depends="validate">
+        <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
+    </target>
+
     <target name="compile" depends="setup, ejbca-ejb-interface, ejbca-util, ejbca-ejb">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
-        	<classpath>
-        		<path refid="compile.classpath"/>
-        	</classpath>
-    	</javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+        	classpathref="compile.classpath"/>
     </target>
 	
     <target name="validate" depends="compile">
@@ -88,15 +81,13 @@
 			<classpath refid="jasper.classpath"/>
 		</depend>
 		<javac srcdir="${jasper-temp.dir}/jspc" destdir="${jasper-temp.dir}/classes" debug="on"
-			includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
-            <classpath refid="jasper.classpath"/>
-        </javac>
+			includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="jasper.classpath"/>
     </target>
 
-    <target name="setup" depends="">
+    <target name="setup">
     	<mkdir dir="${build.dir}" />
         <copy todir="${build.dir}">
-            <fileset dir="${resources.dir}" />
+            <fileset dir="${resources.dir}"/>
         </copy>
         <copy todir="${build.dir}/WEB-INF/lib" file="${ejbca.home}/lib/myfaces/tomahawk-1.1.6.jar" failonerror="true"/>
 		<delete>
