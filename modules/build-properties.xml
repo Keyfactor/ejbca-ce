@@ -103,6 +103,8 @@
     <property name="mod.ocsp-war.path" location="${mod.path}/ocsp-war" />
     <property name="mod.ocsp-war.war" location="${mod.dist.path}/ocsp.war" />
     <property name="mod.ocsp-war-ocsp-build.path" location="${mod.path}/ocsp-war/build-ocsp/WEB-INF/classes" />
+    <property name="mod.renew-war.path" location="${mod.path}/ejbca-renew-war" />
+    <property name="mod.renew-war.war" location="${mod.dist.path}/renew.war" />
     <property name="mod.scep-war.path" location="${mod.path}/ejbca-scep-war" />
     <property name="mod.scep-war.war" location="${mod.dist.path}/scep.war" />
     <property name="mod.webdist-war.path" location="${mod.path}/ejbca-webdist-war" />

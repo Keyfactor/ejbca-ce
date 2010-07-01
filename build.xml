@@ -166,38 +166,6 @@
     </target>
 	
     <!-- =================================================================== -->
-    <!-- Build renewal web part                                              -->
-    <!-- =================================================================== -->
-    <target name="renew.war" depends="compile, ejbca-ejb.jar" if="renew.war.enabled">
-    	
-    	<replace file="${eardd.src}/META-INF/application.xml"
-    			token="!--@renew.war@-->" value="module>&lt;web>&lt;web-uri>renew.war&lt;/web-uri>&lt;context-root>/${app.name}/renew&lt;/context-root>&lt;/web>&lt;/module>"/>
-    	
-    	<mkdir dir="${renew.build}/WEB-INF/lib"/>
-	    <copy todir="${renew.build}">
-	        <fileset dir="${renew.src}"/>
-	    </copy>
-        <copy todir="${renew.build}/WEB-INF/lib">
-            <fileset dir="${lib}/myfaces" >
-				<include name="jstl*.jar"/>
-				<include name="standard*.jar"/>
-            </fileset>
-        </copy>
-
-        <!-- Test compile the public pages to see it compiles ok -->
-    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled
-    	<jsp-compile uriroot="${renew.build}" /> 
-    	-->
-    	
-
-        <war destfile="${renewwar}" webxml="${renew.build}/WEB-INF/web.xml">
-            <fileset dir="${renew.build}">
-            	<exclude name="WEB-INF/web.xml"/>
-			</fileset>
-        </war>
-    </target>   
-
-    <!-- =================================================================== -->
     <!-- Build sampleauth part                                               -->
     <!-- =================================================================== -->
     <target name="sampleauth.war" depends="compile">
@@ -409,6 +377,10 @@
 			<istrue value="${xkms.enabled}"/>
 		</condition>
     	<replace file="${eardd.src}/META-INF/application.xml" token="!--@xkms.war@-->" value="${xkms.enabled.replace-string}"/>
+		<condition property="renew.enabled.replace-string" else="!--@renew.war@-->" value="module>&lt;web>&lt;web-uri>renew.war&lt;/web-uri>&lt;context-root>/${app.name}/renew&lt;/context-root>&lt;/web>&lt;/module>">
+			<istrue value="${web.renewalenabled}"/>
+		</condition>
+		<replace file="${eardd.src}/META-INF/application.xml" token="!--@renew.war@-->" value="${renew.enabled.replace-string}"/>
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
@@ -441,6 +413,7 @@
                 <include name="healthcheck.war" />
                 <include name="webdist.war" />
                 <include name="ocsp.war" />
+                <include name="renew.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -894,6 +867,10 @@
     <target name="ocsphealthcheck.war">
     	<ant antfile="modules/build.xml" target="healthcheck-ocsp-war" />
     </target>	
+
+    <target name="renew.war" if="renew.war.enabled">
+    	<ant antfile="modules/build.xml" target="renew-war" />
+    </target>   
 
     <target name="scep.war">
     	<ant antfile="modules/build.xml" target="scep-war" />
