@@ -426,7 +426,7 @@ JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version t
       <question>How do I manipulate EJBCA-keystores using Suns 'keytool'?</question>
 	  <answer><p>EJBCA use PKCS12 format for the keystore because it is a standard, and I like standards.
 	  Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
-	  Put the BouncyCastle provider 'bcprov-jkd15.jar' in 'jre/lib/ext', the default classpath for extensions in java.
+	  Put the BouncyCastle provider 'bcprov-jkd16-145.jar' in 'jre/lib/ext', the default classpath for extensions in java.
 	  Now it should be possible to run:
 	  </p>
 	  <source>

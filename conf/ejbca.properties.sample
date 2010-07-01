@@ -24,8 +24,8 @@
 
 # which java version to use 15 for jdk 1.5 and jdk 6 (note use 15 for jdk6 as well)
 # In EJBCA >= 3.5 only jdk >= 5 is supported, so leave this value as it is.
-# default: 15
-#java.ver=15
+# default: 16
+#java.ver=16
 
 # To prevent accidental runs of tests or deploying the wrong thing in a production environment, we
 # could prevent this by setting this variable to either "ca" or "ocsp".
