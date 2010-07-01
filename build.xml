@@ -407,9 +407,9 @@
                 <exclude name="META-INF/application.xml" />
             </fileset>
             <fileset dir=".">
-                <include name="${lib}/bcmail-jdk${java.ver}.jar" />
-                <include name="${lib}/bcprov-jdk${java.ver}.jar" />
-                <include name="${lib}/bctsp-jdk${java.ver}.jar" />
+                <include name="${lib}/bcmail-jdk${java.ver}-145.jar" />
+                <include name="${lib}/bcprov-jdk${java.ver}-145.jar" />
+                <include name="${lib}/bctsp-jdk${java.ver}-145.jar" />
                 <include name="${lib}/cert-cvc.jar" />
                 <include name="${lib}/log4j.jar" />
                 <include name="${lib}/ldap.jar" />
@@ -452,8 +452,8 @@
     <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war">
         <ear destfile="${ocspear}" appxml="${ocsp-eardd.src}/META-INF/application.xml"> 
             <fileset dir=".">
-                <include name="${lib}/bcmail-jdk${java.ver}.jar" />
-                <include name="${lib}/bcprov-jdk${java.ver}.jar" />
+                <include name="${lib}/bcmail-jdk${java.ver}-145.jar" />
+                <include name="${lib}/bcprov-jdk${java.ver}-145.jar" />
                 <include name="${lib}/cert-cvc.jar" />
                 <include name="${lib}/log4j.jar" />
                 <include name="${lib}/ldap.jar" />
