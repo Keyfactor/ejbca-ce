@@ -24,7 +24,6 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 
@@ -76,8 +75,8 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			if (keystorepwd == null) {
 				// prompt for keystore password
 				 System.out.print("Enter CA token password: ");
-				 ConsolePasswordReader r = new ConsolePasswordReader();
-				 keystorepwd = String.valueOf(r.readPassword());            	
+			
+				 keystorepwd = String.valueOf(System.console().readPassword());            	
 			}
 
 			getPrintStream().println("Importing certificate for CA: "+caname);

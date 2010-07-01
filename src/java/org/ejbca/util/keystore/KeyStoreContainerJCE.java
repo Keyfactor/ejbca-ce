@@ -23,23 +23,19 @@ import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
-import org.ejbca.ui.cli.util.PasswordReader;
-
 /** A keystore container for Java keystores such as the nCipher JCE provider.
  * 
  * @version $Id$
  */
 public class KeyStoreContainerJCE extends KeyStoreContainerBase {
-    private final PasswordReader passwordReader;
+   
     private char passPhraseGetSetEntry[] = null;
     private KeyStoreContainerJCE( final KeyStore _keyStore,
                                   final String _providerName,
                                   final String _ecryptProviderName,
-                                  final byte storeID[],
-                                  final PasswordReader _passwordReader) throws Exception {
+                                  final byte storeID[]) throws Exception {
         super( _keyStore, _providerName, _ecryptProviderName );
-        this.passwordReader = _passwordReader!=null ? _passwordReader : new ConsolePasswordReader();
+       
         load(storeID);
     }
 
@@ -53,14 +49,12 @@ public class KeyStoreContainerJCE extends KeyStoreContainerBase {
         return getIt( keyStoreType,
                       providerClassName,
                       encryptProviderClassName,
-                      storeID,
-                      null );
+                      storeID );
     }
     static KeyStoreContainer getIt(final String keyStoreType,
                                    final String providerClassName,
                                    final String encryptProviderClassName,
-                                   final byte storeID[],
-                                   final PasswordReader passwordReader) throws Exception {
+                                   final byte storeID[]) throws Exception {
         final String providerName = getProviderName(providerClassName);
         final String ecryptProviderName; {
             String tmp;
@@ -76,12 +70,11 @@ public class KeyStoreContainerJCE extends KeyStoreContainerBase {
         return new KeyStoreContainerJCE( keyStore,
                                          providerName,
                                          ecryptProviderName,
-                                         storeID,
-                                         passwordReader);
+                                         storeID);
     }
     private void setPassWord(boolean isKeystoreException) throws IOException {
         System.err.println((isKeystoreException ? "Setting key entry in keystore" : "Loading keystore")+". Give password of inserted card in slot:");
-        final char result[] = this.passwordReader.readPassword();
+        final char result[] = System.console().readPassword();
         if ( isKeystoreException ) {
             this.passPhraseGetSetEntry = result;
         } else {

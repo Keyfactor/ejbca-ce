@@ -24,7 +24,6 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.CryptoProviderTools;
 
 /**
@@ -53,8 +52,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             } else {
             	getLogger().info("Enter authorization code: ");
                 // Read the password, but mask it so we don't display it on the console
-                ConsolePasswordReader r = new ConsolePasswordReader();
-                authorizationcode = String.valueOf(r.readPassword());            	
+                authorizationcode = String.valueOf(System.console().readPassword());            	
             }
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id

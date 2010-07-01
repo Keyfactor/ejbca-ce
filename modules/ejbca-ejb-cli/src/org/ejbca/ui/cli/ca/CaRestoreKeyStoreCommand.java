@@ -18,7 +18,6 @@ import java.security.KeyStore;
 import java.util.Enumeration;
 
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.FileTools;
 
 /**
@@ -55,8 +54,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 			}
 			getLogger().info("Enter keystore password: ");
 			// Read the password, but mask it so we don't display it on the console
-			ConsolePasswordReader r = new ConsolePasswordReader();
-			String kspwd = String.valueOf(r.readPassword());
+			String kspwd = String.valueOf(System.console().readPassword());
 			// Read old keystore file in the beginning so we know it's good
 			byte[] keystorebytes = null;
 			keystorebytes = FileTools.readFiletoBuffer(p12file);
