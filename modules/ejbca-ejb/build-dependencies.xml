@@ -352,6 +352,7 @@
     			<exclude name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
+    			<include name="org/ejbca/config/OcspConfiguration.java"/>	<!-- Required by external OCSP's LocalCertificateStoreOnlyDataSessionBean -->
     			<include name="org/ejbca/core/ejb/ca/store/**/*.java"/>
     			<include name="org/ejbca/core/model/ca/store/**/*.java"/>
     			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistoryData*.java"/>
