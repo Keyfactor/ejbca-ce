@@ -476,7 +476,7 @@
            	<sourcepath location="modules/clientToolBox/src"/>
            	<sourcepath location="modules/cmpProxy/src"/>
            	<sourcepath location="modules/ejbca-entity/src"/>
-        	<!-- Surpress XDoclet warnings. Thsi should be removed to EJBCA 4.0 -->
+        	<!-- Surpress XDoclet warnings. This should be removed to EJBCA 4.0 -->
         	<tag name="ejb.bean" enabled="no"/>
         	<tag name="ejb.create-method" enabled="no"/>
         	<tag name="ejb.ejb-external-ref" enabled="no"/>
@@ -498,11 +498,6 @@
 	    	<tag name="weblogic.enable-call-by-reference" enabled="no"/>
 	    	<tag name="weblogic.target-column-map" enabled="no"/>
 	    	<tag name="sunone.relation" enabled="no"/>
-	    	<tag name="web.servlet" enabled="no"/>
-	    	<tag name="web.servlet-mapping" enabled="no"/>
-	    	<tag name="web.env-entry" enabled="no"/>
-	    	<tag name="web.ejb-local-ref" enabled="no"/>
-	    	<tag name="web.resource-ref" enabled="no"/>
         </javadoc>
     	<echo message=""/>
     	<dirname file="${apidoc}/index.html" property="javadoc.dir"/>

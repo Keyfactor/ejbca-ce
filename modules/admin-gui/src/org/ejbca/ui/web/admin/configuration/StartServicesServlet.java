@@ -47,7 +47,6 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.ejb.services.IServiceSessionLocal;
 import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
@@ -58,6 +57,7 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.ProtectedLogDevice;
 import org.ejbca.core.model.log.ProtectedLogExporter;
 import org.ejbca.core.model.log.ProtectedLogVerifier;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.services.actions.NoAction;
@@ -68,17 +68,6 @@ import org.ejbca.util.CertTools;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
- *
- * 
- *
- * @version $Id$
- * 
- * @web.servlet name = "StartServices"
- *              display-name = "StartServicesServlet"
- *              description="Servlet used to start services by calling the ServiceSession.load()"
- *              load-on-startup = "1"
- *
- * @web.servlet-mapping url-pattern = "/configuration/startservices"
  * 
  * @version $Id$
  */

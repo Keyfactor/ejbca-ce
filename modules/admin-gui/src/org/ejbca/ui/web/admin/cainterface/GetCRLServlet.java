@@ -42,14 +42,6 @@ import org.ejbca.util.CertTools;
  * <li>crl - gets the latest CRL.
  *
  * @version $Id$
- * 
- * @web.servlet name = "GetCRL"
- *              display-name = "GetCRLServlet"
- *              description="Used to retrieve CA certificate request and Processed CA Certificates from AdminWeb GUI"
- *              load-on-startup = "99"
- *
- * @web.servlet-mapping url-pattern = "/ca/getcrl/getcrl"
- *
  */
 public class GetCRLServlet extends HttpServlet {
 
