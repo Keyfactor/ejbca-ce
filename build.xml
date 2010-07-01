@@ -89,8 +89,13 @@
     <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-run-xdoc">
         <javac destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
-            <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
-            <include name="org/ejbca/core/ejb/protect/TableProtect*.java" />
+            <include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java" />
+            <include name="org/ejbca/core/protocol/ocsp/CertificateCacheStandalone.java" />
+        	
+            <include name="org/ejbca/core/model/ca/MalformedRequestException.java" />
+            <include name="org/ejbca/ui/web/LimitLengthASN1Reader.java" />
+            <include name="org/ejbca/util/DummyPatternLogger.java" />
+        	<include name="org/ejbca/core/ejb/protect/TableProtect*.java" />
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionSession.java" />
             <include name="org/ejbca/core/ejb/ca/store/ICertificateStoreOnlyDataSessionHome.java" />
             <include name="org/ejbca/core/ejb/ca/store/CertificateDataBean.java" />
@@ -100,6 +105,8 @@
             <include name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
             <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
+            <include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java" />
+            <include name="org/ejbca/core/protocol/ws/objects/UserDataVOWS.java" />
             <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
             <src path="modules/ejbca-ws-cli/src-gen" />
             <src path="modules/ejbca-ws/src" />

@@ -20,18 +20,20 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 	
 	<path id="compile-ocsp.classpath">
 		<path location="${mod.ocsp-ejb-interface.lib}"/>
 		<path location="${mod.ocsp-ejb.lib}"/>
-		<!--
+		<!-- This is sort of embedded in ocsp-ejb
 		<path refid="lib.ejbca-util.classpath"/>
 		-->
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 		
     <target name="clean" description="Clean up this module">
@@ -55,7 +57,7 @@
     <target name="ejbca-compile" depends="ejbca-ejb-interface, ejbca-util, ejbca-ejb">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java">
+			excludes="org/ejbca/ui/web/protocol/OCSPServletStandAlone*.java">
         	<classpath>
         		<path refid="compile-ejbca.classpath"/>
         	</classpath>
@@ -63,6 +65,7 @@
     </target>
 
 	<target name="ocsp-compile" depends="ocsp-ejb-interface, ocsp-ejb">
+		<echo message="${mod.ocsp-ejb.lib}"/>
 		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
 		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/protocol/OCSPServlet.java">
