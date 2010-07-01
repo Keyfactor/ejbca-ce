@@ -1460,7 +1460,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void addCertReqHistoryData(Admin admin, Certificate cert, UserDataVO useradmindata){
     	if (log.isTraceEnabled()) {
-        	log.trace(">addCertReqHistData(" + CertTools.getSerialNumberAsString(cert) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
+        	log.trace(">addCertReqHistoryData(" + CertTools.getSerialNumberAsString(cert) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
     	}
         try {
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
@@ -1473,7 +1473,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
-        log.trace("<addCertReqHistData()");    	
+    	if (log.isTraceEnabled()) {
+    		log.trace("<addCertReqHistoryData()");
+        }
     }
     
     /**
