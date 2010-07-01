@@ -122,7 +122,8 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
 			                                 true, // Include in Health Check
 			                                 true, // isDoEnforceUniquePublicKeys
 			                                 true, // isDoEnforceUniqueDistinguishedName
-			                                 false // isDoEnforceUniqueSubjectDNSerialnumber
+			                                 false, // isDoEnforceUniqueSubjectDNSerialnumber
+			                                 true // useCertReqHistory
 			                                 );
             
             getLogger().info("Creating CA...");

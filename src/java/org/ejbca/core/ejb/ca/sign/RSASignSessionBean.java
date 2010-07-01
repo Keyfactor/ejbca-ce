@@ -569,7 +569,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws EjbcaException, ObjectNotFoundException {
-        trace(">createCertificate(pk, certType)");
+        if (log.isTraceEnabled()) {
+        	trace(">createCertificate(pk, certType)");
+        }
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage = new boolean[9];
         Arrays.fill(keyusage, false);
@@ -595,7 +597,9 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
 
         Certificate ret = createCertificate(admin, username, password, pk, keyusage);
-        trace("<createCertificate(pk, certType)");
+        if (log.isTraceEnabled()) {
+        	trace("<createCertificate(pk, certType)");
+        }
         return ret;
     } // createCertificate
 
@@ -623,7 +627,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws EjbcaException, ObjectNotFoundException {
-        trace(">createCertificate(cert)");
+        if (log.isTraceEnabled()) {
+        	trace(">createCertificate(cert)");
+        }
         X509Certificate cert = (X509Certificate) incert;
         try {
             // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
@@ -635,7 +641,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new SignRequestSignatureException(msg);
         }
         Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), cert.getKeyUsage());
-        trace("<createCertificate(cert)");
+        if (log.isTraceEnabled()) {
+        	trace("<createCertificate(cert)");
+        }
         return ret;
     } // createCertificate
 
@@ -1476,7 +1484,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
 
             // Store the request data in history table.
-            certificateStore.addCertReqHistoryData(admin,cert,data);
+            if (ca.isUseCertReqHistory()) {
+            	certificateStore.addCertReqHistoryData(admin,cert,data);
+            }
             // Store certificate in certificate profiles publishers.
             IPublisherSessionLocal pub = publishHome.create();
             Collection publishers = certProfile.getPublisherList();

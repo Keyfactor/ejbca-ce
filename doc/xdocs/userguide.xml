@@ -180,7 +180,24 @@ when new certificates are issued.
 'Enforce unique Subject DN SerialNumber' guarantees that only one end entity with a specific Subject DN SerialNumber can be issued
 from this CA. When adding a new end entity, a check is done to ensure that there are no other end entities, issued by this CA
 before, have the same Subject DN SerialNumber. Note that end entities issued from other CAs can have the same Subject DN SerialNumber
-as end entitied issued from this CA.
+as end entities issued from this CA.
+</p>
+</subsubsection>
+
+<subsubsection name="Use Certificate Request History">
+<p>
+The Certificate Request History stores the values used when generating a certificate for an end entity. Since the values of the end entity, such as the DN, can be edited
+between requests, this function ensures that there is a possibility to trace the values used for issuing a certain certificate.
+Information stored is:
+<ul>
+<li>fingerprint</li>
+<li>serialNumber</li>
+<li>issuerDN</li>
+<li>username</li>
+<li>timestamp</li>
+<li>UserDataVO</li>
+</ul>
+The certificate request history is enabled by default, but you may turn it of to maximize performance and save database space.
 </p>
 </subsubsection>
 

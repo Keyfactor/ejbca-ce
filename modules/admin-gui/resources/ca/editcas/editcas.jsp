@@ -118,6 +118,7 @@
   static final String CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS          = "isdoenforceuniquepublickeys";
   static final String CHECKBOX_DOENFORCEUNIQUEDN                  = "isdoenforceuniquedn";
   static final String CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER="doenforceuniquesubjectdnerialnumber";
+  static final String CHECKBOX_USECERTREQHISTORY                  = "checkboxusecertreqhistory";
   static final String CHECKBOX_USEUTF8POLICYTEXT                  = "checkboxuseutf8policytext";
   static final String CHECKBOX_USEPRINTABLESTRINGSUBJECTDN        = "checkboxuseprintablestringsubjectdn";
   static final String CHECKBOX_USELDAPDNORDER                     = "checkboxuseldapdnorder";
@@ -505,6 +506,11 @@
             	 final String value = request.getParameter(CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER);
             	 isDoEnforceUniqueSubjectDNSerialnumber = value!=null && value.equals(CHECKBOX_VALUE);
              }
+             final boolean useCertReqHistory;
+             {
+            	 final String value = request.getParameter(CHECKBOX_USECERTREQHISTORY);
+            	 useCertReqHistory = value!=null && value.equals(CHECKBOX_VALUE);
+             }
 
 
              
@@ -679,7 +685,8 @@
                                                         true,
                                                         isDoEnforceUniquePublicKeys,
                                                         isDoEnforceUniqueDistinguishedName,
-                                                        isDoEnforceUniqueSubjectDNSerialnumber);
+                                                        isDoEnforceUniqueSubjectDNSerialnumber,
+                                                        useCertReqHistory);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -755,7 +762,8 @@
                                                         true,
                                                         isDoEnforceUniquePublicKeys,
                                                         isDoEnforceUniqueDistinguishedName,
-                                                        isDoEnforceUniqueSubjectDNSerialnumber);
+                                                        isDoEnforceUniqueSubjectDNSerialnumber,
+                                                        useCertReqHistory);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -792,7 +800,8 @@
                          true,
                          isDoEnforceUniquePublicKeys,
                          isDoEnforceUniqueDistinguishedName,
-                         isDoEnforceUniqueSubjectDNSerialnumber);
+                         isDoEnforceUniqueSubjectDNSerialnumber,
+                         useCertReqHistory);
                                   
           		if(request.getParameter(BUTTON_CREATE) != null){           
                      try{
@@ -924,6 +933,11 @@
             {
             	final String value = request.getParameter(CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER);
             	isDoEnforceUniqueSubjectDNSerialnumber = value!=null && value.equals(CHECKBOX_VALUE);
+            }
+            final boolean useCertReqHistory;
+            {
+            	final String value = request.getParameter(CHECKBOX_USECERTREQHISTORY);
+            	useCertReqHistory = value!=null && value.equals(CHECKBOX_VALUE);
             }
             
             String[] values = request.getParameterValues(SELECT_APPROVALSETTINGS);
@@ -1077,7 +1091,8 @@
                                                       true,
                                                       isDoEnforceUniquePublicKeys,
                                                       isDoEnforceUniqueDistinguishedName,
-                                                      isDoEnforceUniqueSubjectDNSerialnumber);
+                                                      isDoEnforceUniqueSubjectDNSerialnumber,
+                                                      useCertReqHistory);
              } // if(catype == CAInfo.CATYPE_X509)
             	 
              // Info specific for CVC CA
@@ -1096,7 +1111,8 @@
                            true,
                            isDoEnforceUniquePublicKeys,
                            isDoEnforceUniqueDistinguishedName,
-                           isDoEnforceUniqueSubjectDNSerialnumber);
+                           isDoEnforceUniqueSubjectDNSerialnumber,
+                           useCertReqHistory);
              } // if(catype == CAInfo.CATYPE_CVC)
             	 
                if(request.getParameter(BUTTON_SAVE) != null){
@@ -1358,6 +1374,7 @@
              final boolean isDoEnforceUniquePublicKeys = true;
              final boolean isDoEnforceUniqueDistinguishedName = true;
              final boolean isDoEnforceUniqueSubjectDNSerialnumber = false;
+             final boolean useCertReqHistory = true;
              final ArrayList crlpublishers = new ArrayList(); 
              final int crlperiod = 0;
              final int crlIssueInterval = 0;
@@ -1435,7 +1452,8 @@
                                                         true,
                                                         isDoEnforceUniquePublicKeys,
                                                         isDoEnforceUniqueDistinguishedName,
-                                                        isDoEnforceUniqueSubjectDNSerialnumber);
+                                                        isDoEnforceUniqueSubjectDNSerialnumber,
+                                                        useCertReqHistory);
                }                               
                }
              } // if(catype == CAInfo.CATYPE_X509)
@@ -1463,7 +1481,8 @@
                        true,
                        isDoEnforceUniquePublicKeys,
                        isDoEnforceUniqueDistinguishedName,
-                       isDoEnforceUniqueSubjectDNSerialnumber);
+                       isDoEnforceUniqueSubjectDNSerialnumber,
+                       useCertReqHistory);
                    }
                  }
                }  // if(catype == CAInfo.CATYPE_CVC)

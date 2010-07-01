@@ -288,7 +288,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 true, // include in health check
 			                                 true, // isDoEnforceUniquePublicKeys
 			                                 true, // isDoEnforceUniqueDistinguishedName
-			                                 false // isDoEnforceUniqueSubjectDNSerialnumber
+			                                 false, // isDoEnforceUniqueSubjectDNSerialnumber
+			                                 true // useCertReqHistory
 			                                 );
             
             getLogger().info("Creating CA...");

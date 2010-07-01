@@ -106,7 +106,8 @@ public class CAInfo implements Serializable {
 	protected boolean doEnforceUniquePublicKeys;
 	protected boolean doEnforceUniqueDistinguishedName;
 	protected boolean doEnforceUniqueSubjectDNSerialnumber;
-    
+	protected boolean useCertReqHistory;
+	
     public CAInfo(){}
     
     public String getSubjectDN() {return subjectdn;}
@@ -204,6 +205,20 @@ public class CAInfo implements Serializable {
 	public void setNumOfReqApprovals(int numOfReqApprovals) {this.numOfReqApprovals = numOfReqApprovals;}
 
     /**
+	 * @return answer this: should this CA issue certificates to only one user of a specific subjectDN serialnumber.
+     */
+    public boolean isUseCertReqHistory() {
+		return this.useCertReqHistory;
+	}
+
+	/**
+	 * @param doEnforceUniqueSubjectDNSerialnumber
+	 */
+	public void setUseCertReqHistory(boolean useCertReqHistory) {
+		this.useCertReqHistory = useCertReqHistory;
+	}
+
+	/**
 	 * @return answer this: should this CA issue certificates to only one user with certificates from one specific key.
      */
     public boolean isDoEnforceUniquePublicKeys() {

@@ -216,7 +216,8 @@ public class CAImportExportTest extends TestCase  {
                 true, // include in health check
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
-                false // isDoEnforceUniqueSubjectDNSerialnumber
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true // useCertReqHistory
         );
 		return cainfo;
 	}

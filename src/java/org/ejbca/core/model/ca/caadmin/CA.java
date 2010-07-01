@@ -116,6 +116,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS    = "doEnforceUniquePublicKeys";
 	private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
 	private static final String DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER = "doEnforceUniqueSubjectDNSerialnumber";
+	private static final String USE_CERTREQ_HISTORY 			 = "useCertreqHistory";
     
     // Public Methods
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
@@ -139,6 +140,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
        setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
        setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
+       setUseCertReqHistory(cainfo.isUseCertReqHistory());
 	   
 	   Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	   ArrayList extendedservicetypes = new ArrayList(); 
@@ -449,13 +451,21 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private void setDoEnforceUniqueSubjectDNSerialnumber(boolean doEnforceUniqueSubjectDNSerialnumber) {
     	data.put(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, new Boolean(doEnforceUniqueSubjectDNSerialnumber));
 	}
+    /** whether certificate request history should be used or not, default true as was the case before 3.10.4
+     */
+	public boolean isUseCertReqHistory() {
+		return getBoolean(USE_CERTREQ_HISTORY, true);
+	}
+    private void setUseCertReqHistory(boolean useCertReqHistory) {
+    	data.put(USE_CERTREQ_HISTORY, new Boolean(useCertReqHistory));
+	}
     
 	/**
 	 * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
 	 * action that requires approvals, default none 
 	 * 
-	 * Never null
-	 * @return
+	 * 
+	 * @return Collection of Integer, never null
 	 */
 	public Collection getApprovalSettings(){
 		if(data.get(APPROVALSETTINGS) == null){
@@ -514,6 +524,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
         setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
         setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
+        setUseCertReqHistory(cainfo.isUseCertReqHistory());
     	
     	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
     	while(iter.hasNext()){
