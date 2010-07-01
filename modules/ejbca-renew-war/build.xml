@@ -21,30 +21,25 @@
 		<path refid="lib.jee.classpath"/>
 	</path>
 	
-    <target name="build" description="Build this module" depends="compile">
-        <war destfile="${mod.renew-war.war}" webxml="${resources.dir}/WEB-INF/web.xml">
-            <fileset dir="${build.dir}" excludes="WEB-INF/web.xml"/>
-        </war>
-    </target>
-
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
     	<delete file="${mod.renew-war.war}" />
     </target>
 	
+    <target name="build" description="Build this module" depends="compile">
+        <war destfile="${mod.renew-war.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
+    </target>
+
     <target name="compile" depends="setup, ejbca-ejb-interface, ejbca-util, ejbca-ejb">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
-        	<classpath>
-        		<path refid="compile.classpath"/>
-        	</classpath>
-    	</javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+        	classpathref="compile.classpath"/>
     </target>
 
     <target name="setup">
-    	<mkdir dir="${build.dir}" />
+    	<mkdir dir="${build.dir}"/>
         <copy todir="${build.dir}">
-            <fileset dir="${resources.dir}" />
+            <fileset dir="${resources.dir}" excludes="WEB-INF/web.xml"/>
         </copy>
     </target>
 

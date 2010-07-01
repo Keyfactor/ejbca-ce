@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ocsp-war" default="ejbca-build">
     <description>
-            Build file for the OCSP Web component
+            Build file for the OCSP Web components
     </description>
 
 	<dirname property="this.dir" file="${ant.file.ocsp-war}"/>
@@ -12,28 +12,28 @@
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
-	<path id="compile-ejbca.classpath">
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
-		<path location="${mod.ejbca-ejb.lib}"/>
-		<path refid="lib.ejbca-util.classpath"/>
+	<path id="compile-common.classpath">
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 	</path>
+
+	<path id="compile-ejbca.classpath">
+		<path refid="compile-common.classpath"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-ejb.lib}"/>
+		<path refid="lib.ejbca-util.classpath"/>
+	</path>
 	
 	<path id="compile-ocsp.classpath">
+		<path refid="compile-common.classpath"/>
 		<path location="${mod.ocsp-ejb-interface.lib}"/>
 		<path location="${mod.ocsp-ejb.lib}"/>
 		<!-- This is sort of embedded in ocsp-ejb
 		<path refid="lib.ejbca-util.classpath"/>
 		-->
-		<path refid="lib.servlet.classpath"/>
-		<path refid="lib.log4j.classpath"/>
-		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.jee.classpath"/>
-		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 		
     <target name="clean" description="Clean up this module">
@@ -43,36 +43,24 @@
     </target>
 
     <target name="ejbca-build" description="Build this module" depends="ejbca-compile">
-        <war destfile="${mod.ocsp-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml">
-            <fileset dir="${build.dir}"/>
-        </war>
+        <war destfile="${mod.ocsp-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml" basedir="${build.dir}"/>
     </target>
 
 	<target name="ocsp-build" description="Build this module" depends="ocsp-compile">
-		<war destfile="${mod.ocsp-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml">
-			<fileset dir="${build-ocsp.dir}"/>
-		</war>
+		<war destfile="${mod.ocsp-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml" basedir="${build-ocsp.dir}"/>
 	</target>
 
     <target name="ejbca-compile" depends="ejbca-ejb-interface, ejbca-util, ejbca-ejb">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/protocol/OCSPServletStandAlone*.java">
-        	<classpath>
-        		<path refid="compile-ejbca.classpath"/>
-        	</classpath>
-    	</javac>
+			excludes="org/ejbca/ui/web/protocol/OCSPServletStandAlone*.java" classpathref="compile-ejbca.classpath"/>
     </target>
 
 	<target name="ocsp-compile" depends="ocsp-ejb-interface, ocsp-ejb">
 		<echo message="${mod.ocsp-ejb.lib}"/>
 		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
 		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/protocol/OCSPServlet.java">
-			<classpath>
-				<path refid="compile-ocsp.classpath"/>
-			</classpath>
-		</javac>
+			excludes="org/ejbca/ui/web/protocol/OCSPServlet.java" classpathref="compile-ocsp.classpath"/>
 	</target>
 
 </project>
