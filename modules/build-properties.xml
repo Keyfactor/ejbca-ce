@@ -102,6 +102,7 @@
     <property name="mod.publicweb-gui.war" location="${mod.dist.path}/publicweb.war" />
     <property name="mod.ocsp-war.path" location="${mod.path}/ocsp-war" />
     <property name="mod.ocsp-war.war" location="${mod.dist.path}/ocsp.war" />
+    <property name="mod.ocsp-war-ocsp-build.path" location="${mod.path}/ocsp-war/build-ocsp/WEB-INF/classes" />
     <property name="mod.scep-war.path" location="${mod.path}/ejbca-scep-war" />
     <property name="mod.scep-war.war" location="${mod.dist.path}/scep.war" />
     <property name="mod.webdist-war.path" location="${mod.path}/ejbca-webdist-war" />

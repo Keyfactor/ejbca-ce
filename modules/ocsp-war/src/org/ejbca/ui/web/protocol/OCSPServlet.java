@@ -133,4 +133,11 @@ public class OCSPServlet extends OCSPServletBase {
     protected void loadPrivateKeys(String password) {
         // not used by this servlet
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#healthCheck()
+     */
+    public String healthCheck(boolean doSignTest, boolean doValidityTest) {
+        // not used by this servlet
+    	return null;
+    }
 } // OCSPServlet

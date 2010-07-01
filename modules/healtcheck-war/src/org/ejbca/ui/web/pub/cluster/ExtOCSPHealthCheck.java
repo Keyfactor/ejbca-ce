@@ -13,6 +13,9 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -22,8 +25,6 @@ import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
-import org.ejbca.ui.web.protocol.IHealtChecker;
-import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
 
 /**
  * External OCSP Health Checker. 
@@ -41,7 +42,6 @@ import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
 public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	
 	private static final Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
-	private static IHealtChecker healthChecker = null;
 
 	private boolean doSignTest = OcspConfiguration.getHealthCheckSignTest();
 	private boolean doValidityTest = OcspConfiguration.getHealthCheckCertificateValidity();
@@ -79,14 +79,22 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 		return getCertificateStoreSession().getDatabaseStatus();
 	}
 
-	private String checkOCSPSignTokens(){
-		if (healthChecker == null) {
-			healthChecker = OCSPServletStandAlone.getStandAloneOCSPHealthChecker();
-			if (healthChecker == null) {
-				return "No OCSP token health checker set";
-			}
-		}
-		return healthChecker.healthCheck(this.doSignTest, this.doValidityTest);
+	/**
+	 * Since the classes are deployed in a separate WAR, we cannot access the healtcheck directly.
+	 */
+	private String checkOCSPSignTokens() {
+        try {
+            URL url = new URL("http://127.0.0.1:8080/ejbca/publicweb/status/ocsp?healthcheck=true&doSignTest=" + this.doSignTest + "&doValidityTest=" + this.doValidityTest);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            int responseCode = con.getResponseCode();
+            String responseMessage = con.getResponseMessage();
+            if (responseCode != 200) {
+                return "Unexpected result code " +responseCode+" for URL: '" + url + "'. Message was: '" + responseMessage+'\'';
+            }
+            return responseMessage;
+        } catch (Exception e){
+        	return "Network problems: '"+e.getMessage()+'\'';
+        }
 	}
 
 	private ICertificateStoreOnlyDataSessionLocal getCertificateStoreSession() {

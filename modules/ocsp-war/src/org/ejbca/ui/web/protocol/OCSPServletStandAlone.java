@@ -62,7 +62,7 @@ import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
  * @author Lars Silven PrimeKey
  * @version  $Id$
  */
-public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
+public class OCSPServletStandAlone extends OCSPServletBase {
 
     private static final long serialVersionUID = -7093480682721604160L;
 
@@ -73,7 +73,6 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 
     private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
     private OCSPServletStandAloneSession session;
-	private static IHealtChecker healthChecker = null;
 
     public OCSPServletStandAlone() {
         super();
@@ -89,7 +88,6 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 
         this.session = new OCSPServletStandAloneSession(this);
         // session must be created before health check could be done
-        healthChecker = this;
     }
     
     /**
@@ -120,7 +118,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
 
     /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.IHealtChecker#healthCheck()
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#healthCheck()
      */
     public String healthCheck(boolean doSignTest, boolean doValidityTest) {
         return this.session.healthCheck(doSignTest, doValidityTest);
@@ -156,11 +154,4 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     CertificateCache createCertificateCache() {
 		return CertificateCacheStandalone.getInstance();
 	}
-    
-    /**
-     * @return the object used to perform healtcheck for the External OCSP responder or null if nu such object exists yet.
-     */
-    public static IHealtChecker getStandAloneOCSPHealthChecker() {
-    	return healthChecker;
-    }
 }

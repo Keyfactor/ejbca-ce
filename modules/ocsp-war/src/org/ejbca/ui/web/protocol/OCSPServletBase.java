@@ -188,6 +188,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 
 	abstract void loadPrivateKeys(String password) throws Exception;
 
+	abstract String healthCheck(boolean doSignTest, boolean doValidityTest);
+
 	abstract Certificate findCertificateByIssuerAndSerno(Admin adm, String issuerDN, BigInteger serno);
 
 	abstract OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
@@ -429,6 +431,21 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				}
 			} else {
 				m_log.info("Got reloadKeys command from unauthorized ip: "+remote);
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			}
+		} else if (StringUtils.equals(request.getParameter("healthcheck"), "true")) {
+			final String remote = request.getRemoteAddr();
+			if (StringUtils.equals(remote, "127.0.0.1")) {
+				boolean doSignTest = StringUtils.equals(request.getParameter("doSignTest"), "true");
+				boolean doValidityTest = StringUtils.equals(request.getParameter("doValidityTest"), "true");
+				byte[] respBytes = healthCheck(doSignTest, doValidityTest).getBytes();
+				response.setStatus(HttpServletResponse.SC_OK);
+				response.setContentType("text/plain");
+				response.setContentLength(respBytes.length);
+				response.getOutputStream().write(respBytes);
+				response.getOutputStream().flush();
+			} else {
+				m_log.info("Got healthcheck command from unauthorized ip: "+remote);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			}
 		} else {
