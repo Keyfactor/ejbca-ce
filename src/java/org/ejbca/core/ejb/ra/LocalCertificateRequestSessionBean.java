@@ -404,7 +404,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws ApprovalException
 	 * @throws DuplicateKeyException
-	 * @throws CADoesntExistsException 
+	 * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
 	 * @throws EjbcaException 
 	 */
 	private void addOrEditUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromwebservice) throws AuthorizationDeniedException,
@@ -412,8 +412,6 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			DuplicateKeyException, CADoesntExistsException, EjbcaException {
 		
 		int caid = userdata.getCAId();
-		getCAAdminSession().verifyExistenceOfCA(caid);
-
 		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
 		
