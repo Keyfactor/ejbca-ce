@@ -17,61 +17,61 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
-
 /**
  * Used to activate the external OCSP responder.
+ * 
  * @author Lars Silven PrimeKey Solution AB
  * @version $Id$
  * 
  */
 public class OCSPActivate extends ClientToolBox {
 
-
-	/* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
     void execute(String[] args) {
-        if (args.length<2) {
-            System.out.println(args[0]+" <hostname:port>");
+        if (args.length < 2) {
+            System.out.println(args[0] + " <hostname:port>");
             System.out.println(" Useed for HSM activation on an OCSP server install.");
             System.out.println(" hostname:port  the address of where the OCSP serrver is running. Only use 127.0.0.1 in a production environment.");
             return;
         }
         final String bindInfo = args[1];
         final char[] passwd;
+
+        System.out.print("Password: ");
+        passwd = System.console().readPassword();
+
         try {
-            ConsolePasswordReader console = new ConsolePasswordReader();
-            System.out.print("Password: ");
-            passwd = console.readPassword();
-        } catch (IOException e){
-            System.out.println("Problems reading password: '"+e.getMessage()+'\'');
-            return;
-        }
-        try {
-            final URL url = new URL("http://"+bindInfo+"/ejbca/publicweb/status/ocsp");
-            final HttpURLConnection con; {
+            final URL url = new URL("http://" + bindInfo + "/ejbca/publicweb/status/ocsp");
+            final HttpURLConnection con;
+            {
                 final URLConnection con0 = url.openConnection();
-                if ( con0==null || !(con0 instanceof HttpURLConnection) ) {
-                    System.out.println("Unable to open http connection to "+url );
+                if (con0 == null || !(con0 instanceof HttpURLConnection)) {
+                    System.out.println("Unable to open http connection to " + url);
                 }
-                con = (HttpURLConnection)con0;
+                con = (HttpURLConnection) con0;
             }
             con.setRequestMethod("POST");
             con.setRequestProperty("activate", new String(passwd));
             final int responseCode = con.getResponseCode();
             if (responseCode != 200) {
                 final String responseMessage = con.getResponseMessage();
-                System.out.println("Unexpected result code " +responseCode+" for URL: '" + url + "'. Message was: '" + responseMessage+'\'');
+                System.out.println("Unexpected result code " + responseCode + " for URL: '" + url + "'. Message was: '" + responseMessage + '\'');
                 return;
             }
             System.out.println("Password for keys sent to the OCSP responder. If the password was right the respnder will be activated. Check this.");
-        } catch (IOException e){
-            System.out.println("Network problems: '"+e.getMessage()+'\'');
+        } catch (IOException e) {
+            System.out.println("Network problems: '" + e.getMessage() + '\'');
         }
     }
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.ejbca.ui.cli.ClientToolBox#getName()
      */
     @Override

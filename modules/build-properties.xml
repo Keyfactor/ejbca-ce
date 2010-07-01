@@ -161,7 +161,6 @@
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
 	<path id="lib.commons-el.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-el-*.jar"/></path>
 	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
-	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
 	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
 	<path id="lib.mail.classpath">
 		<fileset dir="${ejbca.home}/lib/ext" includes="mail.jar"/>
@@ -169,7 +168,6 @@
 	</path>
 	<path id="lib.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/></path>
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
-	<path id="lib.jline.classpath"><fileset dir="${ejbca.home}/lib" includes="jline-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.xmlsec.classpath"><fileset dir="${ejbca.home}/lib/xmlsign/" includes="xmlsec-*.jar"/></path>
 	<path id="lib.clover.classpath"><pathelement location="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/></path>

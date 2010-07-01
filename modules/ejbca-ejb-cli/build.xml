@@ -21,7 +21,6 @@
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
-		<!--  <path refid="lib.jline.classpath"/> NCipherHSMKeyTool, PKCS11HSMKeyTool -->
 	</path>
 	
     <target name="build" description="Build this module" depends="compile">
@@ -81,7 +80,7 @@
     		<map from="${ejbca.home}/" to=""/>
     	</pathconvert>
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true">
-    		<fileset dir="${ejbca.home}" includes="${lib.compile.classpath.property}, lib/jline*.jar"/>
+    		<fileset dir="${ejbca.home}" includes="${lib.compile.classpath.property}"/>
     	</copy>
     	<!-- Add the client libraries from the app server -->
     	<pathconvert property="lib.jee.classpath.property" pathsep=" ">

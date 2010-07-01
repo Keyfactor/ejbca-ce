@@ -19,8 +19,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
-
 /** Class for reading passwords from the console, as requested by the Sun PKCS#11 provider.
  * This class is created as a replacement for com.sun.security.auth.callback.TextCallbackHandler.
  * 1. That class is not available in other Java implementations
@@ -39,8 +37,7 @@ public class PasswordCallBackHandler implements CallbackHandler {
 				PasswordCallback pc = (PasswordCallback)callbacks[i];
 				System.err.print(pc.getPrompt());
 				System.err.flush();
-				ConsolePasswordReader console = new ConsolePasswordReader();
-				pc.setPassword(console.readPassword());
+				pc.setPassword(System.console().readPassword());
 
 			} else {
 				throw new UnsupportedCallbackException

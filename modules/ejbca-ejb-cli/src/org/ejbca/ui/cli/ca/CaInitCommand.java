@@ -36,7 +36,6 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
 import org.ejbca.util.FileTools;
@@ -108,8 +107,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if (StringUtils.equals(catokenpassword, "prompt")) {
             	getLogger().info("Enter CA token password: ");
             	getLogger().info("");
-            	ConsolePasswordReader r = new ConsolePasswordReader();
-            	catokenpassword = String.valueOf(r.readPassword());
+            	catokenpassword = String.valueOf(System.console().readPassword());
             }
             final String keyspec = args[5];
             final String keytype = args[6];

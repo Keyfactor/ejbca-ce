@@ -18,7 +18,6 @@
             <include name="bcmail-*.jar"/>
             <include name="cert-cvc.jar"/>
             <include name="ldap.jar"/>
-            <include name="jline-0.9.94.jar"/>
             <include name="commons-collections-3.2.jar"/>
             <include name="commons-configuration-1.5.jar"/>
             <include name="commons-logging.jar"/>

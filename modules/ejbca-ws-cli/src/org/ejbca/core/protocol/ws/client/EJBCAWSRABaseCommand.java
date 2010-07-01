@@ -20,7 +20,6 @@ import javax.xml.namespace.QName;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.provider.TLSProvider;
@@ -86,10 +85,9 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
             }
             final String password; {
                 final String tmpPassword = props.getProperty("ejbcawsracli.keystore.password");
-                if ( tmpPassword==null ) {
-                	ConsolePasswordReader pwdreader = new ConsolePasswordReader();
+                if ( tmpPassword==null ) {            	
                     System.out.print("Enter keystore password: ");
-                    password = new String(pwdreader.readPassword());
+                    password = new String(System.console().readPassword());
                 }else{
                     password = tmpPassword;
                 }

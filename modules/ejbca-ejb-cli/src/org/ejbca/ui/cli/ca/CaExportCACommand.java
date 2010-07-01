@@ -16,8 +16,6 @@ package org.ejbca.ui.cli.ca;
 import java.io.FileOutputStream;
 
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
-import org.ejbca.ui.cli.util.PasswordReader;
 
 /**
  * Exports CA as a PCKS#12 or PKCS#8 file
@@ -49,9 +47,9 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             if ( args.length > 4 ) {
             	encryptionKeyAlias = args[4];
             }
-            PasswordReader reader = new ConsolePasswordReader();
+           
             getLogger().info("Enter keystore password: ");
-            String kspwd = new String(reader.readPassword());
+            String kspwd = new String(System.console().readPassword());
             
             byte[] keyStoreBytes = getCAAdminSession().exportCAKeyStore(getAdmin(), caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
             FileOutputStream fos = new FileOutputStream(p12file);
