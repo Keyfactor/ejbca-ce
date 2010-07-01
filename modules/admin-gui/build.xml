@@ -73,8 +73,7 @@
 			package="org.apache.jasper.jspc"
 			outputdir="${jasper-temp.dir}/jspc"
 			validatexml="false"
-			webXmlFragment="${build.dir}/WEB-INF/generated_web.xml"
-			addWebXmlMappings="true"
+			addWebXmlMappings="false"
             verbose="9"
             classpath="${jasper.classpath}"/>
 		<depend srcdir="${jasper-temp.dir}/jspc" destdir="${jasper-temp.dir}/classes">
