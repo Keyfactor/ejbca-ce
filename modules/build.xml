@@ -37,6 +37,7 @@
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.ocsp-war.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.renew-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
@@ -152,6 +153,10 @@
 
 	<target name="ocsp-ocsp-war" description="Build the External OCSP Responder OCSP WAR">
 		<ant antfile="${mod.ocsp-war.path}/build.xml" target="ocsp-build" inheritall="false"/>
+	</target>
+
+	<target name="renew-war" description="Build the Renew WAR">
+		<ant antfile="${mod.renew-war.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
 	<target name="scep-war" description="Build the SCEP WAR">
