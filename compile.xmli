@@ -308,54 +308,6 @@ xkms.serviceport                = ${xkms.serviceport}
 -->                
         </ejbdoclet>
         
-        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
-            <fileset dir="${src.java}">
-                <include name="**/*Servlet.java" />
-                <exclude name="**/protocol/*Servlet.java" />
-            	<exclude name="**/ui/web/pub/*Servlet.java" />
-            </fileset>
-            <deploymentdescriptor destdir="${src.dd}/WEB-INF"
-             servletspec="2.3"
-             sessiontimeout="30" 
-             description="EJBCA Administration web" 
-             mergeDir="${webdd.src}/merge-${web.jsfimpl}"
-             distributable="false"
-             validatexml="false" 
-             useIds="true" >             
-             </deploymentdescriptor>
-        </webdoclet>
-        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
-            <fileset dir="${src.java}">
-                <include name="**/protocol/OCSPServlet.java" />
-                <include name="**/protocol/OCSPServletBase.java" />
-            </fileset>
-            <deploymentdescriptor destdir="${src.dd}/status/WEB-INF"
-             servletspec="2.3"
-             sessiontimeout="30" 
-             description="OCSP responder" 
-             distributable="false" 	
-             validatexml="false" 
-             useIds="true"
-             mergedir="${deploy.src}/web/merge-webdoclet"
-             >
-             </deploymentdescriptor>
-        </webdoclet>
-        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
-            <fileset dir="${src.java}">
-                <include name="**/protocol/CmpServlet.java" />
-            </fileset>
-            <deploymentdescriptor destdir="${src.dd}/cmp/WEB-INF"
-             servletspec="2.3"
-             sessiontimeout="30" 
-             description="CMP server" 
-             distributable="false" 	
-             validatexml="false" 
-             useIds="true"
-             mergedir="${deploy.src}/web/merge-webdoclet"
-             >
-             </deploymentdescriptor>
-        </webdoclet>
-        
         <!-- Do some postprecessing on created dd's if needed -->
         <antcall target="dd-postprocess" />
         
@@ -413,20 +365,6 @@ xkms.serviceport                = ${xkms.serviceport}
                 validatexml="false" /> 
 -->                
         </ejbdoclet>
-        <webdoclet force="true" destdir="${ocsp-src.gen}" excludedtags="@version,@author">
-            <fileset dir="${src.java}">
-                <include name="**/protocol/OCSPServletStandAlone.java" />
-                <include name="**/protocol/OCSPServletBase.java" />
-            </fileset>
-            <deploymentdescriptor destdir="${ocsp-src.dd}/status/WEB-INF"
-             servletspec="2.3"
-             sessiontimeout="30" 
-             description="OCSP responder standalone" 
-             distributable="false"            	
-             validatexml="false"
-             mergedir="${deploy.src}/web/merge-webdoclet"
-             />
-        </webdoclet>
     </target>
 	
 	<!--
@@ -536,14 +474,6 @@ xkms.serviceport                = ${xkms.serviceport}
 			</filterchain>
         </copy>
         
-        <!-- 
-	      Replace more values in java and xml files 
-		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
-		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
-		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
-		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
-	    -->
-
 		<!-- 
 		  Copy the correct jndi settings for the selected application server 
 		-->

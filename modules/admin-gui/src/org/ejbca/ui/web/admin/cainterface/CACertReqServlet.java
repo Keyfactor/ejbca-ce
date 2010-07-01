@@ -55,14 +55,6 @@ import org.ejbca.util.RequestMessageUtils;
  * </ul>
  *
  * @version $Id$
- * 
- * @web.servlet name = "CACertReq"
- *              display-name = "CACertReqServlet"
- *              description="Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI"
- *              load-on-startup = "99"
- *
- * @web.servlet-mapping url-pattern = "/ca/editcas/cacertreq"
- *
  */
 public class CACertReqServlet extends HttpServlet {
 

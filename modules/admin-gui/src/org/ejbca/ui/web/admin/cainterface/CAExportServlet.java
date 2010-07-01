@@ -20,14 +20,6 @@ import org.ejbca.ui.web.pub.ServletUtils;
 
 /**
  * This servlet exports a CA as an octet/stream.
- *
- * @web.servlet name = "CAExport"
- *              display-name = "CAExportServlet"
- *              description="Returns the CA as a PKCS#12 file."
- *              load-on-startup = "99"
- *
- * @web.servlet-mapping url-pattern = "/ca/exportca"
- *
  */
 public class CAExportServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(CAExportServlet.class);

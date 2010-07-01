@@ -107,14 +107,6 @@ import org.ejbca.util.StringTools;
  *
  * @author Ville Skytt�
  * @version $Id$
- * 
- * @web.servlet name = "AdminCertReq"
- *              display-name = "AdminCertReqServlet"
- *              description="Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI"
- *              load-on-startup = "99"
- *
- * @web.servlet-mapping url-pattern = "/ca/certreq"
- *
  */
 public class AdminCertReqServlet extends HttpServlet {
     private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);

@@ -45,14 +45,6 @@ import org.ejbca.util.Base64;
  * is in hex format.
  *
  * @version $Id$
- *
- * @web.servlet name = "EndEntityCert"
- *              display-name = "EndEntityCertServlet"
- *              description="Returns the specified end entity certificate"
- *              load-on-startup = "99"
- *
- * @web.servlet-mapping url-pattern = "/ca/endentitycert"
- *
  */
 public class EndEntityCertServlet extends HttpServlet {
 
