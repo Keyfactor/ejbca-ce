@@ -27,8 +27,10 @@ import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
 import javax.net.ssl.HttpsURLConnection;
@@ -42,12 +44,14 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.xml.namespace.QName;
 import org.apache.log4j.Logger;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.util.CertTools;
 import sun.security.pkcs11.SunPKCS11;
 
 /**
@@ -70,10 +74,22 @@ public class ConnectDialog extends javax.swing.JDialog {
             new File("default_connect.properties");
     private static final File CONNECT_FILE = new File("connect.properties");
 
+    private static final String TRUSTSTORE_TYPE_PEM = "PEM";
+    private static final String TRUSTSTORE_TYPE_KEYSTORE = "Use keystore";
+
+    private static final String[] TRUSTSTORE_TYPES = new String[] {
+        TRUSTSTORE_TYPE_KEYSTORE,
+        "JKS",
+        "PKCS12",
+        TRUSTSTORE_TYPE_PEM
+    };
+
     /** Creates new form ConnectDialog. */
     public ConnectDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
         initComponents();
+        truststoreTypeComboBox.setModel(
+                new DefaultComboBoxModel(TRUSTSTORE_TYPES));
         if (CONNECT_FILE.exists()) {
             loadSettingsFromFile(CONNECT_FILE);
         } else {
@@ -100,9 +116,9 @@ public class ConnectDialog extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         truststoreFilePathTextField = new javax.swing.JTextField();
         truststoreTypeComboBox = new javax.swing.JComboBox();
-        jLabel3 = new javax.swing.JLabel();
+        truststoreFilePathLabel = new javax.swing.JLabel();
         truststoreBrowseButton = new javax.swing.JButton();
-        jLabel4 = new javax.swing.JLabel();
+        truststorePasswordLabel = new javax.swing.JLabel();
         truststorePasswordField = new javax.swing.JPasswordField();
         jPanel4 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
@@ -172,9 +188,13 @@ public class ConnectDialog extends javax.swing.JDialog {
         jLabel2.setText("Type:");
 
         truststoreTypeComboBox.setEditable(true);
-        truststoreTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "JKS", "PKCS12" }));
+        truststoreTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                truststoreTypeComboBoxActionPerformed(evt);
+            }
+        });
 
-        jLabel3.setText("Truststore file path:");
+        truststoreFilePathLabel.setText("Truststore file path:");
 
         truststoreBrowseButton.setText("...");
         truststoreBrowseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -183,7 +203,7 @@ public class ConnectDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel4.setText("Password:");
+        truststorePasswordLabel.setText("Password:");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -193,7 +213,7 @@ public class ConnectDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(truststorePasswordField, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
+                    .addComponent(truststoreFilePathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -202,7 +222,7 @@ public class ConnectDialog extends javax.swing.JDialog {
                         .addComponent(truststoreFilePathTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(truststoreBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(truststorePasswordLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -212,13 +232,13 @@ public class ConnectDialog extends javax.swing.JDialog {
                     .addComponent(jLabel2)
                     .addComponent(truststoreTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3)
+                .addComponent(truststoreFilePathLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(truststoreFilePathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(truststoreBrowseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel4)
+                .addComponent(truststorePasswordLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(truststorePasswordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -412,11 +432,46 @@ public class ConnectDialog extends javax.swing.JDialog {
                 }
 
                 final KeyManagerFactory kKeyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-//                kKeyManagerFactory.init(keystore, "foo123".toCharArray());
                 kKeyManagerFactory.init(keystore, null);
 
-                final KeyStore keystoreTrusted = KeyStore.getInstance(settings.getTruststoreType());
-                keystoreTrusted.load(new FileInputStream(settings.getTruststoreFile()), settings.getTruststorePassword());
+                final KeyStore keystoreTrusted;
+                if (TRUSTSTORE_TYPE_PEM.equals(settings.getTruststoreType())) {
+                    keystoreTrusted = KeyStore.getInstance("JKS");
+                    keystoreTrusted.load(null, null);
+                    final Collection certs = CertTools.getCertsFromPEM(
+                            new FileInputStream(settings.getTruststoreFile()));
+                    int i = 0;
+                    for (Object o : certs) {
+                        if (o instanceof Certificate) {
+                            keystoreTrusted.setCertificateEntry("cert-" + i,
+                                    (Certificate) o);
+                            i++;
+                        }
+                    }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Loaded " + i + " certs to truststore");
+                    }
+                } else if (TRUSTSTORE_TYPE_KEYSTORE.equals(
+                        settings.getTruststoreType())) {
+                    keystoreTrusted = KeyStore.getInstance("JKS");
+                    keystoreTrusted.load(null, null);
+                    final Enumeration<String> aliases = keystore.aliases();
+                    int i = 0;
+                    while(aliases.hasMoreElements()) {
+                        final String alias = aliases.nextElement();
+                        if (keystore.isCertificateEntry(alias)) {
+                            keystoreTrusted.setCertificateEntry(alias,
+                                    keystore.getCertificate(alias));
+                            i++;
+                        }
+                    }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Loaded " + i + " certs to truststore");
+                    }
+                } else {
+                    keystoreTrusted = KeyStore.getInstance(settings.getTruststoreType());
+                    keystoreTrusted.load(new FileInputStream(settings.getTruststoreFile()), settings.getTruststorePassword());
+                }
 
                 final TrustManagerFactory tTrustManagerFactory = TrustManagerFactory.getInstance("SunX509");
                 tTrustManagerFactory.init(keystoreTrusted);
@@ -474,6 +529,20 @@ public class ConnectDialog extends javax.swing.JDialog {
     private void defaultsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultsButtonActionPerformed
         loadSettingsFromFile(DEFAULT_CONNECT_FILE);
     }//GEN-LAST:event_defaultsButtonActionPerformed
+
+    private void truststoreTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_truststoreTypeComboBoxActionPerformed
+        final String type = (String) truststoreTypeComboBox.getSelectedItem();
+        truststorePasswordField.setEnabled(!TRUSTSTORE_TYPE_PEM.equals(type)
+                && !TRUSTSTORE_TYPE_KEYSTORE.equals(type));
+        truststorePasswordLabel.setEnabled(!TRUSTSTORE_TYPE_PEM.equals(type)
+                && !TRUSTSTORE_TYPE_KEYSTORE.equals(type));
+        truststoreFilePathLabel.setEnabled(
+                !TRUSTSTORE_TYPE_KEYSTORE.equals(type));
+        truststoreFilePathTextField.setEnabled(
+                !TRUSTSTORE_TYPE_KEYSTORE.equals(type));
+        truststoreBrowseButton.setEnabled(
+                !TRUSTSTORE_TYPE_KEYSTORE.equals(type));
+    }//GEN-LAST:event_truststoreTypeComboBoxActionPerformed
 
     private void loadSettingsFromFile(final File file) {
         try {
@@ -619,8 +688,6 @@ public class ConnectDialog extends javax.swing.JDialog {
     private javax.swing.JButton defaultsButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
@@ -633,8 +700,10 @@ public class ConnectDialog extends javax.swing.JDialog {
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JPanel passwordPanel;
     private javax.swing.JButton truststoreBrowseButton;
+    private javax.swing.JLabel truststoreFilePathLabel;
     private javax.swing.JTextField truststoreFilePathTextField;
     private javax.swing.JPasswordField truststorePasswordField;
+    private javax.swing.JLabel truststorePasswordLabel;
     private javax.swing.JComboBox truststoreTypeComboBox;
     private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
