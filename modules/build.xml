@@ -32,6 +32,7 @@
 		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.batchenrollment-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"/>
@@ -125,6 +126,10 @@
 
 	<target name="externalra-gui" description="Build the EJBCA External RA StandAlone GUI WAR">
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI JAR">
+		<ant antfile="build.xml" dir="${mod.batchenrollment-gui.path}" target="jar" inheritall="false"/>
 	</target>
 
 	<target name="admin-gui" description="Build the EJBCA Admin GUI WAR">
