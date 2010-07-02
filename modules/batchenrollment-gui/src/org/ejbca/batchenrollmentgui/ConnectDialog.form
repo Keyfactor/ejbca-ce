@@ -164,7 +164,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="truststorePasswordField" alignment="0" pref="474" max="32767" attributes="0"/>
-                      <Component id="jLabel3" alignment="0" pref="474" max="32767" attributes="0"/>
+                      <Component id="truststoreFilePathLabel" alignment="0" pref="474" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel2" min="-2" pref="208" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -175,7 +175,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="truststoreBrowseButton" min="-2" pref="36" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="jLabel4" alignment="0" min="-2" pref="215" max="-2" attributes="0"/>
+                      <Component id="truststorePasswordLabel" alignment="0" min="-2" pref="215" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -189,14 +189,14 @@
                       <Component id="truststoreTypeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                  <Component id="truststoreFilePathLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="truststoreFilePathTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="truststoreBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                  <Component id="truststorePasswordLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="truststorePasswordField" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
@@ -215,15 +215,12 @@
         <Component class="javax.swing.JComboBox" name="truststoreTypeComboBox">
           <Properties>
             <Property name="editable" type="boolean" value="true"/>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="2">
-                <StringItem index="0" value="JKS"/>
-                <StringItem index="1" value="PKCS12"/>
-              </StringArray>
-            </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="truststoreTypeComboBoxActionPerformed"/>
+          </Events>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel3">
+        <Component class="javax.swing.JLabel" name="truststoreFilePathLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="Truststore file path:"/>
           </Properties>
@@ -236,7 +233,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="truststoreBrowseButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel4">
+        <Component class="javax.swing.JLabel" name="truststorePasswordLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="Password:"/>
           </Properties>
