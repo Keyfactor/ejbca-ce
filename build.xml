@@ -946,5 +946,8 @@
         <antcall target="j2ee:deploy-externalragui-war" />
 	</target>
 
+	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client">
+    	<ant antfile="build.xml" dir="modules" target="batchenrollment-gui"/>
+	</target>
 
 </project>
