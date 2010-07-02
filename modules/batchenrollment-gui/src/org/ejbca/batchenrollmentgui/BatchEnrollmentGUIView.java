@@ -1296,9 +1296,6 @@ public class BatchEnrollmentGUIView extends FrameView {
                 }
             }
 
-            jTable1Changed(null);
-            jTable1SelectionChanged(null);
-
             int done = 0, failed = 0;
             for (Request request : requests) {
                 if (request.isDone()) {
@@ -1315,6 +1312,8 @@ public class BatchEnrollmentGUIView extends FrameView {
         @Override protected void succeeded(Object result) {
             // Runs on the EDT.  Update the GUI based on
             // the result computed by doInBackground().
+            jTable1Changed(null);
+            jTable1SelectionChanged(null);
         }
     }
 
