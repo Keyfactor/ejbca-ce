@@ -233,4 +233,13 @@ public class EjbcaConfiguration {
 	public static boolean getDevelopmentProviderInstallation() {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getString("development.provider.installation", "false"));
 	}
+	
+	/**
+	 * Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be fully cached, so an "Edit CA" or restart
+	 * is needed in order to refresh the cache.
+	 */
+	public static boolean getCacheCaInfoInCaAdminSession() {
+		return "true".equalsIgnoreCase(ConfigurationHolder.getString("caadmin.cachecainfo", "false"));
+	}
+
 }

@@ -242,7 +242,7 @@
 #healthcheck.publisherconnections=true
 
 # Parameter to specify location of file containing information about maintenance
-# Use this file to specify wether to include node in healthcheck or report as down for maintenance, 
+# Use this file to specify weather to include node in healthcheck or report as down for maintenance, 
 # which will return an error message (either the property name specified below or a custom message specified in web.xml).
 # Default: empty (not used)
 #healthcheck.maintenancefile=~/maintenance.properties
@@ -250,14 +250,14 @@
 # Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
 # The healthcheck.maintenancefile should contain a single line like this:
 # DOWN_FOR_MAINTENANCE=true
-# Where the node will be down for maintenenace of the property is true, and not down for maintenance if the property is false.
+# Where the node will be down for maintenance of the property is true, and not down for maintenance if the property is false.
 # Default: DOWN_FOR_MAINTENANCE
 #healthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE
 
 #------------------- ECDSA implicitlyCA settings -------------
 # Sets pre-defined EC curve parameters for the implicitlyCA facility.
 # See the User's Guide for more information about the implicitlyCA facility.
-# Setting these parameters are not neccesary when using regular named curves. 
+# Setting these parameters are not necessary when using regular named curves. 
 # if you don't know what this means, you can safely ignore these settings.
 #
 # Default values that you can experiment with:
@@ -266,6 +266,16 @@
 # ecdsa.implicitlyca.b=6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a
 # ecdsa.implicitlyca.g=020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf
 # ecdsa.implicitlyca.n=883423532389192164791648750360308884807550341691627752275345424702807307
+
+#------------------- Performance settings -------------
+# If set to true calls to getCAInfo and getCA are completely cached in CAAdminSession. This means that for CAInfo to be updated
+# An "Edit CA" or server restart is needed. This works fine in a single server environment. In a multi server (clustered) environment, 
+# this disables the check if CA has been edited on another node, so the CA must be edited on all nodes, or nodes restarted after editing
+# on one node.
+# Setting this to true will improve performance for very large volume installations (>100 cert/s). 
+# For normal installations, where extreme speeds and response times are not required, leave as false.
+# Default: false
+#caadmin.cachecainfo=false
  
 #------------------- Debug and special settings -------------
 # 
