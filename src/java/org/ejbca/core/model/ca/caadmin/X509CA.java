@@ -526,7 +526,9 @@ public class X509CA extends CA implements Serializable {
         // We have to allow expired as well though, so we can renew expired CAs
         if ((getStatus() != SecConst.CA_ACTIVE) && ((getStatus() != SecConst.CA_EXPIRED))) {
         	String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
-			log.debug(msg); // This is something we handle so no need to log with higher priority
+            if (log.isDebugEnabled()) {
+            	log.debug(msg); // This is something we handle so no need to log with higher priority
+            }
         	throw new CAOfflineException(msg);
         }
 
@@ -581,9 +583,13 @@ public class X509CA extends CA implements Serializable {
         X509Name subjectDNName = CertTools.stringToBcX509Name(dn, converter, dnorder);
         if (certProfile.getAllowDNOverride() && (requestX509Name != null) ) {
         	subjectDNName = requestX509Name;
-        	log.debug("Using X509Name from request instead of user's registered.");
+            if (log.isDebugEnabled()) {
+            	log.debug("Using X509Name from request instead of user's registered.");
+            }
         }
-        log.debug("Using subjectDN: "+subjectDNName.toString());
+        if (log.isDebugEnabled()) {
+        	log.debug("Using subjectDN: "+subjectDNName.toString());
+        }
         certgen.setSubjectDN(subjectDNName);
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
@@ -608,7 +614,7 @@ public class X509CA extends CA implements Serializable {
         // X509 Certificate Extensions
         //
         
-        // Extensions we will add to the cetificate, later when we have filled the structure with 
+        // Extensions we will add to the certificate, later when we have filled the structure with 
         // everything we want.
         X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
         
@@ -619,7 +625,9 @@ public class X509CA extends CA implements Serializable {
         	while (en!=null && en.hasMoreElements()) {
         		DERObjectIdentifier oid = (DERObjectIdentifier)en.nextElement();
         		X509Extension ext = extensions.getExtension(oid);
-        		log.debug("Overriding extension with oid: "+oid);
+        		if (log.isDebugEnabled()) {
+        			log.debug("Overriding extension with oid: "+oid);
+        		}
         		extgen.addExtension(oid, ext.isCritical(), ext.getValue().getOctets());
         	}
         }
@@ -627,7 +635,9 @@ public class X509CA extends CA implements Serializable {
         // Second we see if there is Key usage override
     	X509Extensions overridenexts = extgen.generate();
         if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
-        	log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: "+keyusage);
+        	if (log.isDebugEnabled()) {
+        		log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: "+keyusage);
+        	}
             if ( (certProfile.getUseKeyUsage() == true) && (keyusage >=0) ){
                 X509KeyUsage ku = new X509KeyUsage(keyusage);
              	// We don't want to try to add custom extensions with the same oid if we have already added them 
@@ -637,7 +647,9 @@ public class X509CA extends CA implements Serializable {
                      extgen.addExtension(
                              X509Extensions.KeyUsage, certProfile.getKeyUsageCritical(), ku);        			 
         		 } else {
-        			 log.debug("KeyUsage was already overridden by an extension, not using KeyUsage from parameter.");
+        			 if (log.isDebugEnabled()) {
+        				 log.debug("KeyUsage was already overridden by an extension, not using KeyUsage from parameter.");
+        			 }
         		 }
             }
         } 
@@ -663,7 +675,9 @@ public class X509CA extends CA implements Serializable {
             		}
             	}        		
         	} else {
-        		log.debug("Extension with oid "+oid+" has been overridden, standard extension will not be added.");
+        		if (log.isDebugEnabled()) {
+        			log.debug("Extension with oid "+oid+" has been overridden, standard extension will not be added.");
+        		}
         	}
         }
 
@@ -685,7 +699,9 @@ public class X509CA extends CA implements Serializable {
         				 extgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),value);        	         		         			 
         			 }             		
         		 } else {
-             		log.debug("Extension with oid "+certExt.getOID()+" has been overridden, custom extension will not be added.");
+        			 if (log.isDebugEnabled()) {
+        				 log.debug("Extension with oid "+certExt.getOID()+" has been overridden, custom extension will not be added.");
+        			 }
              	}
         	 }
          }
@@ -704,7 +720,13 @@ public class X509CA extends CA implements Serializable {
          //
          
          X509Certificate cert;
+         if (log.isTraceEnabled()) {
+        	 log.trace(">certgen.generate");
+         }
          cert = certgen.generate(caPrivateKey, provider);
+         if (log.isTraceEnabled()) {
+        	 log.trace("<certgen.generate");
+         }
         
         // Verify before returning
         cert.verify(caPublicKey);
@@ -730,7 +752,9 @@ public class X509CA extends CA implements Serializable {
             	}        		
         	}
         }
-        log.debug("X509CA: generated certificate, CA "+ this.getCAId() + " for DN: " + subject.getDN());
+        if (log.isDebugEnabled()) {
+        	log.debug("X509CA: generated certificate, CA "+ this.getCAId() + " for DN: " + subject.getDN());
+        }
       return cert;                                                                                        
     }
 
