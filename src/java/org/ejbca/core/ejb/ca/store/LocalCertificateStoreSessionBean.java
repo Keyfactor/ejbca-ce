@@ -1915,6 +1915,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Finds a certificate profile by id.
      *
      * @param admin Administrator performing the operation
+     * @return CertificateProfiles or null if it can not be found.
      * @ejb.interface-method
      */
     public CertificateProfile getCertificateProfile(Admin admin, int id) {
