@@ -231,6 +231,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
+		if (log.isTraceEnabled()) {
+			log.trace(">finishUser(" + username + ", hiddenpwd)");
+		}
         try {
             // Change status of the user with username username
         	UserDataVO data = getUserSession().findUser(admin, username);
@@ -247,6 +250,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             error("AuthorizationDeniedException: ", e);
             throw new EJBException(e);
         }
+		if (log.isTraceEnabled()) {
+			log.trace("<finishUser("+username+", hiddenpwd)");
+		}
     }
 	/**
 	 * Cleans the certificate serial number from the user data. Should be called after the data has been used.
@@ -256,7 +262,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
 	 */
 	public void cleanUserCertDataSN(UserDataVO data) throws ObjectNotFoundException {
 		if (log.isTraceEnabled()) {
-			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");
+			log.trace(">cleanUserCertDataSN: " + data.getUsername());
 		}
 		// This admin can be the public web user, which may not be allowed to change status,
 		// this is a bit ugly, but what can a man do...
@@ -265,7 +271,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
 			getUserSession().cleanUserCertDataSN(statusadmin, data.getUsername());
 		} catch (FinderException e) {
 			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
-			getLogSession().log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+			getLogSession().log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
 			throw new ObjectNotFoundException(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			// Should never happen
@@ -281,7 +287,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
 			throw new EJBException(e);
 		}
 		if (log.isTraceEnabled()) {
-			log.trace("<finishUser("+data.getUsername()+", hiddenpwd)");
+			log.trace("<cleanUserCertDataSN: "+data.getUsername());
 		}
 	} 
 	/**
