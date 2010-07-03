@@ -242,7 +242,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @ejb.interface-method
      */
     public AdminPreference getAdminPreference(Admin admin, String certificatefingerprint){
-        trace(">getAdminPreference()");
+    	if (log.isTraceEnabled()) {
+    		trace(">getAdminPreference()");
+    	}
         AdminPreference ret =null;
         try {
             AdminPreferencesDataLocal apdata = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
@@ -253,7 +255,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         } catch(Exception e){
           throw new EJBException(e);
         }
-        trace("<getAdminPreference()");
+    	if (log.isTraceEnabled()) {
+    		trace("<getAdminPreference()");
+    	}
         return ret;
     } // getAdminPreference
 
@@ -292,7 +296,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     		String msg = intres.getLocalizedMessage("ra.adminprefexists");            	
     		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);            	        		
     	}
-    	log.trace("<addAdminPreference()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<addAdminPreference()");
+    	}
     	return ret;
     } // addAdminPreference
 
@@ -337,7 +343,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         } catch(Exception e){
           throw new EJBException(e);
         }
-        log.trace("<existsAdminPreference()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<existsAdminPreference()");
+    	}
         return ret;
     }// existsAdminPreference
 
@@ -349,7 +357,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      */
     public AdminPreference getDefaultAdminPreference(Admin admin){
-        trace(">getDefaultAdminPreference()");
+    	if (log.isTraceEnabled()) {
+    		trace(">getDefaultAdminPreference()");
+    	}
         AdminPreference ret =null;
         try {
             AdminPreferencesDataLocal apdata = adminpreferenceshome.findByPrimaryKey(DEFAULTUSERPREFERENCE);
@@ -365,7 +375,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         } catch(Exception e){
           throw new EJBException(e);
         }
-        trace("<getDefaultAdminPreference()");
+    	if (log.isTraceEnabled()) {
+    		trace("<getDefaultAdminPreference()");
+    	}
         return ret;
     } // getDefaultPreference()
 
@@ -376,7 +388,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       * @ejb.interface-method
      */
     public void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference){
-       trace(">saveDefaultAdminPreference()");
+    	if (log.isTraceEnabled()) {
+    		trace(">saveDefaultAdminPreference()");
+    	}
        try {
           AdminPreferencesDataLocal apdata = adminpreferenceshome.findByPrimaryKey(DEFAULTUSERPREFERENCE);
           apdata.setAdminPreference(defaultadminpreference);
@@ -387,7 +401,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,msg);
            throw new EJBException(e);
        }
-       trace("<saveDefaultAdminPreference()");
+       if (log.isTraceEnabled()) {
+    	   trace("<saveDefaultAdminPreference()");
+       }
     } // saveDefaultAdminPreference
 
     /**
@@ -408,7 +424,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     			EndEntityProfileDataLocal pdata = (EndEntityProfileDataLocal)iter.next();
     			String name = pdata.getProfileName();
     			pdata.upgradeProfile();
-    			log.debug("Loaded end entity profile: "+name);
+            	if (log.isDebugEnabled()) {
+            		log.debug("Loaded end entity profile: "+name);
+            	}
     		}
     	} catch (FinderException e) {
     		log.error("FinderException trying to load profiles: ", e);
@@ -596,9 +614,11 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
                       Integer caid = new Integer(availablecas[j]);
                       // If this is the special value ALLCAs we are authorized
                       if ( (caid.intValue() != SecConst.ALLCAS) && (!authorizedcaids.contains(caid)) ) {
-                          allexists = false;
-                          debug("Profile "+next.getId()+" not authorized");
-                          break;
+                    	  allexists = false;
+                    	  if (log.isDebugEnabled()) {
+                    		  debug("Profile "+next.getId()+" not authorized");
+                    	  }
+                    	  break;
                       }
                   }
                   if(allexists) {
@@ -620,7 +640,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * @ejb.interface-method
      */
     public HashMap getEndEntityProfileIdToNameMap(Admin admin){
-        trace(">getEndEntityProfileIdToNameMap");
+    	if (log.isTraceEnabled()) {
+    		trace(">getEndEntityProfileIdToNameMap");
+    	}
         HashMap returnval = new HashMap();
         Collection result = null;
         returnval.put(new Integer(SecConst.EMPTY_ENDENTITYPROFILE),EMPTY_ENDENTITYPROFILENAME);
@@ -637,7 +659,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         	String msg = intres.getLocalizedMessage("ra.errorreadprofiles");    	  
             error(msg, e);
         }
-        trace("<getEndEntityProfileIdToNameMap");
+    	if (log.isTraceEnabled()) {
+    		trace("<getEndEntityProfileIdToNameMap");
+    	}
         return returnval;
       } // getEndEntityProfileIdToNameMap
 
@@ -714,7 +738,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     		Integer id = (profiledatahome.findByProfileName(profilename)).getId();
     		returnval = id.intValue();
     	}catch(FinderException e){
-    		log.debug("Did not find end entity profile with name: "+profilename);
+        	if (log.isDebugEnabled()) {
+        		log.debug("Did not find end entity profile with name: "+profilename);
+        	}
     		// Ignore so we'll return 0
     	}
     	if (log.isTraceEnabled()) {
@@ -738,7 +764,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       try{
         returnval = (profiledatahome.findByPrimaryKey(Integer.valueOf(id))).getProfileName();
       }catch(FinderException e){
-    	  log.debug("Did not find end entity profile with id: "+id);
+    	  if (log.isDebugEnabled()) {
+    		  log.debug("Did not find end entity profile with id: "+id);
+    	  }
       }
 
       return returnval;
@@ -794,7 +822,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
           for(int j=0; j < availablecas.length; j++){
             if(Integer.parseInt(availablecas[j]) == caid){
               exists=true;
-              debug("CA exists in entity profile "+ep.getProfileName());
+              if (log.isDebugEnabled()) {
+            	  debug("CA exists in entity profile "+ep.getProfileName());
+              }
               break;
             }
           }
@@ -813,7 +843,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      */
     public GlobalConfiguration loadGlobalConfiguration(Admin admin)  {
         try {
-            trace(">loadGlobalConfiguration()");
+        	if (log.isTraceEnabled()) {
+        		trace(">loadGlobalConfiguration()");
+        	}
             // Only do the actual SQL query if we might update the configuration due to cache time anyhow
             if ( globalconfiguration!=null && lastupdatetime+MIN_TIME_BETWEEN_GLOBCONF_UPDATES > new Date().getTime() ){
                 return globalconfiguration;
@@ -837,7 +869,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             }
             return new GlobalConfiguration();	// Fallback to create a new unsaved config
         } finally {
-            trace("<loadGlobalConfiguration()");
+        	if (log.isTraceEnabled()) {
+        		trace("<loadGlobalConfiguration()");
+        	}
         }
     } //loadGlobalConfiguration
 
@@ -849,7 +883,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      */
 
     public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globalconfiguration)  {
-    	trace(">saveGlobalConfiguration()");
+    	if (log.isTraceEnabled()) {
+    		trace(">saveGlobalConfiguration()");
+    	}
     	String pk = "0";
     	try {
     		GlobalConfigurationDataLocal gcdata = globalconfigurationhome.findByPrimaryKey(pk);
@@ -868,7 +904,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     		}
     	}
     	this.globalconfiguration=globalconfiguration;
-    	trace("<saveGlobalConfiguration()");
+    	if (log.isTraceEnabled()) {
+    		trace("<saveGlobalConfiguration()");
+    	}
     } // saveGlobalConfiguration
 
     /**
@@ -959,7 +997,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         } catch(Exception e){
           throw new EJBException(e);
         }
-        log.trace("<updateAdminPreference()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<updateAdminPreference()");
+    	}
         return ret;
     } // changeAdminPreference
 
