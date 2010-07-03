@@ -158,7 +158,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			} else {
 				CAInfo info = casession.getCAInfo(admin, caName);
 				caId = info.getCAId();					
-				log.info("Using fixed caId when adding users in RA mode: "+caId);
+				log.info("Using fixed caName when adding users in RA mode: "+caName+"("+caId+")");
 			}
 			responseProtection = CmpConfiguration.getResponseProtection();
 			if (log.isDebugEnabled()) {
@@ -263,9 +263,8 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 										if (caId == -1) {
 											log.error("No default CA id for end entity profile: "+name);
 										} else {
-											CAInfo info = casession.getCAInfo(admin, caId);													
 											if (log.isDebugEnabled()) {
-												log.debug("Using CA: "+info.getName());
+												log.debug("Using CA with id: "+caId);
 											}
 										}
 									} else if (caId == -2) {
