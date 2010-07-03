@@ -258,10 +258,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									if (caId == -1) {
 										// get default CA id from end entity profile
 										EndEntityProfile eeProfile = rasession.getEndEntityProfile(admin, eeProfileId);
-										String name = rasession.getEndEntityProfileName(admin, eeProfileId);
 										caId = eeProfile.getDefaultCA();
 										if (caId == -1) {
-											log.error("No default CA id for end entity profile: "+name);
+											log.error("No default CA id for end entity profile: "+eeProfileId);
 										} else {
 											if (log.isDebugEnabled()) {
 												log.debug("Using CA with id: "+caId);
