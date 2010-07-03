@@ -1120,6 +1120,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             		// We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
             		if (req.getUsername() != null) {
             			ca = getCAFromUsername(admin, req);
+                    	if (log.isDebugEnabled()) {
+                    		debug("Using CA from username: "+req.getUsername());
+                    	}
                     } else {
                         String msg = intres.getLocalizedMessage("signsession.canotfoundissuerusername", dn, "null");        	
                         throw new CADoesntExistsException(msg);
@@ -1127,6 +1130,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             	}
             } else if (req.getUsername() != null) {
                 ca = getCAFromUsername(admin, req);
+            	if (log.isDebugEnabled()) {
+            		debug("Using CA from username: "+req.getUsername());
+            	}
             } else {
                 throw new CADoesntExistsException(intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
             }
@@ -1335,13 +1341,12 @@ public class RSASignSessionBean extends BaseSessionBean {
             getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType() == SecConst.USER_INVALID) {
-            	String msg = intres.getLocalizedMessage("signsession.usertypeinvalid");
+            	String msg = intres.getLocalizedMessage("signsession.usertypeinvalid", data.getUsername());
             	getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
             	if (log.isTraceEnabled()) {
-            		trace("<createCertificate(pk, ku)");
+            		trace("<createCertificate(pk, ku, notAfter)");
             	}
-                log.error("Invalid user type for user " + data.getUsername());
-                throw new EJBException("Invalid user type for user " + data.getUsername());
+                throw new EJBException(msg);
             }
             final ICertificateStoreSessionLocal certificateStore = storeHome.create();
             final Certificate cacert = ca.getCACertificate();
@@ -1377,6 +1382,9 @@ public class RSASignSessionBean extends BaseSessionBean {
 					certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
 				}
 			}
+        	if (log.isDebugEnabled()) {
+        		log.debug("Using certificate profile with id " + certProfileId);
+        	}
 
             // Check that CAid is among available CAs
             boolean caauthorized = false;
@@ -1387,6 +1395,11 @@ public class RSASignSessionBean extends BaseSessionBean {
                     caauthorized = true;
                 }
             }
+            if (!caauthorized) {
+                String msg = intres.getLocalizedMessage("signsession.errorcertprofilenotauthorized", new Integer(data.getCAId()), new Integer(certProfile.getType()));
+                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                throw new EJBException(msg);
+            }
 
             // Sign Session bean is only able to issue certificates with a End Entity or SubCA type certificate profile.
             if ( (certProfile.getType() != CertificateProfile.TYPE_ENDENTITY) && (certProfile.getType() != CertificateProfile.TYPE_SUBCA) ) {
@@ -1395,24 +1408,15 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new EJBException(msg);
             }
 
-            if (!caauthorized) {
-                String msg = intres.getLocalizedMessage("signsession.errorcertprofilenotauthorized", new Integer(data.getCAId()), new Integer(certProfile.getType()));
-                getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                throw new EJBException(msg);
-            }
-
-        	if (log.isDebugEnabled()) {
-        		log.debug("Using certificate profile with id " + certProfileId);
-        	}
             int keyLength = KeyTools.getKeyLength(pk);
+        	if (log.isDebugEnabled()) {
+        		log.debug("Keylength = " + keyLength);
+        	}
             if (keyLength == -1) {
                 String text = intres.getLocalizedMessage("signsession.unsupportedkeytype", pk.getClass().getName()); 
                 getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
                 throw new IllegalKeyException(text);
             }
-        	if (log.isDebugEnabled()) {
-        		log.debug("Keylength = " + keyLength);
-        	}
             if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
                     || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
                 String text = intres.getLocalizedMessage("signsession.illegalkeylength", new Integer(keyLength)); 
