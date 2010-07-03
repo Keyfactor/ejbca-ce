@@ -1075,10 +1075,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
     /**
-     *  Method returning id's of all CA's available to the system. i.e. not having status
-     * "external" or "waiting for certificate response"
+     *  Method returning id's of all CA's available in the system database.
+     *  Not that this method does not check for authorization and can thus leak information.
      *
-     * @return a Collection (Integer) of available CA id's
+     * @return a Collection (Integer) of CA id's
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
