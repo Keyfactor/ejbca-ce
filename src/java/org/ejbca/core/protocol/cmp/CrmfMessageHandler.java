@@ -85,8 +85,6 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private static final String CMP_ERRORADDUSER = "cmp.erroradduser";
 	private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
 
-	/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
-	private final String extractUsernameComp = null;
 	/** Parameters used for username generation if we are using RA mode to create users */
 	private UsernameGeneratorParams usernameGenParams = null;
 	/** Parameters used for temporary password generation */
@@ -201,21 +199,33 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 					// Try to find the user that is the subject for the request
 					// if extractUsernameComponent is null, we have to find the user from the DN
 					// if not empty the message will find the username itself, in the getUsername method
-					if (StringUtils.isEmpty(extractUsernameComp)) {
-						String dn = crmfreq.getSubjectDN();
+					final String dn = crmfreq.getSubjectDN();
+					final UserDataVO data;
+					/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
+					final String usernameComp = CmpConfiguration.getExtractUsernameComponent();
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("extractUsernameComponent: "+usernameComp);
+					}
+					if (StringUtils.isEmpty(usernameComp)) {
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("looking for user with dn: "+dn);
 						}
-						UserDataVO data = usersession.findUserBySubjectDN(admin, dn);
-						if (data != null) {
-							if (LOG.isDebugEnabled()) {
-								LOG.debug("Found username: "+data.getUsername());
-							}
-							crmfreq.setUsername(data.getUsername());
-						} else {
-							String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn");
-							LOG.info(errMsg);
+						data = usersession.findUserBySubjectDN(admin, dn);
+					} else {
+						final String username = CertTools.getPartFromDN(dn,usernameComp);
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("looking for user with username: "+username);
+						}						
+						data = usersession.findUser(admin, username);
+					}
+					if (data != null) {
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("Found username: "+data.getUsername());
 						}
+						crmfreq.setUsername(data.getUsername());
+					} else {
+						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn");
+						LOG.info(errMsg);
 					}
 				}
 			} else {
