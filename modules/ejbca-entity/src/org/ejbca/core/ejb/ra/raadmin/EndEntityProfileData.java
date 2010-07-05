@@ -68,7 +68,8 @@ public class EndEntityProfileData implements Serializable {
 	public String getProfileName() { return profileName; }
 	public void setProfileName(String profileName) { this.profileName = profileName; }
 
-	@Column(name="data",length=17*1024*1024)
+	// DB2: BLOB(1M), Derby: , Informix: , Ingres: BLOB, MSSQL: , MySQL: , Oracle: , Sapdb: , Sybase: IMAGE
+	@Column(name="data")
 	@Lob
 	private Serializable getDataUnsafe() {
 		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization

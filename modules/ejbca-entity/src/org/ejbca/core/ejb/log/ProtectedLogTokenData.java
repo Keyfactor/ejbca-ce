@@ -78,12 +78,14 @@ public class ProtectedLogTokenData implements Serializable {
     public int getTokenType() { return tokenType; }
     public void setTokenType(int tokenType) { this.tokenType = tokenType; }
 	
-	@Column(name="b64TokenCertificate")
+	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: , MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	@Column(name="b64TokenCertificate", length=100*1024)
 	@Lob
     public String getB64TokenCertificate() { return b64TokenCertificate; }
     public void setB64TokenCertificate(String b64TokenCertificate) { this.b64TokenCertificate = b64TokenCertificate; }
 
-	@Column(name="tokenReference")
+	// DB2: CLOB(100K), Derby: VARCHAR(32672), Informix: TEXT, Ingres: , MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	@Column(name="tokenReference", length=100*1024)
 	@Lob
     public String getTokenReference() { return tokenReference; }
     public void setTokenReference(String tokenReference) { this.tokenReference = tokenReference; }

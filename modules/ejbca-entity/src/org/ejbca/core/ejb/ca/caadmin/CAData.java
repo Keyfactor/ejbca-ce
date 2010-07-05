@@ -117,7 +117,8 @@ public class CAData implements Serializable {
 	public long getUpdateTime() { return updateTime; }
 	public void setUpdateTime(long updateTime){ this.updateTime = updateTime; }
 
-	@Column(name="data") // TODO: @ejb.persistence jdbc-type="LONGVARCHAR"
+	// DB2: CLOB(100K), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT  
+	@Column(name="data")
 	@Lob
 	public String getData() { return data; }
 	public void setData(String data) { this.data = data; }

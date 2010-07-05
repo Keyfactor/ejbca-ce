@@ -22,6 +22,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -119,8 +120,9 @@ public class CRLData implements Serializable {
 	 */
 	public void setNextUpdate(long nextUpdate) { this.nextUpdate = nextUpdate; }
 
-	@Column(name="base64Crl", length=17*1024*1024) // TODO: @ejb.persistence jdbc-type="LONGVARCHAR"
-	//@Lob
+	// DB2: CLOB(100M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	@Column(name="base64Crl", length=100*1024*1024)
+	@Lob
 	private String getBase64Crl() { return base64Crl; }
 	private void setBase64Crl(String base64Crl) { this.base64Crl = base64Crl; }
 

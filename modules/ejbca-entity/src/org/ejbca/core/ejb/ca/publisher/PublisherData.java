@@ -25,6 +25,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -59,10 +60,19 @@ public class PublisherData implements Serializable {
 	public int getUpdateCounter() { return updateCounter; }
 	public void setUpdateCounter(int updateCounter) { this.updateCounter = updateCounter; }
 
-	@Column(name="data") // TODO: @ejb.persistence jdbc-type="LONGVARCHAR" column-name="data" ??
+	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	@Column(name="data")
 	@Lob
 	public String getData() { return data; }
 	public void setData(String data) { this.data = data; }
+
+    /**
+     * Method that gets the cached publisher, if any.
+     */
+	@Transient
+    public BasePublisher getCachedPublisher() {
+    	return publisher;
+    }
 
 	/**
 	 * Method that saves the publisher data to database.

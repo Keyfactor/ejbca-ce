@@ -23,6 +23,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -150,8 +151,9 @@ public class CertReqHistoryData implements Serializable {
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
 	 * @return  xmlencoded encoded UserDataVO
 	 */
-	@Column(name="userDataVO", length=17*1024*1024) // TODO: @ejb.persistence jdbc-type="LONGVARCHAR"
-	//@Lob
+	// DB2: CLOB(1M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	@Column(name="userDataVO", length=1*1024*1024)
+	@Lob
 	private String getUserDataVO() { return userDataVO; }
 
 	/**

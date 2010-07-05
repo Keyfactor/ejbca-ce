@@ -87,6 +87,7 @@ public class KeyRecoveryData implements Serializable {
 	public boolean getMarkedAsRecoverable() { return markedAsRecoverable; }
 	public void setMarkedAsRecoverable(boolean markedAsRecoverable) { this.markedAsRecoverable = markedAsRecoverable; }
 
+	// DB2: VARCHAR(8000), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
 	@Column(name="keyData")
 	@Lob
 	public String getKeyData() { return keyData; } 

@@ -52,11 +52,13 @@ public class HardTokenPropertyData implements Serializable {
 	
 	public HardTokenPropertyData() { }
 
+	// DB2: VARCHAR(80), Derby: , Informix: VARCHAR(194), Ingres: , MSSQL: , MySQL: VARCHAR(80) BINARY, Oracle: , Sapdb: , Sybase: 
 	@Id
 	@Column(name="id")
 	public String getId() { return id; }
 	public void setId(String id) { this.id = id; }
 
+	// DB2: , Derby: , Informix: VARCHAR(194), Ingres: , MSSQL: , MySQL: , Oracle: , Sapdb: , Sybase: 
 	@Id
 	@Column(name="property")
 	public String getProperty() { return property; }
