@@ -667,8 +667,11 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
      /**
      * Finds a end entity profile by id.
+     * 
+     * @return EndEntityProfile or null if it does not exist
+     * 
      * @ejb.transaction type="Supports"
-      * @ejb.interface-method
+     * @ejb.interface-method
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, int id){
     	if (log.isTraceEnabled()) {
@@ -694,9 +697,11 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
      /**
      * Finds a end entity profile by id.
-     * @return null if profile isn't found
+     * 
+     * @return EndEntityProfile or null if it does not exist
+     * 
      * @ejb.transaction type="Supports"
-      * @ejb.interface-method
+     * @ejb.interface-method
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, String profilename){
     	if (log.isTraceEnabled()) {
