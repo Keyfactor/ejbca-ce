@@ -170,7 +170,7 @@ public class ProtectedLogToken implements IProtectedLogToken {
 			if (tokenType == TYPE_NONE) {
 				// Always return null
 			} else if (protectionSecretKey == null && protectionPrivateKey == null) {
-		        CA ca = CACacheManager.instance().getCA(caId, null);
+		        CA ca = CACacheManager.instance().getCA(caId);
 		        if (ca == null) {
 		        	log.error("CA not found.");
 		        } else {
@@ -204,7 +204,7 @@ public class ProtectedLogToken implements IProtectedLogToken {
 			if (tokenType == TYPE_NONE) {
 				// Never return true
 			} else if (protectionSecretKey == null && protectionPublicKey == null) {
-		        CA ca = CACacheManager.instance().getCA(caId, null);
+		        CA ca = CACacheManager.instance().getCA(caId);
 		        if (ca == null) {
 		        	log.error("CA not found.");
 		        }

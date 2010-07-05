@@ -39,12 +39,8 @@ import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
- * Database representing of a certificate and related information.
+ * Representation of a certificate and related information.
  * 
- * This class uses JPA and is not included in the regular EJBCA build.
- * 
- * KEEP THIS FILE IN SYNC WITH org.ejbca.core.ejb.ca.store.CertificateDataBean until EJB2.1 is dropped
- *  
  * @version $Id$
  */ 
 @Entity
@@ -502,8 +498,6 @@ public class CertificateData implements Serializable {
 
 	//
 	// Search functions. 
-	// These methods could easily be wrapped in a sessionbean with a injected '@PersistenceContext(unitName="unitname") EntityManager manager;'
-	// By keeping them here the ORM mapping is isolated to this file.
 	//
 
 	public static CertificateData findByFingerprint(EntityManager entityManager, String fingerprint) {

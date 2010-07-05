@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.CADataBean;
 
 
 /**
@@ -31,7 +30,7 @@ import org.ejbca.core.ejb.ca.caadmin.CADataBean;
  * 
  */
 public class CACacheManager {
-	
+
     /** Log4j instance for Base */
     private static final transient Logger log = Logger.getLogger(CACacheManager.class);
 
@@ -56,17 +55,35 @@ public class CACacheManager {
         }
         return instance;
     }
-    
-    /** Returns a previously registered (using addCA) CA, or null.
-     * 
+
+    /**
+     * Returns a previously registered (using addCA) CA, or null.
+     *
      * @param caid the id of the CA whose CA object you want to fetch.
-     * @param caData the data-bean or null to only fetch CA from cache without any updates
      * @return The previously added CA or null if the CA does not exist in the registry.
      */
-    public CA getCA(int caid, CADataBean caData) {
+    public CA getCA(int caid) {
         CA ret = (CA)caRegistry.get(Integer.valueOf(caid));
         if (ret != null) {
-        	populateCAObject(caData, ret);
+        	ret.setCAId(caid);
+        }
+        return ret;
+    }
+
+    /**
+     * Returns a previously registered (using addCA) CA, or null.
+     *
+     * @param caid the id of the CA whose CA object you want to fetch.
+     * @param caStatus
+     * @param caExpireTime
+     * @param caName
+     * @param caSubjectDN
+     * @return The previously added CA or null if the CA does not exist in the registry.
+     */
+    public CA getAndUpdateCA(int caid, int caStatus, long caExpireTime, String caName, String caSubjectDN) {
+        CA ret = (CA)caRegistry.get(Integer.valueOf(caid));
+        if (ret != null) {
+           	populateCAObject(caStatus, caExpireTime, caName, caSubjectDN, ret);
         	ret.setCAId(caid);
         }
         return ret;
@@ -74,28 +91,43 @@ public class CACacheManager {
 
     /** Returns a previously registered (using addCA) CA, or null.
      * 
-     * @param name the name of the CA whose CA object you want to fetch.
-     * @param caData the data-bean or null to only fetch CA from cache without any updates
+     * @param caName the name of the CA whose CA object you want to fetch.
      * @return The previously added CA or null if the CA does not exist in the registry.
      */
-    public CA getCA(String name, CADataBean caData) {
-    	Object o = this.caNameToCaId.get(name);
+    public CA getCA(String caName) {
+    	Object o = this.caNameToCaId.get(caName);
     	CA ret = null;
     	if (o != null) {
     		final Integer caid = (Integer)o;
-            ret = getCA(caid, caData);
+            ret = getCA(caid);
     	}
         return ret;    		
     }
 
-	private void populateCAObject(CADataBean caData, CA ret) {
-		if (caData != null) {
-			// We mainly cache the xml data, some of the other values may change slightly at will...
-			ret.setStatus(caData.getStatus());
-			ret.setExpireTime(new Date(caData.getExpireTime()));
-			ret.setName(caData.getName());
-			ret.setSubjectDN(caData.getSubjectDN());
-		}
+    /** Returns a previously registered (using addCA) CA, or null.
+     * 
+     * @param caName the name of the CA whose CA object you want to fetch.
+     * @param caStatus
+     * @param caExpireTime
+     * @param caSubjectDN
+     * @return The previously added CA or null if the CA does not exist in the registry.
+     */
+    public CA getAndUpdateCA(String caName, int caStatus, long caExpireTime, String caSubjectDN) {
+    	Object o = this.caNameToCaId.get(caName);
+    	CA ret = null;
+    	if (o != null) {
+    		final Integer caid = (Integer)o;
+            ret = getAndUpdateCA(caid, caStatus, caExpireTime, caName, caSubjectDN);
+    	}
+        return ret;    		
+    }
+
+	private void populateCAObject(int caStatus, long caExpireTime, String caName, String caSubjectDN, CA ret) {
+		// We mainly cache the xml data, some of the other values may change slightly at will...
+		ret.setStatus(caStatus);
+		ret.setExpireTime(new Date(caExpireTime));
+		ret.setName(caName);
+		ret.setSubjectDN(caSubjectDN);
 	}
     
     /** Adds a CA to the registry. If a CA already exists for the given CAid, 

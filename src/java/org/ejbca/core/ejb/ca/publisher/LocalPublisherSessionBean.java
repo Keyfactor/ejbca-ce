@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
@@ -34,7 +35,12 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.ExternalOCSPPublisher;
+import org.ejbca.core.model.ca.publisher.LdapPublisher;
+import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
@@ -43,6 +49,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.CertTools;
 
 
@@ -252,9 +259,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             	PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
             	String fingerprint = CertTools.getFingerprintAsString(cert);
             	// If it should be published directly
-            	if (!pdl.getPublisher().getOnlyUseQueue()) {
+            	if (!getPublisher(pdl).getOnlyUseQueue()) {
 	            	try {
-	            		if (pdl.getPublisher().storeCertificate(admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
+	            		if (getPublisher(pdl).storeCertificate(admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation)) {
 	            			publishStatus = PublisherQueueData.STATUS_SUCCESS;
 	            		}
 	            		String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());            	
@@ -268,10 +275,10 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             		returnval = false;
             	}
             	if (log.isDebugEnabled()) {
-                	log.debug("KeepPublishedInQueue: "+pdl.getPublisher().getKeepPublishedInQueue());
-                	log.debug("UseQueueForCertificates: "+pdl.getPublisher().getUseQueueForCertificates());            		
+                	log.debug("KeepPublishedInQueue: "+getPublisher(pdl).getKeepPublishedInQueue());
+                	log.debug("UseQueueForCertificates: "+getPublisher(pdl).getUseQueueForCertificates());            		
             	}
-            	if ( (publishStatus != PublisherQueueData.STATUS_SUCCESS || pdl.getPublisher().getKeepPublishedInQueue()) && pdl.getPublisher().getUseQueueForCertificates()) {
+            	if ( (publishStatus != PublisherQueueData.STATUS_SUCCESS || getPublisher(pdl).getKeepPublishedInQueue()) && getPublisher(pdl).getUseQueueForCertificates()) {
                 	// Write to the publisher queue either for audit reasons or to be able try again
                 	PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
                 	pqvd.setUsername(username);
@@ -316,9 +323,9 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             try {
                 PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
             	// If it should be published directly
-                if (!pdl.getPublisher().getOnlyUseQueue()) {
+                if (!getPublisher(pdl).getOnlyUseQueue()) {
                 	try {
-	            		if (pdl.getPublisher().storeCRL(admin, incrl, cafp, userDN)) {
+	            		if (getPublisher(pdl).storeCRL(admin, incrl, cafp, userDN)) {
 	            			publishStatus = PublisherQueueData.STATUS_SUCCESS;
 	            		}
                 		String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());            	
@@ -332,10 +339,10 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             		returnval = false;
             	}
             	if (log.isDebugEnabled()) {
-                	log.debug("KeepPublishedInQueue: "+pdl.getPublisher().getKeepPublishedInQueue());
-                	log.debug("UseQueueForCRLs: "+pdl.getPublisher().getUseQueueForCRLs());            		
+                	log.debug("KeepPublishedInQueue: "+getPublisher(pdl).getKeepPublishedInQueue());
+                	log.debug("UseQueueForCRLs: "+getPublisher(pdl).getUseQueueForCRLs());            		
             	}
-            	if ( (publishStatus != PublisherQueueData.STATUS_SUCCESS || pdl.getPublisher().getKeepPublishedInQueue()) && pdl.getPublisher().getUseQueueForCRLs()) {
+            	if ( (publishStatus != PublisherQueueData.STATUS_SUCCESS || getPublisher(pdl).getKeepPublishedInQueue()) && getPublisher(pdl).getUseQueueForCRLs()) {
                 	// Write to the publisher queue either for audit reasons or to be able try again
                 	final PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
                 	pqvd.setUserDN(userDN);
@@ -374,7 +381,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             PublisherDataLocal pdl = publisherhome.findByPrimaryKey(new Integer(publisherid));
             String name = pdl.getName();
             try {
-                pdl.getPublisher().testConnection(admin);
+                getPublisher(pdl).testConnection(admin);
             	String msg = intres.getLocalizedMessage("publisher.testedpublisher", name);            	
                 getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
             } catch (PublisherConnectionException pe) {
@@ -495,7 +502,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         BasePublisher publisherdata = null;
         try {
             PublisherDataLocal htp = publisherhome.findByName(oldname);
-            publisherdata = (BasePublisher) htp.getPublisher().clone();
+            publisherdata = (BasePublisher) getPublisher(htp).clone();
             try {
                 addPublisher(admin, newname, publisherdata);
             	String msg = intres.getLocalizedMessage("publisher.clonedpublisher", newname, oldname);            	
@@ -632,7 +639,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         BasePublisher returnval = null;
 
         try {
-            returnval = (publisherhome.findByName(name)).getPublisher();
+            returnval = getPublisher(publisherhome.findByName(name));
         } catch (FinderException e) {
             // return null if we cant find it
         }
@@ -651,7 +658,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         BasePublisher returnval = null;
 
         try {
-            returnval = (publisherhome.findByPrimaryKey(new Integer(id))).getPublisher();
+            returnval = getPublisher(publisherhome.findByPrimaryKey(new Integer(id)));
         } catch (FinderException e) {
             // return null if we cant find it
         }
@@ -739,7 +746,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
 				PublisherDataLocal pdl = (PublisherDataLocal) i.next();
 				String name = pdl.getName();
 				try {
-					pdl.getPublisher().testConnection(admin);
+					getPublisher(pdl).testConnection(admin);
 				} catch (PublisherConnectionException pe) {
 					String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);            	
 					getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, pe);
@@ -770,6 +777,45 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
         }
         return new Integer(id);
     } // findFreePublisherId
+
+    /**
+     * Method that returns the publisher data and updates it if necessary.
+     */
+    private BasePublisher getPublisher(PublisherDataLocal pData) {
+        BasePublisher publisher = pData.getCachedPublisher();
+    	if (publisher == null) {
+    		java.beans.XMLDecoder decoder;
+    		try {
+    			decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(pData.getData().getBytes("UTF8")));
+    		} catch (UnsupportedEncodingException e) {
+    			throw new EJBException(e);
+    		}
+    		HashMap h = (HashMap) decoder.readObject();
+    		decoder.close();
+    		// Handle Base64 encoded string values
+    		HashMap data = new Base64GetHashMap(h);
+
+    		switch (((Integer) (data.get(BasePublisher.TYPE))).intValue()) {
+    		case LdapPublisher.TYPE_LDAPPUBLISHER:
+    			publisher = new LdapPublisher();
+    			break;
+    		case LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER:
+    			publisher = new LdapSearchPublisher();
+    			break;
+    		case ActiveDirectoryPublisher.TYPE_ADPUBLISHER:
+    			publisher = new ActiveDirectoryPublisher();
+    			break;
+    		case CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER:
+    			publisher = new CustomPublisherContainer();
+    			break;
+    		case ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER:
+    			publisher = new ExternalOCSPPublisher();
+    			break;
+    		}
+    		publisher.loadData(data);
+    	}
+    	return publisher;
+    }
 
 
 } // LocalPublisherSessionBean

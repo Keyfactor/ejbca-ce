@@ -127,6 +127,7 @@ public abstract class PublisherDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="data"
+     * @ejb.interface-method view-type="local"
      */
     public abstract String getData();
 
@@ -135,47 +136,14 @@ public abstract class PublisherDataBean extends BaseEntityBean {
     public abstract void setData(String data);
 
     /**
-     * Method that returns the publisher data and updates it if necessary.
+     * Method that gets the cached publisher, if any.
      *
      * @ejb.interface-method view-type="local"
      */
-    public BasePublisher getPublisher() {
-
-        if (publisher == null) {
-            java.beans.XMLDecoder decoder;
-            try {
-                decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-            } catch (UnsupportedEncodingException e) {
-                throw new EJBException(e);
-            }
-            HashMap h = (HashMap) decoder.readObject();
-            decoder.close();
-            // Handle Base64 encoded string values
-            HashMap data = new Base64GetHashMap(h);
-
-            switch (((Integer) (data.get(BasePublisher.TYPE))).intValue()) {
-                case LdapPublisher.TYPE_LDAPPUBLISHER:
-                    publisher = new LdapPublisher();
-                    break;
-                case LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER:
-                      publisher = new LdapSearchPublisher();
-                      break;
-                case ActiveDirectoryPublisher.TYPE_ADPUBLISHER:
-                    publisher = new ActiveDirectoryPublisher();
-                    break;
-                case CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER:
-                    publisher = new CustomPublisherContainer();
-                    break;
-                case ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER:
-                    publisher = new ExternalOCSPPublisher();
-                    break;
-            }
-
-            publisher.loadData(data);
-        }
-
-        return publisher;
+    public BasePublisher getCachedPublisher() {
+    	return publisher;
     }
+    
 
     /**
      * Method that saves the publisher data to database.

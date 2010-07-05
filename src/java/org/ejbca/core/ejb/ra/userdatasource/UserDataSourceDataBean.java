@@ -22,8 +22,6 @@ import javax.ejb.EJBException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
-import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
-import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
 
 /**
@@ -123,6 +121,7 @@ public abstract class UserDataSourceDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="data"
+     * @ejb.interface-method view-type="local"
      */
     public abstract String getData();
 
@@ -131,34 +130,12 @@ public abstract class UserDataSourceDataBean extends BaseEntityBean {
     public abstract void setData(String data);
 
     /**
-     * Method that returns the userdatasource data and updates it if nessesary.
+     * Method that returns the cached UserDataSource.
      *
      * @ejb.interface-method view-type="local"
      */
-    public BaseUserDataSource getUserDataSource() {
-
-        if (userdatasource == null) {
-            java.beans.XMLDecoder decoder;
-            try {
-                decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-            } catch (UnsupportedEncodingException e) {
-                throw new EJBException(e);
-            }
-            HashMap h = (HashMap) decoder.readObject();
-            decoder.close();
-            // Handle Base64 encoded string values
-            HashMap data = new Base64GetHashMap(h);
-
-            switch (((Integer) (data.get(BaseUserDataSource.TYPE))).intValue()) {
-                case CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER:
-                	userdatasource = new CustomUserDataSourceContainer();
-                    break;
-            }
-
-            userdatasource.loadData(data);
-        }
-
-        return userdatasource;
+    public BaseUserDataSource getCachedUserDataSource() {
+    	return userdatasource;
     }
 
     /**
@@ -170,12 +147,10 @@ public abstract class UserDataSourceDataBean extends BaseEntityBean {
         // We must base64 encode string for UTF safety
         HashMap a = new Base64PutHashMap();
         a.putAll((HashMap)userdatasource.saveData());
-        
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
-
         try {
             if (log.isDebugEnabled()) {
                 log.debug("Profiledata: \n" + baos.toString("UTF8"));
@@ -184,22 +159,13 @@ public abstract class UserDataSourceDataBean extends BaseEntityBean {
         } catch (UnsupportedEncodingException e) {
             throw new EJBException(e);
         }
-
         this.userdatasource = userdatasource;
         setUpdateCounter(getUpdateCounter() + 1);
     }
 
-
     //
     // Fields required by Container
     //
-    /**
-     * Passivates bean, resets CA data.
-     */
-    public void ejbPassivate() {
-        this.userdatasource = null;
-    }
-
 
     /**
      * Entity Bean holding data of a userdatasource.
