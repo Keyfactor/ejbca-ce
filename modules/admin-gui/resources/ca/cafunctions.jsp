@@ -225,7 +225,7 @@ function getPasswordAndSubmit(formname) {
 <br> 
 <form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
 <input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
-<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value='<%=subjectdn%>'> 
+<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value="<%=subjectdn%>"> 
 <%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
        <% if ( (cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_ACTIVE) ) { %>
 <input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
@@ -234,7 +234,7 @@ function getPasswordAndSubmit(formname) {
           } 
        if(cainfo.getCAInfo().getDeltaCRLPeriod() > 0) { %>
 <br>
-<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value='<%=subjectdn%>'> 
+<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value="<%=subjectdn%>"> 
 <%=ejbcawebbean.getText("CREATENEWDELTACRL") + " : " %>
        <% if ( (cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_ACTIVE) ) { %>
 <input type='submit' name='<%=BUTTON_CREATEDELTACRL + number %>' value='<%=ejbcawebbean.getText("CREATEDELTACRL") %>'>
