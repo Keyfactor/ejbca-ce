@@ -238,6 +238,10 @@
            	<include name="org/ejbca/util/NonEjbTestTools.java"/>
         	<!-- Dependencies from Admin GUI -->
            	<include name="org/ejbca/util/HTMLTools.java"/>
+        	<!-- Dependencies from EJB Entity -->
+           	<include name="org/ejbca/core/model/approval/ApprovalDataUtil.java"/>
+           	<include name="org/ejbca/core/model/log/LogEntry.java"/>
+           	<include name="org/ejbca/core/model/ca/caadmin/CACacheManager.java"/>
     	</javac>
     </target>
 

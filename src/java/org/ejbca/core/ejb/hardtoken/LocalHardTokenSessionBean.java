@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -65,7 +66,10 @@ import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
+import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
+import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
+import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
 import org.ejbca.core.model.hardtoken.types.EIDHardToken;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
@@ -75,6 +79,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 
@@ -483,7 +488,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	   HardTokenProfile profiledata = null;
 	   try{
 		 HardTokenProfileDataLocal htp = hardtokenprofilehome.findByName(oldname);
-		 profiledata = (HardTokenProfile) htp.getHardTokenProfile().clone();
+		 profiledata = (HardTokenProfile) getHardTokenProfile(htp).clone();
 
          try{
         	 addHardTokenProfile(admin, newname, profiledata);
@@ -582,7 +587,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		Iterator i = result.iterator();
 		while(i.hasNext()){
 		  HardTokenProfileDataLocal next = (HardTokenProfileDataLocal) i.next();
-		  HardTokenProfile profile = next.getHardTokenProfile();
+		  HardTokenProfile profile = getHardTokenProfile(next);
 
 		  if(profile instanceof EIDProfile){
 		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds()) &&
@@ -625,7 +630,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	  HardTokenProfile returnval=null;
 
 	   try{
-		 returnval = (hardtokenprofilehome.findByName(name)).getHardTokenProfile();
+		 returnval = getHardTokenProfile(hardtokenprofilehome.findByName(name));
 	   } catch(FinderException e){
 		   // return null if we cant find it
 	   }
@@ -640,7 +645,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	   HardTokenProfile returnval=null;
 
   	   try{
-		   returnval = (hardtokenprofilehome.findByPrimaryKey(new Integer(id))).getHardTokenProfile();
+		   returnval = getHardTokenProfile(hardtokenprofilehome.findByPrimaryKey(new Integer(id)));
 	   } catch(FinderException e){
 			 // return null if we cant find it
 	   }
@@ -1682,7 +1687,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	   Collection result = hardtokenprofilehome.findAll();
 	   Iterator i = result.iterator();
 	   while(i.hasNext() && !exists){
-		 profile = ((HardTokenProfileDataLocal) i.next()).getHardTokenProfile();
+		 profile = getHardTokenProfile((HardTokenProfileDataLocal) i.next());
 		 if(profile instanceof EIDProfile){
 		   certprofiles = ((EIDProfile) profile).getAllCertificateProfileIds();
 		   if(certprofiles.contains(new Integer(id))) {
@@ -1830,5 +1835,62 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	
     	return retval;
     }
+    
+	private HardTokenProfile getHardTokenProfile(HardTokenProfileDataLocal htpData) {
+		HardTokenProfile profile = null;
+		java.beans.XMLDecoder decoder;
+		try {
+			decoder = new java.beans.XMLDecoder(
+					new java.io.ByteArrayInputStream(htpData.getData().getBytes("UTF8")));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+		HashMap h = (HashMap) decoder.readObject();
+		decoder.close();
+		// Handle Base64 encoded string values
+		HashMap data = new Base64GetHashMap(h);
+		switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
+		case SwedishEIDProfile.TYPE_SWEDISHEID :
+			profile = new SwedishEIDProfile();
+			break;
+		case EnhancedEIDProfile.TYPE_ENHANCEDEID:
+			profile =  new EnhancedEIDProfile();
+			break;
+		case TurkishEIDProfile.TYPE_TURKISHEID :
+			profile =  new TurkishEIDProfile();
+			break;            
+		}
+		profile.loadData(data);
+		return profile;
+	}
+
+    /**
+     * Method that saves the hard token profile data to database.
+     *
+	private void setHardTokenProfile(HardTokenProfileDataLocal htpData, HardTokenProfile hardtokenprofile){
+        // We must base64 encode string for UTF safety
+        HashMap a = new Base64PutHashMap();
+        a.putAll((HashMap)hardtokenprofile.saveData());
+        
+		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+		encoder.writeObject(a);
+		encoder.close();
+
+		try {
+            if (log.isDebugEnabled()) {
+            	if (baos.size() < 10000) {
+                    log.debug("Profiledata: \n" + baos.toString("UTF8"));            		
+            	} else {
+            		log.debug("Profiledata larger than 10000 bytes, not displayed.");
+            	}
+            }
+            htpData.setData(baos.toString("UTF8"));
+		} catch (UnsupportedEncodingException e) {
+          throw new EJBException(e);
+		}
+
+		htpData.setUpdateCounter(htpData.getUpdateCounter() +1);
+    }*/
 
 } // LocalHardTokenSessionBean

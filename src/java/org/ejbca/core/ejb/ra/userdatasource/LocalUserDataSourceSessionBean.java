@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ra.userdatasource;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -38,10 +39,12 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
+import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
+import org.ejbca.util.Base64GetHashMap;
 
 
 /**
@@ -214,10 +217,10 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             Integer id = (Integer) iter.next();            
             try {            	
                 UserDataSourceDataLocal pdl = userdatasourcehome.findByPrimaryKey(id);
-                BaseUserDataSource userdatasource = pdl.getUserDataSource();
+                BaseUserDataSource userdatasource = getUserDataSource(pdl);
                 if(isAuthorizedToUserDataSource(admin,id.intValue(),userdatasource,false)){
                   try {
-                    result.addAll(pdl.getUserDataSource().fetchUserDataSourceVOs(admin,searchstring));
+                    result.addAll(getUserDataSource(pdl).fetchUserDataSourceVOs(admin,searchstring));
                     String msg = intres.getLocalizedMessage("userdatasource.fetcheduserdatasource", pdl.getName());            	
                     getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null,
                            null, LogConstants.EVENT_INFO_USERDATAFETCHED,msg);
@@ -266,10 +269,10 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             
             try {            	
                 UserDataSourceDataLocal pdl = userdatasourcehome.findByPrimaryKey(id);
-                BaseUserDataSource userdatasource = pdl.getUserDataSource();
+                BaseUserDataSource userdatasource = getUserDataSource(pdl);
                 if(isAuthorizedToUserDataSource(admin,id.intValue(),userdatasource,true)){
                   try {
-                    retval = retval || pdl.getUserDataSource().removeUserData(admin, searchstring, removeMultipleMatch);
+                    retval = retval || getUserDataSource(pdl).removeUserData(admin, searchstring, removeMultipleMatch);
                     String msg = intres.getLocalizedMessage("userdatasource.removeduserdata", pdl.getName());            	
                     getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null,
                            null, LogConstants.EVENT_INFO_USERDATAREMOVED,msg);
@@ -310,7 +313,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
     	}
         try {
         	UserDataSourceDataLocal pdl = userdatasourcehome.findByPrimaryKey(new Integer(userdatasourceid));
-        	BaseUserDataSource userdatasource = pdl.getUserDataSource();
+        	BaseUserDataSource userdatasource = getUserDataSource(pdl);
         	if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
         		try {
         			userdatasource.testConnection(admin);
@@ -449,7 +452,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         BaseUserDataSource userdatasourcedata = null;
         try {
         	UserDataSourceDataLocal htp = userdatasourcehome.findByName(oldname);
-        	userdatasourcedata = (BaseUserDataSource) htp.getUserDataSource().clone();
+        	userdatasourcedata = (BaseUserDataSource) getUserDataSource(htp).clone();
         	if(isAuthorizedToEditUserDataSource(admin,userdatasourcedata)){                   		
         		try {
         			addUserDataSource(admin, newname, userdatasourcedata);
@@ -489,7 +492,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         boolean retval = false;
         try {
         	UserDataSourceDataLocal htp = userdatasourcehome.findByName(name);
-        	BaseUserDataSource userdatasource = htp.getUserDataSource();
+        	BaseUserDataSource userdatasource = getUserDataSource(htp);
         	if(isAuthorizedToEditUserDataSource(admin,userdatasource)){        	
               htp.remove();
               String msg = intres.getLocalizedMessage("userdatasource.removedsource", name);            	
@@ -524,7 +527,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         } catch (FinderException e) {
             try {
             	UserDataSourceDataLocal htp = userdatasourcehome.findByName(oldname);
-            	if(isAuthorizedToEditUserDataSource(admin,htp.getUserDataSource())){
+            	if(isAuthorizedToEditUserDataSource(admin,getUserDataSource(htp))){
                   htp.setName(newname);
                   success = true;
             	}else{
@@ -575,7 +578,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             	if(superadmin){
                   returnval.add(next.getId());
             	}else{
-            		BaseUserDataSource userdatasource = next.getUserDataSource();
+            		BaseUserDataSource userdatasource = getUserDataSource(next);
             		if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
             			if(includeAnyCA){
             				returnval.add(next.getId());
@@ -628,7 +631,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         BaseUserDataSource returnval = null;
 
         try {
-        	BaseUserDataSource result = (userdatasourcehome.findByName(name)).getUserDataSource();
+        	BaseUserDataSource result = getUserDataSource(userdatasourcehome.findByName(name));
             if(isAuthorizedToEditUserDataSource(admin,result)){
             	returnval = result;
             }else{
@@ -651,7 +654,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         BaseUserDataSource returnval = null;
 
         try {            
-        	BaseUserDataSource result = (userdatasourcehome.findByPrimaryKey(new Integer(id))).getUserDataSource();
+        	BaseUserDataSource result = getUserDataSource(userdatasourcehome.findByPrimaryKey(new Integer(id)));
             if(isAuthorizedToEditUserDataSource(admin,result)){
             	returnval = result;
             }else{
@@ -835,5 +838,30 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         return new Integer(id);
     } // findFreeUserDataSourceId
 
+    /**
+     * Method that returns the userdatasource data and updates it if nessesary.
+     */
+    private BaseUserDataSource getUserDataSource(UserDataSourceDataLocal udsData) {
+    	BaseUserDataSource userdatasource = udsData.getCachedUserDataSource();
+        if (userdatasource == null) {
+        	java.beans.XMLDecoder decoder;
+        	try {
+        		decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(udsData.getData().getBytes("UTF8")));
+        	} catch (UnsupportedEncodingException e) {
+        		throw new EJBException(e);
+        	}
+        	HashMap h = (HashMap) decoder.readObject();
+        	decoder.close();
+        	// Handle Base64 encoded string values
+        	HashMap data = new Base64GetHashMap(h);
+        	switch (((Integer) (data.get(BaseUserDataSource.TYPE))).intValue()) {
+        	case CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER:
+        		userdatasource = new CustomUserDataSourceContainer();
+        		break;
+        	}
+        	userdatasource.loadData(data);
+    	}
+    	return userdatasource;
+    }
 
 } // LocalUserDataSourceSessionBean

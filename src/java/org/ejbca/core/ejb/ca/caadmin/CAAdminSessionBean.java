@@ -991,9 +991,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	CA ca = null;
     	if (EjbcaConfiguration.getCacheCaInfoInCaAdminSession()) {
         	if (caid != -1) {
-                ca = CACacheManager.instance().getCA(caid, null);    		
+                ca = CACacheManager.instance().getCA(caid);
         	} else {
-                ca = CACacheManager.instance().getCA(name, null);    		
+                ca = CACacheManager.instance().getCA(name);
         	}    		
     	}
         CADataLocal cadata = null;

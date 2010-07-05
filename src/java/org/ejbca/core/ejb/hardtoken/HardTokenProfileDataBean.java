@@ -124,50 +124,13 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="data"
+     * @ejb.interface-method view-type="local"
      */
     public abstract String getData();
 
     /**
      */
     public abstract void setData(String data);
-
-
-
-    /**
-     * Method that returns the hard token profile data and updates it if nessesary.
-     * @ejb.interface-method view-type="local"
-     */
-    public HardTokenProfile getHardTokenProfile() {
-        
-        HardTokenProfile profile = null;
-        java.beans.XMLDecoder decoder;
-        try {
-            decoder = new java.beans.XMLDecoder(
-                        new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new EJBException(e);
-        }
-        HashMap h = (HashMap) decoder.readObject();
-        decoder.close();
-        // Handle Base64 encoded string values
-        HashMap data = new Base64GetHashMap(h);
-        
-        switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
-        case SwedishEIDProfile.TYPE_SWEDISHEID :
-            profile = new SwedishEIDProfile();
-            break;
-        case EnhancedEIDProfile.TYPE_ENHANCEDEID:
-            profile =  new EnhancedEIDProfile();
-            break;
-        case TurkishEIDProfile.TYPE_TURKISHEID :
-            profile =  new TurkishEIDProfile();
-            break;            
-        }
-        
-        profile.loadData(data);
-        
-        return profile;
-    }
 
     /**
      * Method that saves the hard token profile data to database.

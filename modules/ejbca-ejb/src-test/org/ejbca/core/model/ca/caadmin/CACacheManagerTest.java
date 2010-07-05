@@ -43,49 +43,48 @@ public class CACacheManagerTest extends TestCase {
 		// Plain add
 		CACacheManager.instance().addCA(12, ca1);
 		CACacheManager.instance().addCA(13, ca2);
-		CA ca = CACacheManager.instance().getCA(12, null);
+		CA ca = CACacheManager.instance().getCA(12);
 		assertEquals(12, ca.getCAId());
 		assertEquals("CA1", ca.getName());
-		ca = CACacheManager.instance().getCA("CA1", null);
+		ca = CACacheManager.instance().getCA("CA1");
 		assertEquals(12, ca.getCAId());
 		assertEquals("CA1", ca.getName());
-		ca = CACacheManager.instance().getCA(13, null);
+		ca = CACacheManager.instance().getCA(13);
 		assertEquals(13, ca.getCAId());
 		assertEquals("CA2", ca.getName());
-		ca = CACacheManager.instance().getCA("CA2", null);
+		ca = CACacheManager.instance().getCA("CA2");
 		assertEquals(13, ca.getCAId());
 		assertEquals("CA2", ca.getName());
-		ca = CACacheManager.instance().getCA(14, null);
+		ca = CACacheManager.instance().getCA(14);
 		assertNull(ca);
-		ca = CACacheManager.instance().getCA("CA12", null);
+		ca = CACacheManager.instance().getCA("CA12");
 		assertNull(ca);
 		
 		// plain remove
 		CACacheManager.instance().removeCA(12);
-		ca = CACacheManager.instance().getCA(12, null);
+		ca = CACacheManager.instance().getCA(12);
 		assertNull(ca);
-		ca = CACacheManager.instance().getCA("CA1", null);
+		ca = CACacheManager.instance().getCA("CA1");
 		assertNull(ca);
 
 		// Add new CA but with same CAId as an old one
 		ca1.setName("CA3");
 		CACacheManager.instance().addCA(12, ca1);
-		ca = CACacheManager.instance().getCA(12, null);
+		ca = CACacheManager.instance().getCA(12);
 		assertEquals(12, ca.getCAId());
 		assertEquals("CA3", ca.getName());
-		ca = CACacheManager.instance().getCA("CA3", null);
+		ca = CACacheManager.instance().getCA("CA3");
 		assertEquals(12, ca.getCAId());
 		assertEquals("CA3", ca.getName());
 
 		// Rename CA
 		ca1.setName("CA4");
 		CACacheManager.instance().addCA(12, ca1);
-		ca = CACacheManager.instance().getCA(12, null);
+		ca = CACacheManager.instance().getCA(12);
 		assertEquals(12, ca.getCAId());
 		assertEquals("CA4", ca.getName());
-		ca = CACacheManager.instance().getCA("CA4", null);
+		ca = CACacheManager.instance().getCA("CA4");
 		assertEquals(12, ca.getCAId());
 		assertEquals("CA4", ca.getName());
-
 	}
 }
