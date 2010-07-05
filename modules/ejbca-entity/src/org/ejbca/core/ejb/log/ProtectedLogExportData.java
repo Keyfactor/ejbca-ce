@@ -142,7 +142,8 @@ public class ProtectedLogExportData implements Serializable {
     public void setCurrentHashAlgorithm(String currentHashAlgorithm) { this.currentHashAlgorithm = currentHashAlgorithm; }
     
     /** The certificate that corresponds to the signing key. */
-	@Column(name="b64SignatureCertificate")
+	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: , MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: 
+	@Column(name="b64SignatureCertificate", length=100*1024)
 	@Lob
     public String getB64SignatureCertificate() { return b64SignatureCertificate; } 
     public void setB64SignatureCertificate(String b64SignatureCertificate) { this.b64SignatureCertificate = b64SignatureCertificate; }
@@ -170,6 +171,7 @@ public class ProtectedLogExportData implements Serializable {
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
     /** The signature of all the previous columns (except pk). */
+	// DB2: VARCHAR(4000), Derby: LONG VARCHAR, Informix: TEXT, Ingres: , MSSQL: TEXT, MySQL: TEXT, Oracle: VARCHAR2(4000), Sapdb: LONG, Sybase: 
 	@Column(name="b64Signature")
 	@Lob
     public String getB64Signature() { return b64Signature; }

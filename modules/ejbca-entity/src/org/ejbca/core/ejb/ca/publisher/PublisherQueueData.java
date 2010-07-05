@@ -129,6 +129,7 @@ public class PublisherQueueData implements Serializable {
     public int getPublisherId() { return publisherId; }
     public void setPublisherId(int publisherId) { this.publisherId = publisherId; }
 
+	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
 	@Column(name="volatileData")
 	@Lob
     public String getVolatileData() { return volatileData; }

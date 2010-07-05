@@ -234,27 +234,27 @@ public class CertificateData implements Serializable {
 	public void setExpireDate(long expireDate) { this.expireDate = expireDate; }
 
 	/**
-	 * Set to date when revocation occured if status== CERT_REVOKED. Format == Date.getTime()
+	 * Set to date when revocation occured if status == CERT_REVOKED. Format == Date.getTime()
 	 * @return revocation date
 	 */
 	@Column(name="revocationDate", nullable=false)
 	public long getRevocationDate() { return revocationDate; }
 
 	/**
-	 * Set to date when revocation occured if status== CERT_REVOKED. Format == Date.getTime()
+	 * Set to date when revocation occurred if status == CERT_REVOKED. Format == Date.getTime()
 	 * @param revocationDate revocation date
 	 */
 	public void setRevocationDate(long revocationDate) { this.revocationDate = revocationDate; }
 
 	/**
-	 * Set to revocation reason if status== CERT_REVOKED
+	 * Set to revocation reason if status == CERT_REVOKED
 	 * @return revocation reason
 	 */
 	@Column(name="revocationReason", nullable=false)
 	public int getRevocationReason() { return revocationReason; }
 
 	/**
-	 * Set to revocation reason if status== CERT_REVOKED
+	 * Set to revocation reason if status == CERT_REVOKED
 	 * @param revocationReason revocation reason
 	 */
 	public void setRevocationReason(int revocationReason) { this.revocationReason = revocationReason; }
@@ -263,7 +263,8 @@ public class CertificateData implements Serializable {
 	 * The certificate itself
 	 * @return base64 encoded certificate
 	 */
-	@Column(name="base64Cert") // TODO: @ejb.persistence jdbc-type="LONGVARCHAR"  ?
+	// DB2: VARCHAR(8000), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	@Column(name="base64Cert")
 	@Lob
 	public String getBase64Cert() { return base64Cert; } 
 

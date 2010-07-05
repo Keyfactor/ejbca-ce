@@ -75,7 +75,8 @@ public class HardTokenIssuerData implements Serializable {
 	public int getAdminGroupId() { return adminGroupId; } 
 	public void setAdminGroupId(int adminGroupId) { this.adminGroupId = adminGroupId; }
 
-	@Column(name="data",length=17*1024*1024)
+	// DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Sapdb: , Sybase: IMAGE
+	@Column(name="data")
 	@Lob
 	private Serializable getDataUnsafe() {
 		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization

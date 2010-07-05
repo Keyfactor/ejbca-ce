@@ -92,7 +92,8 @@ public class HardTokenData implements Serializable {
 	public String getSignificantIssuerDN() { return significantIssuerDN; }
 	public void setSignificantIssuerDN(String significantIssuerDN) { this.significantIssuerDN = significantIssuerDN; }
 
-	@Column(name="data",length=17*1024*1024)
+	// DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Sapdb: , Sybase: IMAGE
+	@Column(name="data")
 	@Lob
 	private Serializable getDataUnsafe() {
 		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization

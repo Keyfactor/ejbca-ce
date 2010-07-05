@@ -26,6 +26,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -186,8 +187,9 @@ s	 */
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
 	 */
-	@Column(name="approvaldata", length=17*1024*1024) // TODO: @ejb.persistence jdbc-type="LONGVARCHAR"
-	//@Lob
+	// DB2: VARCHAR(4000), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: VARCHAR2(4000), Sapdb: LONG, Sybase: TEXT 
+	@Column(name="approvaldata", length=17*1024*1024)
+	@Lob
 	public String getApprovaldata() { return approvaldata; }
 
 	/**
@@ -198,7 +200,9 @@ s	 */
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
 	 */
-	@Column(name="requestdata", length=17*1024*1024) // TODO: @ejb.persistence jdbc-type="LONGVARCHAR"
+	// DB2: VARCHAR(8000), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT 
+	@Column(name="requestdata", length=17*1024*1024)
+	@Lob
 	public String getRequestdata() { return requestdata; }
 
 	/**

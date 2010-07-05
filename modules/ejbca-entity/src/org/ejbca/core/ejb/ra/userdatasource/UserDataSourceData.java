@@ -80,6 +80,7 @@ public class UserDataSourceData implements Serializable {
     public void setUpdateCounter(int updateCounter) { this.updateCounter = updateCounter; }
 
     /** Data saved concerning the user data source. */
+	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
     @Column(name="data")
     @Lob
     public String getData() { return data; }
