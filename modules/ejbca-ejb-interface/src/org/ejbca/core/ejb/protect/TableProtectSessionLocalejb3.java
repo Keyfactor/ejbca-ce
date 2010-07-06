@@ -1,0 +1,53 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.core.ejb.protect;
+
+import javax.ejb.Local;
+
+/**
+ * Local interface for TableProtectSession.
+ * 
+ * FIXME: The name of this class is temporarily in conflict with its ejb2
+ * predecessor. Remove ejb3 postfix after the xdoclet-class has ceased to exist.
+ */
+@Local
+public interface TableProtectSessionLocalejb3 {
+    /**
+     * Store a protection entry in an external, remote database.
+     * 
+     * @param Protectable
+     *            the object beeing protected
+     */
+    public void protectExternal(org.ejbca.core.model.protect.Protectable entry, java.lang.String dataSource);
+
+    /**
+     * Store a protection entry.
+     * 
+     * @param admin
+     *            the administrator performing the event.
+     * @param Protectable
+     *            the object beeing protected
+     */
+    public void protect(org.ejbca.core.model.protect.Protectable entry);
+
+    /**
+     * Verifies a protection entry.
+     * 
+     * @param admin
+     *            the administrator performing the event.
+     * @param Protectable
+     *            the object beeing verified
+     * @return TableVerifyResult, never null
+     */
+    public org.ejbca.core.model.protect.TableVerifyResult verify(org.ejbca.core.model.protect.Protectable entry);
+}
