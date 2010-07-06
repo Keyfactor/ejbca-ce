@@ -43,7 +43,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     		getLogger().info(" if there are more than one.");
     		getLogger().info(" If no encryption alias is given, the encryption keys will be generated.");
     		getLogger().info("Usage2: CA " + getCommand() + " <CA name> <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>");
-    		getLogger().info(" catokenclasspath: example org.ejbca.core.model.ca.catoken.NFastCAToken for nCipher, org.ejbca.core.model.ca.catoken.PKCS11CAToken for PKCS11.");
+    		getLogger().info(" catokenclasspath: example org.ejbca.core.model.ca.catoken.PKCS11CAToken for PKCS11 HSMs.");
     		getLogger().info(" catokenproperties: a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui.");
     		getLogger().info(" ca-certificate-file: a file with the CA-certificates in. One or more CA-certificates, with this CAs certificate first, and others following in certificate chain order.");
     		return;
