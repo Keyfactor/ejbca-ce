@@ -307,9 +307,9 @@ public interface UserAdminSessionLocal {
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException;
 
     /**
-     * Decreases (the optional) request counter by 1, until it reaches 0.
-     * Returns the new value. If the value is already 0, -1 is returned, but the
-     * -1 is not stored in the database.
+     * Decreases (the optional) request counter by 1, until it reaches 0. Returns the new value. If the value is already 0, -1 is returned, but the 
+     * -1 is not stored in the database. 
+     * Also sets status of user to generated once the request counter reaches zero.
      * 
      * @param username
      *            the unique username.
@@ -317,6 +317,7 @@ public interface UserAdminSessionLocal {
      *            the new status, from 'UserData'.
      * @throws WaitingForApprovalException
      * @throws ApprovalException
+     * @throws FinderException if user does not exist 
      */
     public int decRequestCounter(org.ejbca.core.model.log.Admin admin, java.lang.String username)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException, org.ejbca.core.model.approval.ApprovalException,

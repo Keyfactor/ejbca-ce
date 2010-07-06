@@ -1109,12 +1109,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 	
     /**
      * Decreases (the optional) request counter by 1, until it reaches 0. Returns the new value. If the value is already 0, -1 is returned, but the 
-     * -1 is not stored in the database.
+     * -1 is not stored in the database. 
+     * Also sets status of user to generated once the request counter reaches zero.
      *
      * @param username the unique username.
      * @param status   the new status, from 'UserData'.
      * @throws WaitingForApprovalException 
-     * @throws ApprovalException 
+     * @throws ApprovalException
+     * @throws FinderException if user does not exist 
      * @ejb.interface-method
      */
     public int decRequestCounter(Admin admin, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
