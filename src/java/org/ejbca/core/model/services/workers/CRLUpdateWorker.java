@@ -25,9 +25,7 @@ import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
- * Class managing the updating of CRLs.
- * 
- * This is a replacement of the old jboss service.
+ * Class managing the updating of CRLs. Loops through the list of CAs to check and generates CRLs and deltaCRLs if needed.
  * 
  * @author Philip Vendil
  * @version $Id$
@@ -40,6 +38,9 @@ public class CRLUpdateWorker extends BaseWorker {
 
     private ICreateCRLSessionLocal createcrlsession = null;
 
+    /** Semaphore that tries to make sure that this CRL creation job does not run several times on the same machine.
+     * Since CRL generation can sometimes take a lot of time, this is needed.
+     */
 	private static boolean running = false;
 
 	/**
