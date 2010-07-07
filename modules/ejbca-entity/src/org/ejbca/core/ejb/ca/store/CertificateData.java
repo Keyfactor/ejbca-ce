@@ -172,7 +172,7 @@ public class CertificateData implements Serializable {
 	 * Fingerprint of CA certificate
 	 * @return fingerprint
 	 */
-	@Column(name="cAFingerprint") // This one is neccesary
+	@Column(name="cAFingerprint")
 	public String getCaFingerprint() { return cAFingerprint; }
 
 	/**
@@ -263,8 +263,8 @@ public class CertificateData implements Serializable {
 	 * The certificate itself
 	 * @return base64 encoded certificate
 	 */
-	// DB2: VARCHAR(8000), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
-	@Column(name="base64Cert")
+	// DB2: VARCHAR(8000) [8000], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	@Column(name="base64Cert", length=8000)
 	@Lob
 	public String getBase64Cert() { return base64Cert; } 
 

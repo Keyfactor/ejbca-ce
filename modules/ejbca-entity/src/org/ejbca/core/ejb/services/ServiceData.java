@@ -76,9 +76,9 @@ public class ServiceData implements Serializable {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
     /** Data saved concerning the service. */
-	@Column(name="data", length=100*1024)
+	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	@Column(name="data", length=32700)
 	@Lob
     public String getData() { return data; }
     public void setData(String data) { this.data = data; }

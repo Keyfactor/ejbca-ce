@@ -78,14 +78,14 @@ public class ProtectedLogTokenData implements Serializable {
     public int getTokenType() { return tokenType; }
     public void setTokenType(int tokenType) { this.tokenType = tokenType; }
 	
-	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: , MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
-	@Column(name="b64TokenCertificate", length=100*1024)
+	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	@Column(name="b64TokenCertificate", length=32700)
 	@Lob
     public String getB64TokenCertificate() { return b64TokenCertificate; }
     public void setB64TokenCertificate(String b64TokenCertificate) { this.b64TokenCertificate = b64TokenCertificate; }
 
-	// DB2: CLOB(100K), Derby: VARCHAR(32672), Informix: TEXT, Ingres: , MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
-	@Column(name="tokenReference", length=100*1024)
+	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: VARCHAR(32672) [32672 chars], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	@Column(name="tokenReference", length=32672)
 	@Lob
     public String getTokenReference() { return tokenReference; }
     public void setTokenReference(String tokenReference) { this.tokenReference = tokenReference; }

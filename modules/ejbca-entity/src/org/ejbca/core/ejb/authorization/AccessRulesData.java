@@ -42,7 +42,8 @@ public class AccessRulesData implements Serializable {
 	private int pK;
 	private String accessRule;
 	private int rule;
-	private boolean isRecursive;
+	//private boolean isRecursive;
+	private int bIsRecursive;
 	
 	public AccessRulesData(String admingroupname, int caid, String accessrule, int rule, boolean isrecursive) {
 		AccessRulesDataPK accessRulesDataPK = new AccessRulesDataPK(admingroupname, caid, new AccessRule(accessrule, rule, isrecursive));
@@ -68,9 +69,19 @@ public class AccessRulesData implements Serializable {
 	public int getRule() { return rule; }
 	public void setRule(int rule) { this.rule = rule; }
 
+	/* Booleans are not mapped correctly on MySQL 
 	@Column(name="isRecursive", nullable=false)
 	public boolean getIsRecursive() { return isRecursive; }
 	public void setIsRecursive(boolean isRecursive) { this.isRecursive = isRecursive; }
+	*/
+
+	@Column(name="bIsRecursive", nullable=false)
+	public int getBIsRecursive() { return bIsRecursive; }
+	public void setBIsRecursive(int bIsRecursive) { this.bIsRecursive = bIsRecursive; }
+
+	@Transient
+	public boolean getIsRecursive() { return getBIsRecursive() == 1; }
+	public void setIsRecursive(boolean isRecursive) { setBIsRecursive(isRecursive?1:0); }
 
 	/**
 	 * Return the access rule transfer object
@@ -83,8 +94,6 @@ public class AccessRulesData implements Serializable {
 
 	//
 	// Search functions. 
-	// These methods could easyly be wrapped in a sessionbean with a injected '@PersistenceContext(unitName="unitname") EntityManager manager;'
-	// By keeping them here the ORM mapping is isolated to this file.
 	//
 
 	public static AccessRulesData findByPrimeKey(EntityManager entityManager, AccessRulesDataPK accessRulesDataPK) {

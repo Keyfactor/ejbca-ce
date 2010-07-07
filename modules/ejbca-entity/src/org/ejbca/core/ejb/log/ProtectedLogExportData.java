@@ -49,7 +49,8 @@ public class ProtectedLogExportData implements Serializable {
 	private String b64PreviosExportHash;
 	private String currentHashAlgorithm;
 	private String b64SignatureCertificate;
-	private boolean deleted;
+	//private boolean deleted;
+	private int bDeleted;
 	private String b64Signature;
 
 	/**
@@ -142,8 +143,8 @@ public class ProtectedLogExportData implements Serializable {
     public void setCurrentHashAlgorithm(String currentHashAlgorithm) { this.currentHashAlgorithm = currentHashAlgorithm; }
     
     /** The certificate that corresponds to the signing key. */
-	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: , MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: 
-	@Column(name="b64SignatureCertificate", length=100*1024)
+	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	@Column(name="b64SignatureCertificate", length=32700)
 	@Lob
     public String getB64SignatureCertificate() { return b64SignatureCertificate; } 
     public void setB64SignatureCertificate(String b64SignatureCertificate) { this.b64SignatureCertificate = b64SignatureCertificate; }
@@ -165,14 +166,24 @@ public class ProtectedLogExportData implements Serializable {
     	}
     }
 
-    /** If the LogEvents were removed after the export. */
+    /*
 	@Column(name="deleted", nullable=false)
     public boolean getDeleted() { return deleted; }
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    */
+
+	@Column(name="bDeleted", nullable=false)
+    public int getBDeleted() { return bDeleted; }
+    public void setBDeleted(int bDeleted) { this.bDeleted = bDeleted; }
+
+    /** If the LogEvents were removed after the export. */
+    @Transient
+    public boolean getDeleted() { return getBDeleted() == 1; }
+    public void setDeleted(boolean deleted) { setBDeleted(deleted?1:0); }
 
     /** The signature of all the previous columns (except pk). */
-	// DB2: VARCHAR(4000), Derby: LONG VARCHAR, Informix: TEXT, Ingres: , MSSQL: TEXT, MySQL: TEXT, Oracle: VARCHAR2(4000), Sapdb: LONG, Sybase: 
-	@Column(name="b64Signature")
+	// DB2: VARCHAR(4000) [4000], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: VARCHAR2(4000) [4000 chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	@Column(name="b64Signature", length=4000)
 	@Lob
     public String getB64Signature() { return b64Signature; }
     public void setB64Signature(String b64Signature) { this.b64Signature = b64Signature; }

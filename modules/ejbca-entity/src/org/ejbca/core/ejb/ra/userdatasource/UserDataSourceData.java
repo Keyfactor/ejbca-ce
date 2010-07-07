@@ -25,6 +25,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
@@ -80,8 +81,8 @@ public class UserDataSourceData implements Serializable {
     public void setUpdateCounter(int updateCounter) { this.updateCounter = updateCounter; }
 
     /** Data saved concerning the user data source. */
-	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
-    @Column(name="data")
+	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+    @Column(name="data", length=32700)
     @Lob
     public String getData() { return data; }
     public void setData(String data) { this.data = data; }
@@ -89,6 +90,7 @@ public class UserDataSourceData implements Serializable {
     /**
      * Method that returns the cached UserDataSource.
      */
+    @Transient
     public BaseUserDataSource getCachedUserDataSource() {
     	return userdatasource;
     }
