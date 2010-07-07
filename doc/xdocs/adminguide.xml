@@ -1717,7 +1717,7 @@ about that his request have expired.</li>
 <li><i>Execution Failed</i>: Means that the action request failed for some reason during execution, see log for more information.
  Used by action requests that are executable.</li>
 <li><i>Execution Denied</i>: Means that the action request hasn't been approved and will not be executed. The difference with status 
-'Rejected' is that this status is only used with executable requests and don’t have any expire time. This means that the requesting 
+'Rejected' is that this status is only used with executable requests and do not have any expire time. This means that the requesting 
 administrator can apply again directly after the rejection.</li>
 </ul>
 </p><p>
