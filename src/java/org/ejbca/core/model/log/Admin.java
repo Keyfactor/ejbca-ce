@@ -79,7 +79,7 @@ public class Admin implements Serializable {
 
     // Public Constructors
     public Admin(Certificate certificate, String username, String email) {
-        this(TYPE_CLIENTCERT_USER, CertTools.getSerialNumberAsString(certificate) + ", " + CertTools.getIssuerDN(certificate));
+        this(TYPE_CLIENTCERT_USER, CertTools.getSerialNumberAsString(certificate) + " : DN : \"" + CertTools.getIssuerDN(certificate)+"\"");
         this.certificate = certificate;
         this.username = username;
         this.email = email;
