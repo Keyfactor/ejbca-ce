@@ -199,6 +199,9 @@ Information stored is:
 </ul>
 The certificate request history is enabled by default, but you may turn it of to maximize performance and save database space.
 </p>
+<p>
+The impact of loosing CertReqHistoryData and that is that currently you can not publish an "unrevokation" of a certificate, or to re-publish a certificate. So if you revoke a certificate (with reason certificate hold) it is published to OCSP responder/LDAP, but the "unrevoke" action will not publish the status back to normal.
+</p>
 </subsubsection>
 
 <subsubsection name="CRL Period">

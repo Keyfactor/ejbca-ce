@@ -37,6 +37,10 @@ import org.ejbca.util.StringTools;
 /**
  * Representation of historical information about the data user to create a certificate.
  * 
+ * the information is currently used to:
+ * - list request history for a user
+ * - find issuing User DN (UserDataVO) when republishing a certificate (in case the userDN for the user changed)
+ * 
  * @version $Id$
  */ 
 @Entity
