@@ -26,6 +26,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
@@ -129,8 +130,8 @@ public class PublisherQueueData implements Serializable {
     public int getPublisherId() { return publisherId; }
     public void setPublisherId(int publisherId) { this.publisherId = publisherId; }
 
-	// DB2: CLOB(100K), Derby: LONG VARCHAR, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
-	@Column(name="volatileData")
+	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	@Column(name="volatileData", length=32700)
 	@Lob
     public String getVolatileData() { return volatileData; }
     public void setVolatileData(String volatileData) { this.volatileData = volatileData; }
@@ -139,6 +140,7 @@ public class PublisherQueueData implements Serializable {
      * Method that returns the PublisherQueueVolatileData data and updates it if necessary.
      * @return VolatileData is optional in publisher queue data
      */
+    @Transient
     public PublisherQueueVolatileData getPublisherQueueVolatileData() {
     	PublisherQueueVolatileData ret = null;
     	try {
