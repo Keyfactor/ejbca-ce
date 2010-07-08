@@ -18,39 +18,6 @@ import javax.ejb.Remote;
  * Remote interface for ServiceTimerSession.
  */
 @Remote
-public interface ServiceTimerSessionRemote {
+public interface ServiceTimerSessionRemote extends ServiceTimerSession {
 
-    /**
-     * Loads and activates all the services from database that are active
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void load() throws java.rmi.RemoteException;
-
-    /**
-     * Cancels all existing timers a unload
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void unload() throws java.rmi.RemoteException;
-
-    /**
-     * Adds a timer to the bean, and cancels all existing timeouts for this id.
-     * 
-     * @param id
-     *            the id of the timer
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void addTimer(long interval, java.lang.Integer id) throws java.rmi.RemoteException;
-
-    /**
-     * cancels a timer with the given Id
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void cancelTimer(java.lang.Integer id) throws java.rmi.RemoteException;
 }
