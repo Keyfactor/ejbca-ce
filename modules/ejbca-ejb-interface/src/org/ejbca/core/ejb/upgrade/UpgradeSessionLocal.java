@@ -14,19 +14,11 @@ package org.ejbca.core.ejb.upgrade;
 
 import javax.ejb.Local;
 
-import org.ejbca.core.model.log.Admin;
-
 /**
  * Local interface for UpgradeSession.
  */
 @Local
-public interface UpgradeSessionLocal {
-    /**
-     * Upgrades the database
-     * 
-     * @param admin
-     * @return true or false if upgrade was done or not
-     */
-    public boolean upgrade(Admin admin, String dbtype, String sOldVersion, boolean isPost);
+public interface UpgradeSessionLocal  extends UpgradeSession{
+
 
 }

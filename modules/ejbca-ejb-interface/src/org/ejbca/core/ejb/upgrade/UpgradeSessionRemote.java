@@ -18,13 +18,6 @@ import javax.ejb.Remote;
  * Remote interface for UpgradeSession.
  */
 @Remote
-public interface UpgradeSessionRemote {
-    /**
-     * Upgrades the database
-     * 
-     * @param admin
-     * @return true or false if upgrade was done or not
-     */
-    public boolean upgrade(org.ejbca.core.model.log.Admin admin, java.lang.String dbtype, java.lang.String sOldVersion, boolean isPost)
-            throws java.rmi.RemoteException;
+public interface UpgradeSessionRemote extends UpgradeSession {
+
 }

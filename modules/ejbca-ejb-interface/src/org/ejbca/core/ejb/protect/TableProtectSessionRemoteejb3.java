@@ -21,33 +21,6 @@ import javax.ejb.Remote;
  * Remove ejb3 postfix after the xdoclet-class has ceased to exist.
  */
 @Remote
-public interface TableProtectSessionRemoteejb3 {
-    /**
-     * Store a protection entry in an external, remote database.
-     * 
-     * @param Protectable
-     *            the object beeing protected
-     */
-    public void protectExternal(org.ejbca.core.model.protect.Protectable entry, java.lang.String dataSource) throws java.rmi.RemoteException;
-
-    /**
-     * Store a protection entry.
-     * 
-     * @param admin
-     *            the administrator performing the event.
-     * @param Protectable
-     *            the object beeing protected
-     */
-    public void protect(org.ejbca.core.model.protect.Protectable entry) throws java.rmi.RemoteException;
-
-    /**
-     * Verifies a protection entry.
-     * 
-     * @param admin
-     *            the administrator performing the event.
-     * @param Protectable
-     *            the object beeing verified
-     * @return TableVerifyResult, never null
-     */
-    public org.ejbca.core.model.protect.TableVerifyResult verify(org.ejbca.core.model.protect.Protectable entry) throws java.rmi.RemoteException;
+public interface TableProtectSessionRemoteejb3 extends TableProtectSession {
+ 
 }

@@ -18,7 +18,7 @@ import javax.ejb.Local;
  * Local interface for ServiceTimerSession.
  */
 @Local
-public interface ServiceTimerSessionLocal {
+public interface ServiceTimerSessionLocal extends ServiceTimerSession {
     /**
      * Internal method should not be called from external classes, method is
      * public to get automatic transaction handling. This method need
@@ -31,38 +31,6 @@ public interface ServiceTimerSessionLocal {
     public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, org.ejbca.core.model.services.ServiceConfiguration serviceData,
             java.lang.String serviceName);
 
-    /**
-     * Loads and activates all the services from database that are active
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void load();
-
-    /**
-     * Cancels all existing timers a unload
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void unload();
-
-    /**
-     * Adds a timer to the bean, and cancels all existing timeouts for this id.
-     * 
-     * @param id
-     *            the id of the timer
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void addTimer(long interval, java.lang.Integer id);
-
-    /**
-     * cancels a timer with the given Id
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void cancelTimer(java.lang.Integer id);
+  
 
 }
