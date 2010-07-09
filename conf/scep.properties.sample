@@ -52,15 +52,15 @@ scep.ra.authPwd=none
 # Defines if a request to the RA will create a new user, 
 # or edit an existing in EJBCA. If false users must be 
 # pre-registered in EJBCA with a pwd.
-scep.ra.createOrEditUser=true
+scep.ra.createOrEditUser=false
 
-# The Certificate profile used to register new SCEP users, if createOrEditUser=false.
+# The Certificate profile used to register new SCEP users, if createOrEditUser=true.
 scep.ra.certificateProfile=ENDUSER
 
-# The End entity profile used to register new SCEP users, if createOrEditUser=false.
+# The End entity profile used to register new SCEP users, if createOrEditUser=true.
 scep.ra.entityProfile=EMPTY
 
-# The default CA used to register new SCEP users, if createOrEditUser=false.
+# The default CA used to register new SCEP users, if createOrEditUser=true.
 scep.ra.defaultCA=ScepCA
 
 # Mapping a CAs issuer DN (as from the Admin-GUI->Edit CAs), which will be 
