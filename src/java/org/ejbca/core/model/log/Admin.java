@@ -85,9 +85,14 @@ public class Admin implements Serializable {
         this.email = email;
     }
 
-    public Admin(int type, String ip) {
+    /**
+     * @param type
+     * @param ipOrCertIssuerSerno
+     * 		ip address of publib web users etc or certserno and issuerDN for certificate authenticated admins (see other constructor above)
+     */
+    public Admin(int type, String ipOrCertIssuerSerno) {
         this.type = type;
-        this.data = ip;
+        this.data = ipOrCertIssuerSerno;
     }
     
 
