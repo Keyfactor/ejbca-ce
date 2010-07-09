@@ -13,8 +13,7 @@ are for example used by MyFaces/FileUpload etc.
 
 commons-lang-2.4.jar is used throughout EJBCA.
 
-commons-cli-1.0.jar and jline-0.9.94.jar is used to create nice CLI programs.
-JLine license is BSD.
+commons-cli-1.0.jar is used to create nice CLI programs.
 
 bc-x jars are BouncyCastle (http://www.bouncycastle.org), License is BC (BSD like).
 These jars are the cryptographic foundation in EJBCA.
