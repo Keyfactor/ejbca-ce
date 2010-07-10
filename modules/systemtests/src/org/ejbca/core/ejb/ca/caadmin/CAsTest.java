@@ -1399,12 +1399,17 @@ public class CAsTest extends TestCase {
                     true // useCertReqHistory
             		);
 
+            info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertNull(info);
             TestTools.getCAAdminSession().createCA(admin, cainfo);
 
             info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
 
             // Generate a certificate request from the CA and send to the TEST CA
             byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), rootcacertchain, false, false, false, null);
+            info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
@@ -1417,6 +1422,7 @@ public class CAsTest extends TestCase {
             
             // Check that the CA has the correct certificate chain now
             info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertEquals(SecConst.CA_ACTIVE, info.getStatus());
             Iterator iter = info.getCertificateChain().iterator();
             X509Certificate cert = (X509Certificate) iter.next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
@@ -1444,6 +1450,8 @@ public class CAsTest extends TestCase {
         // Make a certificate request from the CA
         Collection cachain = info.getCertificateChain();
         byte[] request = TestTools.getCAAdminSession().makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
+        info = TestTools.getCAAdminSession().getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+        assertEquals(SecConst.CA_ACTIVE, info.getStatus()); // No new keys generated, still active
         PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
         assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
