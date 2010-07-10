@@ -273,10 +273,27 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         checkQueueLength();
     }
 
-    public void test34CaRenewCertRequest() throws Exception {
+    public void test34_1CaRenewCertRequestRSA() throws Exception {
         setUpAdmin();
-        super.caRenewCertRequest("1024", AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        final String cvcaMnemonic = "CVCAEXEC";
+        final String dvcaName = "WSTESTDVCAECCSIGNEDBYEXTERNAL";
+        final String dvcaMnemonic = "WSDVEXEC";
+        final String keyspec = "secp256r1";
+        final String keyalg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+        final String signalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+		super.caRenewCertRequest(cvcaMnemonic, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
     }
+    
+	public void test34_2CaRenewCertRequestECC() throws Exception {
+		setUpAdmin();
+        final String cvcaMnemonic = "CVCAEXEC";
+        final String dvcaName = "WSTESTDVCAECCSIGNEDBYEXTERNAL";
+        final String dvcaMnemonic = "WSDVEXEC";
+        final String keyspec = "secp256r1";
+        final String keyalg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+        final String signalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+		caRenewCertRequest(cvcaMnemonic, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
+	}
 
     public void test35CleanUpCACertRequest() throws Exception {
         setUpAdmin();
