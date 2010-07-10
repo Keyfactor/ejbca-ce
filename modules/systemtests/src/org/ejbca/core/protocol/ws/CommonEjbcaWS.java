@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.ws;
 import java.io.File;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -2066,15 +2065,13 @@ public abstract class CommonEjbcaWS extends TestCase {
         }
     }
 
-    /**
-     * This method tests the WS API calls caRenewCertRequest and caCertResponse
-     */
-    protected void caRenewCertRequest(String keyspec, String keyalg, String signalg) throws Exception {
-
-        List<byte[]> cachain = new ArrayList<byte[]>();
-        String pwd = "foo123"; // use default hard coded soft CA token password
-        // first we just try to create a simple request from an active X.509 CA.
-        // A request like this can be used to request a cross certificate
+	/** This method tests the WS API calls caRenewCertRequest and caCertResponse
+	 */
+	protected void caRenewCertRequest(final String cvcaMnemonic, final String dvcaName, final String dvcaMnemonic, final String keyspec, final String keyalg, final String signalg) throws Exception {
+		List<byte[]> cachain = new ArrayList<byte[]>();
+		String pwd = "foo123"; // use default hard coded soft CA token password 
+		// first we just try to create a simple request from an active X.509 CA. 
+		// A request like this can be used to request a cross certificate
         byte[] request = ejbcaraws.caRenewCertRequest(getAdminCAName(), cachain, false, false, false, pwd);
         assertNotNull(request);
         PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
@@ -2082,30 +2079,27 @@ public abstract class CommonEjbcaWS extends TestCase {
         CAInfo info = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
         assertEquals(info.getSubjectDN(), msg.getRequestDN());
         assertTrue(msg.verify());
-        // System.out.println(ASN1Dump.dumpAsString(msg.getCertificationRequest()));
-
-        /*
-         * First test is to renew a CA signed by an external CA *without
-         * renewing the keys*. This just creates a new certificate request,
-         * without setting status to "waiting for certificate response" or
-         * anything.
-         */
+        //System.out.println(ASN1Dump.dumpAsString(msg.getCertificationRequest()));
+        
+		/*
+		 * First test is to renew a CA signed by an external CA *without renewing the keys*.
+		 * This just creates a new certificate request, without setting status to "waiting for certificate response" or anything.
+		 */		
         // Now we want to renew a DVCA signed by an external CVCA
-
+        
         // Create the self signed CVCA, we do it here locally
-        KeyPair cvcakeypair = KeyTools.genKeys(keyspec, keyalg);
-        CAReferenceField caRef = new CAReferenceField("SE", "CVCAEXT", "00001");
-        HolderReferenceField holderRef = new HolderReferenceField("SE", "CVCAEXT", "00001");
-        CVCertificate cvcert = CertificateGenerator.createTestCertificate(cvcakeypair.getPublic(), cvcakeypair.getPrivate(), caRef, holderRef, signalg,
-                AuthorizationRoleEnum.CVCA);
+        final KeyPair cvcakeypair = KeyTools.genKeys(keyspec, keyalg);
+		CAReferenceField caRef = new CAReferenceField("SE", cvcaMnemonic, "00001");
+        HolderReferenceField holderRef = new HolderReferenceField("SE", cvcaMnemonic, "00001");
+        CVCertificate cvcert = CertificateGenerator.createTestCertificate(cvcakeypair.getPublic(), cvcakeypair.getPrivate(), caRef, holderRef, signalg, AuthorizationRoleEnum.CVCA);
         CardVerifiableCertificate cvcacert = new CardVerifiableCertificate(cvcert);
+
         // Create the DVCA signed by our external CVCA
-        String caname = createDVCCASignedByExternal("1024", AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-        assertEquals(caname, "WSTESTDVCASIGNEDBYEXTERNAL");
-        // Now test our WS API to generate a request, setting status to
-        // "WAITING_FOR_CERTIFICATE_RESPONSE"
+        String caname = createDVCCASignedByExternal(cvcacert, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
+        assertEquals(caname, dvcaName);
+        // Now test our WS API to generate a request, setting status to "WAITING_FOR_CERTIFICATE_RESPONSE"
         CAInfo dvinfo = getCAAdminSession().getCAInfo(intAdmin, caname);
-        assertEquals(dvinfo.getStatus(), SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+        assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
         cachain.add(cvcacert.getEncoded());
         // Create the request with WS API
         request = ejbcaraws.caRenewCertRequest(caname, cachain, false, false, false, pwd);
@@ -2115,42 +2109,35 @@ public abstract class CommonEjbcaWS extends TestCase {
         assertNotNull(request);
         assertEquals(dvinfo.getSubjectDN(), cvcreq.getRequestDN());
         CVCObject obj = CertificateParser.parseCVCObject(request);
-        // System.out.println(obj.getAsText());
-        CVCertificate cert = (CVCertificate) obj;
-        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody()
-                .getAuthorityReference().getConcatenated());
-
+        //System.out.println(obj.getAsText());
+        CVCertificate cert = (CVCertificate)obj;
+        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody().getAuthorityReference().getConcatenated());
+        
         // Receive the response so the DV CA is activated
         HolderReferenceField dvholderref = cert.getCertificateBody().getHolderReference();
-        CVCertificate dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(), caRef,
-                dvholderref, signalg, AuthorizationRoleEnum.DV_D);
+        CVCertificate dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(), caRef, dvholderref, signalg, AuthorizationRoleEnum.DV_D);
         ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
         // Check that the cert was received and the CA activated
         dvinfo = getCAAdminSession().getCAInfo(intAdmin, caname);
-        assertEquals(dvinfo.getStatus(), SecConst.CA_ACTIVE);
+        assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
         Collection dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
-        CardVerifiableCertificate dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
+        CardVerifiableCertificate dvcertactive = (CardVerifiableCertificate)dvcerts.iterator().next();
         obj = CertificateParser.parseCVCObject(dvcertactive.getEncoded());
-        // System.out.println(obj.getAsText());
+        //System.out.println(obj.getAsText());
         dvcertactive.verify(cvcakeypair.getPublic());
         // Check to see that is really the same keypair
         String pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
         String pubk2 = new String(Base64.encode(cert.getCertificateBody().getPublicKey().getEncoded(), false));
-        assertTrue(pubk1.compareTo(pubk2) == 0);
+        assertTrue(pubk1.compareTo(pubk2)==0);
         String sequence1 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
-
-        /*
-         * Second test is to renew a CA signed by an external CA *with renewing
-         * the keys*, and activating them. This creates a new key pair and a
-         * certificate request. Status is set to
-         * "waiting for certificate response" because the new keys can not be
-         * used until we have receive a certificate.
-         */
-        // Now we want to renew a DVCA signed by an external CVCA, generating
-        // new keys
-        // Create the request with WS API, cachain is our CVCA cert from
-        // previously created CVCA, we use the previously created DV as well.
+        
+		/*
+		 * Second test is to renew a CA signed by an external CA *with renewing the keys*, and activating them.
+		 * This creates a new key pair and a certificate request. Status is set to "waiting for certificate response" because the new keys can not be used until we have receive a certificate.
+		 */
+        // Now we want to renew a DVCA signed by an external CVCA, generating new keys        
+        // Create the request with WS API, cachain is our CVCA cert from previously created CVCA, we use the previously created DV as well.
         pwd = "foo123";
         request = ejbcaraws.caRenewCertRequest(caname, cachain, true, false, true, pwd);
         // make the mandatory junit checks...
@@ -2159,52 +2146,43 @@ public abstract class CommonEjbcaWS extends TestCase {
         assertNotNull(request);
         assertEquals(dvinfo.getSubjectDN(), cvcreq.getRequestDN());
         obj = CertificateParser.parseCVCObject(request);
-        // System.out.println(obj.getAsText());
-        // We should have created an authenticated request signed by the old
-        // certificate
-        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest) obj;
-        assertEquals(dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated(), authreq.getAuthorityReference()
-                .getConcatenated());
-        cert = authreq.getRequest();
-        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody()
-                .getAuthorityReference().getConcatenated());
-        // Now test our WS API to generate a request, setting status to
-        // "WAITING_FOR_CERTIFICATE_RESPONSE"
+        //System.out.println(obj.getAsText());
+        // We should have created an authenticated request signed by the old certificate
+		CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)obj;
+		assertEquals(dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated(), authreq.getAuthorityReference().getConcatenated());
+		cert = authreq.getRequest();
+        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody().getAuthorityReference().getConcatenated());
+        // Now test our WS API to generate a request, setting status to "WAITING_FOR_CERTIFICATE_RESPONSE"
         dvinfo = getCAAdminSession().getCAInfo(intAdmin, caname);
-        assertEquals(dvinfo.getStatus(), SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+        assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
         // Check to see that is really is a new keypair
         pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
         pubk2 = new String(Base64.encode(cert.getCertificateBody().getPublicKey().getEncoded(), false));
-        assertTrue(pubk1.compareTo(pubk2) != 0);
+        assertTrue(pubk1.compareTo(pubk2)!=0);
 
         // Receive the response so the DV CA is activated
         dvholderref = cert.getCertificateBody().getHolderReference();
-        dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(), caRef, dvholderref,
-        		signalg, AuthorizationRoleEnum.DV_D);
+        dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(), caRef, dvholderref, signalg, AuthorizationRoleEnum.DV_D);
         ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
         // Check that the cert was received and the CA activated
         dvinfo = getCAAdminSession().getCAInfo(intAdmin, caname);
-        assertEquals(dvinfo.getStatus(), SecConst.CA_ACTIVE);
+        assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
         dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
-        dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
+        dvcertactive = (CardVerifiableCertificate)dvcerts.iterator().next();
         obj = CertificateParser.parseCVCObject(dvcertactive.getEncoded());
-        // System.out.println(obj.getAsText());
+        //System.out.println(obj.getAsText());
         dvcertactive.verify(cvcakeypair.getPublic());
         String sequence2 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
         int s1 = Integer.parseInt(sequence1);
         int s2 = Integer.parseInt(sequence2);
-        assertEquals(s1 + 1, s2); // sequence in new certificate should be old
-        // sequence + 1
-
-        /*
-         * Third test is to renew a CA signed by an external CA *with renewing
-         * the keys* saying to *not* activate the key now. This creates a new
-         * key pair and a certificate request, but the new key pair is not used
-         * by the CA for issuing certificates. Status is not set to
-         * "waiting for certificate response" because the old keys can still be
-         * used until we have received a certificate and activated the new keys.
-         */
+        assertEquals(s1+1, s2); // sequence in new certificate should be old sequence + 1
+        
+		/*
+		 * Third test is to renew a CA signed by an external CA *with renewing the keys* saying to *not* activate the key now.
+		 * This creates a new key pair and a certificate request, but the new key pair is not used by the CA for issuing certificates. 
+		 * Status is not set to "waiting for certificate response" because the old keys can still be used until we have received a certificate and activated the new keys.
+		 */
         request = ejbcaraws.caRenewCertRequest(caname, cachain, true, false, false, pwd);
         // make the mandatory junit checks...
         assertNotNull(request);
@@ -2212,133 +2190,122 @@ public abstract class CommonEjbcaWS extends TestCase {
         assertNotNull(request);
         assertEquals(dvinfo.getSubjectDN(), cvcreq.getRequestDN());
         obj = CertificateParser.parseCVCObject(request);
-        // System.out.println(obj.getAsText());
-        // We should have created an authenticated request signed by the old
-        // certificate
-        authreq = (CVCAuthenticatedRequest) obj;
-        assertEquals(dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated(), authreq.getAuthorityReference()
-                .getConcatenated());
-        cert = authreq.getRequest();
-        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody()
-                .getAuthorityReference().getConcatenated());
+        //System.out.println(obj.getAsText());
+        // We should have created an authenticated request signed by the old certificate
+		authreq = (CVCAuthenticatedRequest)obj;
+		assertEquals(dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated(), authreq.getAuthorityReference().getConcatenated());
+		cert = authreq.getRequest();
+        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody().getAuthorityReference().getConcatenated());
         String sequence3 = cert.getCertificateBody().getHolderReference().getSequence();
         int s3 = Integer.parseInt(sequence3);
-        assertEquals(s2 + 1, s3); // sequence in new certificate request should
-        // be old certificate sequence + 1
+        assertEquals(s2+1, s3); // sequence in new certificate request should be old certificate sequence + 1
         // status should not be "WAITING_FOR_CERTIFICATE_RESPONSE"
         dvinfo = getCAAdminSession().getCAInfo(intAdmin, caname);
-        assertEquals(dvinfo.getStatus(), SecConst.CA_ACTIVE);
+        assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
         // Check to see that is really is a new keypair
         dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
-        dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
+        dvcertactive = (CardVerifiableCertificate)dvcerts.iterator().next();
         String sequence4 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
         assertEquals(sequence2, sequence4);
         PublicKey oldPublicKey = dvcertactive.getPublicKey();
         PublicKey newPublicKey = cert.getCertificateBody().getPublicKey();
         pubk1 = new String(Base64.encode(oldPublicKey.getEncoded(), false));
         pubk2 = new String(Base64.encode(newPublicKey.getEncoded(), false));
-        assertTrue(pubk1.compareTo(pubk2) != 0);
+        assertTrue(pubk1.compareTo(pubk2)!=0);
 
-        // Try to issue an IS certificate, it should be issued using the OLD
-        // private key
+        // Try to issue an IS certificate, it should be issued using the OLD private key
         // Simple self signed request
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "BC");
-        keyGen.initialize(1024, new SecureRandom());
-        KeyPair keyPair = keyGen.generateKeyPair();
+        KeyPair keyPair = KeyTools.genKeys(keyspec, keyalg);
         CVCertificate isrequest = CertificateGenerator.createRequest(keyPair, signalg, caRef, holderRef);
-        // Edit our favorite test user
-        UserDataVOWS user1 = new UserDataVOWS();
-        user1.setUsername("WSTESTUSER1");
-        user1.setPassword("foo123");
-        user1.setClearPwd(true);
+		// Edit our favorite test user
+		UserDataVOWS user1 = new UserDataVOWS();
+		user1.setUsername("WSTESTUSER1");
+		user1.setPassword("foo123");
+		user1.setClearPwd(true);
         user1.setSubjectDN("CN=Test,C=SE");
-        user1.setCaName(caname);
-        user1.setStatus(UserDataConstants.STATUS_NEW);
-        user1.setTokenType("USERGENERATED");
-        user1.setEndEntityProfileName("EMPTY");
-        user1.setCertificateProfileName("ENDUSER");
-        // editUser and set status to new
-        ejbcaraws.editUser(user1);
-        List<Certificate> certenv = ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(isrequest.getDEREncoded())));
-        assertNotNull(certenv);
-        Certificate wscert = certenv.get(0);
-        byte[] b64cert = wscert.getCertificateData();
-        java.security.cert.Certificate iscert = CertTools.getCertfromByteArray(Base64.decode(b64cert));
+		user1.setCaName(caname);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("USERGENERATED");
+		user1.setEndEntityProfileName("EMPTY");
+		user1.setCertificateProfileName("ENDUSER");
+		// editUser and set status to new
+		ejbcaraws.editUser(user1);
+		List<Certificate> certenv =  ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(isrequest.getDEREncoded())));
+		assertNotNull(certenv);		
+		Certificate wscert = certenv.get(0);
+		byte[] b64cert = wscert.getCertificateData();
+		java.security.cert.Certificate iscert = CertTools.getCertfromByteArray(Base64.decode(b64cert));
         obj = CertificateParser.parseCVCObject(Base64.decode(b64cert));
-        CVCertificate iscvc = (CVCertificate) obj;
+        CVCertificate iscvc = (CVCertificate)obj;
         assertEquals("Test", iscvc.getCertificateBody().getHolderReference().getMnemonic());
-        // It must verify using the DVCAs old public key
-        iscert.verify(oldPublicKey);
+		// It must verify using the DVCAs old public key
+        PublicKey pk = KeyTools.getECPublicKeyWithParams(oldPublicKey, cvcacert.getPublicKey());
+        iscert.verify(pk);
         boolean thrown = false;
         try {
-            // it must not be possible to verify this with the new public key
-            iscert.verify(newPublicKey);
+        	// it must not be possible to verify this with the new public key
+            pk = KeyTools.getECPublicKeyWithParams(newPublicKey, cvcacert.getPublicKey());
+            iscert.verify(pk);        	
         } catch (SignatureException e) {
-            thrown = true;
+        	thrown = true;
         }
         assertTrue(thrown);
-
-        // Receive the CA certificate response so the DV CA's new key is
-        // activated
+        
+        // Receive the CA certificate response so the DV CA's new key is activated
         dvholderref = cert.getCertificateBody().getHolderReference();
-        dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(), caRef, dvholderref,
-        		signalg, AuthorizationRoleEnum.DV_D);
+        dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(), caRef, dvholderref, signalg, AuthorizationRoleEnum.DV_D);
         // Here we want to activate the new key pair
-        // System.out.println(dvretcert.getAsText());
+        //System.out.println(dvretcert.getAsText());
         ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
         // Check that the cert was received and the CA activated
         dvinfo = getCAAdminSession().getCAInfo(intAdmin, caname);
-        assertEquals(dvinfo.getStatus(), SecConst.CA_ACTIVE);
+        assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
         dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
-        dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
+        dvcertactive = (CardVerifiableCertificate)dvcerts.iterator().next();
         obj = CertificateParser.parseCVCObject(dvcertactive.getEncoded());
-        // System.out.println(obj.getAsText());
+        //System.out.println(obj.getAsText());
         dvcertactive.verify(cvcakeypair.getPublic());
         String sequence5 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
-        assertEquals(sequence3, sequence5); // sequence in new certificate
-        // should be same as sequence in
-        // request, which was old sequence +
-        // 1
+        assertEquals(sequence3, sequence5); // sequence in new certificate should be same as sequence in request, which was old sequence + 1
         // Check to see that is really is the new keypair
         pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
         pubk2 = new String(Base64.encode(newPublicKey.getEncoded(), false));
         assertEquals(pubk1, pubk2);
-        // Finally verify that we can issue an IS certificate and verify with
-        // the new public key, i.e. it is signed by the new private key
+        // Finally verify that we can issue an IS certificate and verify with the new public key, i.e. it is signed by the new private key 
         // Simple self signed request
         isrequest = CertificateGenerator.createRequest(keyPair, signalg, caRef, holderRef);
-        // Edit our favorite test user
-        user1 = new UserDataVOWS();
-        user1.setUsername("WSTESTUSER1");
-        user1.setPassword("foo123");
-        user1.setClearPwd(true);
+		// Edit our favorite test user
+		user1 = new UserDataVOWS();
+		user1.setUsername("WSTESTUSER1");
+		user1.setPassword("foo123");
+		user1.setClearPwd(true);
         user1.setSubjectDN("CN=Test1,C=SE");
-        user1.setCaName(caname);
-        user1.setStatus(UserDataConstants.STATUS_NEW);
-        user1.setTokenType("USERGENERATED");
-        user1.setEndEntityProfileName("EMPTY");
-        user1.setCertificateProfileName("ENDUSER");
-        // editUser and set status to new
-        ejbcaraws.editUser(user1);
-        certenv = ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(isrequest.getDEREncoded())));
-        assertNotNull(certenv);
-        wscert = certenv.get(0);
-        b64cert = wscert.getCertificateData();
-        iscert = CertTools.getCertfromByteArray(Base64.decode(b64cert));
+		user1.setCaName(caname);
+		user1.setStatus(UserDataConstants.STATUS_NEW);
+		user1.setTokenType("USERGENERATED");
+		user1.setEndEntityProfileName("EMPTY");
+		user1.setCertificateProfileName("ENDUSER");
+		// editUser and set status to new
+		ejbcaraws.editUser(user1);
+		certenv =  ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(isrequest.getDEREncoded())));
+		assertNotNull(certenv);		
+		wscert = certenv.get(0);
+		b64cert = wscert.getCertificateData();
+		iscert = CertTools.getCertfromByteArray(Base64.decode(b64cert));
         obj = CertificateParser.parseCVCObject(Base64.decode(b64cert));
-        iscvc = (CVCertificate) obj;
+        iscvc = (CVCertificate)obj;
         assertEquals("Test1", iscvc.getCertificateBody().getHolderReference().getMnemonic());
-        // It must verify using the DVCAs new public key, wsich is the same as
-        // the one we imported
-        iscert.verify(dvcertactive.getPublicKey());
-        iscert.verify(dvretcert.getCertificateBody().getPublicKey());
-
-    } // test34CaRenewCertRequest
+		// It must verify using the DVCAs new public key, which is the same as the one we imported
+        pk = KeyTools.getECPublicKeyWithParams(dvcertactive.getPublicKey(), cvcacert.getPublicKey());
+        iscert.verify(pk);
+        pk = KeyTools.getECPublicKeyWithParams(dvretcert.getCertificateBody().getPublicKey(), cvcacert.getPublicKey());
+        iscert.verify(pk);
+	} // caRenewCertRequest
 
     protected void cleanUpCACertRequest() throws Exception {
-        // Remove CAs created by previous test test34CaRenewCertRequest
+        // Remove CAs created by previous test caRenewCertRequest
         deleteDVCAExt();
     }
 
@@ -2516,46 +2483,51 @@ public abstract class CommonEjbcaWS extends TestCase {
      * Create a DVCA, signed by an external CVCA
      * 
      */
-    private String createDVCCASignedByExternal(String keyspec, String keyalg, String signalg) throws Exception {
+    private String createDVCCASignedByExternal(final CardVerifiableCertificate cvcacert, final String dvcaname, final String dvcaMnemonic, final String keyspec, final String keyalg, final String signalg) throws Exception {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec(keyspec);
-        catokeninfo.setEncKeySpec("1024");
+        catokeninfo.setEncKeySpec(keyspec);
         catokeninfo.setSignKeyAlgorithm(keyalg);
-        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncKeyAlgorithm(keyalg);
         catokeninfo.setSignatureAlgorithm(signalg);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setEncryptionAlgorithm(signalg);
         // No CA Services.
         ArrayList extendedcaservices = new ArrayList();
 
         try {
-            String dvcadn = "CN=WSDVEXT,C=SE";
-            String dvcaname = "WSTESTDVCASIGNEDBYEXTERNAL";
+            String dvcadn = "CN="+dvcaMnemonic+",C=SE";
 
-            CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
-                    CAInfo.CATYPE_CVC, CAInfo.SIGNEDBYEXTERNALCA, null, catokeninfo, "JUnit WS CVC DV signed by external", -1, null, 24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
-                    true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
-                    1, // Number of Req approvals
+        	CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, SecConst.CA_ACTIVE, new Date(),
+        			SecConst.CERTPROFILE_FIXED_SUBCA, 3650, 
+        			null, // Expiretime 
+        			CAInfo.CATYPE_CVC, CAInfo.SIGNEDBYEXTERNALCA,
+        			null, catokeninfo, "JUnit WS CVC DV signed by external", 
+        			-1, null,
+        			24, // CRLPeriod
+        			0, // CRLIssueInterval
+        			10, // CRLOverlapTime
+        			10, // Delta CRL period
+        			new ArrayList(), // CRL publishers
+        			true, // Finish User
+        			extendedcaservices,
+        			new ArrayList(), // Approvals Settings
+        			1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true // useCertReqHistory
-            );
+        	);
 
-            getCAAdminSession().createCA(intAdmin, cvcdvinfo);
-            CAInfo info = getCAAdminSession().getCAInfo(intAdmin, dvcaname);
-            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
-            // It is signed by external so no certificates exists yet
+        	getCAAdminSession().createCA(intAdmin, cvcdvinfo);
+        	CAInfo info = getCAAdminSession().getCAInfo(intAdmin, dvcaname);
+        	assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
+        	// It is signed by external so no certificates exists yet
             Collection col = info.getCertificateChain();
             assertEquals(0, col.size());
             return info.getName();
         } catch (CAExistsException pee) {
-            pee.printStackTrace();
+        	pee.printStackTrace();
         }
         return null;
     }
@@ -2591,6 +2563,14 @@ public abstract class CommonEjbcaWS extends TestCase {
             e.printStackTrace();
             assertTrue(false);
         }
+        
+    	try {
+    		String dn = CertTools.stringToBCDNString("CN=WSDVEXEC,C=SE");
+    		getCAAdminSession().removeCA(intAdmin, dn.hashCode());
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		assertTrue(false);
+    	}
     }
 
     /**
