@@ -78,11 +78,13 @@ public class CAData implements Serializable {
     			setExpireTime(CertTools.getNotAfter(cacert).getTime());  
     			ca.setExpireTime(CertTools.getNotAfter(cacert)); 
     		}  
-    		setCA(ca);        
-    		// Set status last, because it can occur in the ca object as well, but we think the one passed as argument here is what
-    		// is desired primarily
-    		setStatus(status);        
-    		log.debug("Created CA "+ name);
+    		// Set status, because it can occur in the ca object as well, but we think the one passed as argument here is what
+    		// is desired primarily, so make sure we set that
+    		ca.setStatus(status);        
+    		setCA(ca);
+    		if (log.isDebugEnabled()) {
+    			log.debug("Created CA "+ name);
+    		}
 		} catch(java.io.UnsupportedEncodingException e) {
 			log.error("CAData caught exception trying to create: ", e);
 			throw new RuntimeException(e.toString());
