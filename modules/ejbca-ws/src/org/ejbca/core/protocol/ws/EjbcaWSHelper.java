@@ -40,6 +40,7 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ServiceLocatorException;
@@ -48,6 +49,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -118,20 +120,25 @@ public class EjbcaWSHelper extends EjbRemoteHelper {
 			HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
 			X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
 
-			if(certificates == null){
+			if ((certificates == null) || (certificates[0] == null)) {
 				throw new AuthorizationDeniedException("Error no client certificate recieved used for authentication.");
 			}
 
-			admin = getUserAdminSession().getAdmin(certificates[0]);
+			X509Certificate cert = certificates[0];
+			admin = getUserAdminSession().getAdmin(cert);
 			// Check that user have the administrator flag set.
 			if(!allowNonAdmins){
-				getUserAdminSession().checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
+				getUserAdminSession().checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 				getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR);
 			}
 
-			boolean isRevoked = getCertStoreSession().isRevoked(CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0]));
-			if (isRevoked) {
-				throw new AuthorizationDeniedException("Error administrator certificate doesn't exist or is revoked.");
+			try {
+				getCertStoreSession().authenticate(cert, WebConfiguration.getRequireAdminCertificateInDatabase());
+			} catch (AuthenticationFailedException e) {
+				// The message from here is usually the same as we used to hardcode here...
+            	//String msg = intres.getLocalizedMessage("authentication.revokedormissing");
+				// But it can also be that the certificate has expired, very unlikely since the SSL server checks that
+				throw new AuthorizationDeniedException(e.getMessage());
 			}
 		} catch (RemoteException e) {
 			log.error("EJBCA WebService error: ",e);
