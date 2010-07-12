@@ -13,7 +13,6 @@
  
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -63,10 +62,10 @@ public class GlobalConfigurationData implements Serializable {
 	public String getConfigurationId() { return configurationId; }
 	public void setConfigurationId(String configurationId) { this.configurationId = configurationId; }
 
-	// DB2: BLOB(200K), Derby: , Informix: , Ingres: BLOB, MSSQL: , MySQL: , Oracle: , Sapdb: , Sybase: IMAGE
-	@Column(name="data")
+	// EJBCA 3.x: DB2: BLOB(200K), Derby: , Informix: , Ingres: BLOB, MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sapdb: , Sybase: IMAGE
+	@Column(name="data", length=200*1024)
 	@Lob
-	private Serializable getDataUnsafe() {
+	public Serializable getDataUnsafe() {
 		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
 		if (h != null) {
 			setDataUnsafe(h);
@@ -74,7 +73,7 @@ public class GlobalConfigurationData implements Serializable {
 		return data;
 	}
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
-	private void setDataUnsafe(Serializable data) { this.data = data; }
+	public void setDataUnsafe(Serializable data) { this.data = data; }
 
 	@Transient
 	private HashMap getData() { return (HashMap) getDataUnsafe(); }

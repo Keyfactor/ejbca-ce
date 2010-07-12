@@ -16,6 +16,7 @@
         <class>org.ejbca.core.ejb.ca.store.CertificateData</class>
         <class>org.ejbca.core.ejb.ca.store.CertReqHistoryData</class>
         <class>org.ejbca.core.ejb.ca.store.CRLData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenIssuerData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
@@ -34,9 +35,7 @@
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <properties>
-<!--
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
--->
             <property name="hibernate.connection.url" value="jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8"/>
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>

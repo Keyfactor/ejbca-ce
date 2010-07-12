@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+
+<!--
+    Hibernate maps Serializable to the "OID" data-type, instead of "BYTEA". OID is a reference to LOB on disk.
+    Deleting a row with an OID will not remove the LOB from disk. We stick with BYTEA.
+-->
+    <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="BYTEA"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CertificateProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="BYTEA"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="BYTEA"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="BYTEA"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="BYTEA"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenIssuerData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="BYTEA"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.LogConfigurationData" access="PROPERTY">
+        <attributes>
+            <basic name="logConfigurationUnsafe">
+                <column name="logConfiguration" column-definition="BYTEA"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+
+</entity-mappings>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+
+    <!-- 
+         This file contains mappings specific to Hypersonic DB.
+         
+         Hibernate maps boolean on Hsql to BIT. We will use BOOLEAN instead.
+         The old CMP mapping on JBoss mapped large strings to VARCHAR. Hibernate wants LONGVARCHAR. Both can hold Integer.MAXVALUE chars, so the app might work, but validation fails.
+         The old CMP mapping on JBoss mapped large strings to VARBINARY. Hibernate wants LONGVARBINARY. Both can hold Integer.MAXVALUE bytes, so the app might work, but validation fails.
+    -->
+
+    <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="VARBINARY"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
+        <attributes>
+            <basic name="isRecursive">
+                <column name="isRecursive" column-definition="BOOLEAN"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
+        <attributes>
+            <basic name="approvaldata">
+                <column name="approvaldata" column-definition="VARCHAR"/>
+                <lob/>
+            </basic>
+            <basic name="requestdata">
+                <column name="requestdata" column-definition="VARCHAR"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CAData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CRLData" access="PROPERTY">
+        <attributes>
+            <basic name="base64Crl">
+                <column name="base64Crl" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY">
+        <attributes>
+            <basic name="userDataVO">
+                <column name="userDataVO" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
+        <attributes>
+            <basic name="base64Cert">
+                <column name="base64Cert" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CertificateProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="VARBINARY"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="VARBINARY"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="VARBINARY"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="VARBINARY"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenIssuerData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="VARBINARY"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY">
+        <attributes>
+            <basic name="keyData">
+                <column name="keyData" column-definition="VARCHAR"/>
+            </basic>
+            <basic name="markedAsRecoverable">
+                <column name="markedAsRecoverable" column-definition="BOOLEAN"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.LogConfigurationData" access="PROPERTY">
+        <attributes>
+            <basic name="logConfigurationUnsafe">
+                <column name="logConfiguration" column-definition="VARBINARY"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogData" access="PROPERTY">
+        <attributes>
+            <basic name="b64LinkedInEventIdentifiers">
+                <column name="b64LinkedInEventIdentifiers" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogExportData" access="PROPERTY">
+        <attributes>
+            <basic name="b64SignatureCertificate">
+                <column name="b64SignatureCertificate" column-definition="VARCHAR"/>
+            </basic>
+            <basic name="deleted">
+                <column name="deleted" column-definition="BOOLEAN"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogTokenData" access="PROPERTY">
+        <attributes>
+            <basic name="b64TokenCertificate">
+                <column name="b64TokenCertificate" column-definition="VARCHAR"/>
+            </basic>
+            <basic name="tokenReference">
+                <column name="tokenReference" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY">
+        <attributes>
+            <basic name="volatileData">
+                <column name="volatileData" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.services.ServiceData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY">
+        <attributes>
+            <basic name="extendedInformationData">
+                <column name="extendedInformationData" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+
+</entity-mappings>

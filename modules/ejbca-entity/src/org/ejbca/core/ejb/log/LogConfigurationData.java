@@ -61,10 +61,10 @@ public class LogConfigurationData implements Serializable {
 	public Integer getId() { return id; }
 	public void setId(Integer id) { this.id = id; }
 
-	// DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Sapdb: , Sybase: IMAGE
-	@Column(name="logConfiguration")
+	// EJBCA 3.x: DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sapdb: , Sybase: IMAGE
+	@Column(name="logConfiguration", length=200*1024)
 	@Lob
-	private Serializable getLogConfigurationUnsafe() {
+	public Serializable getLogConfigurationUnsafe() {
 		LogConfiguration h = JBossUnmarshaller.extractObject(LogConfiguration.class, logConfiguration);	// This is a workaround for JBoss J2EE CMP Serialization
 		if (h != null) {
 			setLogConfigurationUnsafe(h);
@@ -72,7 +72,7 @@ public class LogConfigurationData implements Serializable {
 		return logConfiguration;
 	}
 	/** DO NOT USE! Stick with setLogConfiguration(LogConfiguration logConfiguration) instead. */
-	private void setLogConfigurationUnsafe(Serializable logConfiguration) { this.logConfiguration = logConfiguration; }
+	public void setLogConfigurationUnsafe(Serializable logConfiguration) { this.logConfiguration = logConfiguration; }
 
 	@Transient
 	private LogConfiguration getLogConfiguration() { return (LogConfiguration) getLogConfigurationUnsafe(); }

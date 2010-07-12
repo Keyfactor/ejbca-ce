@@ -68,10 +68,10 @@ public class EndEntityProfileData implements Serializable {
 	public String getProfileName() { return profileName; }
 	public void setProfileName(String profileName) { this.profileName = profileName; }
 
-	// DB2: BLOB(1M), Derby: , Informix: , Ingres: BLOB, MSSQL: , MySQL: , Oracle: , Sapdb: , Sybase: IMAGE
-	@Column(name="data")
+	// EJBCA 3.x: DB2: BLOB(1M), Derby: , Informix: , Ingres: BLOB, Hsql: VARBINARY, MSSQL: , MySQL: , Oracle: , Postgres: BYTEA , Sapdb: , Sybase: IMAGE
+	@Column(name="data", length=1*1024*1024)
 	@Lob
-	private Serializable getDataUnsafe() {
+	public Serializable getDataUnsafe() {
 		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
 		if (h != null) {
 			setDataUnsafe(h);
@@ -79,7 +79,7 @@ public class EndEntityProfileData implements Serializable {
 		return data;
 	}
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
-	private void setDataUnsafe(Serializable data) { this.data = data; }
+	public void setDataUnsafe(Serializable data) { this.data = data; }
 
 	@Transient
 	private HashMap getData() { return (HashMap) getDataUnsafe(); }
