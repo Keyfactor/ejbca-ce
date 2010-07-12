@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+
+    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
+        <attributes>
+            <basic name="base64Cert">
+                <column name="base64Cert" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY">
+        <attributes>
+            <basic name="keyData">
+                <column name="keyData" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogData" access="PROPERTY">
+        <attributes>
+            <basic name="b64LinkedInEventIdentifiers">
+                <column name="b64LinkedInEventIdentifiers" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="b64Protection">
+                <column name="b64Protection" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogExportData" access="PROPERTY">
+        <attributes>
+            <basic name="b64Signature">
+                <column name="b64Signature" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="b64SignatureCertificate">
+                <column name="b64SignatureCertificate" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="deleted">
+                <column name="deleted" column-definition="INTEGER"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogTokenData" access="PROPERTY">
+        <attributes>
+            <basic name="b64TokenCertificate">
+                <column name="b64TokenCertificate" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="tokenReference">
+                <column name="tokenReference" column-definition="VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY">
+        <attributes>
+            <basic name="volatileData">
+                <column name="volatileData" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.services.ServiceData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+
+</entity-mappings>

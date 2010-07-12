@@ -59,15 +59,61 @@
 		<antcall target="test-mysql"/>
 		<available property="test-oracle" classname="oracle.jdbc.driver.OracleDriver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-oracle"/>
+		<available property="test-db2" classname="com.ibm.db2.jcc.DB2Driver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-db2"/>
+		<available property="test-derby" classname="org.apache.derby.jdbc.ClientDriver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-derby"/>
+		<available property="test-postgres" classname="org.postgresql.Driver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-postgres"/>
+		<available property="test-hsqldb" classname="org.hsqldb.jdbcDriver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-hsqldb"/>
+		<available property="test-ingres" classname="com.ingres.jdbc.IngresDriver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-ingres"/>
+    	<!--
+		<available property="test-informix" classname="com.informix.jdbc.IfxDriver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-informix"/>
+    	-->
     </target>
 
     <target name="test-mysql" if="test-mysql">
     	<copy file="${resources.dir}/persistence-test-mysql.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-mysql.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
     	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
     </target>
 
     <target name="test-oracle" if="test-oracle">
     	<copy file="${resources.dir}/persistence-test-oracle.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-oracle.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
+    </target>
+
+    <target name="test-db2" if="test-db2">
+    	<copy file="${resources.dir}/persistence-test-db2.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-db2.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
+    </target>
+
+    <target name="test-derby" if="test-derby">
+    	<copy file="${resources.dir}/persistence-test-derby.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-derby.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
+    </target>
+
+    <target name="test-postgres" if="test-postgres">
+    	<copy file="${resources.dir}/persistence-test-postgres.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-postgres.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
+    </target>
+
+    <target name="test-hsqldb" if="test-hsqldb">
+    	<copy file="${resources.dir}/persistence-test-hsqldb.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-hsqldb.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
+    </target>
+
+    <target name="test-ingres" if="test-ingres">
+    	<copy file="${resources.dir}/persistence-test-ingres.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-ingres.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
     	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
     </target>
 

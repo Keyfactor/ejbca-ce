@@ -9,5 +9,5 @@
   <field-name>rule</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>isRecursiveNumeric</field-name>
+  <field-name>isRecursive</field-name>
 </cmp-field>

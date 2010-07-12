@@ -119,7 +119,7 @@ public class CAData implements Serializable {
 	public long getUpdateTime() { return updateTime; }
 	public void setUpdateTime(long updateTime){ this.updateTime = updateTime; }
 
-	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: CLOB [2,147,483,647 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	// EJBCA 3.x: DB2: CLOB(100K) [100K (2GBw/o)], Derby: CLOB [2,147,483,647 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
 	@Column(name="data", length=65535)
 	@Lob
 	public String getData() { return data; }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+
+    <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
+        <attributes>
+            <basic name="approvaldata">
+                <column name="approvaldata" column-definition="VARCHAR2(4000)"/>
+            </basic>
+        </attributes>
+    </entity>
+
+</entity-mappings>

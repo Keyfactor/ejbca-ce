@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+
+<!--
+    Hibernate expects the BOOLEANs to be named TINYINT and not INTEGER(1), even though it's the same thing..
+    Hibernate expects the BLOBs to be named BLOB and not LONG BYTE, even though it's the same thing..
+    Hibernate expects the CLOBs to be named CLOB and not LONG VARCHAR, even though it's the same thing..
+-->
+
+    <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
+        <attributes>
+            <basic name="isRecursive">
+                <column name="isRecursive" column-definition="INTEGER(1)"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="LONG BYTE"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CertificateProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="LONG BYTE"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="LONG BYTE"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="LONG BYTE"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="LONG BYTE"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenIssuerData" access="PROPERTY">
+        <attributes>
+            <basic name="dataUnsafe">
+                <column name="data" column-definition="LONG BYTE"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.LogConfigurationData" access="PROPERTY">
+        <attributes>
+            <basic name="logConfigurationUnsafe">
+                <column name="logConfiguration" column-definition="LONG BYTE"/>
+                <lob/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
+        <attributes>
+            <basic name="approvaldata">
+                <column name="approvaldata" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="requestdata">
+                <column name="requestdata" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CAData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
+        <attributes>
+            <basic name="base64Cert">
+                <column name="base64Cert" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CRLData" access="PROPERTY">
+        <attributes>
+            <basic name="base64Crl">
+                <column name="base64Crl" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY">
+        <attributes>
+            <basic name="userDataVO">
+                <column name="userDataVO" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY">
+        <attributes>
+            <basic name="keyData">
+                <column name="keyData" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="markedAsRecoverable">
+                <column name="markedAsRecoverable" column-definition="INTEGER(1)"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogData" access="PROPERTY">
+        <attributes>
+            <basic name="b64LinkedInEventIdentifiers">
+                <column name="b64LinkedInEventIdentifiers" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="b64Protection">
+                <column name="b64Protection" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="eventComment">
+                <column name="eventComment" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogExportData" access="PROPERTY">
+        <attributes>
+            <basic name="b64Signature">
+                <column name="b64Signature" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="b64SignatureCertificate">
+                <column name="b64SignatureCertificate" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="deleted">
+                <column name="deleted" column-definition="INTEGER(1)"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogTokenData" access="PROPERTY">
+        <attributes>
+            <basic name="b64TokenCertificate">
+                <column name="b64TokenCertificate" column-definition="LONG VARCHAR"/>
+            </basic>
+            <basic name="tokenReference">
+                <column name="tokenReference" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY">
+        <attributes>
+            <basic name="volatileData">
+                <column name="volatileData" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY">
+        <attributes>
+            <basic name="extendedInformationData">
+                <column name="extendedInformationData" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.services.ServiceData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData" access="PROPERTY">
+        <attributes>
+            <basic name="data">
+                <column name="data" column-definition="LONG VARCHAR"/>
+            </basic>
+        </attributes>
+    </entity>
+
+</entity-mappings>

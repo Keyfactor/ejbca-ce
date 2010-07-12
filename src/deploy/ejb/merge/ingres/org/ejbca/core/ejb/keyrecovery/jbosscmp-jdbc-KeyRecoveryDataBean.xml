@@ -8,7 +8,7 @@
   <field-name>username</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>markedAsRecoverableNumeric</field-name>
+  <field-name>markedAsRecoverable</field-name>
 </cmp-field>
 <cmp-field>
   <field-name>keyData</field-name>

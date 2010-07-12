@@ -35,11 +35,11 @@
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect"/>
-            <property name="hibernate.connection.url" value="jdbc:oracle:thin:@oracle:1521:XE"/>
-            <property name="hibernate.connection.driver_class" value="oracle.jdbc.driver.OracleDriver"/>
-            <property name="hibernate.connection.username" value="ejbca"/>
-            <property name="hibernate.connection.password" value="ejbca"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"/>
+            <property name="hibernate.connection.url" value="jdbc:db2://db2:50000/ejbca"/>
+            <property name="hibernate.connection.driver_class" value="com.ibm.db2.jcc.DB2Driver"/>
+            <property name="hibernate.connection.username" value="db2inst1"/>
+            <property name="hibernate.connection.password" value="foo123"/>
             <property name="hibernate.hbm2ddl.auto" value="validate"/> <!-- validate | update | create | create-drop -->
             <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
         </properties>
