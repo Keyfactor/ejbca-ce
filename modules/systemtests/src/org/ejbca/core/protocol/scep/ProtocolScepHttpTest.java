@@ -14,6 +14,8 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -357,7 +359,7 @@ public class ProtocolScepHttpTest extends TestCase {
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
         log.debug(new String(retMsg));
-        assertTrue( new String(retMsg).indexOf(InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"))>=0 );
+        assertTrue( new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"))>=0 );
         log.debug("<test10EnforcementOfUniquePublicKeys()");
     }
     public void test11EnforcementOfUniqueDN() throws Exception {
@@ -369,7 +371,7 @@ public class ProtocolScepHttpTest extends TestCase {
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
         log.debug(new String(retMsg));
-        assertTrue( new String(retMsg).indexOf(InternalResources.getInstance().getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"))>=0 );
+        assertTrue( new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"))>=0 );
         log.debug("<test10EnforcementOfUniquePublicKeys()");
     }
     public void test99CleanUp() throws Exception {
@@ -525,11 +527,7 @@ public class ProtocolScepHttpTest extends TestCase {
                 // CRL is first (and only)
                 final X509CRL retCrl = it.next();
                 log.info("Got CRL with DN: "+ retCrl.getIssuerDN().getName());
-//                try {
-//                    FileOutputStream fos = new FileOutputStream("sceptest.der");
-//                    fos.write(retCrl.getEncoded());
-//                    fos.close();
-//                } catch (Exception e) {}
+
                 // check the returned CRL
                 assertEquals(cacert.getSubjectDN().getName(), retCrl.getIssuerDN().getName());
                 retCrl.verify(cacert.getPublicKey());
@@ -549,11 +547,7 @@ public class ProtocolScepHttpTest extends TestCase {
                 while (it.hasNext()) {
                     X509Certificate retcert = it.next();
                     log.info("Got cert with DN: "+ retcert.getSubjectDN().getName());
-//                    try {
-//                        FileOutputStream fos = new FileOutputStream("sceptest.der");
-//                        fos.write(retcert.getEncoded());
-//                        fos.close();
-//                    } catch (Exception e) {}
+
                 
                     // check the returned certificate
                     String subjectdn = CertTools.stringToBCDNString(retcert.getSubjectDN().getName());
@@ -653,4 +647,72 @@ public class ProtocolScepHttpTest extends TestCase {
         assertTrue(respBytes.length > 0);
         return respBytes;
     }
+    
+    static class InternalResourcesStub extends InternalResources {
+
+        private static final long serialVersionUID = 1L;
+        private static final Logger log = Logger.getLogger(InternalResourcesStub.class);
+
+        private InternalResourcesStub() {
+
+            setupResources();
+
+        }
+
+        private void setupResources() {
+            String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase();
+            String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase();
+
+            InputStream primaryStream = null;
+            InputStream secondaryStream = null;
+
+            primaryLanguage = "en";
+            secondaryLanguage = "se";
+            try {
+                primaryStream = new FileInputStream("src/intresources/intresources." + primaryLanguage + ".properties");
+                secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");
+
+                try {
+                    if (primaryStream != null) {
+                        primaryResource.load(primaryStream);
+                    } else {
+                        log.error("primaryResourse == null");
+                    }
+                    if (secondaryStream != null) {
+                        secondaryResource.load(secondaryStream);
+                    } else {
+                        log.error("secondaryResource == null");
+                    }
+                } catch (IOException e) {
+                    log.error("Error reading internal resourcefile", e);
+                }
+
+            } catch (FileNotFoundException e) {
+                log.error("Localization files not found", e);
+
+            } finally {
+                try {
+                    if (primaryStream != null) {
+                        primaryStream.close();
+                    }
+                    if (secondaryStream != null) {
+                        secondaryStream.close();
+                    }
+                } catch (IOException e) {
+                    log.error("Error closing internal resources language streams: ", e);
+                }
+            }
+
+        }
+
+        public static synchronized InternalResources getInstance() {
+            if (instance == null) {
+                instance = new InternalResourcesStub();
+            }
+            return instance;
+        }
+
+    }
 }
+
+
