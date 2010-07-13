@@ -64,6 +64,8 @@ public class AccessRulesData implements Serializable {
 	public String getAccessRule() { return accessRule; }
 	public void setAccessRule(String accessRule) { this.accessRule = accessRule; }
 
+	/** Return the status of the rule. One of AccessRule.RULE_... */
+	// TODO: "rule" is a reserved word on MS SQL Server. We should rename this to "ruleStatus".
 	@Column(name="rule", nullable=false)
 	public int getRule() { return rule; }
 	public void setRule(int rule) { this.rule = rule; }

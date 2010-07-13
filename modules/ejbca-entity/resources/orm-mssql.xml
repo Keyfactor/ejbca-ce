@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+
+	<!-- "rule" is reserved work on MS SQL. -->
+    <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
+        <attributes>
+            <basic name="rule">
+                <column name="rule_"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogData" access="PROPERTY">
+        <attributes>
+            <basic name="b64Protection">
+                <column name="b64Protection" column-definition="TEXT"/>
+            </basic>
+            <basic name="eventComment">
+                <column name="eventComment" column-definition="TEXT"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogExportData" access="PROPERTY">
+        <attributes>
+            <basic name="b64Signature">
+                <column name="b64Signature" column-definition="TEXT"/>
+            </basic>
+        </attributes>
+    </entity>
+    
+
+</entity-mappings>
