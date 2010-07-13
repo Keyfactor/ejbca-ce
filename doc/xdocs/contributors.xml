@@ -77,7 +77,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Abbas Razam, <!-- abbasrazam@yahoo.com -->fixes to ms-sql upgrade scripts 31_32 and 33_34.</li>
 <li>Darren Johnson, <!-- darren.johnson@safenet-inc.com -->split CAToken to be able to use separate JCE/JCA providers, makes SCEP work on Luna HSM with java provider.</li>
 <li>Matt Stevenson, <!-- mavricknzwork@yahoo.com -->code for adding CRMF and SPKAC requests in WS-API, Sybase and case-sensitive columns, MS document signing extended key usage, Intel AMT extended key usage.</li>
-<li>David Carella, <!-- dcarella@linagora.com -->language improvements, minor web improvements, and other standard compliance suggestions.</li>
+<li>David Carella, <!-- dcarella@linagora.com -->language improvements, minor web improvements, new admin Web CSS styles, and other standard compliance suggestions.</li>
 <li>Miguel Angel Tormo Alfaro, <!-- matormo@edicom.es -->ETSI retention period in QC certificate extension, fix for advanced searches with ProtectedLog, Sequences in BasicCertificateExtension.</li>
 <li>Damir Farazetdinov, <!-- fdamirv@mail.ru -->Found bug with duplicate error codes in OCSPUnidClient.</li>
 <li>Liam Kian Shin, <!-- kianshin.lim@gemalto.com -->Howto for using GEMSafe with EJBCA.</li>
