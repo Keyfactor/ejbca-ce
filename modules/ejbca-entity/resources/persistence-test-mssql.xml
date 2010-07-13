@@ -35,9 +35,9 @@
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.InformixDialect"/>
-            <property name="hibernate.connection.url" value="jdbc:informix-sqli://informix:1525/ejbca:informixserver=mydbservername;DBDATE=DMY4/;"/>
-            <property name="hibernate.connection.driver_class" value="com.informix.jdbc.IfxDriver"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect"/>
+            <property name="hibernate.connection.url" value="jdbc:sqlserver://mssql:1433;DatabaseName=ejbca"/>
+            <property name="hibernate.connection.driver_class" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
             <property name="hibernate.hbm2ddl.auto" value="validate"/> <!-- validate | update | create | create-drop -->
