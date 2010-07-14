@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	JPA configuration used to validate the current JPA classes to an existing database.
+-->
+<persistence>
+    <persistence-unit name="ejbca-pu" transaction-type="RESOURCE_LOCAL">
+        <class>org.ejbca.core.ejb.approval.ApprovalData</class>
+        <class>org.ejbca.core.ejb.authorization.AccessRulesData</class>
+        <class>org.ejbca.core.ejb.authorization.AdminEntityData</class>
+        <class>org.ejbca.core.ejb.authorization.AdminGroupData</class>
+        <class>org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateData</class>
+        <class>org.ejbca.core.ejb.ca.caadmin.CAData</class>
+        <class>org.ejbca.core.ejb.ca.caadmin.CertificateProfileData</class>
+        <class>org.ejbca.core.ejb.ca.publisher.PublisherData</class>
+        <class>org.ejbca.core.ejb.ca.publisher.PublisherQueueData</class>
+        <class>org.ejbca.core.ejb.ca.store.CertificateData</class>
+        <class>org.ejbca.core.ejb.ca.store.CertReqHistoryData</class>
+        <class>org.ejbca.core.ejb.ca.store.CRLData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenIssuerData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
+        <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
+        <class>org.ejbca.core.ejb.log.LogConfigurationData</class>
+        <class>org.ejbca.core.ejb.log.LogEntryData</class>
+        <class>org.ejbca.core.ejb.log.ProtectedLogData</class>
+        <class>org.ejbca.core.ejb.log.ProtectedLogExportData</class>
+        <class>org.ejbca.core.ejb.log.ProtectedLogTokenData</class>
+        <class>org.ejbca.core.ejb.protect.TableProtectData</class>
+        <class>org.ejbca.core.ejb.ra.UserData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData</class>
+        <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
+        <class>org.ejbca.core.ejb.services.ServiceData</class>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.SybaseDialect"/>
+            <property name="hibernate.connection.url" value="jdbc:jtds:sybase://sybase:5000/ejbca"/>
+            <property name="hibernate.connection.driver_class" value="net.sourceforge.jtds.jdbc.Driver"/>
+            <property name="hibernate.connection.username" value="ejbca"/>
+            <property name="hibernate.connection.password" value="foo123"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/> <!-- validate | update | create | create-drop -->
+            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>
