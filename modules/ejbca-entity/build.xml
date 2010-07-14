@@ -75,6 +75,9 @@
 		<antcall target="test-mssql"/>
 		<available property="test-sybase" classname="net.sourceforge.jtds.jdbc.Driver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-sybase"/>
+		<!-- This test wont work if the DB2 JDBC driver is in the class-path as well. -->
+		<available property="test-informix" classname="com.informix.jdbc.IfxDriver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-informix"/>
     	<!--
     	-->
     </target>
@@ -130,6 +133,12 @@
     <target name="test-sybase" if="test-sybase">
     	<copy file="${resources.dir}/persistence-test-sybase.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
     	<copy file="${resources.dir}/orm-sybase.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
+    </target>
+
+    <target name="test-informix" if="test-informix">
+    	<copy file="${resources.dir}/persistence-test-informix.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-informix.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
     	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
     </target>
 
