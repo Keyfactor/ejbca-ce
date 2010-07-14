@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+
+    <!-- Hibernate's JPA provider maps long to NUMERIC(19,0) but previous EJBCA CMP uses DECIMAL(20,0)-->
+    <!-- Missing mapping of <jdbc-type>LONGVARCHAR</jdbc-type><sql-type>TEXT</sql-type> in jbosscmp-jdbc-ProtectedLogExportDataBean
+         causes this fields to be incorrectly mapped. Since ProtectedLog is deprecated we don't bother to correct this. -->
+    <!-- "rule" is reserved work on Sybase ASE. -->
+
+    <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
+        <attributes>
+            <basic name="rule">
+                <column name="rule_"/>
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
+        <attributes>
+            <basic name="expiredate">
+                <column name="expiredate" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="requestdate">
+                <column name="requestdate" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CAData" access="PROPERTY">
+        <attributes>
+            <basic name="expireTime">
+                <column name="expireTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="updateTime">
+                <column name="updateTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CRLData" access="PROPERTY">
+        <attributes>
+            <basic name="nextUpdate">
+                <column name="nextUpdate" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="thisUpdate">
+                <column name="thisUpdate" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY">
+        <attributes>
+            <basic name="timestamp">
+                <column name="timestamp" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
+        <attributes>
+            <basic name="expireDate">
+                <column name="expireDate" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="revocationDate">
+                <column name="revocationDate" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="updateTime">
+                <column name="updateTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY">
+        <attributes>
+            <basic name="ctime">
+                <column name="cTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="mtime">
+                <column name="mTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.LogEntryData" access="PROPERTY">
+        <attributes>
+            <basic name="time">
+                <column name="time" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogData" access="PROPERTY">
+        <attributes>
+            <basic name="b64Protection">
+                <column name="b64Protection" column-definition="TEXT"/>
+            </basic>
+            <basic name="counter">
+                <column name="counter" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="eventComment">
+                <column name="eventComment" column-definition="TEXT"/>
+            </basic>
+            <basic name="eventTime">
+                <column name="eventTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.ProtectedLogExportData" access="PROPERTY">
+        <attributes>
+            <basic name="b64Signature">
+                <column name="b64Signature" column-definition="VARCHAR(255)"/>
+            </basic>
+            <basic name="b64SignatureCertificate">
+                <column name="b64SignatureCertificate" column-definition="VARCHAR(255)"/>
+            </basic>
+            <basic name="exportEndTime">
+                <column name="exportEndTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="exportStartTime">
+                <column name="exportStartTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="timeOfExport">
+                <column name="timeOfExport" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY">
+        <attributes>
+            <basic name="lastUpdate">
+                <column name="lastUpdate" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="timeCreated">
+                <column name="timeCreated" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.protect.TableProtectData" access="PROPERTY">
+        <attributes>
+            <basic name="time">
+                <column name="time" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY">
+        <attributes>
+            <basic name="timeCreated">
+                <column name="timeCreated" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="timeModified">
+                <column name="timeModified" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+
+</entity-mappings>

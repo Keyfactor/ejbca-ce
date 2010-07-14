@@ -142,7 +142,9 @@ public class ProtectedLogExportData implements Serializable {
     public void setCurrentHashAlgorithm(String currentHashAlgorithm) { this.currentHashAlgorithm = currentHashAlgorithm; }
     
     /** The certificate that corresponds to the signing key. */
-	// EJBCA 3.x: DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	// EJBCA 3.x: DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: ,
+    //            MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars],
+    //            Sybase: VARCHAR [255 chars, this could never have been used!]
     // EJBCA 4.x:
 	@Column(name="b64SignatureCertificate", length=32700)
 	@Lob
@@ -172,7 +174,9 @@ public class ProtectedLogExportData implements Serializable {
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
     /** The signature of all the previous columns (except pk). */
-	// EJBCA 3.x: DB2: VARCHAR(4000) [4000], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: VARCHAR2(4000) [4000 chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
+	// EJBCA 3.x: DB2: VARCHAR(4000) [4000], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: ,
+    //            MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: VARCHAR2(4000) [4000 chars], Sapdb: LONG [2G chars],
+    //            Sybase: VARCHAR [255 chars, this could never have been used!]
     // EJBCA 4.x:
 	@Column(name="b64Signature", length=4000)
 	//@Lob

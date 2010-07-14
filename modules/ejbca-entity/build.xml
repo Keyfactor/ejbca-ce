@@ -73,6 +73,8 @@
 		<antcall target="test-ingres"/>
 		<available property="test-mssql" classname="com.microsoft.sqlserver.jdbc.SQLServerDriver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-mssql"/>
+		<available property="test-sybase" classname="net.sourceforge.jtds.jdbc.Driver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-sybase"/>
     	<!--
     	-->
     </target>
@@ -122,6 +124,12 @@
     <target name="test-mssql" if="test-mssql">
     	<copy file="${resources.dir}/persistence-test-mssql.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
     	<copy file="${resources.dir}/orm-mssql.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
+    </target>
+
+    <target name="test-sybase" if="test-sybase">
+    	<copy file="${resources.dir}/persistence-test-sybase.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
+    	<copy file="${resources.dir}/orm-sybase.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
     	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
     </target>
 

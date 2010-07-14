@@ -141,14 +141,14 @@ public class CertReqHistoryData implements Serializable {
 	 * @return timestamp 
 	 */
 	@Column(name="timestamp", nullable=false)
-	private long getTimestamp() { return timestamp; }
+	public long getTimestamp() { return timestamp; }
 
 	/**
 	 * Date formated as seconds since 1970 (== Date.getTime())
 	 * Shouldn't be set after creation.
 	 * @param timestamp when certificate request info was stored
 	 */
-	private void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+	public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
 	/**
 	 * UserDataVO in xmlencoded String format
