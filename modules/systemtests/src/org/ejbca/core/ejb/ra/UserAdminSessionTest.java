@@ -22,11 +22,10 @@ import java.util.Random;
 import javax.ejb.DuplicateKeyException;
 import javax.transaction.TransactionRolledbackException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -45,11 +44,11 @@ import org.ejbca.util.dn.DnComponents;
  *
  * @version $Id$
  */
-public class UserAdminSessionTest extends TestCase {
+public class UserAdminSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserAdminSessionTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-    private static final int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
 
     private static String username;
     private static String pwd;
@@ -63,13 +62,13 @@ public class UserAdminSessionTest extends TestCase {
      */
     public UserAdminSessionTest(String name) {
         super(name);
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     private void genRandomSerialnumber() throws Exception {
@@ -93,8 +92,8 @@ public class UserAdminSessionTest extends TestCase {
         log.trace(">test01AddUser()");
 
         // Make user that we know later...
-        username = TestTools.genRandomUserName();
-        pwd = TestTools.genRandomPwd();
+        username = genRandomUserName();
+        pwd = genRandomPwd();
         String email = username + "@anatom.se";
         TestTools.getUserAdminSession().addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
 		usernames.add(username);
@@ -118,7 +117,7 @@ public class UserAdminSessionTest extends TestCase {
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 
         // try to add user with non-existing CA-id
-        String username2 = TestTools.genRandomUserName();
+        String username2 = genRandomUserName();
         int fakecaid = -1;
         boolean thrown = false;
         try {
@@ -142,7 +141,7 @@ public class UserAdminSessionTest extends TestCase {
         log.trace(">test02AddUserWithUniqueDNSerialnumber()");
 
         // Make user that we know later...
-        String thisusername = TestTools.genRandomUserName();
+        String thisusername = genRandomUserName();
         String email = thisusername + "@anatom.se";
         genRandomSerialnumber();
         TestTools.getUserAdminSession().addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
@@ -156,7 +155,7 @@ public class UserAdminSessionTest extends TestCase {
         TestTools.getCAAdminSession().editCA(admin, cainfo);
                
         // Add another user with the same serialnumber
-        thisusername = TestTools.genRandomUserName();
+        thisusername = genRandomUserName();
         try {
         	TestTools.getUserAdminSession().addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
             usernames.add(thisusername);
@@ -230,7 +229,7 @@ public class UserAdminSessionTest extends TestCase {
         boolean exists = TestTools.getUserAdminSession().existsUser(admin, username);
         assertTrue(exists);
         
-        String notexistusername = TestTools.genRandomUserName();
+        String notexistusername = genRandomUserName();
         exists = TestTools.getUserAdminSession().existsUser(admin, notexistusername);
         assertFalse(exists);
         data = TestTools.getUserAdminSession().findUser(admin, notexistusername);
@@ -333,6 +332,6 @@ public class UserAdminSessionTest extends TestCase {
 			TestTools.getRaAdminSession().removeEndEntityProfile(admin, "TESTMERGEWITHWS");				
 		} catch (Exception e) {} // NOPMD, ignore errors so we don't stop deleting users because one of them does not exist.
 		
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

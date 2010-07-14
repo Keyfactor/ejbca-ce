@@ -21,8 +21,6 @@ import java.util.Iterator;
 
 import javax.security.auth.x500.X500Principal;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSSignedData;
@@ -30,6 +28,7 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
@@ -44,7 +43,7 @@ import org.ejbca.util.TestTools;
  *
  * @version $Id$
  */
-public class CmsCAServiceTest extends TestCase {
+public class CmsCAServiceTest extends CaTestCase {
 	private static Logger log = Logger.getLogger(CmsCAServiceTest.class);
 
 	private byte[] doc = "foo123".getBytes();
@@ -60,16 +59,16 @@ public class CmsCAServiceTest extends TestCase {
 		super(name);
 		// Install BouncyCastle provider
 		CertTools.installBCProvider();
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
 	}
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		log.trace(">setUp()");
 		CertTools.installBCProvider();
 		log.trace("<setUp()");
 	}
 
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 	}
 
 	public void test01CmsCAServiceNotActive() throws Exception {
@@ -77,7 +76,7 @@ public class CmsCAServiceTest extends TestCase {
 		// First try a request when the service is not active
 		boolean active = true;
 		try {
-			TestTools.getSignSession().extendedService(admin, TestTools.getTestCAId(), request);
+			TestTools.getSignSession().extendedService(admin, getTestCAId(), request);
 		} catch (ExtendedCAServiceNotActiveException e) {
 			active = false;
 		}
@@ -104,7 +103,7 @@ public class CmsCAServiceTest extends TestCase {
 		// Try the request again
 		boolean active = true;
 		try {
-			resp = (CmsCAServiceResponse) TestTools.getSignSession().extendedService(admin, TestTools.getTestCAId(), request);
+			resp = (CmsCAServiceResponse) TestTools.getSignSession().extendedService(admin, getTestCAId(), request);
 		} catch (ExtendedCAServiceNotActiveException e) {
 			active = false;
 		}
@@ -147,7 +146,7 @@ public class CmsCAServiceTest extends TestCase {
 		// Try the request again
 		boolean active = true;
 		try {
-			resp = (CmsCAServiceResponse) TestTools.getSignSession().extendedService(admin, TestTools.getTestCAId(), request);
+			resp = (CmsCAServiceResponse) TestTools.getSignSession().extendedService(admin, getTestCAId(), request);
 		} catch (ExtendedCAServiceNotActiveException e) {
 			active = false;
 		}
@@ -165,7 +164,7 @@ public class CmsCAServiceTest extends TestCase {
 		// Try the request again
 		active = true;
 		try {
-			resp = (CmsCAServiceResponse) TestTools.getSignSession().extendedService(admin, TestTools.getTestCAId(), request);
+			resp = (CmsCAServiceResponse) TestTools.getSignSession().extendedService(admin, getTestCAId(), request);
 		} catch (ExtendedCAServiceNotActiveException e) {
 			active = false;
 		}
@@ -191,6 +190,6 @@ public class CmsCAServiceTest extends TestCase {
 	}
 	
 	public void test99RemoveTestCA() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

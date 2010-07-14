@@ -25,10 +25,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
@@ -65,7 +64,7 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @version $Id$
  */
-public class CAsTest extends TestCase {
+public class CAsTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
@@ -81,10 +80,12 @@ public class CAsTest extends TestCase {
         CryptoProviderTools.installBCProvider();
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
+        super.setUp();
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
@@ -98,8 +99,8 @@ public class CAsTest extends TestCase {
         log.trace(">test01AddRSACA()");
         boolean ret = false;
         try {
-        	TestTools.removeTestCA();	// We cant be sure this CA was not left over from some other failed test
-            TestTools.getAuthorizationSession().initialize(admin, TestTools.getTestCAId(), TestTools.defaultSuperAdminCN);
+        	removeTestCA();	// We cant be sure this CA was not left over from some other failed test
+            TestTools.getAuthorizationSession().initialize(admin, getTestCAId(), TestTools.defaultSuperAdminCN);
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
@@ -1468,8 +1469,8 @@ public class CAsTest extends TestCase {
     public void test12AddDSACA() throws Exception {
         boolean ret = false;
         try {
-        	TestTools.removeTestCA("TESTDSA");	// We cant be sure this CA was not left over from some other failed test
-            TestTools.getAuthorizationSession().initialize(admin, TestTools.getTestCAId(), TestTools.defaultSuperAdminCN);
+        	removeTestCA("TESTDSA");	// We cant be sure this CA was not left over from some other failed test
+            TestTools.getAuthorizationSession().initialize(admin, getTestCAId(), TestTools.defaultSuperAdminCN);
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
@@ -1562,11 +1563,11 @@ public class CAsTest extends TestCase {
 
     public void test13RenewCA() throws Exception {
     	// Test renew cacert
-    	CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
+    	CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, getTestCAId());
     	Collection certs = info.getCertificateChain();
     	X509Certificate cacert1 = (X509Certificate)certs.iterator().next();
-        TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", false);
-    	info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
+        TestTools.getCAAdminSession().renewCA(admin, getTestCAId(), "foo123", false);
+    	info = TestTools.getCAAdminSession().getCAInfo(admin, getTestCAId());
     	certs = info.getCertificateChain();
     	X509Certificate cacert2 = (X509Certificate)certs.iterator().next();
     	assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
@@ -1575,8 +1576,8 @@ public class CAsTest extends TestCase {
 
 
     	// Test renew CA keys
-        TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", true);
-    	info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
+        TestTools.getCAAdminSession().renewCA(admin, getTestCAId(), "foo123", true);
+    	info = TestTools.getCAAdminSession().getCAInfo(admin, getTestCAId());
     	certs = info.getCertificateChain();
     	X509Certificate cacert3 = (X509Certificate)certs.iterator().next();
     	assertFalse(cacert2.getSerialNumber().equals(cacert3.getSerialNumber()));
@@ -1587,7 +1588,7 @@ public class CAsTest extends TestCase {
     	// Test create X.509 link certificate (NewWithOld rollover cert)
     	// We have cacert3 that we want to sign with the old keys from cacert2, create a link certificate.
     	// That link certificate should have the same subjetcKeyId as cert3, but be possible to verify with cert2.
-    	byte[] bytes = TestTools.getCAAdminSession().signRequest(admin, TestTools.getTestCAId(), cacert3.getEncoded(), true, true);
+    	byte[] bytes = TestTools.getCAAdminSession().signRequest(admin, getTestCAId(), cacert3.getEncoded(), true, true);
     	X509Certificate cacert4 = (X509Certificate)CertTools.getCertfromByteArray(bytes);
     	// Same public key as in cacert3 -> same subject key id
     	keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
@@ -1600,7 +1601,7 @@ public class CAsTest extends TestCase {
     	cacert4.verify(cacert2.getPublicKey());
     	
     	// Test make request just making a request using the old keys
-        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, TestTools.getTestCAId(), new ArrayList(), false, false, false, "foo123");
+        byte[] request = TestTools.getCAAdminSession().makeRequest(admin, getTestCAId(), new ArrayList(), false, false, false, "foo123");
         assertNotNull(request);
         PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
         PublicKey pk1 = cacert3.getPublicKey();
@@ -1610,7 +1611,7 @@ public class CAsTest extends TestCase {
         // A plain request using the CAs key will have the same public key
         assertEquals(key1, key2);
     	// Test make request generating new keys
-        request = TestTools.getCAAdminSession().makeRequest(admin, TestTools.getTestCAId(), new ArrayList(), true, false, true, "foo123");
+        request = TestTools.getCAAdminSession().makeRequest(admin, getTestCAId(), new ArrayList(), true, false, true, "foo123");
         assertNotNull(request);
         msg = RequestMessageUtils.genPKCS10RequestMessage(request);
         pk1 = cacert3.getPublicKey();
@@ -1620,18 +1621,18 @@ public class CAsTest extends TestCase {
         // A plain request using new CAs key can not have the same keys
         assertFalse(key1.equals(key2));
         // After this (new keys activated but no cert response received) status should be waiting...
-    	info = TestTools.getCAAdminSession().getCAInfo(admin, TestTools.getTestCAId());
+    	info = TestTools.getCAAdminSession().getCAInfo(admin, getTestCAId());
     	assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
     	
         // To clean up after us so the active key is not out of sync with the active certificate, we should simply renew the CA
     	info.setStatus(SecConst.CA_ACTIVE);
     	TestTools.getCAAdminSession().editCA(admin, info); // need active status in order to do renew
-        TestTools.getCAAdminSession().renewCA(admin, TestTools.getTestCAId(), "foo123", false);
+        TestTools.getCAAdminSession().renewCA(admin, getTestCAId(), "foo123", false);
     } // test13RenewCA
     
     public void test14RevokeCA() throws Exception {
     	final String caname = "TestRevokeCA";
-    	TestTools.createTestCA(caname);
+    	createTestCA(caname);
         CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, caname);
         assertEquals(SecConst.CA_ACTIVE, info.getStatus());
         assertEquals(RevokedCertInfo.NOT_REVOKED, info.getRevokationReason());

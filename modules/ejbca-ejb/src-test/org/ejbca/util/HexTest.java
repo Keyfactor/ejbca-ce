@@ -28,13 +28,13 @@ public class HexTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         CertTools.installBCProvider();
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
 	public void test01HexSmall() throws Exception {

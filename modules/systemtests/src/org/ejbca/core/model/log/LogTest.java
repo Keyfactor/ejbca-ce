@@ -17,9 +17,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.LogMatch;
@@ -30,7 +29,7 @@ import org.ejbca.util.query.Query;
  *
  * @version $Id$
  */
-public class LogTest extends TestCase {
+public class LogTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(LogTest.class);
 
     private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -44,10 +43,10 @@ public class LogTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -57,15 +56,15 @@ public class LogTest extends TestCase {
      */
     public void test01AddLogConfiguration() throws Exception {
         log.trace(">test01AddLogConfiguration()");
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
         
         LogConfiguration logconf = new LogConfiguration();
         logconf.setLogEvent(LogConstants.EVENT_INFO_DATABASE, false);
         logconf.setLogEvent(LogConstants.EVENT_ERROR_DATABASE, true);
 
-        TestTools.getLogSession().saveLogConfiguration(admin, TestTools.getTestCAId(), logconf);
+        TestTools.getLogSession().saveLogConfiguration(admin, getTestCAId(), logconf);
 
-        LogConfiguration logconf2 = TestTools.getLogSession().loadLogConfiguration(TestTools.getTestCAId());
+        LogConfiguration logconf2 = TestTools.getLogSession().loadLogConfiguration(getTestCAId());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf2.getLogEvent(LogConstants.EVENT_INFO_DATABASE).booleanValue());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf2.getLogEvent(LogConstants.EVENT_ERROR_DATABASE).booleanValue());
 
@@ -80,7 +79,7 @@ public class LogTest extends TestCase {
      */
     public void test02AddAndCheckLogEvents() throws Exception {
         log.trace(">test02AddAndCheckLogEvents()");
-        TestTools.getLogSession().log(admin, TestTools.getTestCAId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
+        TestTools.getLogSession().log(admin, getTestCAId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
         Collection logDeviceNames = TestTools.getLogSession().getAvailableLogDevices();
         Iterator iterator = logDeviceNames.iterator();
         Collection result = null;
@@ -91,7 +90,7 @@ public class LogTest extends TestCase {
         	}
         	Query query = new Query(Query.TYPE_LOGQUERY);
         	query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
-        	result = TestTools.getLogSession().query(logDeviceName, query, "", "caid=" + Integer.toString(TestTools.getTestCAId()), 500);
+        	result = TestTools.getLogSession().query(logDeviceName, query, "", "caid=" + Integer.toString(getTestCAId()), 500);
         	Iterator iter = result.iterator();
         	boolean found = false;
         	while (iter.hasNext()) {
@@ -114,6 +113,6 @@ public class LogTest extends TestCase {
     }
     
 	public void test99RemoveTestCA() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

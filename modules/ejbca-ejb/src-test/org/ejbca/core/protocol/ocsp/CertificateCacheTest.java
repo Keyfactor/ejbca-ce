@@ -35,7 +35,7 @@ import org.ejbca.util.CertTools;
 public class CertificateCacheTest extends TestCase {
 	private static final Logger log = Logger.getLogger(CertificateCacheTest.class);
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		CertTools.installBCProvider();
 	}
 

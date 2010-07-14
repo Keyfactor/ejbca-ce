@@ -18,9 +18,8 @@ import java.security.cert.Certificate;
 import java.util.Enumeration;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
@@ -38,14 +37,14 @@ import org.ejbca.util.TestTools;
  *   
  * @version $Id$
  */
-public class CertificateRequestSessionTest extends TestCase {
+public class CertificateRequestSessionTest extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(CertificateRequestSessionTest.class);
 	private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 	private final Random random= new Random();
 
 	public void test000Setup() {
-		TestTools.createTestCA();
+		createTestCA();
 	}
 	
 	/**
@@ -55,7 +54,7 @@ public class CertificateRequestSessionTest extends TestCase {
 		// First try a successful request and validate the returned KeyStore
 		String username = "softTokenRequestTest-" + random.nextInt();
 		String password = "foo123";
-		UserDataVO userdata = new UserDataVO(username, "CN="+username, TestTools.getTestCAId(), null, null, SecConst.USER_ENDUSER,
+		UserDataVO userdata = new UserDataVO(username, "CN="+username, getTestCAId(), null, null, SecConst.USER_ENDUSER,
 				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_JKS, 0, null);
 		userdata.setPassword(password);
 		byte[] encodedKeyStore = TestTools.getCertificateRequestSession().processSoftTokenReq(admin, userdata, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA, true);
@@ -97,7 +96,7 @@ public class CertificateRequestSessionTest extends TestCase {
 		// First try a successful request and validate the returned KeyStore
 		String username = "certificateRequestTest-" + random.nextInt();
 		String password = "foo123";
-		UserDataVO userdata = new UserDataVO(username, "CN="+username, TestTools.getTestCAId(), null, null, SecConst.USER_ENDUSER,
+		UserDataVO userdata = new UserDataVO(username, "CN="+username, getTestCAId(), null, null, SecConst.USER_ENDUSER,
 				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		userdata.setPassword(password);
 		String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
@@ -121,7 +120,7 @@ public class CertificateRequestSessionTest extends TestCase {
 	}
 
 	public void testZZZTearDown() {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 
 }

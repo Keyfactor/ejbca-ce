@@ -31,8 +31,6 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.naming.NamingException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.cms.CMSSignedData;
@@ -41,6 +39,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
@@ -116,7 +115,7 @@ import org.ejbca.util.keystore.KeyTools;
  * 
  * @version $Id$
  */
-public abstract class CommonEjbcaWS extends TestCase {
+public abstract class CommonEjbcaWS extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CommonEjbcaWS.class);
 
@@ -176,7 +175,7 @@ public abstract class CommonEjbcaWS extends TestCase {
         return "AdminCA1";
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 
@@ -350,8 +349,8 @@ public abstract class CommonEjbcaWS extends TestCase {
     }
 
     protected void editUser() throws Exception {
-        TestTools.createTestCA(CA1);
-        TestTools.createTestCA(CA2);
+        createTestCA(CA1);
+        createTestCA(CA2);
         editUser(CA1_WSTESTUSER1, CA1);
         editUser(CA1_WSTESTUSER2, CA1);
         editUser(CA2_WSTESTUSER1, CA2);
@@ -1775,7 +1774,7 @@ public abstract class CommonEjbcaWS extends TestCase {
             cert = cert2;
         }
         
-        String randomuser = TestTools.genRandomUserName();
+        String randomuser = genRandomUserName();
         List<Certificate> foundnocerts = ejbcaraws.getLastCertChain(randomuser);
         assertTrue(foundnocerts != null);
         assertTrue(foundnocerts.size() == 0);
@@ -2385,12 +2384,12 @@ public abstract class CommonEjbcaWS extends TestCase {
             e.printStackTrace();
         }
         try {
-            TestTools.removeTestCA(CA1);
+            removeTestCA(CA1);
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            TestTools.removeTestCA(CA2);
+            removeTestCA(CA2);
         } catch (Exception e) {
             e.printStackTrace();
         }

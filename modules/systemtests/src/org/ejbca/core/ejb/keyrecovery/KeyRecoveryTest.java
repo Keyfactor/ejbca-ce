@@ -18,9 +18,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
@@ -34,11 +33,10 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @version $Id$
  */
-public class KeyRecoveryTest extends TestCase {
-    private final static Logger log = Logger.getLogger(KeyRecoveryTest.class);
-    private final static Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-    private static final String user = TestTools.genRandomUserName();
-
+public class KeyRecoveryTest extends CaTestCase {
+    private static final Logger log = Logger.getLogger(KeyRecoveryTest.class);
+    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final String user = genRandomUserName();
     private static KeyPair keypair = null;
     private static X509Certificate cert = null;
 
@@ -50,15 +48,18 @@ public class KeyRecoveryTest extends TestCase {
     public KeyRecoveryTest(String name) {
         super(name);
         CryptoProviderTools.installBCProvider();
+        
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
+        super.setUp();
         log.trace(">setUp()");
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
@@ -73,7 +74,7 @@ public class KeyRecoveryTest extends TestCase {
             String email = "test@test.se";
             if (!TestTools.getUserAdminSession().existsUser(admin, user)) {
                 keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-                TestTools.getUserAdminSession().addUser(admin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, TestTools.getTestCAId());
+                TestTools.getUserAdminSession().addUser(admin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, getTestCAId());
                 cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, user, "foo123", keypair.getPublic());
             }
         } catch (Exception e) {
@@ -91,9 +92,10 @@ public class KeyRecoveryTest extends TestCase {
      * @throws Exception error
      */
     public void test02MarkAndRecoverKeyPair() throws Exception {
+        log.error("User:::: " + user);
         log.trace(">test02MarkAndRecoverKeyPair()");
         CryptoProviderTools.installBCProvider();
-        assertTrue("Couldn't mark user for recovery in database", !TestTools.getKeyRecoverySession().isUserMarked(admin, user));
+        assertFalse("Couldn't mark user for recovery in database", TestTools.getKeyRecoverySession().isUserMarked(admin, user));
         TestTools.getUserAdminSession().prepareForKeyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
         assertTrue("Couldn't mark user for recovery in database", TestTools.getKeyRecoverySession().isUserMarked(admin, user));
         KeyRecoveryData data = TestTools.getKeyRecoverySession().keyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
@@ -109,6 +111,7 @@ public class KeyRecoveryTest extends TestCase {
      * @throws Exception error
      */
     public void test03RemoveKeyPair() throws Exception {
+        log.error("User:::: " + user);
         log.trace(">test03RemoveKeyPair()");
         CryptoProviderTools.installBCProvider();
         TestTools.getKeyRecoverySession().removeKeyRecoveryData(admin, cert);
@@ -118,6 +121,6 @@ public class KeyRecoveryTest extends TestCase {
     }
 
 	public void test99RemoveTestCA() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

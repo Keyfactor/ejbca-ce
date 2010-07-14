@@ -378,7 +378,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private void setupApprovals() throws Exception {
         CryptoProviderTools.installBCProvider();
 
-        adminusername1 = TestTools.genRandomUserName();
+        adminusername1 = genRandomUserName();
 
         CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
         caid = cainfo.getCAId();

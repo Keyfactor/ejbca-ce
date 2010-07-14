@@ -154,10 +154,10 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     	return ret;
     }
     
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /** Tests ocsp message

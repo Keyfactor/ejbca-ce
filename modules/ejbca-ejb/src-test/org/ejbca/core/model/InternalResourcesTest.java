@@ -28,7 +28,7 @@ import junit.framework.TestCase;
  */
 public class InternalResourcesTest extends TestCase {
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
     }
 

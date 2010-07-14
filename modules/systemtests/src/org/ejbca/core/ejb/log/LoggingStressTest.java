@@ -30,10 +30,10 @@ public class LoggingStressTest extends TestCase {
 	private static final int NUMBER_OF_THREADS = 10; 
 	private static final int TIME_TO_RUN = 1000 * 60 * 60; // Run for an hour 
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     public void test01LogALot() throws Exception {

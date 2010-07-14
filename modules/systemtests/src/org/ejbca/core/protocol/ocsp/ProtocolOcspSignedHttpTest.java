@@ -24,7 +24,6 @@ import java.util.Hashtable;
 
 import javax.ejb.DuplicateKeyException;
 
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
@@ -38,6 +37,7 @@ import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.SingleResp;
 import org.ejbca.config.OcspConfiguration;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -51,7 +51,7 @@ import org.ejbca.util.keystore.KeyTools;
 /** Test requiring signed OCSP requests.
  * This test requires that the option 'ocsp.signaturerequired=true' is set in conf/ocsp-properties.
  **/
-public class ProtocolOcspSignedHttpTest extends TestCase {
+public class ProtocolOcspSignedHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolOcspSignedHttpTest.class);
 
     protected static byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +
@@ -69,7 +69,7 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
 
     private static ISignSessionRemote signSession;
     private static IUserAdminSessionRemote userAdminSession;
-    private static int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
     private static Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
@@ -98,15 +98,15 @@ public class ProtocolOcspSignedHttpTest extends TestCase {
         userAdminSession = TestTools.getUserAdminSession();
     }
 
-    protected void setUp() throws Exception {
-        TestTools.createTestCA();
-        cacert = (X509Certificate) TestTools.getTestCACert();
+    public void setUp() throws Exception {
+        createTestCA();
+        cacert = (X509Certificate) getTestCACert();
     	TestTools.getConfigurationSession().updateProperty(OcspConfiguration.SIGNATUREREQUIRED, "true");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     	TestTools.getConfigurationSession().restoreConfiguration();
-        TestTools.removeTestCA();
+        removeTestCA();
     }
 
     /** Tests ocsp message

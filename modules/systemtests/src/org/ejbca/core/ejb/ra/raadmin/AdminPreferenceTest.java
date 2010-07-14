@@ -16,19 +16,17 @@ package org.ejbca.core.ejb.ra.raadmin;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
-import org.ejbca.util.TestTools;
 
 /**
  * Tests the admin preference entity bean.
  *
  * @version $Id$
  */
-public class AdminPreferenceTest extends TestCase {
+public class AdminPreferenceTest extends CaTestCase {
     private static Logger log = Logger.getLogger(AdminPreferenceTest.class);
     /**
      * UserAdminSession handle, not static since different object should go to different session
@@ -39,7 +37,7 @@ public class AdminPreferenceTest extends TestCase {
     /** Handle to AdminSessionHome */
     private static IRaAdminSessionHome cacheHome;
 
-    private static final String user = TestTools.genRandomUserName();
+    private static final String user = genRandomUserName();
 
     /**
      * Creates a new AdminPreference object.
@@ -50,7 +48,7 @@ public class AdminPreferenceTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         if (cacheAdmin == null) {
             if (cacheHome == null) {
@@ -63,7 +61,7 @@ public class AdminPreferenceTest extends TestCase {
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
@@ -107,7 +105,7 @@ public class AdminPreferenceTest extends TestCase {
         assertTrue("Adminpref for "+user+" should exist", ret);
         pref = this.cacheAdmin.getAdminPreference(administrator, user);
         assertEquals(pref.getPreferedLanguage(), 2);
-        String newuser = TestTools.genRandomUserName();
+        String newuser = genRandomUserName();
         ret = this.cacheAdmin.changeAdminPreference(administrator, newuser, pref);
         assertFalse("Adminpref for "+newuser+" should not exist", ret);
         log.trace("<test02ModifyAdminPreference()");

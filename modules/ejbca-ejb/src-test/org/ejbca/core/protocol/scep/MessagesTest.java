@@ -72,10 +72,10 @@ public class MessagesTest extends TestCase {
         //log.debug(caCert.toString());
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /** Tests scep message from OpenScep

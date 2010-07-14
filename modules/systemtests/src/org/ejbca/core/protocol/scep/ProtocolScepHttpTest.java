@@ -46,7 +46,6 @@ import java.util.Random;
 
 import javax.servlet.http.HttpServletResponse;
 
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.httpclient.NameValuePair;
@@ -69,6 +68,7 @@ import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
@@ -89,95 +89,68 @@ import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
-/** Tests http pages of scep
- **/
-public class ProtocolScepHttpTest extends TestCase {
+/**
+ * Tests http pages of scep
+ */
+public class ProtocolScepHttpTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
-	protected final static String httpPort;
-	static {
-		String tmp;
-		try {
-			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
-		} catch (RemoteException e) {
-			tmp = "8080";
-			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
-		}
-		httpPort = tmp;
-	}
+    protected final static String httpPort;
+    static {
+        String tmp;
+        try {
+            tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        } catch (RemoteException e) {
+            tmp = "8080";
+            log.error("Not possible to get property " + WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
+        }
+        httpPort = tmp;
+    }
 
     private static final String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
     private static final String resourceScep = "publicweb/apply/scep/pkiclient.exe";
     private static final String resourceScepNoCA = "publicweb/apply/scep/noca/pkiclient.exe";
 
-    private static final byte[] openscep = Base64.decode(("MIIGqwYJKoZIhvcNAQcCoIIGnDCCBpgCAQExDjAMBggqhkiG9w0CBQUAMIICuwYJ" +
-            "KoZIhvcNAQcBoIICrASCAqgwggKkBgkqhkiG9w0BBwOgggKVMIICkQIBADGB1TCB" +
-            "0gIBADA7MC8xDzANBgNVBAMTBlRlc3RDQTEPMA0GA1UEChMGQW5hVG9tMQswCQYD" +
-            "VQQGEwJTRQIIbzEhUVZYO3gwDQYJKoZIhvcNAQEBBQAEgYCksIoSXYsCQPot2DDW" +
-            "dexdFqLj1Fuz3xSpu/rLozXKxEY0n0W0JXRR9OxxuyqNw9cLZhiyWkNsJGbP/rEz" +
-            "yrXe9NXuLK5U8+qqE8OhnY9BhCxjeUJSLni6oCSi7YzwOqdg2KmifJrQQI/jZIiC" +
-            "tSISAtE6qi6DKQwLCkQLmokLrjCCAbIGCSqGSIb3DQEHATARBgUrDgMCBwQILYvZ" +
-            "rBWuC02AggGQW9o5MB/7LN4o9G4ZD1l2mHzS+g+Y/dT2qD/qIaQi1Mamv2oKx9eO" +
-            "uFtaGkBBGWZlIKg4mm/DFtvXqW8Y5ijAiQVHHPuRKNyIV6WVuFjNjhNlM+DWLJR+" +
-            "rpHEhvB6XeDo/pd+TyOKFcxedMPTD7U+j46yd46vKdmoKAiIF21R888uVSz3GDts" +
-            "NlqgvZ7VlaI++Tj7aPdOI7JTdQXZk2FWF7Ql0LBIPwk9keffptF5if5Y+aHqB0a2" +
-            "uQj1aE8Em15VG8p8MmLJOX0OA1aeqfxR0wk343r44UebliY2DE8cEnym/fmya30/" +
-            "7WYzJ7erWofO2ukg1yc93wUpyIKxt2RGIy5geqQCjCYSSGgaNFafEV2pnOVSx+7N" +
-            "9z/ICNQfDBD6b83MO7yPHC1cXcdREKHHeqaKyQLiVRk9+R/3D4vEZt682GRaUKOY" +
-            "PQXK1Be2nyZoo4gZs62nZVAliJ+chFkEUog9k9OsIvZRG7X+VEjVYBqxlE1S3ikt" +
-            "igFXiuLC/LDCi3IgVwQjfNx1/mhxsO7GSaCCAfswggH3MIIBYKADAgEDAiA4OEUy" +
-            "REVFNDcwNjhCQjM3RjE5QkE2NDdCRjAyRkQwRjANBgkqhkiG9w0BAQQFADAyMQsw" +
-            "CQYDVQQGEwJTZTERMA8GA1UEChMIUHJpbWVLZXkxEDAOBgNVBAMTB1RvbWFzIEcw" +
-            "HhcNMDMwNjAxMDgzNDQyWhcNMDMwNzAxMDgzNDQyWjAyMQswCQYDVQQGEwJTZTER" +
-            "MA8GA1UEChMIUHJpbWVLZXkxEDAOBgNVBAMTB1RvbWFzIEcwgZ8wDQYJKoZIhvcN" +
-            "AQEBBQADgY0AMIGJAoGBAOu47fpIQfzfSnEBTG2WJpKZz1891YLNulc7XgMk8hl3" +
-            "nVC4m34SaR7eXR3nCsorYEpPPmL3affaPFsBnNBQNoZLxKmQ1RKiDyu8dj90AKCP" +
-            "CFlIM2aJbKMiQad+dt45qse6k0yTrY3Yx0hMH76tRkDif4DjM5JUvdf4d/zlYcCz" +
-            "AgMBAAEwDQYJKoZIhvcNAQEEBQADgYEAGNoWI02kXNEA5sPHb3KEY8QZoYM5Kha1" +
-            "JA7HLmlXKy6geeJmk329CUnvF0Cr7zxbMkFRdUDUtR8omDDnGlBSOCkV6LLYH939" +
-            "Z8iysfaxigZkxUqUYGLtYHhsEjVgcpfKZVxTz0E2ocR2P+IuU04Duel/gU4My6Qv" +
-            "LDpwo1CQC10xggHDMIIBvwIBATBWMDIxCzAJBgNVBAYTAlNlMREwDwYDVQQKEwhQ" +
-            "cmltZUtleTEQMA4GA1UEAxMHVG9tYXMgRwIgODhFMkRFRTQ3MDY4QkIzN0YxOUJB" +
-            "NjQ3QkYwMkZEMEYwDAYIKoZIhvcNAgUFAKCBwTASBgpghkgBhvhFAQkCMQQTAjE5" +
-            "MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTAzMDYw" +
-            "MTA4MzQ0MlowHwYJKoZIhvcNAQkEMRIEEBqGJFo7n4B8sFBCi54PckIwIAYKYIZI" +
-            "AYb4RQEJBTESBBA77Owxh2rbflhXsDYw3xsLMDAGCmCGSAGG+EUBCQcxIhMgODhF" +
-            "MkRFRTQ3MDY4QkIzN0YxOUJBNjQ3QkYwMkZEMEYwDQYJKoZIhvcNAQEBBQAEgYB4" +
-            "BPcw4NPIt4nMOFKSGg5oM1nGDPGFN7eorZV+/2uWiQfdtK4B4lzCTuNxWRT853dW" +
-            "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI" +
-            "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
+    private static final byte[] openscep = Base64.decode(("MIIGqwYJKoZIhvcNAQcCoIIGnDCCBpgCAQExDjAMBggqhkiG9w0CBQUAMIICuwYJ"
+            + "KoZIhvcNAQcBoIICrASCAqgwggKkBgkqhkiG9w0BBwOgggKVMIICkQIBADGB1TCB" + "0gIBADA7MC8xDzANBgNVBAMTBlRlc3RDQTEPMA0GA1UEChMGQW5hVG9tMQswCQYD"
+            + "VQQGEwJTRQIIbzEhUVZYO3gwDQYJKoZIhvcNAQEBBQAEgYCksIoSXYsCQPot2DDW" + "dexdFqLj1Fuz3xSpu/rLozXKxEY0n0W0JXRR9OxxuyqNw9cLZhiyWkNsJGbP/rEz"
+            + "yrXe9NXuLK5U8+qqE8OhnY9BhCxjeUJSLni6oCSi7YzwOqdg2KmifJrQQI/jZIiC" + "tSISAtE6qi6DKQwLCkQLmokLrjCCAbIGCSqGSIb3DQEHATARBgUrDgMCBwQILYvZ"
+            + "rBWuC02AggGQW9o5MB/7LN4o9G4ZD1l2mHzS+g+Y/dT2qD/qIaQi1Mamv2oKx9eO" + "uFtaGkBBGWZlIKg4mm/DFtvXqW8Y5ijAiQVHHPuRKNyIV6WVuFjNjhNlM+DWLJR+"
+            + "rpHEhvB6XeDo/pd+TyOKFcxedMPTD7U+j46yd46vKdmoKAiIF21R888uVSz3GDts" + "NlqgvZ7VlaI++Tj7aPdOI7JTdQXZk2FWF7Ql0LBIPwk9keffptF5if5Y+aHqB0a2"
+            + "uQj1aE8Em15VG8p8MmLJOX0OA1aeqfxR0wk343r44UebliY2DE8cEnym/fmya30/" + "7WYzJ7erWofO2ukg1yc93wUpyIKxt2RGIy5geqQCjCYSSGgaNFafEV2pnOVSx+7N"
+            + "9z/ICNQfDBD6b83MO7yPHC1cXcdREKHHeqaKyQLiVRk9+R/3D4vEZt682GRaUKOY" + "PQXK1Be2nyZoo4gZs62nZVAliJ+chFkEUog9k9OsIvZRG7X+VEjVYBqxlE1S3ikt"
+            + "igFXiuLC/LDCi3IgVwQjfNx1/mhxsO7GSaCCAfswggH3MIIBYKADAgEDAiA4OEUy" + "REVFNDcwNjhCQjM3RjE5QkE2NDdCRjAyRkQwRjANBgkqhkiG9w0BAQQFADAyMQsw"
+            + "CQYDVQQGEwJTZTERMA8GA1UEChMIUHJpbWVLZXkxEDAOBgNVBAMTB1RvbWFzIEcw" + "HhcNMDMwNjAxMDgzNDQyWhcNMDMwNzAxMDgzNDQyWjAyMQswCQYDVQQGEwJTZTER"
+            + "MA8GA1UEChMIUHJpbWVLZXkxEDAOBgNVBAMTB1RvbWFzIEcwgZ8wDQYJKoZIhvcN" + "AQEBBQADgY0AMIGJAoGBAOu47fpIQfzfSnEBTG2WJpKZz1891YLNulc7XgMk8hl3"
+            + "nVC4m34SaR7eXR3nCsorYEpPPmL3affaPFsBnNBQNoZLxKmQ1RKiDyu8dj90AKCP" + "CFlIM2aJbKMiQad+dt45qse6k0yTrY3Yx0hMH76tRkDif4DjM5JUvdf4d/zlYcCz"
+            + "AgMBAAEwDQYJKoZIhvcNAQEEBQADgYEAGNoWI02kXNEA5sPHb3KEY8QZoYM5Kha1" + "JA7HLmlXKy6geeJmk329CUnvF0Cr7zxbMkFRdUDUtR8omDDnGlBSOCkV6LLYH939"
+            + "Z8iysfaxigZkxUqUYGLtYHhsEjVgcpfKZVxTz0E2ocR2P+IuU04Duel/gU4My6Qv" + "LDpwo1CQC10xggHDMIIBvwIBATBWMDIxCzAJBgNVBAYTAlNlMREwDwYDVQQKEwhQ"
+            + "cmltZUtleTEQMA4GA1UEAxMHVG9tYXMgRwIgODhFMkRFRTQ3MDY4QkIzN0YxOUJB" + "NjQ3QkYwMkZEMEYwDAYIKoZIhvcNAgUFAKCBwTASBgpghkgBhvhFAQkCMQQTAjE5"
+            + "MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTAzMDYw" + "MTA4MzQ0MlowHwYJKoZIhvcNAQkEMRIEEBqGJFo7n4B8sFBCi54PckIwIAYKYIZI"
+            + "AYb4RQEJBTESBBA77Owxh2rbflhXsDYw3xsLMDAGCmCGSAGG+EUBCQcxIhMgODhF" + "MkRFRTQ3MDY4QkIzN0YxOUJBNjQ3QkYwMkZEMEYwDQYJKoZIhvcNAQEBBQAEgYB4"
+            + "BPcw4NPIt4nMOFKSGg5oM1nGDPGFN7eorZV+/2uWiQfdtK4B4lzCTuNxWRT853dW" + "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI"
+            + "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
 
-    private static final IUserAdminSessionRemote usersession;
-    private static final int caid = TestTools.getTestCAId();
+    private IUserAdminSessionRemote usersession;
+    private int caid = getTestCAId();
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-    private static final X509Certificate cacert;
+    private X509Certificate cacert;
     private static final KeyPair key1;
     private static final KeyPair key2;
-    private static final String caname = TestTools.getTestCAName();
+    private String caname = getTestCAName();
     private static final String userName1 = "sceptest1";
     private static final String userName2 = "sceptest2";
-    private static final String userDN1 = "C=SE,O=PrimeKey,CN="+userName1;
-    private static final String userDN2 = "C=SE,O=PrimeKey,CN="+userName2;
+    private static final String userDN1 = "C=SE,O=PrimeKey,CN=" + userName1;
+    private static final String userDN2 = "C=SE,O=PrimeKey,CN=" + userName2;
     private static String senderNonce = null;
     private static String transId = null;
-    
+
     private Random rand = new Random();
-
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-
-    public static TestSuite suite() {
-        return new TestSuite(ProtocolScepHttpTest.class);
-    }
 
     static {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
-        TestTools.createTestCA();
-        cacert = (X509Certificate) TestTools.getTestCACert();
-        usersession = TestTools.getUserAdminSession();
+
         // Pre-generate key for all requests to speed things up a bit
         try {
             key1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -189,6 +162,23 @@ public class ProtocolScepHttpTest extends TestCase {
 
     public ProtocolScepHttpTest(String name) throws Exception {
         super(name);
+        createTestCA();
+        cacert = (X509Certificate) getTestCACert();
+        usersession = TestTools.getUserAdminSession();
+    }
+
+    public static TestSuite suite() {
+        return new TestSuite(ProtocolScepHttpTest.class);
+    }
+
+    public void setUp() throws Exception {
+        super.setUp();
+
+    }
+
+    public void tearDown() throws Exception {
+        super.tearDown();
+
     }
 
     public void test01Access() throws Exception {
@@ -197,11 +187,14 @@ public class ProtocolScepHttpTest extends TestCase {
         WebConnection con = webClient.getWebConnection();
         WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceScep));
         WebResponse resp = con.getResponse(settings);
-        assertEquals( "Response code", 400, resp.getStatusCode() );
+        assertEquals("Response code", 400, resp.getStatusCode());
     }
 
-    /** Tests a random old scep message from OpenScep
-     * @throws Exception error
+    /**
+     * Tests a random old scep message from OpenScep
+     * 
+     * @throws Exception
+     *             error
      */
     public void test02OpenScep() throws Exception {
         log.debug(">test02OpenScep()");
@@ -214,10 +207,12 @@ public class ProtocolScepHttpTest extends TestCase {
         l.add(new NameValuePair("message", new String(Base64.encode(openscep))));
         settings.setRequestParameters(l);
         WebResponse resp = con.getResponse(settings);
-        // TODO: since our request most certainly uses the wrong CA cert to encrypt the
-        // request, it will fail. If we get something back, we came a little bit at least :)
+        // TODO: since our request most certainly uses the wrong CA cert to
+        // encrypt the
+        // request, it will fail. If we get something back, we came a little bit
+        // at least :)
         // We should get a NOT_FOUND error back.
-        assertEquals( "Response code", 404, resp.getStatusCode() );
+        assertEquals("Response code", 404, resp.getStatusCode());
         log.debug("<test02OpenScep()");
     }
 
@@ -228,7 +223,7 @@ public class ProtocolScepHttpTest extends TestCase {
 
         // Make user that we know...
         createScepUser(userName1, userDN1);
-        
+
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
@@ -244,7 +239,7 @@ public class ProtocolScepHttpTest extends TestCase {
 
         // Make user that we know...
         createScepUser(userName1, userDN1);
-        
+
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
@@ -259,7 +254,7 @@ public class ProtocolScepHttpTest extends TestCase {
         // send SCEP req to server and get good response with cert
 
         createScepUser(userName1, userDN1);
-        
+
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes, false);
@@ -274,7 +269,7 @@ public class ProtocolScepHttpTest extends TestCase {
         // send SCEP req to server and get good response with cert
 
         createScepUser(userName1, userDN1);
-        
+
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes, true);
@@ -285,14 +280,15 @@ public class ProtocolScepHttpTest extends TestCase {
 
     public void test07ScepGetCACert() throws Exception {
         log.debug(">test07ScepGetCACert()");
-        String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACert&message="+URLEncoder.encode(caname, "UTF-8");
+        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert&message=" + URLEncoder.encode(caname, "UTF-8");
         URL url = new URL(reqUrl);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         con.getDoOutput();
         con.connect();
         assertEquals("Response code", 200, con.getResponseCode());
-        // Some appserver (Weblogic) responds with "application/x-x509-ca-cert; charset=UTF-8"
+        // Some appserver (Weblogic) responds with
+        // "application/x-x509-ca-cert; charset=UTF-8"
         assertTrue(con.getContentType().startsWith("application/x-x509-ca-cert"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and SCEP requests are small enough
@@ -307,7 +303,7 @@ public class ProtocolScepHttpTest extends TestCase {
         byte[] respBytes = baos.toByteArray();
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
-        X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(respBytes);
+        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(respBytes);
         // Check that we got the right cert back
         assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
         log.debug(">test07ScepGetCACert()");
@@ -322,11 +318,12 @@ public class ProtocolScepHttpTest extends TestCase {
         checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false);
         log.debug(">test08ScepGetCrl()");
     }
+
     public void test09ScepGetCACaps() throws Exception {
         log.debug(">test09ScepGetCACaps()");
-        String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACaps&message="+URLEncoder.encode(caname, "UTF-8");
+        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(caname, "UTF-8");
         URL url = new URL(reqUrl);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         con.getDoOutput();
         con.connect();
@@ -354,61 +351,74 @@ public class ProtocolScepHttpTest extends TestCase {
         log.debug(">test10EnforcementOfUniquePublicKeys()");
         // create new user for new DN.
         createScepUser(userName2, userDN2);
-        
+
         final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2);
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
         log.debug(new String(retMsg));
-        assertTrue( new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"))>=0 );
+        assertTrue(new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user",
+                "'" + userName2 + "'", "'" + userName1 + "'")) >= 0);
         log.debug("<test10EnforcementOfUniquePublicKeys()");
     }
+
     public void test11EnforcementOfUniqueDN() throws Exception {
         log.debug(">test10EnforcementOfUniquePublicKeys()");
-        // new user will have a DN of a certificate already issued for another user.
+        // new user will have a DN of a certificate already issued for another
+        // user.
         changeScepUser(userName2, userDN1);
-        
+
         final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2, key2);
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
         log.debug(new String(retMsg));
-        assertTrue( new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'"+userName2+"'", "'"+userName1+"'"))>=0 );
+        assertTrue(new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage("signsession.subjectdn_exists_for_another_user",
+                "'" + userName2 + "'", "'" + userName1 + "'")) >= 0);
         log.debug("<test10EnforcementOfUniquePublicKeys()");
     }
+
     public void test99CleanUp() throws Exception {
         // remove user
-        usersession.deleteUser(admin,userName1);
-        log.debug("deleted user: "+userName1);
-        usersession.deleteUser(admin,userName2);
-        log.debug("deleted user: "+userName2);
+        usersession.deleteUser(admin, userName1);
+        log.debug("deleted user: " + userName1);
+        usersession.deleteUser(admin, userName2);
+        log.debug("deleted user: " + userName2);
     }
-    
+
     //
     // Private helper methods
     //
     private UserDataVO getUserDataVO(String userName, String userDN) {
-    	final UserDataVO data = new UserDataVO(userName, userDN, caid, null, "sceptest@primekey.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
-    	data.setPassword("foo123");
-    	data.setStatus(UserDataConstants.STATUS_NEW);
-    	return data;
+        final UserDataVO data = new UserDataVO(userName, userDN, caid, null, "sceptest@primekey.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+        data.setPassword("foo123");
+        data.setStatus(UserDataConstants.STATUS_NEW);
+        return data;
     }
+
     private void createScepUser(String userName, String userDN) throws Exception {
         try {
-        	usersession.addUser(admin, getUserDataVO(userName, userDN), false);
-            log.debug("created user: "+userName+", foo123, "+userDN);
+            usersession.addUser(admin, getUserDataVO(userName, userDN), false);
+            log.debug("created user: " + userName + ", foo123, " + userDN);
         } catch (Exception e) {
-            log.debug("User "+userName+" already exists.");
+            log.debug("User " + userName + " already exists.");
             changeScepUser(userName, userDN);
         }
     }
+
     private void changeScepUser(String userName, String userDN) throws Exception {
-    	usersession.changeUser(admin, getUserDataVO(userName, userDN), false);
-    	log.debug("changing user: "+userName+", foo123, "+userDN);
+        usersession.changeUser(admin, getUserDataVO(userName, userDN), false);
+        log.debug("changing user: " + userName + ", foo123, " + userDN);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException, CertificateEncodingException, IllegalStateException {
-    	return genScepRequest( makeCrlReq, digestoid, userDN, key1);
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN) throws InvalidKeyException, NoSuchAlgorithmException,
+            NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException,
+            CertificateEncodingException, IllegalStateException {
+        return genScepRequest(makeCrlReq, digestoid, userDN, key1);
     }
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException, CertificateEncodingException, IllegalStateException {
+
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair key) throws InvalidKeyException, NoSuchAlgorithmException,
+            NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException,
+            CertificateEncodingException, IllegalStateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(key);
         gen.setDigestOid(digestoid);
@@ -422,16 +432,18 @@ public class ProtocolScepHttpTest extends TestCase {
         if (makeCrlReq) {
             msgBytes = gen.generateCrlReq(userDN, transId, cacert);
         } else {
-            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert);            
+            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert);
         }
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
         byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
-        assertTrue(nonceBytes.length == 16); 
+        assertTrue(nonceBytes.length == 16);
         return msgBytes;
     }
-    
-    private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca) throws CMSException, NoSuchProviderException, NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException, SignatureException, CRLException {
+
+    private void checkScepResponse(byte[] retMsg, String userDN, String _senderNonce, String _transId, boolean crlRep, String digestOid, boolean noca)
+            throws CMSException, NoSuchProviderException, NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException,
+            SignatureException, CRLException {
         //
         // Parse response message
         //
@@ -455,7 +467,7 @@ public class ProtocolScepHttpTest extends TestCase {
         // --Fail info
         Attribute attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_failInfo));
         // No failInfo on this success message
-        assertNull(attr); 
+        assertNull(attr);
         // --Message type
         attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_messageType));
         assertNotNull(attr);
@@ -477,7 +489,8 @@ public class ProtocolScepHttpTest extends TestCase {
         values = attr.getAttrValues();
         assertEquals(values.size(), 1);
         ASN1OctetString octstr = ASN1OctetString.getInstance(values.getObjectAt(0));
-        // SenderNonce is something the server came up with, but it should be 16 chars
+        // SenderNonce is something the server came up with, but it should be 16
+        // chars
         assertTrue(octstr.getOctets().length == 16);
         // --Recipient Nonce
         attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce));
@@ -495,50 +508,52 @@ public class ProtocolScepHttpTest extends TestCase {
         str = DERPrintableString.getInstance((values.getObjectAt(0)));
         // transid should be the same as the one we sent
         assertEquals(_transId, str.getString());
-        
+
         //
         // Check different message types
         //
         if (messageType.equals("3")) {
-            // First we extract the encrypted data from the CMS enveloped data contained
+            // First we extract the encrypted data from the CMS enveloped data
+            // contained
             // within the CMS signed data
             final CMSProcessable sp = s.getSignedContent();
-            final byte[] content = (byte[])sp.getContent();
+            final byte[] content = (byte[]) sp.getContent();
             final CMSEnvelopedData ed = new CMSEnvelopedData(content);
             final RecipientInformationStore recipients = ed.getRecipientInfos();
             CertStore certstore;
             {
-            	Collection<RecipientInformation> c = recipients.getRecipients();
-            	assertEquals(c.size(), 1);
-            	Iterator<RecipientInformation> it = c.iterator();
-            	byte[] decBytes = null;
-            	RecipientInformation recipient = it.next();
-            	decBytes = recipient.getContent(key1.getPrivate(), "BC");
-            	// This is yet another CMS signed data
-            	CMSSignedData sd = new CMSSignedData(decBytes);
-            	// Get certificates from the signed data
-            	certstore = sd.getCertificatesAndCRLs("Collection","BC");
+                Collection<RecipientInformation> c = recipients.getRecipients();
+                assertEquals(c.size(), 1);
+                Iterator<RecipientInformation> it = c.iterator();
+                byte[] decBytes = null;
+                RecipientInformation recipient = it.next();
+                decBytes = recipient.getContent(key1.getPrivate(), "BC");
+                // This is yet another CMS signed data
+                CMSSignedData sd = new CMSSignedData(decBytes);
+                // Get certificates from the signed data
+                certstore = sd.getCertificatesAndCRLs("Collection", "BC");
             }
             if (crlRep) {
                 // We got a reply with a requested CRL
-                final Collection<X509CRL> crls = (Collection<X509CRL>)certstore.getCRLs(null);
+                final Collection<X509CRL> crls = (Collection<X509CRL>) certstore.getCRLs(null);
                 assertEquals(crls.size(), 1);
                 final Iterator<X509CRL> it = crls.iterator();
                 // CRL is first (and only)
                 final X509CRL retCrl = it.next();
-                log.info("Got CRL with DN: "+ retCrl.getIssuerDN().getName());
+                log.info("Got CRL with DN: " + retCrl.getIssuerDN().getName());
 
                 // check the returned CRL
                 assertEquals(cacert.getSubjectDN().getName(), retCrl.getIssuerDN().getName());
                 retCrl.verify(cacert.getPublicKey());
             } else {
-                // We got a reply with a requested certificate 
-                final Collection<X509Certificate> certs = (Collection<X509Certificate>)certstore.getCertificates(null);
-                // EJBCA returns the issued cert and the CA cert (cisco vpn client requires that the ca cert is included)
+                // We got a reply with a requested certificate
+                final Collection<X509Certificate> certs = (Collection<X509Certificate>) certstore.getCertificates(null);
+                // EJBCA returns the issued cert and the CA cert (cisco vpn
+                // client requires that the ca cert is included)
                 if (noca) {
-                    assertEquals(certs.size(), 1);	                	
+                    assertEquals(certs.size(), 1);
                 } else {
-                    assertEquals(certs.size(), 2);                	
+                    assertEquals(certs.size(), 2);
                 }
                 final Iterator<X509Certificate> it = certs.iterator();
                 // Issued certificate must be first
@@ -546,9 +561,8 @@ public class ProtocolScepHttpTest extends TestCase {
                 boolean gotcacert = false;
                 while (it.hasNext()) {
                     X509Certificate retcert = it.next();
-                    log.info("Got cert with DN: "+ retcert.getSubjectDN().getName());
+                    log.info("Got cert with DN: " + retcert.getSubjectDN().getName());
 
-                
                     // check the returned certificate
                     String subjectdn = CertTools.stringToBCDNString(retcert.getSubjectDN().getName());
                     if (CertTools.stringToBCDNString(userDN).equals(subjectdn)) {
@@ -561,49 +575,53 @@ public class ProtocolScepHttpTest extends TestCase {
                     } else {
                         // ca certificate
                         assertEquals(cacert.getSubjectDN().getName(), retcert.getSubjectDN().getName());
-                        gotcacert = true;                        	
+                        gotcacert = true;
                     }
                 }
                 assertTrue(verified);
                 if (noca) {
-                	assertFalse(gotcacert);
+                    assertFalse(gotcacert);
                 } else {
-                    assertTrue(gotcacert); 
+                    assertTrue(gotcacert);
                 }
             }
         }
-        
+
     }
+
     /**
-     * checks that a public and private key matches by signing and verifying a message
+     * checks that a public and private key matches by signing and verifying a
+     * message
      */
     private boolean checkKeys(PrivateKey priv, PublicKey pub) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
         Signature signer = Signature.getInstance("SHA1WithRSA");
         signer.initSign(priv);
         signer.update("PrimeKey".getBytes());
         byte[] signature = signer.sign();
-        
+
         Signature signer2 = Signature.getInstance("SHA1WithRSA");
         signer2.initVerify(pub);
         signer2.update("PrimeKey".getBytes());
         return signer2.verify(signature);
     }
+
     private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca) throws IOException {
         return sendScep(post, scepPackage, noca, HttpServletResponse.SC_OK);
     }
+
     private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca, int responseCode) throws IOException {
         // POST the SCEP request
         // we are going to do a POST
-    	String resource = resourceScep;
-    	if (noca) {
-    		resource = resourceScepNoCA;
-    	}
-    	String urlString = httpReqPath + '/' + resource+"?operation=PKIOperation";
-    	log.debug("UrlString =" + urlString);
+        String resource = resourceScep;
+        if (noca) {
+            resource = resourceScepNoCA;
+        }
+        String urlString = httpReqPath + '/' + resource + "?operation=PKIOperation";
+        log.debug("UrlString =" + urlString);
         final HttpURLConnection con;
         if (post) {
             URL url = new URL(urlString);
-            con = (HttpURLConnection)url.openConnection();
+            con = (HttpURLConnection) url.openConnection();
             con.setDoOutput(true);
             con.setRequestMethod("POST");
             con.connect();
@@ -612,17 +630,18 @@ public class ProtocolScepHttpTest extends TestCase {
             os.write(scepPackage);
             os.close();
         } else {
-            String reqUrl = urlString + "&message=" + URLEncoder.encode(new String(Base64.encode(scepPackage)),"UTF-8");
+            String reqUrl = urlString + "&message=" + URLEncoder.encode(new String(Base64.encode(scepPackage)), "UTF-8");
             URL url = new URL(reqUrl);
-            con = (HttpURLConnection)url.openConnection();
+            con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.getDoOutput();
             con.connect();
         }
 
         assertEquals("Response code", responseCode, con.getResponseCode());
-        // Some appserver (Weblogic) responds with "application/x-pki-message; charset=UTF-8"
-        if ( responseCode==HttpServletResponse.SC_OK ) {
+        // Some appserver (Weblogic) responds with
+        // "application/x-pki-message; charset=UTF-8"
+        if (responseCode == HttpServletResponse.SC_OK) {
             assertTrue(con.getContentType().startsWith("application/x-pki-message"));
         } else {
             assertTrue(con.getContentType().startsWith("text/html"));
@@ -630,7 +649,7 @@ public class ProtocolScepHttpTest extends TestCase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and SCEP requests are small enough
         final InputStream in;
-        if ( responseCode==HttpServletResponse.SC_OK ) {
+        if (responseCode == HttpServletResponse.SC_OK) {
             in = con.getInputStream();
         } else {
             in = con.getErrorStream();
@@ -647,7 +666,7 @@ public class ProtocolScepHttpTest extends TestCase {
         assertTrue(respBytes.length > 0);
         return respBytes;
     }
-    
+
     static class InternalResourcesStub extends InternalResources {
 
         private static final long serialVersionUID = 1L;
@@ -714,5 +733,3 @@ public class ProtocolScepHttpTest extends TestCase {
 
     }
 }
-
-

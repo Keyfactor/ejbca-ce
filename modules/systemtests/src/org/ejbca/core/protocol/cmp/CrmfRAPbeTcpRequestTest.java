@@ -138,14 +138,14 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         }
 	}
 	
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
 			keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		}
 	}
 	
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		super.tearDown();
 	}
 

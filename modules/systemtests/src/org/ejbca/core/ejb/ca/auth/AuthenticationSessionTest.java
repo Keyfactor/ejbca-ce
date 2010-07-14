@@ -21,9 +21,8 @@ import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -47,10 +46,10 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @version $Id$
  */
-public class AuthenticationSessionTest extends TestCase {
+public class AuthenticationSessionTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AuthenticationSessionTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-    private static final int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
 
     private static final int MAXFAILEDLOGINS = 4;
     
@@ -66,29 +65,17 @@ public class AuthenticationSessionTest extends TestCase {
      */
     public AuthenticationSessionTest(String name) {
         super(name);
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         CryptoProviderTools.installBCProvider();
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
-
-    private String genRandomPwd() throws Exception {
-        // Gen random pwd
-        Random rand = new Random(new Date().getTime() + 4812);
-        String password = "";
-        for (int i = 0; i < 8; i++) {
-            int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random pwd: password=" + password);
-        return password;
-    } // genRandomPwd
 
     private static void createUser(Admin admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins) throws DuplicateKeyException, RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
 		log.info("createUser: username="+username+", certProfileId="+certProfileId);
@@ -112,14 +99,14 @@ public class AuthenticationSessionTest extends TestCase {
         log.trace(">test01CreateNewUser()");
 
         // Make user that we know later...
-        username1 = TestTools.genRandomUserName();
+        username1 = genRandomUserName();
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
         TestTools.getUserAdminSession().addUser(admin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         log.debug("created user: " + username1 + ", " + pwd1 + ", C=SE, O=AnaTom, CN=" + username1);
         
         // Make another user that we know later...
-        username2 = TestTools.genRandomUserName();
+        username2 = genRandomUserName();
         pwd2 = genRandomPwd();
         createUser(admin, username2, pwd2, caid, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, MAXFAILEDLOGINS);
         log.debug("created user: " + username2 + ", " + pwd2 + ", C=SE, O=AnaTom, CN=" + username2);
@@ -363,6 +350,6 @@ public class AuthenticationSessionTest extends TestCase {
     }
 
 	public void test99RemoveTestCA() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

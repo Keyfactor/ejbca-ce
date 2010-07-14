@@ -45,13 +45,13 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         log.setLevel(Level.DEBUG);
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**

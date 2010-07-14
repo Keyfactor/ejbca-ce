@@ -8,11 +8,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
 import org.ejbca.config.ProtectedLogConfiguration;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
@@ -21,7 +20,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.util.TestTools;
 
-public class ProtectedLogTest extends TestCase {
+public class ProtectedLogTest extends CaTestCase {
 
 	private final static String DEFAULT_CA_NAME   = "TEST";
 	private final static String LOGMESSAGE        = "Logmessage ";
@@ -43,10 +42,10 @@ public class ProtectedLogTest extends TestCase {
 	 */
 	public ProtectedLogTest(String name) {
 		super(name);
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
 	}
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		log.trace(">setUp()");
 		// Stop services
 		TestTools.getProtectedLogSession().stopServices();
@@ -62,7 +61,7 @@ public class ProtectedLogTest extends TestCase {
 		log.trace("<setUp()");
 	}
 
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		TestTools.getConfigurationSession().restoreConfiguration();
 		// Clear protected log
 		TestTools.getProtectedLogSession().removeAllUntil(System.currentTimeMillis()+60*1000);
@@ -310,6 +309,6 @@ public class ProtectedLogTest extends TestCase {
 	}
 	
 	public void test99RemoveTestCA() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

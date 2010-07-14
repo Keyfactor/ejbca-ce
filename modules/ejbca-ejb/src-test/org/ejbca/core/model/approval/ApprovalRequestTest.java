@@ -78,7 +78,7 @@ public class ApprovalRequestTest extends TestCase {
     	assertEquals(id1, id2);
 	}
 
-	protected void setUp() throws Exception {		
+	public void setUp() throws Exception {		
 		super.setUp();
 		CertTools.installBCProvider();
 	}

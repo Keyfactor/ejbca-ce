@@ -28,8 +28,6 @@ import java.util.Set;
 
 import javax.ejb.DuplicateKeyException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -41,6 +39,7 @@ import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -67,7 +66,7 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @version $Id$
  */
-public class CreateCRLSessionTest extends TestCase {
+public class CreateCRLSessionTest extends CaTestCase {
 
 	private final static Logger log = Logger.getLogger(CreateCRLSessionTest.class);
 	private final static Admin admin =  new Admin(Admin.TYPE_INTERNALUSER);
@@ -85,17 +84,17 @@ public class CreateCRLSessionTest extends TestCase {
 	public CreateCRLSessionTest(String name) throws Exception {
 		super(name);
 		CryptoProviderTools.installBCProviderIfNotAvailable();
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
         CAInfo inforsa = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         caid = inforsa.getCAId();
 		ca = TestTools.getCAAdminSession().getCA(admin, caid);
 	}
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 	}
 
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 	}
 
 	/**
@@ -476,7 +475,7 @@ public class CreateCRLSessionTest extends TestCase {
 
     public void test99CleanUp() throws Exception {
         log.trace(">test99CleanUp()");
-		TestTools.removeTestCA();
+		removeTestCA();
         log.trace("<test99CleanUp()");
     }
 

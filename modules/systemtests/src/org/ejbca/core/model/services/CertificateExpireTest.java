@@ -18,9 +18,8 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -37,33 +36,32 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @version $Id$
  */
-public class CertificateExpireTest extends TestCase {
+public class CertificateExpireTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CertificateExpireTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     private static final String CA_NAME = "CertExpNotifCA";
-    private static final int caid = TestTools.getTestCAId(CA_NAME);
+    private int caid = getTestCAId(CA_NAME);
 
     private static String username;
     private static String pwd;
     
     private static final String CERTIFICATE_EXPIRATION_SERVICE = "CertificateExpirationService";
 
-    /**
-     * Creates a new TestUserPasswordExpire object.
-     *
-     * @param name DOCUMENT ME!
-     */
+    public CertificateExpireTest() {
+        super();
+    }
+    
     public CertificateExpireTest(String name) {
         super(name);
         CertTools.installBCProvider();	// Install BouncyCastle provider
-        assertTrue("Could not create TestCA.", TestTools.createTestCA(CA_NAME));
+        assertTrue("Could not create TestCA.", createTestCA(CA_NAME));
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /** Add a new user and an expire service. Test that the service expires the users password
@@ -73,8 +71,8 @@ public class CertificateExpireTest extends TestCase {
         log.trace(">test01CreateNewUser()");
         
         // Create a new user
-        username = TestTools.genRandomUserName();
-        pwd = TestTools.genRandomPwd();
+        username = genRandomUserName();
+        pwd = genRandomPwd();
         TestTools.getUserAdminSession().addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created user: "+username);
         
@@ -146,7 +144,7 @@ public class CertificateExpireTest extends TestCase {
         log.debug("Removed user: "+username);
         TestTools.getServiceSession().removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
         log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
-        TestTools.removeTestCA(CA_NAME);
+        removeTestCA(CA_NAME);
         log.debug("Removed test CA");
         log.trace("<test99CleanUp()");
     }

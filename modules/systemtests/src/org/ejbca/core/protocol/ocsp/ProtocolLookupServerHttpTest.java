@@ -40,8 +40,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -56,6 +54,7 @@ import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -88,7 +87,7 @@ import org.ejbca.util.keystore.KeyTools;
  * ); 
  * 
  **/
-public class ProtocolLookupServerHttpTest extends TestCase {
+public class ProtocolLookupServerHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolLookupServerHttpTest.class);
 
     private String httpReqPath;
@@ -96,7 +95,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
 
     private static ISignSessionRemote signSession;
     private static IUserAdminSessionRemote userAdminSession;
-    private static int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
     private static Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
@@ -112,17 +111,17 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         resourceOcsp = res;
         // Install BouncyCastle provider
         CertTools.installBCProvider();
-        TestTools.createTestCA();
-        cacert = (X509Certificate) TestTools.getTestCACert();
+        createTestCA();
+        cacert = (X509Certificate) getTestCACert();
         signSession = TestTools.getSignSession();
         userAdminSession = TestTools.getUserAdminSession();
         keys = KeyTools.genKeys("512", "RSA");
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /** Tests ocsp message with good status and a valid unid
@@ -346,7 +345,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
     }
 
     public void testZZZCleanUp() throws Exception {
-    	TestTools.removeTestCA();
+    	removeTestCA();
     }
 
     //

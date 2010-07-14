@@ -15,9 +15,8 @@ package org.ejbca.ui.cli.batch;
 
 import java.io.File;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.TestTools;
@@ -27,10 +26,10 @@ import org.ejbca.util.TestTools;
  * @version $Id$
  */
 
-public class BatchMakeP12Test extends TestCase {
+public class BatchMakeP12Test extends CaTestCase {
     private static final Logger log = Logger.getLogger(BatchMakeP12Test.class);
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-    private static final int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
 
     /**
      * Creates a new TestBatchMakeP12 object.
@@ -39,13 +38,13 @@ public class BatchMakeP12Test extends TestCase {
      */
     public BatchMakeP12Test(String name) {
         super(name);
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -55,7 +54,7 @@ public class BatchMakeP12Test extends TestCase {
      */
     public void test01CreateNewUsers() throws Exception {
         log.trace(">test01CreateNewUser()");
-        String username = TestTools.genRandomUserName();
+        String username = genRandomUserName();
         Object o = null;
         try {
             TestTools.getUserAdminSession().addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN=" + username, "", username + "@anatom.se", false,
@@ -69,7 +68,7 @@ public class BatchMakeP12Test extends TestCase {
 
         log.debug("created " + username + ", pwd=foo123");
 
-        String username1 = TestTools.genRandomUserName();
+        String username1 = genRandomUserName();
         o = null;
         try {
         	TestTools.getUserAdminSession().addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
@@ -102,6 +101,6 @@ public class BatchMakeP12Test extends TestCase {
     }
     
 	public void test99RemoveTestCA() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

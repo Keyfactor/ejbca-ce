@@ -17,9 +17,8 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
@@ -35,7 +34,7 @@ import org.ejbca.util.TestTools;
  *
  * @version $Id$
  */
-public class HardTokenTest extends TestCase {
+public class HardTokenTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(HardTokenTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
@@ -63,13 +62,13 @@ public class HardTokenTest extends TestCase {
     public HardTokenTest(String name) {
         super(name);
         CertTools.installBCProvider();
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -160,7 +159,7 @@ public class HardTokenTest extends TestCase {
         log.trace(">test04EncryptHardToken()");
 
         GlobalConfiguration gc = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
-        gc.setHardTokenEncryptCA(TestTools.getTestCAId());
+        gc.setHardTokenEncryptCA(getTestCAId());
         TestTools.getRaAdminSession().saveGlobalConfiguration(admin, gc);
         boolean ret = false;
 
@@ -214,6 +213,6 @@ public class HardTokenTest extends TestCase {
     }
    
 	public void test99RemoveTestCA() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

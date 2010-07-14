@@ -47,7 +47,7 @@ public class HardTokenIssuerTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         if (cacheAdmin == null) {
             if (cacheHome == null) {
@@ -61,7 +61,7 @@ public class HardTokenIssuerTest extends TestCase {
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {

@@ -53,7 +53,7 @@ public class ApprovalTest extends TestCase {
             + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ"
             + "QUOBOvc=").getBytes());
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		super.setUp();
 		CertTools.installBCProvider();
 	}

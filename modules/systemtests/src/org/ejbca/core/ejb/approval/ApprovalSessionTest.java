@@ -7,10 +7,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -30,7 +29,7 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 
-public class ApprovalSessionTest extends TestCase {
+public class ApprovalSessionTest extends CaTestCase {
     
     private static Logger log = Logger.getLogger(ApprovalSessionTest.class);
     
@@ -46,7 +45,7 @@ public class ApprovalSessionTest extends TestCase {
     private static Admin admin1 = null;
     private static Admin admin2 = null;
     
-    private static int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
     private static ArrayList adminentities;
 	private static GlobalConfiguration gc = null;
     
@@ -55,14 +54,14 @@ public class ApprovalSessionTest extends TestCase {
     public ApprovalSessionTest(String name) {
         super(name);
         CertTools.installBCProvider();
-        TestTools.createTestCA();
+        createTestCA();
     }
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		super.setUp();
 		
 		if (adminusername1 == null) {
-			adminusername1 = TestTools.genRandomUserName();
+			adminusername1 = genRandomUserName();
 			adminusername2 = adminusername1 + "2";
 			reqadminusername = "req" + adminusername1;
 			
@@ -106,7 +105,7 @@ public class ApprovalSessionTest extends TestCase {
 		}
 	}
 
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		super.tearDown();
 	}
 
@@ -484,6 +483,6 @@ public class ApprovalSessionTest extends TestCase {
 		TestTools.getUserAdminSession().deleteUser(intadmin, adminusername2);
 		TestTools.getUserAdminSession().deleteUser(intadmin, reqadminusername);
 		TestTools.getAuthorizationSession().removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);					
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }
