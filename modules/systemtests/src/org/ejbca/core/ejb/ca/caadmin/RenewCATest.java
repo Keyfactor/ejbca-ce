@@ -16,9 +16,8 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.TestTools;
@@ -28,7 +27,7 @@ import org.ejbca.util.TestTools;
  *
  * @version $Id$
  */
-public class RenewCATest extends TestCase {
+public class RenewCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(RenewCATest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -39,13 +38,13 @@ public class RenewCATest extends TestCase {
      */
     public RenewCATest(String name) {
         super(name);
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -82,6 +81,6 @@ public class RenewCATest extends TestCase {
     }
 
 	public void test99RemoveTestCA() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

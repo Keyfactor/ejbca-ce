@@ -21,9 +21,8 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
@@ -47,7 +46,7 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @version $Id$
  */
-public class AddLotsofCertsPerUserTest extends TestCase {
+public class AddLotsofCertsPerUserTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AddLotsofCertsPerUserTest.class);
 
     private IUserAdminSessionRemote userAdminSession = TestTools.getUserAdminSession();
@@ -68,27 +67,17 @@ public class AddLotsofCertsPerUserTest extends TestCase {
         keys = KeyTools.genKeys("2048", "RSA");
     }
 
-    protected void setUp() throws Exception {
-        TestTools.createTestCA();
+    public void setUp() throws Exception {
+        createTestCA();
     }
 
-    protected void tearDown() throws Exception {
-        TestTools.removeTestCA();
+    public void tearDown() throws Exception {
+        removeTestCA();
     }
 
     private String genUserName(String baseUsername) {
         userNo++;
         return baseUsername + userNo;
-    }
-
-    private String genRandomPwd() throws Exception {
-        Random rand = new Random(new Date().getTime() + 4812);
-        String password = "";
-        for (int i = 0; i < 8; i++) {
-            int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
-        }
-        return password;
     }
 
     /**
@@ -122,7 +111,7 @@ public class AddLotsofCertsPerUserTest extends TestCase {
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-        	UserDataVO userdata = new UserDataVO(username, CertTools.stringToBCDNString(dn), TestTools.getTestCAId(), subjectaltname, 
+        	UserDataVO userdata = new UserDataVO(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname, 
         			email, UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid,
         			null,null, token, hardtokenissuerid, null);
         	userdata.setPassword(password);

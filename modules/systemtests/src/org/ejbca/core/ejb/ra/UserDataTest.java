@@ -16,9 +16,8 @@ package org.ejbca.core.ejb.ra;
 import java.util.Collection;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -35,11 +34,11 @@ import org.ejbca.util.dn.DnComponents;
  *
  * @version $Id$
  */
-public class UserDataTest extends TestCase {
+public class UserDataTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserDataTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-    private static final int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
 
     private static String username;
     private static String username1;
@@ -54,13 +53,13 @@ public class UserDataTest extends TestCase {
      */
     public UserDataTest(String name) {
         super(name);
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     public void test00SetEnableEndEntityProfileLimitations() throws Exception {
@@ -75,8 +74,8 @@ public class UserDataTest extends TestCase {
     
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
-        username = TestTools.genRandomUserName();
-        pwd = TestTools.genRandomPwd();
+        username = genRandomUserName();
+        pwd = genRandomPwd();
         TestTools.getUserAdminSession().addUser(admin,username,pwd,"C=SE,O=AnaTom,CN="+username,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it!");
         log.trace("<test01CreateNewUser()");
@@ -159,8 +158,8 @@ public class UserDataTest extends TestCase {
 
     public void test04CreateNewUser() throws Exception {
         log.trace(">test04CreateNewUser()");
-        username1 = TestTools.genRandomUserName();
-        pwd1 = TestTools.genRandomPwd();
+        username1 = genRandomUserName();
+        pwd1 = genRandomPwd();
         TestTools.getUserAdminSession().addUser(admin,username1,pwd1,"C=SE,O=AnaTom,CN="+username1,null,null,false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_INVALID,SecConst.TOKEN_SOFT_PEM,0,caid);
         log.debug("created it again!");
         log.trace("<test04CreateNewUser()");
@@ -458,7 +457,7 @@ public class UserDataTest extends TestCase {
         } catch (Exception e) { /* ignore */ }
 
         // Delete any Test CA we created
-        TestTools.removeTestCA();
+        removeTestCA();
         log.trace("<test99CleanUp()");
     }
 }

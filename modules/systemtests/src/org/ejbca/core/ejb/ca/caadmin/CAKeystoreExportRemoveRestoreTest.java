@@ -56,7 +56,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase  {
      *
      * @throws Exception
      */
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
     
     /**
@@ -64,7 +64,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase  {
      *
      * @throws Exception
      */
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
     
     /**

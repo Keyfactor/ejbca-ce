@@ -108,7 +108,7 @@ public class CertificateRetrivalTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         CertTools.installBCProvider();
         ICertificateStoreSessionRemote certificateStoreSession = TestTools.getCertificateStoreSession();
@@ -164,7 +164,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**

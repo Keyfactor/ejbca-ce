@@ -101,7 +101,7 @@ public class XKMSKISSTest extends TestCase {
 	private static String dn2;
 	private static String dn3;
 	
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         CertTools.installBCProvider();
         Random ran = new Random();
@@ -111,7 +111,7 @@ public class XKMSKISSTest extends TestCase {
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
     
     public void test00SetupDatabase() throws Exception{

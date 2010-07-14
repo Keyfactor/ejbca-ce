@@ -33,8 +33,6 @@ import java.util.Vector;
 
 import javax.ejb.DuplicateKeyException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DEROctetString;
@@ -50,6 +48,7 @@ import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
@@ -85,7 +84,7 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @version $Id$
  */
-public class SignSessionTest extends TestCase {
+public class SignSessionTest extends CaTestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDY+ATE4ZB0oKfmXStu8J+do0GhTag6rOGtoydI" +
             "eNX9DdytlsmXDyONKl8746478/3HXdx9rA0RevUizKSataMpDsb3TjprRjzBTvYPZSIfzko6s8g6" +
@@ -209,7 +208,7 @@ public class SignSessionTest extends TestCase {
         	dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
         }
         // Add this again since it will be removed by the other tests in the batch..
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
         CAInfo inforsa = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
@@ -261,10 +260,10 @@ public class SignSessionTest extends TestCase {
         dsacacert = (X509Certificate)objs[0];
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -1944,7 +1943,7 @@ public class SignSessionTest extends TestCase {
         TestTools.getCAAdminSession().editCA(admin, cainfo);
 
         // New random username and create cert
-    	String username = TestTools.genRandomUserName();
+    	String username = genRandomUserName();
         TestTools.getUserAdminSession().addUser(admin,username,"foo123","C=SE,O=AnaTom,CN="+username,null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
         X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
@@ -1959,7 +1958,7 @@ public class SignSessionTest extends TestCase {
         cainfo.setUseCertReqHistory(false);
         TestTools.getCAAdminSession().editCA(admin, cainfo);
     	// New random username and create cert
-    	username = TestTools.genRandomUserName();
+    	username = genRandomUserName();
         TestTools.getUserAdminSession().addUser(admin,username,"foo123","C=SE,O=AnaTom,CN="+username,null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
         cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
@@ -2019,7 +2018,7 @@ public class SignSessionTest extends TestCase {
         	log.debug("deleted user: foodsa, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */ }
 
-		TestTools.removeTestCA();
+		removeTestCA();
         log.trace("<test99CleanUp()");
     }
 

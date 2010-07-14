@@ -13,9 +13,8 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.TestTools;
@@ -25,7 +24,7 @@ import org.ejbca.util.TestTools;
  *
  * @version $Id$
  */
-public class RemoveCATest extends TestCase {
+public class RemoveCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -38,10 +37,10 @@ public class RemoveCATest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -51,7 +50,7 @@ public class RemoveCATest extends TestCase {
      */
     public void test02removeRSACA() throws Exception {
         log.trace(">test02removeRSACA()");
-        assertTrue("Removing RSA CA failed", TestTools.removeTestCA("TEST"));
+        assertTrue("Removing RSA CA failed", removeTestCA("TEST"));
         log.trace("<test02removeRSACA()");
     }
 

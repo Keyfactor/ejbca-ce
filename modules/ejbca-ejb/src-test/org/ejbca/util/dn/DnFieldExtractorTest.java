@@ -36,12 +36,12 @@ public class DnFieldExtractorTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         log.trace(">tearDown()");
         log.trace("<tearDown()");
     }

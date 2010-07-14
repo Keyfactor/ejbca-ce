@@ -24,8 +24,8 @@ public class SimpleTimeTest extends TestCase {
     
     public SimpleTimeTest(String name) { super(name); }
 
-    protected void setUp() throws Exception { }
-    protected void tearDown() throws Exception { }
+    public void setUp() throws Exception { }
+    public void tearDown() throws Exception { }
 
     /**
      * Test parsing without default value.

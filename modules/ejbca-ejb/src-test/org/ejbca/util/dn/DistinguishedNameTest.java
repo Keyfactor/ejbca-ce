@@ -39,13 +39,13 @@ public class DistinguishedNameTest extends TestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         otherDn = new DistinguishedName(OTHER_DN);
         otherSubjectAltName = new DistinguishedName(OTHER_SUBJECT_ALT_NAME);
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 

@@ -39,7 +39,6 @@ import java.util.Hashtable;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.ObjectNotFoundException;
 
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -62,6 +61,7 @@ import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -98,7 +98,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 
 /** Tests http pages of ocsp
  **/
-public class ProtocolOcspHttpTest extends TestCase {
+public class ProtocolOcspHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
     protected final String httpReqPath;
@@ -117,7 +117,7 @@ public class ProtocolOcspHttpTest extends TestCase {
             "nTiIOfQIP9eD/nhIIo7n4JOaTUeqgyafPsEgKdTiZfSdXjvy6rj5GiZ3DaGZ9SNK" +
             "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
-    protected static int caid = TestTools.getTestCAId();
+    protected int caid = getTestCAId();
     protected static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     protected static X509Certificate cacert = null;
     protected static X509Certificate ocspTestCert = null;
@@ -159,16 +159,16 @@ public class ProtocolOcspHttpTest extends TestCase {
         unknowncacert = (X509Certificate)CertTools.getCertfromByteArray(unknowncacertBytes);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     public void test00Setup() throws Exception {
     	assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
-        assertTrue("Failed to create test CA.", TestTools.createTestCA());
-        cacert = (X509Certificate) TestTools.getTestCACert();
+        assertTrue("Failed to create test CA.", createTestCA());
+        cacert = (X509Certificate) getTestCACert();
     }
     
     public void test01Access() throws Exception {
@@ -949,7 +949,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 
     public void testZZZTearDown() throws Exception {
     	assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
-        TestTools.removeTestCA();
+        removeTestCA();
     }
 
     //

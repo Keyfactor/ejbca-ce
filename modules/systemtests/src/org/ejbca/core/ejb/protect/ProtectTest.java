@@ -60,7 +60,7 @@ public class ProtectTest extends TestCase {
         CertTools.installBCProvider();
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         TestTools.getConfigurationSession().updateProperty(ProtectConfiguration.CONFIG_PROTECTIONENABLED, "true");
         if (entrys == null) {
@@ -69,7 +69,7 @@ public class ProtectTest extends TestCase {
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     	TestTools.getConfigurationSession().restoreConfiguration();
     }
 

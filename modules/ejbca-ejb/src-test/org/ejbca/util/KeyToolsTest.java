@@ -145,12 +145,12 @@ public class KeyToolsTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     public void test01GetCertChain() throws Exception {

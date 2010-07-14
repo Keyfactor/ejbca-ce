@@ -17,9 +17,8 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -34,11 +33,11 @@ import org.ejbca.util.TestTools;
  *
  * @version $Id$
  */
-public class UserPasswordExpireTest extends TestCase {
+public class UserPasswordExpireTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserPasswordExpireTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-    private static final int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
 
     private static String username;
     private static String pwd;
@@ -50,40 +49,14 @@ public class UserPasswordExpireTest extends TestCase {
      */
     public UserPasswordExpireTest(String name) {
         super(name);
-        assertTrue("Could not create TestCA.", TestTools.createTestCA());
+        assertTrue("Could not create TestCA.", createTestCA());
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
-
-    private String genRandomUserName() throws Exception {
-        // Gen random user
-        Random rand = new Random(new Date().getTime() + 4711);
-        String username = "";
-        for (int i = 0; i < 6; i++) {
-            int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random username: username =" + username);
-        return username;
-    } // genRandomUserName
-
-    private String genRandomPwd() throws Exception {
-        // Gen random pwd
-        Random rand = new Random(new Date().getTime() + 4812);
-        String password = "";
-
-        for (int i = 0; i < 8; i++) {
-            int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
-        }
-        log.debug("Generated random pwd: password=" + password);
-        return password;
-    } // genRandomPwd
-
 
     /** Add a new user and an expire service. Test that the service expires the users password
      *
@@ -159,7 +132,7 @@ public class UserPasswordExpireTest extends TestCase {
         log.debug("Removed user: "+username);
         TestTools.getServiceSession().removeService(admin, "TestUserPasswordService");
         log.debug("Removed service: TestUserPasswordService");
-        TestTools.removeTestCA();
+        removeTestCA();
         log.debug("Removed test CA");
         log.trace("<test99CleanUp()");
     }

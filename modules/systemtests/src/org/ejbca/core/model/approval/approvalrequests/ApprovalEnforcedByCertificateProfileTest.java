@@ -27,9 +27,8 @@ import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
@@ -59,7 +58,7 @@ import org.ejbca.util.keystore.KeyTools;
  * @author Markus Kilås
  * @version $Id$
  */
-public class ApprovalEnforcedByCertificateProfileTest extends TestCase {
+public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 	
 	private static final Logger log = Logger.getLogger(ApprovalEnforcedByCertificateProfileTest.class);
 
@@ -79,7 +78,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends TestCase {
     private static int certProfileIdActivateCATokensApprovals;
     private static int certProfileIdAllApprovals;
     
-    private static int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
     private static int approvalCAID;
     private static int anotherCAID1;
     private static int anotherCAID2;
@@ -91,14 +90,14 @@ public class ApprovalEnforcedByCertificateProfileTest extends TestCase {
     private static Collection createdUsers = new LinkedList();
 
 	@Override
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		super.setUp();
 		CryptoProviderTools.installBCProvider();
 	}
     
 	public void test00SetupDatabase() throws Exception {
 		log.info("test00SetupDatabase");
-		TestTools.createTestCA();
+		createTestCA();
 		
 		// Create admin end entity
 		adminUsername = genRandomUserName("approvalEnforcedTestAdmin");

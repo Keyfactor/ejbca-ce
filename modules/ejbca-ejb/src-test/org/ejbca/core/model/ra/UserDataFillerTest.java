@@ -29,7 +29,7 @@ public class UserDataFillerTest extends TestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();  
         userData = new UserDataVO("userName","CN=userName,O=linagora",-1688117755,"",
         		"user@linagora.com",1,3,1,2,0,new ExtendedInformation());
@@ -53,7 +53,7 @@ public class UserDataFillerTest extends TestCase {
         profile.setValue(DnComponents.ORGANIZATION, 0, "linagora");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
     /**

@@ -64,10 +64,10 @@ public class PublisherQueueProcessTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /** Add a new entry to the publisher queue and let the process service run, with no publisher.

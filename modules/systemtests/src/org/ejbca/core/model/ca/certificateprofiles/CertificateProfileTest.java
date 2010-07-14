@@ -50,10 +50,10 @@ public class CertificateProfileTest extends TestCase {
         certificateStoreSession = TestTools.getCertificateStoreSession();
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     /**

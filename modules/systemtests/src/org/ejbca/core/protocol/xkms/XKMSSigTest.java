@@ -112,7 +112,7 @@ public class XKMSSigTest extends TestCase {
 
 	}
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()"); 
     	caid = CertTools.stringToBCDNString("CN=AdminCA1,O=EJBCA Sample,C=SE").hashCode();
         Random ran = new Random();
@@ -122,7 +122,7 @@ public class XKMSSigTest extends TestCase {
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     

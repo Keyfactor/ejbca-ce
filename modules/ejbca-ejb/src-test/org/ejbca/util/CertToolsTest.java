@@ -614,13 +614,13 @@ public class CertToolsTest extends TestCase {
 		super(name);
 	}
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		log.trace(">setUp()");
 		CryptoProviderTools.installBCProvider();
 		log.trace("<setUp()");
 	}
 
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 	}
 
 	/**

@@ -25,9 +25,8 @@ import java.util.Set;
 
 import javax.ejb.DuplicateKeyException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -45,7 +44,7 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @version $Id$
  */
-public class DeltaCRLTest extends TestCase {
+public class DeltaCRLTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(DeltaCRLTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -64,19 +63,19 @@ public class DeltaCRLTest extends TestCase {
         super(name);
         CryptoProviderTools.installBCProvider();
         keys = genKeys();
-        TestTools.createTestCA();
+        createTestCA();
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         // Use Test CA created before
-        caid = TestTools.getTestCAId();
+        caid = getTestCAId();
         ca = TestTools.getCAAdminSession().getCA(admin, caid);
         assertNotNull("CA TEST not active. You must run TestCAs before this test", ca.getSubjectDN());
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception { }
+    public void tearDown() throws Exception { }
 
     public void test01CreateNewDeltaCRL() throws Exception {
         log.trace(">test01CreateNewCRL()");
@@ -295,7 +294,7 @@ public class DeltaCRLTest extends TestCase {
     }
 
     public void test99RemoveTestCA() throws Exception {
-    	TestTools.removeTestCA();    	
+    	removeTestCA();    	
     }
     
     // 

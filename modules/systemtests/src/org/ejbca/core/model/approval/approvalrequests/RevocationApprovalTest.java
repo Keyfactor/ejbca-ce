@@ -21,10 +21,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
@@ -53,7 +52,7 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 
-public class RevocationApprovalTest extends TestCase {
+public class RevocationApprovalTest extends CaTestCase {
 
     private static IApprovalSessionRemote approvalSession = TestTools.getApprovalSession();
     private static IAuthorizationSessionRemote authorizationSession = TestTools.getAuthorizationSession();
@@ -69,16 +68,16 @@ public class RevocationApprovalTest extends TestCase {
     private static Admin approvingAdmin = null;
     private static ArrayList adminentities;
     
-    private static int caid = TestTools.getTestCAId();
+    private int caid = getTestCAId();
     private int approvalCAID;
 
     public RevocationApprovalTest(String name) {
         super(name);
         CryptoProviderTools.installBCProvider();
-        TestTools.createTestCA();
+        createTestCA();
     }
     
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		super.setUp();
 		adminUsername = genRandomUserName("revocationTestAdmin");
 		requestingAdminUsername = genRandomUserName("revocationTestRequestingAdmin");
@@ -108,7 +107,7 @@ public class RevocationApprovalTest extends TestCase {
 		approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession);
 	}
 	
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		super.tearDown();
 		userAdminSession.deleteUser(internalAdmin, adminUsername);
 		userAdminSession.deleteUser(internalAdmin, requestingAdminUsername);
@@ -316,6 +315,6 @@ public class RevocationApprovalTest extends TestCase {
 	} // test04RevokeAndUnrevokeCertificateOnHold
 
 	public void testZZZCleanUp() throws Exception {
-		TestTools.removeTestCA();
+		removeTestCA();
 	}
 }

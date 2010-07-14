@@ -125,7 +125,7 @@ public class AutoEnrollServletTest extends TestCase {
 
 	boolean installedBCProvider = false;
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		log.trace(">setUp");
 		if (!installedBCProvider) {
 			CertTools.installBCProvider();
@@ -150,7 +150,7 @@ public class AutoEnrollServletTest extends TestCase {
 		log.trace("<setUp");
 	}
 
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		log.trace(">tearDown");
 		log.trace("<tearDown");
 	}

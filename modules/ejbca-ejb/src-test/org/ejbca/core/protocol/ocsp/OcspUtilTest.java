@@ -54,7 +54,7 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class OcspUtilTest extends TestCase {
 	
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		CryptoProviderTools.installBCProvider();
 	}
 

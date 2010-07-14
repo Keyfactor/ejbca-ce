@@ -24,9 +24,8 @@ import java.util.Date;
 
 import javax.ejb.DuplicateKeyException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
@@ -42,12 +41,12 @@ import org.ejbca.util.keystore.KeyTools;
  * 
  * @version $Id$
  */
-public class SignLotsOfCertsTest extends TestCase {
+public class SignLotsOfCertsTest extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(SignLotsOfCertsTest.class);
 
     private static final String CANAME = "TESTPERF1";
-    private static final int caid = TestTools.getTestCAId(CANAME);
+    private int caid = getTestCAId(CANAME);
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
     public static KeyPair keys;
@@ -62,7 +61,7 @@ public class SignLotsOfCertsTest extends TestCase {
         CertTools.installBCProvider();	// Install BouncyCastle provider
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         if (keys == null) {
             keys = KeyTools.genKeys("1024", "RSA");
@@ -70,7 +69,7 @@ public class SignLotsOfCertsTest extends TestCase {
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     private void newUser(String post) throws Exception {
@@ -103,8 +102,8 @@ public class SignLotsOfCertsTest extends TestCase {
     }
     
     public void test00AddRSACA() throws Exception {
-        TestTools.getAuthorizationSession().initialize(admin, TestTools.getTestCAId(CANAME), TestTools.defaultSuperAdminCN);
-        TestTools.createTestCA(CANAME, 2048);
+        TestTools.getAuthorizationSession().initialize(admin, getTestCAId(CANAME), TestTools.defaultSuperAdminCN);
+        createTestCA(CANAME, 2048);
         CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, CANAME);
         X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
         assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN="+CANAME));
@@ -203,7 +202,7 @@ public class SignLotsOfCertsTest extends TestCase {
     }
     
     public void testZZZCleanUp() throws Exception {
-    	TestTools.removeTestCA(CANAME);
+    	removeTestCA(CANAME);
         deleteUser("no1");
         deleteUser("no2");
         deleteUser("no3");

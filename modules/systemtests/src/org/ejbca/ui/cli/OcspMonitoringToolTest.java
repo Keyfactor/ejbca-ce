@@ -35,7 +35,7 @@ public class OcspMonitoringToolTest extends TestCase {
 	
 	private final EntityManager ocspEntityManager = Persistence.createEntityManagerFactory("ocsp1").createEntityManager();
 
-	protected void setUp() throws Exception { }
+	public void setUp() throws Exception { }
 
 	String[] args = {"ocspmon", "all", "1000", "60", "1", "9", "-", "ca", "ocsp1"};
 

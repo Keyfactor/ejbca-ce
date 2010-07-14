@@ -16,9 +16,8 @@ package org.ejbca.core.ejb.ra;
 import java.util.Date;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
@@ -29,7 +28,7 @@ import org.ejbca.util.TestTools;
  *
  * @version $Id$
  */
-public class AddLotsofUsersTest extends TestCase {
+public class AddLotsofUsersTest extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(AddLotsofUsersTest.class);
 
@@ -42,12 +41,12 @@ public class AddLotsofUsersTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
-        TestTools.createTestCA();
+    public void setUp() throws Exception {
+        createTestCA();
     }
 
-    protected void tearDown() throws Exception {
-        TestTools.removeTestCA();
+    public void tearDown() throws Exception {
+        removeTestCA();
     }
 
     /**
@@ -56,20 +55,6 @@ public class AddLotsofUsersTest extends TestCase {
     private String genUserName(String baseUsername) throws Exception {
         userNo++;
         return baseUsername + userNo;
-    }
-
-    /**
-     * Generate a new random password
-     */
-    private String genRandomPwd() throws Exception {
-        Random rand = new Random(new Date().getTime() + 4812);
-        String password = "";
-        for (int i = 0; i < 8; i++) {
-            int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
-        }
-        //log.debug("Generated random pwd: password=" + password);
-        return password;
     }
 
     /**
@@ -96,7 +81,7 @@ public class AddLotsofUsersTest extends TestCase {
                 log.warn("User already exists in the database.");
             } else {
             	TestTools.getUserAdminSession().addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
-                        type, token, hardtokenissuerid, TestTools.getTestCAId());
+                        type, token, hardtokenissuerid, getTestCAId());
             }
             TestTools.getUserAdminSession().setClearTextPassword(administrator, username, pwd);
             if (i % 100 == 0) {

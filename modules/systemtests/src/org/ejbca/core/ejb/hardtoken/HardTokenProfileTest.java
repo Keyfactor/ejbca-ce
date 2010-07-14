@@ -55,7 +55,7 @@ public class HardTokenProfileTest extends TestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         log.trace(">setUp()");
         CertTools.installBCProvider();
         if (cacheAdmin == null) {
@@ -70,7 +70,7 @@ public class HardTokenProfileTest extends TestCase {
         log.trace("<setUp()");
     }
 
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {

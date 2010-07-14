@@ -50,10 +50,10 @@ public class UserDataSourceTest extends TestCase {
         CertTools.installBCProvider();
     }
     
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
     }
     
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
     }
     
     /**
