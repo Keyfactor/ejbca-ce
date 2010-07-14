@@ -29,5 +29,6 @@
   <field-name>event</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>logComment</field-name>
+  <field-name>comment</field-name>
+  <column-name>logComment</column-name>
 </cmp-field>
