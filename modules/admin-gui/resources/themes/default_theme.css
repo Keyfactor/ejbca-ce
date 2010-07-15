@@ -149,7 +149,7 @@ body#menu {
 	border-color: #E77;
 	color: #A00;
 	box-shadow: .15em .15em .45em rgba(0,0,0,.2);
-	-o-box-shadow: .15em .15em .45em rgba(0,0,0,.2);
+	-o-box-shadow: .15em .15em .45em #BBB;
 	-moz-box-shadow: .15em .15em .45em rgba(0,0,0,.2);
 	-khtml-box-shadow: .15em .15em .45em #BBB;
 	-webkit-box-shadow: .15em .15em .45em rgba(0,0,0,.2);

@@ -471,9 +471,9 @@ function viewcert(row){
     <td width="18%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
     <td width="7%">
     <%	if (logentries[i].getValue(LogEntryView.VERIFY).equalsIgnoreCase("VERIFY_SUCCESS")) { %>
-	    	<img hight="14" width="14" src="<%= ejbcawebbean.getImagefileInfix("true.png") %>" border="0"> (<%= logentries[i].getValue(LogEntryView.VERIFY) %>)
+	    	<img hight="14" width="14" src="<%= ejbcawebbean.getImagefileInfix("verify-log-success.png") %>" border="0"> (<%= logentries[i].getValue(LogEntryView.VERIFY) %>)
 	<%	} else {	%>
-	    	<img hight="14" width="14" src="<%= ejbcawebbean.getImagefileInfix("false.png") %>" border="0"> (<%= logentries[i].getValue(LogEntryView.VERIFY) %>)
+	    	<img hight="14" width="14" src="<%= ejbcawebbean.getImagefileInfix("verify-log-failed.png") %>" border="0"> (<%= logentries[i].getValue(LogEntryView.VERIFY) %>)
 	<%	} %>
     </td>
   </tr>
