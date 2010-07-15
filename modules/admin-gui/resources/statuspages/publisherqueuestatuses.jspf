@@ -14,7 +14,7 @@
 		<%	if(ejbcawebbean.getAdminPreference().getFrontpagePublisherQueueStatus()) { %>
 			<tr>
 				<th style="text-align:left;"><%=ejbcawebbean.getText("PUBLISHER")%></th>
-				<th><%=ejbcawebbean.getText("QUEUELENGTH")%></th>
+				<th><abbr title="<%=ejbcawebbean.getText("QUEUELENGTH")%>"><%=ejbcawebbean.getText("QUEUELENGTH_ABBR")%></abbr></th>
 			</tr>
 		<%  if(!iter.hasNext()) { %>
 				<tr class="a">

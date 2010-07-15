@@ -54,7 +54,7 @@
 	    			<h:outputText value="#{item.status}"></h:outputText>
 	    			</td>
 	    			<td align="right">
-	    			<h:graphicImage height="14" width="14" url="#{item.statusImg}" style="border-width:0"/>
+	    			<h:graphicImage height="16" width="16" url="#{item.statusImg}" style="border-width:0"/>
 	    			</td>
 	    			</tr>
 	    			</table>
@@ -69,7 +69,7 @@
 	    			<h:outputText value="#{item.tokenStatus}"></h:outputText>
 	    			</td>
 	    			<td align="right">
-	    			<h:graphicImage height="14" width="14" url="#{item.tokenStatusImg}" style="border-width:0"/>
+	    			<h:graphicImage height="16" width="16" url="#{item.tokenStatusImg}" style="border-width:0"/>
 	    			</td>
 	    			</tr>
 	    			</table>

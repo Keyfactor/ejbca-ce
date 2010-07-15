@@ -15,7 +15,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>">
 </head>
 <body>
-<H5><DIV align=right><i><%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION%></i>
+<H5><DIV align=right><%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION%>
 <%	if ( ejbcawebbean.isUsingExportableCryptography() ) { %>
 	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("EXPORTABLE") %></div>
 <%	} %>
@@ -24,11 +24,11 @@
 	</noscript>
 </div></H5> 
 
-<H3><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%> </H3> 
-<div align=left><i><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "+ejbcawebbean.getHostName()%></i></div> 
-<div align=left><i><%= ejbcawebbean.getText("SERVERTIME") + " : "+ejbcawebbean.getServerTime()%></i></div>
-
-<p>&nbsp;</p>
+<h3 id="welcome"><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%></h3> 
+<div id="information">
+	<div><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "%><code><%= ejbcawebbean.getHostName()%></code></div> 
+	<div><%= ejbcawebbean.getText("SERVERTIME") + " : "%><code><%= ejbcawebbean.getServerTime()%></code></div>
+</div>
 
 <div id="projecthome" class="app">
    <table width="50%" align="top">

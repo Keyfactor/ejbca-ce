@@ -73,9 +73,9 @@ public class CAWrapper implements Serializable {
 	public String getStatusImg() {
 		caStatus = cainfo.getStatus();
 		if(caStatus == SecConst.CA_ACTIVE) {
-			return webBean.getImagefileInfix("true.png");
+			return webBean.getImagefileInfix("status-ca-active.png");
 		}		
-		return webBean.getImagefileInfix("false.png");
+		return webBean.getImagefileInfix("status-ca-offline.png");
 	}
 
 	public String getName() {
@@ -178,9 +178,9 @@ public class CAWrapper implements Serializable {
 	public String getTokenStatusImg() {
 		tokenStatus = cainfo.getCATokenInfo().getCATokenStatus();
 		if (tokenStatus == ICAToken.STATUS_OFFLINE) {
-			return webBean.getImagefileInfix("false.png");
+			return webBean.getImagefileInfix("status-ca-offline.png");
 		}		
-		return webBean.getImagefileInfix("true.png");
+		return webBean.getImagefileInfix("status-ca-active.png");
 	}
 	
 	public boolean getMonitored() {

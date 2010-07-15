@@ -149,7 +149,7 @@ body#menu {
 	-khtml-border-radius: 1em;
 	-webkit-border-radius: 1em;
 	box-shadow: .15em .15em .45em rgba(0,0,0,.1);
-	-o-box-shadow: .15em .15em .45em rgba(0,0,0,.1);
+	-o-box-shadow: .15em .15em .45em #DDD;
 	-moz-box-shadow: .15em .15em .45em rgba(0,0,0,.1);
 	-khtml-box-shadow: .15em .15em .45em #DDD;
 	-webkit-box-shadow: .15em .15em .45em rgba(0,0,0,.1);

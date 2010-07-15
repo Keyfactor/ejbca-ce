@@ -46,28 +46,24 @@
 								<td><%=name %></td>
 								<td style="text-align:center;">
 									<% if (caservice) { %>
-									<img src="<%=ejbcawebbean.getImagefileInfix("true.png")%>"
+									<img src="<%=ejbcawebbean.getImagefileInfix("status-ca-active.png")%>"
 										alt="<%=ejbcawebbean.getText("CASERVICE_ON")%>"
-										title="<%=ejbcawebbean.getText("CASERVICE_ON_TITLE")%>"
-										width="14" height="14" style="border-width:0;" />
+										title="<%=ejbcawebbean.getText("CASERVICE_ON_TITLE")%>" />
 									<% } else { %>
-									<img src="<%=ejbcawebbean.getImagefileInfix("false.png")%>"
+									<img src="<%=ejbcawebbean.getImagefileInfix("status-ca-offline.png")%>"
 										alt="<%=ejbcawebbean.getText("CASERVICE_OFF")%>"
-										title="<%=ejbcawebbean.getText("CASERVICE_OFF_TITLE")%>"
-										width="14" height="14" style="border-width:0;" />
+										title="<%=ejbcawebbean.getText("CASERVICE_OFF_TITLE")%>" />
 									<% } %>
 								</td>
 								<td style="text-align:center;">
 									<% if (crlstatus) { %>
-									<img src="<%=ejbcawebbean.getImagefileInfix("true.png")%>"
+									<img src="<%=ejbcawebbean.getImagefileInfix("status-crl-uptodate.png")%>"
 										alt="<%=ejbcawebbean.getText("CRLSTATUS_ON")%>"
-										title="<%=ejbcawebbean.getText("CRLSTATUS_ON_TITLE")%>"
-										width="14" height="14" style="border-width:0;" />
+										title="<%=ejbcawebbean.getText("CRLSTATUS_ON_TITLE")%>" />
 									<% } else { %>
-									<img src="<%=ejbcawebbean.getImagefileInfix("false.png")%>"
+									<img src="<%=ejbcawebbean.getImagefileInfix("status-crl-expired.png")%>"
 										alt="<%=ejbcawebbean.getText("CRLSTATUS_OFF")%>"
-										title="<%=ejbcawebbean.getText("CRLSTATUS_OFF_TITLE")%>"
-										width="14" height="14" style="border-width:0;" />
+										title="<%=ejbcawebbean.getText("CRLSTATUS_OFF_TITLE")%>" />
 									<% } %>
 								</td>
 							</tr>
