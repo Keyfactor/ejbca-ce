@@ -40,8 +40,7 @@ public interface ApprovalSession {
      * @throws ApprovalException
      *             if an approval already exists for this request.
      */
-    public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest,
-            GlobalConfiguration gc) throws ApprovalException;
+    public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException;
 
     /**
      * Method used to approve an approval requests. It does the follwing 1.
@@ -68,10 +67,8 @@ public interface ApprovalSession {
      * @throws AdminAlreadyApprovedRequestException
      * @throws EjbcaException
      */
-    public void approve(Admin admin, int approvalId, Approval approval,
-            GlobalConfiguration gc) throws ApprovalRequestExpiredException,
-            ApprovalRequestExecutionException, AuthorizationDeniedException,
-            AdminAlreadyApprovedRequestException, EjbcaException;
+    public void approve(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException;
 
     /**
      * Method that goes through exists approvals in database to see if there
@@ -93,8 +90,7 @@ public interface ApprovalSession {
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
      */
-    public int isApproved(Admin admin, int approvalId, int step) throws ApprovalException,
-            ApprovalRequestExpiredException;
+    public int isApproved(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method that goes through exists approvals in database to see if there
@@ -117,8 +113,7 @@ public interface ApprovalSession {
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
      */
-    public int isApproved(Admin admin, int approvalId) throws ApprovalException,
-            ApprovalRequestExpiredException;
+    public int isApproved(Admin admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method that marks a certain step of a a non-executable approval as done.
@@ -167,10 +162,53 @@ public interface ApprovalSession {
      * @throws ApprovalException
      * @throws AdminAlreadyApprovedRequestException
      */
-    public void reject(Admin admin, int approvalId, Approval approval,
-            GlobalConfiguration gc) throws ApprovalRequestExpiredException,
-            AuthorizationDeniedException, ApprovalException,
-            AdminAlreadyApprovedRequestException;
-    
-    
+    public void reject(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+            AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException;
+
+    /**
+     * Method returning an approval requests with status 'waiting', 'Approved'
+     * or 'Reject' returns null if no non expired exists
+     */
+    public org.ejbca.core.model.approval.ApprovalDataVO findNonExpiredApprovalRequest(org.ejbca.core.model.log.Admin admin, int approvalId);
+
+    /**
+     * Method that takes an approvalId and returns all aprovalrequests for this.
+     * 
+     * @param admin
+     * @param approvalId
+     * @return and collection of ApprovalDataVO, empty if no approvals exists.
+     */
+    public java.util.Collection findApprovalDataVO(org.ejbca.core.model.log.Admin admin, int approvalId);
+
+    /**
+     * Method returning a list of approvals from the give query
+     * 
+     * @param admin
+     * @param query
+     *            should be a Query object containing ApprovalMatch and
+     *            TimeMatch
+     * @param index
+     *            where the resultset should start.
+     * @param caAuthorizationString
+     *            a list of auhtorized CA Ids in the form 'cAId=... OR cAId=...'
+     * @param endEntityProfileAuthorizationString
+     *            a list of authorized end entity profile ids in the form
+     *            '(endEntityProfileId=... OR endEntityProfileId=...) objects
+     *            only
+     * @return a List of ApprovalDataVO, never null
+     * @throws AuthorizationDeniedException
+     * @throws IllegalQueryException
+     */
+    public java.util.List query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, int index, int numberofrows,
+            java.lang.String caAuthorizationString, java.lang.String endEntityProfileAuthorizationString)
+            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.query.IllegalQueryException, java.rmi.RemoteException;
+
+    /**
+     * Get a list of all pending approvals ids. This was written for the upgrade
+     * to EJBCA 3.10.
+     * 
+     * @return a List<Integer> with all pending approval ids, never null
+     */
+    public java.util.List getAllPendingApprovalIds() throws java.rmi.RemoteException;
+
 }
