@@ -316,7 +316,7 @@
 	<%{
 		final ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
 		final BigInteger oldNr = ei!=null ? ei.getCertificateSerialNumber() : null;
-		final String certSerialNr = oldNr!=null ? oldNr.toString() : null;
+		final String certSerialNr = oldNr!=null ? oldNr.toString(16) : null;
 		if ( certSerialNr!=null ) { %>
 			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
 			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERTSERIALNUMER") %></td>
