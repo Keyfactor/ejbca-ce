@@ -73,6 +73,7 @@ h3, h4 {
 body { color: black; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 H { font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 
+
 /*--------------------------------------------------------------------------*/
 /* NAVIGATION */
 
@@ -155,13 +156,109 @@ body#menu {
 	-webkit-box-shadow: .15em .15em .45em rgba(0,0,0,.2);
 }
 
-/*--------------------------------------------------------------------------*/
 
-/* Header fix */
-img[src$="ejbcaheader.jpg"] {
+/*--------------------------------------------------------------------------*/
+/* HEADER & FOOTER */
+
+/* Header */
+img[src*="ejbcaheader"] {
 	margin-left: -36px;
 }
 
+/* Footer */
+#footer a:link,
+#footer a:visited {
+	color: #00A;
+	text-decoration: none;
+}
+#footer a:hover,
+#footer a:focus,
+#footer a:active {
+	color: #A00;
+	text-decoration: underline;
+}
+
+
+/*--------------------------------------------------------------------------*/
+/* CONTENT */
+
+/* Page: ALL */
+div.h4 {
+	margin: 0em .5em;
+}
+.app h4 {
+	margin: 0px;
+	padding: 3px 4px;
+	background: #5B8CCD none;
+	border: 1px solid #2E5A94;
+	border-bottom: 0px none;
+	border-radius: .8em .8em 0em 0em;
+	-o-border-radius: .8em .8em 0em 0em;
+	-moz-border-radius: .8em .8em 0em 0em;
+	-khtml-border-radius: .8em .8em 0em 0em;
+	-webkit-border-radius: .8em .8em 0em 0em;
+	color: #FFF;
+}
+table.grid {
+	border-collapse: collapse;
+}
+table.grid th {
+	background-color: #EEE;
+	color: #284E81;
+}
+table.grid th,
+table.grid td {
+	margin: 0px;
+	padding: 2px 3px;
+	border: 1px solid #2E5A94;
+}
+
+/* Page: Home */
+h3#welcome {
+	color: #2E5A94;
+	text-shadow: .1em .1em .15em rgba(0,0,0,.1);
+	-o-text-shadow: .1em .1em .15em #DDD;
+	-moz-text-shadow: .1em .1em .15em rgba(0,0,0,.1);
+	-khtml-text-shadow: .1em .1em .15em #DDD;
+	-webkit-text-shadow: .1em .1em .15em rgba(0,0,0,.1);
+}
+div#information {
+	margin-top: .5em;
+}
+div#information code {
+	font-size: 1em;
+/*	font-weight: bold;	/**/
+}
+div#projecthome {
+	margin-top: 1.5em;
+}
+div#projecthome > table > tbody > tr > td {
+	margin: 0em;
+	padding: 0em;
+}
+div#crlstatus {
+	margin-left: 0em;
+}
+div#publishqueuestatus {
+	margin-right: 0em;
+}
+#crlstatus h4,
+#publishqueuestatus h4,
+#crlstatus table th,
+#publishqueuestatus table th,
+#crlstatus table td,
+#publishqueuestatus table td {
+	white-space: nowrap;
+}
+#crlstatus table td img,
+#publishqueuestatus table td img {
+	width: 16px;
+	height: 16px;
+	margin-top: .1em;
+}
+
+
+/*--------------------------------------------------------------------------*/
 
 #alert {color: red; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
 .alert {color: red;
