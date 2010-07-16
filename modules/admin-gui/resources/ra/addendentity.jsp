@@ -568,9 +568,9 @@
 			}
 			if( oldprofile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) {
 				final ExtendedInformation ei = newuser.getExtendedInformation();
-				value = request.getParameter(TEXTFIELD_CERTSERIALNUMER).trim();
+				value = request.getParameter(TEXTFIELD_CERTSERIALNUMER);
 				if ( value!=null && value.length()>0 ) {
-					ei.setCertificateSerialNumber( new BigInteger(value) );
+					ei.setCertificateSerialNumber( new BigInteger(value.trim(), 16) );
 				} else {
 				    ei.setCertificateSerialNumber(null);
 				}
@@ -1527,7 +1527,7 @@ function checkallfields(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td></td><td align="right"> 
 				<%= ejbcawebbean.getText("CERTSERIALNUMER") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> 1234567890 <%= ejbcawebbean.getText("OR").toLowerCase() %> 0x1234567890abcdef)
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> 1234567890abcdef)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMER %>" size="40" maxlength="40" tabindex="<%=tabindex++%>" value="" />
 			</td>
