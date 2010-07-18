@@ -206,13 +206,17 @@ div.h4 {
 .app h4 a:active {
 	color: #000 !important;
 }
+#activation table,
 table.grid {
 	border-collapse: collapse;
 }
+#activation table th,
 table.grid th {
 	background-color: #F4F4F4;
 	color: #284E81;
 }
+#activation table th,
+#activation table td,
 table.grid th,
 table.grid td {
 	margin: 0px;
@@ -262,6 +266,45 @@ div#publishqueuestatus {
 	width: 16px;
 	height: 16px;
 	margin-top: .1em;
+}
+
+/* Page: CA > CA Activation */
+#activation table th,
+#activation table td {
+	padding: 4px 3px;
+	text-align: left;
+	white-space: nowrap;
+}
+#activation table td {
+	padding-right: 9px;
+}
+#activation table tr:nth-child(2n) td {
+	background-color: #FAFAFA;
+}
+#activation table td img {
+	width: 16px;
+	height: 16px;
+	vertical-align: -.07em;
+	margin: 0em .35em 0em .5em;
+}
+#activation table td input[type="checkbox"],
+#activation table td label {
+	margin-right: .4em;
+}
+#activation table table th,
+#activation table table td {
+	margin: 0px;
+	padding: 0px;
+	border: 0px none;
+}
+div#code {
+	margin-top: 1.5em;
+}
+div#code input {
+	margin-left: .35em;
+}
+div#code input[type="submit"] {
+	margin-left: 1em;
 }
 
 
