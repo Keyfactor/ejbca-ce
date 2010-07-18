@@ -37,6 +37,7 @@
 	     	<h:outputText value="#{item.CAActivationMessage}"></h:outputText>
 	     	</h:column>
 	     </h:dataTable>
+	<div id="activation">
 	<h:dataTable border="1" value="#{cAActivationMBean.authorizedCAWrappers}" var="item" style="border-collapse: collapse; right: auto; left: auto">
 	  			<h:column>
 	    			<f:facet name="header">
@@ -48,31 +49,15 @@
 	    			<f:facet name="header">
 	    				<h:outputText value="#{web.text.CASTATUS}" />
 	    			</f:facet>
-	    			<table width="90px" border="0">
-	    			<tr>
-	    			<td>
-	    			<h:outputText value="#{item.status}"></h:outputText>
-	    			</td>
-	    			<td align="right">
 	    			<h:graphicImage height="16" width="16" url="#{item.statusImg}" style="border-width:0"/>
-	    			</td>
-	    			</tr>
-	    			</table>
+	    			<h:outputText value="#{item.status}"></h:outputText>
 		    		</h:column>
 	    		<h:column>
 	    			<f:facet name="header">
 	    				<h:outputText value="#{web.text.CATOKENSTATUS}" />
 	    			</f:facet>
-	    			<table width="100px" border="0">
-	    			<tr>
-	    			<td>
-	    			<h:outputText value="#{item.tokenStatus}"></h:outputText>
-	    			</td>
-	    			<td align="right">
 	    			<h:graphicImage height="16" width="16" url="#{item.tokenStatusImg}" style="border-width:0"/>
-	    			</td>
-	    			</tr>
-	    			</table>
+	    			<h:outputText value="#{item.tokenStatus}"></h:outputText>
 	    		</h:column>
 	    		<h:column>
 	    		<f:facet name="header">
@@ -92,22 +77,14 @@
 	    		<h:outputText value="#{web.text.MONITORED}" />
 	    		</h:column>
 	         </h:dataTable>
-	     <br/>
-	     <table border="1" style="border-collapse: collapse; right: auto; left: auto">
-	         <tr>
-	         <td>
-	           <h:outputText value="#{web.text.AUTHENTICATIONCODE}:" style="right: 4px"></h:outputText>
-	         </td>
-	         <td>
+			</div>
+
+			<div id="code">
+	           <h:outputText value="#{web.text.AUTHENTICATIONCODE}"></h:outputText>
 	           <h:inputSecret id="password" value="#{cAActivationMBean.authenticationCode}" />
-	         </td>
-	         <td>
-	           <h:commandButton id="submit" action="#{cAActivationMBean.apply}" value="Apply" />
-	         </td>
-	         </tr>
-	     </table>
-	     <br>
-	     
+	           <h:commandButton id="submit" action="#{cAActivationMBean.apply}" value="#{web.text.APPLY}" />
+			</div>
+
 	 </h:form>
 </body>
 </f:view>
