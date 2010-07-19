@@ -15,13 +15,12 @@ import java.security.cert.X509Certificate;
 
 import javax.ejb.DuplicateKeyException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -42,7 +41,7 @@ import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
-public class CustomCertSerialnumberTest extends TestCase {
+public class CustomCertSerialnumberTest extends CaTestCase {
 	
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberTest.class);
     
@@ -57,13 +56,13 @@ public class CustomCertSerialnumberTest extends TestCase {
 
 	    CryptoProviderTools.installBCProvider();
 
-	    assertTrue("Could not create TestCA.", TestTools.createTestCA());
+	    assertTrue("Could not create TestCA.", createTestCA());
 	    CAInfo inforsa = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
 	    assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
 	    rsacaid = inforsa.getCAId();
     }
 
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
 
 	TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"FOOCERTPROFILE");
 	TestTools.getRaAdminSession().removeEndEntityProfile(admin, "FOOEEPROFILE");
@@ -83,7 +82,7 @@ public class CustomCertSerialnumberTest extends TestCase {
         fooEEProfile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "FOOEEPROFILE");
     }    
     
-    protected void tearDown() throws Exception {
+    public void tearDown() throws Exception {
 	try {
     	    TestTools.getUserAdminSession().deleteUser(admin, "foo");
 	    log.debug("deleted user: foo");
