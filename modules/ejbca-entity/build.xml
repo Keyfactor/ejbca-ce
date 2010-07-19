@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ejbca-entity" default="build">
     <description>
-            Contains all JPA entity classes
+            Contains all JPA entity classes.
     </description>
 
 	<dirname property="this.dir" file="${ant.file.ejbca-entity}"/>
@@ -43,7 +43,27 @@
     </target>
 	
     <target name="build" description="Build this module" depends="compile">
-    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class"/>
+    	<echo message="Database type:      ${database.name}"/>
+    	<echo message="DataSource mapping: ${datasource.jndi-name-prefix}${datasource.jndi-name}"/>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.DerbyDialect"><equals arg1="${database.name}" arg2="derby"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"><equals arg1="${database.name}" arg2="hsqldb"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.InformixDialect"><equals arg1="${database.name}" arg2="informix"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.IngresDialect"><equals arg1="${database.name}" arg2="ingres"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect"><equals arg1="${database.name}" arg2="mssql"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"><equals arg1="${database.name}" arg2="mysql"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect"><equals arg1="${database.name}" arg2="oracle"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"><equals arg1="${database.name}" arg2="postgres"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.SybaseDialect"><equals arg1="${database.name}" arg2="sybase"/></condition>
+    	<fail unless="hibernate.dialect" message="Unsupported database type '${database.name}'."/>
+    	<mkdir dir="${build.dir}/META-INF"/>
+    	<copy file="${resources.dir}/persistence-ds-template.xml" tofile="${build.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
+    		<filterchain>
+				<expandproperties/>
+    		</filterchain>
+    	</copy>
+    	<copy file="${resources.dir}/orm-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml"/>
     </target>
 
     <target name="compile" depends="ejbca-util">
@@ -52,34 +72,30 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
     </target>
 
-    <target name="test" description="Test this module. Use -Djdbc-loc=/path-to-jdbc-jars/" depends="compile-test">
+    <target name="test" description="Perform database schema validation for all databases where the JDBC driver is available." depends="compile-test">
+    	<fail unless="jdbc-loc" message="Use -Djdbc-loc=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
         <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
     	<mkdir dir="${build-test.dir}/META-INF"/>
-    	<!--
-    	-->
-		<available property="test-mysql" classname="com.mysql.jdbc.Driver" classpathref="jdbc-jars.classpath"/>
-		<antcall target="test-mysql"/>
-		<available property="test-oracle" classname="oracle.jdbc.driver.OracleDriver" classpathref="jdbc-jars.classpath"/>
-		<antcall target="test-oracle"/>
 		<available property="test-db2" classname="com.ibm.db2.jcc.DB2Driver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-db2"/>
 		<available property="test-derby" classname="org.apache.derby.jdbc.ClientDriver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-derby"/>
-		<available property="test-postgres" classname="org.postgresql.Driver" classpathref="jdbc-jars.classpath"/>
-		<antcall target="test-postgres"/>
 		<available property="test-hsqldb" classname="org.hsqldb.jdbcDriver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-hsqldb"/>
+		<available property="test-informix" classname="com.informix.jdbc.IfxDriver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-informix"/>
 		<available property="test-ingres" classname="com.ingres.jdbc.IngresDriver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-ingres"/>
 		<available property="test-mssql" classname="com.microsoft.sqlserver.jdbc.SQLServerDriver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-mssql"/>
+		<available property="test-mysql" classname="com.mysql.jdbc.Driver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-mysql"/>
+		<available property="test-oracle" classname="oracle.jdbc.driver.OracleDriver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-oracle"/>
+		<available property="test-postgres" classname="org.postgresql.Driver" classpathref="jdbc-jars.classpath"/>
+		<antcall target="test-postgres"/>
 		<available property="test-sybase" classname="net.sourceforge.jtds.jdbc.Driver" classpathref="jdbc-jars.classpath"/>
 		<antcall target="test-sybase"/>
-		<!-- This test wont work if the DB2 JDBC driver is in the class-path as well. -->
-		<available property="test-informix" classname="com.informix.jdbc.IfxDriver" classpathref="jdbc-jars.classpath"/>
-		<antcall target="test-informix"/>
-    	<!--
-    	-->
     </target>
 
     <target name="test-mysql" if="test-mysql">
@@ -136,11 +152,16 @@
     	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
     </target>
 
-    <target name="test-informix" if="test-informix">
+	<!-- This test wont work if the DB2 JDBC driver is in the class-path as well. -->
+    <target name="test-informix" if="test-informix" depends="test-informix-check">
     	<copy file="${resources.dir}/persistence-test-informix.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true"/>
     	<copy file="${resources.dir}/orm-informix.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
     	<java classname="org.ejbca.core.ejb.ValidateJpaSchema" classpathref="jpavalidation.classpath"/>
     </target>
+
+    <target name="test-informix-check" if="test-db2">
+    	<echo message="WARNING: Mixing Informix and DB2 JDBC drivers will probably not work!" level="warning"/>
+	</target>
 
     <target name="compile-test" depends="ejbca-util, build">
     	<mkdir dir="${build-test.dir}" />

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+    http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+    >
+    <persistence-unit name="ejbca" transaction-type="JTA">
+        <jta-data-source>${datasource.jndi-name-prefix}${datasource.jndi-name}</jta-data-source>        
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <properties>
+            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
+            <!-- We don't want Hibernate to go and change the database schema on it's own initiative.. -->
+            <property name="hibernate.hbm2ddl.auto" value="validate"/> <!-- validate | update | create | create-drop -->
+            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>
