@@ -231,7 +231,7 @@ public class UserData implements Serializable {
     /**
      * Non-searchable information about a user.
      */
-	// DB2: CLOB(1M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	// DB2: CLOB(1M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
     @Column(name="extendedInformationData", length=1*1024*1024)
     @Lob
     public String getExtendedInformationData() { return extendedInformationData; }

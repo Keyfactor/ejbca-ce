@@ -75,7 +75,7 @@ public class HardTokenIssuerData implements Serializable {
 	public int getAdminGroupId() { return adminGroupId; } 
 	public void setAdminGroupId(int adminGroupId) { this.adminGroupId = adminGroupId; }
 
-	// EJBCA 3.x: DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sapdb: , Sybase: IMAGE
+	// DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sybase: IMAGE
 	@Column(name="data", length=200*1024)
 	@Lob
 	public Serializable getDataUnsafe() {

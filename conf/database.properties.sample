@@ -29,7 +29,6 @@
 #database.name=postgres
 #database.name=mssql2000
 #database.name=oracle
-#database.name=sapdb
 #database.name=sybase
 #database.name=informix
 #database.name=derby
@@ -47,7 +46,6 @@
 #datasource.mapping=MS SQLSERVER2000
 #datasource.mapping=Oracle8
 #datasource.mapping=Oracle9i
-#datasource.mapping=SapDB
 #datasource.mapping=Sybase
 #datasource.mapping=Informix92
 #datasource.mapping=InformixDB
