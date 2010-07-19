@@ -169,6 +169,9 @@
 					<!-- Tests that require the CMP TCP listener -->
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
+					<!-- Tests that require unique index in the database to work -->
+					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberTest.class" />
+					<exclude name="org/ejbca/core/protocol/ws/CustomCertSerialnumberWSTest.class" />
 				</fileset>
 			</batchtest>
 			<!-- Tests that require the CMP TCP listener -->
