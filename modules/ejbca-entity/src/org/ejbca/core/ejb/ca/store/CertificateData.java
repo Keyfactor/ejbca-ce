@@ -263,8 +263,7 @@ public class CertificateData implements Serializable {
 	 * The certificate itself
 	 * @return base64 encoded certificate
 	 */
-	// EJBCA 3.x: DB2: VARCHAR(8000) [8000], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
-	// EJBCA 4.x: 
+	// DB2: VARCHAR(8000) [8000], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
 	@Column(name="base64Cert", length=8000)
 	@Lob
 	public String getBase64Cert() { return base64Cert; } 

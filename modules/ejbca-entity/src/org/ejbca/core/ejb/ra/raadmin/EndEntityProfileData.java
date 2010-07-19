@@ -68,7 +68,7 @@ public class EndEntityProfileData implements Serializable {
 	public String getProfileName() { return profileName; }
 	public void setProfileName(String profileName) { this.profileName = profileName; }
 
-	// EJBCA 3.x: DB2: BLOB(1M), Derby: , Informix: , Ingres: BLOB, Hsql: VARBINARY, MSSQL: , MySQL: , Oracle: , Postgres: BYTEA , Sapdb: , Sybase: IMAGE
+	// DB2: BLOB(1M), Derby: , Informix: , Ingres: BLOB, Hsql: VARBINARY, MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sybase: IMAGE
 	@Column(name="data", length=1*1024*1024)
 	@Lob
 	public Serializable getDataUnsafe() {

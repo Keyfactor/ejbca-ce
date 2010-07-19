@@ -155,7 +155,7 @@ public class CertReqHistoryData implements Serializable {
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
 	 * @return  xmlencoded encoded UserDataVO
 	 */
-	// DB2: CLOB(1M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	// DB2: CLOB(1M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
 	@Column(name="userDataVO", length=1*1024*1024)
 	@Lob
 	public String getUserDataVO() { return userDataVO; }

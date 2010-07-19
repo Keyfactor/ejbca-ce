@@ -71,7 +71,7 @@ public class CertificateProfileData implements Serializable {
 	public String getCertificateProfileName() { return certificateProfileName; }
 	public void setCertificateProfileName(String certificateProfileName) { this.certificateProfileName = certificateProfileName; }
 
-	// EJBCA 3.x: DB2: BLOB(1M), Derby: , Informix: , Ingres: , Hsql: VARBINARY [Integer.MAXVALUE], MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sapdb: , Sybase: IMAGE
+	// DB2: BLOB(1M), Derby: , Informix: , Ingres: , Hsql: VARBINARY [Integer.MAXVALUE], MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sybase: IMAGE
 	@Column(name="data", length=1*1024*1024)
 	@Lob
 	public Serializable getDataUnsafe() {

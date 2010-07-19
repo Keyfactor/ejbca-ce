@@ -187,8 +187,7 @@ s	 */
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
 	 */
-	// EJBCA 3.x: DB2: VARCHAR(4000), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: TEXT, Oracle: VARCHAR2(4000), Sapdb: LONG, Sybase: TEXT 
-	// EJBCA 4.x:  
+	// DB2: VARCHAR(4000), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: TEXT, Oracle: VARCHAR2(4000), Sybase: TEXT 
 	@Column(name="approvaldata", length=4000)
 	@Lob
 	public String getApprovaldata() { return approvaldata; }
@@ -201,8 +200,7 @@ s	 */
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
 	 */
-	// EJBCA 3.x: DB2: VARCHAR(8000), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
-	// EJBCA 4.x:
+	// DB2: VARCHAR(8000), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sybase: TEXT
 	@Column(name="requestdata", length=8000)
 	@Lob
 	public String getRequestdata() { return requestdata; }

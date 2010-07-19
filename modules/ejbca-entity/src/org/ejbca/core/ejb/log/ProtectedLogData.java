@@ -147,8 +147,7 @@ public class ProtectedLogData implements Serializable {
     public void setEventId(int eventId) { this.eventId = eventId; }
 
     /** An optional comment of the event. */
-	// EJBCA 3.x: DB2: VARCHAR(4000) [4000], Derby: VARCHAR(32672) [32672 chars], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: VARCHAR2(4000) [4000 chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
-    // EJBCA 4.x:
+	// DB2: VARCHAR(4000) [4000], Derby: VARCHAR(32672) [32672 chars], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: VARCHAR2(4000) [4000 chars], Sybase: TEXT [2,147,483,647 chars]  
 	@Column(name="eventComment", length=4000)
 	//@Lob
     public String getEventComment() { return eventComment; }
@@ -169,8 +168,7 @@ public class ProtectedLogData implements Serializable {
     public void setNodeIP(String nodeIP) { this.nodeIP = nodeIP; }
     
     /** A collection of (nodeGUID, counter) pairs of linked in rows or null if none were linked to. */
-	// EJBCA 3.x: DB2: CLOB(100K) [100K (2GBw/o)], Derby: VARCHAR(32672) [32672 chars], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]
-    // EJBCA 4.x:
+	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: VARCHAR(32672) [32672 chars], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]
 	@Column(name="b64LinkedInEventIdentifiers", length=32672)
 	@Lob
     public String getB64LinkedInEventIdentifiers() { return b64LinkedInEventIdentifiers; }
@@ -244,8 +242,7 @@ public class ProtectedLogData implements Serializable {
     public void setProtectionKeyAlgorithm(String protectionKeyAlgorithm) { this.protectionKeyAlgorithm = protectionKeyAlgorithm; }
 
     /** The signature of all the previous columns or null if the row is unprotected. */
-	// EJBCA 3.x: DB2: VARCHAR(4000) [4000], Derby: Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: VARCHAR2(4000) [4000 chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
-    // EJBCA 4.x:
+	// DB2: VARCHAR(4000) [4000], Derby: Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: VARCHAR2(4000) [4000 chars], Sybase: TEXT [2,147,483,647 chars]  
 	@Column(name="b64Protection", length=4000)
 	//@Lob
     public String getB64Protection() { return b64Protection; }

@@ -62,8 +62,7 @@ public class AdminPreferencesData implements Serializable {
 	public String getId() { return id; }
 	public void setId(String id) { this.id = id; }
 
-	// EJBCA 3.x: DB2: BLOB(200K), Derby: , Informix: BLOB, Ingres: BLOB, MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sapdb: , Sybase: IMAGE
-	// EJBCA 4.x:
+	// DB2: BLOB(200K), Derby: , Informix: BLOB, Ingres: BLOB, MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sybase: IMAGE
 	@Column(name="data", length=200*1024)
 	@Lob
 	public Serializable getDataUnsafe() {

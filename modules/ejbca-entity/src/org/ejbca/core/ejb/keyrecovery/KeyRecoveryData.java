@@ -87,8 +87,7 @@ public class KeyRecoveryData implements Serializable {
 	public boolean getMarkedAsRecoverable() { return markedAsRecoverable; }
 	public void setMarkedAsRecoverable(boolean markedAsRecoverable) { this.markedAsRecoverable = markedAsRecoverable; }
 
-	// EJBCA 3.x: DB2: VARCHAR(8000) [8000], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sapdb: LONG [2G chars], Sybase: TEXT [2,147,483,647 chars]  
-	// EJBCA 4.x: 
+	// DB2: VARCHAR(8000) [8000], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
 	@Column(name="keyData", length=8000)
 	@Lob
 	public String getKeyData() { return keyData; } 

@@ -120,7 +120,7 @@ public class CRLData implements Serializable {
 	 */
 	public void setNextUpdate(long nextUpdate) { this.nextUpdate = nextUpdate; }
 
-	// DB2: CLOB(100M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR, MSSQL: TEXT [65535 chars], MySQL: LONGTEXT, Oracle: CLOB, Sapdb: LONG, Sybase: TEXT
+	// DB2: CLOB(100M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR, MSSQL: TEXT [65535 chars], MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
 	@Column(name="base64Crl", length=65535)
 	@Lob
 	public String getBase64Crl() { return base64Crl; }
