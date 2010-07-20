@@ -62,14 +62,14 @@ public class SubjectDNProxy implements java.io.Serializable {
       // Check if name is in hashmap
       returnval = (String) subjectdnstore.get(admindata);
 
-      if(returnval==null && admindata.indexOf(',') != -1){
+      if(returnval==null && admindata.indexOf(':') != -1){
         // Try to find the certificate in database
-        String certificatesnr = admindata.substring(0,admindata.indexOf(','));
-        String issuerdn = admindata.substring(admindata.indexOf(',')+1);
+        String certificatesnr = admindata.substring(0,admindata.indexOf(':'));
+        String issuerdn = admindata.substring(admindata.indexOf('"')+1, admindata.length()-1);
         if(local) {
-          result = certificatesessionlocal.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr));
+          result = certificatesessionlocal.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr.trim(), 16));
         } else {
-          result = certificatesessionremote.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr));
+          result = certificatesessionremote.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr.trim(), 16));
         }
         if(result != null){
           returnval = CertTools.getSubjectDN(result);
