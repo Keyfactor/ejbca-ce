@@ -97,11 +97,12 @@ function getPasswordAndSubmit(formname) {
 }
 -->
 </SCRIPT>
-  <h2 align="center"><%= ejbcawebbean.getText("CAFUNCTIONS") %></h2>
+  <h1><%= ejbcawebbean.getText("CAFUNCTIONS") %></h1>
 <!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
   </div> -->
 
+	<br>
   <% // Display CA info one by one.
      Iterator iter = canames.keySet().iterator();
      int number = 0;
@@ -116,8 +117,7 @@ function getPasswordAndSubmit(formname) {
        Certificate[] certificatechain = (Certificate[]) cainfo.getCertificateChain().toArray(new Certificate[0]);
        int chainsize = certificatechain.length;
  %>
-       <br>
-       <H3><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : " + caname%> <a href="<%=THIS_FILENAME%>"  onClick="viewcacert(<%=caid%>)"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
+       <H3><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : " + caname%> &nbsp; <a href="<%=THIS_FILENAME%>"  onClick="viewcacert(<%=caid%>)"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
                                                                             <a href="<%=THIS_FILENAME%>"  onClick="viewcainfo(<%=caid%>)"><%= ejbcawebbean.getText("VIEWINFO")%></a></H3>    
  
         <table> 
@@ -243,7 +243,6 @@ function getPasswordAndSubmit(formname) {
           }
        } %>
 </form>
-<br>          
 <%    } %>
 <br>
 <hr>

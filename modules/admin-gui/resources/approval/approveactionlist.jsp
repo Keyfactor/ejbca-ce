@@ -33,7 +33,7 @@ function viewcert(link){
 <f:view>
 <body>
 
-<h1 align="center"><h:outputText value="#{web.text.APPROVEACTIONS}"/></h1>
+<h1><h:outputText value="#{web.text.APPROVEACTIONS}"/></h1>
 <h:form>
 <p align="center"><h:outputText value="#{web.text.SEARCHFORACTION}"/>  
 <h:selectOneMenu id="status" value="#{listApproveActionSessionBean.selectedStatus}"> 
@@ -160,7 +160,11 @@ function viewcert(link){
     </p>
      </h:form>
        <hr/>
-<p></p>
+
+	<%	// Include Footer 
+	String footurl = globalconfiguration.getFootBanner(); %>
+   
+	<jsp:include page="<%= footurl %>" />
   
 </body>
 </f:view>

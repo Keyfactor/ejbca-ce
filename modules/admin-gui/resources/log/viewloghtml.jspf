@@ -40,7 +40,7 @@ function viewcert(row){
 </head>
 
 <body>
-<h2 align="center"><%= ejbcawebbean.getText("VIEWLOG") %></h2>
+<h1><%= ejbcawebbean.getText("VIEWLOG") %></h1>
   <form name="changefiltermode" method="post" action="<%=THIS_FILENAME %>">
     <div align="right">
      <% if(filtermode == AdminPreference.FILTERMODE_BASIC){ %>

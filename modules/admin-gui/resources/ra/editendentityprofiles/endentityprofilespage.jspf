@@ -4,11 +4,10 @@
 %>
 
 
-<div align="center">
-  <p><H1><%= ejbcawebbean.getText("ENDENTITYPROFILES") %></H1></p>
+<h1><%= ejbcawebbean.getText("ENDENTITYPROFILES") %></h1>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+
   <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_PROFILES %>'>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -55,7 +54,7 @@
       <tr> 
         <td width="5%"></td>
         <td width="60%">
-          <select name="<%=SELECT_PROFILE%>" size="15"  >
+          <select name="<%=SELECT_PROFILE%>" style="width: 50em" size="15"  >
             <% Iterator iter = profiles.keySet().iterator();
                while(iter.hasNext()){
                  String profilename = (String) iter.next();%>
@@ -63,16 +62,6 @@
                   <%= profilename %>
                </option>
             <%}%>
-              <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
           </select>
           </td>
       </tr>
@@ -112,13 +101,7 @@
           <input type="submit" name="<%= BUTTON_CLONE_PROFILE%>" onClick='return checkfieldforlegalchars("document.editprofiles.<%=TEXTFIELD_PROFILENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
         </td>
       </tr>
-      <tr> 
-        <td width="5%">&nbsp; </td>
-        <td width="95%">&nbsp;</td>
-      </tr>
     </table>
   </form>
-  <p align="center">&nbsp;</p>
-  <p>&nbsp;</p>
 </div>
 

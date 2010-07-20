@@ -166,6 +166,10 @@ img[src*="ejbcaheader"] {
 }
 
 /* Footer */
+div#footer {
+	margin-top: 2em;
+	text-align: center;
+}
 #footer a:link,
 #footer a:visited {
 	color: #00A;
@@ -183,6 +187,40 @@ img[src*="ejbcaheader"] {
 /* CONTENT */
 
 /* Page: ALL */
+h1 {
+	width: 30em;		/* (50em+10em)/2 */
+	text-align: center;
+	font-size: 2em;
+	color: #284E81;
+	text-shadow: .05em .05em 0em rgba(0,0,0,.1);
+	-o-text-shadow: .05em .05em 0em #DDD;
+	-moz-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
+	-khtml-text-shadow: .05em .05em 0em #DDD;
+	-webkit-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
+}
+h2 {
+	width: 40em;		/* (50em+10em)/1.5 */
+	text-align: center;
+	font-size: 1.5em;
+	color: #284E81;
+}
+a {
+	background-color: transparent;
+	text-decoration: none;
+}
+a:link,
+a:visited {
+	color: #00A;
+}
+a:hover,
+a:focus,
+a:active {
+	color: #A00;
+}
+p.help {
+	margin-top: .25em;
+	margin-bottom: .25em;
+}
 div.h4 {
 	margin: 0em .5em;
 }
@@ -199,17 +237,13 @@ div.h4 {
 	-webkit-border-radius: .8em .8em 0em 0em;
 	color: #FFF;
 }
-#activation table,
 table.grid {
 	border-collapse: collapse;
 }
-#activation table th,
 table.grid th {
 	background-color: #EEE;
 	color: #284E81;
 }
-#activation table th,
-#activation table td,
 table.grid th,
 table.grid td {
 	margin: 0px;
@@ -298,6 +332,31 @@ div#code input {
 }
 div#code input[type="submit"] {
 	margin-left: 1em;
+}
+
+/* Page: SYS > Administrators Groups */
+form#groupList p {
+	margin-top: 1.25em;
+}
+form#groupList p a.commandLink {
+	font-size: 1.0em;
+}
+form#groupList table {
+	border-collapse: collapse;
+}
+form#groupList table th {
+	padding-bottom: .35em;
+}
+form#groupList table td {
+	padding: .35em;
+	border: 1px solid #2E5A94;
+}
+form#groupList table td {
+	font-size: 1.1em;
+	font-weight: bold;
+}
+form#groupList table td a {
+	font-size: inherit !important;
 }
 
 
