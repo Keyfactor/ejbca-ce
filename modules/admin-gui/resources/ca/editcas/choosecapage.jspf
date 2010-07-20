@@ -6,11 +6,10 @@
 %>
 
 <body>
-<div align="center">
-  <p><H1><%= ejbcawebbean.getText("EDITCAS") %></H1></p>
+<h1><%= ejbcawebbean.getText("EDITCAS") %></h1>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+
   <form name="editcas" method="post"  action="<%= THIS_FILENAME%>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CAS %>'>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -106,7 +105,7 @@
       <tr> 
         <td width="5%"></td>
         <td width="60%">
-          <select name="<%=SELECT_CAS%>" size="15"  >
+          <select name="<%=SELECT_CAS%>" style="width: 50em" size="15"  >
             <% Iterator iter = canames.keySet().iterator();               
                while(iter.hasNext()){                 
                    String nameofca = (String) iter.next();
@@ -116,16 +115,6 @@
                   <%= nameandstatus %>
                </option>
                <%}%>
-              <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
           </select>
           </td>
       </tr>
@@ -141,10 +130,10 @@
                 <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true) %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
               </td>
               <td width="25%">
-		          <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA")+".." %>">
+		          <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA")+"..." %>">
               </td>
               <td width="25%">
-		          <input type="submit" name="<%= BUTTON_IMPORTCACERT%>" value="<%= ejbcawebbean.getText("IMPORTCACERT")+".." %>">
+		          <input type="submit" name="<%= BUTTON_IMPORTCACERT%>" value="<%= ejbcawebbean.getText("IMPORTCACERT")+"..." %>">
               </td>
             </tr>
           </table> 
@@ -169,13 +158,7 @@
           <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("SIGNREQUEST") %>">
         </td>
       </tr>
-      <tr> 
-        <td width="5%">&nbsp; </td>
-        <td width="95%">&nbsp;</td>
-      </tr>
     </table>
   </form>
-  <p align="center">&nbsp;</p>
-  <p>&nbsp;</p>
 </div>
 

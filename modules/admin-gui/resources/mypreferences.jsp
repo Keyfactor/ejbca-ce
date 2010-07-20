@@ -90,18 +90,13 @@
 </head>
 
 <body>
-<div align="center"> 
-  <h2><%= ejbcawebbean.getText("EJBCAADMINPREFERENCES") %><br>
-      <%= ejbcawebbean.getText("FORADMIN")+" " + ejbcawebbean.getUsersCommonName() %>
-  </h2>
-</div>
+<h1><%= ejbcawebbean.getText("EJBCAADMINPREFERENCES") %></h1>
+<h2><%= ejbcawebbean.getText("FORADMIN")+" " + ejbcawebbean.getUsersCommonName() %></h2>
 <form name="defaultmypreferences" method="post" action="<%=THIS_FILENAME %>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
-        <div align="left"> 
-          <h3>&nbsp;</h3>
-        </div>
+        &nbsp;
       </td>
       <td width="50%" valign="top"> 
       <!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("mypreferences_help.html") %>")'>
@@ -111,7 +106,7 @@
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><%= ejbcawebbean.getText("PREFEREDLANGUAGE") %></h3>
-        <h5><%= ejbcawebbean.getText("DEFAULTLANGUAGETOUSE") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("DEFAULTLANGUAGETOUSE") %></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_PREFEREDLANGUAGE %>">
@@ -127,7 +122,7 @@
     <tr id="Row1"> 
       <td width="50%" valign="top"> 
         <h3><%= ejbcawebbean.getText("SECONDARYLANGUAGE") %></h3>
-        <h5><%= ejbcawebbean.getText("LANGUAGETOUSEWHEN") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("LANGUAGETOUSEWHEN") %></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_SECONDARYLANGUAGE %>">
@@ -143,7 +138,7 @@
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><%= ejbcawebbean.getText("THEME") %></h3>
-        <h5><%= ejbcawebbean.getText("THEADMINSTHEMEOFFONTS") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("THEADMINSTHEMEOFFONTS") %></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
@@ -161,7 +156,7 @@
     <tr  id="Row1"> 
       <td width="49%" valign="top"> 
         <h3><%= ejbcawebbean.getText("NUMBEROFRECORDSPERPAGE") %></h3>
-        <h5><%= ejbcawebbean.getText("THENUMBEROFRECORDSTO") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("THENUMBEROFRECORDSTO") %></p>
       </td>
       <td width="51%" valign="top"> 
         <select name="<%= LIST_ENTIESPERPAGE %>">
@@ -177,7 +172,7 @@
     <tr  id="Row0"> 
       <td width="49%" valign="top"> 
         <h3><%= ejbcawebbean.getText("CASTATUSONFRONTPAGE") %></h3>
-        <h5><%= ejbcawebbean.getText("IFCASTATUSSHOULDBEDISP") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("IFCASTATUSSHOULDBEDISP") %></p>
       </td>
       <td width="51%" valign="top"> 
         <input name="<%= CHECKBOX_CASTATUSFIRSTPAGE %>" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=dup.getFrontpageCaStatus() ? "checked=\"checked\"" : ""%>/>
@@ -186,13 +181,17 @@
     <tr  id="Row1"> 
       <td width="49%" valign="top"> 
         <h3><%= ejbcawebbean.getText("PUBLISHERQUEUESTATUSON") %></h3>
-        <h5><%= ejbcawebbean.getText("IFPUBLISHERQUEUESSHOULD") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("IFPUBLISHERQUEUESSHOULD") %></p>
       </td>
       <td width="51%" valign="top"> 
         <input name="<%= CHECKBOX_PUBQSTATUSFIRSTPAGE %>" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=dup.getFrontpagePublisherQueueStatus() ? "checked=\"checked\"" : ""%>/>
       </td>
     </tr>
     <tr  id="Row0"> 
+      <td width="49%" valign="top">&nbsp;</td>
+      <td width="51%" valign="top">&nbsp;</td>
+    </tr>
+    <tr  id="Row1"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>">

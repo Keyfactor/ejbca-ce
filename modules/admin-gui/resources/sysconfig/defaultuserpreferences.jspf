@@ -1,8 +1,6 @@
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
-        <div align="left"> 
-          <h3>&nbsp;</h3>
-        </div>
+        &nbsp; 
       </td>
       <td width="50%" valign="top"> 
      <!--   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("configuration_help.html") + "#defaultuserpreference"%>")'>
@@ -12,7 +10,7 @@
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><%= ejbcawebbean.getText("PREFEREDLANGUAGE") %></h3>
-        <h5><%= ejbcawebbean.getText("DEFAULTLANGUAGETOUSE") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("DEFAULTLANGUAGETOUSE") %></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_PREFEREDLANGUAGE %>">
@@ -28,7 +26,7 @@
     <tr id="Row1"> 
       <td width="50%" valign="top"> 
         <h3><%= ejbcawebbean.getText("SECONDARYLANGUAGE") %></h3>
-        <h5><%= ejbcawebbean.getText("LANGUAGETOUSEWHEN") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("LANGUAGETOUSEWHEN") %></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_SECONDARYLANGUAGE %>">
@@ -44,7 +42,7 @@
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><%= ejbcawebbean.getText("THEME") %></h3>
-        <h5><%= ejbcawebbean.getText("THEADMINSTHEMEOFFONTS") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("THEADMINSTHEMEOFFONTS") %></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
@@ -62,7 +60,7 @@
     <tr  id="Row1"> 
       <td width="49%" valign="top"> 
         <h3><%= ejbcawebbean.getText("NUMBEROFRECORDSPERPAGE") %></h3>
-        <h5><%= ejbcawebbean.getText("THENUMBEROFRECORDSTO") %></h5>
+        <p class="help"><%= ejbcawebbean.getText("THENUMBEROFRECORDSTO") %></p>
       </td>
       <td width="51%" valign="top"> 
         <select name="<%= LIST_ENTIESPERPAGE %>">

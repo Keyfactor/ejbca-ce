@@ -178,11 +178,10 @@
 </head>
 
 <body>
+<h1><%= ejbcawebbean.getText("LOGCONFIGURATION") %></h1>
 
 <form name="form" method="post" action="<%= globalconfiguration .getLogPath() + "/logconfiguration/" + THIS_FILENAME %>">
 <div align="center"> 
-  <h2><%= ejbcawebbean.getText("LOGCONFIGURATION") %><br>
-  </h2><br>
    <% if(logconfigurationsaved) out.write("<h3>" + ejbcawebbean.getText("LOGCONFIGURATIONSAVED") + "</h3>"); %>
    <h3><%= ejbcawebbean.getText("CONFIGURECA") %> 
    <select name="<%=SELECT_CA %>" >
@@ -204,9 +203,7 @@
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr > 
       <td width="50%" valign="top"> 
-        <div align="left"> 
-          <h3>&nbsp;</h3>
-        </div>
+        &nbsp; 
       </td>
       <td width="50%" valign="top"> 
    <!--     <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("log_configuration_help.html") + "#logconfiguration"%>")'>
@@ -217,7 +214,7 @@
    <table width="100%" border="0" cellspacing="3" cellpadding="3"> 
     <tr > 
       <td colspan="4" width="100%" valign="top" halign="left"> 
-        This configuration do not apply to the Protected Log Device, where all events always are logged.
+      	<%= ejbcawebbean.getText("LOGCONFIGURATIONINFO") %>
       </td>
 <!--
       <td width="40%" valign="top"> 

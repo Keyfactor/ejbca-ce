@@ -25,14 +25,13 @@
 
 <f:view>
 <body>
-<div align="center"><h:outputText value="#{web.text.EDITSERVICES}" styleClass="header" style="text-align: center"/></div>
+<h1><h:outputText value="#{web.text.EDITSERVICES}"/></h1>
 <p>
 	<h:messages styleClass="alert" layout="table"/>
 	</p>
-<h:outputText value="#{web.text.CURRENTSERVICES}" styleClass="subheader"/>
-<p>
+<h3><h:outputText value="#{web.text.CURRENTSERVICES}"/></h3>
 	<h:form>
-		<h:selectOneListbox id="listServices" value="#{listServicesManagedBean.selectedServiceName}" style="width: 500" size="10">
+		<h:selectOneListbox id="listServices" value="#{listServicesManagedBean.selectedServiceName}" style="width: 50em" size="15">
 			<f:selectItems value="#{listServicesManagedBean.availableServices}"/>
 		</h:selectOneListbox>
 		<p>
@@ -40,7 +39,7 @@
 	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	    <h:commandButton id="deleteButton" action="#{listServicesManagedBean.deleteService}" value="#{web.text.DELETESERVICE}" onclick="return confirm('#{web.text.AREYOUSURE}');"/>
 		</p>
-		<p><h:outputText value="#{web.text.ADD}" styleClass="subheader"/></p>
+		<h3><h:outputText value="#{web.text.ADD}"/></h3>
 		<h:inputText id="newServiceName" value="#{listServicesManagedBean.newServiceName}" size="40"/>
 		<h:commandButton id="addButton" action="#{listServicesManagedBean.addService}" value="#{web.text.ADD}"/>
 		<br/>
@@ -49,8 +48,12 @@
 		<br/>
 		<p></p>
 	</h:form>
-	</p>
+
+	<%	// Include Footer 
+	String footurl = globalconfiguration.getFootBanner(); %>
+   
+	<jsp:include page="<%= footurl %>" />
+
 </body>
 </f:view>
 </html>
-

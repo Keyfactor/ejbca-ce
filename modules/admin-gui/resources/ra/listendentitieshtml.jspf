@@ -82,7 +82,7 @@ function confirmrevokation(){
 </head>
 
 <body>
-<h2 align="center"><%= ejbcawebbean.getText("LISTENDENTITIES") %></h2>
+<h1><%= ejbcawebbean.getText("LISTENDENTITIES") %></h1>
   <form name="changefiltermode" method="post" action="<%=THIS_FILENAME %>">
     <div align="right">
      <% if(filtermode == AdminPreference.FILTERMODE_BASIC){ %>

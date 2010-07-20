@@ -38,8 +38,9 @@
 </head>
 <body>
 
+<h1><h:outputText value="#{web.text.ADMINPRIVILEGES}" /></h1>
+
 <div align="center">
-	<p><H1><h:outputText value="#{web.text.ADMINPRIVILEGES}" /></H1></p>
 	<p><h:messages layout="table" errorClass="alert"/></p>
 
 	<h:form id="groupList">

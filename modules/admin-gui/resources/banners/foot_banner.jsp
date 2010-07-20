@@ -6,7 +6,5 @@
 <%   // Initialize environment
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/administrator"); 
 %>
- <br>
- <br>
-<div align="center" id="footer"><i><%=ejbcawebbean.getText("MADEBYPRIMEKEY") %></i></div>
 
+<div id="footer"><span><%=ejbcawebbean.getText("MADEBYPRIMEKEY") %></span></div>

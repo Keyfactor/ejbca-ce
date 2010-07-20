@@ -24,7 +24,7 @@
 </head>
 <f:view>
 <body>
-<h1 align="center"><h:outputText value="#{web.text.ACTIVATECAS}"/></h1>
+<h1><h:outputText value="#{web.text.ACTIVATECAS}"/></h1>
 	<h:form>
 	<h:dataTable border="0" value="#{cAActivationMBean.hasMessages}" var="item" style="right: auto; left: auto">
 	     	<h:column>
@@ -38,7 +38,7 @@
 	     	</h:column>
 	     </h:dataTable>
 	<div id="activation">
-	<h:dataTable border="1" value="#{cAActivationMBean.authorizedCAWrappers}" var="item" style="border-collapse: collapse; right: auto; left: auto">
+	<h:dataTable styleClass="grid" value="#{cAActivationMBean.authorizedCAWrappers}" var="item" style="border-collapse: collapse; right: auto; left: auto">
 	  			<h:column>
 	    			<f:facet name="header">
 	    				<h:outputText value="#{web.text.CA}" />
@@ -86,6 +86,12 @@
 			</div>
 
 	 </h:form>
+
+	<%	// Include Footer 
+	String footurl = globalconfiguration.getFootBanner(); %>
+   
+	<jsp:include page="<%= footurl %>" />
+
 </body>
 </f:view>
 </html>

@@ -28,11 +28,10 @@ function checkselected(){
 -->
 </script>
 
-<div align="center">
-  <p><H1><%= ejbcawebbean.getText("EDITHARDTOKENISSUERS") %></H1></p>
+<h1><%= ejbcawebbean.getText("EDITHARDTOKENISSUERS") %></h1>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html") + "#edithardtokenissuers"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+
   <form name="editissuers" method="post"  action="<%= THIS_FILENAME%>">
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ISSUERS %>'>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -58,7 +57,7 @@ function checkselected(){
       <tr> 
         <td width="5%"></td>
         <td width="60%">
-          <select name="<%=SELECT_ISSUER%>" size="15"  >
+          <select name="<%=SELECT_ISSUER%>" style="width: 50em" size="15"  >
             <% Iterator i = issuerdatas.keySet().iterator();
                while(i.hasNext()){  
                  String curalias = (String) i.next();
@@ -68,16 +67,6 @@ function checkselected(){
                   <%= curalias + ", "+ adminidtonamemap.get(new Integer(data.getAdminGroupId()))%>  
                </option>
             <%}%>
-              <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
           </select>
           </td>
       </tr>
@@ -143,13 +132,7 @@ function checkselected(){
           <input type="submit" name="<%= BUTTON_RENAME_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">&nbsp;&nbsp;&nbsp;
           <input type="submit" name="<%= BUTTON_CLONE_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
         </td>
-      <tr> 
-        <td width="130">&nbsp; </td>
-        <td width="*">&nbsp;</td>
-      </tr>
     </table>
   </form>
-  <p align="center">&nbsp;</p>
-  <p>&nbsp;</p>
 </div>
 

@@ -4,11 +4,10 @@
 %>
 
 
-<div align="center">
-  <p><H1><%= ejbcawebbean.getText("EDITUSERDATASOURCES") %></H1></p>
+<h1><%= ejbcawebbean.getText("EDITUSERDATASOURCES") %></h1>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#userdatasources"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+
   <form name="edituserdatasources" method="post"  action="<%= THIS_FILENAME%>">
     <input type="hidden" name='<%= userdatasourcehelper.ACTION %>' value='<%=userdatasourcehelper.ACTION_EDIT_USERDATASOURCES %>'>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -37,7 +36,7 @@
       <tr> 
         <td width="5%"></td>
         <td width="60%">
-          <select name="<%=EditUserDataSourceJSPHelper.SELECT_USERDATASOURCE%>" size="15"  >
+          <select name="<%=EditUserDataSourceJSPHelper.SELECT_USERDATASOURCE%>" style="width: 50em" size="15"  >
             <% Iterator iter = userdatasourcenames.keySet().iterator();
                while(iter.hasNext()){
                  String userdatasourcename = (String) iter.next(); %>
@@ -46,16 +45,6 @@
                   <%= userdatasourcename %>
                </option>
             <%}%>
-              <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
           </select>
           </td>
       </tr>
@@ -95,13 +84,7 @@
           <input type="submit" name="<%= userdatasourcehelper.BUTTON_CLONE_USERDATASOURCE%>" onClick='return checkfieldforlegalchars("document.edituserdatasources.<%=userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
         </td>
       </tr>
-      <tr> 
-        <td width="5%">&nbsp; </td>
-        <td width="95%">&nbsp;</td>
-      </tr>
     </table>
   </form>
-  <p align="center">&nbsp;</p>
-  <p>&nbsp;</p>
 </div>
 
