@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.pub;
 
 import java.io.ByteArrayOutputStream;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.EJBException;
+import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
@@ -49,9 +49,8 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.ConfigurationHolder;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
@@ -115,53 +114,42 @@ public class CertReqServlet extends HttpServlet {
     private IUserAdminSessionHome useradminhome = null;
     private ICertificateStoreSessionHome storehome = null;
     private IRaAdminSessionHome raadminhome = null;
+    @EJB
+    private SignSessionLocal signsession;
 
-    private ISignSessionLocal signsession = null;
-
-    private synchronized ISignSessionLocal getSignSession(){
-    	if(signsession == null){	
-    		try {
-    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-    			signsession = signhome.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return signsession;
-    }
-    
     /**
      * Servlet init
-     *
-     * @param config servlet configuration
-     *
-     * @throws ServletException on error
+     * 
+     * @param config
+     *            servlet configuration
+     * 
+     * @throws ServletException
+     *             on error
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
         try {
             // Install BouncyCastle provider
-        	CryptoProviderTools.installBCProvider();
+            CryptoProviderTools.installBCProvider();
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
-            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
-                             ctx.lookup(IUserAdminSessionHome.JNDI_NAME), IUserAdminSessionHome.class );
-            raadminhome   = (IRaAdminSessionHome) PortableRemoteObject.narrow(
-                             ctx.lookup(IRaAdminSessionHome.JNDI_NAME), IRaAdminSessionHome.class );            
-            storehome   = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
-                    ctx.lookup(ICertificateStoreSessionHome.JNDI_NAME), ICertificateStoreSessionHome.class );            
-        } catch( Exception e ) {
+            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup(IUserAdminSessionHome.JNDI_NAME), IUserAdminSessionHome.class);
+            raadminhome = (IRaAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup(IRaAdminSessionHome.JNDI_NAME), IRaAdminSessionHome.class);
+            storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(ctx.lookup(ICertificateStoreSessionHome.JNDI_NAME),
+                    ICertificateStoreSessionHome.class);
+        } catch (Exception e) {
             throw new ServletException(e);
         }
     }
 
-    private class RequestInstance{
+    private class RequestInstance {
 
-    	RequestInstance(){}
+        RequestInstance() {
+        }
 
-    	void doPost(HttpServletRequest request, HttpServletResponse response)
+        void doPost(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
         	
         	ServletDebug debug = new ServletDebug(request, response);
@@ -205,7 +193,6 @@ public class CertReqServlet extends HttpServlet {
                 IUserAdminSessionRemote adminsession = useradminhome.create();
                 ICertificateStoreSessionRemote storesession = storehome.create();
                 IRaAdminSessionRemote raadminsession = raadminhome.create();            
-                ISignSessionLocal signsession = getSignSession();
                 RequestHelper helper = new RequestHelper(administrator, debug);
 
                 log.info(intres.getLocalizedMessage("certreq.receivedcertreq", username, request.getRemoteAddr()));
@@ -437,157 +424,165 @@ public class CertReqServlet extends HttpServlet {
                 return;
             }
         }
+
         private Map params = null;
 
-        /** Method creating a Map of request values, designed to handle both regular 
-         * x-encoded forms and multipart encoded upload forms. 
+        /**
+         * Method creating a Map of request values, designed to handle both
+         * regular x-encoded forms and multipart encoded upload forms.
          * 
-         * @param request HttpServletRequest
-         * @throws FileUploadException if multipart request can not be parsed
-         * @throws IOException If input stream of uploaded object can not be read 
+         * @param request
+         *            HttpServletRequest
+         * @throws FileUploadException
+         *             if multipart request can not be parsed
+         * @throws IOException
+         *             If input stream of uploaded object can not be read
          */
         private void setParameters(HttpServletRequest request) throws FileUploadException, IOException {
-        	if (FileUpload.isMultipartContent(request)) {     
-        		params = new HashMap();
-        		DiskFileUpload upload = new DiskFileUpload();
-        		upload.setSizeMax(10000);                   
-        		upload.setSizeThreshold(9999);
-        		List items;
-        		items = upload.parseRequest(request);
-        		Iterator iter = items.iterator();
-        		while (iter.hasNext()) {     
-        			FileItem item = (FileItem) iter.next();
-        			if (item.isFormField()) {
-        				params.put(item.getFieldName(), item.getString());
-        			} else {
-        				InputStream is = item.getInputStream();
-        				byte[] bytes = FileTools.readInputStreamtoBuffer(is);
-        				params.put(item.getFieldName(), new String(Base64.encode(bytes)));
-        			}
-        		}
-        	} else {
-        		params = request.getParameterMap();  		  
-        	}
-        }
-        private String getParameter(String param) {
-        	String ret = null;
-        	Object o = params.get(param);
-        	if (o != null) {
-        		if (o instanceof String) {
-            		ret = (String)o;    			
-        		} else if (o instanceof String[]) { // keygen is of this type for some reason...
-        			String[] str = (String[])o;
-        			if ( (str != null) && (str.length>0) ) {
-            			ret = str[0];    				
-        			}
-        		} else {
-        			log.debug("Can not cast object of type: "+o.getClass().getName());    			
-        		}
-        	}
-        	return ret;
+            if (FileUpload.isMultipartContent(request)) {
+                params = new HashMap();
+                DiskFileUpload upload = new DiskFileUpload();
+                upload.setSizeMax(10000);
+                upload.setSizeThreshold(9999);
+                List items;
+                items = upload.parseRequest(request);
+                Iterator iter = items.iterator();
+                while (iter.hasNext()) {
+                    FileItem item = (FileItem) iter.next();
+                    if (item.isFormField()) {
+                        params.put(item.getFieldName(), item.getString());
+                    } else {
+                        InputStream is = item.getInputStream();
+                        byte[] bytes = FileTools.readInputStreamtoBuffer(is);
+                        params.put(item.getFieldName(), new String(Base64.encode(bytes)));
+                    }
+                }
+            } else {
+                params = request.getParameterMap();
+            }
         }
 
-    	private void pkcs10Req(HttpServletResponse response, String username,
-    			String password, int resulttype, ISignSessionLocal signsession,
-    			RequestHelper helper, byte[] reqBytes) throws Exception,
-    			IOException {
-    		log.debug("Received PKCS10 request: "+new String(reqBytes));
-    		  byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
-    		  if(resulttype == RequestHelper.ENCODED_PKCS7) {  
-    		    RequestHelper.sendNewB64File(b64cert, response, username+".pem", RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
-    		  }
-    		  if(resulttype == RequestHelper.ENCODED_CERTIFICATE) {
-    		    RequestHelper.sendNewB64File(b64cert, response, username+".pem", RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
-    		  }
-    	}
+        private String getParameter(String param) {
+            String ret = null;
+            Object o = params.get(param);
+            if (o != null) {
+                if (o instanceof String) {
+                    ret = (String) o;
+                } else if (o instanceof String[]) { // keygen is of this type
+                                                    // for some reason...
+                    String[] str = (String[]) o;
+                    if ((str != null) && (str.length > 0)) {
+                        ret = str[0];
+                    }
+                } else {
+                    log.debug("Can not cast object of type: " + o.getClass().getName());
+                }
+            }
+            return ret;
+        }
+
+        private void pkcs10Req(HttpServletResponse response, String username, String password, int resulttype, SignSessionLocal signsession,
+                RequestHelper helper, byte[] reqBytes) throws Exception, IOException {
+            log.debug("Received PKCS10 request: " + new String(reqBytes));
+            byte[] b64cert = helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
+            if (resulttype == RequestHelper.ENCODED_PKCS7) {
+                RequestHelper.sendNewB64File(b64cert, response, username + ".pem", RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
+            }
+            if (resulttype == RequestHelper.ENCODED_CERTIFICATE) {
+                RequestHelper.sendNewB64File(b64cert, response, username + ".pem", RequestHelper.BEGIN_CERTIFICATE_WITH_NL,
+                        RequestHelper.END_CERTIFICATE_WITH_NL);
+            }
+        }
+
         /**
-         * method to create an install package for OpenVPN including keys and send to user.
-         * Contributed by: Jon Bendtsen, jon.bendtsen(at)laerdal.dk
+         * method to create an install package for OpenVPN including keys and
+         * send to user. Contributed by: Jon Bendtsen,
+         * jon.bendtsen(at)laerdal.dk
          */
         private void sendOpenVPNToken(KeyStore ks, String username, String kspassword, HttpServletResponse out) throws Exception {
-        	ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        	ks.store(buffer, kspassword.toCharArray());
-        	
-        	String tempDirectory = System.getProperty("java.io.tmpdir");
-        	File fout = new File(tempDirectory + System.getProperty("file.separator") + username + ".p12");
-        	FileOutputStream certfile = new FileOutputStream(fout);
-        	
-        	Enumeration en = ks.aliases();
-        	String alias = (String)en.nextElement();
-        	// Then get the certificates
-        	Certificate[] certs = KeyTools.getCertChain(ks, alias);
-        	// The first  one (certs[0]) is the users cert and the last
-        	// one (certs [certs.lenght-1]) is the CA-cert
-        	X509Certificate x509cert = (X509Certificate) certs[0];
-        	String IssuerDN = x509cert.getIssuerDN().toString();
-        	String SubjectDN = x509cert.getSubjectDN().toString();
-        	
-        	// export the users certificate to file
-        	buffer.writeTo(certfile);
-        	buffer.flush();
-        	buffer.close();
-        	certfile.close();
-        	
-        	// run shell script, which will also remove the created files
-        	// parameters are the username, IssuerDN and SubjectDN
-        	// IssuerDN and SubjectDN will be used to select the right
-        	// openvpn configuration file
-        	// they have to be written to stdin of the script to support
-        	// spaces in the username, IssuerDN or SubjectDN
-        	Runtime rt = Runtime.getRuntime();
-        	if (rt==null) {
-        		log.error(intres.getLocalizedMessage("certreq.ovpntnoruntime"));
-        	} else {
-        		final String script = ConfigurationHolder.getString("web.openvpn.createInstallerScript", "/usr/local/ejbca/bin/mk_openvpn_windows_installer.sh");        		
-        		Process p = rt.exec(script);
-        		if (p==null) {
-            		log.error(intres.getLocalizedMessage("certreq.ovpntfailedexec", script));
-        		} else {
-        			OutputStream pstdin = p.getOutputStream();
-        			PrintStream stdoutp = new PrintStream(pstdin);
-        			stdoutp.println(username);
-        			stdoutp.println(IssuerDN);
-        			stdoutp.println(SubjectDN);
-        			stdoutp.flush();
-        			stdoutp.close();
-        			pstdin.close();
-        			int exitVal = p.waitFor();
-        			if (exitVal != 0) {
-                		log.error(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
-        			} else {
-                		log.debug(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
-        			}
-        		}
-        	}
-        	
-        	// we ought to check if the script was okay or not, but in a little
-        	// while we will look for the openvpn-gui-install-$username.exe
-        	// and fail there if the script failed. Also, one could question
-        	// what to do if it did fail, serve the user the certificate?
-        	
-        	// sending the OpenVPN windows installer
-        	String filename = "openvpn-gui-install-" + username + ".exe";
-        	File fin =  new File(tempDirectory + System.getProperty("file.separator") + filename);
-        	FileInputStream vpnfile = new FileInputStream(fin);        	
-        	out.setContentType("application/x-msdos-program");
-        	out.setHeader("Content-disposition", "filename=" + filename);
-    		out.setContentLength( new Long(fin.length()).intValue() );
-    		OutputStream os = out.getOutputStream(); 
-        	byte[] buf = new byte[4096];
-        	int offset = 0;
-        	int bytes = 0;
-        	while ( (bytes=vpnfile.read(buf)) != -1 ) {
-        		os.write(buf,0,bytes);
-        		offset += bytes;
-        	}
-        	vpnfile.close();
-        	// delete OpenVPN windows installer, the script will delete cert.
-        	fin.delete();
-        	out.flushBuffer();    	
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            ks.store(buffer, kspassword.toCharArray());
+
+            String tempDirectory = System.getProperty("java.io.tmpdir");
+            File fout = new File(tempDirectory + System.getProperty("file.separator") + username + ".p12");
+            FileOutputStream certfile = new FileOutputStream(fout);
+
+            Enumeration en = ks.aliases();
+            String alias = (String) en.nextElement();
+            // Then get the certificates
+            Certificate[] certs = KeyTools.getCertChain(ks, alias);
+            // The first one (certs[0]) is the users cert and the last
+            // one (certs [certs.lenght-1]) is the CA-cert
+            X509Certificate x509cert = (X509Certificate) certs[0];
+            String IssuerDN = x509cert.getIssuerDN().toString();
+            String SubjectDN = x509cert.getSubjectDN().toString();
+
+            // export the users certificate to file
+            buffer.writeTo(certfile);
+            buffer.flush();
+            buffer.close();
+            certfile.close();
+
+            // run shell script, which will also remove the created files
+            // parameters are the username, IssuerDN and SubjectDN
+            // IssuerDN and SubjectDN will be used to select the right
+            // openvpn configuration file
+            // they have to be written to stdin of the script to support
+            // spaces in the username, IssuerDN or SubjectDN
+            Runtime rt = Runtime.getRuntime();
+            if (rt == null) {
+                log.error(intres.getLocalizedMessage("certreq.ovpntnoruntime"));
+            } else {
+                final String script = ConfigurationHolder
+                        .getString("web.openvpn.createInstallerScript", "/usr/local/ejbca/bin/mk_openvpn_windows_installer.sh");
+                Process p = rt.exec(script);
+                if (p == null) {
+                    log.error(intres.getLocalizedMessage("certreq.ovpntfailedexec", script));
+                } else {
+                    OutputStream pstdin = p.getOutputStream();
+                    PrintStream stdoutp = new PrintStream(pstdin);
+                    stdoutp.println(username);
+                    stdoutp.println(IssuerDN);
+                    stdoutp.println(SubjectDN);
+                    stdoutp.flush();
+                    stdoutp.close();
+                    pstdin.close();
+                    int exitVal = p.waitFor();
+                    if (exitVal != 0) {
+                        log.error(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
+                    } else {
+                        log.debug(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
+                    }
+                }
+            }
+
+            // we ought to check if the script was okay or not, but in a little
+            // while we will look for the openvpn-gui-install-$username.exe
+            // and fail there if the script failed. Also, one could question
+            // what to do if it did fail, serve the user the certificate?
+
+            // sending the OpenVPN windows installer
+            String filename = "openvpn-gui-install-" + username + ".exe";
+            File fin = new File(tempDirectory + System.getProperty("file.separator") + filename);
+            FileInputStream vpnfile = new FileInputStream(fin);
+            out.setContentType("application/x-msdos-program");
+            out.setHeader("Content-disposition", "filename=" + filename);
+            out.setContentLength(new Long(fin.length()).intValue());
+            OutputStream os = out.getOutputStream();
+            byte[] buf = new byte[4096];
+            int offset = 0;
+            int bytes = 0;
+            while ((bytes = vpnfile.read(buf)) != -1) {
+                os.write(buf, 0, bytes);
+                offset += bytes;
+            }
+            vpnfile.close();
+            // delete OpenVPN windows installer, the script will delete cert.
+            fin.delete();
+            out.flushBuffer();
         } // sendOpenVPNToken
-        
-        private void sendP12Token(KeyStore ks, String username, String kspassword,
-            HttpServletResponse out) throws Exception {
+
+        private void sendP12Token(KeyStore ks, String username, String kspassword, HttpServletResponse out) throws Exception {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             ks.store(buffer, kspassword.toCharArray());
 
@@ -599,8 +594,7 @@ public class CertReqServlet extends HttpServlet {
             buffer.close();
         }
 
-        private void sendJKSToken(KeyStore ks, String username, String kspassword,
-            HttpServletResponse out) throws Exception {
+        private void sendJKSToken(KeyStore ks, String username, String kspassword, HttpServletResponse out) throws Exception {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             ks.store(buffer, kspassword.toCharArray());
 
@@ -612,8 +606,7 @@ public class CertReqServlet extends HttpServlet {
             buffer.close();
         }
 
-        private void sendPEMTokens(KeyStore ks, String username, String kspassword,
-            HttpServletResponse out) throws Exception {
+        private void sendPEMTokens(KeyStore ks, String username, String kspassword, HttpServletResponse out) throws Exception {
             out.setContentType("application/octet-stream");
             out.setHeader("Content-disposition", " attachment; filename=" + username + ".pem");
             out.getOutputStream().write(KeyTools.getSinglePemFromKeyStore(ks, kspassword.toCharArray()));
@@ -623,35 +616,41 @@ public class CertReqServlet extends HttpServlet {
 
     /**
      * Handles HTTP POST
-     *
-     * @param request servlet request
-     * @param response servlet response
-     *
-     * @throws IOException input/output error
-     * @throws ServletException on error
+     * 
+     * @param request
+     *            servlet request
+     * @param response
+     *            servlet response
+     * 
+     * @throws IOException
+     *             input/output error
+     * @throws ServletException
+     *             on error
      */
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws IOException, ServletException {
-        //doPost
-    	new RequestInstance().doPost(request, response);
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        // doPost
+        new RequestInstance().doPost(request, response);
     }
 
     /**
      * Handles HTTP GET
-     *
-     * @param request servlet request
-     * @param response servlet response
-     *
-     * @throws IOException input/output error
-     * @throws ServletException on error
+     * 
+     * @param request
+     *            servlet request
+     * @param response
+     *            servlet response
+     * 
+     * @throws IOException
+     *             input/output error
+     * @throws ServletException
+     *             on error
      */
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-        throws IOException, ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         response.setHeader("Allow", "POST");
 
         ServletDebug debug = new ServletDebug(request, response);
-    	String iMsg = intres.getLocalizedMessage("certreq.postonly");
+        String iMsg = intres.getLocalizedMessage("certreq.postonly");
         debug.print(iMsg);
         debug.printDebugInfo();
         log.trace("<doGet()");

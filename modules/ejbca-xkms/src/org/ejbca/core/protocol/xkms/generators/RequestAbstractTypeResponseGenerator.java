@@ -23,14 +23,16 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
+import javax.ejb.EJB;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -80,6 +82,15 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 	protected String resultMajor = null;
 	protected String resultMinor = null;
 
+
+        @EJB
+        private CAAdminSessionLocal caadminsession;
+        
+        @EJB
+        private CertificateStoreSessionLocal certificateStoreSession;
+        
+        @EJB
+        private CreateCRLSessionLocal createCrlSession;
 	
 	
 	public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req){
@@ -284,7 +295,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CHAIN)){
    			int caid = CertTools.getIssuerDN(cert).hashCode();
    			try {
-   				Iterator iter = getCAAdminSession().getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
+   				Iterator iter = caadminsession.getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
    				while(iter.hasNext()){
    					X509Certificate next = (X509Certificate) iter.next();
    					x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(next.getEncoded()));
@@ -299,7 +310,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CRL)){
    			byte[] crl = null;
    			try {
-   				crl = getCreateCRLSession().getLastCRL(pubAdmin, CertTools.getIssuerDN(cert), false);
+   				crl = createCrlSession.getLastCRL(pubAdmin, CertTools.getIssuerDN(cert), false);
    			} catch (Exception e) {
    				log.error(intres.getLocalizedMessage("xkms.errorfetchinglastcrl"),e);
    				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
@@ -382,7 +393,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         	// Check Issuer Trust
         	try{
         		int caid = CertTools.getIssuerDN(cert).hashCode();
-        		CAInfo cAInfo = getCAAdminSession().getCAInfo(pubAdmin, caid);
+        		CAInfo cAInfo = caadminsession.getCAInfo(pubAdmin, caid);
         		if(cAInfo != null){
         			retval.getValidReason().add(XKMSConstants.STATUSREASON_ISSUERTRUST);
 
@@ -408,7 +419,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         		}
 
         		// Check RevokationReason
-        		CertificateInfo certInfo = getCertStoreSession().getCertificateInfo(pubAdmin, CertTools.getFingerprintAsString(cert));
+        		CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(pubAdmin, CertTools.getFingerprintAsString(cert));
         		if(certInfo != null){
         			if(certInfo.getRevocationReason() == RevokedCertInfo.NOT_REVOKED){
         				retval.getValidReason().add(XKMSConstants.STATUSREASON_REVOCATIONSTATUS);				  
@@ -422,20 +433,12 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         			allValid = false;
         		}
 
-
-        	}catch(CreateException e){
-        		log.error(intres.getLocalizedMessage("xkms.errorcreatesession"),e);        		
-        		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
-        		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
         	} catch (ClassCastException e) {
         		log.error(intres.getLocalizedMessage("xkms.errorcreatesession"),e);
         		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
         		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
-        	} catch (NamingException e) {
-        		log.error(intres.getLocalizedMessage("xkms.errorcreatesession"),e);
-        		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
-        		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
-        	}
+        	} 
+
 
         	if(allValid){
         		retval.setStatusValue(XKMSConstants.STATUSVALUE_VALID);

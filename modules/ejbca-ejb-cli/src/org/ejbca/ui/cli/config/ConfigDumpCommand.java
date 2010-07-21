@@ -13,38 +13,49 @@
 
 package org.ejbca.ui.cli.config;
 
-import java.rmi.RemoteException;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Shows the current server configuration
- *
+ * 
  * @version $Id$
  */
 public class ConfigDumpCommand extends BaseCommand {
-	
-	public String getMainCommand() { return "config"; }
-	public String getSubCommand() { return "dump"; }
-	public String getDescription() { return "Shows the current server configuration"; }
+
+    @EJB
+    private ConfigurationSessionRemote configurationSession;
+
+    public String getMainCommand() {
+        return "config";
+    }
+
+    public String getSubCommand() {
+        return "dump";
+    }
+
+    public String getDescription() {
+        return "Shows the current server configuration";
+    }
 
     /**
      * Tries to fetch the server properties and dumps them to standard out
      */
-	public void execute(String[] args) throws ErrorAdminCommandException {
-		getLogger().info("Trying to fetch currently used server properties..");
-        try {
-			Properties properties = getConfigurationSession().getAllProperties();
-			Enumeration enumeration = properties.keys();
-			while (enumeration.hasMoreElements()) {
-				String key = (String) enumeration.nextElement();
-				getLogger().info(" " + key + " = " + properties.getProperty(key));
-			}
-		} catch (RemoteException e) {
-			getLogger().error("Error getting properties: " + e.getMessage());
-		}
-	}
+    public void execute(String[] args) throws ErrorAdminCommandException {
+        getLogger().info("Trying to fetch currently used server properties..");
+
+        Properties properties = configurationSession.getAllProperties();
+        Enumeration enumeration = properties.keys();
+        while (enumeration.hasMoreElements()) {
+            String key = (String) enumeration.nextElement();
+            getLogger().info(" " + key + " = " + properties.getProperty(key));
+        }
+
+    }
 }

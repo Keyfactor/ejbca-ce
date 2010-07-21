@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
+import javax.ejb.EJB;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -31,12 +32,11 @@ public class AdminPreferenceTest extends CaTestCase {
     /**
      * UserAdminSession handle, not static since different object should go to different session
      * beans concurrently
-     */
-    private IRaAdminSessionRemote cacheAdmin;
+*/
 
-    /** Handle to AdminSessionHome */
-    private static IRaAdminSessionHome cacheHome;
-
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+    
     private static final String user = genRandomUserName();
 
     /**
@@ -49,16 +49,7 @@ public class AdminPreferenceTest extends CaTestCase {
     }
 
     public void setUp() throws Exception {
-        log.trace(">setUp()");
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("RaAdminSession");
-                cacheHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
-            }
-            cacheAdmin = cacheHome.create();
-        }
-        log.trace("<setUp()");
+
     }
 
     public void tearDown() throws Exception {
@@ -73,8 +64,9 @@ public class AdminPreferenceTest extends CaTestCase {
 
     /**
      * tests adding an administrator preference
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test01AddAdminPreference() throws Exception {
         log.trace(">test01AddAdminPreference()");
@@ -82,32 +74,33 @@ public class AdminPreferenceTest extends CaTestCase {
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        boolean ret = this.cacheAdmin.addAdminPreference(administrator, user, pref);
-        assertTrue("Adminpref for "+user+" should not exist", ret);
-        ret = this.cacheAdmin.addAdminPreference(administrator, user, pref);
-        assertFalse("Adminpref for "+user+" should exist", ret);
+        boolean ret = this.raAdminSession.addAdminPreference(administrator, user, pref);
+        assertTrue("Adminpref for " + user + " should not exist", ret);
+        ret = this.raAdminSession.addAdminPreference(administrator, user, pref);
+        assertFalse("Adminpref for " + user + " should exist", ret);
         log.trace("<test01AddAdminPreference()");
     }
 
     /**
      * tests modifying an administrator preference
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test02ModifyAdminPreference() throws Exception {
         log.trace(">test02ModifyAdminPreference()");
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
-        AdminPreference pref = this.cacheAdmin.getAdminPreference(administrator, user);
+        AdminPreference pref = this.raAdminSession.getAdminPreference(administrator, user);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));
         pref.setPreferedLanguage(2);
-        boolean ret = this.cacheAdmin.changeAdminPreference(administrator, user, pref);
-        assertTrue("Adminpref for "+user+" should exist", ret);
-        pref = this.cacheAdmin.getAdminPreference(administrator, user);
+        boolean ret = this.raAdminSession.changeAdminPreference(administrator, user, pref);
+        assertTrue("Adminpref for " + user + " should exist", ret);
+        pref = this.raAdminSession.getAdminPreference(administrator, user);
         assertEquals(pref.getPreferedLanguage(), 2);
         String newuser = genRandomUserName();
-        ret = this.cacheAdmin.changeAdminPreference(administrator, newuser, pref);
-        assertFalse("Adminpref for "+newuser+" should not exist", ret);
+        ret = this.raAdminSession.changeAdminPreference(administrator, newuser, pref);
+        assertFalse("Adminpref for " + newuser + " should not exist", ret);
         log.trace("<test02ModifyAdminPreference()");
     }
 

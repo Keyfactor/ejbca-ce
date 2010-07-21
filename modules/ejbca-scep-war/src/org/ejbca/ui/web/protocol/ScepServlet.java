@@ -19,7 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.EJBException;
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -29,11 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -71,31 +68,11 @@ public class ScepServlet extends HttpServlet {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    private ISignSessionLocal signsession = null;
-    private ICAAdminSessionLocal casession = null;
+    @EJB
+    private SignSessionLocal signsession;
+    @EJB
+    private CAAdminSessionLocal casession;
 
-    private synchronized ISignSessionLocal getSignSession(){
-    	if(signsession == null){	
-    		try {
-    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-    			signsession = signhome.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return signsession;
-    }
-    private synchronized ICAAdminSessionLocal getCASession(){
-    	if(casession == null){	
-    		try {
-    			ICAAdminSessionLocalHome cahome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-    			casession = cahome.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return casession;
-    }
     /**
      * Inits the SCEP servlet
      *
@@ -197,7 +174,6 @@ public class ScepServlet extends HttpServlet {
 			log.info(iMsg);
             if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
-                ISignSessionLocal signsession = getSignSession();
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
                 
                 // Read the message end get the cert, this also checksauthorization
@@ -223,8 +199,7 @@ public class ScepServlet extends HttpServlet {
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
                 log.debug("Got SCEP cert request for CA '" + message + "'");
                 Collection certs = null;
-                ICAAdminSessionLocal caadminsession = getCASession();
-                CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
+                CAInfo cainfo = casession.getCAInfo(administrator, message);
                 if (cainfo != null) {
                     certs = cainfo.getCertificateChain();
                 }
@@ -248,9 +223,8 @@ public class ScepServlet extends HttpServlet {
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
                 log.debug("Got SCEP pkcs7 request for CA '" + message + "'");
-                ICAAdminSessionLocal caadminsession = getCASession();
-                CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
-                ISignSessionLocal signsession = getSignSession();
+  
+                CAInfo cainfo = casession.getCAInfo(administrator, message);
                 byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId(), true);
                 if ((pkcs7 != null) && (pkcs7.length > 0)) {
                     log.debug("Sent PKCS7 for CA '" + message + "' to SCEP client.");

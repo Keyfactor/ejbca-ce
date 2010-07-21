@@ -1,14 +1,14 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<application version="5"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                        http://java.sun.com/xml/ns/javaee/application_5.xsd"
+    >
 
-<!DOCTYPE application PUBLIC
-	"-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN"
-	"http://java.sun.com/dtd/application_1_3.dtd">
-
-<application>
+    <description>The EJBCA module consists of the CA beans and the web applications for enrollment, distribution and administration.</description>
     <display-name>EJBCA</display-name>
-    <description>The EJBCA module consists of the CA beans and the web
-applications for enrollment, distribution and administration.
-    </description>
+
     <module>
         <ejb>ejbca-ejb.jar</ejb>
     </module>

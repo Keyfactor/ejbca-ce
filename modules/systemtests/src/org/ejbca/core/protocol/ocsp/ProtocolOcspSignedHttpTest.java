@@ -23,6 +23,7 @@ import java.security.cert.X509Certificate;
 import java.util.Hashtable;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJB;
 
 import junit.framework.TestSuite;
 
@@ -38,14 +39,14 @@ import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.SingleResp;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /** Test requiring signed OCSP requests.
@@ -67,18 +68,20 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
             "nTiIOfQIP9eD/nhIIo7n4JOaTUeqgyafPsEgKdTiZfSdXjvy6rj5GiZ3DaGZ9SNK" +
             "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
-    private static ISignSessionRemote signSession;
     private static IUserAdminSessionRemote userAdminSession;
     private int caid = getTestCAId();
     private static Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
+    
+    @EJB
+    private ConfigurationSessionRemote configurationSessionRemote;
+    
+    @EJB
+    private SignSessionRemote signSession;
+
 
     private OcspJunitHelper helper = null;
-    
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
-    }
 
     public static TestSuite suite() {
         return new TestSuite(ProtocolOcspSignedHttpTest.class);
@@ -94,18 +97,16 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
 
         // Install BouncyCastle provider
         CertTools.installBCProvider();
-        signSession = TestTools.getSignSession();
-        userAdminSession = TestTools.getUserAdminSession();
     }
 
     public void setUp() throws Exception {
         createTestCA();
         cacert = (X509Certificate) getTestCACert();
-    	TestTools.getConfigurationSession().updateProperty(OcspConfiguration.SIGNATUREREQUIRED, "true");
+    	configurationSessionRemote.updateProperty(OcspConfiguration.SIGNATUREREQUIRED, "true");
     }
 
     public void tearDown() throws Exception {
-    	TestTools.getConfigurationSession().restoreConfiguration();
+    	configurationSessionRemote.restoreConfiguration();
         removeTestCA();
     }
 

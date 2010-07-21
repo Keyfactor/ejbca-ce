@@ -13,6 +13,9 @@
  
 package org.ejbca.ui.cli.ra;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -24,6 +27,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
 
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "finduser"; }
 	public String getDescription() { return "Find and show details of a user"; }
@@ -37,7 +43,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
             }
             String username = args[1];
             try {
-                UserDataVO data = getUserAdminSession().findUser(getAdmin(), username);
+                UserDataVO data = userAdminSession.findUser(getAdmin(), username);
                 if (data != null) {
                 	getLogger().info("Found user:");
                 	getLogger().info("username=" + data.getUsername());

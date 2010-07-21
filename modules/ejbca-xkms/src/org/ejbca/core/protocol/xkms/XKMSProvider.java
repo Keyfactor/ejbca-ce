@@ -31,8 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
+import javax.ejb.EJB;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -59,12 +58,9 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
@@ -129,6 +125,15 @@ public class XKMSProvider implements Provider<Source> {
     private static Marshaller marshaller = null;
     private static Unmarshaller unmarshaller = null;
     private static DocumentBuilderFactory dbf = null;
+    
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private SignSessionLocal signSession;
+    
+    
     
     static{    	
     	try {
@@ -316,12 +321,12 @@ public class XKMSProvider implements Provider<Source> {
 							// Check that the issuer is among accepted issuers
 							int cAId = CertTools.getIssuerDN(verCert).hashCode();
 
-							Collection acceptedCAIds = XKMSConfig.getAcceptedCA(intAdmin, getCAAdminSession());
+							Collection acceptedCAIds = XKMSConfig.getAcceptedCA(intAdmin, caAdminSession);
 							if(!acceptedCAIds.contains(new Integer(cAId))){
 								throw new Exception("Error XKMS request signature certificate isn't among the list of accepted CA certificates");
 							}
 
-							CAInfo cAInfo = getCAAdminSession().getCAInfo(intAdmin, cAId);
+							CAInfo cAInfo = caAdminSession.getCAInfo(intAdmin, cAId);
 							Collection cACertChain = cAInfo.getCertificateChain();
 							// Check issuer and validity						
 							X509Certificate rootCert = null;
@@ -364,7 +369,7 @@ public class XKMSProvider implements Provider<Source> {
 							cpv.validate(cp, param); 
 
 							// Check revocation status
-							boolean revoked = getCertStoreSession().isRevoked(CertTools.getIssuerDN(verCert), verCert.getSerialNumber());
+							boolean revoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(verCert), verCert.getSerialNumber());
 							if (revoked) {
 								return false;
 							}
@@ -397,7 +402,7 @@ public class XKMSProvider implements Provider<Source> {
 
 				XKMSCAServiceRequest cAReq = new XKMSCAServiceRequest(result, id,true,false);
 
-				XKMSCAServiceResponse resp = (XKMSCAServiceResponse) getSignSession().extendedService(admin, XKMSConfig.cAIdUsedForSigning(admin, getCAAdminSession()), cAReq);
+				XKMSCAServiceResponse resp = (XKMSCAServiceResponse) signSession.extendedService(admin, XKMSConfig.cAIdUsedForSigning(admin, caAdminSession), cAReq);
 
 				retval = resp.getSignedDocument();
 			} catch (Exception e) {
@@ -421,28 +426,6 @@ public class XKMSProvider implements Provider<Source> {
         return ServiceLocator.getInstance();
     }
     
-	private ICertificateStoreSessionLocal certificatestoresession = null;
-	protected ICertificateStoreSessionLocal getCertStoreSession() throws ClassCastException, CreateException, NamingException{
-		if(certificatestoresession == null){
-			certificatestoresession = ((ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME)).create();
-		}
-		return certificatestoresession;
-	}
 	
-	private ICAAdminSessionLocal caadminsession = null;
-	protected ICAAdminSessionLocal getCAAdminSession() throws ClassCastException, CreateException, NamingException{ 		
-	    if(caadminsession == null){	  
-	    	caadminsession = ((ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME)).create();
-	    }
-	    return caadminsession;
-	}
-	
-	private ISignSessionLocal signsession = null;
-	protected ISignSessionLocal getSignSession() throws ClassCastException, CreateException, NamingException{
-		if(signsession == null){
-			signsession = ((ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
-		}
-		return signsession;
-	}
 
 }

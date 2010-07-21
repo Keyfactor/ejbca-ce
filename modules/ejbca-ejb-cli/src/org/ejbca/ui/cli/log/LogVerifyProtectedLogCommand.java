@@ -15,6 +15,9 @@ package org.ejbca.ui.cli.log;
 
 import java.rmi.RemoteException;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.core.model.log.ProtectedLogConstants;
 import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -26,6 +29,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class LogVerifyProtectedLogCommand extends BaseLogAdminCommand  {
 
+    @EJB
+    private ProtectedLogSessionRemote protectedLogSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "verifyprotected"; }
 	public String getDescription() { return "Verify log (ProtectedLog)"; }
@@ -40,14 +46,12 @@ public class LogVerifyProtectedLogCommand extends BaseLogAdminCommand  {
 		long freezeThreshold = Long.parseLong(args[1]) * 1000;
 		getLogger().info("Starting verification..");
         try {
-			ProtectedLogEventIdentifier protectedLogEventIdentifier = getProtectedLogSession().verifyEntireLog(ProtectedLogConstants.ACTION_NONE, freezeThreshold);
+			ProtectedLogEventIdentifier protectedLogEventIdentifier = protectedLogSession.verifyEntireLog(ProtectedLogConstants.ACTION_NONE, freezeThreshold);
 			if (protectedLogEventIdentifier == null) {
 				getLogger().info("Log verification OK!");
 		        return;
 			}
 			getLogger().error("Failed to verify nodeGUID=" + protectedLogEventIdentifier.getNodeGUID() + " counter=" + protectedLogEventIdentifier.getCounter() + "");
-		} catch (RemoteException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

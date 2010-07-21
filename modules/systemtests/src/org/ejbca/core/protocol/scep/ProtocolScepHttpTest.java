@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.rmi.RemoteException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -44,6 +43,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
+import javax.ejb.EJB;
 import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestSuite;
@@ -69,7 +69,8 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -80,7 +81,6 @@ import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.gargoylesoftware.htmlunit.SubmitMethod;
@@ -95,19 +95,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class ProtocolScepHttpTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
-    protected final static String httpPort;
-    static {
-        String tmp;
-        try {
-            tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
-        } catch (RemoteException e) {
-            tmp = "8080";
-            log.error("Not possible to get property " + WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
-        }
-        httpPort = tmp;
-    }
 
-    private static final String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
     private static final String resourceScep = "publicweb/apply/scep/pkiclient.exe";
     private static final String resourceScepNoCA = "publicweb/apply/scep/noca/pkiclient.exe";
 
@@ -131,7 +119,6 @@ public class ProtocolScepHttpTest extends CaTestCase {
             + "BPcw4NPIt4nMOFKSGg5oM1nGDPGFN7eorZV+/2uWiQfdtK4B4lzCTuNxWRT853dW" + "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI"
             + "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
 
-    private IUserAdminSessionRemote usersession;
     private int caid = getTestCAId();
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private X509Certificate cacert;
@@ -146,7 +133,16 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private static String transId = null;
 
     private Random rand = new Random();
+    private final String httpPort;
+    private final String httpReqPath;
 
+    @EJB
+    private ConfigurationSessionRemote configurationSessionRemote;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
+
+    
     static {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
@@ -164,7 +160,10 @@ public class ProtocolScepHttpTest extends CaTestCase {
         super(name);
         createTestCA();
         cacert = (X509Certificate) getTestCACert();
-        usersession = TestTools.getUserAdminSession();
+        
+        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
+        
     }
 
     public static TestSuite suite() {
@@ -378,9 +377,9 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
     public void test99CleanUp() throws Exception {
         // remove user
-        usersession.deleteUser(admin, userName1);
+        userAdminSession.deleteUser(admin, userName1);
         log.debug("deleted user: " + userName1);
-        usersession.deleteUser(admin, userName2);
+        userAdminSession.deleteUser(admin, userName2);
         log.debug("deleted user: " + userName2);
     }
 
@@ -397,7 +396,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
     private void createScepUser(String userName, String userDN) throws Exception {
         try {
-            usersession.addUser(admin, getUserDataVO(userName, userDN), false);
+            userAdminSession.addUser(admin, getUserDataVO(userName, userDN), false);
             log.debug("created user: " + userName + ", foo123, " + userDN);
         } catch (Exception e) {
             log.debug("User " + userName + " already exists.");
@@ -406,7 +405,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
 
     private void changeScepUser(String userName, String userDN) throws Exception {
-        usersession.changeUser(admin, getUserDataVO(userName, userDN), false);
+        userAdminSession.changeUser(admin, getUserDataVO(userName, userDN), false);
         log.debug("changing user: " + userName + ", foo123, " + userDN);
     }
 

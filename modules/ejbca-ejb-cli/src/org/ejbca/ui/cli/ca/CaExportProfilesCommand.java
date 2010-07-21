@@ -19,6 +19,11 @@ import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -31,6 +36,15 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+    
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "exportprofiles"; }
 	public String getDescription() { return "Export profiles from the database to XML-files."; }
@@ -47,8 +61,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	getLogger().error("Error: '"+outpath+"' is not a directory.");
                 return;
             }
-            Collection certprofids = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(),0, getCAAdminSession().getAvailableCAs(getAdmin()));                                               
-			Collection endentityprofids = getRaAdminSession().getAuthorizedEndEntityProfileIds(getAdmin());
+            Collection certprofids = certificateStoreSession.getAuthorizedCertificateProfileIds(getAdmin(),0, caAdminSession.getAvailableCAs(getAdmin()));                                               
+			Collection endentityprofids = raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin());
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");
             Iterator iter = certprofids.iterator();
@@ -59,8 +73,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 } else if (SecConst.isFixedCertificateProfile(profileid)) {
                     //getLogger().debug("Skipping export fixed certificate profile with id '"+profileid+"'.");
                 } else {
-					String profilename = getCertificateStoreSession().getCertificateProfileName(getAdmin(), profileid);									
-                    CertificateProfile profile = getCertificateStoreSession().getCertificateProfile(getAdmin(),profileid);
+					String profilename = certificateStoreSession.getCertificateProfileName(getAdmin(), profileid);									
+                    CertificateProfile profile = certificateStoreSession.getCertificateProfile(getAdmin(),profileid);
                     if (profile == null) {
                     	getLogger().error("Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
                     } else {
@@ -81,8 +95,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
                     //getLogger().debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
                 } else {
-                	String profilename = getRaAdminSession().getEndEntityProfileName(getAdmin(), profileid);
-                    EndEntityProfile profile = getRaAdminSession().getEndEntityProfile(getAdmin(), profileid);
+                	String profilename = raAdminSession.getEndEntityProfileName(getAdmin(), profileid);
+                    EndEntityProfile profile = raAdminSession.getEndEntityProfile(getAdmin(), profileid);
                     if (profile == null) {
                     	getLogger().error("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
                     } else {

@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.crypto.SecretKey;
+import javax.ejb.EJB;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
@@ -51,6 +52,13 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -92,6 +100,27 @@ public class KRSSResponseGenerator extends
 	 
 	 protected Document requestDoc = null;
 
+	      @EJB
+	      private CAAdminSessionLocal caadminsession;
+	      
+	      @EJB 
+	      private AuthenticationSessionLocal authenticationSession;
+	      
+	      @EJB
+	      private CertificateStoreSessionLocal certificateStoreSession;
+	      
+	      @EJB
+	      private KeyRecoverySessionLocal keyRecoverySession;
+	      
+	      @EJB
+	      private RaAdminSessionLocal raAdminSessionLocal;
+	      
+	      @EJB
+	      private SignSessionLocal signSession;
+	      
+	      @EJB
+	      private UserAdminSessionLocal userAdminSession;
+	 
 	public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc) {
 		super(remoteIP, req);
 		this.requestDoc = requestDoc;
@@ -173,7 +202,7 @@ public class KRSSResponseGenerator extends
 		if((!recover && userDataVO.getStatus() == UserDataConstants.STATUS_NEW) || (recover && userDataVO.getStatus() == UserDataConstants.STATUS_KEYRECOVERY)){
 				
 			try{		
-				boolean usekeyrecovery = !reissue && (getRAAdminSession().loadGlobalConfiguration(pubAdmin)).getEnableKeyRecovery();
+				boolean usekeyrecovery = !reissue && (raAdminSessionLocal.loadGlobalConfiguration(pubAdmin)).getEnableKeyRecovery();
 
 				boolean savekeys = userDataVO.getKeyRecoverable() && usekeyrecovery &&  (userDataVO.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
 				boolean loadkeys = (userDataVO.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
@@ -187,17 +216,17 @@ public class KRSSResponseGenerator extends
 				KeyRecoveryData keyData = null;
 				boolean reusecertificate = false;
 				if(loadkeys){
-					EndEntityProfile endEntityProfile = getRAAdminSession().getEndEntityProfile(pubAdmin, userDataVO.getEndEntityProfileId());
+					EndEntityProfile endEntityProfile = raAdminSessionLocal.getEndEntityProfile(pubAdmin, userDataVO.getEndEntityProfileId());
 					reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 
 					// used saved keys.
-					keyData = getKeyRecoverySession().keyRecovery(pubAdmin, userDataVO.getUsername(), userDataVO.getEndEntityProfileId());
+					keyData = keyRecoverySession.keyRecovery(pubAdmin, userDataVO.getUsername(), userDataVO.getEndEntityProfileId());
 					keyPair = keyData.getKeyPair();
 					certKey = keyPair.getPublic();
 					privKey = keyPair.getPrivate();
 
 					if(reusecertificate){
-						getKeyRecoverySession().unmarkUser(pubAdmin,userDataVO.getUsername());
+					    keyRecoverySession.unmarkUser(pubAdmin,userDataVO.getUsername());
 					}
 				}
 				else{
@@ -215,25 +244,25 @@ public class KRSSResponseGenerator extends
 				X509Certificate cert = null;
 				if(reusecertificate){
 					cert = (X509Certificate) keyData.getCertificate();	             
-					boolean finishUser = getCAAdminSession().getCAInfo(pubAdmin,CertTools.getIssuerDN(cert).hashCode()).getFinishUser();
+					boolean finishUser = caadminsession.getCAInfo(pubAdmin,CertTools.getIssuerDN(cert).hashCode()).getFinishUser();
 					if(finishUser){	           	  
-						getAuthenticationSession().finishUser(pubAdmin, userDataVO.getUsername(), password);
+					    authenticationSession.finishUser(pubAdmin, userDataVO.getUsername(), password);
 					}
 
 				}else{        	 
-					cert = (X509Certificate)getSignSession().createCertificate(pubAdmin, userDataVO.getUsername(), password, certKey);	 
+					cert = (X509Certificate) signSession.createCertificate(pubAdmin, userDataVO.getUsername(), password, certKey);	 
 				}
 
 				if (savekeys) {
 					// Save generated keys to database.	             
-					getKeyRecoverySession().addKeyRecoveryData(pubAdmin, cert, userDataVO.getUsername(), keyPair);
+				    keyRecoverySession.addKeyRecoveryData(pubAdmin, cert, userDataVO.getUsername(), keyPair);
 				}
 
 				// Save the revocation code
 				if(revocationCode != null && !recover){
-					UserDataVO data = getUserAdminSession().findUser(pubAdmin, userDataVO.getUsername());
+					UserDataVO data = userAdminSession.findUser(pubAdmin, userDataVO.getUsername());
 					data.getExtendedinformation().setRevocationCodeIdentifier(revocationCode);
-					getUserAdminSession().changeUser(raAdmin, data, true);
+					userAdminSession.changeUser(raAdmin, data, true);
 
 				}
 
@@ -313,7 +342,7 @@ public class KRSSResponseGenerator extends
 		
 		if(subjectDN != null){
 			try {
-				retval = getUserAdminSession().findUserBySubjectDN(pubAdmin, subjectDN);
+				retval = userAdminSession.findUserBySubjectDN(pubAdmin, subjectDN);
 			} catch (AuthorizationDeniedException e) {
 				log.error(intres.getLocalizedMessage("xkms.errorinprivs"),e);				
 			}		
@@ -333,8 +362,8 @@ public class KRSSResponseGenerator extends
 		UserDataVO retval = null;
         
 		try {
-			String username = getCertStoreSession().findUsernameByCertSerno(pubAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert));
-			retval = getUserAdminSession().findUser(pubAdmin, username);
+			String username = certificateStoreSession.findUsernameByCertSerno(pubAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert));
+			retval = userAdminSession.findUser(pubAdmin, username);
 		} catch (Exception e) {
 			log.error(intres.getLocalizedMessage("xkms.errorfindinguserdata",cert.getSubjectDN().toString()));			
 		}
@@ -437,19 +466,19 @@ public class KRSSResponseGenerator extends
 		boolean retval = false;
 		
 		try {
-			CAInfo cAInfo = getCAAdminSession().getCAInfo(pubAdmin, CertTools.getIssuerDN(cert).hashCode());
+			CAInfo cAInfo = caadminsession.getCAInfo(pubAdmin, CertTools.getIssuerDN(cert).hashCode());
 			if(cAInfo != null){		
 				Collection caCertChain = cAInfo.getCertificateChain();
 				Iterator iter = caCertChain.iterator();
 				
 				boolean revoked = false;				
-				if (getCertStoreSession().isRevoked(CertTools.getIssuerDN(cert), cert.getSerialNumber())) {
+				if (certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), cert.getSerialNumber())) {
 					revoked = true;
 				}
 				
 				while(iter.hasNext()){
 					X509Certificate cACert = (X509Certificate) iter.next();
-					if (getCertStoreSession().isRevoked(CertTools.getIssuerDN(cACert), cACert.getSerialNumber())) {
+					if (certificateStoreSession.isRevoked(CertTools.getIssuerDN(cACert), cACert.getSerialNumber())) {
 						revoked = true;
 					}
 				}

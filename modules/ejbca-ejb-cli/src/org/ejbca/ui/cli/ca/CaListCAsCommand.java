@@ -17,6 +17,9 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
@@ -29,6 +32,9 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaListCAsCommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "listcas"; }
 	public String getDescription() { return "Lists the names of all available CAs"; }
@@ -36,11 +42,11 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
         	CryptoProviderTools.installBCProvider();
-            Collection caids = getCAAdminSession().getAvailableCAs(getAdmin());
+            Collection caids = caAdminSession.getAvailableCAs(getAdmin());
             Iterator iter = caids.iterator();
             while (iter.hasNext()) {
                 int caid = ((Integer)iter.next()).intValue();
-                CAInfo ca = getCAAdminSession().getCAInfo(getAdmin(),caid);
+                CAInfo ca = caAdminSession.getCAInfo(getAdmin(),caid);
                 Collection certs = ca.getCertificateChain();
                 Iterator ci = certs.iterator();
                 Certificate cacert = null;

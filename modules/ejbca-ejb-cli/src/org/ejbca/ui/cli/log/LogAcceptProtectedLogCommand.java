@@ -19,6 +19,9 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.security.SecureRandom;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -28,6 +31,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
 	
+    @EJB
+    private ProtectedLogSessionRemote protectedLogSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "accept"; }
 	public String getDescription() { return "Signs unsigned log-chains (ProtectedLog)"; }
@@ -66,21 +72,19 @@ public class LogAcceptProtectedLogCommand extends BaseLogAdminCommand  {
         try {
         	if (nodeGUID.intValue() == 0) {
         		getLogger().info("Signing "+(all? "all":"frozen")+"...");
-        		if (getProtectedLogSession().signAllUnsignedChains(all)) {
+        		if (protectedLogSession.signAllUnsignedChains(all)) {
         			getLogger().info("SUCCESS!");
         		} else {
         			getLogger().error("FAILED!");
         		}
         	} else {
         		getLogger().info("Signing "+nodeGUID+"...");
-        		if (getProtectedLogSession().signUnsignedChainUsingSingleSignerNode(nodeGUID)) {
+        		if (protectedLogSession.signUnsignedChainUsingSingleSignerNode(nodeGUID)) {
         			getLogger().info("SUCCESS!");
         		} else {
         			getLogger().error("FAILED!");
         		}        		
         	}
-        } catch (RemoteException e) {
-        	getLogger().error("",e);
         } catch (Exception e) {
         	getLogger().error("",e);
         }

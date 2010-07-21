@@ -19,11 +19,14 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
+import javax.ejb.EJB;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectConfiguration;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -33,7 +36,6 @@ import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 
 /**
  * Tests the log modules entity and session beans.
@@ -43,13 +45,19 @@ import org.ejbca.util.TestTools;
 public class ProtectTest extends TestCase {
     private static Logger log = Logger.getLogger(ProtectTest.class);
 
-    private TableProtectSessionRemote tableProtectSession = TestTools.getTableProtectSession();
-    private ICertificateStoreSessionRemote certificateStoreSession = TestTools.getCertificateStoreSession();
+    @EJB
+    private TableProtectSessionRemoteejb3 tableProtectSession;
 
     private static ArrayList entrys = null;
 
     private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    @EJB
+    private ConfigurationSessionRemote configurationSessionRemote;
+    
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
     /**
      * Creates a new TestLog object.
      *
@@ -62,7 +70,7 @@ public class ProtectTest extends TestCase {
 
     public void setUp() throws Exception {
         log.trace(">setUp()");
-        TestTools.getConfigurationSession().updateProperty(ProtectConfiguration.CONFIG_PROTECTIONENABLED, "true");
+        configurationSessionRemote.updateProperty(ProtectConfiguration.CONFIG_PROTECTIONENABLED, "true");
         if (entrys == null) {
         	createLogEntrys();
         }
@@ -70,7 +78,7 @@ public class ProtectTest extends TestCase {
     }
 
     public void tearDown() throws Exception {
-    	TestTools.getConfigurationSession().restoreConfiguration();
+    	configurationSessionRemote.restoreConfiguration();
     }
 
     private void createLogEntrys() {

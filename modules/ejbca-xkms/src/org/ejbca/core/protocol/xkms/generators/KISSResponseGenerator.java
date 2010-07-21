@@ -24,9 +24,12 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -58,7 +61,12 @@ public class KISSResponseGenerator extends
 	
 	 private static final InternalResources intres = InternalResources.getInstance();
 	
-
+	 @EJB
+	 private CertificateStoreSessionLocal certificateStoreSession;
+	 
+	 @EJB
+	 private UserAdminSessionLocal userAdminSession;
+	 
 	public KISSResponseGenerator(String remoteIP,RequestAbstractType req) {
 		super(remoteIP,req);
 	}
@@ -136,14 +144,14 @@ public class KISSResponseGenerator extends
 				Query query = genQueryFromUseKeyWith(queryKeyBindingType.getUseKeyWith());
                 
 				try {            		
-					Collection userDatas = getUserAdminSession().query(pubAdmin, query, null, null, resSize);
+					Collection userDatas = userAdminSession.query(pubAdmin, query, null, null, resSize);
 
 					Iterator<UserDataVO> userIter = userDatas.iterator();
 					while(userIter.hasNext() && retval.size() <= resSize){
 						UserDataVO nextUser = userIter.next();
 						// Find all the certificates of the matching users
 						try {
-							Collection userCerts = getCertStoreSession().findCertificatesByUsername(pubAdmin, nextUser.getUsername());
+							Collection userCerts = certificateStoreSession.findCertificatesByUsername(pubAdmin, nextUser.getUsername());
 							// For all the certificates
 							Iterator<X509Certificate> userCertIter = userCerts.iterator();
 							while(userCertIter.hasNext() &&  retval.size() <= resSize){
@@ -152,7 +160,7 @@ public class KISSResponseGenerator extends
 									// Check that the certificate is valid 
 									nextCert.checkValidity(new Date());								
 									// and not revoked	
-									CertificateInfo certInfo = getCertStoreSession().getCertificateInfo(pubAdmin, CertTools.getFingerprintAsString(nextCert));
+									CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(pubAdmin, CertTools.getFingerprintAsString(nextCert));
 									if(certInfo.getRevocationReason() == RevokedCertInfo.NOT_REVOKED){
 										if(fulfillsKeyUsageAndUseKeyWith(queryKeyBindingType,nextCert)){
 											retval.add(nextCert);											

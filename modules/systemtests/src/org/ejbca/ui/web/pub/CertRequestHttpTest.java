@@ -26,18 +26,19 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJB;
 
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.TestTools;
 
 /**
  * Tests http servlet for certificate request
@@ -50,40 +51,28 @@ public class CertRequestHttpTest extends CaTestCase {
     protected final String httpReqPath;
     protected final String resourceReq;
 
-    private static IUserAdminSessionRemote usersession;
     protected int caid = getTestCAId();
     protected static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     protected static X509Certificate cacert = null;
 
-    protected final static String httpPort;
-    static {
-        String tmp;
-        try {
-            tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
-        } catch (RemoteException e) {
-            tmp = "8080";
-            log.error("Not possible to get property " + WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
-        }
-        httpPort = tmp;
-    }
+    @EJB
+    private ConfigurationSessionRemote configurationSession;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
 
-    public static TestSuite suite() {
-        return new TestSuite(CertRequestHttpTest.class);
-    }
-
-    public CertRequestHttpTest(String name) throws Exception {
-        this(name, "http://127.0.0.1:" + httpPort + "/ejbca", "certreq");
-    }
-
-    protected CertRequestHttpTest(String name, String reqP, String res) throws Exception {
+    public CertRequestHttpTest(String name) {
         super(name);
-        httpReqPath = reqP;
-        resourceReq = res;
+        httpReqPath = "http://127.0.0.1:" + configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080") + "/ejbca";
+        resourceReq = "certreq";
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
         createTestCA();
         cacert = (X509Certificate) getTestCACert();
-        usersession = TestTools.getUserAdminSession();
+    }
+
+    public static TestSuite suite() {
+        return new TestSuite(CertRequestHttpTest.class);
     }
 
     public void setUp() throws Exception {
@@ -333,7 +322,7 @@ public class CertRequestHttpTest extends CaTestCase {
     public void test99Cleanup() throws Exception {
         log.trace(">test99Cleanup()");
         removeTestCA();
-        usersession.deleteUser(admin, "reqtest");
+        userAdminSession.deleteUser(admin, "reqtest");
         log.trace("<test99Cleanup()");
     }
 
@@ -345,7 +334,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+            userAdminSession.addUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
             log.debug("created user: reqtest, foo123, C=SE, O=PrimeKey, CN=ReqTest");
         } catch (RemoteException re) {
@@ -356,14 +345,14 @@ public class CertRequestHttpTest extends CaTestCase {
 
         if (userExists) {
             log.debug("User reqtest already exists.");
-            usersession.changeUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+            userAdminSession.changeUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, UserDataConstants.STATUS_NEW, caid);
             log.debug("Reset status to NEW");
         }
     }
 
     private void setupUserStatus(int status) throws Exception {
-        usersession.changeUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+        userAdminSession.changeUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, status, caid);
         log.debug("Set status to: " + status);
     }

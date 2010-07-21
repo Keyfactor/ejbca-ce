@@ -23,15 +23,17 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /** This is a performance test:
@@ -43,6 +45,8 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class SignLotsOfCertsTest extends CaTestCase {
 
+    public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
+    
 	private static final Logger log = Logger.getLogger(SignLotsOfCertsTest.class);
 
     private static final String CANAME = "TESTPERF1";
@@ -50,6 +54,15 @@ public class SignLotsOfCertsTest extends CaTestCase {
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
     public static KeyPair keys;
+    
+    @EJB
+    private AuthorizationSessionRemote authorizationSession;
+    
+    @EJB
+    private SignSessionRemote signSession;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
 
     /**
      * Creates a new TestSignSession object.
@@ -76,8 +89,10 @@ public class SignLotsOfCertsTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-        	TestTools.getUserAdminSession().addUser(admin,"performancefoo"+post,"foo123","C=SE,O=AnaTom,OU=Performance Test,CN=performancefoo",null,"performancefoo@foo.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
-            log.debug("created user: performancefoo"+post+", foo123, C=SE, O=AnaTom, OU=Performance Test,CN=performancefoo");
+            userAdminSession.addUser(admin, "performancefoo" + post, "foo123", "C=SE,O=AnaTom,OU=Performance Test,CN=performancefoo", null,
+                    "performancefoo@foo.se", false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, 0, caid);
+            log.debug("created user: performancefoo" + post + ", foo123, C=SE, O=AnaTom, OU=Performance Test,CN=performancefoo");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -87,41 +102,44 @@ public class SignLotsOfCertsTest extends CaTestCase {
         }
         if (userExists) {
             log.info("User performancefoo already exists, resetting status.");
-            TestTools.getUserAdminSession().setUserStatus(admin,"performancefoo"+post,UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(admin, "performancefoo" + post, UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
     }
+
     private void deleteUser(String post) throws Exception {
         try {
-        	TestTools.getUserAdminSession().deleteUser(admin, "performancefoo"+post);
-            log.debug("deleted user: performancefoo"+post);
+            userAdminSession.deleteUser(admin, "performancefoo" + post);
+            log.debug("deleted user: performancefoo" + post);
         } catch (RemoteException re) {
-        	// User did not exist, which is fine so do nothing.
+            // User did not exist, which is fine so do nothing.
         }
     }
-    
+
     public void test00AddRSACA() throws Exception {
-        TestTools.getAuthorizationSession().initialize(admin, getTestCAId(CANAME), TestTools.defaultSuperAdminCN);
+        authorizationSession.initialize(admin, getTestCAId(CANAME), DEFAULT_SUPERADMIN_CN);
         createTestCA(CANAME, 2048);
-        CAInfo info = TestTools.getCAAdminSession().getCAInfo(admin, CANAME);
+        CAInfo info = caAdminSessionRemote.getCAInfo(admin, CANAME);
         X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-        assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN="+CANAME));
-        assertTrue("Creating CA failed", info.getSubjectDN().equals("CN="+CANAME));
+        assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + CANAME));
+        assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + CANAME));
         PublicKey pk = cert.getPublicKey();
         if (pk instanceof RSAPublicKey) {
-        	RSAPublicKey rsapk = (RSAPublicKey) pk;
-        	assertEquals(rsapk.getAlgorithm(), "RSA");
+            RSAPublicKey rsapk = (RSAPublicKey) pk;
+            assertEquals(rsapk.getAlgorithm(), "RSA");
         } else {
-        	assertTrue("Public key is not EC", false);
+            assertTrue("Public key is not EC", false);
         }
-        assertTrue("CA is not valid for the specified duration.",cert.getNotAfter().after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && cert.getNotAfter().before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
+        assertTrue("CA is not valid for the specified duration.", cert.getNotAfter().after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
     }
 
     /**
      * creates new user
-     *
-     * @throws Exception if an error occurs...
+     * 
+     * @throws Exception
+     *             if an error occurs...
      */
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
@@ -140,23 +158,24 @@ public class SignLotsOfCertsTest extends CaTestCase {
 
     /**
      * creates cert
-     *
-     * @throws Exception if en error occurs...
+     * 
+     * @throws Exception
+     *             if en error occurs...
      */
     public void test03SignLotsOfCerts() throws Exception {
         log.trace(">test03SignLotsOfCerts()");
 
-		long before = System.currentTimeMillis();
-        Thread no1 = new Thread(new SignTester(),"no1");
-        Thread no2 = new Thread(new SignTester(),"no2");
-        Thread no3 = new Thread(new SignTester(),"no3");
-        Thread no4 = new Thread(new SignTester(),"no4");
-        Thread no5 = new Thread(new SignTester(),"no5");
-        Thread no6 = new Thread(new SignTester(),"no6");
-        Thread no7 = new Thread(new SignTester(),"no7");
-        Thread no8 = new Thread(new SignTester(),"no8");
-        Thread no9 = new Thread(new SignTester(),"no9");
-        Thread no10 = new Thread(new SignTester(),"no10");
+        long before = System.currentTimeMillis();
+        Thread no1 = new Thread(new SignTester(), "no1");
+        Thread no2 = new Thread(new SignTester(), "no2");
+        Thread no3 = new Thread(new SignTester(), "no3");
+        Thread no4 = new Thread(new SignTester(), "no4");
+        Thread no5 = new Thread(new SignTester(), "no5");
+        Thread no6 = new Thread(new SignTester(), "no6");
+        Thread no7 = new Thread(new SignTester(), "no7");
+        Thread no8 = new Thread(new SignTester(), "no8");
+        Thread no9 = new Thread(new SignTester(), "no9");
+        Thread no10 = new Thread(new SignTester(), "no10");
         no1.start();
         log.info("Started no1");
         no2.start();
@@ -187,22 +206,22 @@ public class SignLotsOfCertsTest extends CaTestCase {
         no8.join();
         no9.join();
         no10.join();
-		long after = System.currentTimeMillis();
-		long diff = after - before;
-        log.info("All threads finished. Total time: "+diff+" ms");
+        long after = System.currentTimeMillis();
+        long diff = after - before;
+        log.info("All threads finished. Total time: " + diff + " ms");
         int noOfGeneratedCerts = (10 * SignTester.NO_CERTS);
-        log.info("Generated "+noOfGeneratedCerts+" certificates in total.");
+        log.info("Generated " + noOfGeneratedCerts + " certificates in total.");
         BigDecimal d = new BigDecimal(diff).divide(new BigDecimal(1000));
         BigDecimal noCerts = new BigDecimal(noOfGeneratedCerts).divide(d, 2, RoundingMode.UP);
-        log.info("Performance is "+ noCerts.intValue() +" certs/sec.");
-        //FileOutputStream fos = new FileOutputStream("testcert.crt");
-        //fos.write(cert.getEncoded());
-        //fos.close();
+        log.info("Performance is " + noCerts.intValue() + " certs/sec.");
+        // FileOutputStream fos = new FileOutputStream("testcert.crt");
+        // fos.write(cert.getEncoded());
+        // fos.close();
         log.trace("<test03SignLotsOfCerts()");
     }
-    
+
     public void testZZZCleanUp() throws Exception {
-    	removeTestCA(CANAME);
+        removeTestCA(CANAME);
         deleteUser("no1");
         deleteUser("no2");
         deleteUser("no3");
@@ -216,30 +235,30 @@ public class SignLotsOfCertsTest extends CaTestCase {
     }
 
     private class SignTester implements Runnable {
-    	
-    	public static final int NO_CERTS=1000;
-    	
-    	public void run() {
+
+        public static final int NO_CERTS = 1000;
+
+        public void run() {
             try {
-                String user = "performancefoo"+Thread.currentThread().getName();
-				long before = System.currentTimeMillis();
-				for (int i = 0; i<NO_CERTS;i++) {
-			        // user that we know exists...
-				    X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin, user, "foo123", keys.getPublic());
-				    assertNotNull("Failed to create certificate", cert);
-				    if ((i % 100) == 0) {
-				    	long mellantid = System.currentTimeMillis() - before;
-				    	log.info(Thread.currentThread().getName()+" has generated "+i+", time="+mellantid);
-				    	
-				    }
-				}
-				long after = System.currentTimeMillis();
-				long diff = after - before;
-				log.info("Time used ("+Thread.currentThread().getName()+"): "+diff);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}    		
-    	}
+                String user = "performancefoo" + Thread.currentThread().getName();
+                long before = System.currentTimeMillis();
+                for (int i = 0; i < NO_CERTS; i++) {
+                    // user that we know exists...
+                    X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, user, "foo123", keys.getPublic());
+                    assertNotNull("Failed to create certificate", cert);
+                    if ((i % 100) == 0) {
+                        long mellantid = System.currentTimeMillis() - before;
+                        log.info(Thread.currentThread().getName() + " has generated " + i + ", time=" + mellantid);
+
+                    }
+                }
+                long after = System.currentTimeMillis();
+                long diff = after - before;
+                log.info("Time used (" + Thread.currentThread().getName() + "): " + diff);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 }

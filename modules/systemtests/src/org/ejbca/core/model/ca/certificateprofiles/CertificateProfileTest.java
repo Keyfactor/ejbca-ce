@@ -16,16 +16,18 @@ package org.ejbca.core.model.ca.certificateprofiles;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.EJB;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
@@ -36,10 +38,15 @@ import org.ejbca.util.dn.DNFieldExtractor;
 public class CertificateProfileTest extends TestCase {
     private static final Logger log = Logger.getLogger(CertificateProfileTest.class);
 
-    private static ICertificateStoreSessionRemote certificateStoreSession;
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    @EJB
+    private CAAdminSessionRemote caAdminSessionRemote;
+    
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
     /**
      * Creates a new TestCertificateProfile object.
      *
@@ -47,7 +54,6 @@ public class CertificateProfileTest extends TestCase {
      */
     public CertificateProfileTest(String name) {
         super(name);
-        certificateStoreSession = TestTools.getCertificateStoreSession();
     }
 
     public void setUp() throws Exception {
@@ -104,7 +110,7 @@ public class CertificateProfileTest extends TestCase {
         log.trace(">test03CloneCertificateProfile()");
         boolean ret = false;
         try {
-            certificateStoreSession.cloneCertificateProfile(admin, "TEST2", "TEST", TestTools.getCAAdminSession().getAvailableCAs(admin));
+            certificateStoreSession.cloneCertificateProfile(admin, "TEST2", "TEST", caAdminSessionRemote.getAvailableCAs(admin));
             ret = true;
         } catch (CertificateProfileExistsException pee) {
         }

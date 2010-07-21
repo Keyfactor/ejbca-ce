@@ -18,15 +18,15 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
-import java.util.Date;
-import java.util.Random;
+
+import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -38,7 +38,6 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -49,11 +48,16 @@ import org.ejbca.util.keystore.KeyTools;
 public class AddLotsofCertsPerUserTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AddLotsofCertsPerUserTest.class);
 
-    private IUserAdminSessionRemote userAdminSession = TestTools.getUserAdminSession();
-    private ISignSessionRemote signSession = TestTools.getSignSession();
-    private IRaAdminSessionRemote raAdminSession = TestTools.getRaAdminSession();
-    private ICertificateStoreSessionRemote certificateStoreSession = TestTools.getCertificateStoreSession();
-    private ICreateCRLSessionRemote createCrlSession = TestTools.getCreateCRLSession();
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
+    @EJB
+    private SignSessionRemote signSession;
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    @EJB
+    private CreateCRLSessionRemote createCrlSession;
 
     private int userNo = 0;
     private KeyPair keys;
@@ -81,9 +85,11 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
     }
 
     /**
-     * tests creating 10 users, each with 50 active, 50 revoked, 50 expired and 50 expired and "archived"
-     *
-     * @throws Exception on error
+     * tests creating 10 users, each with 50 active, 50 revoked, 50 expired and
+     * 50 expired and "archived"
+     * 
+     * @throws Exception
+     *             on error
      */
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
@@ -99,7 +105,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             CertificateProfile certificateProfile = new EndUserCertificateProfile();
             certificateProfile.setAllowValidityOverride(true);
             try {
-            	certificateStoreSession.addCertificateProfile(administrator, certificateProfileName, certificateProfile);
+                certificateStoreSession.addCertificateProfile(administrator, certificateProfileName, certificateProfile);
             } catch (CertificateProfileExistsException e) {
             }
 
@@ -111,37 +117,37 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-        	UserDataVO userdata = new UserDataVO(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname, 
-        			email, UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid,
-        			null,null, token, hardtokenissuerid, null);
-        	userdata.setPassword(password);
+            UserDataVO userdata = new UserDataVO(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname, email,
+                    UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid, null, null, token, hardtokenissuerid, null);
+            userdata.setPassword(password);
             if (userAdminSession.findUser(administrator, username) != null) {
                 log.warn("User already exists in the database.");
             } else {
-            	userAdminSession.addUser(administrator, userdata, true);
+                userAdminSession.addUser(administrator, userdata, true);
             }
             // Create some valid certs
-            for (int j=0; j<CERTS_OF_EACH_KIND; j++) {
+            for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 userAdminSession.setClearTextPassword(administrator, username, password);
-            	userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
+                userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 signSession.createCertificate(administrator, username, password, keys.getPublic());
             }
             // Create some revoked certs
-            for (int j=0; j<CERTS_OF_EACH_KIND; j++) {
+            for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 userAdminSession.setClearTextPassword(administrator, username, password);
-            	userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
+                userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
-                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
-                		username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
+                        RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
             }
 
             int cid = certificateStoreSession.getCertificateProfileId(administrator, certificateProfileName);
             int eid = raAdminSession.getEndEntityProfileId(administrator, endEntityProfileName);
             if (eid == 0) {
                 EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-                endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES , 0, "" + cid);
+                endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cid);
                 endEntityProfile.setUse(EndEntityProfile.ENDTIME, 0, true);
-                //endEntityProfile.setValue(EndEntityProfile.ENDTIME, 0, "0:0:10");
+                // endEntityProfile.setValue(EndEntityProfile.ENDTIME, 0,
+                // "0:0:10");
                 raAdminSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
                 eid = raAdminSession.getEndEntityProfileId(administrator, endEntityProfileName);
             }
@@ -152,20 +158,20 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             userdata.setCertificateProfileId(cid);
             userAdminSession.changeUser(administrator, userdata, true);
             // Create some soon-to-be-expired certs
-            for (int j=0; j<CERTS_OF_EACH_KIND; j++) {
+            for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 userAdminSession.setClearTextPassword(administrator, username, password);
-            	userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
+                userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
-                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
-                		username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
+                        RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
             }
             // Create some expired and archived
-            for (int j=0; j<CERTS_OF_EACH_KIND; j++) {
+            for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
                 userAdminSession.setClearTextPassword(administrator, username, password);
-            	userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
+                userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
-                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
-                		username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
+                        RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
                 createCrlSession.setArchivedStatus(CertTools.getFingerprintAsString(certificate));
             }
             raAdminSession.removeEndEntityProfile(administrator, endEntityProfileName);

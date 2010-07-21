@@ -13,6 +13,9 @@
  
 package org.ejbca.ui.cli.ra;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -24,6 +27,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaSetPwdCommand extends BaseRaAdminCommand {
 
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "setpwd"; }
 	public String getDescription() { return "Set a (hashed) password for a user"; }
@@ -39,7 +45,7 @@ public class RaSetPwdCommand extends BaseRaAdminCommand {
             String password = args[2];
             getLogger().info("Setting password (hashed only) " + password + " for user " + username);
             try {
-                getUserAdminSession().setPassword(getAdmin(), username, password);
+                userAdminSession.setPassword(getAdmin(), username, password);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

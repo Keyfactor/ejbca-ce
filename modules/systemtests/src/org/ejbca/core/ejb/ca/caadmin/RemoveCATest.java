@@ -13,11 +13,13 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import javax.ejb.EJB;
+
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 
 /**
  * Tests and removes the ca data entity bean.
@@ -28,6 +30,9 @@ public class RemoveCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
     /**
      * Creates a new TestCAs object.
      *
@@ -63,14 +68,14 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test03removeECDSACA()");
         boolean ret = false;
         try {
-            TestTools.getCAAdminSession().removeCA(admin, "CN=TESTECDSA".hashCode());
+            caAdminSessionRemote.removeCA(admin, "CN=TESTECDSA".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
         assertTrue("Removing ECDSA CA failed", ret);
 
         try {
-            TestTools.getCAAdminSession().removeCA(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
+            caAdminSessionRemote.removeCA(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
@@ -88,7 +93,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test04removeRSASha256WithMGF1CA()");
         boolean ret = false;
         try {
-            TestTools.getCAAdminSession().removeCA(admin, "CN=TESTSha256WithMGF1".hashCode());
+            caAdminSessionRemote.removeCA(admin, "CN=TESTSha256WithMGF1".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
@@ -102,7 +107,7 @@ public class RemoveCATest extends CaTestCase {
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
-            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            caAdminSessionRemote.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
@@ -116,7 +121,7 @@ public class RemoveCATest extends CaTestCase {
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
-            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            caAdminSessionRemote.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
@@ -130,21 +135,21 @@ public class RemoveCATest extends CaTestCase {
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTCVCA,C=SE");
-            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            caAdminSessionRemote.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTDV-D,C=SE");
-            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            caAdminSessionRemote.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTDV-F,C=FI");
-            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            caAdminSessionRemote.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
@@ -152,21 +157,21 @@ public class RemoveCATest extends CaTestCase {
         // test10AddCVCCAECC
         try {
         	String dn = CertTools.stringToBCDNString("CN=TCVCAEC,C=SE");
-            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            caAdminSessionRemote.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
         	String dn = CertTools.stringToBCDNString("CN=TDVEC-D,C=SE");
-            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            caAdminSessionRemote.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
         	String dn = CertTools.stringToBCDNString("CN=TDVEC-F,C=FI");
-            TestTools.getCAAdminSession().removeCA(admin, dn.hashCode());
+            caAdminSessionRemote.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
@@ -175,7 +180,7 @@ public class RemoveCATest extends CaTestCase {
         assertTrue("Removing CVC CA failed", ret);
 
         try {
-        	TestTools.getCertificateStoreSession().removeCertificateProfile(admin, "TESTCVCDV");
+        	certificateStoreSession.removeCertificateProfile(admin, "TESTCVCDV");
         } catch (Exception e) {
         	log.info("Remove profile failed: ", e);
         }
@@ -186,7 +191,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test09removeRSASignedByExternal()");
         boolean ret = false;
         try {
-            TestTools.getCAAdminSession().removeCA(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
+            caAdminSessionRemote.removeCA(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
@@ -198,7 +203,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test10removeDSACA()");
         boolean ret = false;
         try {
-            TestTools.getCAAdminSession().removeCA(admin, "CN=TESTDSA".hashCode());
+            caAdminSessionRemote.removeCA(admin, "CN=TESTDSA".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
@@ -211,7 +216,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test11removeRevokeCA()");
         boolean ret = false;
         try {
-            TestTools.getCAAdminSession().removeCA(admin, "CN=TestRevokeCA".hashCode());
+            caAdminSessionRemote.removeCA(admin, "CN=TestRevokeCA".hashCode());
             ret = true;
         } catch (Exception pee) {
         }

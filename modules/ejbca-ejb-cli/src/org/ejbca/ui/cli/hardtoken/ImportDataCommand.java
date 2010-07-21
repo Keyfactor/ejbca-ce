@@ -10,13 +10,17 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.hardtoken;
 
 import java.io.FileInputStream;
 import java.util.List;
 import java.util.Properties;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.ui.cli.BaseCommand;
@@ -39,6 +43,12 @@ import org.ejbca.util.CliTools;
  */
 public class ImportDataCommand extends BaseCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
+    @EJB 
+    private HardTokenSessionRemote hardTokenSession;
+    
 	public String getMainCommand() { return "hardtoken"; }
 	public String getSubCommand() { return "importdata"; }
 	public String getDescription() { return "Used to import hard token data from a source"; }
@@ -65,7 +75,7 @@ public class ImportDataCommand extends BaseCommand {
         	}
         	String significantIssuerDN = props.getProperty("significantissuerdn");
         	int cAId = significantIssuerDN.hashCode();
-        	if(getCAAdminSession().getCAInfo(getAdmin(), cAId) == null){
+        	if(caAdminSession.getCAInfo(getAdmin(), cAId) == null){
         		throw new IllegalAdminCommandException("Error, the property significantissuerdn '" + significantIssuerDN +  "' doesn't exists as CA in the system.");
         	}
         	// Create the importer
@@ -78,12 +88,12 @@ public class ImportDataCommand extends BaseCommand {
         	try{
         	  while((htd = importer.readHardTokenData()) != null){
         		  try{
-        	         getHardTokenSession().addHardToken(getAdmin(), htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
+        	         hardTokenSession.addHardToken(getAdmin(), htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
         	         getLogger().info("Token with SN " + htd.getTokenSN() + " were added to the database.");
         		  }catch(HardTokenExistsException e){
         			  if(force){
-        				  getHardTokenSession().removeHardToken(getAdmin(), htd.getTokenSN());
-        				  getHardTokenSession().addHardToken(getAdmin(), htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
+        				  hardTokenSession.removeHardToken(getAdmin(), htd.getTokenSN());
+        				  hardTokenSession.addHardToken(getAdmin(), htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
         				  getLogger().info("Token with SN " + htd.getTokenSN() + " already existed in the database but was OVERWRITTEN.");        				  
         			  }else{
         				  getLogger().error("Token with SN " + htd.getTokenSN() + " already exists in the database and is NOT imported.");

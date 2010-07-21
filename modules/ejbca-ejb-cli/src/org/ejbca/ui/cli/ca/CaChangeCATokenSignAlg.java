@@ -15,6 +15,9 @@ package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
@@ -29,6 +32,9 @@ import org.ejbca.util.CertTools;
  */
 public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "changecatokensignalg"; }
 	public String getDescription() { return "Changes the signature algorithm and possible keyspec of a CA token"; }
@@ -43,7 +49,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 
 		try {
 			String caName = args[1];
-			CAInfo cainfo = getCAAdminSession().getCAInfo(getAdmin(), caName);
+			CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caName);
 			String signAlg = args[2];
 			getLogger().info("Setting new signature algorithm: " + signAlg);
 			CATokenInfo tokeninfo = cainfo.getCATokenInfo();
@@ -59,7 +65,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 				}
 			}
 			cainfo.setCATokenInfo(tokeninfo);
-			getCAAdminSession().editCA(getAdmin(), cainfo);
+			caAdminSession.editCA(getAdmin(), cainfo);
 			getLogger().info("CA token signature algorithm for CA changed.");
 		} catch (Exception e) {
 			getLogger().error(e.getMessage());
@@ -76,9 +82,9 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().info(" Existing CAs: ");
 		try {
 			// Print available CAs
-			Collection<Integer> cas = getCAAdminSession().getAvailableCAs(getAdmin());
+			Collection<Integer> cas = caAdminSession.getAvailableCAs(getAdmin());
 			for (Integer caid : cas) {
-				CAInfo info = getCAAdminSession().getCAInfo(getAdmin(), caid);
+				CAInfo info = caAdminSession.getCAInfo(getAdmin(), caid);
 				getLogger().info("    "+info.getName()+": "+info.getCATokenInfo().getSignatureAlgorithm());				
 			}
 		} catch (Exception e) {

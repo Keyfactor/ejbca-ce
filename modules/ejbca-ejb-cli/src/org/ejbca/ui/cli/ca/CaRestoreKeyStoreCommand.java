@@ -17,6 +17,9 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Enumeration;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.FileTools;
 
@@ -28,6 +31,9 @@ import org.ejbca.util.FileTools;
  */
 public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "restorekeystore"; }
 	public String getDescription() { return "Restore a CA token keystore from a PKCS12 file."; }
@@ -79,7 +85,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 				}
 				// else alias already contains the only alias, so we can use that
 			}
-			getCAAdminSession().restoreCAKeyStore(getAdmin(), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
+			caAdminSession.restoreCAKeyStore(getAdmin(), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
 		} catch (ErrorAdminCommandException e) {
 			throw e;
 		} catch (Exception e) {

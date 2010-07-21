@@ -17,6 +17,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -27,56 +31,70 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "removeadmin"; }
-	public String getDescription() { return "Removes an admin"; }
+    @EJB
+    private AuthorizationSessionRemote authorizationSession;
+
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+
+    public String getMainCommand() {
+        return MAINCOMMAND;
+    }
+
+    public String getSubCommand() {
+        return "removeadmin";
+    }
+
+    public String getDescription() {
+        return "Removes an admin";
+    }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-		try {
-			if (args.length < 6) {
-    			getLogger().info("Description: " + getDescription());
-				getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-				return;
-			}
-			String groupName = args[1];
-			AdminGroup adminGroup = getAuthorizationSession().getAdminGroup(getAdmin(), groupName);
+        try {
+            if (args.length < 6) {
+                getLogger().info("Description: " + getDescription());
+                getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
+                return;
+            }
+            String groupName = args[1];
+            AdminGroup adminGroup = authorizationSession.getAdminGroup(getAdmin(), groupName);
             if (adminGroup == null) {
-            	getLogger().error("No such group \"" + groupName + "\" .");
+                getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
-			String caName = args[2];
-			CAInfo caInfo = getCAAdminSession().getCAInfo(getAdmin(), caName);
+            String caName = args[2];
+            CAInfo caInfo = caAdminSession.getCAInfo(getAdmin(), caName);
             if (caInfo == null) {
-            	getLogger().error("No such CA \"" + caName + "\" .");
+                getLogger().error("No such CA \"" + caName + "\" .");
                 return;
             }
-			int matchWith = Arrays.asList(AdminEntity.MATCHWITHTEXTS).indexOf(args[3]);
+            int matchWith = Arrays.asList(AdminEntity.MATCHWITHTEXTS).indexOf(args[3]);
             if (matchWith == -1) {
-            	getLogger().error("No such thing to match with as \"" + args[3] + "\" .");
+                getLogger().error("No such thing to match with as \"" + args[3] + "\" .");
                 return;
             }
-			int matchType = Arrays.asList(AdminEntity.MATCHTYPETEXTS).indexOf(args[4]) + 1000;
+            int matchType = Arrays.asList(AdminEntity.MATCHTYPETEXTS).indexOf(args[4]) + 1000;
             if (matchType == (-1 + 1000)) {
-            	getLogger().error("No such type to match with as \"" + args[4] + "\" .");
+                getLogger().error("No such type to match with as \"" + args[4] + "\" .");
                 return;
             }
-			String matchValue = args[5];
-			int caid = getCAAdminSession().getCAInfo(getAdmin(), caName).getCAId();
-			AdminEntity adminEntity = new AdminEntity(matchWith, matchType, matchValue, caid);
-			
+            String matchValue = args[5];
+            int caid = caAdminSession.getCAInfo(getAdmin(), caName).getCAId();
+            AdminEntity adminEntity = new AdminEntity(matchWith, matchType, matchValue, caid);
+
             Collection<AdminEntity> list = adminGroup.getAdminEntities();
             for (AdminEntity currentAdminEntity : list) {
-            	if (currentAdminEntity.getMatchValue().equals(adminEntity.getMatchValue()) && currentAdminEntity.getMatchWith() == adminEntity.getMatchWith() &&
-            			currentAdminEntity.getMatchType() == adminEntity.getMatchType() && currentAdminEntity.getCaId() == adminEntity.getCaId()) {
-        			Collection<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
-        			adminEntities.add(adminEntity);
-        			getAuthorizationSession().removeAdminEntities(getAdmin(), groupName, adminEntities);
-            		return;
-            	}
+                if (currentAdminEntity.getMatchValue().equals(adminEntity.getMatchValue()) && currentAdminEntity.getMatchWith() == adminEntity.getMatchWith()
+                        && currentAdminEntity.getMatchType() == adminEntity.getMatchType() && currentAdminEntity.getCaId() == adminEntity.getCaId()) {
+                    Collection<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
+                    adminEntities.add(adminEntity);
+                    authorizationSession.removeAdminEntities(getAdmin(), groupName, adminEntities);
+                    return;
+                }
             }
             getLogger().info("Could not find any matching admin in group \"" + groupName + "\" .");
-		} catch (Exception e) {
-			throw new ErrorAdminCommandException(e);
-		}
-	}
+        } catch (Exception e) {
+            throw new ErrorAdminCommandException(e);
+        }
+    }
 }

@@ -7,7 +7,9 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
@@ -19,6 +21,9 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaImportCACertCommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importcacert"; }
 	public String getDescription() { return "Imports a PEM file and creates a new external CA representation from it"; }
@@ -60,7 +65,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 				getLogger().info("Initializing authorization module for caid: "+caid);
 				initAuthorizationModule(caid.intValue(), superAdminCN);
 			}
-			getCAAdminSession().importCACertificate(getAdmin(), caName, certs);
+			caAdminSession.importCACertificate(getAdmin(), caName, certs);
 			getLogger().info("Imported CA "+caName);			
 		} catch (CertificateException e) {
 			getLogger().error(e.getMessage());

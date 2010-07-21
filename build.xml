@@ -418,7 +418,10 @@
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
             </fileset>
-        	<zipfileset prefix="lib" dir="modules/dist" includes="externalra-service.jar"/>
+        	<zipfileset prefix="lib" dir="modules/dist">
+                <include name="externalra-service.jar" />
+                <include name="ejbca-ejb3-interface.jar" />
+        	</zipfileset>
 	</ear>
 
     <antcall target="signjar">

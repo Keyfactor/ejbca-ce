@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.Enumeration;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
+import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
 import javax.servlet.ServletConfig;
@@ -28,15 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -95,26 +91,20 @@ public class DemoCertReqServlet extends HttpServlet {
 
   private final static Logger log = Logger.getLogger(DemoCertReqServlet.class);
 
-  private IUserAdminSessionHome useradminsessionhome = null;
-  private IRaAdminSessionHome raadminsessionhome = null;
-  private ICertificateStoreSessionHome storesessionhome = null;
 
   // Edit this constant to the id of your preferable ca used to sign certificate.
   private final static int DEFAULT_DEMOCAID = 0;
   
-  private ISignSessionLocal signsession = null;
+  @EJB
+  private SignSessionLocal signsession;
+  @EJB
+  private CertificateStoreSessionRemote storesession;
+  @EJB
+  private UserAdminSessionRemote useradminsession;
+  @EJB
+  private RaAdminSessionRemote raadminsession;
 
-  private synchronized ISignSessionLocal getSignSession(){
-  	if(signsession == null){	
-  		try {
-  			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-  			signsession = signhome.create();
-  		}catch(Exception e){
-  			throw new EJBException(e);      	  	    	  	
-  		}
-  	}
-  	return signsession;
-  }
+
   public void init(ServletConfig config) throws ServletException
   {
     super.init(config);
@@ -124,9 +114,6 @@ public class DemoCertReqServlet extends HttpServlet {
 
       // Get EJB context and home interfaces
       InitialContext ctx = new InitialContext();
-      useradminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class);
-      raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class);
-      storesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
     } catch (Exception e) {
       throw new ServletException(e);
     }
@@ -160,18 +147,6 @@ public class DemoCertReqServlet extends HttpServlet {
   {
     ServletDebug debug = new ServletDebug(request, response);
 
-    ISignSessionLocal signsession = null;
-    ICertificateStoreSessionRemote storesession = null;
-    IUserAdminSessionRemote useradminsession = null;
-    IRaAdminSessionRemote raadminsession = null;
-    try {
-        useradminsession = useradminsessionhome.create();
-        raadminsession = raadminsessionhome.create();
-        signsession = getSignSession();
-        storesession = storesessionhome.create();
-    } catch (CreateException e) {
-      throw new ServletException(e);
-    }
 
      Admin admin = new Admin(Admin.TYPE_RA_USER, request.getRemoteAddr());
      RequestHelper.setDefaultCharacterEncoding(request);
@@ -365,7 +340,7 @@ public class DemoCertReqServlet extends HttpServlet {
   /**
    * @return true if the username is ok (does not already exist), false otherwise
    */
-  private final boolean checkUsername(Admin admin, String username, IUserAdminSessionRemote adminsession) throws ServletException
+  private final boolean checkUsername(Admin admin, String username, UserAdminSessionRemote adminsession) throws ServletException
   {
     if (username != null) {
     	username = username.trim();

@@ -16,6 +16,7 @@ package org.ejbca.ui.web.renew;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
+import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -24,13 +25,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.log.Admin;
@@ -46,15 +43,20 @@ import org.ejbca.util.CryptoProviderTools;
  * @version $Id$
  */
 public class RenewServlet extends HttpServlet {
-    
-	private static final Logger log = Logger.getLogger(RenewServlet.class);
+
+    private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(RenewServlet.class);
     
     /** Submit button on the web page */
 	public static final String BUTTONRENEW = "buttonrenew";
 
-	private ICertificateStoreSessionRemote certificateStoreSession;
-	private IRaAdminSessionRemote raadminsession;
-	private IUserAdminSessionRemote useradminhome;
+	@EJB
+	private CertificateStoreSessionRemote certificateStoreSession;
+	@EJB
+	private RaAdminSessionRemote raadminsession;
+	@EJB
+	private UserAdminSessionRemote useradminhome;
     
     /**
      * Servlet init
@@ -64,18 +66,12 @@ public class RenewServlet extends HttpServlet {
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        try {
-            // Install BouncyCastle provider
-            CryptoProviderTools.installBCProviderIfNotAvailable();
+    
+        // Install BouncyCastle provider
+        CryptoProviderTools.installBCProviderIfNotAvailable();
 
-            // Get EJB context and home interfaces
-            ServiceLocator locator = ServiceLocator.getInstance();
-            useradminhome = ((IUserAdminSessionHome) locator.getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class)).create();
-            certificateStoreSession = ((ICertificateStoreSessionHome) locator.getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class)).create();
-            raadminsession = ((IRaAdminSessionHome) locator.getRemoteHome(IRaAdminSessionHome.JNDI_NAME, IRaAdminSessionHome.class)).create();
-        } catch(Exception e) {
-        	throw new ServletException(e);
-        }
+            
+      
     }
 
     

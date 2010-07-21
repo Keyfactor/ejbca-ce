@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
+import javax.ejb.EJB;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -30,11 +31,10 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 public class GlobalConfigurationTest extends TestCase {
     private static Logger log = Logger.getLogger(GlobalConfigurationTest.class);
 
-    private IRaAdminSessionRemote cacheAdmin;
-
-    private static IRaAdminSessionHome cacheHome;
-
     private static GlobalConfiguration original = null;
+    
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
 
 
     /**
@@ -47,17 +47,7 @@ public class GlobalConfigurationTest extends TestCase {
     }
 
     public void setUp() throws Exception {
-        log.trace(">setUp()");
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("RaAdminSession");
-                cacheHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
 
-            }
-            cacheAdmin = cacheHome.create();
-        }
-        log.trace("<setUp()");
     }
 
     public void tearDown() throws Exception {
@@ -82,11 +72,11 @@ public class GlobalConfigurationTest extends TestCase {
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
 
         // First save the original
-        original = this.cacheAdmin.loadGlobalConfiguration(administrator);
+        original = this.raAdminSession.loadGlobalConfiguration(administrator);
 
         GlobalConfiguration conf = new GlobalConfiguration();
         conf.setEjbcaTitle("TESTTITLE");
-        this.cacheAdmin.saveGlobalConfiguration(administrator, conf);
+        this.raAdminSession.saveGlobalConfiguration(administrator, conf);
 
         log.trace("<test01AddGlobalConfiguration()");
     }
@@ -101,14 +91,14 @@ public class GlobalConfigurationTest extends TestCase {
 
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
 
-        GlobalConfiguration conf = this.cacheAdmin.loadGlobalConfiguration(administrator);
+        GlobalConfiguration conf = this.raAdminSession.loadGlobalConfiguration(administrator);
         assertTrue("Error Retreiving Global Configuration.", conf.getEjbcaTitle().equals("TESTTITLE"));
 
         conf.setEjbcaTitle("TESTTITLE2");
-        this.cacheAdmin.saveGlobalConfiguration(administrator, conf);
+        this.raAdminSession.saveGlobalConfiguration(administrator, conf);
 
         // Replace with original
-        this.cacheAdmin.saveGlobalConfiguration(administrator, original);
+        this.raAdminSession.saveGlobalConfiguration(administrator, original);
 
         log.trace("<test01ModifyGlobalConfiguration()");
     }

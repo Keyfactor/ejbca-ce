@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJB;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
@@ -55,14 +56,14 @@ import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /** Tests http pages of ocsp lookup server.
@@ -93,13 +94,19 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private String httpReqPath;
     private final String resourceOcsp;
 
-    private static ISignSessionRemote signSession;
+
     private static IUserAdminSessionRemote userAdminSession;
     private int caid = getTestCAId();
     private static Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     private static KeyPair keys = null;
+    
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
+    @EJB
+    private SignSessionRemote signSession;
     
     public ProtocolLookupServerHttpTest(String name)  throws Exception {
         this(name,"https://127.0.0.1:8443/ejbca", "publicweb/status/ocsp");
@@ -113,8 +120,6 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         CertTools.installBCProvider();
         createTestCA();
         cacert = (X509Certificate) getTestCACert();
-        signSession = TestTools.getSignSession();
-        userAdminSession = TestTools.getUserAdminSession();
         keys = KeyTools.genKeys("512", "RSA");
     }
 
@@ -178,7 +183,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception error
      */
     public void test02OcspBadWithFnr() throws Exception {
-        TestTools.getCertificateStoreSession().revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, null);
+        certificateStoreSession.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, null);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
