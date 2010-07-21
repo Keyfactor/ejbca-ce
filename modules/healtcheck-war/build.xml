@@ -22,6 +22,7 @@
 	<path id="compile-ejbca.classpath">
 		<path refid="compile-common.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
