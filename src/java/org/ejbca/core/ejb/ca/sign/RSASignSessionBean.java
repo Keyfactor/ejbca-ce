@@ -211,7 +211,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-	private boolean isUniqueCertificateSerialNumberIndex;
+	static private Boolean isUniqueCertificateSerialNumberIndex;
     /**
      * Default create for SessionBean without any creation Arguments.
      *
@@ -238,7 +238,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                 SernoGenerator.instance().setAlgorithm(randomAlgorithm);
             }
             SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());            	
-            this.isUniqueCertificateSerialNumberIndex = testUniqueCertificateSerialNumberIndex();
+            if ( isUniqueCertificateSerialNumberIndex==null ) {
+            	isUniqueCertificateSerialNumberIndex = new Boolean( testUniqueCertificateSerialNumberIndex() );
+            }
         } catch (Exception e) {
             debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
@@ -251,7 +253,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean isUniqueCertificateSerialNumberIndex() {
-		return this.isUniqueCertificateSerialNumberIndex;
+		return isUniqueCertificateSerialNumberIndex!=null && isUniqueCertificateSerialNumberIndex.booleanValue();
 	}
 	private boolean testUniqueCertificateSerialNumberIndex() throws Exception {
 		final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
