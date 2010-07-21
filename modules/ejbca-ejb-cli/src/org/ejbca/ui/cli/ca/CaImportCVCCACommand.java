@@ -25,8 +25,11 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.ejb.EJB;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
@@ -47,6 +50,9 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importcvcca"; }
 	public String getDescription() { return "Imports a PKCS#8 file and created a new CVC CA from it"; }
@@ -88,12 +94,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	        // Verify that the public and private key belongs together
 	        getLogger().info("Testing keys with algorithm: "+pubKey.getAlgorithm());        	
 	        KeyTools.testKey(privKey, pubKey, null);
-//	        try {
-//	        	cert.verify(pubKey);
-//	        } catch (SignatureException e) {
-//	        	getLogger().info("Can not verify self signed certificate '"+certFile+"': "+e.getMessage());
-//            	System.exit(2);
-//            }
+
 	        Certificate cacert = null;
 	        if (args.length > 6) {
 		        // Create a self signed CVCA cert from the DN
@@ -130,7 +131,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
 	        Certificate[] chain = new Certificate[1];
 	        chain[0] = cacert;
-        	getCAAdminSession().importCAFromKeys(getAdmin(), caName, "foo123", chain, pubKey, privKey, null, null);        	
+        	caAdminSession.importCAFromKeys(getAdmin(), caName, "foo123", chain, pubKey, privKey, null, null);        	
         } catch (ErrorAdminCommandException e) {
         	throw e;
         } catch (Exception e) {

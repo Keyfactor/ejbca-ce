@@ -15,11 +15,13 @@ package org.ejbca.ui.web.pub.cluster;
 
 import java.net.URL;
 
+import javax.ejb.EJB;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.util.TestTools;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
@@ -33,19 +35,12 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class WebEjbcaHealthCheckTest extends TestCase {
     private static final Logger log = Logger.getLogger(WebEjbcaHealthCheckTest.class);
 
-	protected final static String httpPort;
-	static {
-		String tmp;
-		try {
-			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
-		} catch (Exception e) {
-			tmp = "8080";
-			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
-		}
-		httpPort = tmp;
-	}
+    @EJB
+    private ConfigurationSessionRemote configurationSession;
+    
+	protected final String httpPort;
 
-	private static final String httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/healthcheck/ejbcahealth";
+	private final String httpReqPath;
 
     /**
      * Creates a new TestSignSession object.
@@ -54,6 +49,8 @@ public class WebEjbcaHealthCheckTest extends TestCase {
      */
     public WebEjbcaHealthCheckTest(String name) {
         super(name);
+        httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/healthcheck/ejbcahealth";
     }
 
     public void setUp() throws Exception {
@@ -63,25 +60,27 @@ public class WebEjbcaHealthCheckTest extends TestCase {
     }
 
     /**
-     * Creates a number of threads that bombards the health check servlet 1000 times each
+     * Creates a number of threads that bombards the health check servlet 1000
+     * times each
      */
     public void test01EjbcaHealthHttp() throws Exception {
         log.trace(">test01EjbcaHealthHttp()");
 
-        // Make a quick test first that it works at all before starting all threads
+        // Make a quick test first that it works at all before starting all
+        // threads
         final WebClient webClient = new WebClient();
         WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath));
         WebConnection con = webClient.getWebConnection();
         WebResponse resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
         assertEquals("ALLOK", resp.getContentAsString());
 
-		long before = System.currentTimeMillis();
-        Thread no1 = new Thread(new WebEjbcaHealthRunner(httpReqPath),"no1");
-        Thread no2 = new Thread(new WebEjbcaHealthRunner(httpReqPath),"no2");
-        Thread no3 = new Thread(new WebEjbcaHealthRunner(httpReqPath),"no3");
-        Thread no4 = new Thread(new WebEjbcaHealthRunner(httpReqPath),"no4");
-        Thread no5 = new Thread(new WebEjbcaHealthRunner(httpReqPath),"no5");
+        long before = System.currentTimeMillis();
+        Thread no1 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no1");
+        Thread no2 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no2");
+        Thread no3 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no3");
+        Thread no4 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no4");
+        Thread no5 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no5");
         no1.start();
         log.info("Started no1");
         no2.start();
@@ -97,10 +96,10 @@ public class WebEjbcaHealthCheckTest extends TestCase {
         no3.join();
         no4.join();
         no5.join();
-		long after = System.currentTimeMillis();
-		long diff = after - before;
-		log.info("All threads finished. Total time: "+diff+" ms");
+        long after = System.currentTimeMillis();
+        long diff = after - before;
+        log.info("All threads finished. Total time: " + diff + " ms");
         log.trace("<test01EjbcaHealthHttp()");
     }
-    
+
 }

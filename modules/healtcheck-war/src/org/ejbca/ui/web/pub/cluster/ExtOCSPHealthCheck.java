@@ -16,6 +16,7 @@ package org.ejbca.ui.web.pub.cluster;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 
@@ -46,6 +48,9 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	private boolean doSignTest = OcspConfiguration.getHealthCheckSignTest();
 	private boolean doValidityTest = OcspConfiguration.getHealthCheckCertificateValidity();
 
+	@EJB
+	private CertificateStoreOnlyDataSessionLocal certificateStoreOnlyDataSessionLocal;
+	
 	public void init(ServletConfig config) {
 		super.init(config);
 		log.debug("OCSPSignTest: '"+this.doSignTest+"'. OCSCertificateValidityTest: '"+this.doValidityTest+"'.");
@@ -76,7 +81,7 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 
 	private String checkDB(){
 		log.debug("Checking database connection.");
-		return getCertificateStoreSession().getDatabaseStatus();
+		return certificateStoreOnlyDataSessionLocal.getDatabaseStatus();
 	}
 
 	/**
@@ -95,16 +100,5 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
         } catch (Exception e){
         	return "Network problems: '"+e.getMessage()+'\'';
         }
-	}
-
-	private ICertificateStoreOnlyDataSessionLocal getCertificateStoreSession() {
-		try {
-			ICertificateStoreOnlyDataSessionLocalHome home = (ICertificateStoreOnlyDataSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreOnlyDataSessionLocalHome.COMP_NAME);
-			ICertificateStoreOnlyDataSessionLocal session = home.create();
-			return session;
-		} catch (Exception e) {
-			log.error("Error getting CertificateStoreOnlyDataSession: ", e);
-			throw new EJBException(e);
-		} 
 	}
 }

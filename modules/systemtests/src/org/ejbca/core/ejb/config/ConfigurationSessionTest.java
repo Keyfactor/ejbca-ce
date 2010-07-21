@@ -14,8 +14,12 @@
 package org.ejbca.core.ejb.config;
 
 import java.util.Properties;
+
+import javax.ejb.EJB;
+
 import junit.framework.TestCase;
-import org.ejbca.util.TestTools;
+
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 
 /**
  * Tests ConfigurationSessionBean
@@ -24,6 +28,9 @@ import org.ejbca.util.TestTools;
  */
 public class ConfigurationSessionTest extends TestCase {
 
+    @EJB
+    private ConfigurationSessionRemote configurationSession;
+    
 	public ConfigurationSessionTest(String name) {
         super(name);
 	}
@@ -35,12 +42,12 @@ public class ConfigurationSessionTest extends TestCase {
      * Test that back and restore works as expected.
      */
     public void test01BackupRestore() throws Exception {
-    	TestTools.getConfigurationSession().restoreConfiguration();
-    	assertFalse("Was able to restore config even though it was never backed up.", TestTools.getConfigurationSession().restoreConfiguration());
-    	assertTrue("Was not able to backup config even though it was never backed up.", TestTools.getConfigurationSession().backupConfiguration());
-    	assertFalse("Was able to backup config even though it was already backed up.", TestTools.getConfigurationSession().backupConfiguration());
-    	assertTrue("Was not able to restore config even though it was backed up.", TestTools.getConfigurationSession().restoreConfiguration());
-    	assertFalse("Was able to restore config even though it was already restored..", TestTools.getConfigurationSession().restoreConfiguration());
+    	configurationSession.restoreConfiguration();
+    	assertFalse("Was able to restore config even though it was never backed up.", configurationSession.restoreConfiguration());
+    	assertTrue("Was not able to backup config even though it was never backed up.", configurationSession.backupConfiguration());
+    	assertFalse("Was able to backup config even though it was already backed up.", configurationSession.backupConfiguration());
+    	assertTrue("Was not able to restore config even though it was backed up.", configurationSession.restoreConfiguration());
+    	assertFalse("Was able to restore config even though it was already restored..", configurationSession.restoreConfiguration());
     }
 
     /**
@@ -48,18 +55,18 @@ public class ConfigurationSessionTest extends TestCase {
      */
     public void test02UpdateValue() throws Exception {
     	final String dummyProperty = "dummy-test-property";
-    	TestTools.getConfigurationSession().restoreConfiguration();
-    	assertTrue(dummyProperty + " was already set.", TestTools.getConfigurationSession().verifyProperty(dummyProperty, null));
+    	configurationSession.restoreConfiguration();
+    	assertTrue(dummyProperty + " was already set.", configurationSession.verifyProperty(dummyProperty, null));
     	Properties properties = new Properties();
     	properties.put(dummyProperty, "2");
-    	assertTrue("Unable to change configuration.", TestTools.getConfigurationSession().updateProperties(properties));
-    	assertTrue("Was not able to change configuration.", TestTools.getConfigurationSession().verifyProperty(dummyProperty, "2"));
+    	assertTrue("Unable to change configuration.", configurationSession.updateProperties(properties));
+    	assertTrue("Was not able to change configuration.", configurationSession.verifyProperty(dummyProperty, "2"));
     	properties.put(dummyProperty, "3");
-    	assertTrue("Unable to change configuration.", TestTools.getConfigurationSession().updateProperties(properties));
-    	assertTrue("Was not able to change configuration.", TestTools.getConfigurationSession().verifyProperty(dummyProperty, "3"));
-    	assertTrue("Unable to change configuration.", TestTools.getConfigurationSession().updateProperty(dummyProperty, "4"));
-    	assertTrue("Was not able to change configuration.", TestTools.getConfigurationSession().verifyProperty(dummyProperty, "4"));
-    	assertTrue("Was not able to restore config even though it was backed up.", TestTools.getConfigurationSession().restoreConfiguration());
-    	assertTrue("Reset did not reset test property.", TestTools.getConfigurationSession().verifyProperty(dummyProperty, null));
+    	assertTrue("Unable to change configuration.", configurationSession.updateProperties(properties));
+    	assertTrue("Was not able to change configuration.", configurationSession.verifyProperty(dummyProperty, "3"));
+    	assertTrue("Unable to change configuration.", configurationSession.updateProperty(dummyProperty, "4"));
+    	assertTrue("Was not able to change configuration.", configurationSession.verifyProperty(dummyProperty, "4"));
+    	assertTrue("Was not able to restore config even though it was backed up.", configurationSession.restoreConfiguration());
+    	assertTrue("Reset did not reset test property.", configurationSession.verifyProperty(dummyProperty, null));
     }
 }

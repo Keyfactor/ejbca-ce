@@ -18,6 +18,9 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
@@ -33,6 +36,9 @@ import org.ejbca.util.RequestMessageUtils;
  */
 public class CreateCert extends BaseCommand {
 	
+    @EJB
+    private SignSessionRemote signSession;
+    
 	public String getMainCommand() { return null; }
 	public String getSubCommand() { return "createcert"; }
 	public String getDescription() { return "Issue a certificate for a user based on a CSR"; }
@@ -61,7 +67,7 @@ public class CreateCert extends BaseCommand {
 			}
 			Class responseClass = Class.forName(X509ResponseMessage.class.getName());
 			// Call signsession to create a certificate
-			IResponseMessage resp = getSignSession().createCertificate(getAdmin(), req, responseClass);
+			IResponseMessage resp = signSession.createCertificate(getAdmin(), req, responseClass);
 			byte[] respBytes = resp.getResponseMessage();
 			// Convert to PEM
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);

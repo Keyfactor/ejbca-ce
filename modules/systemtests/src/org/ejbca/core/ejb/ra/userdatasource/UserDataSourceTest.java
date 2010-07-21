@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -26,7 +28,6 @@ import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 
 /**
  * Tests User Data Sources.
@@ -36,7 +37,8 @@ import org.ejbca.util.TestTools;
 public class UserDataSourceTest extends TestCase {
         
     private static final Logger log = Logger.getLogger(UserDataSourceTest.class);
-    private static IUserDataSourceSessionRemote userDataSourceSession = TestTools.getUserDataSourceSession();
+    @EJB
+    private UserDataSourceSessionRemote userDataSourceSession;
     
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
@@ -72,15 +74,16 @@ public class UserDataSourceTest extends TestCase {
             ret = true;
         } catch (UserDataSourceExistsException pee) {
         }
-        
+
         assertTrue("Creating Custom UserDataSource failed", ret);
         log.trace("<test01AddCustomUserDataSource()");
     }
-    
+
     /**
      * renames userdatasource
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test02RenameUserDataSource() throws Exception {
         log.trace(">test02RenameUserDataSource()");
@@ -93,11 +96,12 @@ public class UserDataSourceTest extends TestCase {
         assertTrue("Renaming Custom UserDataSource failed", ret);
         log.trace("<test02RenameUserDataSource()");
     }
-    
+
     /**
      * clones userdatasource
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test03CloneUserDataSource() throws Exception {
         log.trace(">test03CloneUserDataSource()");
@@ -107,50 +111,51 @@ public class UserDataSourceTest extends TestCase {
         assertTrue("Cloning Custom UserDataSource failed", ret);
         log.trace("<test03CloneUserDataSource()");
     }
-    
-    
+
     /**
      * edits userdatasource
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test04EditUserDataSource() throws Exception {
         log.trace(">test04EditUserDataSource()");
         boolean ret = false;
-        
+
         BaseUserDataSource userdatasource = userDataSourceSession.getUserDataSource(admin, "TESTCLONEDUMMYCUSTOM");
         userdatasource.setDescription(userdatasource.getDescription().toUpperCase());
         userDataSourceSession.changeUserDataSource(admin, "TESTCLONEDUMMYCUSTOM", userdatasource);
         ret = true;
-        
+
         assertTrue("Editing Custom UserDataSource failed", ret);
         log.trace("<test04EditUserDataSource()");
     }
-    
+
     /**
      * Tries to retrieve userdata from dummy user data source
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test05FetchFromDummy() throws Exception {
         log.trace(">test05FetchFromDummy()");
         ArrayList userdatasources = new ArrayList();
         userdatasources.add(new Integer(userDataSourceSession.getUserDataSourceId(admin, "TESTNEWDUMMYCUSTOM")));
-        
-        Collection ret = userDataSourceSession.fetch(admin,userdatasources,"per");
-        assertTrue("Fetching data from dummy userdatasource failed", ret.size() ==1);
-        
+
+        Collection ret = userDataSourceSession.fetch(admin, userdatasources, "per");
+        assertTrue("Fetching data from dummy userdatasource failed", ret.size() == 1);
+
         Iterator iter = ret.iterator();
         UserDataSourceVO next = (UserDataSourceVO) iter.next();
-        assertTrue("Didn't get epected user data", next.getUserDataVO().getUsername().equals("PER"));        
+        assertTrue("Didn't get epected user data", next.getUserDataVO().getUsername().equals("PER"));
         log.trace("<test05FetchFromDummy()");
     }
-    
-    
+
     /**
      * removes all userdatasources
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test06removeUserDataSources() throws Exception {
         log.trace(">test06removeUserDataSources()");

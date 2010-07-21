@@ -13,6 +13,9 @@
  
 package org.ejbca.ui.cli.ca;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -25,6 +28,9 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaDeactivateCACommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "deactivateca"; }
 	public String getDescription() { return "Makes the specified HSM CA offline"; }
@@ -39,13 +45,13 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = getCAAdminSession().getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caname);
             if(cainfo == null){
             	getLogger().error("CA " + caname + " cannot be found");	
             	return;            	
             }
             if(cainfo.getStatus() == SecConst.CA_ACTIVE){
-              getCAAdminSession().deactivateCAToken(getAdmin(), cainfo.getCAId());                        
+              caAdminSession.deactivateCAToken(getAdmin(), cainfo.getCAId());                        
               getLogger().info("CA token deactivated.");
             }else{
             	getLogger().error("CA or CAToken must be active to be put offline.");

@@ -20,7 +20,6 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.TestTools;
 
 /**
  * Tests and removes the ca data entity bean.
@@ -55,12 +54,12 @@ public class RenewCATest extends CaTestCase {
     public void test01renewCA() throws Exception {
         log.trace(">test01renewCA()");
 
-        X509CAInfo info = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
+        X509CAInfo info = (X509CAInfo) caAdminSessionRemote.getCAInfo(admin, "TEST");
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         // Sleep at least for one second so we are not so fast that we create a new cert with the same time
         Thread.sleep(2000);
-        TestTools.getCAAdminSession().renewCA(admin,info.getCAId(),null,false);
-        X509CAInfo newinfo = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
+        caAdminSessionRemote.renewCA(admin,info.getCAId(),null,false);
+        X509CAInfo newinfo = (X509CAInfo) caAdminSessionRemote.getCAInfo(admin, "TEST");
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
         byte[] orgkey = orgcert.getPublicKey().getEncoded();
@@ -70,8 +69,8 @@ public class RenewCATest extends CaTestCase {
         assertTrue("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter() + " orgcert.getNotAfter: "+orgcert.getNotAfter(), newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
 
         // This assumes that the default system keystore password is not changed from foo123
-        TestTools.getCAAdminSession().renewCA(admin,info.getCAId(),"foo123",true);
-        X509CAInfo newinfo2 = (X509CAInfo) TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
+        caAdminSessionRemote.renewCA(admin,info.getCAId(),"foo123",true);
+        X509CAInfo newinfo2 = (X509CAInfo) caAdminSessionRemote.getCAInfo(admin, "TEST");
         X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
         byte[] newkey = newcertnewkeys.getPublicKey().getEncoded();

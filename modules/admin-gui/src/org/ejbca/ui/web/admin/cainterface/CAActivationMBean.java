@@ -66,7 +66,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private Admin administrator;
 	private ICertificateStoreSessionLocal      certificatesession;
 	private ICAAdminSessionLocal               caadminsession;
-    private ICreateCRLSessionLocal             createCRLSession;
+    private ICreateCRLSessionLocal             createCrlSession;
 	private IAuthorizationSessionLocal         authorizationsession;
 	private IUserAdminSessionLocal             adminsession;
 	private IRaAdminSessionLocal               raadminsession;
@@ -94,8 +94,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
 			caadminsession = caadminsessionhome.create();
 
-			ICreateCRLSessionLocalHome createCRLSessionHome = (ICreateCRLSessionLocalHome) locator.getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-			createCRLSession = createCRLSessionHome.create();
+			ICreateCRLSessionLocalHome createCrlSessionHome = (ICreateCRLSessionLocalHome) locator.getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
+			createCrlSession = createCrlSessionHome.create();
 
 			IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
 			authorizationsession = authorizationsessionhome.create();
@@ -115,7 +115,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			this.informationmemory = webBean.getInformationMemory();
 
 			new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);
-			cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, createCRLSession, webBean);
+			cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, createCrlSession, webBean);
 			caInfoList = new ArrayList();
 			initializeWrappers();
 		} catch (Exception e){

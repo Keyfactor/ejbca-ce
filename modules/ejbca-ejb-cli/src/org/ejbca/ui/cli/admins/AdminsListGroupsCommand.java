@@ -10,13 +10,17 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.admins;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -25,21 +29,35 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsListGroupsCommand extends BaseAdminsCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "listgroups"; }
-	public String getDescription() { return "Lists admin groups"; }
+    @EJB
+    private AuthorizationSessionRemote authorizationSession;
+
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+
+    public String getMainCommand() {
+        return MAINCOMMAND;
+    }
+
+    public String getSubCommand() {
+        return "listgroups";
+    }
+
+    public String getDescription() {
+        return "Lists admin groups";
+    }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-        	Collection<AdminGroup> adminGroups = getAuthorizationSession().getAuthorizedAdminGroupNames(getAdmin(), getCAAdminSession().getAvailableCAs(getAdmin()));
-        	Collections.sort((List<AdminGroup>) adminGroups);
-        	for (AdminGroup adminGroupRep : adminGroups) {
-        		AdminGroup adminGroup = getAuthorizationSession().getAdminGroup(getAdmin(), adminGroupRep.getAdminGroupName());
-        		int numberOfAdmins = adminGroup.getNumberAdminEntities();
-        		getLogger().info(adminGroup.getAdminGroupName() + " (" +  numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
-        	}
+            Collection<AdminGroup> adminGroups = authorizationSession.getAuthorizedAdminGroupNames(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()));
+            Collections.sort((List<AdminGroup>) adminGroups);
+            for (AdminGroup adminGroupRep : adminGroups) {
+                AdminGroup adminGroup = authorizationSession.getAdminGroup(getAdmin(), adminGroupRep.getAdminGroupName());
+                int numberOfAdmins = adminGroup.getNumberAdminEntities();
+                getLogger().info(adminGroup.getAdminGroupName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
+            }
         } catch (Exception e) {
-        	getLogger().error("",e);
+            getLogger().error("", e);
             throw new ErrorAdminCommandException(e);
         }
     }

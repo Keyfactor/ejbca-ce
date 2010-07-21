@@ -16,12 +16,13 @@ package org.ejbca.core.ejb.log;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.ejb.EJB;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.util.TestTools;
 
 public class LoggingStressTest extends TestCase {
 	
@@ -55,13 +56,15 @@ public class LoggingStressTest extends TestCase {
     	private long startTime = 0;
     	private int threadId = 0;
     	
+    	@EJB
+    	private LogSessionRemote logSession;
+    	
     	LogTester(int threadId, long runTime) {
     		this.threadId = threadId;
     		this.startTime = new Date().getTime();
     		this.runTime = runTime;
     	}
     	
-    	private ILogSessionRemote logSession = TestTools.getLogSession();
     	Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
     	public void run() {
             try {

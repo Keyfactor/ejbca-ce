@@ -22,6 +22,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -39,6 +45,18 @@ import org.ejbca.util.FileTools;
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
+    @EJB 
+    private PublisherSessionRemote publisherSession;
+    
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importprofiles"; }
 	public String getDescription() { return "Import profiles from XML-files to the database"; }
@@ -53,7 +71,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
             String inpath = args[1];
             Integer caid = null;
             if (args.length > 2) {
-            	CAInfo ca = getCAAdminSession().getCAInfo(getAdmin(), args[2]);
+            	CAInfo ca = caAdminSession.getCAInfo(getAdmin(), args[2]);
             	if (ca != null) {
             		caid = ca.getCAId();
             	} else {
@@ -98,20 +116,20 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                 // Check if the profiles already exist, and change the name and id if already taken
                                 boolean error = false;
                                 if (entityprofile) {
-                                    if (getRaAdminSession().getEndEntityProfileId(getAdmin(), profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (raAdminSession.getEndEntityProfileId(getAdmin(), profilename) != SecConst.PROFILE_NO_PROFILE) {
                                     	getLogger().error("Entity profile '"+profilename+"' already exist in database.");
                                         error = true;
-                                    } else if (getRaAdminSession().getEndEntityProfile(getAdmin(), profileid) != null) {
-                                        int newprofileid = getRaAdminSession().findFreeEndEntityProfileId();
+                                    } else if (raAdminSession.getEndEntityProfile(getAdmin(), profileid) != null) {
+                                        int newprofileid = raAdminSession.findFreeEndEntityProfileId();
                                         getLogger().warn("Entity profileid '"+profileid+"' already exist in database. Using " + newprofileid + " instead.");
                                         profileid = newprofileid;
                                     }
                                 } else {
-                                    if (getCertificateStoreSession().getCertificateProfileId(getAdmin(),profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (certificateStoreSession.getCertificateProfileId(getAdmin(),profilename) != SecConst.PROFILE_NO_PROFILE) {
                                     	getLogger().error("Error: Certificate profile '"+profilename+"' already exist in database.");
                                         error = true;
-                                    } else if (getCertificateStoreSession().getCertificateProfile(getAdmin(),profileid) != null) {
-                                    	int newprofileid  = getCertificateStoreSession().findFreeCertificateProfileId();
+                                    } else if (certificateStoreSession.getCertificateProfile(getAdmin(),profileid) != null) {
+                                    	int newprofileid  = certificateStoreSession.findFreeCertificateProfileId();
                                     	getLogger().warn("Certificate profile id '"+profileid+"' already exist in database. Using " + newprofileid + " instead.");
                                         certificateProfileIdMapping.put(profileid, newprofileid);
                                         profileid = newprofileid;
@@ -141,7 +159,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         			defaultCertProfile = ""+replacementCertProfileId;
                                         		}
                                         	} else {
-                                        		if (getCertificateStoreSession().getCertificateProfile(getAdmin(), currentCertProfileId) != null ||
+                                        		if (certificateStoreSession.getCertificateProfile(getAdmin(), currentCertProfileId) != null ||
                                         				SecConst.isFixedCertificateProfile(currentCertProfileId)) {
                                             		availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";" ) + currentCertProfile;
                                        			} else {
@@ -170,7 +188,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for ( String currentCA : cas ) {
                                         	Integer currentCAInt = Integer.parseInt(currentCA);
                                         	// The constant ALLCAS will not be searched for among available CAs
-                                        	if ( (currentCAInt.intValue() != SecConst.ALLCAS) && (getCAAdminSession().getCAInfo(getAdmin(), currentCAInt) == null) ) {
+                                        	if ( (currentCAInt.intValue() != SecConst.ALLCAS) && (caAdminSession.getCAInfo(getAdmin(), currentCAInt) == null) ) {
                                         		getLogger().warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profilename + "'.");
                                                 if (defaultCA.equals(currentCA)) {
                                                 	defaultCA = "";
@@ -196,7 +214,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
                                         eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
                                         try{                                        
-                                            getRaAdminSession().addEndEntityProfile(getAdmin(),profileid,profilename,eprofile);
+                                            raAdminSession.addEndEntityProfile(getAdmin(),profileid,profilename,eprofile);
                                             getLogger().info("Added entity profile '"+profilename+"' to database.");
                                         }catch(EndEntityProfileExistsException eepee){  
                                         	getLogger().error("Error adding entity profile '"+profilename+"' to database.");
@@ -208,7 +226,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         Collection<Integer> cas = cprofile.getAvailableCAs();
                                         ArrayList<Integer> casToRemove = new ArrayList<Integer>();
                                         for (Integer currentCA : cas) {
-                                        	if (currentCA != CertificateProfile.ANYCA && getCAAdminSession().getCAInfo(getAdmin(), currentCA) == null) {
+                                        	if (currentCA != CertificateProfile.ANYCA && caAdminSession.getCAInfo(getAdmin(), currentCA) == null) {
                                         		casToRemove.add(currentCA);
                                         	}
                                         }
@@ -232,7 +250,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for (Integer publisher : publishers) {
                                         	BasePublisher pub = null;
                                         	try {
-                                        		pub = getPublisherSession().getPublisher(getAdmin(), publisher);
+                                        		pub = publisherSession.getPublisher(getAdmin(), publisher);
                                         	} catch (Exception e) {
                                         		String msg = e.getMessage();
                                         		if (e.getCause() != null) {
@@ -252,8 +270,8 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         cprofile.setPublisherList(publishers);
                                         // Add profile
                                         try{
-                                            getCertificateStoreSession().addCertificateProfile(getAdmin(),profileid,profilename,cprofile);
-                                            certificateProfileIdMapping.put(profileid, getCertificateStoreSession().getCertificateProfileId(getAdmin(),profilename));
+                                            certificateStoreSession.addCertificateProfile(getAdmin(),profileid,profilename,cprofile);
+                                            certificateProfileIdMapping.put(profileid, certificateStoreSession.getCertificateProfileId(getAdmin(),profilename));
                                             getLogger().info("Added certificate profile '"+profilename+"' to database.");
                                         }catch(CertificateProfileExistsException cpee){
                                         	getLogger().error("Error adding certificate profile '"+profilename+"' to database.");

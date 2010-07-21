@@ -21,10 +21,17 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -37,7 +44,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -71,6 +77,21 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private static int caid = 0;
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
+    
+    @EJB
+    private CAAdminSessionRemote caAdminSessionRemote;
+    
+    @EJB
+    private ConfigurationSessionRemote configurationSessionRemote;
+    
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
 
     /** This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
      */
@@ -78,9 +99,9 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 		super(arg0);
 		CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = TestTools.getCAAdminSession().getCAInfo(admin, "AdminCA1");
+        CAInfo adminca1 = caAdminSessionRemote.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
-            Collection caids = TestTools.getCAAdminSession().getAvailableCAs(admin);
+            Collection caids = caAdminSessionRemote.getAvailableCAs(admin);
             Iterator iter = caids.iterator();
             while (iter.hasNext()) {
             	caid = ((Integer) iter.next()).intValue();
@@ -91,7 +112,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         if (caid == 0) {
         	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }        	
-        CAInfo cainfo = TestTools.getCAAdminSession().getCAInfo(admin, caid);
+        CAInfo cainfo = caAdminSessionRemote.getCAInfo(admin, caid);
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator certiter = certs.iterator();
@@ -106,24 +127,24 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         }
         issuerDN = cacert.getIssuerDN().getName();
         // Configure CMP for this test
-        TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
-        TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
-        TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
-        TestTools.getConfigurationSession().updateProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
+        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
+        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
+        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
+        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
+        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override".
-        if (TestTools.getCertificateStoreSession().getCertificateProfile(admin, CPNAME) == null) {
+        if (certificateStoreSession.getCertificateProfile(admin, CPNAME) == null) {
             CertificateProfile cp = new EndUserCertificateProfile();
             cp.setAllowValidityOverride(true);
             try {	// TODO: Fix this better
-				TestTools.getCertificateStoreSession().addCertificateProfile(admin, CPNAME, cp);
+				certificateStoreSession.addCertificateProfile(admin, CPNAME, cp);
 			} catch (CertificateProfileExistsException e) {
 				e.printStackTrace();
 			}
         }
-        int cpId = TestTools.getCertificateStoreSession().getCertificateProfileId(admin, CPNAME);
-        if (TestTools.getRaAdminSession().getEndEntityProfile(admin, EEPNAME) == null) {
+        int cpId = certificateStoreSession.getCertificateProfileId(admin, CPNAME);
+        if (raAdminSession.getEndEntityProfile(admin, EEPNAME) == null) {
             // Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN and rfc822Name (uncheck 'Use entity e-mail field' and check 'Modifyable'), MS UPN in altNames in the end entity profile.
             EndEntityProfile eep = new EndEntityProfile(true);
             eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE,0, "" + cpId);
@@ -131,7 +152,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
             eep.setModifyable(DnComponents.RFC822NAME, 0, true);
             eep.setUse(DnComponents.RFC822NAME, 0, false);	// Don't use field from "email" data
             try {
-    			TestTools.getRaAdminSession().addEndEntityProfile(admin, EEPNAME, eep);
+    			raAdminSession.addEndEntityProfile(admin, EEPNAME, eep);
     		} catch (EndEntityProfileExistsException e) {
     			log.error("Could not create end entity profile.", e);
     		}
@@ -208,13 +229,13 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 
 	public void testZZZCleanUp() throws Exception {
 		try {
-			TestTools.getUserAdminSession().deleteUser(admin, "cmptest");
+			userAdminSession.deleteUser(admin, "cmptest");
 		} catch (NotFoundException e) {
 			// A test probably failed before creating the entity
 		}
-		TestTools.getRaAdminSession().removeEndEntityProfile(admin, EEPNAME);
-		TestTools.getCertificateStoreSession().removeCertificateProfile(admin, CPNAME);
-		TestTools.getConfigurationSession().restoreConfiguration();
+		raAdminSession.removeEndEntityProfile(admin, EEPNAME);
+		certificateStoreSession.removeCertificateProfile(admin, CPNAME);
+		configurationSessionRemote.restoreConfiguration();
 	}
 	
 

@@ -16,6 +16,7 @@ package org.ejbca.ui.web.protocol;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -23,6 +24,7 @@ import javax.servlet.ServletException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -51,7 +53,8 @@ public class OCSPServletStandAlone extends OCSPServletBase {
      */
 	private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
 
-    private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
+	@EJB
+    private CertificateStoreOnlyDataSessionLocal m_certStore;
     private OCSPServletStandAloneSession session;
 
     public OCSPServletStandAlone() {
@@ -80,23 +83,6 @@ public class OCSPServletStandAlone extends OCSPServletBase {
 	    m_versionLog.warn("Destroy, "+GlobalConfiguration.EJBCA_VERSION+" OCSP shutdown");
 	}
 
-    /**
-     * Returns the certificate data only session bean
-     */
-    synchronized ICertificateStoreOnlyDataSessionLocal getStoreSessionOnlyData(){
-    	if(this.m_certStore == null){	
-    		try {
-                ServiceLocator locator = ServiceLocator.getInstance();
-                ICertificateStoreOnlyDataSessionLocalHome castorehome =
-                    (ICertificateStoreOnlyDataSessionLocalHome)locator.getLocalHome(ICertificateStoreOnlyDataSessionLocalHome.COMP_NAME);
-                this.m_certStore = castorehome.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return this.m_certStore;
-    }
-
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#healthCheck()
      */
@@ -113,7 +99,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#findCertificateByIssuerAndSerno(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
      */
     Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
-        return getStoreSessionOnlyData().findCertificateByIssuerAndSerno(adm, issuer, serno);
+        return m_certStore.findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#extendedService(org.ejbca.core.model.log.Admin, int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)
@@ -126,7 +112,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#getStatus(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
      */
     CertificateStatus getStatus(String name, BigInteger serialNumber) {
-        return getStoreSessionOnlyData().getStatus(name, serialNumber);
+        return m_certStore.getStatus(name, serialNumber);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#createCertificateCache()

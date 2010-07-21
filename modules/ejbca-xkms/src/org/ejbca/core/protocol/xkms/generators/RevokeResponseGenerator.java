@@ -15,8 +15,10 @@ package org.ejbca.core.protocol.xkms.generators;
 
 import java.security.cert.X509Certificate;
 
+import javax.ejb.EJB;
 import javax.ejb.FinderException;
 
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -44,6 +46,9 @@ public class RevokeResponseGenerator extends
 		KRSSResponseGenerator {
 	//private static Logger log = Logger.getLogger(RevokeResponseGenerator.class);
 
+    @EJB
+    private UserAdminSessionLocal userAdminSession;
+    
 	public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc) {
 		super(remoteIP, req,requestDoc);
 	}
@@ -130,7 +135,7 @@ public class RevokeResponseGenerator extends
 		if(revocationCode.equals(password)){				
 			// revoke cert
 			try {								
-				getUserAdminSession().revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), userData.getUsername(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+			    userAdminSession.revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), userData.getUsername(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 				retval = cert;
 			} catch (WaitingForApprovalException e) {
 				// The request has been sent for approval. -> Only part of the information requested could be provided.

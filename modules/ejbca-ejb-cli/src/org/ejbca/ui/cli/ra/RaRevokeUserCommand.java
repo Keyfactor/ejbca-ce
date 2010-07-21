@@ -13,6 +13,9 @@
  
 package org.ejbca.ui.cli.ra;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -27,6 +30,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "revokeuser"; }
 	public String getDescription() { return "Revokes a user and all certificates for a user"; }
@@ -46,7 +52,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             if ((reason == 7) || (reason < 0) || (reason > 10)) {
             	getLogger().error("Reason must be an integer between 0 and 10 except 7.");
             } else {
-                UserDataVO data = getUserAdminSession().findUser(getAdmin(), username);
+                UserDataVO data = userAdminSession.findUser(getAdmin(), username);
                 if (data==null) {
                 	getLogger().error("User not found.");
                 	return;
@@ -57,8 +63,8 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 getLogger().info("Old status=" + data.getStatus());
                 // Revoke users certificates
                 try {
-                    getUserAdminSession().revokeUser(getAdmin(), username, reason);
-                    data = getUserAdminSession().findUser(getAdmin(), username);
+                    userAdminSession.revokeUser(getAdmin(), username, reason);
+                    data = userAdminSession.findUser(getAdmin(), username);
                     getLogger().info("New status=" + data.getStatus());
                 } catch (AuthorizationDeniedException e) {
                 	getLogger().error("Not authorized to revoke user.");

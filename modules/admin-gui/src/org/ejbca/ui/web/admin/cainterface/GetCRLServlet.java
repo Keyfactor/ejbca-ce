@@ -54,17 +54,17 @@ public class GetCRLServlet extends HttpServlet {
     private static final String COMMAND_DELTACRL = "deltacrl";
     private static final String ISSUER_PROPERTY = "issuer";
 
-    private ICreateCRLSessionLocalHome createCRLSessionHome = null;
+    private ICreateCRLSessionLocalHome createCrlSessionHome = null;
 
     private synchronized ICreateCRLSessionLocalHome getCreateCRLSessionHome() throws IOException {
         try{
-            if(createCRLSessionHome == null){
-              createCRLSessionHome = (ICreateCRLSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
+            if(createCrlSessionHome == null){
+              createCrlSessionHome = (ICreateCRLSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
             }
           } catch(Exception e){
              throw new java.io.IOException("Authorization Denied");
           }
-          return createCRLSessionHome;
+          return createCrlSessionHome;
     }
       
 

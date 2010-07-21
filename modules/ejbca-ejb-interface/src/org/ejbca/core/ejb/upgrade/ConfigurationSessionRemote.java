@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import java.rmi.RemoteException;
 import java.util.Properties;
 
 import javax.ejb.Remote;
@@ -24,36 +23,36 @@ public interface ConfigurationSessionRemote {
      * 
      * @return false if a backup already exists.
      */
-    public boolean backupConfiguration() throws RemoteException;
+    public boolean backupConfiguration();
 
     /**
      * Restore configuration from backup.
      * 
      * @return false if no backup exists.
      */
-    public boolean restoreConfiguration() throws RemoteException;
+    public boolean restoreConfiguration();
 
     /**
      * Makes sure there is a backup of the configuration and then alters the
      * active configuration with all the properties.
      */
-    public boolean updateProperties(Properties properties) throws RemoteException;
+    public boolean updateProperties(Properties properties);
 
     /**
      * Makes sure there is a backup of the configuration and then alters the
      * active configuration with the property.
      */
-    public boolean updateProperty(String key, String value) throws RemoteException;
+    public boolean updateProperty(String key, String value);
 
     /**
      * Verifies that the property is set to the expected value.
      */
-    public boolean verifyProperty(String key, String value) throws RemoteException;
+    public boolean verifyProperty(String key, String value);
 
     /**
      * Returns a property from the current server configuration
      */
-    public String getProperty(String key, String defaultValue) throws RemoteException;
+    public String getProperty(String key, String defaultValue);
 
-    public Properties getAllProperties() throws RemoteException;
+    public Properties getAllProperties();
 }

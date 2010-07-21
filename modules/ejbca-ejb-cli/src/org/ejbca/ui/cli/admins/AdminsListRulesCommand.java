@@ -16,6 +16,9 @@ package org.ejbca.ui.cli.admins;
 import java.util.Collections;
 import java.util.List;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -25,6 +28,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsListRulesCommand extends BaseAdminsCommand {
 
+    @EJB
+    private AuthorizationSessionRemote authorizationSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "listrules"; }
 	public String getDescription() { return "Lists access rules for a group"; }
@@ -37,7 +43,7 @@ public class AdminsListRulesCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            AdminGroup adminGroup = getAuthorizationSession().getAdminGroup(getAdmin(), groupName);
+            AdminGroup adminGroup = authorizationSession.getAdminGroup(getAdmin(), groupName);
             if (adminGroup == null) {
             	getLogger().error("No such group \"" + groupName + "\" .");
                 return;

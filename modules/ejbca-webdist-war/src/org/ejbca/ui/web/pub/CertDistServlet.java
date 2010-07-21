@@ -23,7 +23,7 @@ import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.EJBException;
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -32,14 +32,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -70,6 +68,8 @@ import org.ejbca.util.CertTools;
  */
 public class CertDistServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     private static Logger log = Logger.getLogger(CertDistServlet.class);
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
@@ -90,43 +90,13 @@ public class CertDistServlet extends HttpServlet {
     private static final String MOZILLA_PROPERTY = "moz";
     private static final String FORMAT_PROPERTY = "format";
 
-    private ICertificateStoreSessionLocal storesession = null;
-	private ICreateCRLSessionLocal createCRLSession = null;
-    private ISignSessionLocal signsession = null;
+    @EJB
+    private CertificateStoreSessionLocal storesession;
+    @EJB
+    private CreateCRLSessionLocal createCrlSession;
+    @EJB
+    private SignSessionLocal signSession;
 
-    private synchronized ISignSessionLocal getSignSession(){
-    	if(signsession == null){	
-    		try {
-    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-    			signsession = signhome.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return signsession;
-    }
-    private synchronized ICertificateStoreSessionLocal getStoreSession(){
-    	if(storesession == null){	
-    		try {
-    			ICertificateStoreSessionLocalHome storehome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-    			storesession = storehome.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return storesession;
-    }
-    private synchronized ICreateCRLSessionLocal getCreateCRLSession(){
-		if(createCRLSession == null){	
-    		try {
-    			ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-    			createCRLSession = home.create();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return createCRLSession;
-    }
     /**
      * init servlet
      *
@@ -192,9 +162,9 @@ public class CertDistServlet extends HttpServlet {
             try {
                 byte[] crl = null;
                 if (command.equalsIgnoreCase(COMMAND_CRL)) {
-                	crl = getCreateCRLSession().getLastCRL(administrator, issuerdn, false); // CRL
+                	crl = createCrlSession.getLastCRL(administrator, issuerdn, false); // CRL
                 } else {
-                	crl = getCreateCRLSession().getLastCRL(administrator, issuerdn, true); // deltaCRL
+                	crl = createCrlSession.getLastCRL(administrator, issuerdn, true); // deltaCRL
                 } 
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
@@ -230,8 +200,7 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 log.debug("Looking for certificates for '"+dn+"'.");
-                ICertificateStoreSessionLocal store = getStoreSession();
-                Collection certcoll = store.findCertificatesBySubject(administrator, dn);
+                Collection certcoll = storesession.findCertificatesBySubject(administrator, dn);
                 Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {
@@ -313,13 +282,12 @@ public class CertDistServlet extends HttpServlet {
                 pkcs7 = true;
             }// CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
             try {
-                ISignSessionLocal ss = getSignSession();
                 Certificate[] chain = null;
                 if(caid != 0) {
-				    chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
+				    chain = (Certificate[]) signSession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
                 }
                 else {
-                    chain = (Certificate[]) ss.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
+                    chain = (Certificate[]) signSession.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
                 }
                 // chain.length-1 is last cert in chain (root CA)
                 if (chain.length < level) {
@@ -332,7 +300,7 @@ public class CertDistServlet extends HttpServlet {
                 String filename = RequestHelper.getFileNameFromCertNoEnding(cacert, "ca");
                 byte[] enccert = null;
                 if (pkcs7) {
-                    enccert = ss.createPKCS7(administrator, cacert, true);
+                    enccert = signSession.createPKCS7(administrator, cacert, true);
                 } else {
                     enccert = cacert.getEncoded();
                 }
@@ -403,8 +371,7 @@ public class CertDistServlet extends HttpServlet {
             }
             log.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
-                ICertificateStoreSessionLocal store = getStoreSession();
-                CertificateStatus revinfo = store.getStatus(dn, new BigInteger(serno));
+                CertificateStatus revinfo = storesession.getStatus(dn, new BigInteger(serno));
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
                 res.setContentType("text/html");
                 printHtmlHeader("Check revocation", pout);

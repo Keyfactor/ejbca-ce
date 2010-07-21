@@ -13,6 +13,11 @@
  
 package org.ejbca.ui.cli.ra;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -23,6 +28,15 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
 
+    @EJB
+    private KeyRecoverySessionRemote keyRecoverySession;
+    
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "keyrecovernewest"; }
 	public String getDescription() { return "Set status to key recovery for a user's newest certificate"; }
@@ -35,21 +49,21 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     			return;
     		}
     		String username = args[1];
-    		boolean usekeyrecovery = getRaAdminSession().loadGlobalConfiguration(getAdmin()).getEnableKeyRecovery();  
+    		boolean usekeyrecovery = raAdminSession.loadGlobalConfiguration(getAdmin()).getEnableKeyRecovery();  
     		if(!usekeyrecovery){
     			getLogger().error("Keyrecovery have to be enabled in the system configuration in order to use this command.");
     			return;                   
     		}   
-    		if(getKeyRecoverySession().isUserMarked(getAdmin(),username)){
+    		if(keyRecoverySession.isUserMarked(getAdmin(),username)){
     			getLogger().error("User is already marked for recovery.");
     			return;                     
     		}
-    		UserDataVO userdata = getUserAdminSession().findUser(getAdmin(), username);
+    		UserDataVO userdata = userAdminSession.findUser(getAdmin(), username);
     		if(userdata == null){
     			getLogger().error("The user doesn't exist.");
     			return;
     		}
-    		if (getUserAdminSession().prepareForKeyRecovery(getAdmin(), userdata.getUsername(), userdata.getEndEntityProfileId(), null)) {
+    		if (userAdminSession.prepareForKeyRecovery(getAdmin(), userdata.getUsername(), userdata.getEndEntityProfileId(), null)) {
         		getLogger().info("Key corresponding to users newest certificate has been marked for recovery.");             
     		} else {
         		getLogger().info("Failed to mark key corresponding to users newest certificate for recovery.");             

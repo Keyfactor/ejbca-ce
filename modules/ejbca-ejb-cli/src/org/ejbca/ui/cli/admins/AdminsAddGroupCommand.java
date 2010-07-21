@@ -13,6 +13,9 @@
  
 package org.ejbca.ui.cli.admins;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 
@@ -23,6 +26,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsAddGroupCommand extends BaseAdminsCommand {
 
+    @EJB
+    private AuthorizationSessionRemote authorizationSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "addgroup"; }
 	public String getDescription() { return "Adds an administartor"; }
@@ -38,7 +44,7 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            getAuthorizationSession().addAdminGroup(getAdmin(), groupName);
+            authorizationSession.addAdminGroup(getAdmin(), groupName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
 		}

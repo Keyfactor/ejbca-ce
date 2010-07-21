@@ -19,6 +19,9 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -31,6 +34,9 @@ import org.ejbca.util.FileTools;
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importca"; }
 	public String getDescription() { return "Imports a keystore and creates a new X509 CA from it"; }
@@ -90,7 +96,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                     } 
                     // else alias already contains the only alias, so we can use that
                 }
-                getCAAdminSession().importCAFromKeyStore(getAdmin(), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);        		
+                caAdminSession.importCAFromKeyStore(getAdmin(), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);        		
         	} else {
         		// Import HSM keystore
                 // "Usage2: CA importca <CA name> <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>\n" +
@@ -99,7 +105,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
         		String catokenproperties = new String(FileTools.readFiletoBuffer(args[4]));
         		Collection cacerts = CertTools.getCertsFromPEM(args[5]);
         		Certificate[] cacertarray = (Certificate[])cacerts.toArray(new Certificate[0]);
-        		getCAAdminSession().importCAFromHSM(getAdmin(), caName, cacertarray, tokenpwd, tokenclasspath, catokenproperties);
+        		caAdminSession.importCAFromHSM(getAdmin(), caName, cacertarray, tokenpwd, tokenclasspath, catokenproperties);
         	}
         } catch (ErrorAdminCommandException e) {
         	throw e;

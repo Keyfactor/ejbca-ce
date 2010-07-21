@@ -15,9 +15,11 @@ package org.ejbca.ui.cli.log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.rmi.RemoteException;
 import java.security.SecureRandom;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -27,6 +29,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class LogResetProtectedLogCommand extends BaseLogAdminCommand  {
 	
+    @EJB
+    private ProtectedLogSessionRemote protectedLogSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "resetprotected"; }
 	public String getDescription() { return "Reset log to a consistent state (ProtectedLog)"; }
@@ -56,13 +61,11 @@ public class LogResetProtectedLogCommand extends BaseLogAdminCommand  {
         }
         getLogger().info("Forcing the protected log to a consistent state...");
         try {
-			if (getProtectedLogSession().resetEntireLog(export)) {
+			if (protectedLogSession.resetEntireLog(export)) {
 				getLogger().info("SUCCESS!");
 			} else {
 				getLogger().error("FAILED!");
 			}
-		} catch (RemoteException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -18,6 +18,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -31,6 +35,12 @@ import org.ejbca.util.CertTools;
  */
 public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "changecertprofile"; }
 	public String getDescription() { return "Changes the certificate profile of a CA"; }
@@ -45,21 +55,21 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		try {
 		    final String caName = args[1];
 		    {
-		        final CAInfo cainfo = getCAAdminSession().getCAInfo(getAdmin(), caName);
+		        final CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caName);
 		        final String certProfileName = args[2];
 		        getLogger().debug("Searching for Certificate Profile " + certProfileName);
-		        final int certificateprofileid = getCertificateStoreSession().getCertificateProfileId(getAdmin(), certProfileName);
+		        final int certificateprofileid = certificateStoreSession.getCertificateProfileId(getAdmin(), certProfileName);
 		        if (certificateprofileid == SecConst.PROFILE_NO_PROFILE) {
 		        	getLogger().error("Certificate Profile " + certProfileName + " doesn't exists.");
 		            throw new Exception("Certificate Profile '" + certProfileName + "' doesn't exists.");
 		        }
                 cainfo.setCertificateProfileId(certificateprofileid);
-                getCAAdminSession().editCA(getAdmin(), cainfo);
+                caAdminSession.editCA(getAdmin(), cainfo);
 		    }{
-                final CAInfo cainfo = getCAAdminSession().getCAInfo(getAdmin(), caName);
+                final CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caName);
                 getLogger().info("Certificate profile for CA changed:");
                 getLogger().info("CA Name: " + caName);
-                getLogger().info("Certificate Profile: " + getCertificateStoreSession().getCertificateProfileName(getAdmin(), cainfo.getCertificateProfileId()));
+                getLogger().info("Certificate Profile: " + certificateStoreSession.getCertificateProfileName(getAdmin(), cainfo.getCertificateProfileId()));
 		    }
 		} catch (Exception e) {
 			getLogger().error(e.getMessage());
@@ -75,7 +85,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		Collection<Integer> cas = null;
 		try {
 			// Print available CAs
-			cas = getCAAdminSession().getAvailableCAs(getAdmin());
+			cas = caAdminSession.getAvailableCAs(getAdmin());
 			boolean first = true;
 			for (Integer caid : cas) {
 				if (first) {
@@ -83,7 +93,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 				} else {
 					existingCasInfo += ", ";
 				}
-				CAInfo info = getCAAdminSession().getCAInfo(getAdmin(), caid);
+				CAInfo info = caAdminSession.getCAInfo(getAdmin(), caid);
 				existingCasInfo += info.getName();				
 			}
 		} catch (Exception e) {
@@ -92,8 +102,8 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		getLogger().info(existingCasInfo);
 		try {
 			// Print available Root CA and Sub CA profiles
-			Collection<Integer> cpssub = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_SUBCA, cas);
-			Collection<Integer> cpsroot = getCertificateStoreSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ROOTCA, cas);
+			Collection<Integer> cpssub = certificateStoreSession.getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_SUBCA, cas);
+			Collection<Integer> cpsroot = certificateStoreSession.getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ROOTCA, cas);
 			HashMap<String,Collection<Integer>> cps = new HashMap<String,Collection<Integer>>();
 			cps.put("Root CA profiles: ", cpsroot);
 			cps.put("Sub CA profiles: ", cpssub);
@@ -110,7 +120,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 					} else {
 						profileInfo += ", ";
 					}
-					profileInfo += getCertificateStoreSession().getCertificateProfileName(getAdmin(), profid);					
+					profileInfo += certificateStoreSession.getCertificateProfileName(getAdmin(), profid);					
 				}
 				getLogger().info(profileInfo);
 			}

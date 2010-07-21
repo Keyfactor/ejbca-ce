@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
+import javax.ejb.EJB;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -31,10 +32,11 @@ import org.ejbca.core.model.log.Admin;
  */
 public class HardTokenIssuerTest extends TestCase {
     private static Logger log = Logger.getLogger(HardTokenIssuerTest.class);
-    private IHardTokenSessionRemote cacheAdmin;
+    
+    @EJB
+    private HardTokenSessionRemote cacheAdmin;
 
 
-    private static IHardTokenSessionHome cacheHome;
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -48,17 +50,7 @@ public class HardTokenIssuerTest extends TestCase {
     }
 
     public void setUp() throws Exception {
-        log.trace(">setUp()");
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("HardTokenSession");
-                cacheHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
 
-            }
-            cacheAdmin = cacheHome.create();
-        }
-        log.trace("<setUp()");
     }
 
     public void tearDown() throws Exception {

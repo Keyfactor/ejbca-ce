@@ -17,9 +17,11 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.util.TestTools;
+import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.LogMatch;
 import org.ejbca.util.query.Query;
@@ -34,6 +36,9 @@ public class LogTest extends CaTestCase {
 
     private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    @EJB
+    private LogSessionRemote logSession;
+    
     /**
      * Creates a new TestLog object.
      *
@@ -62,9 +67,9 @@ public class LogTest extends CaTestCase {
         logconf.setLogEvent(LogConstants.EVENT_INFO_DATABASE, false);
         logconf.setLogEvent(LogConstants.EVENT_ERROR_DATABASE, true);
 
-        TestTools.getLogSession().saveLogConfiguration(admin, getTestCAId(), logconf);
+        logSession.saveLogConfiguration(admin, getTestCAId(), logconf);
 
-        LogConfiguration logconf2 = TestTools.getLogSession().loadLogConfiguration(getTestCAId());
+        LogConfiguration logconf2 = logSession.loadLogConfiguration(getTestCAId());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf2.getLogEvent(LogConstants.EVENT_INFO_DATABASE).booleanValue());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf2.getLogEvent(LogConstants.EVENT_ERROR_DATABASE).booleanValue());
 
@@ -79,8 +84,8 @@ public class LogTest extends CaTestCase {
      */
     public void test02AddAndCheckLogEvents() throws Exception {
         log.trace(">test02AddAndCheckLogEvents()");
-        TestTools.getLogSession().log(admin, getTestCAId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
-        Collection logDeviceNames = TestTools.getLogSession().getAvailableLogDevices();
+        logSession.log(admin, getTestCAId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
+        Collection logDeviceNames = logSession.getAvailableLogDevices();
         Iterator iterator = logDeviceNames.iterator();
         Collection result = null;
         while (iterator.hasNext()) {
@@ -90,7 +95,7 @@ public class LogTest extends CaTestCase {
         	}
         	Query query = new Query(Query.TYPE_LOGQUERY);
         	query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
-        	result = TestTools.getLogSession().query(logDeviceName, query, "", "caid=" + Integer.toString(getTestCAId()), 500);
+        	result = logSession.query(logDeviceName, query, "", "caid=" + Integer.toString(getTestCAId()), 500);
         	Iterator iter = result.iterator();
         	boolean found = false;
         	while (iter.hasNext()) {

@@ -18,7 +18,7 @@ import java.security.GeneralSecurityException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
@@ -33,7 +33,7 @@ public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
     private ScepRequestMessage reqmsg = null;
     private Admin admin = null;
-    private ISignSessionLocal signsession = null;
+    private SignSessionLocal signsession;
 
     /**
      * Creates a new ScepPkiOpHelper object.
@@ -41,7 +41,7 @@ public class ScepPkiOpHelper {
      * @param admin administrator performing this
      * @param signsession signsession used to request certificates
      */
-    public ScepPkiOpHelper(Admin admin, ISignSessionLocal signsession) {
+    public ScepPkiOpHelper(Admin admin, SignSessionLocal signsession) {
         log.trace(">ScepPkiOpHelper");
         this.admin = admin;
         this.signsession = signsession;

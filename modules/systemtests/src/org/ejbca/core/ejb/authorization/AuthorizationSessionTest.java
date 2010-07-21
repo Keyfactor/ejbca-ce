@@ -17,13 +17,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.TestTools;
 
 
 /**
@@ -32,11 +33,17 @@ import org.ejbca.util.TestTools;
  * @version $Id$
  */
 public class AuthorizationSessionTest extends TestCase {
+    
+    public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
+    
     private static final Logger log = Logger.getLogger(AuthorizationSessionTest.class);
 
     private static int caid="CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
     private final static Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    @EJB
+    private AuthorizationSessionRemote authorizationSession;
+    
     /**
      * Creates a new TestAuthenticationSession object.
      *
@@ -61,10 +68,10 @@ public class AuthorizationSessionTest extends TestCase {
         log.trace(">test01Initialize()");
         
         // Initialize with a new CA
-        TestTools.getAuthorizationSession().initialize(admin, caid, TestTools.defaultSuperAdminCN);
+        authorizationSession.initialize(admin, caid, DEFAULT_SUPERADMIN_CN);
 
         // Retrieve access rules and check that they were added
-        AdminGroup ag = TestTools.getAuthorizationSession().getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
+        AdminGroup ag = authorizationSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
         Collection rules = ag.getAccessRules();
         assertEquals("Number of available access rules for AdminGroup.PUBLICWEBGROUPNAME was not the expected.", 8, rules.size());
@@ -74,10 +81,10 @@ public class AuthorizationSessionTest extends TestCase {
 		accessrules.add(new AccessRule("/public_foo_user", AccessRule.RULE_ACCEPT, false));
 		accessrules.add(new AccessRule("/foo_functionality/basic_functions", AccessRule.RULE_ACCEPT, false));
 		accessrules.add(new AccessRule("/foo_functionality/view_certificate", AccessRule.RULE_ACCEPT, false));
-        TestTools.getAuthorizationSession().addAccessRules(admin, AdminGroup.PUBLICWEBGROUPNAME, accessrules);
+        authorizationSession.addAccessRules(admin, AdminGroup.PUBLICWEBGROUPNAME, accessrules);
         
         // Retrieve the access rules and check that they were added
-        ag = TestTools.getAuthorizationSession().getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
+        ag = authorizationSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
         rules = ag.getAccessRules();
         assertEquals(11, rules.size()); // We have added three rules
@@ -93,9 +100,9 @@ public class AuthorizationSessionTest extends TestCase {
         
         // Initialize the same CA again, this will remove old default Public Web rules and create new ones.
         // This had some troubles with glassfish before, hence the creation of this test
-        TestTools.getAuthorizationSession().initialize(admin, caid, TestTools.defaultSuperAdminCN);
+        authorizationSession.initialize(admin, caid, DEFAULT_SUPERADMIN_CN);
         // Retrieve access rules and check that we only have the default ones
-        ag = TestTools.getAuthorizationSession().getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
+        ag = authorizationSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
         rules = ag.getAccessRules();
         assertEquals(8, rules.size());
@@ -114,7 +121,7 @@ public class AuthorizationSessionTest extends TestCase {
 
     public void test02ExistMethods() throws Exception {
     	log.trace(">test02ExistMethods");
-    	TestTools.getAuthorizationSession().existsCAInRules(admin, caid);
+    	authorizationSession.existsCAInRules(admin, caid);
     	log.trace("<test02ExistMethods");
     }
     

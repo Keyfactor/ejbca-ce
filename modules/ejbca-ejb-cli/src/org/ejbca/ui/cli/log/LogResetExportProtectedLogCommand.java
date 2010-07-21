@@ -19,6 +19,9 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.security.SecureRandom;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -28,6 +31,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class LogResetExportProtectedLogCommand extends BaseLogAdminCommand {
 
+    @EJB
+    private ProtectedLogSessionRemote protectedLogSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "resetexports"; }
 	public String getDescription() { return "Reset list of non-deleted exports (ProtectedLog)"; }
@@ -50,13 +56,11 @@ public class LogResetExportProtectedLogCommand extends BaseLogAdminCommand {
         }
         getLogger().info("Forcing the protected log to a consistent state..");
         try {
-			if (getProtectedLogSession().removeAllExports(false)) {
+			if (protectedLogSession.removeAllExports(false)) {
 				getLogger().info("SUCCESS!");
 			} else {
 				getLogger().error("FAILED!");
 			}
-		} catch (RemoteException e) {
-			getLogger().error("", e);
 		} catch (Exception e) {
 			getLogger().error("", e);
 		}

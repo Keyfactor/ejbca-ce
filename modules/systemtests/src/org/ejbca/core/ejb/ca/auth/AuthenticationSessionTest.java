@@ -16,13 +16,16 @@ package org.ejbca.core.ejb.ca.auth;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
-import java.util.Date;
-import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -37,7 +40,6 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 
@@ -52,16 +54,32 @@ public class AuthenticationSessionTest extends CaTestCase {
     private int caid = getTestCAId();
 
     private static final int MAXFAILEDLOGINS = 4;
-    
+
     private static String username1;
     private static String pwd1;
     private static String username2;
     private static String pwd2;
 
+    @EJB
+    private AuthenticationSessionRemote authenticationSessionRemote;
+
+    @EJB
+    private KeyRecoverySessionRemote keyRecoverySession;
+
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+
+    @EJB
+    private SignSessionRemote signSession;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
+
     /**
      * Creates a new TestAuthenticationSession object.
-     *
-     * @param name name
+     * 
+     * @param name
+     *            name
      */
     public AuthenticationSessionTest(String name) {
         super(name);
@@ -77,23 +95,27 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void tearDown() throws Exception {
     }
 
-    private static void createUser(Admin admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins) throws DuplicateKeyException, RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
-		log.info("createUser: username="+username+", certProfileId="+certProfileId);
-		UserDataVO userdata = new UserDataVO(username, "CN="+username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0, null);
-		ExtendedInformation ei = new ExtendedInformation();
-		ei.setMaxLoginAttempts(maxFailedLogins);
-		ei.setRemainingLoginAttempts(maxFailedLogins);
-		userdata.setExtendedinformation(ei);
-		userdata.setPassword(password);
-		TestTools.getUserAdminSession().addUser(admin, userdata, true);
-	    UserDataVO userdata2 = TestTools.getUserAdminSession().findUser(admin, userdata.getUsername());
-	    assertNotNull("findUser: " + userdata.getUsername(), userdata2);
-	}
+    private void createUser(Admin admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
+            throws DuplicateKeyException, RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            WaitingForApprovalException, Exception {
+        log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
+        UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
+                null);
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.setMaxLoginAttempts(maxFailedLogins);
+        ei.setRemainingLoginAttempts(maxFailedLogins);
+        userdata.setExtendedinformation(ei);
+        userdata.setPassword(password);
+        userAdminSession.addUser(admin, userdata, true);
+        UserDataVO userdata2 = userAdminSession.findUser(admin, userdata.getUsername());
+        assertNotNull("findUser: " + userdata.getUsername(), userdata2);
+    }
 
     /**
      * tests creation of new users
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
@@ -102,9 +124,10 @@ public class AuthenticationSessionTest extends CaTestCase {
         username1 = genRandomUserName();
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
-        TestTools.getUserAdminSession().addUser(admin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+        userAdminSession.addUser(admin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false,
+                SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         log.debug("created user: " + username1 + ", " + pwd1 + ", C=SE, O=AnaTom, CN=" + username1);
-        
+
         // Make another user that we know later...
         username2 = genRandomUserName();
         pwd2 = genRandomPwd();
@@ -116,14 +139,15 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     /**
      * Tests authentiction of users
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test02AuthenticateUser() throws Exception {
         log.trace(">test02AuthenticateUser()");
         // user that we know exists...
         log.debug("Username:" + username1 + "\npwd:" + pwd1);
-        UserDataVO data = TestTools.getAuthenticationSession().authenticateUser(admin, username1, pwd1);
+        UserDataVO data = authenticationSessionRemote.authenticateUser(admin, username1, pwd1);
 
         log.debug("DN: " + data.getDN());
         assertTrue("DN is wrong", data.getDN().indexOf(username1) != -1);
@@ -139,17 +163,18 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     /**
      * Tests filed authentication
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test03FailAuthenticateUser() throws Exception {
         log.trace(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
-        TestTools.getUserAdminSession().setUserStatus(admin,username1,UserDataConstants.STATUS_GENERATED);
+        userAdminSession.setUserStatus(admin, username1, UserDataConstants.STATUS_GENERATED);
         boolean authfailed = false;
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username1, pwd1);
-            log.debug("Authenticated user: "+auth.getUsername());
+            UserDataVO auth = authenticationSessionRemote.authenticateUser(admin, username1, pwd1);
+            log.debug("Authenticated user: " + auth.getUsername());
         } catch (Exception e) {
             authfailed = true;
         }
@@ -159,16 +184,17 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     /**
      * Tests more failed authentication
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test04FailAuthenticateUser() throws Exception {
         log.trace(">test04FailAuthenticateUser()");
         // user that we know exists... but we issue wrong password
         boolean authfailed = false;
         try {
-            UserDataVO auth = TestTools.getAuthenticationSession().authenticateUser(admin, username1, "abc123");
-            log.debug("Authenticated user: "+auth.getUsername());
+            UserDataVO auth = authenticationSessionRemote.authenticateUser(admin, username1, "abc123");
+            log.debug("Authenticated user: " + auth.getUsername());
         } catch (Exception e) {
             authfailed = true;
         }
@@ -182,174 +208,177 @@ public class AuthenticationSessionTest extends CaTestCase {
      * @throws Exception
      */
     public void test05UnmarkKeyRecoveryOnFinish() throws Exception {
-    	log.trace(">test05UnmarkKeyRecoveryOnFinish()");
-    	
-    	GlobalConfiguration config = TestTools.getRaAdminSession().loadGlobalConfiguration(admin);
-    	boolean orgkeyrecconfig = config.getEnableKeyRecovery();
-    	config.setEnableKeyRecovery(true);
-    	TestTools.getRaAdminSession().saveGlobalConfiguration(admin,config);
-    	
+        log.trace(">test05UnmarkKeyRecoveryOnFinish()");
+
+        GlobalConfiguration config = raAdminSession.loadGlobalConfiguration(admin);
+        boolean orgkeyrecconfig = config.getEnableKeyRecovery();
+        config.setEnableKeyRecovery(true);
+        raAdminSession.saveGlobalConfiguration(admin, config);
+
         // create certificate for user
-        //    	 Set status to NEW        
-        TestTools.getUserAdminSession().setPassword(admin, username1, "foo123");
-        TestTools.getUserAdminSession().setUserStatus(admin, username1, UserDataConstants.STATUS_NEW);
-        
-    	// Create a dummy certificate and keypair.
-    	KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-    	X509Certificate cert = (X509Certificate) TestTools.getSignSession().createCertificate(admin,username1,"foo123",keys.getPublic()); 
-    	
-    	// First mark the user for recovery
-    	TestTools.getKeyRecoverySession().addKeyRecoveryData(admin, cert, username1, keys);
-    	TestTools.getUserAdminSession().prepareForKeyRecovery(admin, username1, SecConst.EMPTY_ENDENTITYPROFILE, null);
-    	
-		assertTrue("Failure the users keyrecovery session should have been marked", TestTools.getKeyRecoverySession().isUserMarked(admin,username1));
-		
-    	// Now finish the user (The actual test)
-		TestTools.getAuthenticationSession().finishUser(admin,username1,pwd1);
-		// And se if the user is still marked
-		
-		assertTrue("Failure the users keyrecovery session should have been unmarked", !TestTools.getKeyRecoverySession().isUserMarked(admin,username1));
-		
-		// Clean up
-		TestTools.getKeyRecoverySession().removeAllKeyRecoveryData(admin,username1);
-		
-		config.setEnableKeyRecovery(orgkeyrecconfig);
-    	TestTools.getRaAdminSession().saveGlobalConfiguration(admin,config);
-    	log.trace("<test05UnmarkKeyRecoveryOnFinish()");
+        // Set status to NEW
+        userAdminSession.setPassword(admin, username1, "foo123");
+        userAdminSession.setUserStatus(admin, username1, UserDataConstants.STATUS_NEW);
+
+        // Create a dummy certificate and keypair.
+        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, username1, "foo123", keys.getPublic());
+
+        // First mark the user for recovery
+        keyRecoverySession.addKeyRecoveryData(admin, cert, username1, keys);
+        userAdminSession.prepareForKeyRecovery(admin, username1, SecConst.EMPTY_ENDENTITYPROFILE, null);
+
+        assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(admin, username1));
+
+        // Now finish the user (The actual test)
+        authenticationSessionRemote.finishUser(admin, username1, pwd1);
+        // And se if the user is still marked
+
+        assertTrue("Failure the users keyrecovery session should have been unmarked", !keyRecoverySession.isUserMarked(admin, username1));
+
+        // Clean up
+        keyRecoverySession.removeAllKeyRecoveryData(admin, username1);
+
+        config.setEnableKeyRecovery(orgkeyrecconfig);
+        raAdminSession.saveGlobalConfiguration(admin, config);
+        log.trace("<test05UnmarkKeyRecoveryOnFinish()");
     }
-    
+
     /**
-     * Tests that (maxNumFailedLogins-1) tries can be done and then after a correct login the remainingLoginAttempts is reset so
-     * that (maxNumFailedLogins) can be performed before the account is locked which is then tested by trying to login using 
-     * the correct password.
+     * Tests that (maxNumFailedLogins-1) tries can be done and then after a
+     * correct login the remainingLoginAttempts is reset so that
+     * (maxNumFailedLogins) can be performed before the account is locked which
+     * is then tested by trying to login using the correct password.
      */
     public void test06MultipleFailedLogins() throws Exception {
-    	log.trace(">test06FailedLoginsThenCorrect()");
-    	
-    	assertEquals(MAXFAILEDLOGINS, 4);
-    	
-    	// Test that we don't lock the account to early
-    	loginMaxNumFailedLoginsMinusOneAndThenOk(username2, pwd2);
-    	
-    	// Test that we lock the account
+        log.trace(">test06FailedLoginsThenCorrect()");
+
+        assertEquals(MAXFAILEDLOGINS, 4);
+
+        // Test that we don't lock the account to early
+        loginMaxNumFailedLoginsMinusOneAndThenOk(username2, pwd2);
+
+        // Test that we lock the account
         loginUntilLocked(username2, pwd2);
-        
+
         // Reset the status
-        TestTools.getUserAdminSession().setUserStatus(admin, username2, UserDataConstants.STATUS_NEW);
-        
+        userAdminSession.setUserStatus(admin, username2, UserDataConstants.STATUS_NEW);
+
         // After reset: Test that we don't lock the account to early
-    	loginMaxNumFailedLoginsMinusOneAndThenOk(username2, pwd2);
-        
-    	// After reset: Test that we lock the account
+        loginMaxNumFailedLoginsMinusOneAndThenOk(username2, pwd2);
+
+        // After reset: Test that we lock the account
         loginUntilLocked(username2, pwd2);
-        
-    	log.trace("<test06FailedLoginsThenCorrect()");
+
+        log.trace("<test06FailedLoginsThenCorrect()");
     }
-    
+
     private void loginMaxNumFailedLoginsMinusOneAndThenOk(String username, String password) throws Exception {
-    	// Login attempt: 1
+        // Login attempt: 1
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            authenticationSessionRemote.authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
-        	// OK
+            // OK
         }
         // Login attempt: 2
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            authenticationSessionRemote.authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
-        	// OK
+            // OK
         }
         // Login attempt: 3
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            authenticationSessionRemote.authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
-        	// OK
+            // OK
         }
         // Login attempt: 4: This time with the right password which should work
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
+            authenticationSessionRemote.authenticateUser(admin, username, password);
         } catch (AuthStatusException e) { // This time the status is wrong
-        	fail("The account shold not have been locked");
+            fail("The account shold not have been locked");
         } catch (AuthLoginException e) {
-        	fail("Authentication should have succeeded");
+            fail("Authentication should have succeeded");
         }
     }
-    
+
     private void loginUntilLocked(String username, String password) throws Exception {
-    	// Login attempt: 1
+        // Login attempt: 1
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            authenticationSessionRemote.authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
-        	// OK
+            // OK
         }
         // Login attempt: 2
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            authenticationSessionRemote.authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
-        	// OK
+            // OK
         }
         // Login attempt: 3
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            authenticationSessionRemote.authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
-        	// OK
+            // OK
         }
         // Login attempt: 4
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, "_wrong-password_");
+            authenticationSessionRemote.authenticateUser(admin, username, "_wrong-password_");
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthLoginException e) {
-        	// OK
+            // OK
         }
-        // Login attempt: 5: This time with the right password but the account should have been locked
+        // Login attempt: 5: This time with the right password but the account
+        // should have been locked
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
+            authenticationSessionRemote.authenticateUser(admin, username, password);
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthStatusException e) { // This time the status is wrong
-        	// OK
+            // OK
         }
-        
+
         // Login attempt: 6: Should still be locked
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
+            authenticationSessionRemote.authenticateUser(admin, username, password);
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthStatusException e) { // This time the status is wrong
-        	// OK
+            // OK
         }
-        
+
         // Login attempt: 7: Should still be locked
         try {
-            TestTools.getAuthenticationSession().authenticateUser(admin, username, password);
+            authenticationSessionRemote.authenticateUser(admin, username, password);
             fail("Authentication succeeded when it should have failed.");
         } catch (AuthStatusException e) { // This time the status is wrong
-        	// OK
+            // OK
         }
     }
-    
+
     /**
      * Delete user after completed tests
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test98DeleteUsers() throws Exception {
         log.trace(">test98DeleteUsers()");
-        
-        TestTools.getUserAdminSession().deleteUser(admin, username1);
+
+        userAdminSession.deleteUser(admin, username1);
         log.debug("deleted user: " + username1);
-        
-        TestTools.getUserAdminSession().deleteUser(admin, username2);
+
+        userAdminSession.deleteUser(admin, username2);
         log.debug("deleted user: " + username2);
-        
+
         log.trace("<test98eleteUsers()");
     }
 
-	public void test99RemoveTestCA() throws Exception {
-		removeTestCA();
-	}
+    public void test99RemoveTestCA() throws Exception {
+        removeTestCA();
+    }
 }

@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -20,10 +21,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 
@@ -49,6 +53,14 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	private static Logger log = Logger.getLogger(EJBCAHealthCheck.class);
 
 	private boolean checkPublishers = EjbcaConfiguration.getHealthCheckPublisherConnections();
+	
+	@EJB
+	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private PublisherSessionLocal publisherSession;
+	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+
 	
 	public void init(ServletConfig config) {
 		super.init(config);
@@ -87,49 +99,17 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		
 	private String checkDB(){
 		log.debug("Checking database connection.");
-		return getCertificateStoreSession().getDatabaseStatus();
+		return certificateStoreSession.getDatabaseStatus();
 	}
 
 	private String checkCAs(){
 		log.debug("Checking CAs.");
-		return getCAAdminSession().healthCheck();
+		return caAdminSession.healthCheck();
 	}
 	
 	private String checkPublishers(){
 		log.debug("Checking publishers.");
-		return getPublisherSession().testAllConnections();
+		return publisherSession.testAllConnections();
 	}
 	
-	private IPublisherSessionLocal getPublisherSession(){
-		try {
-			IPublisherSessionLocalHome home = (IPublisherSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
-			IPublisherSessionLocal publishersession = home.create();
-			return publishersession;
-		} catch (Exception e) {
-			log.error("Error getting PublisherSession: ", e);
-			throw new EJBException(e);
-		} 
-	}
-	
-	private ICAAdminSessionLocal getCAAdminSession() {
-		try {
-			ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-			ICAAdminSessionLocal caadminsession = home.create();
-			return caadminsession;
-		} catch (Exception e) {
-			log.error("Error getting CAAdminSession: ", e);
-			throw new EJBException(e);
-		} 
-	}
-
-	private ICertificateStoreSessionLocal getCertificateStoreSession() {
-		try {
-			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-			ICertificateStoreSessionLocal session = home.create();
-			return session;
-		} catch (Exception e) {
-			log.error("Error getting CertificateStoreSession: ", e);
-			throw new EJBException(e);
-		} 
-	}
 }

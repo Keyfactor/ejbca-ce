@@ -14,6 +14,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -21,6 +22,11 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -38,7 +44,6 @@ import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.TestTools;
 import org.ejbca.util.keystore.KeyTools;
 
 public class CustomCertSerialnumberTest extends CaTestCase {
@@ -50,6 +55,21 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     
     int fooCertProfile;
     int fooEEProfile;
+    
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
+    @EJB
+    private CertificateRequestSessionRemote certificateRequestSession;
+    
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
 
     public CustomCertSerialnumberTest(String name) throws Exception {
 	    super(name);
@@ -57,46 +77,46 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 	    CryptoProviderTools.installBCProvider();
 
 	    assertTrue("Could not create TestCA.", createTestCA());
-	    CAInfo inforsa = TestTools.getCAAdminSession().getCAInfo(admin, "TEST");
+	    CAInfo inforsa = caAdminSession.getCAInfo(admin, "TEST");
 	    assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
 	    rsacaid = inforsa.getCAId();
     }
 
     public void setUp() throws Exception {
 
-	TestTools.getCertificateStoreSession().removeCertificateProfile(admin,"FOOCERTPROFILE");
-	TestTools.getRaAdminSession().removeEndEntityProfile(admin, "FOOEEPROFILE");
+	certificateStoreSession.removeCertificateProfile(admin,"FOOCERTPROFILE");
+	raAdminSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
 	    
         final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setAllowKeyUsageOverride(true);
         certprof.setAllowCertSerialNumberOverride(true);
-        TestTools.getCertificateStoreSession().addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
-        fooCertProfile = TestTools.getCertificateStoreSession().getCertificateProfileId(admin,"FOOCERTPROFILE");
+        certificateStoreSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
+        fooCertProfile = certificateStoreSession.getCertificateProfileId(admin,"FOOCERTPROFILE");
 
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, Integer.toString(fooCertProfile));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(fooCertProfile));
         profile.setValue(EndEntityProfile.AVAILKEYSTORE, 0, Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN));
         assertTrue(profile.getUse(EndEntityProfile.CERTSERIALNR, 0));
-        TestTools.getRaAdminSession().addEndEntityProfile(admin, "FOOEEPROFILE", profile);
-        fooEEProfile = TestTools.getRaAdminSession().getEndEntityProfileId(admin, "FOOEEPROFILE");
+        raAdminSession.addEndEntityProfile(admin, "FOOEEPROFILE", profile);
+        fooEEProfile = raAdminSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
     }    
     
     public void tearDown() throws Exception {
 	try {
-    	    TestTools.getUserAdminSession().deleteUser(admin, "foo");
+    	    userAdminSession.deleteUser(admin, "foo");
 	    log.debug("deleted user: foo");
 	} catch (Exception e) {}
 	try {
-    	    TestTools.getUserAdminSession().deleteUser(admin, "foo2");
+    	    userAdminSession.deleteUser(admin, "foo2");
 	    log.debug("deleted user: foo2");
 	} catch (Exception e) {}
 	try {
-    	    TestTools.getUserAdminSession().deleteUser(admin, "foo3");
+    	    userAdminSession.deleteUser(admin, "foo3");
 	    log.debug("deleted user: foo3");
 	} catch (Exception e) {}
 
-	TestTools.getCertificateStoreSession().revokeAllCertByCA(admin, TestTools.getCAAdminSession().getCA(admin, rsacaid).getSubjectDN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+	certificateStoreSession.revokeAllCertByCA(admin, caAdminSession.getCA(admin, rsacaid).getSubjectDN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
     }
 
     
@@ -133,7 +153,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 	ExtendedInformation ei = user.getExtendedinformation();
 	ei.setCertificateSerialNumber(serno);
 	user.setExtendedinformation(ei);
-        IResponseMessage resp = TestTools.getCertificateRequestSession().processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -152,7 +172,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     	log.trace(">test02CreateCertWithRandomSN()");
 
 	KeyPair rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-	BigInteger serno = ((X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(admin, "foo").iterator().next()).getSerialNumber();
+	BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, "foo").iterator().next()).getSerialNumber();
 	log.debug("foo serno: " + serno);
 
 	PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
@@ -179,7 +199,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         user.setPassword("foo123");
 	
 	
-	IResponseMessage resp = TestTools.getCertificateRequestSession().processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+	IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -196,7 +216,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 	log.trace(">test03CreateCertWithDublicateSN()");
 
 	KeyPair rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-	BigInteger serno = ((X509Certificate) TestTools.getCertificateStoreSession().findCertificatesByUsername(admin, "foo").iterator().next()).getSerialNumber();
+	BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, "foo").iterator().next()).getSerialNumber();
 	log.debug("foo serno: " + serno);
 
 	PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
@@ -227,7 +247,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 	IResponseMessage resp = null;
 	try {
-            resp = TestTools.getCertificateRequestSession().processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+            resp = certificateRequestSession.processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
 	} catch (EjbcaException e) {
 	    log.debug(e.getMessage());
 	    assertTrue("Unexpected exception.", e.getMessage().startsWith("There is already a certificate stored in 'CertificateData' with the serial number"));

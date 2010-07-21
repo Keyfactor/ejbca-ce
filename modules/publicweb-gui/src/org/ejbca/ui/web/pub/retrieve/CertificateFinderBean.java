@@ -22,19 +22,16 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
@@ -56,9 +53,12 @@ public class CertificateFinderBean {
 	
 	private static final Logger log = Logger.getLogger(CertificateFinderBean.class);
 
-	private ISignSessionRemote mSignSession;
-	private ICAAdminSessionRemote mCaAdminSession;
-	private ICertificateStoreSessionRemote mStoreSession;
+	@EJB
+	private SignSessionRemote mSignSession;
+	@EJB
+	private CAAdminSessionRemote mCaAdminSession;
+	@EJB
+	private CertificateStoreSessionRemote mStoreSession;
 	private boolean mInitialized = false;
 	private Admin mAdmin;
 	
@@ -89,9 +89,6 @@ public class CertificateFinderBean {
 	public void initialize(String remoteAddress) throws NamingException, RemoteException, CreateException {
 		log.trace(">initialize()");
 	    mAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddress);
-	    mSignSession = ((ISignSessionHome) ServiceLocator.getInstance().getRemoteHome(ISignSessionHome.JNDI_NAME, ISignSessionHome.class)).create();
-	    mStoreSession = ((ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class)).create();
-	    mCaAdminSession = ((ICAAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class)).create();
 	    mInitialized = true;
 	}
 

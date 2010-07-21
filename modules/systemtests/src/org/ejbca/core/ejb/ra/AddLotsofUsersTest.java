@@ -13,15 +13,13 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.util.Date;
-import java.util.Random;
+import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.TestTools;
 
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
@@ -33,6 +31,9 @@ public class AddLotsofUsersTest extends CaTestCase {
 	private static final Logger log = Logger.getLogger(AddLotsofUsersTest.class);
 
     private int userNo = 0;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
 
     /**
      * Creates a new TestAddLotsofUsers object.
@@ -77,13 +78,13 @@ public class AddLotsofUsersTest extends CaTestCase {
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-            if (TestTools.getUserAdminSession().findUser(administrator, username) != null) {
+            if (userAdminSession.findUser(administrator, username) != null) {
                 log.warn("User already exists in the database.");
             } else {
-            	TestTools.getUserAdminSession().addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
+            	userAdminSession.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
                         type, token, hardtokenissuerid, getTestCAId());
             }
-            TestTools.getUserAdminSession().setClearTextPassword(administrator, username, pwd);
+            userAdminSession.setClearTextPassword(administrator, username, pwd);
             if (i % 100 == 0) {
                 log.debug("Created " + i + " users...");
             }

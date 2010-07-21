@@ -15,6 +15,9 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.FileOutputStream;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -24,6 +27,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaExportCACommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CAAdminSessionRemote caAdminSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "exportca"; }
 	public String getDescription() { return "Exports CA as a PCKS#12 or PKCS#8 file"; }
@@ -51,7 +57,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             getLogger().info("Enter keystore password: ");
             String kspwd = new String(System.console().readPassword());
             
-            byte[] keyStoreBytes = getCAAdminSession().exportCAKeyStore(getAdmin(), caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
+            byte[] keyStoreBytes = caAdminSession.exportCAKeyStore(getAdmin(), caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
             FileOutputStream fos = new FileOutputStream(p12file);
             fos.write(keyStoreBytes);
             fos.close();

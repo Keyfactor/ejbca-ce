@@ -19,6 +19,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.ejb.EJB;
+
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
@@ -31,6 +34,9 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
 
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "listexpired"; }
 	public String getDescription() { return "List certificates that will expire within the given number of days"; }
@@ -73,7 +79,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
     private Collection getExpiredCerts(Date findDate) {
         try {
         	getLogger().debug("Looking for cert with expireDate=" + findDate);
-            Collection certs = getCertificateStoreSession().findCertificatesByExpireTime(getAdmin(), findDate);
+            Collection certs = certificateStoreSession.findCertificatesByExpireTime(getAdmin(), findDate);
             getLogger().debug("Found " + certs.size() + " certs.");
             return certs;
         } catch (Exception e) {

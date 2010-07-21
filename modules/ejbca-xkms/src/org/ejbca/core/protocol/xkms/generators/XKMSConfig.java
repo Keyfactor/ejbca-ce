@@ -19,7 +19,7 @@ import java.util.Collection;
 import javax.ejb.EJBException;
 
 import org.ejbca.config.XkmsConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 
@@ -76,7 +76,7 @@ public class XKMSConfig {
      * xkms.response.causedforsigning on which CA that should
      * be used for signing XKMS requests
      */
-    public static int cAIdUsedForSigning(Admin admin,ICAAdminSessionLocal cAAdminSession){
+    public static int cAIdUsedForSigning(Admin admin,CAAdminSessionLocal cAAdminSession){
     	if(cAIdUsedForSigning == null){
     		CAInfo info = cAAdminSession.getCAInfo(admin, XkmsConfiguration.getResponseCaUsedForSigning());
     		if(info == null){    		
@@ -95,7 +95,7 @@ public class XKMSConfig {
      * xkms.request.acceptedcas on which CA that should
      * be accepted for signing XKMS requests
      */
-    public static Collection getAcceptedCA(Admin admin,ICAAdminSessionLocal cAAdminSession){
+    public static Collection getAcceptedCA(Admin admin,CAAdminSessionLocal cAAdminSession){
     	if(acceptedCAs == null){
     		acceptedCAs = new ArrayList();
     		String[] cANames = XkmsConfiguration.getRequestAcceptedCas();

@@ -24,9 +24,17 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -51,7 +59,6 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.TestTools;
 
 /**
  * 
@@ -71,9 +78,30 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
     private Admin reqadmin;
 
+    @EJB
+    private CAAdminSessionRemote caAdminSessionRemote;
+
+    @EJB
+    private ApprovalSessionRemote approvalSessionRemote;
+
+    @EJB
+    private CertificateStoreSessionRemote certificateStoreSession;
+
+    @EJB
+    private HardTokenSessionRemote hardTokenSessionRemote;
+    
+    @EJB
+    private RaAdminSessionRemote raAdminSession;
+    
+    @EJB
+    private UserAdminSessionRemote userAdminSession;
+
+    @EJB
+    private AuthorizationSessionRemote authorizationSession;
+    
     public void test00SetupAccessRights() throws Exception {
         super.setupAccessRights();
-        gc = TestTools.getRaAdminSession().loadGlobalConfiguration(new Admin(Admin.INTERNALCAID));
+        gc = raAdminSession.loadGlobalConfiguration(new Admin(Admin.INTERNALCAID));
     }
 
     private void setUpNonAdmin() throws Exception {
@@ -198,20 +226,21 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setUpNonAdmin();
         setupApprovals();
 
-        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, serialNumber, true, reqadmin, null, 1, 0, 0);
-        
+        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, serialNumber, true, reqadmin, null, 1,
+                0, 0);
+
         // Setup the test
-        if (!TestTools.getHardTokenSession().existsHardToken(reqadmin, serialNumber)) {
+        if (!hardTokenSessionRemote.existsHardToken(reqadmin, serialNumber)) {
             /*
              * Add an arbitrary token for the below two tests to wait for
              * (should such a token not already exist due to sloppy cleanup).
              */
-            TestTools.getHardTokenSession().addHardToken(reqadmin, serialNumber, TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, SecConst.TOKEN_SWEDISHEID,
+            hardTokenSessionRemote.addHardToken(reqadmin, serialNumber, TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, SecConst.TOKEN_SWEDISHEID,
                     new SwedishEIDHardToken("1234", "12345678", "5678", "23456789", 1), new ArrayList(), null);
 
         }
 
-        //Make sure that the ApprovalSession is clean.
+        // Make sure that the ApprovalSession is clean.
         cleanApprovalRequestFromApprovalSession(approvalRequest, reqadmin);
 
         try {
@@ -230,10 +259,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
             Approval approval1 = new Approval("ap1test");
 
-            
-
             try {
-                getApprovalSession().approve(admin1, approvalRequest.generateApprovalId(), approval1, gc);
+                approvalSessionRemote.approve(admin1, approvalRequest.generateApprovalId(), approval1, gc);
 
                 getHardTokenData(serialNumber, true);
 
@@ -243,7 +270,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
                 } catch (WaitingForApprovalException_Exception e) {
                 }
 
-                getApprovalSession().reject(admin1, approvalRequest.generateApprovalId(), approval1, gc);
+                approvalSessionRemote.reject(admin1, approvalRequest.generateApprovalId(), approval1, gc);
 
                 try {
                     getHardTokenData(serialNumber, true);
@@ -257,7 +284,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         } finally {
             // Clean up hard token.
-            TestTools.getHardTokenSession().removeHardToken(new Admin(Admin.TYPE_INTERNALUSER), serialNumber);
+            hardTokenSessionRemote.removeHardToken(new Admin(Admin.TYPE_INTERNALUSER), serialNumber);
 
             removeApprovalAdmins();
         }
@@ -273,12 +300,12 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
      * @throws ApprovalException
      */
     private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, Admin admin) throws RemoteException, ApprovalException {
-        Collection collection = TestTools.getApprovalSession().findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
+        Collection collection = approvalSessionRemote.findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
         if (!collection.isEmpty()) {
             ApprovalDataVO approvalDataVO = null;
             for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
                 approvalDataVO = (ApprovalDataVO) iterator.next();
-                TestTools.getApprovalSession().removeApprovalRequest(admin, approvalDataVO.getId());
+                approvalSessionRemote.removeApprovalRequest(admin, approvalDataVO.getId());
             }
         }
     }
@@ -287,11 +314,11 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setupApprovals();
         ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
 
-        Collection result = getApprovalSession().findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        Collection result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         Iterator iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = (ApprovalDataVO) iter.next();
-            getApprovalSession().removeApprovalRequest(admin1, next.getId());
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         }
 
         removeApprovalAdmins();
@@ -315,7 +342,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         Approval approval1 = new Approval("ap1test");
 
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, reqadmin, null, 1, 0, 0);
-        getApprovalSession().approve(admin1, ar.generateApprovalId(), approval1, gc);
+        approvalSessionRemote.approve(admin1, ar.generateApprovalId(), approval1, gc);
 
         genTokenCertificates(true);
 
@@ -331,7 +358,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         } catch (WaitingForApprovalException_Exception e) {
         }
 
-        getApprovalSession().reject(admin1, ar.generateApprovalId(), approval1, gc);
+        approvalSessionRemote.reject(admin1, ar.generateApprovalId(), approval1, gc);
 
         try {
             genTokenCertificates(true);
@@ -346,25 +373,25 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setupApprovals();
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, reqadmin, null, 1, 0, 0);
 
-        Collection result = getApprovalSession().findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        Collection result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         Iterator iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = (ApprovalDataVO) iter.next();
-            getApprovalSession().removeApprovalRequest(admin1, next.getId());
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         }
 
         ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
 
-        result = getApprovalSession().findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = (ApprovalDataVO) iter.next();
-            getApprovalSession().removeApprovalRequest(admin1, next.getId());
+            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         }
 
         removeApprovalAdmins();
-        getHardTokenSession().removeHardToken(intAdmin, "12345678");
-        getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        hardTokenSessionRemote.removeHardToken(intAdmin, "12345678");
+        userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 
     }
 
@@ -380,13 +407,13 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         adminusername1 = genRandomUserName();
 
-        CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
+        CAInfo cainfo = caAdminSessionRemote.getCAInfo(intAdmin, getAdminCAName());
         caid = cainfo.getCAId();
 
         UserDataVO userdata = new UserDataVO(adminusername1, "CN=" + adminusername1, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
-        getUserAdminSession().addUser(intadmin, userdata, true);
+        userAdminSession.addUser(intadmin, userdata, true);
 
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
@@ -396,11 +423,11 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         adminEntities = new ArrayList();
         adminEntities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername1, caid));
-        getAuthSession().addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
+        authorizationSession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
 
-        getAuthSession().forceRuleUpdate(intadmin);
+        authorizationSession.forceRuleUpdate(intadmin);
 
-        admincert1 = (X509Certificate) getCertStore().findCertificatesByUsername(intadmin, adminusername1).iterator().next();
+        admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername1).iterator().next();
 
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("p12/wsnonadmintest.jks"), "foo123".toCharArray());
@@ -414,12 +441,12 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
 
         admin1 = new Admin(admincert1, adminusername1, null);
-        reqadmin = TestTools.getUserAdminSession().getAdmin(reqadmincert);
+        reqadmin = userAdminSession.getAdmin(reqadmincert);
     }
 
     protected void removeApprovalAdmins() throws Exception {
-        getUserAdminSession().deleteUser(intadmin, adminusername1);
-        getAuthSession().removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
+        userAdminSession.deleteUser(intadmin, adminusername1);
+        authorizationSession.removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
 
     }
 }

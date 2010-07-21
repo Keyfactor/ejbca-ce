@@ -10,57 +10,49 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.pub;
 
 import java.net.URL;
 
-import org.apache.log4j.Logger;
-import org.ejbca.config.WebConfiguration;
-import org.ejbca.util.TestTools;
+import javax.ejb.EJB;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
-/** Tests http pages of public webdist
+/**
+ * Tests http pages of public webdist
  **/
 public class WebdistHttpTest extends TestCase {
 
-	final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
-			
-	protected final static String httpPort;
-	static {
-		String tmp;
-		try {
-			tmp = TestTools.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
-		} catch (Exception e) {
-			tmp = "8080";
-			log.error("Not possible to get property "+WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, e);
-		}
-		httpPort = tmp;
-	}
+    final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
 
-    public static void main( String args[] ) {
-        junit.textui.TestRunner.run( suite() );
-    }
+    private final String httpPort;
 
-
+    @EJB
+    private ConfigurationSessionRemote configurationSessionRemote;
+    
     public static TestSuite suite() {
-        return new TestSuite( WebdistHttpTest.class );
+        return new TestSuite(WebdistHttpTest.class);
     }
 
-
-    public WebdistHttpTest( String name ) {
-        super( name );
+    public WebdistHttpTest(String name) {
+        super(name);
+        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
     }
 
     public void testJspCompile() throws Exception {
-        // We hit the pages and see that they return a 200 value, so we know they at least compile correctly
+        // We hit the pages and see that they return a 200 value, so we know
+        // they at least compile correctly
         String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         String resourceName = "publicweb/webdist/certdist";
         String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0";
@@ -69,16 +61,17 @@ public class WebdistHttpTest extends TestCase {
         WebConnection con = webClient.getWebConnection();
         WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName));
         WebResponse resp = con.getResponse(settings);
-        assertEquals( "Response code", 400, resp.getStatusCode() );
+        assertEquals("Response code", 400, resp.getStatusCode());
 
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName1));
         resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
     }
 
     public void testPublicWeb() throws Exception {
-        // We hit the pages and see that they return a 200 value, so we know they at least compile correctly
+        // We hit the pages and see that they return a 200 value, so we know
+        // they at least compile correctly
         String httpReqPath = "http://127.0.0.1:8080/ejbca";
         String resourceName = "retrieve/ca_crls.jsp";
         String resourceName1 = "retrieve/ca_certs.jsp";
@@ -93,35 +86,35 @@ public class WebdistHttpTest extends TestCase {
         WebConnection con = webClient.getWebConnection();
         WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName));
         WebResponse resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName1));
         resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName2));
         resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName3));
         resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName4));
         resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName5));
         resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName6));
         resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName7));
         resp = con.getResponse(settings);
-        assertEquals( "Response code", 200, resp.getStatusCode() );
+        assertEquals("Response code", 200, resp.getStatusCode());
 
     }
 
