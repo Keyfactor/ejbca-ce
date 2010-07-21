@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
@@ -30,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
