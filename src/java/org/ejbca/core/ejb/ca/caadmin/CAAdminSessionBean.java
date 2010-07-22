@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -66,6 +67,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.JndiConstants;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
@@ -225,7 +227,7 @@ import org.ejbca.util.keystore.KeyTools;
  * @jboss.method-attributes pattern = "verify*" read-only = "true"
  * 
  */
-@Stateless(mappedName = "ejbca/CAAdminSession")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CAAdminSession")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessionLocal, CAAdminSessionRemote {
 
@@ -270,7 +272,9 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * 
      * @throws CreateException
      *             if bean instance can't be created
+     * TODO: Convert this to a regular constructor!
      */
+    @PostConstruct
     public void ejbCreate() throws CreateException {
         cadatahome = (CADataLocalHome) getLocator().getLocalHome(CADataLocalHome.COMP_NAME);
         // Install BouncyCastle provider

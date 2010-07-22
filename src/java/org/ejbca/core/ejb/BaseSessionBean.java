@@ -25,6 +25,8 @@ import org.apache.log4j.Logger;
  * Base for Session Beans providing common features, new Session Beans should extend this.
  *
  * @version $Id$
+ * 
+ * TODO: This class should not implement SessionBean.
  */
 public class BaseSessionBean implements SessionBean {
 

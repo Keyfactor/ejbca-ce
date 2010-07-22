@@ -253,6 +253,8 @@ xkms.serviceport                = ${xkms.serviceport}
                 <exclude name="**/AdminGroupsManagedBean.java" />
                 <exclude name="**/BaseSessionBean.java" />
                 <exclude name="**/CertificateFinderBean.java" />
+                <!-- Exlude beans ocnverted to EJB 3.0 -->
+                <exclude name="**/CAAdminSessionBean.java" />
             </fileset>
             <remoteinterface />
             <homeinterface />
