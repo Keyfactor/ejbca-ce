@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -243,7 +244,7 @@ s	 */
 	public void setRemainingapprovals(int remainingapprovals) { this.remainingapprovals = remainingapprovals; }
 
 	@Transient
-	private Collection<Approval> getApprovals() {   
+	public Collection<Approval> getApprovals() {   
 		return ApprovalDataUtil.getApprovals(getApprovaldata());
 	}
 
@@ -272,11 +273,11 @@ s	 */
 	}
 
 	@Transient
-	private ApprovalRequest getApprovalRequest() {
+	public ApprovalRequest getApprovalRequest() {
 		return ApprovalDataUtil.getApprovalRequest(getRequestdata());
 	}
 
-	private void setApprovalRequest(ApprovalRequest approvalRequest){
+	public void setApprovalRequest(ApprovalRequest approvalRequest){
 		try{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -478,23 +479,27 @@ s	 * @throws ApprovalRequestExpiredException
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static ApprovalData findById(EntityManager entityManager, Integer id) {
 		return entityManager.find(ApprovalData.class,  id);
 	}
 	
-	public static Collection<ApprovalData> findByApprovalId(EntityManager entityManager, int approvalid) {
+	/** @return return the query results as a List. */
+	public static List<ApprovalData> findByApprovalId(EntityManager entityManager, int approvalid) {
 		Query query = entityManager.createQuery("from ApprovalData a WHERE a.approvalid=:approvalid");
 		query.setParameter("approvalid", approvalid);
 		return query.getResultList();
 	}
 	
-	public static Collection<ApprovalData> findByApprovalIdNonExpired(EntityManager entityManager, int approvalid) {
+	/** @return return the query results as a List. */
+	public static List<ApprovalData> findByApprovalIdNonExpired(EntityManager entityManager, int approvalid) {
 		Query query = entityManager.createQuery("from ApprovalData a WHERE a.approvalid=:approvalid and (a.status=-1 or a.status=0 or a.status=-3)");
 		query.setParameter("approvalid", approvalid);
 		return query.getResultList();
 	}
 
-	public static Collection<ApprovalData> findAll(EntityManager entityManager) {
+	/** @return return the query results as a List. */
+	public static List<ApprovalData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("from ApprovalData a");
 		return query.getResultList();
 	}	 

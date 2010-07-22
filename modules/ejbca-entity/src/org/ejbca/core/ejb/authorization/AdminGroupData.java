@@ -25,6 +25,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.OneToMany;
 import javax.persistence.Query;
 import javax.persistence.Table;
@@ -167,7 +169,7 @@ public class AdminGroupData implements Serializable {
 			Iterator<AccessRulesData> i = getAccessRules().iterator();
 			while (i.hasNext()) {
 				AccessRulesData ar = i.next();
-				if (ar.getAccessRuleObject().getAccessRule().equals(accessrule) && accessrule.getRule() == ar.getRule() && accessrule.isRecursive() == ar.getIsRecursive()) {
+				if (ar.getAccessRuleObject().getAccessRule().equals(accessrule)) {
 					getAccessRules().remove(ar);
 					entityManager.remove(ar);
 					break;
@@ -175,6 +177,26 @@ public class AdminGroupData implements Serializable {
 			}
 		}
 	}
+
+	/**
+     * Removes a Collection of (AccessRules) accessrules from the database.
+     * Only used during upgrade.
+     */
+    public void removeAccessRulesObjects(EntityManager entityManager, Collection<AccessRule> accessrules) {
+		Iterator<AccessRule> iter = accessrules.iterator();
+		while (iter.hasNext()) {
+			AccessRule accessrule = iter.next();
+			Iterator<AccessRulesData> i = getAccessRules().iterator();
+            while (i.hasNext()) {
+				AccessRulesData ar = i.next();
+                if (accessrule.getAccessRule().equals(ar.getAccessRule()) && accessrule.getRule() == ar.getRule() && accessrule.isRecursive() == ar.getIsRecursive()) {
+                    getAccessRules().remove(ar);
+					entityManager.remove(ar);
+					break;
+                }
+            }
+        }
+    }
 
 	/**
 	 * Returns the number of access rules in admingroup
@@ -301,17 +323,28 @@ public class AdminGroupData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static AdminGroupData findByPrimeKey(EntityManager entityManager, Integer primeKey) {
 		return entityManager.find(AdminGroupData.class,  primeKey);
 	}
 	
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
 	public static AdminGroupData findByGroupNameAndCAId(EntityManager entityManager, String adminGroupName,  int caId) {
-		Query query = entityManager.createQuery("from AdminGroupData a WHERE adminGroupName=:adminGroupName AND a.caId=:caId");
-		query.setParameter("adminGroupName", adminGroupName);
-		query.setParameter("caId", caId);
-		return (AdminGroupData) query.getSingleResult();
+		AdminGroupData ret = null;
+		try {
+			Query query = entityManager.createQuery("from AdminGroupData a WHERE adminGroupName=:adminGroupName AND a.caId=:caId");
+			query.setParameter("adminGroupName", adminGroupName);
+			query.setParameter("caId", caId);
+			ret = (AdminGroupData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
 	}
 
+	/** @return return the query results as a List. */
 	public static List<AdminGroupData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("from AdminGroupData a");
 		return query.getResultList();

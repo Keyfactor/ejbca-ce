@@ -201,7 +201,7 @@ public interface ApprovalSession {
      */
     public java.util.List query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, int index, int numberofrows,
             java.lang.String caAuthorizationString, java.lang.String endEntityProfileAuthorizationString)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.query.IllegalQueryException, java.rmi.RemoteException;
+            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.query.IllegalQueryException;
 
     /**
      * Get a list of all pending approvals ids. This was written for the upgrade
@@ -209,6 +209,6 @@ public interface ApprovalSession {
      * 
      * @return a List<Integer> with all pending approval ids, never null
      */
-    public java.util.List getAllPendingApprovalIds() throws java.rmi.RemoteException;
+    public java.util.List getAllPendingApprovalIds();
 
 }
