@@ -13,7 +13,6 @@
  
 package org.ejbca.core.ejb.ca.store;
 
-import java.io.IOException;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.util.Date;

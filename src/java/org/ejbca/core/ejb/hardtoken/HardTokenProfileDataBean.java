@@ -21,11 +21,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
-import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
-import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
-import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
-import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
 
 

@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;

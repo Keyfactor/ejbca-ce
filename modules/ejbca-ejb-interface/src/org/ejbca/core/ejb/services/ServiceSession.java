@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
+import javax.ejb.EJBException;
+
+import org.ejbca.core.model.services.ServiceExistsException;
+
 public interface ServiceSession {
     /**
      * Adds a Service to the database.

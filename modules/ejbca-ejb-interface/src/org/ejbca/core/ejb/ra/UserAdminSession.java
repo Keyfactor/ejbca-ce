@@ -12,6 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
+
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
+
 public interface UserAdminSession {
     /**
      * Implements IUserAdminSession::addUser. Implements a mechanism that uses

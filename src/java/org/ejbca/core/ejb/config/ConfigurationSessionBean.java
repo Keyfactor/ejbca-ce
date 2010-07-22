@@ -22,7 +22,6 @@ import javax.ejb.TransactionAttributeType;
 
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 

@@ -22,7 +22,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 

@@ -17,7 +17,11 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
-import static org.ejbca.core.model.util.AlgorithmToolsHelper.*;
+
+import org.ejbca.core.model.util.AlgorithmToolsHelper.MockDSAPublicKey;
+import org.ejbca.core.model.util.AlgorithmToolsHelper.MockECDSAPublicKey;
+import org.ejbca.core.model.util.AlgorithmToolsHelper.MockNotSupportedPublicKey;
+import org.ejbca.core.model.util.AlgorithmToolsHelper.MockRSAPublicKey;
 
 /**
  * Tests for AlgorithmTools.

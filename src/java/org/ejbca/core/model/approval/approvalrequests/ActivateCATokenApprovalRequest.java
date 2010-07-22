@@ -25,8 +25,6 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;

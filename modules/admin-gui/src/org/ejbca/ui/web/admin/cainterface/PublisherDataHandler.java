@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.cainterface;
 import java.io.Serializable;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;

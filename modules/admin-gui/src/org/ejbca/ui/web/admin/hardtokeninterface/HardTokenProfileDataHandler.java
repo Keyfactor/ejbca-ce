@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;

@@ -50,7 +50,6 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;

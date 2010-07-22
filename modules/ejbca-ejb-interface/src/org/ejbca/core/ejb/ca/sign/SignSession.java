@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+
 public interface SignSession {
 
     public boolean isUniqueCertificateSerialNumberIndex();

@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
+import javax.ejb.EJBException;
+
 public interface RaAdminSession {
     /**
      * Finds the admin preference belonging to a certificate serialnumber.

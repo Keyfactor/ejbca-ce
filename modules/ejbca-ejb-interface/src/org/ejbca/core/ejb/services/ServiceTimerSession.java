@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
+import javax.ejb.EJBException;
+
 public interface ServiceTimerSession {
     /**
      * Loads and activates all the services from database that are active
