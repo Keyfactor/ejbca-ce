@@ -25,6 +25,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -144,6 +146,10 @@ public class CAData implements Serializable {
     	return readAndUpgradeCAInternal();
 	}
 
+    public void upgradeCA() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
+    	readAndUpgradeCAInternal();
+    }
+
     /** We have an internal method for this read operation with a side-effect. 
      * This is because getCA() is a read-only method, so the possible side-effect of upgrade will not happen,
      * and therefore this internal method can be called from another non-read-only method, upgradeCA().
@@ -239,16 +245,27 @@ public class CAData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static CAData findById(EntityManager entityManager, Integer cAId) {
 		return entityManager.find(CAData.class,  cAId);
 	}
 	
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
 	public static CAData findByName(EntityManager entityManager, String name) {
-		Query query = entityManager.createQuery("from CAData a WHERE a.name=:name");
-		query.setParameter("name", name);
-		return (CAData) query.getSingleResult();
+		CAData ret = null;
+		try {
+			Query query = entityManager.createQuery("from CAData a WHERE a.name=:name");
+			query.setParameter("name", name);
+			ret = (CAData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
 	}
 
+	/** @return return the query results as a List. */
 	public static Collection<CAData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("from CAData a");
 		return query.getResultList();
