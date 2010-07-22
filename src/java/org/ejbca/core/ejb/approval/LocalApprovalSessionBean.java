@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.ServiceLoader;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -41,6 +42,7 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
@@ -122,9 +124,9 @@ import org.ejbca.util.query.Query;
  * 
  * @jonas.bean ejb-name="ApprovalSession"
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ApprovalSession")
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ApprovalSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalApprovalSessionBean extends BaseSessionBean implements ApprovalSessionLocal, ApprovalSessionRemote {
+public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessionRemote {
 
     private static final long serialVersionUID = 1L;
 
@@ -162,7 +164,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean implements Approva
      *             if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        approvalHome = (ApprovalDataLocalHome) getLocator().getLocalHome(ApprovalDataLocalHome.COMP_NAME);
+        approvalHome = (ApprovalDataLocalHome) ServiceLocator.getInstance().getLocalHome(ApprovalDataLocalHome.COMP_NAME);
     }
 
     /**
@@ -679,7 +681,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean implements Approva
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString)
             throws AuthorizationDeniedException, IllegalQueryException {
-        trace(">query()");
+        log.trace(">query()");
         ArrayList returnData = new ArrayList();
         String sqlquery = "select " + APPROVALDATA_COL + " from ApprovalData where ";
         // Check if query is legal.
@@ -766,7 +768,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean implements Approva
 
                 returnData.add(data);
             }
-            trace("<query()");
+            log.trace("<query()");
             return returnData;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -862,7 +864,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean implements Approva
                         LogConstants.EVENT_INFO_NOTIFICATION, "Approval notification with id " + id + " was sent successfully.");
             }
         } catch (Exception e) {
-            error("Error when sending notification approving notification", e);
+           log.error("Error when sending notification approving notification", e);
             try {
                 logsession.log(admin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null,
                         LogConstants.EVENT_ERROR_NOTIFICATION, "Error sending approval notification with id " + id + ".");
