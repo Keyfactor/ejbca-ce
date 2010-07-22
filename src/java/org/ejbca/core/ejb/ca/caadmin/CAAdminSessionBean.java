@@ -230,7 +230,7 @@ import org.ejbca.util.keystore.KeyTools;
  * @jboss.method-attributes pattern = "verify*" read-only = "true"
  * 
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CAAdminSession")
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CAAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRemote {
 
@@ -242,7 +242,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
-    @Resource private
+    @Resource
     private SessionContext sessionContext;
     @EJB
     private LogSessionLocal logSession;
