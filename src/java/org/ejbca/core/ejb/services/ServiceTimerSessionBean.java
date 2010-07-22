@@ -220,7 +220,7 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ServiceTimerSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class ServiceTimerSessionBean {
+public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, ServiceTimerSessionRemote {
 
 	private static final Logger log = Logger.getLogger(ServiceTimerSessionBean.class);
     /** Internal localization of logs and errors */
