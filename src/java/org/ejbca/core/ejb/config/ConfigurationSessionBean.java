@@ -53,9 +53,9 @@ import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
  *   remote-class="org.ejbca.core.ejb.upgrade.IConfigurationSessionRemote"
  * 
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ConfigurationSession")
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ConfigurationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class ConfigurationSessionBean extends BaseSessionBean implements ConfigurationSessionRemote {
+public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 
     private static final long serialVersionUID = 1L;
 

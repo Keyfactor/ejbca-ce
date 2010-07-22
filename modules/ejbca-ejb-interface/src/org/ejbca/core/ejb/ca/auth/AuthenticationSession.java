@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.auth;
 
-import javassist.tools.rmi.ObjectNotFoundException;
+import javax.ejb.ObjectNotFoundException;
 
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
