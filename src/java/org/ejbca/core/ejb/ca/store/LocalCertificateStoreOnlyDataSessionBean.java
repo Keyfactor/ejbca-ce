@@ -22,12 +22,17 @@ import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.CreateException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CryptoProviderTools;
@@ -82,8 +87,12 @@ import org.ejbca.util.JDBCUtil;
  * 
  * @version $Id$
  */
-public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
-
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreOnlyDataSessionRemote")
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStoreOnlyDataSessionLocal, CertificateStoreOnlyDataSessionRemote {
+    
+    private static final Logger log = Logger.getLogger(LocalCertificateStoreOnlyDataSessionBean.class);
+    
     /**
      * The home interface of Certificate entity bean
      */
@@ -248,19 +257,19 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#debug(java.lang.String)
          */
         public void debug(String s) {
-            LocalCertificateStoreOnlyDataSessionBean.this.debug(s);
+            log.debug(s);
         }
         /* (non-Javadoc)
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
          */
         public void error(String s) {
-            LocalCertificateStoreOnlyDataSessionBean.this.error(s);
+            log.error(s);
         }
         /* (non-Javadoc)
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
          */
         public void error(String s, Exception e) {
-        	LocalCertificateStoreOnlyDataSessionBean.this.error(s, e);        	
+            log.error(s, e);        	
         }
     }
 
@@ -270,9 +279,9 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
+        certHome = (CertificateDataLocalHome) ServiceLocator.getInstance().getLocalHome(CertificateDataLocalHome.COMP_NAME);
         if (ProtectConfiguration.getCertProtectionEnabled()) {
-        	protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
+        	protecthome = (TableProtectSessionLocalHome) ServiceLocator.getInstance().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
         }
     }
 

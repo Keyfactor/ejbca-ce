@@ -29,7 +29,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 
 /**
  * Base interface for request messages sent to the CA. Implementors of this interface must also
- * implement Serializable if they are to be sent to any EJB bussiness methods.
+ * implement Serializable if they are to be sent to any EJB business methods.
  *
  * @version $Id$
  */
