@@ -23,6 +23,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -60,23 +62,22 @@ public class CRLData implements Serializable {
 	 * @param incrl the (X509)CRL to be stored in the database.
 	 * @param number monotonically increasnig CRL number
 	 */
-	public CRLData(X509CRL incrl, int number) {
-		// Exctract all fields to store with the certificate.
-		try {
-			String b64Crl = new String(Base64.encode(incrl.getEncoded()));
-			setBase64Crl(b64Crl);
-			setFingerprint(CertTools.getFingerprintAsString(incrl));
-			// Make sure names are always looking the same
-			setIssuerDN(CertTools.getIssuerDN(incrl));
-			log.debug("Creating crldata, issuer=" + getIssuerDN());
-			// Default values for cafp
-			setCaFingerprint(null);
-			setCrlNumber(number);
-			setThisUpdate(incrl.getThisUpdate());
-			setNextUpdate(incrl.getNextUpdate());
-		} catch (CRLException ce) {
-			log.error("Can't extract DER encoded CRL.", ce);
-		}
+	public CRLData(byte[] incrl, int number, String issuerDN, Date thisUpdate, Date nextUpdate, String cafingerprint, int deltaCRLIndicator) {
+    	String b64Crl = new String(Base64.encode(incrl));
+    	setBase64Crl(b64Crl);
+    	String fp = CertTools.getFingerprintAsString(incrl);
+    	setFingerprint(fp);
+    	// Make sure names are always looking the same
+    	String issuer = CertTools.stringToBCDNString(issuerDN);
+    	setIssuerDN(issuer);
+    	if (log.isDebugEnabled()) {
+    		log.debug("Creating crldata, fp="+fp+", issuer=" + issuer+", crlNumber="+number+", deltaCRLIndicator="+deltaCRLIndicator);
+    	}
+    	setCaFingerprint(cafingerprint);
+    	setCrlNumber(number);
+    	setThisUpdate(thisUpdate);
+    	setNextUpdate(nextUpdate);
+    	setDeltaCRLIndicator(deltaCRLIndicator);
 	}
 	
 	public CRLData() { }
@@ -179,14 +180,23 @@ public class CRLData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static CRLData findByFingerprint(EntityManager entityManager, String fingerprint) {
 		return entityManager.find(CRLData.class,  fingerprint);
 	}
 	
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
 	public static CRLData findByIssuerDNAndCRLNumber(EntityManager entityManager, String issuerDN, int crlNumber) {
-		Query query = entityManager.createQuery("from CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber");
-		query.setParameter("issuerDN", issuerDN);
-		query.setParameter("crlNumber", crlNumber);
-		return (CRLData) query.getSingleResult();
+		try {
+			Query query = entityManager.createQuery("from CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber");
+			query.setParameter("issuerDN", issuerDN);
+			query.setParameter("crlNumber", crlNumber);
+			return (CRLData) query.getSingleResult();
+    	} catch (NoResultException e) {
+		}
+    	return null;
 	}
 }

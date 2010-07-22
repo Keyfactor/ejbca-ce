@@ -501,16 +501,19 @@ public class CertificateData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static CertificateData findByFingerprint(EntityManager entityManager, String fingerprint) {
 		return entityManager.find(CertificateData.class,  fingerprint);
 	}
 
+	/** @return return the query results as a List. */
 	public static List<CertificateData> findByExpireDate(EntityManager entityManager, long expireDate) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.expireDate<:expireDate");
 		query.setParameter("expireDate", expireDate);
 		return query.getResultList();
 	}
 
+	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=issuerDN");
 		query.setParameter("subjectDN", subjectDN);
@@ -518,18 +521,21 @@ public class CertificateData implements Serializable {
 		return query.getResultList();
 	}
 	
+	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.subjectDN=:subjectDN");
 		query.setParameter("subjectDN", subjectDN);
 		return query.getResultList();
 	}
 
+	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.serialNumber=:serialNumber");
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
 	}
 
+	/** @return return the query results as a List. */
 	public static List<CertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
 		query.setParameter("issuerDN", issuerDN);
@@ -537,12 +543,14 @@ public class CertificateData implements Serializable {
 		return query.getResultList();
 	}
 
+	/** @return return the query results as a List. */
 	public static List<CertificateData> findByUsername(EntityManager entityManager, String username) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.username=:username");
 		query.setParameter("username", username);
 		return query.getResultList();
 	}
 
+	/** @return return the query results as a List. */
 	// TODO: When only JPA is used, check if we can refactor this method to SELECT DISTINCT a.username FROM ...
 	public static List<CertificateData> findByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
@@ -582,20 +590,22 @@ public class CertificateData implements Serializable {
 		return query.getResultList();
 	}
 	
+	/** @return the number of entries with the given parameter  */
 	public static long getCount(EntityManager entityManager, int certificateProfileId) {
 		Query countQuery = entityManager.createQuery("SELECT COUNT(a) FROM CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
 		countQuery.setParameter("certificateProfileId", certificateProfileId);
 		return (Long) countQuery.getSingleResult();
 	}
 	
+	/** @return the number of entries with the given parameter  */
 	public static long getCount(EntityManager entityManager) {
 		Query countQuery = entityManager.createQuery("SELECT COUNT(a) FROM CertificateData a");
 		return (Long) countQuery.getSingleResult();
 	}
 	
+	/** @return return the query results as a List. */
 	public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
 		Query query = entityManager.createQuery("SELECT DISTINCT certificateProfileId FROM CertificateData ORDER BY certificateProfileId");
 	    return query.getResultList();
 	}
-
 }

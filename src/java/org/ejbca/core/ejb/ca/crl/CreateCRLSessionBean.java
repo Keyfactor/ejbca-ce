@@ -23,24 +23,21 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
-import org.ejbca.core.ejb.BaseSessionBean;
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ca.store.CRLDataLocal;
-import org.ejbca.core.ejb.ca.store.CRLDataLocalHome;
-import org.ejbca.core.ejb.ca.store.CRLDataPK;
-import org.ejbca.core.ejb.ca.store.CertificateDataLocal;
-import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
-import org.ejbca.core.ejb.ca.store.CertificateDataPK;
+import org.ejbca.core.ejb.ca.store.CRLData;
+import org.ejbca.core.ejb.ca.store.CertificateData;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -141,40 +138,25 @@ import org.ejbca.util.JDBCUtil;
  *   link="PublisherSession"
  *
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CreateCRLSession")
- @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSessionLocal, CreateCRLSessionRemote{
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CreateCRLSessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSessionRemote{
 
     private static final long serialVersionUID = 1L;
 
+    private static final Logger log = Logger.getLogger(CreateCRLSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    /** The home interface of CRL entity bean */
-    private CRLDataLocalHome crlDataHome = null;
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
 
-      /** The local home interface of Certificate entity bean */
-    private CertificateDataLocalHome certHome = null;
-    
     @EJB
     private CertificateStoreSessionLocal store;
-    
     @EJB
     private PublisherSessionLocal publisherSession;
-
-    /** The local interface of the log session bean */
     @EJB
     private LogSessionLocal logsession;
-
-    /** Default create for SessionBean without any creation Arguments.
-     * @throws CreateException if bean instance can't be created
-     */
-    public void ejbCreate () throws CreateException {
-        crlDataHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
-        certHome = (CertificateDataLocalHome)getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
-     
-      
-    }
 
 	/** Same as generating a new CRL but this is in a new separate transaction.
 	 *
@@ -214,10 +196,10 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
     			log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
     		} else {
     			if (cainfo instanceof X509CAInfo) {
-    				Collection certs = cainfo.getCertificateChain();
+    				Collection<Certificate> certs = cainfo.getCertificateChain();
     				final Certificate cacert;
     				if (!certs.isEmpty()) {
-    					cacert = (Certificate)certs.iterator().next();   
+    					cacert = certs.iterator().next();   
     				} else {
     					cacert = null;
     				}
@@ -293,7 +275,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
     		}
     	} catch(Exception e) {
     		String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(cainfo.getCAId()));            	    			    	   
-    		error(msg, e);
+    		log.error(msg, e);
     		logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
     		if (e instanceof EJBException) {
     			throw (EJBException)e;
@@ -340,10 +322,10 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
 				log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
 			} else {
 				if (cainfo instanceof X509CAInfo) {
-					Collection certs = cainfo.getCertificateChain();
+					Collection<Certificate> certs = cainfo.getCertificateChain();
 					final Certificate cacert;
 					if (!certs.isEmpty()) {
-						cacert = (Certificate)certs.iterator().next();   
+						cacert = certs.iterator().next();   
 					} else {
 					    cacert = null;
 					}
@@ -382,7 +364,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
 		   }
 		}catch(Exception e) {
         	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(cainfo.getCAId()));            	    			    	   
-        	error(msg, e);
+        	log.error(msg, e);
         	logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
         	if (e instanceof EJBException) {
         		throw (EJBException)e;
@@ -404,7 +386,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
      * @ejb.interface-method
 	 */
     public String run(Admin admin, CA ca) throws CATokenOfflineException {
-        trace(">run()");
+    	log.trace(">run()");
         if (ca == null) {
             throw new EJBException("No CA specified.");
         }
@@ -414,23 +396,23 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
         try {
             final String caCertSubjectDN; // DN from the CA issuing the CRL to be used when searching for the CRL in the database.
             {
-            	final Collection certs = cainfo.getCertificateChain();
-            	final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
+            	final Collection<Certificate> certs = cainfo.getCertificateChain();
+            	final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
             	caCertSubjectDN = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
             }
             // We can not create a CRL for a CA that is waiting for certificate response
             if ( caCertSubjectDN!=null && cainfo.getStatus()==SecConst.CA_ACTIVE )  {
             	long crlperiod = cainfo.getCRLPeriod();
             	// Find all revoked certificates for a complete CRL
-            	Collection revcerts = store.listRevokedCertInfo(admin, caCertSubjectDN, -1);
-            	debug("Found "+revcerts.size()+" revoked certificates.");
+            	Collection<RevokedCertInfo> revcerts = store.listRevokedCertInfo(admin, caCertSubjectDN, -1);
+            	log.debug("Found "+revcerts.size()+" revoked certificates.");
 
             	// Go through them and create a CRL, at the same time archive expired certificates
             	Date now = new Date();
             	Date check = new Date(now.getTime() - crlperiod);
-            	Iterator iter = revcerts.iterator();
+            	Iterator<RevokedCertInfo> iter = revcerts.iterator();
             	while (iter.hasNext()) {
-            		RevokedCertInfo data = (RevokedCertInfo)iter.next();
+            		RevokedCertInfo data = iter.next();
             		// We want to include certificates that was revoked after the last CRL was issued, but before this one
             		// so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
             		if ( data.getExpireDate().before(check) ) {
@@ -440,8 +422,9 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
                 		Date revDate = data.getRevocationDate();
             			if (revDate == null) {
             				data.setRevocationDate(now);
-            				CertificateDataPK pk = new CertificateDataPK(data.getCertificateFingerprint());
-            				CertificateDataLocal certdata = certHome.findByPrimaryKey(pk);
+            				CertificateData certdata = CertificateData.findByFingerprint(entityManager, data.getCertificateFingerprint());
+            				//CertificateDataPK pk = new CertificateDataPK(data.getCertificateFingerprint());
+            				//CertificateDataLocal certdata = certHome.findByPrimaryKey(pk);
             				// Set revocation date in the database
             				certdata.setRevocationDate(now);
             			}
@@ -475,9 +458,9 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
             logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
             throw new EJBException(e);
         }
-        trace("<run()");
+        log.trace("<run()");
         return ret;
-    } // run
+    }
 
 	/**
 	 * This method sets the "archived" certificates status. Normally this is done by the CRL-creation process.
@@ -489,8 +472,9 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
      * @ejb.interface-method
 	 */
     public void setArchivedStatus(String certificateFingerprint) throws FinderException {
-		CertificateDataPK pk = new CertificateDataPK(certificateFingerprint);
-		CertificateDataLocal certdata = certHome.findByPrimaryKey(pk);
+    	CertificateData certdata = CertificateData.findByFingerprint(entityManager, certificateFingerprint);
+		/*CertificateDataPK pk = new CertificateDataPK(certificateFingerprint);
+		CertificateDataLocal certdata = certHome.findByPrimaryKey(pk);*/
 		certdata.setStatus(SecConst.CERT_ARCHIVED);
     }
     
@@ -519,8 +503,8 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
     	final int caid = cainfo.getCAId();
     	try {
     		final String caCertSubjectDN; {
-    		    final Collection certs = cainfo.getCertificateChain();
-    		    final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
+    		    final Collection<Certificate> certs = cainfo.getCertificateChain();
+    		    final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
                 caCertSubjectDN = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
             }
     		if (caCertSubjectDN!=null && cainfo instanceof X509CAInfo) { // Only create CRLs for X509 CAs
@@ -530,13 +514,13 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
         			baseCrlNumber = basecrlinfo.getLastCRLNumber();    				
     			}
     			// Find all revoked certificates
-    			Collection revcertinfos = store.listRevokedCertInfo(admin, caCertSubjectDN, baseCrlCreateTime);
-    			debug("Found "+revcertinfos.size()+" revoked certificates.");
+    			Collection<RevokedCertInfo> revcertinfos = store.listRevokedCertInfo(admin, caCertSubjectDN, baseCrlCreateTime);
+    			log.debug("Found "+revcertinfos.size()+" revoked certificates.");
     			// Go through them and create a CRL, at the same time archive expired certificates
-    			ArrayList certs = new ArrayList();
-    			Iterator iter = revcertinfos.iterator();
+    			ArrayList<RevokedCertInfo> certs = new ArrayList<RevokedCertInfo>();
+    			Iterator<RevokedCertInfo> iter = revcertinfos.iterator();
     			while (iter.hasNext()) {
-    				RevokedCertInfo ci = (RevokedCertInfo)iter.next();
+    				RevokedCertInfo ci = iter.next();
     				if (ci.getRevocationDate() == null) {
     					ci.setRevocationDate(new Date());
     				}
@@ -545,7 +529,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
     			// create a delta CRL
     			crlBytes = createCRL(admin, ca, certs, baseCrlNumber);
     			X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
-    			debug("Created delta CRL with expire date: "+crl.getNextUpdate());
+    			log.debug("Created delta CRL with expire date: "+crl.getNextUpdate());
     		}
     	} catch (Exception e) {
     		logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,e.getMessage());
@@ -555,7 +539,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
         	log.trace("<runDeltaCRL: "+cainfo.getSubjectDN());
     	}
 		return crlBytes;
-    } // runDeltaCRL
+    }
         
     /**
      * Requests for a CRL to be created with the passed (revoked) certificates.
@@ -634,7 +618,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    //Redundant, since the call attribute is the same.. @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
     	if (log.isTraceEnabled()) {
         	log.trace(">storeCRL(" + cafp + ", " + number + ")");
@@ -647,7 +631,8 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
             	String msg = intres.getLocalizedMessage("store.storecrlwrongnumber", number, lastNo);            	
             	logsession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);        		
         	}
-            crlDataHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
+        	entityManager.persist(new CRLData(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator));
+            //crlDataHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
         	String msg = intres.getLocalizedMessage("store.storecrl", new Integer(number), null);            	
         	logsession.log(admin, issuerDN.toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
         } catch (Exception e) {
@@ -657,7 +642,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
         }
         log.trace("<storeCRL()");
         return true;
-    } // storeCRL
+    }
 
     /**
      * Retrieves the latest CRL issued by this CA.
@@ -677,13 +662,15 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
         try {
             int maxnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
             X509CRL crl = null;
-            try {
-                CRLDataLocal data = crlDataHome.findByIssuerDNAndCRLNumber(issuerdn, maxnumber);
+        	CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, maxnumber);
+        	if (data != null) {
+            //try {
+                //CRLDataLocal data = crlDataHome.findByIssuerDNAndCRLNumber(issuerdn, maxnumber);
                 crl = data.getCRL();
-            } catch (FinderException e) {
-                crl = null;
+            /*} catch (FinderException e) {
+                crl = null;*/
             }
-            trace("<getLastCRL()");
+            log.trace("<getLastCRL()");
             if (crl == null) {
             	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, maxnumber);            	
                 logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
@@ -697,7 +684,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
             throw new EJBException(e);
         }
-    } //getLastCRL
+    }
 
     /**
      * Retrieves the information about the lastest CRL issued by this CA. Retreives less information than getLastCRL, i.e. not the actual CRL data.
@@ -718,28 +705,31 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
         try {
             crlnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
             CRLInfo crlinfo = null;
-            try {
-                CRLDataLocal data = crlDataHome.findByIssuerDNAndCRLNumber(issuerdn, crlnumber);
+            CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, crlnumber);
+            if (data != null) {
+            //try {
+                //CRLDataLocal data = crlDataHome.findByIssuerDNAndCRLNumber(issuerdn, crlnumber);
                 crlinfo = new CRLInfo(data.getIssuerDN(), crlnumber, data.getThisUpdate(), data.getNextUpdate());
-            } catch (FinderException e) {
+            } else {
+            //} catch (FinderException e) {
             	if (deltaCRL && (crlnumber == 0)) {
             		log.debug("No delta CRL exists for CA with dn '"+issuerdn+"'");
             	} else if (crlnumber == 0) {
             		log.debug("No CRL exists for CA with dn '"+issuerdn+"'");
             	} else {
                 	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
-                    log.error(msg, e);            		
+                    log.error(msg);            		
             	}
                 crlinfo = null;
             }
-            trace("<getLastCRLInfo()");
+            log.trace("<getLastCRLInfo()");
             return crlinfo;
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", issuerdn);            	
             logsession.log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
             throw new EJBException(e);
         }
-    } //getLastCRLInfo
+    }
 
     /**
      * Retrieves the information about the specified CRL. Retreives less information than getLastCRL, i.e. not the actual CRL data.
@@ -757,23 +747,26 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
     	}
         try {
             CRLInfo crlinfo = null;
-            try {
-                CRLDataLocal data = crlDataHome.findByPrimaryKey(new CRLDataPK(fingerprint));
+            CRLData data = CRLData.findByFingerprint(entityManager, fingerprint);
+            if (data != null) {
+            //try {
+                //CRLDataLocal data = crlDataHome.findByPrimaryKey(new CRLDataPK(fingerprint));
                 crlinfo = new CRLInfo(data.getIssuerDN(), data.getCrlNumber(), data.getThisUpdate(), data.getNextUpdate());
-            } catch (FinderException e) {
+            } else {
+            //} catch (FinderException e) {
             	log.debug("No CRL exists with fingerprint '"+fingerprint+"'");
             	String msg = intres.getLocalizedMessage("store.errorgetcrl", fingerprint, 0);            	
-            	log.error(msg, e);            		
-                crlinfo = null;
+            	log.error(msg);            		
+                //crlinfo = null;
             }
-            trace("<getCRLInfo()");
+            log.trace("<getCRLInfo()");
             return crlinfo;
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", fingerprint);            	
             logsession.log(admin, fingerprint.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
             throw new EJBException(e);
         }
-    } //getCRLInfo
+    }
 
     /**
      * Retrieves the highest CRLNumber issued by the CA.
@@ -819,7 +812,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSe
         } finally {
             JDBCUtil.close(con, ps, result);
         }
-    } //getLastCRLNumber
+    }
 
 
     /**
