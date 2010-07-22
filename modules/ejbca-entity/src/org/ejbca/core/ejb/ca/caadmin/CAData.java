@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CACacheManager;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.CVCCA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
@@ -251,6 +252,18 @@ public class CAData implements Serializable {
 	}
 	
 	/**
+	 * @throws CADoesntExistsException if the entity does not exist
+	 * @return the found entity instance
+	 */
+	public static CAData findByIdOrThrow(EntityManager entityManager, Integer cAId) throws CADoesntExistsException {
+		CAData ret = findById(entityManager, cAId);
+		if (ret == null) {
+			throw new CADoesntExistsException("CA id: " + cAId);
+		}
+		return ret;
+	}
+	
+	/**
 	 * @throws NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
@@ -261,6 +274,19 @@ public class CAData implements Serializable {
 			query.setParameter("name", name);
 			ret = (CAData) query.getSingleResult();
 		} catch (NoResultException e) {
+		}
+		return ret;
+	}
+
+	/**
+	 * @throws CADoesntExistsException if the entity does not exist
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance
+	 */
+	public static CAData findByNameOrThrow(EntityManager entityManager, String name) throws CADoesntExistsException {
+		CAData ret = findByName(entityManager, name);
+		if (ret == null) {
+			throw new CADoesntExistsException("CA name: " + name);
 		}
 		return ret;
 	}

@@ -256,7 +256,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Caching of CA IDs with CA cert hash as ID
      */
-    private final Map caCertToCaId = new HashMap();
+    private final Map<Integer, Integer> caCertToCaId = new HashMap<Integer, Integer>();
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -432,7 +432,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Certificate chain
-        Collection certificatechain = null;
+        Collection<Certificate> certificatechain = null;
         String sequence = catoken.getCATokenInfo().getKeySequence(); // get from
         // CAtoken
         // to make
@@ -454,7 +454,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
 
                 // Build Certificate Chain
-                certificatechain = new ArrayList();
+                certificatechain = new ArrayList<Certificate>();
                 certificatechain.add(cacertificate);
 
                 // set status to active
@@ -470,7 +470,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
-            certificatechain = new ArrayList();
+            certificatechain = new ArrayList<Certificate>();
             // set status to waiting certificate response.
             castatus = SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
         }
@@ -478,7 +478,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
             // Create CA signed by other internal CA.
             try {
-            	CAData signcadata = CAData.findById(entityManager, cainfo.getSignedBy());
+            	CAData signcadata = CAData.findByIdOrThrow(entityManager, cainfo.getSignedBy());
                 //CADataLocal signcadata = cadatahome.findByPrimaryKey(new Integer(cainfo.getSignedBy()));
                 CA signca = signcadata.getCA();
                 // Check that the signer is valid
@@ -493,8 +493,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         sequence);
 
                 // Build Certificate Chain
-                Collection rootcachain = signca.getCertificateChain();
-                certificatechain = new ArrayList();
+                Collection<Certificate> rootcachain = signca.getCertificateChain();
+                certificatechain = new ArrayList<Certificate>();
                 certificatechain.add(cacertificate);
                 certificatechain.addAll(rootcachain);
                 // set status to active
@@ -596,7 +596,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Get CA from database
         try {
-        	CAData cadata = CAData.findById(entityManager, cainfo.getCAId());
+        	CAData cadata = CAData.findByIdOrThrow(entityManager, cainfo.getCAId());
             //CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(cainfo.getCAId()));
             CA ca = cadata.getCA();
 
@@ -626,7 +626,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (xkmsrenewcert) {
                 XKMSCAServiceInfo info = (XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE);
                 Certificate xkmscert = (Certificate) info.getXKMSSignerCertificatePath().get(0);
-                ArrayList xkmscertificate = new ArrayList();
+                ArrayList<Certificate> xkmscertificate = new ArrayList<Certificate>();
                 xkmscertificate.add(xkmscert);
                 // Publish the extended service certificate, but only for active
                 // services
@@ -637,7 +637,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (cmsrenewcert) {
                 CmsCAServiceInfo info = (CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE);
                 Certificate cmscert = (Certificate) info.getCertificatePath().get(0);
-                ArrayList cmscertificate = new ArrayList();
+                ArrayList<Certificate> cmscertificate = new ArrayList<Certificate>();
                 cmscertificate.add(cmscert);
                 // Publish the extended service certificate, but only for active
                 // services
@@ -679,7 +679,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Get CA from database
         try {
-        	CAData cadata = CAData.findById(entityManager, caid);
+        	CAData cadata = CAData.findByIdOrThrow(entityManager, caid);
             //CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             // Remove CA
         	entityManager.remove(cadata);
@@ -1228,8 +1228,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection getAvailableCAs() {
-        ArrayList al = new ArrayList();
+    public Collection<Integer> getAvailableCAs() {
+        ArrayList<Integer> al = new ArrayList<Integer>();
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1262,7 +1262,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection getAvailableCAs(Admin admin) {
+    public Collection<Integer> getAvailableCAs(Admin admin) {
         return authorizationSession.getAuthorizedCAIds(admin, getAvailableCAs());
     }
 
@@ -1327,10 +1327,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Get CA info.
         CAData cadata = null;
         try {
-        	cadata = CAData.findById(entityManager, caid);
-        	if (cadata == null) {
-        		throw new CADoesntExistsException();
-        	}
+        	cadata = CAData.findByIdOrThrow(entityManager, caid);
             //cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
             String caname = ca.getName();
@@ -1484,10 +1481,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         byte[] returnval = null;
         String caname = "" + caid;
-        CAData signedbydata = CAData.findById(entityManager, caid);
-    	if (signedbydata == null) {
-            throw new CADoesntExistsException("caid=" + caid);
-    	}
+        CAData signedbydata = CAData.findByIdOrThrow(entityManager, caid);
         try {
             //signedbydata = this.cadatahome.findByPrimaryKey(new Integer(caid));
             caname = signedbydata.getName();
@@ -1578,12 +1572,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         throw new EjbcaException(msg);
                     }
 
-                    ArrayList tmpchain = new ArrayList();
+                    ArrayList<Certificate> tmpchain = new ArrayList<Certificate>();
                     tmpchain.add(cacert);
                     // If we have a chain given as parameter, we will use that.
                     // If no parameter is given we assume that the request chain
                     // was stored when the request was created.
-                    Collection reqchain = null;
+                    Collection<Certificate> reqchain = null;
                     if ((cachain != null) && (cachain.size() > 0)) {
                         reqchain = CertTools.createCertChain(cachain);
                         log.debug("Using CA certificate chain from parameter of size: " + reqchain.size());
@@ -1598,7 +1592,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     }
                     log.debug("Picked up request certificate chain of size: " + reqchain.size());
                     tmpchain.addAll(reqchain);
-                    Collection chain = CertTools.createCertChain(tmpchain);
+                    Collection<Certificate> chain = CertTools.createCertChain(tmpchain);
                     log.debug("Storing certificate chain of size: " + chain.size());
                     // Before importing the certificate we want to make sure
                     // that the public key matches the CAs private key
@@ -1781,7 +1775,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) throws CAExistsException, CADoesntExistsException,
             AuthorizationDeniedException, CATokenOfflineException {
         final CA ca;
-        Collection certchain = null;
+        Collection<Certificate> certchain = null;
         IResponseMessage returnval = null;
         // check authorization
         try {
@@ -1852,10 +1846,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // get signing CA
         if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
             try {
-            	CAData signcadata = CAData.findById(entityManager, cainfo.getSignedBy());
-            	if (signcadata == null) {
-            		throw new CADoesntExistsException("caid " + cainfo.getSignedBy() + "does not exist.");
-            	}
+            	CAData signcadata = CAData.findByIdOrThrow(entityManager, cainfo.getSignedBy());
                 //CADataLocal signcadata = cadatahome.findByPrimaryKey(new Integer(cainfo.getSignedBy()));
                 CA signca = signcadata.getCA();
                 try {
@@ -1894,8 +1885,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     returnval.setCertificate(cacertificate);
 
                     // Build Certificate Chain
-                    Collection rootcachain = signca.getCertificateChain();
-                    certchain = new ArrayList();
+                    Collection<Certificate> rootcachain = signca.getCertificateChain();
+                    certchain = new ArrayList<Certificate>();
                     certchain.add(cacertificate);
                     certchain.addAll(rootcachain);
 
@@ -2094,10 +2085,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Get CA info.
         //try {
-            CAData cadata = CAData.findById(entityManager, caid);
-            if (cadata == null) {
-                throw new CADoesntExistsException("caid=" + caid);
-            }
+            CAData cadata = CAData.findByIdOrThrow(entityManager, caid);
             //cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
             if (ca.getStatus() == SecConst.CA_OFFLINE) {
@@ -2139,7 +2127,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">CAAdminSession, renewCA(), caid=" + caid);
         }
-        Collection cachain = null;
+        Collection<Certificate> cachain = null;
         Certificate cacertificate = null;
         // check authorization
         try {
@@ -2156,10 +2144,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Get CA info.
         CAData cadata = null;
         try {
-        	cadata = CAData.findById(entityManager, caid);
-        	if (cadata == null) {
-        		throw new CADoesntExistsException("caid="+caid);
-        	}
+        	cadata = CAData.findByIdOrThrow(entityManager, caid);
             //cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
 
@@ -2198,10 +2183,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     CACacheManager.instance().removeCA(ca.getCAId());
                     CATokenManager.instance().removeCAToken(ca.getCAId());
                 }
-            	cadata = CAData.findById(entityManager, caid);
-            	if (cadata == null) {
-            		throw new CADoesntExistsException("caid="+caid);
-            	}
+            	cadata = CAData.findByIdOrThrow(entityManager, caid);
                 //cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
                 ca = cadata.getCA();
                 // In order to generate a certificate with this keystore we must
@@ -2243,10 +2225,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     // Resign with CA above.
                     if (ca.getSignedBy() > CAInfo.SPECIALCAIDBORDER || ca.getSignedBy() < 0) {
                         // Create CA signed by other internal CA.
-                    	CAData signcadata = CAData.findById(entityManager, ca.getSignedBy());
-                    	if (cadata == null) {
-                    		throw new CADoesntExistsException("caid="+ca.getSignedBy());
-                    	}
+                    	CAData signcadata = CAData.findByIdOrThrow(entityManager, ca.getSignedBy());
                         //CADataLocal signcadata = cadatahome.findByPrimaryKey(new Integer(ca.getSignedBy()));
                         CA signca = signcadata.getCA();
                         // Check that the signer is valid
@@ -2265,8 +2244,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, ca
                                 .getValidity(), certprofile, sequence);
                         // Build Certificate Chain
-                        Collection rootcachain = signca.getCertificateChain();
-                        cachain = new ArrayList();
+                        Collection<Certificate> rootcachain = signca.getCertificateChain();
+                        cachain = new ArrayList<Certificate>();
                         cachain.add(cacertificate);
                         cachain.addAll(rootcachain);
                     }
@@ -2348,10 +2327,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Get CA info.
-        CAData cadata = CAData.findById(entityManager, caid);
-        if (cadata == null) {
-        	throw new CADoesntExistsException("caid="+ caid);
-        }
+        CAData cadata = CAData.findByIdOrThrow(entityManager, caid);
         /*try {
             ca = this.cadatahome.findByPrimaryKey(new Integer(caid));
         } catch (javax.ejb.FinderException fe) {
@@ -2405,10 +2381,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
                 authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
             }
-            CAData cadata = CAData.findById(entityManager, caid);
-            if (cadata == null) {
-            	throw new CADoesntExistsException("caid="+caid);
-            }
+            CAData cadata = CAData.findByIdOrThrow(entityManager, caid);
             //CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
             CATokenContainer token = ca.getCAToken();
@@ -2546,10 +2519,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }
 
-            CAData caData = CAData.findByName(entityManager, caname);
-            if (caData == null) {
-            	throw new CADoesntExistsException("caname="+caname);
-            }
+            CAData caData = CAData.findByNameOrThrow(entityManager, caname);
             //CADataLocal caData = cadatahome.findByName(caname);
             CA thisCa = caData.getCA();
 
@@ -2615,10 +2585,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }
 
-            CAData caData = CAData.findByName(entityManager, caname);
-            if (caData == null) {
-            	throw new CADoesntExistsException("caname="+caname);
-            }
+            CAData caData = CAData.findByNameOrThrow(entityManager, caname);
             //CADataLocal caData = cadatahome.findByName(caname);
             CA thisCa = caData.getCA();
 
@@ -2827,8 +2794,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         int signedby = CAInfo.SIGNEDBYEXTERNALCA;
         int certprof = SecConst.CERTPROFILE_FIXED_SUBCA;
         String description = "Imported external signed CA";
-        Certificate caSignatureCertificate = (Certificate) signatureCertChain[0];
-        ArrayList certificatechain = new ArrayList();
+        Certificate caSignatureCertificate = signatureCertChain[0];
+        ArrayList<Certificate> certificatechain = new ArrayList<Certificate>();
         for (int i = 0; i < signatureCertChain.length; i++) {
             certificatechain.add(signatureCertChain[i]);
         }
@@ -2848,18 +2815,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         + "certificate chain in PKCS#12");
             }
         } else if (signatureCertChain.length > 1) {
-            Collection cas = getAvailableCAs();
-            Iterator iter = cas.iterator();
+            Collection<Integer> cas = getAvailableCAs();
+            Iterator<Integer> iter = cas.iterator();
             // Assuming certificate chain in forward direction (from target
             // to most-trusted CA). Multiple CA chains can contains the
             // issuer certificate; so only the chain where target certificate
             // is the issuer will be selected.
             while (iter.hasNext()) {
-                int caid = ((Integer) iter.next()).intValue();
+                int caid = iter.next().intValue();
                 CAInfo superCaInfo = getCAInfo(admin, caid);
-                Iterator i = superCaInfo.getCertificateChain().iterator();
+                Iterator<Certificate> i = superCaInfo.getCertificateChain().iterator();
                 if (i.hasNext()) {
-                    Certificate superCaCert = (Certificate) i.next();
+                    Certificate superCaCert = i.next();
                     if (verifyIssuer(caSignatureCertificate, superCaCert)) {
                         signedby = caid;
                         description = "Imported sub CA";
@@ -2872,7 +2839,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CAInfo cainfo = null;
         CA ca = null;
         int validity = (int) ((CertTools.getNotAfter(caSignatureCertificate).getTime() - CertTools.getNotBefore(caSignatureCertificate).getTime()) / (24 * 3600 * 1000));
-        ArrayList extendedcaservices = new ArrayList();
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         if (caSignatureCertificate instanceof X509Certificate) {
             // Create an X509CA
             // Create and active extended CA Services (OCSP, XKMS, CMS).
@@ -2978,10 +2945,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             String privateEncryptionKeyAlias) throws Exception {
         log.trace(">exportCAKeyStore");
         try {
-        	CAData cadata = CAData.findByName(entityManager, caname);
-        	if (cadata == null) {
-        		throw new CADoesntExistsException("caname="+caname);
-        	}
+        	CAData cadata = CAData.findByNameOrThrow(entityManager, caname);
         	CA thisCa = cadata.getCA();
             //CA thisCa = cadatahome.findByName(caname).getCA();
             // Make sure we are not trying to export a hard or invalid token
@@ -3068,8 +3032,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection getAllCACertificates() {
-        ArrayList returnval = new ArrayList();
+    public Collection<Certificate> getAllCACertificates() {
+        ArrayList<Certificate> returnval = new ArrayList<Certificate>();
 
         try {
             Collection<Integer> caids = getAvailableCAs();
@@ -3113,10 +3077,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
                 authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }
-        	CAData cadata = CAData.findByName(entityManager, caname);
-        	if (cadata == null) {
-        		throw new CADoesntExistsException("caname="+caname);
-        	}
+        	CAData cadata = CAData.findByNameOrThrow(entityManager, caname);
         	CA thisCa = cadata.getCA();
             //CA thisCa = cadatahome.findByName(caname).getCA();
 
@@ -3370,10 +3331,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.interface-method
      */
     public byte[] encryptWithCA(int caid, byte[] data) throws Exception {
-    	CAData caData = CAData.findById(entityManager, caid);
-    	if (caData == null) {
-    		throw new CADoesntExistsException("caid="+caid);
-    	}
+    	CAData caData = CAData.findByIdOrThrow(entityManager, caid);
         //CADataLocal caData = cadatahome.findByPrimaryKey(new Integer(caid));
         return caData.getCA().encryptData(data, SecConst.CAKEYPURPOSE_KEYENCRYPT);
     }
@@ -3391,10 +3349,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.interface-method
      */
     public byte[] decryptWithCA(int caid, byte[] data) throws Exception {
-    	CAData caData = CAData.findById(entityManager, caid);
-    	if (caData == null) {
-    		throw new CADoesntExistsException("caid="+caid);
-    	}
+    	CAData caData = CAData.findByIdOrThrow(entityManager, caid);
         //CADataLocal caData = cadatahome.findByPrimaryKey(new Integer(caid));
         return caData.getCA().decryptData(data, SecConst.CAKEYPURPOSE_KEYENCRYPT);
     }
@@ -3687,7 +3642,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public int createDeltaCRLs(Admin admin, Collection caids, long crloverlaptime) {
         int createddeltacrls = 0;
         try {
-            Iterator iter = null;
+            Iterator<Integer> iter = null;
             if (caids != null) {
                 iter = caids.iterator();
             }
@@ -3695,7 +3650,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 iter = getAvailableCAs().iterator();
             }
             while (iter.hasNext()) {
-                int caid = ((Integer) iter.next()).intValue();
+                int caid = iter.next().intValue();
                 log.debug("createDeltaCRLs for caid: " + caid);
                 CA ca = getCA(admin, caid);
                 if (crlSession.runDeltaCRLnewTransactionConditioned(admin, ca, crloverlaptime)) {
@@ -3729,9 +3684,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
         log.debug("CaTokenSignTest: " + caTokenSignTest);
-        Iterator iter = getAvailableCAs().iterator();
+        Iterator<Integer> iter = getAvailableCAs().iterator();
         while (iter.hasNext()) {
-            int caid = ((Integer) iter.next()).intValue();
+            int caid = iter.next().intValue();
             CAInfo cainfo = getCAInfo(admin, caid, caTokenSignTest);
             if ((cainfo.getStatus() == SecConst.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()) {
                 int tokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
