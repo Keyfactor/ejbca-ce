@@ -240,15 +240,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /** The local home interface of CAData. */
     //private CADataLocalHome cadatahome;
 
-    @PersistenceContext(unitName="ejbca") private EntityManager entityManager;
-    @Resource private SessionContext sessionContext;
-
-    @EJB private LogSessionLocal logSession;
-    @EJB private AuthorizationSessionLocal authorizationSession;
-    @EJB private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB private CreateCRLSessionLocal crlSession;
-    @EJB private PublisherSessionLocal publisherSession;
-    @EJB private ApprovalSessionLocal approvalSession;
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
+    @Resource private
+    private SessionContext sessionContext;
+    @EJB
+    private LogSessionLocal logSession;
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CreateCRLSessionLocal crlSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
