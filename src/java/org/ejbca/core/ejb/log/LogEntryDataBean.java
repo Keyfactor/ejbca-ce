@@ -14,14 +14,13 @@
 package org.ejbca.core.ejb.log;
 
 
+import java.util.Date;
+
 import javax.ejb.CreateException;
 
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.StringTools;
-
-
-import java.util.Date;
 
 /** Entity bean should not be used directly, use though Session beans.
  *

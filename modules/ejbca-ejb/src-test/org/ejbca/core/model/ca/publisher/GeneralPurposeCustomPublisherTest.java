@@ -18,11 +18,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
-
-import junit.framework.TestCase;
 
 /**
  * Was doing some unit testing when I realized that these run without a running

@@ -13,10 +13,10 @@
  
 package org.ejbca.ui.web.admin.loginterface;
 
+import java.rmi.RemoteException;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.text.DateFormat;
-import java.rmi.RemoteException;
 
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;

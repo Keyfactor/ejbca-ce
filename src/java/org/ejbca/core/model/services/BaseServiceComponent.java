@@ -17,8 +17,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CRLDataLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;

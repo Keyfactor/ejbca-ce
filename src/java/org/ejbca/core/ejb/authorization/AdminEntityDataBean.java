@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.authorization;
 
 import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.authorization.AdminEntity;

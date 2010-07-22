@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.store;
 
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+
 public interface CertificateStoreSession {
 
     /**

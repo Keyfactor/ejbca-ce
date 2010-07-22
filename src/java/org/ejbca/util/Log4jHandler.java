@@ -13,12 +13,12 @@
 
 package org.ejbca.util;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Use {@link #add()} to add a handler to {@link java.util.logging.Logger} that logs to {@link org.apache.log4j.Logger}

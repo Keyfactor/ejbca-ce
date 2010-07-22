@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.userdatasource;
 
+import javax.ejb.EJBException;
+
+import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
+
 public interface UserDataSourceSession {
     /**
      * Main method used to fetch userdata from the given user data sources See

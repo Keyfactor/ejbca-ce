@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.util.dn.DnComponents;
-
 import junit.framework.Assert;
 import junit.framework.TestCase;
+
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.util.dn.DnComponents;
 
 /** Tests DN merging
  * 

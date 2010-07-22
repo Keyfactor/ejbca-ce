@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.keyrecovery;
 
+import javax.ejb.EJBException;
+
 public interface KeyRecoverySession {
     /**
      * Adds a certificates keyrecovery data to the database.

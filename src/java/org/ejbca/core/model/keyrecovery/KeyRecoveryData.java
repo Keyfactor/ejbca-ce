@@ -15,8 +15,8 @@ package org.ejbca.core.model.keyrecovery;
 
 
 import java.math.BigInteger;
-import java.security.cert.Certificate;
 import java.security.KeyPair;
+import java.security.cert.Certificate;
 
 import org.ejbca.util.StringTools;
 

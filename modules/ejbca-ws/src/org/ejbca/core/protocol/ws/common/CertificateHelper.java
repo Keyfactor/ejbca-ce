@@ -14,9 +14,9 @@ package org.ejbca.core.protocol.ws.common;
 
 import java.security.cert.CertificateException;
 
+import org.ejbca.core.model.SecConst;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.core.model.SecConst;
 
 /**
  * Class used to generate a java.security.Certificate from a 

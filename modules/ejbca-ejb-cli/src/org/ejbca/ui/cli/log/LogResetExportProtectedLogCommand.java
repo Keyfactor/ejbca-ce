@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.rmi.RemoteException;
 import java.security.SecureRandom;
 
 import javax.ejb.EJB;
