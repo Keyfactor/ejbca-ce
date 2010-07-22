@@ -268,7 +268,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * TODO: Convert this to a regular constructor!
      */
     @PostConstruct
-    public void ejbCreate() throws CreateException {
+    public void ejbCreate() /*throws CreateException*/ {
         cadatahome = (CADataLocalHome) ServiceLocator.getInstance().getLocalHome(CADataLocalHome.COMP_NAME);
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
@@ -286,7 +286,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
-    //@TransactionAttribute(TransactionAttributeType.REQUIRED)
+    //Redundant, class level attribute is the same.. @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void initializeAndUpgradeCAs(Admin admin) {
         try {
             Collection result = cadatahome.findAll();
