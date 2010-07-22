@@ -29,7 +29,6 @@ import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.config.ProtectConfiguration;
-import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -115,6 +114,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="local"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getDatabaseStatus() {
 		String returnval = "";
 		Connection con = null;
