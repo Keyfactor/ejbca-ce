@@ -16,10 +16,15 @@ package org.ejbca.core.ejb.config;
 import java.util.Properties;
 
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 
 /**
  * This bean handles configuration changes for system tests.
@@ -48,9 +53,13 @@ import org.ejbca.core.ejb.BaseSessionBean;
  *   remote-class="org.ejbca.core.ejb.upgrade.IConfigurationSessionRemote"
  * 
  */
-public class ConfigurationSessionBean extends BaseSessionBean {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ConfigurationSession")
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+public class ConfigurationSessionBean extends BaseSessionBean implements ConfigurationSessionRemote {
 
-	public void ejbCreate() { }
+    private static final long serialVersionUID = 1L;
+
+    public void ejbCreate() { }
 	public void ejbRemove() { }
 
 	/**
