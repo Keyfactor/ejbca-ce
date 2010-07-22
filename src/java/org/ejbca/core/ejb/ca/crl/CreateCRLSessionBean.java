@@ -24,23 +24,25 @@ import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CRLDataLocal;
 import org.ejbca.core.ejb.ca.store.CRLDataLocalHome;
 import org.ejbca.core.ejb.ca.store.CRLDataPK;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocal;
 import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataPK;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -139,7 +141,11 @@ import org.ejbca.util.JDBCUtil;
  *   link="PublisherSession"
  *
  */
-public class CreateCRLSessionBean extends BaseSessionBean {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CreateCRLSession")
+ @TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class CreateCRLSessionBean extends BaseSessionBean implements CreateCRLSessionLocal, CreateCRLSessionRemote{
+
+    private static final long serialVersionUID = 1L;
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -147,27 +153,27 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     /** The home interface of CRL entity bean */
     private CRLDataLocalHome crlDataHome = null;
 
-    /** The local home interface of Certificate store */
-    private ICertificateStoreSessionLocalHome storeHome = null;
-
-    /** The local home interface of Certificate entity bean */
+      /** The local home interface of Certificate entity bean */
     private CertificateDataLocalHome certHome = null;
-
-    private IPublisherSessionLocal publisherSession = null;
+    
+    @EJB
+    private CertificateStoreSessionLocal store;
+    
+    @EJB
+    private PublisherSessionLocal publisherSession;
 
     /** The local interface of the log session bean */
-    private ILogSessionLocal logsession;
+    @EJB
+    private LogSessionLocal logsession;
 
     /** Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate () throws CreateException {
         crlDataHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
-        storeHome = (ICertificateStoreSessionLocalHome)getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
         certHome = (CertificateDataLocalHome)getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
-        publisherSession = ((IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME)).create();
-        ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-        logsession = logsessionhome.create();
+     
+      
     }
 
 	/** Same as generating a new CRL but this is in a new separate transaction.
@@ -175,6 +181,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="RequiresNew"
 	 */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void runNewTransaction(Admin admin, CA ca) throws CATokenOfflineException {
     	run(admin, ca);
     }
@@ -195,6 +202,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="RequiresNew" 
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public boolean runNewTransactionConditioned(Admin admin, CA ca, long addtocrloverlaptime) throws CATokenOfflineException {
     	boolean ret = false;
     	Date currenttime = new Date();
@@ -302,6 +310,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="RequiresNew"
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public byte[] runDeltaCRLnewTransaction(Admin admin, CA ca)  {
     	return runDeltaCRL(admin, ca, -1, -1);
     }
@@ -319,6 +328,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="RequiresNew"
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public boolean runDeltaCRLnewTransactionConditioned(Admin admin, CA ca, long crloverlaptime) {
     	boolean ret = false;
 		Date currenttime = new Date();
@@ -402,7 +412,6 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         int caid = cainfo.getCAId();
         String ret = null;
         try {
-            ICertificateStoreSessionLocal store = storeHome.create();
             final String caCertSubjectDN; // DN from the CA issuing the CRL to be used when searching for the CRL in the database.
             {
             	final Collection certs = cainfo.getCertificateChain();
@@ -509,7 +518,6 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     	byte[] crlBytes = null;
     	final int caid = cainfo.getCAId();
     	try {
-    		final ICertificateStoreSessionLocal store = storeHome.create();
     		final String caCertSubjectDN; {
     		    final Collection certs = cainfo.getCertificateChain();
     		    final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
@@ -561,6 +569,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @throws CATokenOfflineException 
      * @ejb.interface-method view-type="both"
      */
+    
     public byte[] createCRL(Admin admin, CA ca, Collection certs, int basecrlnumber) throws CATokenOfflineException {
         log.trace(">createCRL()");
         byte[] crlBytes = null; // return value
@@ -625,6 +634,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
     	if (log.isTraceEnabled()) {
         	log.trace(">storeCRL(" + cafp + ", " + number + ")");
@@ -659,6 +669,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
     	if (log.isTraceEnabled()) {
         	log.trace(">getLastCRL(" + issuerdn + ", "+deltaCRL+")");
@@ -698,6 +709,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
     	if (log.isTraceEnabled()) {
         	log.trace(">getLastCRLInfo(" + issuerdn + ", "+deltaCRL+")");
@@ -738,6 +750,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
     	if (log.isTraceEnabled()) {
         	log.trace(">getCRLInfo(" + fingerprint+")");
@@ -771,6 +784,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
     	if (log.isTraceEnabled()) {
         	log.trace(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
