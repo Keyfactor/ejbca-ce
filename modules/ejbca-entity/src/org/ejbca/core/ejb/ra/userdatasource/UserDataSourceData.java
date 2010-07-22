@@ -15,14 +15,16 @@ package org.ejbca.core.ejb.ra.userdatasource;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -123,17 +125,28 @@ public class UserDataSourceData implements Serializable {
 	//  Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
     public static UserDataSourceData findById(EntityManager entityManager, int id) {
     	return entityManager.find(UserDataSourceData.class,  id);
     }
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
     public static UserDataSourceData findByName(EntityManager entityManager, String name) {
-    	Query query = entityManager.createQuery("from UserDataSourceData a WHERE a.name=:name");
-    	query.setParameter("name", name);
-    	return (UserDataSourceData) query.getSingleResult();
+    	UserDataSourceData ret = null;
+    	try {
+    		Query query = entityManager.createQuery("from UserDataSourceData a WHERE a.name=:name");
+    		query.setParameter("name", name);
+    		ret = (UserDataSourceData) query.getSingleResult();
+    	} catch (NoResultException e) {
+		}
+    	return ret;
     }
     
-    public static Collection<UserDataSourceData> findAll(EntityManager entityManager) {
+	/** @return return the query results as a List. */
+    public static List<UserDataSourceData> findAll(EntityManager entityManager) {
     	Query query = entityManager.createQuery("from UserDataSourceData a");
     	return query.getResultList();
     }
