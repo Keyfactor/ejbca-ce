@@ -13,10 +13,8 @@
  
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.util.HashMap;
-
 import javax.ejb.CreateException;
-
+import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;

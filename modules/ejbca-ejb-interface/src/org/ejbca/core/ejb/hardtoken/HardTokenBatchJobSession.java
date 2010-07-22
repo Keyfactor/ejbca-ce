@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.hardtoken;
 
-import javax.ejb.EJBException;
-
 public interface HardTokenBatchJobSession {
     /**
      * Returns the next user scheduled for batch generation for the given

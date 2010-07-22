@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocalejb3;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -223,7 +222,7 @@ public class CertificateDataUtil {
 
 
     static public CertificateStatus getStatus(String issuerDN, BigInteger serno,
-                                              CertificateDataLocalHome certHome, TableProtectSessionLocalejb3 protect, Adapter adapter) {
+                                              CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
         if (adapter.getLogger().isTraceEnabled()) {
             adapter.getLogger().trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
@@ -241,8 +240,8 @@ public class CertificateDataUtil {
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
                 	final CertificateDataLocal data = (CertificateDataLocal) iter.next();
-                	if (protect != null) {
-                		verifyProtection(data, protect, adapter);
+                	if (protectHome != null) {
+                		verifyProtection(data, protectHome, adapter);
                 	}
                     final CertificateStatus result = getIt(data);
                 	if (adapter.getLogger().isTraceEnabled()) {
@@ -294,12 +293,12 @@ public class CertificateDataUtil {
     }
 
     static public void verifyProtection(Admin admin, String issuerDN, BigInteger serno,
-    		CertificateDataLocalHome certHome, TableProtectSessionLocalejb3 protect, Adapter adapter) {
+    		CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
     	if (adapter.getLogger().isTraceEnabled()) {
     		adapter.getLogger().trace(">verifyProtection, dn:" + issuerDN + ", serno=" + serno.toString(16));
     	}
 		try {
-			if (protect != null) {
+			if (protectHome != null) {
 				// First make a DN in our well-known format
 				Collection coll = certHome.findByIssuerDNSerialNumber(CertTools.stringToBCDNString(issuerDN), serno.toString());
 				if (coll != null) {
@@ -310,7 +309,7 @@ public class CertificateDataUtil {
 					Iterator iter = coll.iterator();
 					if (iter.hasNext()) {
 						CertificateDataLocal data = (CertificateDataLocal) iter.next();
-						verifyProtection(data, protect, adapter);
+						verifyProtection(data, protectHome, adapter);
 					}
 				}
 			}
@@ -320,14 +319,19 @@ public class CertificateDataUtil {
     }
 
 
-    static void verifyProtection(CertificateDataLocal data, TableProtectSessionLocalejb3 protect, Adapter adapter) {
+    static void verifyProtection(CertificateDataLocal data, TableProtectSessionLocalHome protectHome, Adapter adapter) {
 		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
-	
+		TableProtectSessionLocal protect;
+		try {
+			protect = protectHome.create();
 			// The verify method will log failed verifies itself
 			TableVerifyResult res = protect.verify(entry);
 			if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
 				//adapter.error("Verify failed, but we go on anyway.");
 			}
-		
+		} catch (CreateException e) {
+        	String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
+			adapter.error(msg, e);
+		}
     }
 }

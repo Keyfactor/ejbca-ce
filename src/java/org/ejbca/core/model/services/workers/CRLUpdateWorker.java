@@ -17,6 +17,9 @@ import java.util.Collection;
 import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;

@@ -13,11 +13,11 @@
  
 package org.ejbca.core.model.authorization;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.Iterator;
+import java.io.Serializable;
 
 /**
  * A class that represents a group of users and their access rules.

@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.cli;
 
+import java.rmi.RemoteException;
+
 import javax.ejb.EJB;
 
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;

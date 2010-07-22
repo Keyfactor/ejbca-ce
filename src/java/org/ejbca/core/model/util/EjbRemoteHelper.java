@@ -19,10 +19,16 @@ import javax.ejb.EJBException;
 
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ServiceLocatorException;
+import org.ejbca.core.ejb.approval.IApprovalSessionHome;
+import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
@@ -37,12 +43,14 @@ import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.ejb.log.ILogSessionHome;
 import org.ejbca.core.ejb.log.ILogSessionRemote;
-import org.ejbca.core.ejb.ra.ICertificateRequestSessionHome;
-import org.ejbca.core.ejb.ra.ICertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.ICertificateRequestSessionHome;
+import org.ejbca.core.ejb.ra.ICertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionHome;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote;
 
 /**
  * Helper methods to get EJB session interfaces.

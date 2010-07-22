@@ -16,8 +16,8 @@ package org.ejbca.ui.web.admin.hardtokeninterface;
 import java.util.Collection;
 import java.util.Date;
 
-import org.ejbca.core.model.hardtoken.HardTokenData;
-import org.ejbca.core.model.hardtoken.types.HardToken;
+import org.ejbca.core.model.hardtoken.*;
+import org.ejbca.core.model.hardtoken.types.*;
 import org.ejbca.util.StringTools;
 
 

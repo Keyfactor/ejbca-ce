@@ -6,7 +6,6 @@ import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
-
 import org.w3._2002._03.xkms_.CompoundRequestType;
 import org.w3._2002._03.xkms_.CompoundResultType;
 import org.w3._2002._03.xkms_.LocateRequestType;

@@ -12,11 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
 
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 /**
  * Holds certificate WS response data 
