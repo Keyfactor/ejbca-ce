@@ -14,14 +14,16 @@
 package org.ejbca.core.ejb.ra.raadmin;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -136,17 +138,28 @@ public class EndEntityProfileData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static EndEntityProfileData findById(EntityManager entityManager, Integer id) {
 		return entityManager.find(EndEntityProfileData.class,  id);
 	}
 	
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
 	public static EndEntityProfileData findByProfileName(EntityManager entityManager, String profileName) {
-		Query query = entityManager.createQuery("from EndEntityProfileData a WHERE a.profileName=:profileName");
-		query.setParameter("profileName", profileName);
-		return (EndEntityProfileData) query.getSingleResult();
+		EndEntityProfileData ret = null;
+		try {
+			Query query = entityManager.createQuery("from EndEntityProfileData a WHERE a.profileName=:profileName");
+			query.setParameter("profileName", profileName);
+			ret = (EndEntityProfileData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
 	}
 
-	public static Collection<EndEntityProfileData> findAll(EntityManager entityManager) {
+	/** @return return the query results as a List. */
+	public static List<EndEntityProfileData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("from EndEntityProfileData a");
 		return query.getResultList();
 	}

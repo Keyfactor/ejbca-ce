@@ -99,6 +99,7 @@ public class AdminPreferencesData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static AdminPreferencesData findById(EntityManager entityManager, String id) {
 		return entityManager.find(AdminPreferencesData.class, id);
 	}

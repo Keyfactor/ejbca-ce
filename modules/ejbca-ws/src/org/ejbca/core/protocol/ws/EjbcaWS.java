@@ -256,8 +256,8 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);
+		/*} catch (RemoteException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);*/
 		} catch (DuplicateKeyException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
         } catch( RuntimeException t ) {
