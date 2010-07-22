@@ -17,12 +17,16 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;

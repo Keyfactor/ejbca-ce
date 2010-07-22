@@ -13,12 +13,12 @@
  
 package org.ejbca.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.util.LinkedHashMap;
 import java.util.Vector;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.File;
 
 /**
  * JAX-WS Support.

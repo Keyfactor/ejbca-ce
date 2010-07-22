@@ -30,7 +30,6 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-
 import com.novosec.pkix.asn1.crmf.CertId;
 
 /**

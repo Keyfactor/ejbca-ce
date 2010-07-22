@@ -19,20 +19,13 @@
 
 package com.novosec.pkix.asn1.cmp;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Enumeration;
 import java.util.Vector;
+import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
+import java.io.ByteArrayOutputStream;
+
+import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.x509.*;
 
 /**
  * ASN.1 structure DER En/DeCoder.

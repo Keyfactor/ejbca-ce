@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import javax.ejb.DuplicateKeyException;
-
 
 public interface CertificateRequestSession {
     /**

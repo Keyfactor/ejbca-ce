@@ -2,12 +2,10 @@
 package org.w3._2001._04.xmlenc_;
 
 import java.math.BigInteger;
-
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
-
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 
 

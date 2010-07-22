@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
+//import org.ejbca.core.protocol.ws.wsclient.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;

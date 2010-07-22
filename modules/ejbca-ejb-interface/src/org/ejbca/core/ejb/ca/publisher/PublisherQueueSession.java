@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
-import javax.ejb.CreateException;
-
 /**
  * @author mikek
  * 

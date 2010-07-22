@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.cli.ca;
 
+import java.rmi.UnmarshalException;
+
 import javax.ejb.EJB;
 import javax.security.auth.login.FailedLoginException;
 

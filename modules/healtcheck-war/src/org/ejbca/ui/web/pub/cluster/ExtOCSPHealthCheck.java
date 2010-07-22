@@ -17,12 +17,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 
 /**
  * External OCSP Health Checker. 

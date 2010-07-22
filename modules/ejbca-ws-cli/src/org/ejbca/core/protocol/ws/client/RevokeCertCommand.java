@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.ws.client;
 
 import java.math.BigInteger;
 
+
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;

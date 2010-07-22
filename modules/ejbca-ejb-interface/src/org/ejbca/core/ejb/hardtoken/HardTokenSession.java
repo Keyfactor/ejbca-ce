@@ -12,11 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.hardtoken;
 
-import javax.ejb.EJBException;
-
-import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
-import org.ejbca.core.model.hardtoken.UnavailableTokenException;
-
 public interface HardTokenSession {
     /**
      * Adds a hard token profile to the database.
