@@ -50,24 +50,29 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
-import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
@@ -229,35 +234,23 @@ import org.ejbca.util.keystore.KeyTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CAAdminSession")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessionLocal, CAAdminSessionRemote {
+public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRemote {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(CAAdminSessionBean.class);
 
     /** The local home interface of CAData. */
     private CADataLocalHome cadatahome;
 
-    /** The local interface of the log session bean */
-    @EJB
-    private LogSessionLocal logsession;
+    @PersistenceContext(unitName="ejbca") private EntityManager entityManager;
+    @Resource private SessionContext sessionContext;
 
-    /** The local interface of the authorization session bean */
-    @EJB
-    private AuthorizationSessionLocal authorizationsession;
-
-    /** The local interface of the certificate store session bean */
-    @EJB
-    private CertificateStoreSessionLocal certificatestoresession;
-
-    /** The local interface of the job runner session bean used to create crls. */
-    @EJB
-    private CreateCRLSessionLocal crlsession;
-
-    @EJB
-    private PublisherSessionLocal publisherSession;
-
-    /** The local interface of the approval session bean */
-    @EJB
-    private ApprovalSessionLocal approvalsession;
+    @EJB private LogSessionLocal logSession;
+    @EJB private AuthorizationSessionLocal authorizationSession;
+    @EJB private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB private CreateCRLSessionLocal crlSession;
+    @EJB private PublisherSessionLocal publisherSession;
+    @EJB private ApprovalSessionLocal approvalSession;
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -276,7 +269,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      */
     @PostConstruct
     public void ejbCreate() throws CreateException {
-        cadatahome = (CADataLocalHome) getLocator().getLocalHome(CADataLocalHome.COMP_NAME);
+        cadatahome = (CADataLocalHome) ServiceLocator.getInstance().getLocalHome(CADataLocalHome.COMP_NAME);
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
     }
@@ -293,6 +286,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    //@TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void initializeAndUpgradeCAs(Admin admin) {
         try {
             Collection result = cadatahome.findAll();
@@ -336,10 +330,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         int castatus = SecConst.CA_OFFLINE;
         // Check that administrat has superadminsitrator rights.
         try {
-            authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+            authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
         } catch (AuthorizationDeniedException ade) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocreateca", "create", cainfo.getName());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
                     msg, ade);
             throw new AuthorizationDeniedException(msg);
         }
@@ -348,12 +342,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             int caid = cainfo.getCAId();
             if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
                 String msg = intres.getLocalizedMessage("caadmin.wrongcaid", new Integer(caid));
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
                 throw new CAExistsException(msg);
             }
             cadatahome.findByPrimaryKey(new Integer(caid));
             String msg = intres.getLocalizedMessage("caadmin.caexistsid", new Integer(caid));
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
             throw new CAExistsException(msg);
         } catch (javax.ejb.FinderException fe) {
         }
@@ -361,7 +355,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         try {
             cadatahome.findByName(cainfo.getName());
             String msg = intres.getLocalizedMessage("caadmin.caexistsname", cainfo.getName());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
             throw new CAExistsException(msg);
         } catch (javax.ejb.FinderException fe) {
         }
@@ -381,7 +375,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 catoken.generateKeys(authCode, renew, true);
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
                 throw new EJBException(e);
             }
         }
@@ -389,18 +383,18 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             catoken.activate(authCode);
         } catch (CATokenAuthenticationFailedException ctaf) {
             String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, ctaf);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, ctaf);
             throw ctaf;
         } catch (CATokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, ctoe);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, ctoe);
             throw ctoe;
         }
 
         // Create CA
         CA ca = null;
         // The certificate profile used for the CAs certificate
-        CertificateProfile certprofile = certificatestoresession.getCertificateProfile(admin, cainfo.getCertificateProfileId());
+        CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, cainfo.getCertificateProfileId());
         // AltName is not implemented for all CA types
         String caAltName = null;
         // X509 CA is the normal type of CA
@@ -459,11 +453,11 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 castatus = SecConst.CA_ACTIVE;
             } catch (CATokenOfflineException e) {
                 String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
                 throw e;
             } catch (Exception fe) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, fe);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, fe);
                 throw new EJBException(fe);
             }
         }
@@ -498,11 +492,11 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 castatus = SecConst.CA_ACTIVE;
             } catch (CATokenOfflineException e) {
                 String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
                 throw e;
             } catch (Exception fe) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, fe);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, fe);
                 throw new EJBException(fe);
             }
         }
@@ -525,10 +519,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 createCRLs(admin, ca, cainfo);
             }
             String msg = intres.getLocalizedMessage("caadmin.createdca", cainfo.getName(), new Integer(castatus));
-            logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CACREATED, msg);
+            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CACREATED, msg);
         } catch (javax.ejb.CreateException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
             throw new EJBException(e);
         }
         // Update local OCSP's CA certificate cache
@@ -536,13 +530,13 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
     } // createCA
 
     private void createCRLs(Admin admin, CA ca, CAInfo cainfo) throws CATokenOfflineException {
-        final String fp = this.crlsession.run(admin, ca);
+        final String fp = this.crlSession.run(admin, ca);
         // If we could not create a full CRL (for example CVC CAs does not even
         // support CRLs), don't try to create a delta CRL.
         if (fp != null) {
-            final CRLInfo crlInfo = crlsession.getCRLInfo(admin, fp);
+            final CRLInfo crlInfo = crlSession.getCRLInfo(admin, fp);
             if (cainfo.getDeltaCRLPeriod() > 0) {
-                this.crlsession.runDeltaCRL(admin, ca, crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
+                this.crlSession.runDeltaCRL(admin, ca, crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
             }
         }
     }
@@ -568,10 +562,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
 
         // Check authorization
         try {
-            authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+            authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", cainfo.getName());
-            logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
+            logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
                     msg, e);
             throw new AuthorizationDeniedException(msg);
         }
@@ -610,10 +604,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 }
             } catch (CATokenAuthenticationFailedException ctaf) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, ctaf);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, ctaf);
             } catch (CATokenOfflineException ctoe) {
                 String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, ctoe);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, ctoe);
             }
             // No OCSP Certificate exists that can be renewed.
             if (xkmsrenewcert) {
@@ -640,11 +634,11 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             }
             // Log Action
             String msg = intres.getLocalizedMessage("caadmin.editedca", cainfo.getName());
-            logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+            logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
         } catch (Exception fe) {
             String msg = intres.getLocalizedMessage("caadmin.erroreditca", cainfo.getName());
             log.error(msg, fe);
-            logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, fe);
+            logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, fe);
             throw new EJBException(fe);
         }
     } // editCA
@@ -664,10 +658,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
     public void removeCA(Admin admin, int caid) throws AuthorizationDeniedException {
         // check authorization
         try {
-            authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+            authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoremoveca", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
             throw new AuthorizationDeniedException(msg);
         }
         // Get CA from database
@@ -680,11 +674,11 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             // Remove an eventual CA token from the token registry
             CATokenManager.instance().addCAToken(caid, null);
             String msg = intres.getLocalizedMessage("caadmin.removedca", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorremoveca", new Integer(caid), e.getMessage());
             log.error(msg, e);
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw new EJBException(e);
         }
     } // removeCA
@@ -702,10 +696,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             // Check authorization
             int caid = cadata.getCaId().intValue();
             try {
-                authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+                authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
             } catch (AuthorizationDeniedException e) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorenameca", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
                 throw new AuthorizationDeniedException(msg);
             }
 
@@ -719,12 +713,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 // Invalidate CA cache to refresh information
                 CACacheManager.instance().removeCA(cadata.getCaId().intValue());
                 String msg = intres.getLocalizedMessage("caadmin.renamedca", oldname, newname);
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
             }
         } catch (javax.ejb.FinderException fe) {
             String msg = intres.getLocalizedMessage("caadmin.errorrenameca", oldname);
             log.error(msg, fe);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
             throw new EJBException(fe);
         }
     } // renamewCA
@@ -745,6 +739,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfoOrThrowException(Admin admin, String name) throws CADoesntExistsException {
         CAInfo cainfo = null;
         try {
@@ -783,6 +778,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfo(Admin admin, String name) {
         CAInfo caInfo = null;
         try {
@@ -811,6 +807,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfoOrThrowException(Admin admin, int caid) throws CADoesntExistsException {
         return getCAInfoOrThrowException(admin, caid, false);
 
@@ -896,6 +893,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfo(Admin admin, int caid) {
         // No sign test for the standard method
         return getCAInfo(admin, caid, false);
@@ -923,6 +921,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfo(Admin admin, int caid, boolean doSignTest) {
         CAInfo caInfo = null;
         try {
@@ -1132,12 +1131,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 }
             }
             String msg = intres.getLocalizedMessage("signsession.caexpired", ca.getSubjectDN());
-            logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_UNKNOWN, msg, cee);
+            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_UNKNOWN, msg, cee);
         } catch (CertificateNotYetValidException e) {
             // Signers Certificate is not yet valid.
             String msg = intres.getLocalizedMessage("signsession.canotyetvalid", ca.getSubjectDN());
             log.warn(msg);
-            logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_UNKNOWN, msg, e);
+            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_UNKNOWN, msg, e);
         }
     } // checkCAExpireAndUpdateCA
 
@@ -1186,6 +1185,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap getCAIdToNameMap(Admin admin) {
         HashMap returnval = new HashMap();
         try {
@@ -1210,6 +1210,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection getAvailableCAs() {
         ArrayList al = new ArrayList();
         Connection con = null;
@@ -1243,8 +1244,9 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection getAvailableCAs(Admin admin) {
-        return authorizationsession.getAuthorizedCAIds(admin, getAvailableCAs());
+        return authorizationSession.getAuthorizedCAIds(admin, getAvailableCAs());
     }
 
     /**
@@ -1295,13 +1297,13 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         byte[] returnval = null;
         // Check authorization
         try {
-            authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA);
+            authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA);
             if (!authorizedToCA(admin, caid)) {
                 throw new AuthorizationDeniedException("Not authorized to CA");
             }
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertreq", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -1401,27 +1403,27 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             cadata.setCA(ca);
             // Log information about the event
             String msg = intres.getLocalizedMessage("caadmin.certreqcreated", caname, new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
         } catch (CertPathValidatorException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw e;
         } catch (CATokenOfflineException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw e;
         } catch (CATokenAuthenticationFailedException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw e;
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertreq", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw new EJBException(e);
         }
 
         String msg = intres.getLocalizedMessage("caadmin.certreqcreated", new Integer(caid));
-        logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+        logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
         if (log.isTraceEnabled()) {
             log.trace("<makeRequest: " + caid);
         }
@@ -1453,10 +1455,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
     public byte[] signRequest(Admin admin, int caid, byte[] request, boolean usepreviouskey, boolean createlinkcert) throws AuthorizationDeniedException,
             CADoesntExistsException, CATokenOfflineException {
         try {
-            authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+            authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertreq", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
             throw new AuthorizationDeniedException(msg);
         }
         byte[] returnval = null;
@@ -1468,12 +1470,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             CA signedbyCA = signedbydata.getCA();
             returnval = signedbyCA.signRequest(request, usepreviouskey, createlinkcert);
             String msg = intres.getLocalizedMessage("caadmin.certreqsigned", caname);
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SIGNEDREQUEST, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SIGNEDREQUEST, msg);
         } catch (FinderException e) {
             throw new CADoesntExistsException("caid=" + caid);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertreqsign", caname);
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SIGNEDREQUEST, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SIGNEDREQUEST, msg, e);
             throw new EJBException(e);
         }
         return returnval;
@@ -1510,13 +1512,13 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         Certificate cacert = null;
         // Check authorization
         try {
-            authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA);
+            authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA);
             if (!authorizedToCA(admin, caid)) {
                 throw new AuthorizationDeniedException("Not authorized to CA");
             }
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -1532,7 +1534,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 } else {
                     String msg = intres.getLocalizedMessage("caadmin.errorcertrespillegalmsg", responsemessage != null ? responsemessage.getClass().getName()
                             : "null");
-                    logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                     throw new EjbcaException(msg);
                 }
 
@@ -1542,7 +1544,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                     // Check that CA DN is equal to the certificate response.
                     if (!CertTools.getSubjectDN(cacert).equals(CertTools.stringToBCDNString(ca.getSubjectDN()))) {
                         String msg = intres.getLocalizedMessage("caadmin.errorcertrespwrongdn", CertTools.getSubjectDN(cacert), ca.getSubjectDN());
-                        logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+                        logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                         throw new EjbcaException(msg);
                     }
 
@@ -1633,7 +1635,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
 
                     // Publish CA Cert
                     publishCACertificate(admin, chain, ca.getCRLPublishers(), ca.getSubjectDN());
-                    crlsession.publishCRL(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
+                    crlSession.publishCRL(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
 
                     // Set status to active, so we can sign certificates for the
                     // external services below.
@@ -1668,12 +1670,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                             }
                         } catch (CATokenOfflineException e) {
                             String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", new Integer(caid));
-                            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
+                            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
                                     LogConstants.EVENT_ERROR_CACREATED, msg, e);
                             throw e;
                         } catch (Exception fe) {
                             String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", new Integer(caid));
-                            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
+                            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
                                     LogConstants.EVENT_ERROR_CACREATED, msg, fe);
                             throw new EJBException(fe);
                         }
@@ -1686,55 +1688,55 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                     cadata.setCA(ca);
 
                     // Create initial CRL
-                    this.crlsession.run(admin, ca);
+                    this.crlSession.run(admin, ca);
                 } else {
                     String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", new Integer(caid));
                     // Cannot create certificate request for internal CA
-                    logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                     throw new EjbcaException(msg);
                 }
 
             } catch (CATokenOfflineException e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                 throw e;
             } catch (CertificateEncodingException e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                 throw new EjbcaException(e.getMessage());
             } catch (CertificateException e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                 throw new EjbcaException(e.getMessage());
             } catch (IOException e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                 throw new EjbcaException(e.getMessage());
             } catch (InvalidAlgorithmParameterException e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                 throw new EjbcaException(e.getMessage());
             } catch (NoSuchAlgorithmException e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                 throw new EjbcaException(e.getMessage());
             } catch (NoSuchProviderException e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                 throw new EjbcaException(e.getMessage());
             }
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw new EjbcaException(e.getMessage());
         } catch (UnsupportedEncodingException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw new EjbcaException(e.getMessage());
         }
 
         String msg = intres.getLocalizedMessage("caadmin.certrespreceived", new Integer(caid));
-        logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+        logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
     } // recieveResponse
 
     /**
@@ -1753,10 +1755,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         IResponseMessage returnval = null;
         // check authorization
         try {
-            authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+            authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", cainfo.getName());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
                     msg, e);
             throw new AuthorizationDeniedException(msg);
         }
@@ -1767,7 +1769,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             int caid = cainfo.getCAId();
             if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcaexists", cainfo.getName());
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                 throw new CAExistsException(msg);
             }
             oldcadata = cadatahome.findByPrimaryKey(new Integer(caid));
@@ -1843,7 +1845,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                         extInfo.setCustomData(ExtendedInformation.CUSTOM_PKCS10, new String(Base64.encode(pkcs10.getEncoded())));
                         cadata.setExtendedinformation(extInfo);
                     }
-                    CertificateProfile certprofile = certificatestoresession.getCertificateProfile(admin, cainfo.getCertificateProfileId());
+                    CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, cainfo.getCertificateProfileId());
                     String sequence = null;
                     byte[] ki = requestmessage.getRequestKeyInfo();
                     if ((ki != null) && (ki.length > 0)) {
@@ -1909,19 +1911,19 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                     }
                     // Publish CA certificates.
                     publishCACertificate(admin, certchain, signca.getCRLPublishers(), ca != null ? ca.getSubjectDN() : null);
-                    crlsession.publishCRL(admin, cacertificate, signca.getCRLPublishers(), ca != null ? ca.getSubjectDN() : null, ca != null
+                    crlSession.publishCRL(admin, cacertificate, signca.getCRLPublishers(), ca != null ? ca.getSubjectDN() : null, ca != null
                             && ca.getDeltaCRLPeriod() > 0);
 
                 } catch (CATokenOfflineException e) {
                     String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());
-                    error(msg, e);
-                    logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                    log.error(msg, e);
+                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                     throw e;
                 }
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());
-                error(msg, e);
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+                log.error(msg, e);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
                 throw new EJBException(e);
             }
 
@@ -1929,10 +1931,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
 
         if (certchain != null) {
             String msg = intres.getLocalizedMessage("caadmin.processedca", cainfo.getName());
-            logsession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+            logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
         } else {
             String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
         }
 
         return returnval;
@@ -1977,7 +1979,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
 
             // Process certificate policies.
             ArrayList policies = new ArrayList();
-            CertificateProfile certprof = certificatestoresession.getCertificateProfile(admin, certprofileid);
+            CertificateProfile certprof = certificateStoreSession.getCertificateProfile(admin, certprofileid);
             if (certprof.getCertificatePolicies() != null && certprof.getCertificatePolicies().size() > 0) {
                 policies.addAll(certprof.getCertificatePolicies());
             }
@@ -2045,10 +2047,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException {
         // check authorization
         try {
-            authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+            authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorenew", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -2100,13 +2102,13 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         Certificate cacertificate = null;
         // check authorization
         try {
-            authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA);
+            authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA);
             if (!authorizedToCA(admin, caid)) {
                 throw new AuthorizationDeniedException("Not authorized to CA");
             }
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorenew", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -2172,7 +2174,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                     UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null, 0, 0, 0, ca
                             .getCertificateProfileId(), null, null, 0, 0, null);
 
-                    CertificateProfile certprofile = certificatestoresession.getCertificateProfile(admin, ca.getCertificateProfileId());
+                    CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, ca.getCertificateProfileId());
                     String sequence = caToken.getCATokenInfo().getKeySequence(); // get
                     // from
                     // CAtoken
@@ -2205,7 +2207,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                         UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null, 0, 0, 0, ca
                                 .getCertificateProfileId(), null, null, 0, 0, null);
 
-                        CertificateProfile certprofile = certificatestoresession.getCertificateProfile(admin, ca.getCertificateProfileId());
+                        CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, ca.getCertificateProfileId());
                         String sequence = caToken.getCATokenInfo().getKeySequence(); // get
                         // from
                         // CAtoken
@@ -2241,22 +2243,22 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             // Publish the new CA certificate
             publishCACertificate(admin, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
             createCRLs(admin, ca, ca.getCAInfo());
-            crlsession.publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
+            crlSession.publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
         } catch (CATokenOfflineException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw e;
         } catch (CATokenAuthenticationFailedException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw e;
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw new EJBException(e);
         }
         String msg = intres.getLocalizedMessage("caadmin.renewdca", new Integer(caid));
-        logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CARENEWED, msg);
+        logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CARENEWED, msg);
         if (log.isTraceEnabled()) {
             log.trace("<CAAdminSession, renewCA(), caid=" + caid);
         }
@@ -2293,10 +2295,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
     public void revokeCA(Admin admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {
         // check authorization
         try {
-            authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+            authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
         } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorevoke", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, e);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -2314,11 +2316,11 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             CA cadata = ca.getCA();
 
             // Revoke CA certificate
-            certificatestoresession.revokeCertificate(admin, cadata.getCACertificate(), cadata.getCRLPublishers(), reason, ca.getSubjectDN());
+            certificateStoreSession.revokeCertificate(admin, cadata.getCACertificate(), cadata.getCRLPublishers(), reason, ca.getSubjectDN());
             // Revoke all certificates generated by CA
             if (cadata.getStatus() != SecConst.CA_EXTERNAL) {
-                certificatestoresession.revokeAllCertByCA(admin, issuerdn, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
-                crlsession.run(admin, cadata);
+                certificateStoreSession.revokeAllCertByCA(admin, issuerdn, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+                crlSession.run(admin, cadata);
             }
 
             cadata.setRevokationReason(reason);
@@ -2330,12 +2332,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
 
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrevoke", ca.getName());
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAREVOKED, msg, e);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAREVOKED, msg, e);
             throw new EJBException(e);
         }
 
         String msg = intres.getLocalizedMessage("caadmin.revokedca", ca.getName(), new Integer(reason));
-        logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAREVOKED, msg);
+        logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAREVOKED, msg);
     } // revokeCA
 
     /**
@@ -2353,7 +2355,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         try {
             // check authorization
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
-                authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+                authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
             }
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
@@ -2361,26 +2363,26 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             CATokenInfo tokeninfo = token.getCATokenInfo();
             HardCATokenInfo htokeninfo = null;
             if (tokeninfo instanceof HardCATokenInfo) {
-                error("(this is not an error) Found hard token for ca with id: " + caid);
+                log.error("(this is not an error) Found hard token for ca with id: " + caid);
                 htokeninfo = (HardCATokenInfo) tokeninfo;
             } else {
-                error("(this is not an error) No need to update soft token for ca with id: " + caid);
+                log.error("(this is not an error) No need to update soft token for ca with id: " + caid);
             }
             if (htokeninfo != null) {
                 String oldtoken = htokeninfo.getClassPath();
                 if (oldtoken.equals("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken") || oldtoken.equals("se.primeKey.caToken.nFast.NFastCAToken")) {
                     htokeninfo.setClassPath(org.ejbca.core.model.ca.catoken.NFastCAToken.class.getName());
-                    error("(this is not an error) Updated catoken classpath (" + oldtoken + ") for ca with id: " + caid);
+                    log.error("(this is not an error) Updated catoken classpath (" + oldtoken + ") for ca with id: " + caid);
                     token.updateCATokenInfo(htokeninfo);
                     ca.setCAToken(token);
                     cadata.setCA(ca);
                 } else {
-                    error("(this is not an error) No need to update catoken classpath (" + oldtoken + ") for ca with id: " + caid);
+                    log.error("(this is not an error) No need to update catoken classpath (" + oldtoken + ") for ca with id: " + caid);
                 }
             }
         } catch (Exception e) {
-            error("An error occured when trying to upgrade hard token classpath: ", e);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,
+            log.error("An error occured when trying to upgrade hard token classpath: ", e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,
                     "An error occured when trying to upgrade hard token classpath", e);
             throw new EJBException(e);
         }
@@ -2413,7 +2415,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         try {
             // check authorization
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
-                authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+                authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }
             // load keystore
             java.security.KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
@@ -2456,7 +2458,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                     p12PublicEncryptionKey);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorimportca", caname, "PKCS12", e.getMessage());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
             throw new EJBException(e);
         }
     } // importCAFromKeyStore
@@ -2489,7 +2491,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         try {
             // check authorization
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
-                authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+                authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }
 
             CADataLocal caData = cadatahome.findByName(caname);
@@ -2513,11 +2515,11 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
 
             // Log
             String msg = intres.getLocalizedMessage("caadmin.removedcakeystore", new Integer(thisCa.getCAId()));
-            logsession.log(admin, thisCa.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+            logSession.log(admin, thisCa.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
 
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorremovecakeystore", caname, "PKCS12", e.getMessage());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
             throw new EJBException(e);
         }
     } // removeCAKeyStore
@@ -2554,7 +2556,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         try {
             // check authorization
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
-                authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+                authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }
 
             CADataLocal caData = cadatahome.findByName(caname);
@@ -2638,10 +2640,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
 
             // Log
             String msg = intres.getLocalizedMessage("caadmin.restoredcakeystore", new Integer(thisCa.getCAId()));
-            logsession.log(admin, thisCa.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+            logSession.log(admin, thisCa.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrestorecakeystore", caname, "PKCS12", e.getMessage());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw new EJBException(e);
         }
     } // restoreCAKeyStore
@@ -2694,7 +2696,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         // Do the general import
         CA ca = importCA(admin, caname, keystorepass, signatureCertChain, catoken, keyAlgorithm, keySpecification);
         String msg = intres.getLocalizedMessage("caadmin.importedca", caname, "PKCS12", ca.getStatus());
-        logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CACREATED, msg);
+        logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CACREATED, msg);
     }
 
     /**
@@ -2886,7 +2888,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
         // Store CA in database.
         cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
-        this.crlsession.run(admin, ca);
+        this.crlSession.run(admin, ca);
         return ca;
     } // importCA
 
@@ -2924,7 +2926,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             }
             // Check authorization
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
-                authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+                authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }
             // Fetch keys
             // This is a way of verifying the passowrd. If activate fails, we
@@ -2980,12 +2982,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 ret = baos.toByteArray();
             }
             String msg = intres.getLocalizedMessage("caadmin.exportedca", caname, format);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEXPORTED, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEXPORTED, msg);
             log.trace("<exportCAKeyStore");
             return ret;
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorexportca", caname, "PKCS12", e.getMessage());
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEXPORTED, msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEXPORTED, msg, e);
             throw new EJBException(e);
         }
     } // exportCAKeyStore
@@ -2999,6 +3001,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection getAllCACertificates() {
         ArrayList returnval = new ArrayList();
 
@@ -3010,12 +3013,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 CADataLocal cadata = cadatahome.findByPrimaryKey(caid);
                 CA ca = cadata.getCA();
                 if (log.isDebugEnabled()) {
-                    debug("Getting certificate chain for CA: " + ca.getName() + ", " + ca.getCAId());
+                    log.debug("Getting certificate chain for CA: " + ca.getName() + ", " + ca.getCAId());
                 }
                 returnval.add(ca.getCACertificate());
             }
         } catch (javax.ejb.FinderException fe) {
-            error("Can't find CA: ", fe);
+            log.error("Can't find CA: ", fe);
         } catch (UnsupportedEncodingException uee) {
             throw new EJBException(uee);
         } catch (IllegalKeyStoreException e) {
@@ -3038,7 +3041,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
     public String getKeyFingerPrint(Admin admin, String caname) throws Exception {
         try {
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
-                authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+                authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
             }
             CA thisCa;
             thisCa = cadatahome.findByName(caname).getCA();
@@ -3097,10 +3100,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException {
         // Authorize
         try {
-            authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_ACTIVATECA);
+            authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_ACTIVATECA);
         } catch (AuthorizationDeniedException ade) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoactivatetoken", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, ade);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, ade);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -3120,7 +3123,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), authorizationcode, admin, numOfApprovalsRequired, caid,
                 ApprovalDataVO.ANY_ENDENTITYPROFILE);
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
-            approvalsession.addApprovalRequest(admin, ar, gc);
+            approvalSession.addApprovalRequest(admin, ar, gc);
             String msg = intres.getLocalizedMessage("ra.approvalcaactivation");
             throw new WaitingForApprovalException(msg);
         }
@@ -3128,7 +3131,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
         try {
             if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
                 String msg = intres.getLocalizedMessage("caadmin.erroractivatetoken", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                 throw new CATokenAuthenticationFailedException(msg);
             }
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
@@ -3157,10 +3160,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                     // Invalidate CA cache to refresh information
                     CACacheManager.instance().removeCA(cadata.getCaId().intValue());
                     String msg = intres.getLocalizedMessage("caadmin.catokenactivated", cadata.getName());
-                    logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
                 } catch (CATokenAuthenticationFailedException e) {
                     String msg = intres.getLocalizedMessage("caadmin.badcaactivationcode", cadata.getName());
-                    logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAACTIVATIONCODE, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAACTIVATIONCODE, msg);
                     throw e;
                 } catch (IllegalKeyStoreException e) {
                     throw new EJBException(e);
@@ -3169,12 +3172,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 }
             } else {
                 String msg = intres.getLocalizedMessage("caadmin.errornotoffline", cadata.getName());
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                 throw new CATokenAuthenticationFailedException(msg);
             }
         } catch (javax.ejb.FinderException fe) {
             String msg = intres.getLocalizedMessage("caadmin.errorcanotfound", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
             throw new EJBException(fe);
         }
     }
@@ -3203,10 +3206,10 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
     public void deactivateCAToken(Admin admin, int caid) throws AuthorizationDeniedException, EjbcaException {
         // Authorize
         try {
-            authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_ACTIVATECA);
+            authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_ACTIVATECA);
         } catch (AuthorizationDeniedException ade) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtodeactivatetoken", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, ade);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg, ade);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -3214,7 +3217,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
                 // This should never happen.
                 String msg = intres.getLocalizedMessage("caadmin.errordeactivatetoken", new Integer(caid));
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                 throw new EjbcaException(msg);
             }
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
@@ -3229,18 +3232,18 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                     // Invalidate CA cache to refresh information
                     CACacheManager.instance().removeCA(cadata.getCaId().intValue());
                     String msg = intres.getLocalizedMessage("caadmin.catokendeactivated", cadata.getName());
-                    logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
                 } catch (Exception e) {
                     throw new EJBException(e);
                 }
             } else {
                 String msg = intres.getLocalizedMessage("caadmin.errornotonline", cadata.getName());
-                logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                 throw new EjbcaException(msg);
             }
         } catch (javax.ejb.FinderException fe) {
             String msg = intres.getLocalizedMessage("caadmin.errorcanotfound", new Integer(caid));
-            logsession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
             throw new EJBException(fe);
         }
     }
@@ -3351,7 +3354,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             if (cainfo.isApprovalRequired(action)) {
                 retval = cainfo.getNumOfReqApprovals();
             }
-            CertificateProfile certprofile = certificatestoresession.getCertificateProfile(admin, certProfileId);
+            CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, certProfileId);
             if (certprofile != null && certprofile.isApprovalRequired(action)) {
                 retval = Math.max(retval, certprofile.getNumOfReqApprovals());
             }
@@ -3422,11 +3425,11 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 long updateTime = new Date().getTime();
                 int profileId = 0;
                 String tag = null;
-                CertificateInfo ci = certificatestoresession.getCertificateInfo(admin, fingerprint);
+                CertificateInfo ci = certificateStoreSession.getCertificateInfo(admin, fingerprint);
                 if (ci == null) {
                     // If we don't have it in the database, store it setting
                     // certificateProfileId = 0 and tag = null
-                    certificatestoresession.storeCertificate(admin, cert, name, cafp, SecConst.CERT_ACTIVE, type, profileId, tag, updateTime);
+                    certificateStoreSession.storeCertificate(admin, cert, name, cafp, SecConst.CERT_ACTIVE, type, profileId, tag, updateTime);
                 } else {
                     updateTime = ci.getUpdateTime().getTime();
                     profileId = ci.getCertificateProfileId();
@@ -3470,7 +3473,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             return true; // Skip database seach since this is always ok
         }
         try {
-            returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
+            returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
         } catch (AuthorizationDeniedException e) {
         }
         return returnval;
@@ -3551,14 +3554,14 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 int caid = ((Integer) iter.next()).intValue();
                 log.debug("createCRLs for caid: " + caid);
                 CA ca = getCA(admin, caid);
-                if (crlsession.runNewTransactionConditioned(admin, ca, addtocrloverlaptime)) {
+                if (crlSession.runNewTransactionConditioned(admin, ca, addtocrloverlaptime)) {
                     createdcrls++;
                 }
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("createcrl.erroravailcas");
-            error(msg, e);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
+            log.error(msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
             if (e instanceof EJBException) {
                 throw (EJBException) e;
             }
@@ -3599,14 +3602,14 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                 int caid = ((Integer) iter.next()).intValue();
                 log.debug("createDeltaCRLs for caid: " + caid);
                 CA ca = getCA(admin, caid);
-                if (crlsession.runDeltaCRLnewTransactionConditioned(admin, ca, crloverlaptime)) {
+                if (crlSession.runDeltaCRLnewTransactionConditioned(admin, ca, crloverlaptime)) {
                     createddeltacrls++;
                 }
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("createcrl.erroravailcas");
-            error(msg, e);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
+            log.error(msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
             if (e instanceof EJBException) {
                 throw (EJBException) e;
             }
@@ -3624,6 +3627,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="local"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String healthCheck() {
         String returnval = "";
         final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -3701,12 +3705,12 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
             // Signers Certificate has expired.
             signcadata.setStatus(SecConst.CA_EXPIRED);
             String msg = intres.getLocalizedMessage("signsession.caexpired", signcadata.getSubjectDN());
-            logsession.log(admin, signcadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,
+            logSession.log(admin, signcadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,
                     msg, ce);
             throw new EJBException(ce);
         } catch (CertificateNotYetValidException cve) {
             String msg = intres.getLocalizedMessage("signsession.canotyetvalid", signcadata.getSubjectDN());
-            logsession.log(admin, signcadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,
+            logSession.log(admin, signcadata.getCaId().intValue(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED,
                     msg, cve);
             throw new EJBException(cve);
         }
@@ -3730,7 +3734,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                     // certifcate
                 } catch (Exception fe) {
                     String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "OCSPCAService");
-                    logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg,
+                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg,
                             fe);
                     throw new EJBException(fe);
                 }
@@ -3742,7 +3746,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                             .getXKMSSignerCertificatePath().get(0));
                 } catch (Exception fe) {
                     String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "XKMSCAService");
-                    logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg,
+                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg,
                             fe);
                     throw new EJBException(fe);
                 }
@@ -3754,7 +3758,7 @@ public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessio
                             .add(((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE)).getCertificatePath().get(0));
                 } catch (Exception fe) {
                     String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "CMSCAService");
-                    logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg,
+                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg,
                             fe);
                     throw new EJBException(fe);
                 }
