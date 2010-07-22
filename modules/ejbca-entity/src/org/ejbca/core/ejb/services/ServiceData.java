@@ -23,6 +23,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -54,7 +56,7 @@ public class ServiceData implements Serializable {
     /**
      * Entity Bean holding data of a service configuration.
      */
-    public ServiceData(Integer id, String name, ServiceConfiguration serviceConfiguration) throws UnsupportedEncodingException {
+    public ServiceData(Integer id, String name, ServiceConfiguration serviceConfiguration) {
         setId(id);
         setName(name);
         if (serviceConfiguration != null) {
@@ -137,16 +139,27 @@ public class ServiceData implements Serializable {
     // Search functions. 
     //
 
+	/** @return the found entity instance or null if the entity does not exist */
     public static ServiceData findById(EntityManager entityManager, Integer id) {
     	return entityManager.find(ServiceData.class,  id);
     }
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
     public static ServiceData findByName(EntityManager entityManager, java.lang.String name) {
+    	ServiceData ret = null;
     	Query query = entityManager.createQuery("from ServiceData a WHERE a.name=:name");
     	query.setParameter("name", name);
-    	return (ServiceData) query.getSingleResult();
+    	try {
+    		ret = (ServiceData)query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
     }    
 
+	/** @return return the query results as a List. */
     public static Collection<ServiceData> findAll(EntityManager entityManager) {
     	Query query = entityManager.createQuery("from ServiceData a");
     	return query.getResultList();

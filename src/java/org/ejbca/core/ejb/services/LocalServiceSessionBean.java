@@ -20,16 +20,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.ejb.BaseSessionBean;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -131,51 +134,28 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *
  *  @jonas.bean ejb-name="ServiceSession"
  */
-public class LocalServiceSessionBean extends BaseSessionBean  {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ServiceSessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class LocalServiceSessionBean {
 
-    /**
-     * The local home interface of service data source entity bean.
-     */
-    private transient ServiceDataLocalHome servicehome = null;
-    
-    /**
-     * The local  interface of service timer session
-     */
-    private transient IServiceTimerSessionLocal serviceTimerSession = null;
-    
-
-    /**
-     * The local interface of authorization session bean
-     */
-    private transient IAuthorizationSessionLocal authorizationsession = null;
-
-    /**
-     * The remote interface of  log session bean
-     */
-    private transient ILogSessionLocal logsession = null;
-    
+	private static final Logger log = Logger.getLogger(LocalServiceSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
+	@EJB
+	private ServiceTimerSessionLocal serviceTimerSession;
+	@EJB
+    private AuthorizationSessionLocal authorizationSession;
+	@EJB
+    private LogSessionLocal logSession;
 
     /**
      * The administrator that the services should be runned as.
      */
-    Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+    private Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
     
-    /**
-     * Default create for SessionBean without any creation Arguments.
-     *
-     * @throws CreateException if bean instance can't be created
-     */
-    public void ejbCreate() throws CreateException {    	    
-    	
-    }
-    
-    
-
- 
-
    /**
     * Method that creates a worker from the service configuration. 
     * 
@@ -198,76 +178,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
 			String msg = intres.getLocalizedMessage("services.errorworkerconfig", serviceConfiguration.getWorkerClassPath(), serviceName);
 			log.error(msg,e);
 		}    	
-    	
 		return worker;
 	}
 
-
-
-	/**
-     * Gets connection to log session bean
-     *
-     * @return Connection
-     */
-    private ILogSessionLocal getLogSession() {
-        if (logsession == null) {
-            try {
-                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-                logsession = logsessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return logsession;
-    } //getLogSession
-
-
-    /**
-     * Gets connection to service data bean
-     *
-     * @return ServiceDataLocalHome
-     */
-    private ServiceDataLocalHome getServiceDataHome() {
-        if (servicehome == null) {                
-        	servicehome = (ServiceDataLocalHome) getLocator().getLocalHome(ServiceDataLocalHome.COMP_NAME); 
-        }
-        return servicehome;
-    } //getServiceDataHome
-
-    /**
-     * Gets connection to authorization session bean
-     *
-     * @return IAuthorizationSessionLocal
-     */
-    private IAuthorizationSessionLocal getAuthorizationSession() {
-        if (authorizationsession == null) {
-            try {
-                IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-                authorizationsession = authorizationsessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return authorizationsession;
-    } //getAuthorizationSession
-
-    /**
-     * Gets connection to service timer session bean
-     *
-     * @return IServiceTimerSessionLocal
-     */
-    private IServiceTimerSessionLocal getServiceTimerSession() {
-        if (serviceTimerSession == null) {
-            try {
-                IServiceTimerSessionLocalHome servicetimersessionhome = (IServiceTimerSessionLocalHome) getLocator().getLocalHome(IServiceTimerSessionLocalHome.COMP_NAME);
-                serviceTimerSession = servicetimersessionhome.create();
-            } catch (CreateException e) {
-                throw new EJBException(e);
-            }
-        }
-        return serviceTimerSession;
-    } //getServiceTimerSession
-    
     /**
      * Adds a Service to the database.
      *
@@ -275,15 +188,13 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @throws EJBException             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-
     public void addService(Admin admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ")");
     	}
         addService(admin,findFreeServiceId().intValue(),name,serviceConfiguration);
         log.trace("<addService()");
-    } // addService
-
+    }
 
     /**
      * Adds a service to the database.
@@ -293,14 +204,19 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @throws EJBException             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-
     public void addService(Admin admin, int id, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ", id: " + id + ")");
     	}
         boolean success = false;
         if(isAuthorizedToEditService(admin,serviceConfiguration)){
-        	try {
+        	if (ServiceData.findByName(entityManager, name) == null) {
+        		if (ServiceData.findById(entityManager, id) == null) {
+        			entityManager.persist(new ServiceData(new Integer(id), name, serviceConfiguration));
+    				success = true;
+        		}
+        	}
+        	/*try {
         		getServiceDataHome().findByName(name);
         	} catch (FinderException e) {
         		try {
@@ -311,23 +227,23 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         				success = true;
         				
         			} catch (CreateException g) {
-        				error("Unexpected error creating new service: ", g);
+        				log.error("Unexpected error creating new service: ", g);
         			}
         		}
-        	}
+        	}*/
         	if (success){
-        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceadded", name));
+        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceadded", name));
         	}else{
-        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.erroraddingservice", name));
+        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.erroraddingservice", name));
         	}
         	if (!success) {
         		throw new ServiceExistsException();
         	}
         }else{
-        	getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoadd", name));
+        	logSession.log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoadd", name));
         }
         log.trace("<addService()");
-    } // addService
+    }
 
     /**
      * Updates service configuration, but does not re-set the timer
@@ -337,25 +253,31 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-
     public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
     	if (log.isTraceEnabled()) {
             log.trace(">changeService(name: " + name + ")");
     	}
         boolean success = false;
         if(isAuthorizedToEditService(admin,serviceConfiguration)){
-        	try {
+        	ServiceData htp = ServiceData.findByName(entityManager, name);
+        	if (htp != null) {
+        		htp.setServiceConfiguration(serviceConfiguration);
+        		success = true;
+        	} else {
+        		log.error("Can not find service to change: "+name);
+        	}
+        	/*try {
         		ServiceDataLocal htp = getServiceDataHome().findByName(name);
         		htp.setServiceConfiguration(serviceConfiguration);
         		success = true;
         	} catch (FinderException e) {
-        		error("Can not find service to change: "+name);
-        	}
+        		log.error("Can not find service to change: "+name);
+        	}*/
         	
         	if (success){
         		String msg = intres.getLocalizedMessage("services.serviceedited", name);
         		if (!noLogging) {
-        			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, msg);
+        			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, msg);
         		} else {
             		log.info(msg);
         		}
@@ -363,7 +285,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         		String msg = intres.getLocalizedMessage("services.serviceedited", name);
         		log.error(msg);
         		if (!noLogging) {
-        			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, msg);
+        			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, msg);
         		} else {
             		log.error(msg);        			
         		}
@@ -371,14 +293,13 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         }else{
         	String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
     		if (!noLogging) {
-    			getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg);
+    			logSession.log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg);
     		} else {
             	log.error(msg);    			
     		}
         }      
-        
         log.trace("<changeService()");
-    } // changeService
+    }
 
     /**
      * Adds a service with the same content as the original.
@@ -392,29 +313,35 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
             log.trace(">cloneService(name: " + oldname + ")");
     	}
         ServiceConfiguration servicedata = null;
+        ServiceData htp = ServiceData.findByName(entityManager, oldname);
+        if (htp == null) {
+        	String msg = "Error cloning service: No such service found.";
+            log.error(msg);
+            throw new EJBException(msg);
+        }
         try {
-        	ServiceDataLocal htp = getServiceDataHome().findByName(oldname);
-        	servicedata = (ServiceConfiguration) htp.serviceConfiguration().clone();
+        	//ServiceDataLocal htp = getServiceDataHome().findByName(oldname);
+        	servicedata = (ServiceConfiguration) htp.getServiceConfiguration().clone();
         	if(isAuthorizedToEditService(admin,servicedata)){                   		
         		try {
         			addService(admin, newname, servicedata);
-        			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicecloned", newname,oldname));
+        			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicecloned", newname,oldname));
         		} catch (ServiceExistsException f) {
-        			getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorcloningservice", newname, oldname));
+        			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorcloningservice", newname, oldname));
         			throw f;
         		}        		
         	}else{
-        		getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
+        		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
         	}            
-        } catch (FinderException e) {
-            error("Error cloning service: ", e);
-            throw new EJBException(e);
+        /*} catch (FinderException e) {
+            log.error("Error cloning service: ", e);
+            throw new EJBException(e);*/
         } catch (CloneNotSupportedException e) {
-            error("Error cloning service: ", e);
+            log.error("Error cloning service: ", e);
             throw new EJBException(e);
 		}
         log.trace("<cloneService()");
-    } // cloneService
+    }
 
     /**
      * Removes a service from the database.
@@ -427,26 +354,32 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
             log.trace(">removeService(name: " + name + ")");
     	}
         boolean retval = false;
-        try {
-        	ServiceDataLocal htp = getServiceDataHome().findByName(name);
-        	ServiceConfiguration serviceConfiguration = htp.serviceConfiguration();
+        //try {
+        ServiceData htp = ServiceData.findByName(entityManager, name);
+        if (htp == null) {
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorremovingservice", name));
+        } else {
+        	//ServiceDataLocal htp = getServiceDataHome().findByName(name);
+        	ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
         	if(isAuthorizedToEditService(admin,serviceConfiguration)){        	        		
-        	  IWorker worker = getWorker(serviceConfiguration, name);
-        	  if(worker != null){
-        		  getServiceTimerSession().cancelTimer(htp.getId());
-        	  }
-              htp.remove();
-              getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
-              retval = true;
+        		IWorker worker = getWorker(serviceConfiguration, name);
+        		if(worker != null){
+        			serviceTimerSession.cancelTimer(htp.getId());
+        		}
+        		entityManager.remove(htp);
+        		//htp.remove();
+        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
+        		retval = true;
         	}else{
-        		getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+        		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", name));
         	}
-        } catch (Exception e) {
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorremovingservice", name), e);
         }
+        /*} catch (Exception e) {
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorremovingservice", name), e);
+        }*/
         log.trace("<removeService)");
         return retval;
-    } // removeService
+    }
 
     /**
      * Renames a service
@@ -460,7 +393,18 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
             log.trace(">renameService(from " + oldname + " to " + newname + ")");
     	}
         boolean success = false;
-        try {
+        if (ServiceData.findByName(entityManager, newname) == null) {
+        	ServiceData htp = ServiceData.findByName(entityManager, oldname);
+        	if (htp != null) {
+            	if (isAuthorizedToEditService(admin, htp.getServiceConfiguration())) {
+                    htp.setName(newname);
+                    success = true;
+              	} else {
+              		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
+              	}
+        	}
+        }
+        /*try {
         	getServiceDataHome().findByName(newname);
         } catch (FinderException e) {
             try {
@@ -469,40 +413,40 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
                   htp.setName(newname);
                   success = true;
             	}else{
-            		getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
+            		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
             	}
             } catch (FinderException g) {
             }
-        }
+        }*/
 
         if (success){
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicerenamed", oldname, newname));
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicerenamed", oldname, newname));
         }else{
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname));
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname));
         }
         if (!success) {
             throw new ServiceExistsException();
         }
         log.trace("<renameService()");
-    } // renameService
+    }
 
     /**
-     * Retrives a Collection of id:s (Integer) to visible authorized services.
+     * Retrieves a Collection of id:s (Integer) to visible authorized services.
      * Currently is the only check if the superadmin can see them all
      *
      * @return Collection of id:s (Integer)
      * @ejb.interface-method view-type="both"
      */
     public Collection getAuthorizedVisibleServiceIds(Admin admin) {
-        Collection allServiceIds = new ArrayList();
-        Collection allVisibleServiceIds = new ArrayList();
+        Collection<Integer> allServiceIds = new ArrayList<Integer>();
+        Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
         try {
-        	getAuthorizationSession().isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        	authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         	allServiceIds = getServiceIdToNameMap(admin).keySet();
-        	Iterator i = allServiceIds.iterator();
+        	Iterator<Integer> i = allServiceIds.iterator();
         	while (i.hasNext()) {
-        		int id = ((Integer) i.next()).intValue();
+        		int id = i.next().intValue();
         		// Remove hidden services here..
         		if (!getServiceConfiguration(admin, id).isHidden()) {
         			allVisibleServiceIds.add(new Integer(id));
@@ -512,7 +456,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         	log.debug("AuthorizationDeniedException: ", e);
         }
         return allVisibleServiceIds;
-    } // getAuthorizedVisibleServiceIds
+    }
 
     /**
      * Method creating a hashmap mapping service id (Integer) to service name (String).
@@ -520,11 +464,16 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap getServiceIdToNameMap(Admin admin) {
-        HashMap returnval = new HashMap();
-        Collection result = null;
-
-        try {
+        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
+        Collection<ServiceData> result = ServiceData.findAll(entityManager);
+        Iterator<ServiceData> i = result.iterator();
+        while (i.hasNext()) {
+        	ServiceData next = i.next();
+            returnval.put(next.getId(), next.getName());
+        }
+        /*try {
             result = getServiceDataHome().findAll();
             Iterator i = result.iterator();
             while (i.hasNext()) {
@@ -532,10 +481,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
                 returnval.put(next.getId(), next.getName());
             }
         } catch (FinderException e) {
-        }
+        }*/
         return returnval;
-    } // getServiceIdToNameMap
-
+    }
 
     /**
      * Retrives a named service.
@@ -544,22 +492,26 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ServiceConfiguration getService(Admin admin, String name) {
     	if (log.isTraceEnabled()) {
     		log.trace(">getService: "+name);
     	}
     	ServiceConfiguration returnval = null;
-
-        try {
+    	ServiceData serviceData = ServiceData.findByName(entityManager, name);
+    	if (serviceData != null) {
+    		returnval = serviceData.getServiceConfiguration();
+    	}
+        /*try {
         	returnval = (getServiceDataHome().findByName(name)).serviceConfiguration();            
         } catch (FinderException e) {
             // return null if we cant find it
-        }
+        }*/
     	if (log.isTraceEnabled()) {
     		log.trace("<getService: "+name);
     	}
         return returnval;
-    } //  getService
+    }
 
     /**
      * Finds a service configuration by id.
@@ -568,15 +520,19 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ServiceConfiguration getServiceConfiguration(Admin admin, int id) {
     	if (log.isTraceEnabled()) {
     		log.trace(">getServiceConfiguration: "+id);
     	}
     	ServiceConfiguration returnval = null;
-
         try {            
-        	returnval = (getServiceDataHome().findByPrimaryKey(new Integer(id))).serviceConfiguration();                      
-        } catch (FinderException e) {
+        	ServiceData serviceData = ServiceData.findById(entityManager, id);
+        	if (serviceData != null) {
+        		returnval = serviceData.getServiceConfiguration();
+        	}
+        	//returnval = (getServiceDataHome().findByPrimaryKey(new Integer(id))).serviceConfiguration();                      
+        } catch (Exception e) {
             // return null if we cant find it, if it is not due to underlying database error
         	log.debug("Got a FinderException for service with id "+ id + ": "+e.getMessage());
         	// This is a way to try to figure out if it is an underlying database error or if it is simply that
@@ -599,9 +555,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     		log.trace("<getServiceConfiguration: "+id);
     	}
         return returnval;
-    } // getServiceConfiguration
-
-
+    }
 
     /**
      * Returns a service id, given it's service name
@@ -610,17 +564,20 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getServiceId(Admin admin, String name) {
         int returnval = 0;
-
-        try {
+        ServiceData serviceData = ServiceData.findByName(entityManager, name);
+        if (serviceData != null) {
+        	returnval = serviceData.getId();
+        }
+        /*try {
             Integer id = (getServiceDataHome().findByName(name)).getId();
             returnval = id.intValue();
         } catch (FinderException e) {
-        }
-
+        }*/
         return returnval;
-    } // getServiceId
+    }
 
     /**
      * Returns a Service name given its id.
@@ -630,24 +587,28 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getServiceName(Admin admin, int id) {
     	if (log.isTraceEnabled()) {
             log.trace(">getServiceName(id: " + id + ")");
     	}
         String returnval = null;
-        ServiceDataLocal htp = null;
+        ServiceData serviceData = ServiceData.findById(entityManager, id);
+        if (serviceData != null) {
+        	returnval = serviceData.getName();
+        }
+        /*ServiceDataLocal htp = null;
         try {
             htp = getServiceDataHome().findByPrimaryKey(new Integer(id));
             if (htp != null) {
                 returnval = htp.getName();
             }
         } catch (FinderException e) {
-        }
+        }*/
         log.trace("<getServiceName()");
         return returnval;
-    } // getServiceName
-    
-    
+    }
+
     /**
      * Activates the timer for a named service. The service must already be previously added.
      *
@@ -657,31 +618,34 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void activateServiceTimer(Admin admin, String name) {
     	if (log.isTraceEnabled()) {
         	log.trace(">activateServiceTimer(name: " + name + ")");
     	}
-    	try {
-    		ServiceDataLocal htp = getServiceDataHome().findByName(name);
-    		ServiceConfiguration serviceConfiguration = htp.serviceConfiguration();
+    	ServiceData htp = ServiceData.findByName(entityManager, name);
+    	if (htp != null) {
+    	//try {
+    		//ServiceDataLocal htp = getServiceDataHome().findByName(name);
+    		ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
     		if(isAuthorizedToEditService(admin,serviceConfiguration)){
     			IWorker worker = getWorker(serviceConfiguration, name);
     			if(worker != null){
-    				getServiceTimerSession().cancelTimer(htp.getId());
+    				serviceTimerSession.cancelTimer(htp.getId());
     				if(serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-    					getServiceTimerSession().addTimer(worker.getNextInterval() *1000, htp.getId());
+    					serviceTimerSession.addTimer(worker.getNextInterval() *1000, htp.getId());
     				}
     			}
     		}else{
-    			getLogSession().log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+    			logSession.log(admin, admin.getCaId(),LogConstants.MODULE_SERVICES,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
     		}
-    	} catch (FinderException e) {
+    	//} catch (FinderException e) {
+    	} else {
     		log.error("Can not find service: "+name);
     	}
     	log.trace("<activateServiceTimer()");
-    } // getServiceName
-    
-    
+    }
+
     /**
      * Method to check if an admin is authorized to edit a service
      * The following checks are performed.
@@ -698,7 +662,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     			return false;
     		} else if (serviceConfiguraion.isHidden() && admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
     			return true;
-    		} if(getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
+    		} if(authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
     			return true;
     		}
     	} catch (AuthorizationDeniedException e) {}
@@ -711,18 +675,19 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         boolean foundfree = false;
 
         while (!foundfree) {
-            try {
+            //try {
                 if (id > 1) {
+                	if (ServiceData.findById(entityManager, id) == null) {
+                		foundfree = true;
+                	}
                 	// Will throw exception if id is not found in the database
-                	getServiceDataHome().findByPrimaryKey(new Integer(id));
+                	//getServiceDataHome().findByPrimaryKey(new Integer(id));
                 }
                 id = ran.nextInt();
-            } catch (FinderException e) {
+            /*} catch (FinderException e) {
                 foundfree = true;
-            }
+            }*/
         }
         return new Integer(id);
-    } // findFreeServiceId
-
-
-} // LocalServiceSessionBean
+    }
+}
