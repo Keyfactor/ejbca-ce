@@ -67,7 +67,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.JndiConstants;
+import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
@@ -227,7 +227,7 @@ import org.ejbca.util.keystore.KeyTools;
  * @jboss.method-attributes pattern = "verify*" read-only = "true"
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CAAdminSession")
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CAAdminSession")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminSessionBean extends BaseSessionBean implements CAAdminSessionLocal, CAAdminSessionRemote {
 

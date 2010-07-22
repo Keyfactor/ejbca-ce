@@ -150,6 +150,7 @@ xkms.serviceport                = ${xkms.serviceport}
             <classpath>
             	<path refid="compile.classpath" />
             	<path location="modules/dist/ejbca-ejb3-interface.jar" />
+            	<path location="modules/common/lib/ejbca-ejb2-interface.jar" />
             </classpath>
             <exclude name="**/appserver/**" />
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
