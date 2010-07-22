@@ -252,8 +252,7 @@ public interface UserAdminSession {
      */
     public void changeUser(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd, boolean fromWebService)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException,
-            java.rmi.RemoteException;
+            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
 
     /**
      * Deletes a user from the database. The users certificates must be revoked

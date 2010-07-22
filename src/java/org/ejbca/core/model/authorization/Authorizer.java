@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
@@ -37,11 +37,11 @@ public class Authorizer extends Object implements java.io.Serializable {
     private AccessTree            accesstree;
     private int                   module;
     
-    private ILogSessionLocal               logsession;
+    private LogSessionLocal               logsession;
     private AuthorizationProxy             authorizationproxy;
 
     /** Creates new EjbcaAthorization */
-    public Authorizer(Collection admingroups, ILogSessionLocal logsession, int module) {
+    public Authorizer(Collection admingroups, LogSessionLocal logsession, int module) {
         accesstree = new AccessTree();
         authorizationproxy = new AuthorizationProxy(accesstree);
         buildAccessTree(admingroups);

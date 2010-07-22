@@ -32,27 +32,28 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import javax.annotation.Resource;
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJBException;
+import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.BaseSessionBean;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -161,89 +162,27 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
  *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
  *   link="HardTokenSession"
+ *
  */
-public class LocalCertificateRequestSessionBean extends BaseSessionBean {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class LocalCertificateRequestSessionBean implements CertificateRequestSessionRemote, CertificateRequestSessionLocal {
 
-    /** Requerid method by EJB 2.x. */
-    public void ejbCreate() throws CreateException { }
-
-    private IAuthorizationSessionLocal authorizationsession = null;
-    private IAuthorizationSessionLocal getAuthorizationSession() {
-        if(authorizationsession == null){
-          try{
-            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-            authorizationsession = authorizationsessionhome.create();
-          }catch(Exception e){
-             throw new EJBException(e);
-          }
-        }
-        return authorizationsession;
-    } //getAuthorizationSession
-
-    private IRaAdminSessionLocal raadminsession = null;
-    private IRaAdminSessionLocal getRAAdminSession() {
-        if(raadminsession == null){
-            try{
-                IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-                raadminsession = raadminsessionhome.create();
-              }catch(Exception e){
-                 throw new EJBException(e);
-              }
-            }
-            return raadminsession;
-    } //getAuthorizationSession
-
-    private ICAAdminSessionLocal caadminsession = null;
-    private ICAAdminSessionLocal getCAAdminSession() {
-        if(caadminsession == null){
-            try{
-                ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-                caadminsession = caadminsessionhome.create();
-              }catch(Exception e){
-                 throw new EJBException(e);
-              }
-            }
-            return caadminsession;
-    } //getAuthorizationSession
-
-    private IUserAdminSessionLocal useradminsession = null;
-    private IUserAdminSessionLocal getUserAdminSession() {
-        if(useradminsession == null){
-            try{
-                IUserAdminSessionLocalHome useradminsessionhome = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-                useradminsession = useradminsessionhome.create();
-              }catch(Exception e){
-                 throw new EJBException(e);
-              }
-            }
-            return useradminsession;
-    } //getAuthorizationSession
-
-	private ISignSessionLocal signsession = null;
-	private ISignSessionLocal getSignSession() {
-		if(signsession == null){	  
-	      try{
-	    	  ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-	          signsession = signsessionhome.create();
-	        }catch(Exception e){
-	           throw new EJBException(e);
-	        }
-	      }
-	      return signsession;
-	}
- 
-	private IHardTokenSessionLocal tokensession = null;
-	private IHardTokenSessionLocal getHardTokenSession() {
-		if(tokensession == null){	  
-	      try{
-	    	  IHardTokenSessionLocalHome tokensessionhome = (IHardTokenSessionLocalHome) getLocator().getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-	    	  tokensession = tokensessionhome.create();
-	        }catch(Exception e){
-	           throw new EJBException(e);
-	        }
-	      }
-	      return tokensession;
-	}
+    private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(LocalCertificateRequestSessionBean.class);
+    
+    @EJB
+    private AuthorizationSessionLocal authorizationsession;
+    @EJB
+    private RaAdminSessionLocal raadminsession;
+    @EJB
+    private UserAdminSessionLocal useradminsession = null;
+    @EJB
+    private SignSessionLocal signsession = null;
+    @EJB
+    private HardTokenSessionLocal hardTokenSession = null;
+    @Resource
+    private SessionContext sessionContext;
 
 	/**
 	 * Edits or adds a user and generates a certificate for that user in a single transaction.
@@ -326,31 +265,31 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
 			}
 		} catch (NotFoundException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (InvalidKeyException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (NoSuchAlgorithmException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (InvalidKeySpecException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (NoSuchProviderException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (SignatureException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (IOException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (CertificateException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (EjbcaException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		}
 		return retval;
@@ -383,12 +322,12 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 		addOrEditUser(admin, userdata, false, true);
 		IResponseMessage retval = null;
 		try {
-			retval = getSignSession().createCertificate(admin, req, -1, responseClass);				
+			retval = signsession.createCertificate(admin, req, -1, responseClass);				
 		} catch (NotFoundException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (EjbcaException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		}
 		return retval;
@@ -412,25 +351,25 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			DuplicateKeyException, CADoesntExistsException, EjbcaException {
 		
 		int caid = userdata.getCAId();
-		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
-		getAuthorizationSession().isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+		authorizationsession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
+		authorizationsession.isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
 		
 		// Add or edit user
 		try {
 			String username = userdata.getUsername();
-			if (getUserAdminSession().existsUser(admin, username)) {
+			if (useradminsession.existsUser(admin, username)) {
 				if (log.isDebugEnabled()) {
 					log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
 				}
-				getUserAdminSession().changeUser(admin,userdata, clearpwd, fromwebservice);
+				useradminsession.changeUser(admin,userdata, clearpwd, fromwebservice);
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
 				}
-				getUserAdminSession().addUserFromWS(admin,userdata,clearpwd);
+				useradminsession.addUserFromWS(admin,userdata,clearpwd);
 			}
 		} catch (WaitingForApprovalException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			String msg = "Single transaction enrollment request rejected since approvals are enabled for this CA ("+caid+") or Certificate Profile ("+userdata.getCertificateProfileId()+").";
 			log.info(msg);
 			throw new ApprovalException(msg);
@@ -450,20 +389,20 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 	throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
 		byte[] retval = null;
 		Class respClass = org.ejbca.core.protocol.X509ResponseMessage.class; 
-		IResponseMessage resp =  getSignSession().createCertificate(admin, msg, respClass);
+		IResponseMessage resp =  signsession.createCertificate(admin, msg, respClass);
 		java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
 		if(responseType == SecConst.CERT_RES_TYPE_CERTIFICATE){
 			retval = cert.getEncoded();
 		}
 		if(responseType == SecConst.CERT_RES_TYPE_PKCS7){
-			retval = getSignSession().createPKCS7(admin, cert, false);
+			retval = signsession.createPKCS7(admin, cert, false);
 		}
 		if(responseType == SecConst.CERT_RES_TYPE_PKCS7WITHCHAIN){
-			retval = getSignSession().createPKCS7(admin, cert, true);
+			retval = signsession.createPKCS7(admin, cert, true);
 		}
 
 		if(hardTokenSN != null){ 
-			getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,cert);				  
+			hardTokenSession.addHardTokenCertificateMapping(admin,hardTokenSN,cert);				  
 		}
 		return retval;
 	}
@@ -494,7 +433,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 		byte[] ret = null;
 		try {
 			// Get key recovery info
-			boolean usekeyrecovery = getRAAdminSession().loadGlobalConfiguration(admin).getEnableKeyRecovery();
+			boolean usekeyrecovery = raadminsession.loadGlobalConfiguration(admin).getEnableKeyRecovery();
 			if (log.isDebugEnabled()) {
 				log.debug("usekeyrecovery: "+usekeyrecovery);
 			}
@@ -509,7 +448,7 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 				log.debug("loadkeys: "+loadkeys);
 			}
 			int endEntityProfileId = userdata.getEndEntityProfileId();
-			EndEntityProfile endEntityProfile = getRAAdminSession().getEndEntityProfile(admin, endEntityProfileId);
+			EndEntityProfile endEntityProfile = raadminsession.getEndEntityProfile(admin, endEntityProfileId);
 			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 			if (log.isDebugEnabled()) {
 				log.debug("reusecertificate: "+reusecertificate);
@@ -523,45 +462,45 @@ public class LocalCertificateRequestSessionBean extends BaseSessionBean {
 			String alias = keyStore.aliases().nextElement();
 		    X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
 		    if ( (hardTokenSN != null) && (cert != null) ) {
-		    	getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,cert);                 
+		    	hardTokenSession.addHardTokenCertificateMapping(admin,hardTokenSN,cert);                 
 		    }
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			keyStore.store(baos, password.toCharArray());
 			ret = baos.toByteArray();
 		} catch (NotFoundException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (InvalidKeyException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (NoSuchAlgorithmException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (InvalidKeySpecException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (NoSuchProviderException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (SignatureException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (IOException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (CertificateException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (EjbcaException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (InvalidAlgorithmParameterException e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {
-			getSessionContext().setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
+			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw new KeyStoreException(e);
 		}
 	    return ret;
