@@ -20,22 +20,22 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
-import org.ejbca.core.ejb.BaseSessionBean;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
@@ -156,8 +156,12 @@ import org.ejbca.util.CertTools;
  *   ejb-name="KeyRecoverySession"
  *
  */
-public class LocalKeyRecoverySessionBean extends BaseSessionBean {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "KeyRecoverySessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class LocalKeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecoverySessionRemote {
 
+    private static final Logger log = Logger.getLogger(LocalKeyRecoverySessionBean.class);
+    
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
@@ -165,22 +169,28 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     private KeyRecoveryDataLocalHome keyrecoverydatahome = null;
 
     /** The local interface of sign session bean */
-    private ISignSessionLocal signsession = null;
+    @EJB
+    private SignSessionLocal signsession;
 
     /** The local interface of certificate store session bean */
-    private ICertificateStoreSessionLocal certificatestoresession = null;
+    @EJB
+    private CertificateStoreSessionLocal certificatestoresession;
     
     /** The local interface of the caadmin session bean*/
-    private ICAAdminSessionLocal caadminsession = null;
+    @EJB
+    private CAAdminSessionLocal caadminsession;
     
     /** The local interface of the approval session bean*/
-    private IApprovalSessionLocal approvalsession = null;
+    @EJB
+    private ApprovalSessionLocal approvalsession;
     
     /** The local interface of  log session bean */
-    private ILogSessionLocal logsession = null;
+    @EJB
+    private LogSessionLocal logsession;
 
     /** The local interface of  authorization session bean */
-	private IAuthorizationSessionLocal authorizationsession;
+    @EJB
+    private AuthorizationSessionLocal authorizationsession;
 	
 	/**
 	 * Method checking the following authorizations:
@@ -252,32 +262,11 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        trace(">ejbCreate()");
+        log.trace(">ejbCreate()");
 
         try {
-            keyrecoverydatahome = (KeyRecoveryDataLocalHome) getLocator().getLocalHome(KeyRecoveryDataLocalHome.COMP_NAME);
-
-            ILogSessionLocalHome logHome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-            logsession = logHome.create();
-
-            ICertificateStoreSessionLocalHome storeHome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-            certificatestoresession = storeHome.create();
-
-            ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-            signsession = signsessionhome.create();
-            
-            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-            authorizationsession = authorizationsessionhome.create();
-
-            ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-            caadminsession = caadminsessionhome.create();
-            
-            IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
-            approvalsession = approvalsessionhome.create();
-            
-
-            
-            trace("<ejbCreate()");
+            keyrecoverydatahome = (KeyRecoveryDataLocalHome) ServiceLocator.getInstance().getLocalHome(KeyRecoveryDataLocalHome.COMP_NAME);       
+            log.trace("<ejbCreate()");
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -678,6 +667,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isUserMarked(Admin admin, String username) {
     	if (log.isTraceEnabled()) {
             log.trace(">isUserMarked(user: " + username + ")");
@@ -718,6 +708,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsKeys(Admin admin, Certificate certificate) {
         log.trace(">existsKeys()");
 
@@ -726,7 +717,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         final String dn = CertTools.getIssuerDN(certificate);
         try {
             KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
-            debug("Found key for user: "+krd.getUsername());
+            log.debug("Found key for user: "+krd.getUsername());
             returnval = true;
         } catch (FinderException e) {
         }
