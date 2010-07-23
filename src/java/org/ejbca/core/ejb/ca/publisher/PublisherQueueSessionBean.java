@@ -27,9 +27,14 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
-import org.ejbca.core.ejb.BaseSessionBean;
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.util.JDBCUtil;
@@ -77,8 +82,12 @@ import org.ejbca.util.JDBCUtil;
  * @author Tomas Gustavsson
  * @version $Id$
  */
-public class PublisherQueueSessionBean extends BaseSessionBean {
-
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "PublisherSessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, PublisherQueueSessionLocal  {
+    private static final Logger log = Logger.getLogger(PublisherQueueSessionBean.class);
+    
+    
     /**
      * The local home interface of publisher entity bean.
      */
@@ -90,7 +99,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        queuehome = (PublisherQueueDataLocalHome) getLocator().getLocalHome(PublisherQueueDataLocalHome.COMP_NAME);
+        queuehome = (PublisherQueueDataLocalHome) ServiceLocator.getInstance().getLocalHome(PublisherQueueDataLocalHome.COMP_NAME);
     }
 
 
@@ -108,7 +117,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
             log.trace(">addQueueData(publisherId: " + publisherId + ")");
     	}
     	queuehome.create(publisherId, publishType, fingerprint, queueData, publishStatus);
-        trace("<addQueueData()");
+    	log.trace("<addQueueData()");
     } // addEntry
 
     /**
@@ -128,7 +137,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 		} catch (RemoveException e) {
 			log.info(e);
 		}
-        trace("<removeQueueData()");
+	log.trace("<removeQueueData()");
     } // addEntry
 
     /**
@@ -157,7 +166,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    		ret.add(pqd);
 	    	}			
 		}
-        trace("<getPendingEntriesForPublisher()");
+		log.trace("<getPendingEntriesForPublisher()");
     	return ret;
     } // getPendingEntriesForPublisher
 
@@ -233,7 +242,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     	} finally {
     		JDBCUtil.close(con, ps, rs);
     	}
-    	trace("<getPendingEntriesCountForPublisherInIntervals()");
+    	log.trace("<getPendingEntriesCountForPublisherInIntervals()");
     	return result;
     } // getPendingEntriesCountForPublisher
     
@@ -304,7 +313,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
     	} finally {
     		JDBCUtil.close(con, ps, result);
     	}
-        trace("<getPendingEntriesForPublisherWithLimit()");
+    	log.trace("<getPendingEntriesForPublisherWithLimit()");
     	return ret;
     } // getPendingEntriesForPublisherWithLimit
 
@@ -334,7 +343,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 	    		ret.add(pqd);
 	    	}			
 		}
-        trace("<getEntriesByFingerprint()");
+		log.trace("<getEntriesByFingerprint()");
     	return ret;
     } // getEntriesByFingerprint
 
@@ -363,7 +372,7 @@ public class PublisherQueueSessionBean extends BaseSessionBean {
 		} catch (FinderException e) {
 			log.debug("Trying to set status on nonexisting data, pk: "+pk);
 		}
-        trace("<updateData()");
+		log.trace("<updateData()");
     }
 
 } // LocalPublisherSessionBean
