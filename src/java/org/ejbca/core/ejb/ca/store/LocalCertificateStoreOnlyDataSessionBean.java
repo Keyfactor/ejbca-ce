@@ -21,18 +21,15 @@ import java.sql.Statement;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.CreateException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocalejb3;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.JDBCUtil;
@@ -99,7 +96,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
     private final CertificateDataUtil.Adapter adapter;
 
     /** The come interface of the protection session bean */
-    private TableProtectSessionLocalHome protecthome = null;
+    private TableProtectSessionLocalejb3 protect = null;
     
     public LocalCertificateStoreOnlyDataSessionBean() {
         super();
@@ -140,7 +137,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @ejb.interface-method
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(issuerDN, serno, certHome, protecthome, adapter);
+        return CertificateDataUtil.getStatus(issuerDN, serno, certHome, protect, adapter);
     }
 
     /**
@@ -270,18 +267,6 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
          */
         public void error(String s, Exception e) {
             log.error(s, e);        	
-        }
-    }
-
-    /**
-     * Default create for SessionBean without any creation Arguments.
-     *
-     * @throws CreateException if bean instance can't be created
-     */
-    public void ejbCreate() throws CreateException {
-        certHome = (CertificateDataLocalHome) ServiceLocator.getInstance().getLocalHome(CertificateDataLocalHome.COMP_NAME);
-        if (ProtectConfiguration.getCertProtectionEnabled()) {
-        	protecthome = (TableProtectSessionLocalHome) ServiceLocator.getInstance().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
         }
     }
 
