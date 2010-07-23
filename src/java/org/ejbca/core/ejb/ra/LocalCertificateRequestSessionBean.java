@@ -50,7 +50,6 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -172,13 +171,13 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
     private static final Logger log = Logger.getLogger(LocalCertificateRequestSessionBean.class);
     
     @EJB
-    private AuthorizationSessionLocal authorizationsession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private RaAdminSessionLocal raadminsession;
+    private RaAdminSessionLocal raadminSession;
     @EJB
-    private UserAdminSessionLocal useradminsession = null;
+    private UserAdminSessionLocal userAdminSession = null;
     @EJB
-    private SignSessionLocal signsession = null;
+    private SignSessionLocal signSession = null;
     @EJB
     private HardTokenSessionLocal hardTokenSession = null;
     @Resource
@@ -322,7 +321,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 		addOrEditUser(admin, userdata, false, true);
 		IResponseMessage retval = null;
 		try {
-			retval = signsession.createCertificate(admin, req, -1, responseClass);				
+			retval = signSession.createCertificate(admin, req, -1, responseClass);				
 		} catch (NotFoundException e) {
 			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
@@ -351,22 +350,22 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 			DuplicateKeyException, CADoesntExistsException, EjbcaException {
 		
 		int caid = userdata.getCAId();
-		authorizationsession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
-		authorizationsession.isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+		authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
+		authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
 		
 		// Add or edit user
 		try {
 			String username = userdata.getUsername();
-			if (useradminsession.existsUser(admin, username)) {
+			if (userAdminSession.existsUser(admin, username)) {
 				if (log.isDebugEnabled()) {
 					log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
 				}
-				useradminsession.changeUser(admin,userdata, clearpwd, fromwebservice);
+				userAdminSession.changeUser(admin,userdata, clearpwd, fromwebservice);
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("New User " + username + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
 				}
-				useradminsession.addUserFromWS(admin,userdata,clearpwd);
+				userAdminSession.addUserFromWS(admin,userdata,clearpwd);
 			}
 		} catch (WaitingForApprovalException e) {
 			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
@@ -389,16 +388,16 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 	throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
 		byte[] retval = null;
 		Class respClass = org.ejbca.core.protocol.X509ResponseMessage.class; 
-		IResponseMessage resp =  signsession.createCertificate(admin, msg, respClass);
+		IResponseMessage resp =  signSession.createCertificate(admin, msg, respClass);
 		java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
 		if(responseType == SecConst.CERT_RES_TYPE_CERTIFICATE){
 			retval = cert.getEncoded();
 		}
 		if(responseType == SecConst.CERT_RES_TYPE_PKCS7){
-			retval = signsession.createPKCS7(admin, cert, false);
+			retval = signSession.createPKCS7(admin, cert, false);
 		}
 		if(responseType == SecConst.CERT_RES_TYPE_PKCS7WITHCHAIN){
-			retval = signsession.createPKCS7(admin, cert, true);
+			retval = signSession.createPKCS7(admin, cert, true);
 		}
 
 		if(hardTokenSN != null){ 
@@ -433,7 +432,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 		byte[] ret = null;
 		try {
 			// Get key recovery info
-			boolean usekeyrecovery = raadminsession.loadGlobalConfiguration(admin).getEnableKeyRecovery();
+			boolean usekeyrecovery = raadminSession.loadGlobalConfiguration(admin).getEnableKeyRecovery();
 			if (log.isDebugEnabled()) {
 				log.debug("usekeyrecovery: "+usekeyrecovery);
 			}
@@ -448,7 +447,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 				log.debug("loadkeys: "+loadkeys);
 			}
 			int endEntityProfileId = userdata.getEndEntityProfileId();
-			EndEntityProfile endEntityProfile = raadminsession.getEndEntityProfile(admin, endEntityProfileId);
+			EndEntityProfile endEntityProfile = raadminSession.getEndEntityProfile(admin, endEntityProfileId);
 			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 			if (log.isDebugEnabled()) {
 				log.debug("reusecertificate: "+reusecertificate);

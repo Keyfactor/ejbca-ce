@@ -20,6 +20,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -122,14 +124,24 @@ public class TableProtectData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return return the query results as a List. */
 	public static TableProtectData findById(EntityManager entityManager, String id) {
 		return entityManager.find(TableProtectData.class,  id);
 	}
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
 	public static TableProtectData findByDbTypeAndKey(EntityManager entityManager, String dbType, String dbKey) {
-		Query query = entityManager.createQuery("from TableProtectDataBean a WHERE a.dbType=:dbType AND a.dbKey=:dbKey");
-		query.setParameter("dbType", dbType);
-		query.setParameter("dbKey", dbKey);
-		return (TableProtectData) query.getSingleResult();
+		TableProtectData ret = null;
+		try {
+			Query query = entityManager.createQuery("from TableProtectDataBean a WHERE a.dbType=:dbType AND a.dbKey=:dbKey");
+			query.setParameter("dbType", dbType);
+			query.setParameter("dbKey", dbKey);
+			ret = (TableProtectData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
 	}
 }
