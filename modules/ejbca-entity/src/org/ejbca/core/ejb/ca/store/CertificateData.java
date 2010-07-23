@@ -551,6 +551,14 @@ public class CertificateData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
+	public static List<CertificateData> findByUsernameAndStatus(EntityManager entityManager, String username, int status) {
+		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.username=:username AND a.status=:status ORDER BY a.expireDate DESC, a.serialNumber DESC");
+		query.setParameter("username", username);
+		query.setParameter("status", status);
+		return query.getResultList();
+	}
+
+	/** @return return the query results as a List. */
 	// TODO: When only JPA is used, check if we can refactor this method to SELECT DISTINCT a.username FROM ...
 	public static List<CertificateData> findByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
 		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");

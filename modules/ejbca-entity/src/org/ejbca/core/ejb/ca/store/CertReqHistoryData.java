@@ -210,10 +210,12 @@ public class CertReqHistoryData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static CertReqHistoryData findById(EntityManager entityManager, String fingerprint) {
 		return entityManager.find(CertReqHistoryData.class, fingerprint);
 	}
 	
+	/** @return return the query results as a List. */
 	public static Collection<CertReqHistoryData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
 		Query query = entityManager.createQuery("from CertReqHistoryData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
 		query.setParameter("issuerDN", issuerDN);
@@ -221,6 +223,7 @@ public class CertReqHistoryData implements Serializable {
 		return query.getResultList();
 	}
 
+	/** @return return the query results as a List. */
 	public static Collection<CertReqHistoryData> findByUsername(EntityManager entityManager, String username) {
 		Query query = entityManager.createQuery("from CertReqHistoryData a WHERE a.username=:username");
 		query.setParameter("username", username);
