@@ -21,11 +21,14 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
+import org.ejbca.core.model.log.ProtectedLogEventRow;
 import org.ejbca.util.Base64;
 import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.StringTools;
@@ -264,22 +267,40 @@ public class ProtectedLogData implements Serializable {
         	setB64Protection(null);
     	}
     }
-	
+
+    public ProtectedLogEventRow toProtectedLogEventRow() {
+    	return new ProtectedLogEventRow(getAdminType(), getAdminData(), getCaId(), getModule(), getEventTime(),
+    			getUsername(), getCertificateSerialNumber(), getCertificateIssuerDN(), getEventId(), getEventComment(),
+    			new ProtectedLogEventIdentifier(getNodeGUID(), getCounter()), getNodeIP(), getLinkedInEventIdentifiers(), getLinkedInEventsHash(),
+    			getCurrentHashAlgorithm(), getProtectionKeyIdentifier(), getProtectionKeyAlgorithm(), getProtection());
+    }
+
 	//
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static ProtectedLogData findById(EntityManager entityManager, String pk) {
 		return entityManager.find(ProtectedLogData.class, pk);
 	}
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
 	public static ProtectedLogData findByNodeGUIDandCounter(EntityManager entityManager, int nodeGUID, long counter) {
-		Query query = entityManager.createQuery("from ProtectedLogData a WHERE a.nodeGUID=:nodeGUID AND a.counter=:counter");
-		query.setParameter("nodeGUID", nodeGUID);
-		query.setParameter("counter", counter);
-		return (ProtectedLogData) query.getSingleResult();
+		ProtectedLogData ret = null;
+		try {
+			Query query = entityManager.createQuery("from ProtectedLogData a WHERE a.nodeGUID=:nodeGUID AND a.counter=:counter");
+			query.setParameter("nodeGUID", nodeGUID);
+			query.setParameter("counter", counter);
+			ret = (ProtectedLogData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
 	}    
 
+	/** @return return the query results as a List. */
 	public static Collection<ProtectedLogData> findNewProtectedLogEvents(EntityManager entityManager, int nodeToExclude, long newerThan) {
 		Query query = entityManager.createQuery("from ProtectedLogData a WHERE a.nodeGUID<>:nodeToExclude AND a.eventTime>=:newerThan AND a.b64Protection IS NOT NULL");
 		query.setParameter("nodeToExclude", nodeToExclude);
@@ -287,13 +308,17 @@ public class ProtectedLogData implements Serializable {
 		return query.getResultList();
 	}    
 
+	/** @return return the query results as a List. */
 	public static Collection<ProtectedLogData> findProtectedLogEventsByTime(EntityManager entityManager, long eventTime) {
 		Query query = entityManager.createQuery("from ProtectedLogData a WHERE a.eventTime=:eventTime");
 		query.setParameter("eventTime", eventTime);
 		return query.getResultList();
 	}    
 
-	/** Using this method would probably send a database to a long and painful near death experience.. =/ */
+	/**
+	 * Using this method would probably send a database to a long and painful near death experience.. =/
+	 * @return return the query results as a List.
+	 */
 	public static Collection<ProtectedLogData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("from ProtectedLogData a");
 		return query.getResultList();
