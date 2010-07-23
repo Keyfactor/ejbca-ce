@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.keyrecovery;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -113,17 +113,20 @@ public class KeyRecoveryData implements Serializable {
     // Search functions. 
     //
 
+	/** @return the found entity instance or null if the entity does not exist */
     public static KeyRecoveryData findByPK(EntityManager entityManager, KeyRecoveryDataPK pk) {
     	return entityManager.find(KeyRecoveryData.class,  pk);
     }
 
-    public static KeyRecoveryData findByUsername(EntityManager entityManager, String username) {
+	/** @return return the query results as a List. */
+    public static List<KeyRecoveryData> findByUsername(EntityManager entityManager, String username) {
     	Query query = entityManager.createQuery("from KeyRecoveryData a WHERE a.username=:username");
     	query.setParameter("username", username);
-    	return (KeyRecoveryData) query.getSingleResult();
+    	return query.getResultList();
     }    
 	 
-    public static Collection<KeyRecoveryData> findByUserMark(EntityManager entityManager, String usermark) {
+	/** @return return the query results as a List. */
+    public static List<KeyRecoveryData> findByUserMark(EntityManager entityManager, String usermark) {
     	Query query = entityManager.createQuery("from KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverable=TRUE");
     	query.setParameter("usermark", usermark);
     	return query.getResultList();
