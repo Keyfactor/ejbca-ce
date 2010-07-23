@@ -15,12 +15,15 @@ package org.ejbca.core.ejb.hardtoken;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
@@ -72,18 +75,29 @@ public class HardTokenPropertyData implements Serializable {
     // Search functions. 
     //
 
+	/** @return the found entity instance or null if the entity does not exist */
     public static HardTokenPropertyData findByPK(EntityManager entityManager, HardTokenPropertyDataPK pk) {
     	return entityManager.find(HardTokenPropertyData.class,  pk);
     }
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
     public static HardTokenPropertyData findByProperty(EntityManager entityManager, String id, String property) {
-    	Query query = entityManager.createQuery("from HardTokenPropertyData a WHERE a.id=:id AND a.property=:property");
-    	query.setParameter("id", id);
-    	query.setParameter("property", property);
-    	return (HardTokenPropertyData) query.getSingleResult();
+		HardTokenPropertyData ret = null;
+    	try {
+    		Query query = entityManager.createQuery("from HardTokenPropertyData a WHERE a.id=:id AND a.property=:property");
+    		query.setParameter("id", id);
+    		query.setParameter("property", property);
+    		ret = (HardTokenPropertyData) query.getSingleResult();
+    	} catch (NoResultException e) {
+    	}
+    	return ret;
     }    
 
-    public static Collection<HardTokenPropertyData> findIdsByPropertyAndValue(EntityManager entityManager, String property, String value) {
+	/** @return return the query results as a List. */
+    public static List<HardTokenPropertyData> findIdsByPropertyAndValue(EntityManager entityManager, String property, String value) {
     	Query query = entityManager.createQuery("from HardTokenPropertyData a WHERE a.property=:property AND a.value=:value");
     	query.setParameter("property", property);
     	query.setParameter("value", value);
