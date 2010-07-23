@@ -15,9 +15,10 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
+import javax.ejb.EJBException;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -79,7 +80,7 @@ public class PublisherData implements Serializable {
 	/**
 	 * Method that saves the publisher data to database.
 	 */
-	public void setPublisher(BasePublisher publisher) throws UnsupportedEncodingException {
+	public void setPublisher(BasePublisher publisher) {
 		// We must base64 encode string for UTF safety
 		HashMap a = new Base64PutHashMap();
 		a.putAll((HashMap)publisher.saveData());
@@ -87,10 +88,14 @@ public class PublisherData implements Serializable {
 		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
 		encoder.writeObject(a);
 		encoder.close();
-		if (log.isDebugEnabled()) {
-			log.debug("Profiledata: \n" + baos.toString("UTF8"));
-		}
-		setData(baos.toString("UTF8"));
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("Profiledata: \n" + baos.toString("UTF8"));
+            }
+            setData(baos.toString("UTF8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new EJBException(e);
+        }
 		this.publisher = publisher;
 		setUpdateCounter(getUpdateCounter() + 1);
 	}
@@ -101,7 +106,7 @@ public class PublisherData implements Serializable {
 	 * @return null
 	 * @ejb.create-method view-type="local"
 	 */
-	public PublisherData(Integer id, String name, BasePublisher publisher) throws UnsupportedEncodingException {
+	public PublisherData(Integer id, String name, BasePublisher publisher) {
 		setId(id);
 		setName(name);
 		this.setUpdateCounter(0);
@@ -117,6 +122,7 @@ public class PublisherData implements Serializable {
 	// Search functions. 
 	// 
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static PublisherData findById(EntityManager entityManager, Integer id) {	    
 	    return entityManager.find(PublisherData.class,  id);
 	}
@@ -136,7 +142,8 @@ public class PublisherData implements Serializable {
 		return ret;
 	}
 
-	public static Collection<PublisherData> findAll(EntityManager entityManager) {
+	/** @return return the query results as a List. */
+	public static List<PublisherData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("from PublisherData a");
 		return query.getResultList();
 	}
