@@ -38,26 +38,22 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.crypto.SecretKey;
-import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
-import javax.ejb.RemoveException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectedLogConfiguration;
-import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.services.IServiceSessionLocal;
-import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -183,7 +179,9 @@ import org.ejbca.util.TCPTool;
  *
  * @deprecated
  */
-public class ProtectedLogSessionBean extends BaseSessionBean {
+@Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "ProtectedLogSessionRemote")
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, ProtectedLogSessionRemote {
 
 	private static final Logger log = Logger.getLogger(ProtectedLogSessionBean.class);
     /** Internal localization of logs and errors */
@@ -191,14 +189,17 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 
 	private static Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 
-	private ProtectedLogDataLocalHome protectedLogData = null;
-	private ProtectedLogExportDataLocalHome protectedLogExportData = null;
-	private ProtectedLogTokenDataLocalHome protectedLogTokenData = null;
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
 
-	private ICAAdminSessionLocal caAdminSession = null;
-	private ICertificateStoreSessionLocal certificateStoreSession = null;
-	private ISignSessionLocal signSession = null;
-	private IServiceSessionLocal serviceSession = null;
+    @EJB
+	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
+	private SignSessionLocal signSession;
+	@EJB
+	private ServiceSessionLocal serviceSession;
 
 	/** Cache of log tokens, so we don't have to load a CA token or keystore every time.
 	 * We can have this as static, because the protected log configuration is global for every CA node.
@@ -212,87 +213,24 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	public void ejbRemove() {
 	}
 
-	private ProtectedLogDataLocalHome getProtectedLogData() {
-		if (protectedLogData == null) {
-			protectedLogData = (ProtectedLogDataLocalHome) ServiceLocator.getInstance().getLocalHome(ProtectedLogDataLocalHome.COMP_NAME);
-		}
-		return protectedLogData;
-	}
-
-	private ProtectedLogExportDataLocalHome getProtectedLogExportData() {
-		if (protectedLogExportData == null) {
-			protectedLogExportData = (ProtectedLogExportDataLocalHome) ServiceLocator.getInstance().getLocalHome(ProtectedLogExportDataLocalHome.COMP_NAME);
-		}
-		return protectedLogExportData;
-	}
-
-	private ProtectedLogTokenDataLocalHome getProtectedLogTokenData() {
-		if (protectedLogTokenData == null) {
-			protectedLogTokenData = (ProtectedLogTokenDataLocalHome) ServiceLocator.getInstance().getLocalHome(ProtectedLogTokenDataLocalHome.COMP_NAME);
-		}
-		return protectedLogTokenData;
-	}
-
-	private ICAAdminSessionLocal getCAAdminSession() {
-		try {
-			if (caAdminSession == null) {
-				caAdminSession = ((ICAAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME)).create();
-			}
-			return caAdminSession;
-		} catch (Exception e) {
-			log.error("", e);
-			throw new EJBException(e);
-		}
-	}
-
-	private ICertificateStoreSessionLocal getCertificateStoreSession() {
-		try {
-			if (certificateStoreSession == null) {
-				certificateStoreSession = ((ICertificateStoreSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME)).create();
-			}
-			return certificateStoreSession;
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	}
-
-	private ISignSessionLocal getSignSession() {
-		try {
-			if (signSession == null) {
-				signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
-			}
-			return signSession;
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	}
-
-	private IServiceSessionLocal getServiceSession() {
-		try{
-			if(serviceSession == null){
-				serviceSession = ((IServiceSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IServiceSessionLocalHome.COMP_NAME)).create();
-			}
-		} catch(Exception e){
-			throw new EJBException(e);
-		}
-		return serviceSession;
-	}
-
 	/**
 	 * Persists a new token to the database.
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void addToken(IProtectedLogToken token) {
 		log.trace(">addToken");
 		try {
 			int tokenType = token.getType();
 			switch (tokenType) {
 			case IProtectedLogToken.TYPE_CA:
-				getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId()));
+				entityManager.persist(new ProtectedLogTokenData(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId())));
+				//getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId()));
 				break;
 			case IProtectedLogToken.TYPE_NONE:
-				getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId()));
+				entityManager.persist(new ProtectedLogTokenData(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId())));
+				//getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId()));
 				break;
 			case IProtectedLogToken.TYPE_ASYM_KEY:
 			case IProtectedLogToken.TYPE_SYM_KEY:
@@ -301,7 +239,8 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				oos.writeObject(token.getTokenProtectionKey());
 				oos.close();
 				byte[] rawKeyData = encryptKeyData(baos.toByteArray(), token.getTokenCertificate());
-				getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), new String(Base64.encode(rawKeyData, false)));
+				entityManager.persist(new ProtectedLogTokenData(token.getIdentifier(), tokenType, token.getTokenCertificate(), new String(Base64.encode(rawKeyData, false))));
+				//getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), new String(Base64.encode(rawKeyData, false)));
 				break;
 			}
 		} catch (Exception e) {
@@ -328,30 +267,34 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		}
 		IProtectedLogToken protectedLogToken = null;
 		try {
-			ProtectedLogTokenDataLocal protectedLogTokenDataLocal = getProtectedLogTokenData().findByTokenIdentifier(tokenIdentifier);
-			int tokenType = protectedLogTokenDataLocal.getTokenType();
-			switch (tokenType) {
-			case IProtectedLogToken.TYPE_CA:
-				protectedLogToken = new ProtectedLogToken(new Integer(Integer.parseInt(protectedLogTokenDataLocal.getTokenReference())).intValue(), protectedLogTokenDataLocal.getTokenCertificate());
-				break;
-			case IProtectedLogToken.TYPE_NONE:
-				protectedLogToken = new ProtectedLogToken();
-				break;
-			case IProtectedLogToken.TYPE_ASYM_KEY:
-			case IProtectedLogToken.TYPE_SYM_KEY:
-				byte[] rawKeyData = Base64.decode(protectedLogTokenDataLocal.getTokenReference().getBytes()); 
-				ByteArrayInputStream bais = new ByteArrayInputStream(decryptKeyData(rawKeyData, protectedLogTokenDataLocal.getTokenCertificate()));
-				ObjectInputStream ois = new ObjectInputStream(bais);
-				Key key = (Key) ois.readObject();
-				ois.close();
-				if (key instanceof PrivateKey) {
-					protectedLogToken = new ProtectedLogToken((PrivateKey) key, protectedLogTokenDataLocal.getTokenCertificate());
-				} else {
-					protectedLogToken = new ProtectedLogToken((SecretKey) key, protectedLogTokenDataLocal.getTokenCertificate());
+			ProtectedLogTokenData pltd = ProtectedLogTokenData.findByTokenIdentifier(entityManager, tokenIdentifier);
+			if (pltd != null) {
+				//ProtectedLogTokenDataLocal protectedLogTokenDataLocal = getProtectedLogTokenData().findByTokenIdentifier(tokenIdentifier);
+				int tokenType = pltd.getTokenType();
+				switch (tokenType) {
+				case IProtectedLogToken.TYPE_CA:
+					protectedLogToken = new ProtectedLogToken(new Integer(Integer.parseInt(pltd.getTokenReference())).intValue(), pltd.getTokenCertificate());
+					break;
+				case IProtectedLogToken.TYPE_NONE:
+					protectedLogToken = new ProtectedLogToken();
+					break;
+				case IProtectedLogToken.TYPE_ASYM_KEY:
+				case IProtectedLogToken.TYPE_SYM_KEY:
+					byte[] rawKeyData = Base64.decode(pltd.getTokenReference().getBytes()); 
+					ByteArrayInputStream bais = new ByteArrayInputStream(decryptKeyData(rawKeyData, pltd.getTokenCertificate()));
+					ObjectInputStream ois = new ObjectInputStream(bais);
+					Key key = (Key) ois.readObject();
+					ois.close();
+					if (key instanceof PrivateKey) {
+						protectedLogToken = new ProtectedLogToken((PrivateKey) key, pltd.getTokenCertificate());
+					} else {
+						protectedLogToken = new ProtectedLogToken((SecretKey) key, pltd.getTokenCertificate());
+					}
 				}
+			} else { 
+		//} catch (ObjectNotFoundException e) {
+				log.error(intres.getLocalizedMessage("protectedlog.error.tokennotfound", tokenIdentifier));
 			}
-		} catch (ObjectNotFoundException e) {
-        	log.error(intres.getLocalizedMessage("protectedlog.error.tokennotfound", tokenIdentifier));
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -368,7 +311,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		// Use issuing CA for encryption
 		int caid = CertTools.getIssuerDN(certificate).hashCode();
 		log.trace("<encryptKeyData");
-		return getCAAdminSession().encryptWithCA(caid, data);
+		return caAdminSession.encryptWithCA(caid, data);
 	}
 
 	/**
@@ -379,7 +322,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		// Use issuing CA for decryption
 		int caid = CertTools.getIssuerDN(certificate).hashCode();
 		log.trace("<decryptKeyData");
-		return getCAAdminSession().decryptWithCA(caid, data);
+		return caAdminSession.decryptWithCA(caid, data);
 	}
 
 	/**
@@ -387,10 +330,15 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void removeTokens(Integer[] tokenIdentifiers) {
 		log.trace(">removeTokens");
 		for (int i=0; i<tokenIdentifiers.length; i++) {
-			try {
+			ProtectedLogTokenData pltd = ProtectedLogTokenData.findByTokenIdentifier(entityManager, tokenIdentifiers[i].intValue());
+			if (pltd != null) {
+				entityManager.remove(pltd);
+			}
+			/*try {
 				// Find token
 				ProtectedLogTokenDataLocal protectedLogTokenDataLocal = getProtectedLogTokenData().findByTokenIdentifier(tokenIdentifiers[i].intValue());
 				// Nuke token
@@ -400,7 +348,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			} catch (RemoveException e) {
 				log.error("", e);
 				throw new EJBException(e);
-			}
+			}*/
 		}
 		log.trace("<removeTokens");
 	}
@@ -410,9 +358,15 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void addExport(ProtectedLogExportRow protectedLogExportRow) {
 		log.trace(">addExport");
-		try {
+		entityManager.persist(new ProtectedLogExportData(
+				protectedLogExportRow.getTimeOfExport(), protectedLogExportRow.getExportEndTime(), protectedLogExportRow.getExportStartTime(),
+				protectedLogExportRow.getLogDataHash(), protectedLogExportRow.getPreviosExportHash(), protectedLogExportRow.getCurrentHashAlgorithm(),
+				protectedLogExportRow.getSignatureCertificateAsByteArray(), protectedLogExportRow.getDeleted(), protectedLogExportRow.getSignature()
+				));
+		/*try {
 			getProtectedLogExportData().create(
 					protectedLogExportRow.getTimeOfExport(), protectedLogExportRow.getExportEndTime(), protectedLogExportRow.getExportStartTime(),
 					protectedLogExportRow.getLogDataHash(), protectedLogExportRow.getPreviosExportHash(), protectedLogExportRow.getCurrentHashAlgorithm(),
@@ -420,7 +374,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		} catch (CreateException e) {
 			log.error("", e);
 			throw new EJBException(e);
-		}
+		}*/
 		log.trace("<addExport");
 	}
 
@@ -489,12 +443,23 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void addProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow) {
 		if (log.isTraceEnabled()) {
 			log.trace(">addProtectedLogEventRow: "+protectedLogEventRow.getEventIdentifier().getNodeGUID()+", "+protectedLogEventRow.getEventIdentifier().getCounter());
 		}
-		try {
-			getProtectedLogData().create(
+		//try {
+			entityManager.persist(new ProtectedLogData(
+					protectedLogEventRow.getAdminType(), protectedLogEventRow.getAdmindata(), protectedLogEventRow.getCaid(),
+					protectedLogEventRow.getModule(), protectedLogEventRow.getEventTime(), protectedLogEventRow.getUsername(),
+					protectedLogEventRow.getCertificateSerialNumber(), protectedLogEventRow.getCertificateIssuerDN(),
+					protectedLogEventRow.getEventId(), protectedLogEventRow.getEventComment(),
+					protectedLogEventRow.getEventIdentifier(), protectedLogEventRow.getNodeIP(),
+					protectedLogEventRow.getLinkedInEventIdentifiers(), protectedLogEventRow.getLinkedInEventsHash(),
+					protectedLogEventRow.getCurrentHashAlgorithm(), protectedLogEventRow.getProtectionKeyIdentifier(),
+					protectedLogEventRow.getProtectionKeyAlgorithm(), protectedLogEventRow.getProtection()
+					));
+			/*getProtectedLogData().create(
 					protectedLogEventRow.getAdminType(), protectedLogEventRow.getAdmindata(), protectedLogEventRow.getCaid(),
 					protectedLogEventRow.getModule(), protectedLogEventRow.getEventTime(), protectedLogEventRow.getUsername(),
 					protectedLogEventRow.getCertificateSerialNumber(), protectedLogEventRow.getCertificateIssuerDN(),
@@ -503,10 +468,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					protectedLogEventRow.getLinkedInEventIdentifiers(), protectedLogEventRow.getLinkedInEventsHash(),
 					protectedLogEventRow.getCurrentHashAlgorithm(), protectedLogEventRow.getProtectionKeyIdentifier(),
 					protectedLogEventRow.getProtectionKeyAlgorithm(), protectedLogEventRow.getProtection());
-		} catch (CreateException e) {
+		} catch (Exception e) {
 			log.error("", e);
 			throw new EJBException(e);
-		}
+		}*/
 		if (log.isTraceEnabled()) {
 			log.trace("<addProtectedLogEventRow");
 		}
@@ -520,7 +485,16 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		if (log.isTraceEnabled()) {
 			log.trace(">getProtectedLogEventRow: "+identifier.getNodeGUID()+", "+identifier.getCounter());
 		}
-		ProtectedLogEventRow protectedLogEventRow = null;
+		if (identifier == null) {
+			return null;
+		}
+		ProtectedLogData pld = ProtectedLogData.findByNodeGUIDandCounter(entityManager, identifier.getNodeGUID(), identifier.getCounter());
+		if (pld == null) {
+			return null;
+		}
+		log.trace("<getProtectedLogEventRow");
+		return pld.toProtectedLogEventRow();
+		/*ProtectedLogEventRow protectedLogEventRow = null;
 		try {
 			if (identifier != null) {
 				ProtectedLogDataLocal protectedLogDataLocal = getProtectedLogData().findByNodeGUIDandCounter(identifier.getNodeGUID(), identifier.getCounter());
@@ -534,7 +508,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		if (log.isTraceEnabled()) {
 			log.trace("<getProtectedLogEventRow");
 		}
-		return protectedLogEventRow;
+		return protectedLogEventRow;*/
 	}
 
 	/**
@@ -572,15 +546,16 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		}
 		// TODO: Double check the algo on this one to make it more efficient
 		ProtectedLogEventRow[] protectedLogEventRows = null;
-		try {
-			Collection protectedLogDataLocals = getProtectedLogData().findNewProtectedLogEvents(nodeToExclude, newerThan);
-			ArrayList protectedLogEventRowArrayList = new ArrayList(); // <ProtectedLogEventRow>
-			Iterator i = protectedLogDataLocals.iterator();
+		//try {
+			Collection<ProtectedLogData> protectedLogDatas = ProtectedLogData.findNewProtectedLogEvents(entityManager, nodeToExclude, newerThan);
+			//Collection protectedLogDataLocals = getProtectedLogData().findNewProtectedLogEvents(nodeToExclude, newerThan);
+			ArrayList<ProtectedLogEventRow> protectedLogEventRowArrayList = new ArrayList<ProtectedLogEventRow>();
+			Iterator<ProtectedLogData> i = protectedLogDatas.iterator();
 			while (i.hasNext()) {
-				ProtectedLogDataLocal protectedLogDataLocal = (ProtectedLogDataLocal) i.next();
+				ProtectedLogData protectedLogDataLocal = i.next();
 				boolean addProtectedLogEventRow = true;
 				ProtectedLogEventRow protectedLogEventRowToRemove = null;
-				Iterator j = protectedLogEventRowArrayList.iterator();
+				Iterator<ProtectedLogEventRow> j = protectedLogEventRowArrayList.iterator();
 				while (j.hasNext()) {
 					ProtectedLogEventRow protectedLogEventRow = (ProtectedLogEventRow) j.next();
 					if (protectedLogDataLocal.getNodeGUID() == protectedLogEventRow.getEventIdentifier().getNodeGUID()) {
@@ -605,8 +580,8 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				protectedLogEventRows = (ProtectedLogEventRow[]) protectedLogEventRowArrayList.toArray(new ProtectedLogEventRow[0]);
 			}
 			// Get newest for every one
-		} catch (FinderException e) {
-		}
+		/*} catch (FinderException e) {
+		}*/
 		if (log.isTraceEnabled()) {
 			log.trace("<findNewestProtectedLogEventsForAllOtherNodesInternal");
 		}
@@ -765,7 +740,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public Integer[] getNodeGUIDs(long exportStartTime, long exportEndTime) {
 		log.trace(">getNodeGUIDs");
-		ArrayList nodes = new ArrayList();	// <Integer>
+		ArrayList<Integer> nodes = new ArrayList<Integer>();
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -786,7 +761,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			JDBCUtil.close(con, ps, rs);
 		}
 		log.trace("<getNodeGUIDs");
-		return (Integer[]) nodes.toArray(new Integer[0]);
+		return (Integer[]) nodes.toArray();
 	}
 
 	/**
@@ -795,7 +770,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public Integer[] getAllNodeGUIDs() {
 		log.trace(">getAllNodeGUIDs");
-		ArrayList nodes = new ArrayList();	// <Integer>
+		ArrayList<Integer> nodes = new ArrayList<Integer>();
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -814,7 +789,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			JDBCUtil.close(con, ps, rs);
 		}
 		log.trace("<getAllNodeGUIDs");
-		return (Integer[]) nodes.toArray(new Integer[0]);
+		return (Integer[]) nodes.toArray();
 	}
 
 	/**
@@ -823,7 +798,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public Integer[] getFullyUnprotectedNodeGUIDs() {
 		log.trace(">getFullyUnprotectedNodeGUIDs");
-		ArrayList nodes = new ArrayList();	// <Integer>
+		ArrayList<Integer> nodes = new ArrayList<Integer>();
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -851,7 +826,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public ProtectedLogEventRow[] findNextProtectedLogEventRows(long exportStartTime, long exportEndTime, int fetchSize) {
 		log.trace(">findNextProtectedLogEventRows");
-		ArrayList protectedLogEventRows = new ArrayList();
+		ArrayList<ProtectedLogEventRow> protectedLogEventRows = new ArrayList<ProtectedLogEventRow>();
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -883,7 +858,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			JDBCUtil.close(con, ps, rs);
 		}
 		log.trace("<findNextProtectedLogEventRows");
-		return (ProtectedLogEventRow[]) protectedLogEventRows.toArray(new ProtectedLogEventRow[0]);
+		return (ProtectedLogEventRow[]) protectedLogEventRows.toArray();
 	}
 
 	/**
@@ -891,6 +866,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void removeAllUntil(long exportEndTime) {
 		log.trace(">removeAllUntil");
 		Connection con = null;
@@ -915,6 +891,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void removeNodeChain(int nodeGUID) {
 		log.trace(">removeNodeChain");
 		Connection con = null;
@@ -963,7 +940,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public Integer[] findTokenIndentifiersUsedOnlyUntil(long exportEndTime) {
 		log.trace(">findTokenIndentifiersUsedOnlyUntil");
-		ArrayList protectionKeyIdentifiers = new ArrayList();	//<Integer>
+		ArrayList<Integer> protectionKeyIdentifiers = new ArrayList<Integer>();
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -1039,13 +1016,13 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			} else {
 				//int caid = CertTools.getIssuerDN(certificate).hashCode();
 				int caid = CertTools.getIssuerDN(certificate).hashCode();
-				CAInfo caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caid);
+				CAInfo caInfo = caAdminSession.getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caid);
 				CertTools.verify(certificate, caInfo.getCertificateChain());
 			}
 			// Verify that the certificate is valid
 			CertTools.checkValidity(certificate, new Date(timeOfUse));
 			// Verify that the cert wasn't revoked
-			CertificateStatus revinfo = getCertificateStoreSession().getStatus(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+			CertificateStatus revinfo = certificateStoreSession.getStatus(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
 			if (revinfo == null) {
 				return false;	// Certificate missing
 			} else if (revinfo.revocationReason  != RevokedCertInfo.NOT_REVOKED && revinfo.revocationDate.getTime() <= timeOfUse) {
@@ -1066,6 +1043,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	private ProtectedLogExportRow reserveExport(long atLeastThisOld) {
 		log.trace(">reserveExport");
 		ProtectedLogExportRow protectedLogExportRow = getLastSignedExport();
@@ -1132,7 +1110,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				Certificate cert = plt.getTokenCertificate();
 				int caId = CertTools.getIssuerDN(cert).hashCode();
 				try {
-					getSignSession().signData(dummy, caId, SecConst.CAKEYPURPOSE_CERTSIGN);
+					signSession.signData(dummy, caId, SecConst.CAKEYPURPOSE_CERTSIGN);
 				} catch (Exception e) {
 		        	String iMsg = intres.getLocalizedMessage("protectedlog.error.canotworking", caId);
 		        	log.error(iMsg);
@@ -1141,10 +1119,11 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 		}
 		try {
-			getProtectedLogExportData().create(0, exportEndTime, exportStartTime, null, null, null, null, false, null);
+			entityManager.persist(new ProtectedLogExportData(0, exportEndTime, exportStartTime, null, null, null, null, false, null));
+			//getProtectedLogExportData().create(0, exportEndTime, exportStartTime, null, null, null, null, false, null);
 			log.trace("<reserveExport");
 			return getLastExport();
-		} catch (CreateException e) {
+		} catch (Exception e) {
 			log.error("", e);
 			throw new EJBException(e);
 		}
@@ -1155,20 +1134,23 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	private void completeExport(ProtectedLogExportRow protectedLogExportRow, boolean success) {
 		log.trace(">completeExport");
 		try {
-			ProtectedLogExportDataLocal protectedLogExportDataLocal = getProtectedLogExportData().findByExportStartTime(protectedLogExportRow.getExportStartTime());
+			ProtectedLogExportData protectedLogExportData = ProtectedLogExportData.findByExportStartTime(entityManager, protectedLogExportRow.getExportStartTime());
+			//ProtectedLogExportDataLocal protectedLogExportDataLocal = getProtectedLogExportData().findByExportStartTime(protectedLogExportRow.getExportStartTime());
 			if (success) {
-				protectedLogExportDataLocal.setTimeOfExport(protectedLogExportRow.getTimeOfExport());
-				protectedLogExportDataLocal.setLogDataHash(protectedLogExportRow.getLogDataHash());
-				protectedLogExportDataLocal.setPreviosExportHash(protectedLogExportRow.getPreviosExportHash());
-				protectedLogExportDataLocal.setCurrentHashAlgorithm(protectedLogExportRow.getCurrentHashAlgorithm());
-				protectedLogExportDataLocal.setSignatureCertificate(protectedLogExportRow.getSignatureCertificateAsByteArray());
-				protectedLogExportDataLocal.setDeleted(protectedLogExportRow.getDeleted());
-				protectedLogExportDataLocal.setSignature(protectedLogExportRow.getSignature());
+				protectedLogExportData.setTimeOfExport(protectedLogExportRow.getTimeOfExport());
+				protectedLogExportData.setLogDataHash(protectedLogExportRow.getLogDataHash());
+				protectedLogExportData.setPreviosExportHash(protectedLogExportRow.getPreviosExportHash());
+				protectedLogExportData.setCurrentHashAlgorithm(protectedLogExportRow.getCurrentHashAlgorithm());
+				protectedLogExportData.setSignatureCertificate(protectedLogExportRow.getSignatureCertificateAsByteArray());
+				protectedLogExportData.setDeleted(protectedLogExportRow.getDeleted());
+				protectedLogExportData.setSignature(protectedLogExportRow.getSignature());
 			} else {
-				protectedLogExportDataLocal.remove();
+				entityManager.remove(protectedLogExportData);
+				//protectedLogExportDataLocal.remove();
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -1182,6 +1164,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public Collection performQuery(String sqlQuery, int maxResults) {
 		log.trace(">performQuery");
 		Connection con = null;
@@ -1196,14 +1179,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			// Execute query.
 			rs = ps.executeQuery();
 			// Assemble result.
-			ArrayList returnval = new ArrayList();
+			ArrayList<LogEntry> returnval = new ArrayList<LogEntry>();
 			while (rs.next() && returnval.size() <= maxResults) {
 				// Use pk 0
 				LogEntry data = new LogEntry(0, rs.getInt(2), rs.getString(3), rs.getInt(4), rs.getInt(5), new Date(rs.getLong(6)), rs.getString(7), 
 						rs.getString(8), rs.getInt(9), rs.getString(10));
 				// Verify each result
 				String verified = TableVerifyResult.VERIFY_FAILED_MSG;
-				int result = verifyProtectedLogEventRow(protectedLogData.findByPrimaryKey(rs.getString(1)).toProtectedLogEventRow(), true);
+				int result = verifyProtectedLogEventRow(ProtectedLogData.findById(entityManager, rs.getString(1)).toProtectedLogEventRow(), true);
 				if (result == 1) {
 					verified = TableVerifyResult.VERIFY_SUCCESS_MSG;
 				} else if (result == 0) {
@@ -1227,6 +1210,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public int verifyProtectedLogEventRow(ProtectedLogEventRow protectedLogEventRow, boolean checkVerifiedSteps) {
 		if (log.isTraceEnabled()) {
 			log.trace(">verifyProtectedLogEventRow");
@@ -1347,13 +1331,13 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 		log.trace(">verifyEntireLog");
 		ProtectedLogActions protectedLogActions = new ProtectedLogActions(actionType);
 		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
-		ArrayList newestProtectedLogEventRows =new ArrayList();	//<ProtectedLogEventRow>
-		ArrayList knownNodeGUIDs =new ArrayList();	//<Integer>
-		ArrayList processedNodeGUIDs =new ArrayList();	// <Integer>
+		ArrayList<ProtectedLogEventRow> newestProtectedLogEventRows = new ArrayList<ProtectedLogEventRow>();
+		ArrayList<Integer> knownNodeGUIDs = new ArrayList<Integer>();
+		ArrayList<Integer> processedNodeGUIDs = new ArrayList<Integer>();
 		long stopTime = 0;
 		// The time right after last chunk was exported (if it was deleted too)
 		long lastDeletingExportTime = 0;
-		ArrayList lastExportProtectedLogIdentifier = new ArrayList(); // <ProtectedLogIdentifier>
+		ArrayList<ProtectedLogEventIdentifier> lastExportProtectedLogIdentifier = new ArrayList<ProtectedLogEventIdentifier>();
 		ProtectedLogExportRow protectedLogExportRow = getLastSignedExport();
 		if (protectedLogExportRow != null && protectedLogExportRow.getDeleted()) {
 			if (!verifySignature(protectedLogExportRow.getAsByteArray(false), protectedLogExportRow.getSignature(),
@@ -1363,23 +1347,24 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			}
 			lastDeletingExportTime = protectedLogExportRow.getExportEndTime();
 			// Fetch the identifier for this/these last event
-			try {
-				Collection protectedLogDataLocals = getProtectedLogData().findProtectedLogEventsByTime(lastDeletingExportTime);
-				Iterator i = protectedLogDataLocals.iterator();
+			//try {
+				Collection<ProtectedLogData> protectedLogDatas = ProtectedLogData.findProtectedLogEventsByTime(entityManager, lastDeletingExportTime);
+				//Collection protectedLogDataLocals = getProtectedLogData().findProtectedLogEventsByTime(lastDeletingExportTime);
+				Iterator<ProtectedLogData> i = protectedLogDatas.iterator();
 				while (i.hasNext()) {
-					ProtectedLogDataLocal protectedLogDataLocal = (ProtectedLogDataLocal) i.next();
-					if (verifyProtectedLogEventRow(protectedLogDataLocal.toProtectedLogEventRow(), false) == 1) {
-						lastExportProtectedLogIdentifier.add(new ProtectedLogEventIdentifier(protectedLogDataLocal.getNodeGUID(), protectedLogDataLocal.getCounter()));
+					ProtectedLogData protectedLogData = i.next();
+					if (verifyProtectedLogEventRow(protectedLogData.toProtectedLogEventRow(), false) == 1) {
+						lastExportProtectedLogIdentifier.add(new ProtectedLogEventIdentifier(protectedLogData.getNodeGUID(), protectedLogData.getCounter()));
 					}
 					if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
 			        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 						return null;
 					}
 				}
-			} catch (FinderException e) {
+			/*} catch (FinderException e) {
 				log.error("", e);
 				throw new EJBException(e);
-			}
+			}*/
 		}
 		// Find newest protected LogEventRow.
 		ProtectedLogEventIdentifier newestProtectedLogEventIdentifier = findNewestProtectedLogEventRow();
@@ -1542,13 +1527,13 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 						}
 						ProtectedLogEventRow toRemove = null;
 						boolean knownNodeGUID = false;
-						Iterator iterator2 = newestProtectedLogEventRows.iterator();
+						Iterator<ProtectedLogEventRow> iterator2 = newestProtectedLogEventRows.iterator();
 						while (iterator2.hasNext()) {
 							if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
 					        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 								return null;
 							}
-							ProtectedLogEventRow j = (ProtectedLogEventRow) iterator2.next();
+							ProtectedLogEventRow j = iterator2.next();
 							if (j.getEventIdentifier().getNodeGUID() == currentProtectedLogEventRow.getEventIdentifier().getNodeGUID()
 									&& j.getEventTime() < currentProtectedLogEventRow.getEventTime()) {
 								toRemove = j;
@@ -1621,6 +1606,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public IProtectedLogToken getProtectedLogToken() {
 		log.trace(">getProtectedLogToken");
 		IProtectedLogToken protectedLogToken = null;
@@ -1633,7 +1619,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			Certificate protectedLogTokenCertificate = null;
 			if (protectionTokenReferenceType == ProtectedLogConfiguration.TOKENREFTYPE_CANAME) {
 				// Use a CA as token
-				CAInfo caInfo = getCAAdminSession().getCAInfo(internalAdmin, protectionTokenReference);
+				CAInfo caInfo = caAdminSession.getCAInfo(internalAdmin, protectionTokenReference);
 				if (caInfo == null) {
 					// Revert to the "none" token.
 		        	log.error(intres.getLocalizedMessage("protectedlog.error.reverttonone"));
@@ -1695,6 +1681,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public boolean signAllUnsignedChains(boolean signAll) {
 		log.trace(">signAllUnsignedChains: "+signAll);
 		// Find last unsigned event for all nodes, sorted by time, oldest first
@@ -1725,15 +1712,15 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 			log.info("Could not find any signed log-events. Is there any? Is a token in use?");
 			return false;
 		}
-		List unsignedNodeGUIDs = Arrays.asList(nodeGUIDs);
+		List<Integer> unsignedNodeGUIDs = Arrays.asList(nodeGUIDs);
 		if (log.isDebugEnabled()) {
 			if (unsignedNodeGUIDs.isEmpty()) {
 				log.debug("No unsigned node GUIDs found.");
 			}
 		}
-		Iterator i = unsignedNodeGUIDs.iterator();
+		Iterator<Integer> i = unsignedNodeGUIDs.iterator();
 		while (i.hasNext()) {
-			Integer nodeGUID = (Integer) i.next();
+			Integer nodeGUID = i.next();
 			if (!signUnsignedChain( newestProtectedLogEventRow, nodeGUID)) {
 				return false;
 			}
@@ -1750,6 +1737,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public boolean signUnsignedChainUsingSingleSignerNode(Integer nodeGUID) {
 		return signUnsignedChain(null, nodeGUID);
 	}
@@ -1762,6 +1750,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public boolean signUnsignedChain(ProtectedLogEventRow newestProtectedLogEventRow, Integer nodeGUID) {
 		if (log.isDebugEnabled()) {
 			log.debug("Unsigned node GUID: "+nodeGUID);
@@ -1817,6 +1806,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public boolean resetEntireLog(boolean export) {
 		log.trace(">resetEntireLog");
 		// Start by disabling services
@@ -1891,11 +1881,11 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					// if not CA-cert get the issuers cert
 					int caId = CertTools.getSubjectDN(certificate).hashCode();
 					//int caId = CertTools.getSubjectDN(certificate).hashCode();
-					CAInfo caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
+					CAInfo caInfo = caAdminSession.getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 					if (caInfo == null) {
 						caId = CertTools.getIssuerDN(certificate).hashCode();
 						//int caId = CertTools.getIssuerDN(certificate).hashCode();
-						caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
+						caInfo = caAdminSession.getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 						if (caInfo == null) {
 					    	log.error(intres.getLocalizedMessage("protectedlog.error.noexportca"));
 							protectedLogExportHandler.abort();
@@ -1906,7 +1896,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 					}
 					ProtectedLogExportRow newProtectedLogExportRow = new ProtectedLogExportRow(timeOfExport, exportEndTime, exportStartTime, exportedHash,
 							lastExportedHash, currentHashAlgorithm, certificate, deleteAfterExport, null);
-					byte[] signature = getSignSession().signData(newProtectedLogExportRow.getAsByteArray(false), caId, SecConst.CAKEYPURPOSE_CERTSIGN);
+					byte[] signature = signSession.signData(newProtectedLogExportRow.getAsByteArray(false), caId, SecConst.CAKEYPURPOSE_CERTSIGN);
 					newProtectedLogExportRow.setSignature(signature);
 					// Send to export interface
 					if (!protectedLogExportHandler.done(currentHashAlgorithm, exportedHash, lastExportedHash)) {
@@ -1950,15 +1940,15 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public boolean stopServices() {
 		// Disable services first.
-		ServiceConfiguration serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
+		ServiceConfiguration serviceConfiguration = serviceSession.getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
 		if (serviceConfiguration != null) {
 			serviceConfiguration.setActive(false);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
+			serviceSession.changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
 		}
-		serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
+		serviceConfiguration = serviceSession.getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
 		if (serviceConfiguration != null) {
 			serviceConfiguration.setActive(false);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
+			serviceSession.changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
 		}
 		// Wait for already running instances of the services to stop. Time-out after x minutes.
 		ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
@@ -1992,15 +1982,15 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 */
 	public void startServices() {
 		// Enable services again
-		ServiceConfiguration serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
+		ServiceConfiguration serviceConfiguration = serviceSession.getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
 		if (serviceConfiguration != null) {
 			serviceConfiguration.setActive(true);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
+			serviceSession.changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
 		}
-		serviceConfiguration = getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
+		serviceConfiguration = serviceSession.getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
 		if (serviceConfiguration != null) {
 			serviceConfiguration.setActive(true);
-			getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
+			serviceSession.changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
 		}
 	}
 
@@ -2009,6 +1999,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="NotSupported"
 	 */
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public boolean exportLog(IProtectedLogExportHandler protectedLogExportHandler,
 			int actionType, String currentHashAlgorithm, boolean deleteAfterExport, long atLeastThisOld) {
 		log.trace(">exportLog");
@@ -2083,10 +2074,10 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				int issuingCAId = CertTools.getIssuerDN(certificate).hashCode();
 				if (caInfo == null || (caInfo.getCAId() != caId && caInfo.getCAId() != issuingCAId)) {
 					// Cache CAInfo locally
-					caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);	
+					caInfo = caAdminSession.getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);	
 					if (caInfo == null) {
 						caId = issuingCAId;
-						caInfo = getCAAdminSession().getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
+						caInfo = caAdminSession.getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 						if (caInfo == null) {
 					    	log.error(intres.getLocalizedMessage("protectedlog.error.noexportcacert"));
 							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_INVALID_TOKEN);
@@ -2099,7 +2090,7 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 				}
 				ProtectedLogExportRow newProtectedLogExportRow = new ProtectedLogExportRow(timeOfExport, exportEndTime, exportStartTime, exportedHash,
 						lastExportedHash, currentHashAlgorithm, certificate, deleteAfterExport, null);
-				byte[] signature = getSignSession().signData(newProtectedLogExportRow.getAsByteArray(false), caId, SecConst.CAKEYPURPOSE_CERTSIGN);
+				byte[] signature = signSession.signData(newProtectedLogExportRow.getAsByteArray(false), caId, SecConst.CAKEYPURPOSE_CERTSIGN);
 				newProtectedLogExportRow.setSignature(signature);
 				// Send to interface
 				if (!protectedLogExportHandler.done(currentHashAlgorithm, exportedHash, lastExportedHash)) {
@@ -2140,13 +2131,14 @@ public class ProtectedLogSessionBean extends BaseSessionBean {
 	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean existsAnyProtectedLogEventByTime(long time) {
-		try {
+		return !ProtectedLogData.findProtectedLogEventsByTime(entityManager, time).isEmpty();
+		/*try {
 			Collection protectedLogDataLocals = getProtectedLogData().findProtectedLogEventsByTime(time);
 			Iterator i = protectedLogDataLocals.iterator();
 			return i.hasNext();
 		} catch (FinderException e) {
 		}
-		return false;
+		return false;*/
 	}
 
 }

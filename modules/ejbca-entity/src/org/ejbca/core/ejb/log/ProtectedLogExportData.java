@@ -21,6 +21,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -200,16 +202,27 @@ public class ProtectedLogExportData implements Serializable {
 	// Search functions. 
 	//
 
+    /** @return the found entity instance or null if the entity does not exist */
 	public static ProtectedLogExportData findByPk(EntityManager entityManager, String pk) {
 		return entityManager.find(ProtectedLogExportData.class,  pk);
 	}
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
 	public static ProtectedLogExportData findByExportStartTime(EntityManager entityManager, long exportStartTime) {
-		Query query = entityManager.createQuery("from ProtectedLogExportData a WHERE a.exportStartTime=:exportStartTime");
-		query.setParameter("exportStartTime", exportStartTime);
-		return (ProtectedLogExportData) query.getSingleResult();
+		ProtectedLogExportData ret = null;
+		try {
+			Query query = entityManager.createQuery("from ProtectedLogExportData a WHERE a.exportStartTime=:exportStartTime");
+			query.setParameter("exportStartTime", exportStartTime);
+			ret = (ProtectedLogExportData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
 	}    
 
+	/** @return return the query results as a List. */
 	public static Collection<ProtectedLogExportData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("from ProtectedLogExportData a");
 		return query.getResultList();
