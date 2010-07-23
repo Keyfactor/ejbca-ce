@@ -25,14 +25,14 @@ import java.util.Random;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -124,38 +124,15 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    /**
-     * The local home interface of publisher entity bean.
-     */
-    private PublisherDataLocalHome publisherhome = null;
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
 
-    /**
-     * The local interface of authorization session bean
-     */
     @EJB
     private AuthorizationSessionLocal authorizationsession;
-
-    /**
-     * Local interface to the publisher queue, that handles failed publishings.
-     */
     @EJB
     private PublisherQueueSessionLocal pubqueuesession;
-
-    /**
-     * The remote interface of log session bean
-     */
     @EJB
     private LogSessionLocal logsession;
-
-    /**
-     * Default create for SessionBean without any creation Arguments.
-     * 
-     * @throws CreateException
-     *             if bean instance can't be created
-     */
-    public void ejbCreate() throws CreateException {
-        publisherhome = (PublisherDataLocalHome) ServiceLocator.getInstance().getLocalHome(PublisherDataLocalHome.COMP_NAME);
-    }
 
     /**
      * Stores the certificate to the given collection of publishers. See
@@ -215,13 +192,13 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection publisherids, Certificate cert, String username,
             String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
             long lastUpdate, ExtendedInformation extendedinformation) {
-        Iterator iter = publisherids.iterator();
+        Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
             int publishStatus = PublisherQueueData.STATUS_PENDING;
-            Integer id = (Integer) iter.next();
-            try {
-                PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
+            Integer id = iter.next();
+            PublisherData pdl = PublisherData.findById(entityManager, id);
+            if (pdl != null) {
                 String fingerprint = CertTools.getFingerprintAsString(cert);
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
@@ -263,7 +240,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
                         logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, e);
                     }
                 }
-            } catch (FinderException fe) {
+            } else {
                 String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
                 logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), null, cert, logErrorEvent, msg);
                 returnval = false;
@@ -284,13 +261,13 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      */
     public boolean storeCRL(Admin admin, Collection publisherids, byte[] incrl, String cafp, String userDN) {
         log.trace(">storeCRL");
-        Iterator iter = publisherids.iterator();
+        Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
             int publishStatus = PublisherQueueData.STATUS_PENDING;
-            Integer id = (Integer) iter.next();
-            try {
-                PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
+            Integer id = iter.next();
+            PublisherData pdl = PublisherData.findById(entityManager, id);
+            if (pdl != null) {
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
                     try {
@@ -329,7 +306,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
                                 msg, e);
                     }
                 }
-            } catch (FinderException fe) {
+            } else {
                 String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
                 logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
                 returnval = false;
@@ -351,8 +328,8 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + publisherid + ")");
         }
-        try {
-            PublisherDataLocal pdl = publisherhome.findByPrimaryKey(new Integer(publisherid));
+        PublisherData pdl = PublisherData.findById(entityManager, publisherid);
+        if (pdl != null) {
             String name = pdl.getName();
             try {
                 getPublisher(pdl).testConnection(admin);
@@ -364,7 +341,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
                         pe);
                 throw new PublisherConnectionException(pe.getMessage());
             }
-        } catch (FinderException fe) {
+        } else {
             String msg = intres.getLocalizedMessage("publisher.nopublisher", new Integer(publisherid));
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
 
@@ -383,23 +360,19 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      *             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-
     public void addPublisher(Admin admin, String name, BasePublisher publisher) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ")");
         }
         addPublisher(admin, findFreePublisherId().intValue(), name, publisher);
         log.trace("<addPublisher()");
-    } // addPublisher
+    }
 
     /**
      * Adds a publisher to the database. Used for importing and exporting
      * profiles from xml-files.
      * 
-     * @throws PublisherExistsException
-     *             if publisher already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
+     * @throws PublisherExistsException if publisher already exists.
      * @ejb.interface-method view-type="both"
      */
     public void addPublisher(Admin admin, int id, String name, BasePublisher publisher) throws PublisherExistsException {
@@ -407,18 +380,14 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             log.trace(">addPublisher(name: " + name + ", id: " + id + ")");
         }
         boolean success = false;
-        try {
-            publisherhome.findByName(name);
-        } catch (FinderException e) {
-            try {
-                publisherhome.findByPrimaryKey(new Integer(id));
-            } catch (FinderException f) {
+        if (PublisherData.findByName(entityManager, name) == null) {
+            if (PublisherData.findById(entityManager, id) == null) {
                 try {
-                    publisherhome.create(new Integer(id), name, publisher);
+                	entityManager.persist(new PublisherData(new Integer(id), name, publisher));
                     success = true;
-                } catch (CreateException g) {
+                } catch (Exception e) {
                     String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
-                    log.error(msg, g);
+                    log.error(msg, e);
                 }
             }
         }
@@ -428,51 +397,38 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         } else {
             String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
-        }
-        if (!success) {
             throw new PublisherExistsException();
         }
         log.trace("<addPublisher()");
-    } // addPublisher
+    }
 
     /**
      * Updates publisher data
      * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-
     public void changePublisher(Admin admin, String name, BasePublisher publisher) {
         if (log.isTraceEnabled()) {
             log.trace(">changePublisher(name: " + name + ")");
         }
-        boolean success = false;
-        try {
-            PublisherDataLocal htp = publisherhome.findByName(name);
+        PublisherData htp = PublisherData.findByName(entityManager, name);
+        if (htp != null) {
             htp.setPublisher(publisher);
-            success = true;
-        } catch (FinderException e) {
-        }
-
-        if (success) {
             String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
         }
-
         log.trace("<changePublisher()");
-    } // changePublisher
+    }
 
     /**
      * Adds a publisher with the same content as the original.
      * 
      * @throws PublisherExistsException
      *             if publisher already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
+     * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
     public void clonePublisher(Admin admin, String oldname, String newname) {
@@ -481,7 +437,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         }
         BasePublisher publisherdata = null;
         try {
-            PublisherDataLocal htp = publisherhome.findByName(oldname);
+        	PublisherData htp = PublisherData.findByName(entityManager, oldname);
+        	if (htp == null) {
+        		throw new Exception("Could not find publisher " + oldname);
+        	}
             publisherdata = (BasePublisher) getPublisher(htp).clone();
             try {
                 addPublisher(admin, newname, publisherdata);
@@ -495,16 +454,14 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("publisher.errorclonepublisher", newname, oldname);
             log.error(msg, e);
-            throw new EJBException(e);
+            throw new EJBException(e);	// TODO: This might be a bit too much...
         }
         log.trace("<clonePublisher()");
-    } // clonePublisher
+    }
 
     /**
      * Removes a publisher from the database.
      * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
     public void removePublisher(Admin admin, String name) {
@@ -512,8 +469,8 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             log.trace(">removePublisher(name: " + name + ")");
         }
         try {
-            PublisherDataLocal htp = publisherhome.findByName(name);
-            htp.remove();
+            PublisherData htp = PublisherData.findByName(entityManager, name);
+            entityManager.remove(htp);
             String msg = intres.getLocalizedMessage("publisher.removedpublisher", name);
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
         } catch (Exception e) {
@@ -521,7 +478,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, e);
         }
         log.trace("<removePublisher()");
-    } // removePublisher
+    }
 
     /**
      * Renames a publisher
@@ -537,29 +494,23 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             log.trace(">renamePublisher(from " + oldname + " to " + newname + ")");
         }
         boolean success = false;
-        try {
-            publisherhome.findByName(newname);
-        } catch (FinderException e) {
-            try {
-                PublisherDataLocal htp = publisherhome.findByName(oldname);
+        if (PublisherData.findByName(entityManager, newname) == null) {
+        	PublisherData htp = PublisherData.findByName(entityManager, oldname);
+        	if (htp != null) {
                 htp.setName(newname);
                 success = true;
-            } catch (FinderException g) {
             }
         }
-
         if (success) {
             String msg = intres.getLocalizedMessage("publisher.renamedpublisher", oldname, newname);
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldname, newname);
             logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
-        }
-        if (!success) {
             throw new PublisherExistsException();
         }
         log.trace("<renamePublisher()");
-    } // renameHardTokenProfile
+    }
 
     /**
      * Retrives a Collection of id:s (Integer) for all authorized publishers if
@@ -576,17 +527,11 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      * @ejb.interface-method view-type="both"
      */
     public Collection getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
-        HashSet returnval = new HashSet();
-        try {
-            authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
-            Collection allPublishers = this.publisherhome.findAll();
-            Iterator i = allPublishers.iterator();
-            while (i.hasNext()) {
-                PublisherDataLocal next = (PublisherDataLocal) i.next();
-                returnval.add(next.getId());
-            }
-        } catch (FinderException fe) {
-            log.error("FinderException looking for all publishers: ", fe);
+        HashSet<Integer> returnval = new HashSet<Integer>();
+        authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
+        while (i.hasNext()) {
+        	returnval.add(i.next().getId());
         }
         return returnval;
     }
@@ -600,20 +545,14 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap getPublisherIdToNameMap(Admin admin) {
-        HashMap returnval = new HashMap();
-        Collection result = null;
-
-        try {
-            result = publisherhome.findAll();
-            Iterator i = result.iterator();
-            while (i.hasNext()) {
-                PublisherDataLocal next = (PublisherDataLocal) i.next();
-                returnval.put(next.getId(), next.getName());
-            }
-        } catch (FinderException e) {
+        HashMap<Integer,String> returnval = new HashMap<Integer,String>();
+        Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
+        while (i.hasNext()) {
+        	PublisherData next = i.next();
+        	returnval.put(next.getId(), next.getName());
         }
         return returnval;
-    } // getPublisherIdToNameMap
+    }
 
     /**
      * Retrives a named publisher.
@@ -627,14 +566,12 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public BasePublisher getPublisher(Admin admin, String name) {
         BasePublisher returnval = null;
-
-        try {
-            returnval = getPublisher(publisherhome.findByName(name));
-        } catch (FinderException e) {
-            // return null if we cant find it
+        PublisherData pd = PublisherData.findByName(entityManager, name);
+        if (pd != null) {
+        	returnval = getPublisher(pd);
         }
         return returnval;
-    } // getPublisher
+    }
 
     /**
      * Finds a publisher by id.
@@ -648,14 +585,12 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public BasePublisher getPublisher(Admin admin, int id) {
         BasePublisher returnval = null;
-
-        try {
-            returnval = getPublisher(publisherhome.findByPrimaryKey(new Integer(id)));
-        } catch (FinderException e) {
-            // return null if we cant find it
+        PublisherData pd = PublisherData.findById(entityManager, id);
+        if (pd != null) {
+        	returnval = getPublisher(pd);
         }
         return returnval;
-    } // getPublisher
+    }
 
     /**
      * Help method used by publisher proxys to indicate if it is time to update
@@ -667,12 +602,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getPublisherUpdateCount(Admin admin, int publisherid) {
         int returnval = 0;
-
-        try {
-            returnval = (publisherhome.findByPrimaryKey(new Integer(publisherid))).getUpdateCounter();
-        } catch (FinderException e) {
+        PublisherData pd = PublisherData.findById(entityManager, publisherid);
+        if (pd != null) {
+        	returnval = pd.getUpdateCounter();
         }
-
         return returnval;
     }
 
@@ -686,22 +619,17 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getPublisherId(Admin admin, String name) {
         int returnval = 0;
-
-        try {
-            Integer id = (publisherhome.findByName(name)).getId();
-            returnval = id.intValue();
-        } catch (FinderException e) {
+        PublisherData pd = PublisherData.findByName(entityManager, name);
+        if (pd != null) {
+        	returnval = pd.getId();
         }
-
         return returnval;
-    } // getPublisherId
+    }
 
     /**
      * Returns a publishers name given its id.
      * 
-     * @return the name or null if id doesnt exists
-     * @throws EJBException
-     *             if a communication or other error occurs.
+     * @return the name or null if id doesn't exists
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
@@ -711,17 +639,13 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             log.trace(">getPublisherName(id: " + id + ")");
         }
         String returnval = null;
-        PublisherDataLocal htp = null;
-        try {
-            htp = publisherhome.findByPrimaryKey(new Integer(id));
-            if (htp != null) {
-                returnval = htp.getName();
-            }
-        } catch (FinderException e) {
+        PublisherData pd = PublisherData.findById(entityManager, id);
+        if (pd != null) {
+        	returnval = pd.getName();
         }
         log.trace("<getPublisherName()");
         return returnval;
-    } // getPublisherName
+    }
 
     /**
      * Use from Healtcheck only! Test connection for all publishers. No
@@ -736,51 +660,43 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         log.trace(">testAllPublishers");
         String returnval = "";
         Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-        try {
-            Collection allPublishers = this.publisherhome.findAll();
-            ;
-            Iterator i = allPublishers.iterator();
-            while (i.hasNext()) {
-                PublisherDataLocal pdl = (PublisherDataLocal) i.next();
-                String name = pdl.getName();
-                try {
-                    getPublisher(pdl).testConnection(admin);
-                } catch (PublisherConnectionException pe) {
-                    String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);
-                    logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA,
-                            msg, pe);
-                    returnval += "\n" + msg;
-                }
-            }
-        } catch (FinderException e) {
-            returnval += "Could not access publishers.";
+        Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
+        while (i.hasNext()) {
+        	PublisherData pdl = i.next();
+        	String name = pdl.getName();
+        	try {
+        		getPublisher(pdl).testConnection(admin);
+        	} catch (PublisherConnectionException pe) {
+        		String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);
+        		logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA,
+        				msg, pe);
+        		returnval += "\n" + msg;
+        	}
         }
         log.trace("<testAllPublishers");
         return returnval;
     }
 
     private Integer findFreePublisherId() {
-        Random ran = (new Random((new Date()).getTime()));
-        int id = ran.nextInt();
-        boolean foundfree = false;
-
-        while (!foundfree) {
-            try {
-                if (id > 1) {
-                    publisherhome.findByPrimaryKey(new Integer(id));
-                }
-                id = ran.nextInt();
-            } catch (FinderException e) {
-                foundfree = true;
-            }
-        }
-        return new Integer(id);
-    } // findFreePublisherId
+    	Random ran = (new Random((new Date()).getTime()));
+    	int id = ran.nextInt();
+    	boolean foundfree = false;
+    	while (!foundfree) {
+    		if (id > 1) {
+    			PublisherData pd = PublisherData.findById(entityManager, id);
+    			if (pd == null) {
+    				foundfree = true;
+    			}
+    		}
+    		id = ran.nextInt();
+    	}
+    	return new Integer(id);
+    }
 
     /**
      * Method that returns the publisher data and updates it if necessary.
      */
-    private BasePublisher getPublisher(PublisherDataLocal pData) {
+    private BasePublisher getPublisher(PublisherData pData) {
         BasePublisher publisher = pData.getCachedPublisher();
         if (publisher == null) {
             java.beans.XMLDecoder decoder;
@@ -815,5 +731,4 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         }
         return publisher;
     }
-
-} // LocalPublisherSessionBean
+}
