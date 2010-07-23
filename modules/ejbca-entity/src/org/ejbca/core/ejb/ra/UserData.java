@@ -25,6 +25,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -321,7 +323,7 @@ public class UserData implements Serializable {
     /**
      * Non-searchable information about a user.
      */
-    public void setExtendedInformation(ExtendedInformation extendedinformation) throws UnsupportedEncodingException {
+    public void setExtendedInformation(ExtendedInformation extendedinformation) {
 		try {
 	    	String eidata = UserDataVO.extendedInformationToStringData(extendedinformation);
 			setExtendedInformationData(eidata);
@@ -358,35 +360,57 @@ public class UserData implements Serializable {
     // Search functions. 
     //
 
+	/** @return the found entity instance or null if the entity does not exist */
     public static UserData findByUsername(EntityManager entityManager, String username) {
     	return entityManager.find(UserData.class,  username);
     }
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
     public static UserData findBySubjectDNAndCAId(EntityManager entityManager, String subjectDN, int caId) {
-    	Query query = entityManager.createQuery("from UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
-    	query.setParameter("subjectDN", subjectDN);
-    	query.setParameter("caId", caId);
-    	return (UserData) query.getSingleResult();
+    	UserData ret = null;
+    	try {
+    		Query query = entityManager.createQuery("from UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
+    		query.setParameter("subjectDN", subjectDN);
+    		query.setParameter("caId", caId);
+    		ret = (UserData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
     }    
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
     public static UserData findBySubjectDN(EntityManager entityManager, String subjectDN) {
-    	Query query = entityManager.createQuery("from UserData a WHERE a.subjectDN=:subjectDN");
-    	query.setParameter("subjectDN", subjectDN);
-    	return (UserData) query.getSingleResult();
+    	UserData ret = null;
+    	try {
+    		Query query = entityManager.createQuery("from UserData a WHERE a.subjectDN=:subjectDN");
+    		query.setParameter("subjectDN", subjectDN);
+    		ret = (UserData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
     }
 
+	/** @return return the query results as a List. */
     public static List<UserData> findBySubjectEmail(EntityManager entityManager, String subjectEmail) {
     	Query query = entityManager.createQuery("from UserData a WHERE a.subjectEmail=:subjectEmail");
     	query.setParameter("subjectEmail", subjectEmail);
     	return query.getResultList();
     }
 
+	/** @return return the query results as a List. */
     public static List<UserData> findByStatus(EntityManager entityManager, int status) {
     	Query query = entityManager.createQuery("from UserData a WHERE a.status=:status");
     	query.setParameter("status", status);
     	return query.getResultList();
     }
 
+	/** @return return the query results as a List. */
     public static List<UserData> findAll(EntityManager entityManager) {
     	Query query = entityManager.createQuery("from UserData a");
     	return query.getResultList();

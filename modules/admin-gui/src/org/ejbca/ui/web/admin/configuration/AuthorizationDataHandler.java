@@ -16,8 +16,8 @@ package org.ejbca.ui.web.admin.configuration;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -34,17 +34,20 @@ import org.ejbca.core.model.log.Admin;
  */
 public class AuthorizationDataHandler implements java.io.Serializable {
 	
-	private ICAAdminSessionLocal caAdminSession;
+	private CAAdminSessionLocal caAdminSession;
+    private AuthorizationSessionLocal authorizationsession;
+    private Admin administrator;    
+    private Collection authorizedadmingroups;
+    private InformationMemory informationmemory;
 
     /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caAdminSession) {       
+    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, AuthorizationSessionLocal authorizationsession, CAAdminSessionLocal caAdminSession) {       
        this.authorizationsession = authorizationsession;
        this.caAdminSession = caAdminSession;
-              
        this.administrator = administrator;
        this.informationmemory = informationmemory;
    }
-    // Public methods.
+
     /**
      * Method to check if a admin is authorized to a resource
      *
@@ -216,13 +219,4 @@ public class AuthorizationDataHandler implements java.io.Serializable {
         }
       }
     }
-   
-
-
-
-    // Private fields
-    private IAuthorizationSessionLocal  authorizationsession;
-    private Admin                       administrator;    
-    private Collection                  authorizedadmingroups;
-    private InformationMemory           informationmemory;
 }

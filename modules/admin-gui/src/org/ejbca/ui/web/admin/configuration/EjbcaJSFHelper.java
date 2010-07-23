@@ -2,8 +2,7 @@ package org.ejbca.ui.web.admin.configuration;
 
 import java.util.Map;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
+import javax.ejb.EJB;
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
@@ -12,27 +11,16 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
-import org.ejbca.core.ejb.services.IServiceSessionLocal;
-import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-
-
-
 
 /**
  * Class used to integrate the old jsp framework with the new JSF one.
@@ -41,8 +29,7 @@ import org.ejbca.core.model.log.Admin;
  * @author Philip Vendil
  * $Id$
  */
-
-public class EjbcaJSFHelper  {
+public class EjbcaJSFHelper {
 	private static final Logger log = Logger.getLogger(EjbcaJSFHelper.class);
 		
 	private EjbcaJSFLanguageResource text = null;
@@ -51,14 +38,20 @@ public class EjbcaJSFHelper  {
 	
 	private boolean initialized = false;
 	
-
-	private IRaAdminSessionLocal raadminsession;
-	private ICAAdminSessionLocal caadminsession;
-	private IApprovalSessionLocal approvalsession;
-	private IServiceSessionLocal servicesession;
-	private IUserDataSourceSessionLocal userdatasourcesession;
-	private IPublisherSessionLocal publishersession;
-	private IAuthorizationSessionLocal authorizationsession;
+	@EJB
+	private RaAdminSessionLocal raAdminSession;
+	@EJB
+	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private ApprovalSessionLocal approvalSession;
+	@EJB
+	private ServiceSessionLocal serviceSession;
+	@EJB
+	private UserDataSourceSessionLocal userDataSourceSession;
+	@EJB
+	private PublisherSessionLocal publisherSession;
+	@EJB
+	private AuthorizationSessionLocal authorizationSession;
 	
 	public EjbcaJSFHelper(){}
 	
@@ -186,96 +179,32 @@ public class EjbcaJSFHelper  {
     	return (EjbcaJSFHelper) value;
     }
     
-    public IRaAdminSessionLocal getRaAdminSession(){
-    	if(raadminsession == null){ 
-    		ServiceLocator locator = ServiceLocator.getInstance();
-    		IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-    		try {
-    			raadminsession = raadminsessionhome.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}
-    	}
-
-    	return raadminsession;
+    public RaAdminSessionLocal getRaAdminSession(){
+    	return raAdminSession;
     }
 
-    public ICAAdminSessionLocal getCAAdminSession(){
-    	if(caadminsession == null){ 
-    		ServiceLocator locator = ServiceLocator.getInstance();
-    		ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-    		try {
-    			caadminsession = caadminsessionhome.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}
-    	}
-    	return caadminsession;
+    public CAAdminSessionLocal getCAAdminSession(){
+    	return caAdminSession;
     }
     
-    public IApprovalSessionLocal getApprovalSession(){
-    	if(approvalsession == null){ 
-    		ServiceLocator locator = ServiceLocator.getInstance();
-    		IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) locator.getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
-    		try {
-    			approvalsession = approvalsessionhome.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}
-    	}
-    	return approvalsession;
+    public ApprovalSessionLocal getApprovalSession(){
+    	return approvalSession;
     }    
 	
     
-    public IServiceSessionLocal getServiceSession(){
-    	if(servicesession == null){ 
-    		ServiceLocator locator = ServiceLocator.getInstance();
-    		IServiceSessionLocalHome servicesessionhome = (IServiceSessionLocalHome) locator.getLocalHome(IServiceSessionLocalHome.COMP_NAME);
-    		try {
-    			servicesession = servicesessionhome.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}
-    	}
-    	return servicesession;
+    public ServiceSessionLocal getServiceSession(){
+    	return serviceSession;
     }
     
-    public IUserDataSourceSessionLocal getUserDataSourceSession(){
-		if(userdatasourcesession  == null){ 
-    		ServiceLocator locator = ServiceLocator.getInstance();
-    		IUserDataSourceSessionLocalHome userdatasourcesessionhome = (IUserDataSourceSessionLocalHome) locator.getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
-    		try {
-    			userdatasourcesession = userdatasourcesessionhome.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}
-    	}
-    	return userdatasourcesession;
+    public UserDataSourceSessionLocal getUserDataSourceSession(){
+    	return userDataSourceSession;
     }
 
-    public IPublisherSessionLocal getPublisherSession(){
-		if(publishersession  == null){ 
-    		ServiceLocator locator = ServiceLocator.getInstance();
-    		IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
-    		try {
-    			publishersession = publishersessionhome.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}
-    	}
-    	return publishersession;
+    public PublisherSessionLocal getPublisherSession(){
+    	return publisherSession;
     }
 
-    public IAuthorizationSessionLocal getAuthorizationSession(){
-		if(authorizationsession  == null){ 
-    		ServiceLocator locator = ServiceLocator.getInstance();
-    		IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-    		try {
-    			authorizationsession = authorizationsessionhome.create();
-    		} catch (CreateException e) {
-    			throw new EJBException(e);
-    		}
-    	}
-    	return authorizationsession;
+    public AuthorizationSessionLocal getAuthorizationSession(){
+    	return authorizationSession;
     }
 }

@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
@@ -26,6 +27,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -33,24 +35,15 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -68,7 +61,7 @@ import org.ejbca.util.keystore.KeyTools;
  * @author  Philip Vendil
  * @version $Id$
  */
-public class EjbcaWebBean implements java.io.Serializable {
+public class EjbcaWebBean implements Serializable {
 
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);
 
@@ -90,10 +83,25 @@ public class EjbcaWebBean implements java.io.Serializable {
                                                              "/ra_functionality/view_hardtoken","/ca_functionality/view_certificate",
                                                              "/ra_functionality/keyrecovery"};
 
-    // Private Fields.
-    private ILogSessionLocal               logsession;
-    private ICertificateStoreSessionLocal  certificateStoreSession;
-    private IUserAdminSessionLocal         userAdminSession; 
+    @EJB
+    private LogSessionLocal logSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+	private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private UserAdminSessionLocal userAdminSession;
+    @EJB
+    private RaAdminSessionLocal raAdminSession;
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private HardTokenSessionLocal hardTokenSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
+    private UserDataSourceSessionLocal userDataSourceSession;
+
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;
     private GlobalConfiguration            globalconfiguration;
@@ -111,47 +119,15 @@ public class EjbcaWebBean implements java.io.Serializable {
     private Boolean[]                      raauthorized;
     private Admin                          administrator;
     private String                         requestServerName;
-	private ICAAdminSessionLocal           caadminsession;
-    
-
-    
 
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() {
-      initialized=false;
-      raauthorized = new Boolean[AUTHORIZED_FIELD_LENGTH];
+    	initialized = false;
+    	raauthorized = new Boolean[AUTHORIZED_FIELD_LENGTH];
     }
-
 
     private void commonInit() throws Exception {
         ServiceLocator locator = ServiceLocator.getInstance();
-
-    	IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-    	IRaAdminSessionLocal raadminsession = raadminsessionhome.create();
-
-    	IUserAdminSessionLocalHome useradminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-    	userAdminSession = useradminsessionhome.create();
-
-    	ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) locator.getLocalHome(ILogSessionLocalHome.COMP_NAME);
-    	logsession = logsessionhome.create();
-
-    	ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-    	caadminsession = caadminsessionhome.create();
-
-    	ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-    	certificateStoreSession = certificatestoresessionhome.create();
-
-    	IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-    	IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
-
-    	IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-    	IHardTokenSessionLocal hardtokensession = hardtokensessionhome.create();
-
-        IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
-    	IPublisherSessionLocal publishersession = publishersessionhome.create();
-    	
-        IUserDataSourceSessionLocalHome userdatasourcesessionhome = (IUserDataSourceSessionLocalHome) locator.getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
-    	IUserDataSourceSessionLocal userdatasourcesession = userdatasourcesessionhome.create();
 
     	if ((administrator == null) && (certificates == null)) {
     		throw new AuthenticationFailedException("Client certificate required.");
@@ -159,13 +135,13 @@ public class EjbcaWebBean implements java.io.Serializable {
     		administrator = userAdminSession.getAdmin(certificates[0]);    		
     	} // else we have already defined an administrator, for example in initialize_errorpage
 
-    	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
+    	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raAdminSession, authorizationSession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
-    		informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, certificateStoreSession, hardtokensession,
-    				publishersession, userdatasourcesession, globalconfiguration);
+    		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, authorizationSession, certificateStoreSession, hardTokenSession,
+    				publisherSession, userDataSourceSession, globalconfiguration);
     	}
-    	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession, caadminsession);
+    	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationSession, caAdminSession);
     	
     }
     /* Sets the current user and returns the global configuration */
@@ -195,7 +171,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     		userdn = CertTools.getSubjectDN(certificates[0]);
     		log.debug("Verifying authorization of '"+userdn);    		
     		userAdminSession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));        
-    		logsession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
+    		logSession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
     	}
 
     	try {
@@ -647,11 +623,11 @@ public class EjbcaWebBean implements java.io.Serializable {
      * Method returning all CA ids with CMS service enabled
      */
     public Collection getCAIdsWithCMSServiceActive(){
-    	ArrayList retval = new ArrayList();
-    	Collection caids = caadminsession.getAvailableCAs(administrator);
-    	Iterator iter = caids.iterator();
+    	ArrayList<Integer> retval = new ArrayList<Integer>();
+    	Collection<Integer> caids = caAdminSession.getAvailableCAs(administrator);
+    	Iterator<Integer> iter = caids.iterator();
     	while(iter.hasNext()){
-    		Integer caid = (Integer) iter.next();
+    		Integer caid = iter.next();
     		retval.add(caid);
     	}
     	return retval;
@@ -735,5 +711,4 @@ public class EjbcaWebBean implements java.io.Serializable {
     	return "[<a href=\"" + getHelpBaseURI() +lastPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW +
     		"\" title=\"" + getText("OPENHELPSECTION") + "\" >?</a>]";
     }
-
 }

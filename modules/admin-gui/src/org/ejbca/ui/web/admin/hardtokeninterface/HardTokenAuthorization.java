@@ -21,9 +21,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
@@ -42,15 +42,13 @@ public class HardTokenAuthorization implements Serializable {
 	private ArrayList authissueingadmgrps = null;
 	
     private Admin admin;
-    private IHardTokenSessionLocal hardtokensession;
-    private IAuthorizationSessionLocal authorizationsession;    
-    private ICAAdminSessionLocal caadminsession;
+    private HardTokenSession hardtokensession;
+    private AuthorizationSession authorizationsession;    
+    private CAAdminSession caadminsession;
 
-  
-    
     /** Creates a new instance of CAAuthorization. */
-    public HardTokenAuthorization(Admin admin, IHardTokenSessionLocal hardtokensession, 
-    		IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caadminsession) {
+    public HardTokenAuthorization(Admin admin, HardTokenSession hardtokensession, 
+    		AuthorizationSession authorizationsession, CAAdminSession caadminsession) {
       this.admin=admin;
       this.hardtokensession=hardtokensession;            
       this.authorizationsession=authorizationsession;

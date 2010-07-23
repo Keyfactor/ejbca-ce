@@ -18,8 +18,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
@@ -33,8 +33,12 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  */
 public class GlobalConfigurationDataHandler implements java.io.Serializable {
     
+    private RaAdminSessionLocal raadminsession;
+    private AuthorizationSessionLocal  authorizationsession;
+    private Admin administrator;
+
     /** Creates a new instance of GlobalConfigurationDataHandler */
-    public GlobalConfigurationDataHandler(Admin administrator,IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession){
+    public GlobalConfigurationDataHandler(Admin administrator, RaAdminSessionLocal raadminsession, AuthorizationSessionLocal authorizationsession){
         this.raadminsession = raadminsession;
         this.authorizationsession = authorizationsession;
         this.administrator = administrator;
@@ -58,9 +62,4 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
             raadminsession.saveGlobalConfiguration(administrator,  gc);
         }
     }
-    
-    // private IRaAdminSessionHome  raadminsessionhome;
-    private IRaAdminSessionLocal raadminsession;
-    private IAuthorizationSessionLocal  authorizationsession;
-    private Admin administrator;
 }

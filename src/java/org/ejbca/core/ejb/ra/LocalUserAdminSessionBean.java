@@ -27,35 +27,33 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.naming.InvalidNameException;
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
-import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -227,52 +225,32 @@ import org.ejbca.util.query.UserMatch;
  *   read-only = "true"
  *   
  */
-public class LocalUserAdminSessionBean extends BaseSessionBean {
+@Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "UserAdminSessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdminSessionRemote {
 
-    /** Internal localization of logs and errors */
+	private static final Logger log = Logger.getLogger(LocalUserAdminSessionBean.class);
+	/** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    /**
-     * The local interface of RaAdmin Session Bean.
-     */
-    private IRaAdminSessionLocal raadminsession;
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
 
-    /**
-     * The local interface of the certificate store session bean
-     */
-    private ICertificateStoreSessionLocal certificatesession;
+    @EJB
+    private RaAdminSessionLocal raAdminSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private KeyRecoverySessionLocal keyRecoverySession;
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private LogSessionLocal logSession;
 
-    /**
-     * The local interface of the authorization session bean
-     */
-    private IAuthorizationSessionLocal authorizationsession;
-
-    /**
-     * The local interface of the authorization session bean
-     */
-    private IKeyRecoverySessionLocal keyrecoverysession;
-    
-    /**
-     * The local interface of the caadmin session bean
-     */
-    private ICAAdminSessionLocal caadminsession;
-    
-    /**
-     * The local interface of the certificatestore session bean
-     */
-    private ICertificateStoreSessionLocal certificatestoresession;
-    
-    /**
-     * The local interface of the approval session bean
-     */
-    private IApprovalSessionLocal approvalsession;
-
-    /**
-     * The remote interface of the log session bean
-     */
-    private ILogSessionLocal logsession;
-
-    private UserDataLocalHome home = null;
     /**
      * Columns in the database used in select
      */
@@ -280,75 +258,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     private static final String USERDATA_CREATED_COL = "timeCreated";
 
     /**
-     * Default create for SessionBean.
-     *
-     * @throws CreateException if bean instance can't be created
-     * @see org.ejbca.core.model.log.Admin
-     */
-    public void ejbCreate() throws CreateException {
-        try {
-            home = (UserDataLocalHome) getLocator().getLocalHome(UserDataLocalHome.COMP_NAME);
-
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-            logsession = logsessionhome.create();
-
-            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-            authorizationsession = authorizationsessionhome.create();
-
-            IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-            raadminsession = raadminsessionhome.create();
-
-            ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-            certificatesession = certificatesessionhome.create();
-            
-            
-            ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-            caadminsession = caadminsessionhome.create();
-            
-
-        } catch (Exception e) {
-            error("Error creating session bean:", e);
-            throw new EJBException(e);
-        }
-
-    }
-    
-    private IApprovalSessionLocal getApprovalSession(){
-      if(approvalsession == null){
-          try {
-            IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
-			approvalsession = approvalsessionhome.create();
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}  
-      }
-      return approvalsession;
-    }
-
-    private IKeyRecoverySessionLocal getKeyRecoverySession(){
-        if(keyrecoverysession == null){
-            try {
-            	IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) getLocator().getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
-                keyrecoverysession = keyrecoverysessionhome.create();
-  		} catch (CreateException e) {
-  			throw new EJBException(e);
-  		}  
-        }
-        return keyrecoverysession;
-      }
-
-    
-    /**
      * Gets the Global Configuration from ra admin session bean-
      */
     private GlobalConfiguration getGlobalConfiguration(Admin admin) {
-        return raadminsession.loadGlobalConfiguration(admin);
+        return raAdminSession.loadGlobalConfiguration(admin);
     }
 
     private boolean authorizedToCA(Admin admin, int caid) {
         boolean returnval = false;
         try {
-            returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
+            returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
         } catch (AuthorizationDeniedException e) {
         	log.info(e.getMessage()); // be sure to log the full real resource we are denied
         }
@@ -359,10 +278,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         boolean returnval = false;
         try {
             if (profileid == SecConst.EMPTY_ENDENTITYPROFILE && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
-                returnval = authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+                returnval = authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
             } else {
-                returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights) &&
-                            authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+                returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights) &&
+                            authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
             }
         } catch (AuthorizationDeniedException e) {
         	log.info(e.getMessage()); // be sure to log the full real resource we are denied
@@ -435,7 +354,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 			UserDoesntFullfillEndEntityProfile, DuplicateKeyException,
 			WaitingForApprovalException, CADoesntExistsException, EjbcaException {
 		int profileId = userdata.getEndEntityProfileId();
-		EndEntityProfile profile = raadminsession.getEndEntityProfile(admin,profileId);
+		EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin,profileId);
 		if (profile.getAllowMergeDnWebServices()) {
 			userdata = UserDataFiller.fillUserDataWithDefaultValues(userdata,profile);
 		}	
@@ -459,7 +378,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      */
     public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         try {
-			FieldValidator.validate(userdata, userdata.getEndEntityProfileId(), raadminsession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()));
+			FieldValidator.validate(userdata, userdata.getEndEntityProfileId(), raAdminSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()));
 		} catch (CustomFieldException e1) {
 			throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e1.getMessage(), e1);
 		}
@@ -476,7 +395,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     	userdata.setEmail(email);
         int type = userdata.getType();
         String newpassword = userdata.getPassword();
-        EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, userdata.getEndEntityProfileId());
+        EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin, userdata.getEndEntityProfileId());
         
 
         if (profile.useAutoGeneratedPasswd() && userdata.getPassword() == null) {
@@ -492,17 +411,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                         (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
-                String profileName = raadminsession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId());
+                String profileName = raAdminSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId());
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", profileName, dn, udfp.getMessage());            	
-                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
+                logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
                 throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());
             }
 
             // Check if administrator is authorized to add user.
             if (!authorizedToEndEntityProfile(admin, userdata.getEndEntityProfileId(), AccessRulesConstants.CREATE_RIGHTS)) {
-                String profileName = raadminsession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId());
+                String profileName = raAdminSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId());
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", profileName);            	
-                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
+                logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
@@ -510,7 +429,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         // Check if administrator is authorized to add user to CA.
         if (!authorizedToCA(admin, userdata.getCAId())) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(userdata.getCAId()));            	
-            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
+            logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -518,13 +437,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId(), userdata.getCertificateProfileId());
         AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(userdata,clearpwd,admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {       		    		
-        	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+        	approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
             String msg = intres.getLocalizedMessage("ra.approvalad");            	
         	throw new WaitingForApprovalException(msg);
         }
         
         // Check if the subjectDN serialnumber already exists.
-        if(caadminsession.getCAInfoOrThrowException(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
+        if(caAdminSession.getCAInfoOrThrowException(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
             String serialnumber = getSerialnumber(userdata.getDN());
             if(serialnumber != null){
             	if(!serialnumberIsUnique(admin, userdata.getCAId(), serialnumber)){
@@ -534,7 +453,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }    
         
         try {
-            UserDataLocal data1 = home.create(userdata.getUsername(), newpassword, dn, userdata.getCAId(), userdata.getCardNumber());
+        	UserData data1 = new UserData(userdata.getUsername(), newpassword, dn, userdata.getCAId(), userdata.getCardNumber());
+        	entityManager.persist(data1);
+            //UserDataLocal data1 = home.create(userdata.getUsername(), newpassword, dn, userdata.getCAId(), userdata.getCardNumber());
             if (userdata.getSubjectAltName() != null) {
                 data1.setSubjectAltName(userdata.getSubjectAltName());
             }
@@ -556,7 +477,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                         data1.setOpenPassword(newpassword);
                     }
                 } catch (java.security.NoSuchAlgorithmException nsae) {
-                    debug("NoSuchAlgorithmException while setting password for user " + userdata.getUsername());
+                    log.debug("NoSuchAlgorithmException while setting password for user " + userdata.getUsername());
                     throw new EJBException(nsae);
                 }
             }
@@ -571,26 +492,26 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             	print(admin,profile,userdata);
             }
             String msg = intres.getLocalizedMessage("ra.addedentity", userdata.getUsername());            	
-            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_ADDEDENDENTITY, msg);
+            logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_ADDEDENDENTITY, msg);
 
-        } catch (DuplicateKeyException e) {
+        } catch (EntityExistsException e) {
             String msg = intres.getLocalizedMessage("ra.errorentityexist", userdata.getUsername());            	
-            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
+            logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
             throw e;
-        } catch (CreateException e) {
+        /*} catch (CreateException e) {
             String msg = intres.getLocalizedMessage("ra.errorentityexist", userdata.getUsername());            	
-            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
-            throw new DuplicateKeyException(e.getMessage());
+            logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
+            throw new DuplicateKeyException(e.getMessage());*/
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("ra.erroraddentity", userdata.getUsername());            	
-            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg, e);
-            error(msg, e);
+            logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg, e);
+            log.error(msg, e);
             throw new EJBException(e);
         }
         if (log.isTraceEnabled()) {
             log.trace("<addUser(" + userdata.getUsername() + ", password, " + dn + ", " + userdata.getEmail() + ")");
         }
-    } // addUser
+    }
     
     private String getSerialnumber(String subjectDN){
     	String elements[] = subjectDN.split(",");
@@ -610,9 +531,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     private boolean serialnumberIsUnique(Admin admin, int caid, String serialnumber) {
     	UserDataVO user = null;
     	String sn = null;
-    	Iterator itr = findAllUsersByCaId(admin, caid).iterator();
+    	Iterator<UserDataVO> itr = findAllUsersByCaId(admin, caid).iterator();
     	while(itr.hasNext()){
-    		user = (UserDataVO) itr.next();
+    		user = itr.next();
     		sn = getSerialnumber(user.getDN());
     		if(sn != null){
     			if(sn.equals(serialnumber)) {
@@ -632,24 +553,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @return 0 of no approvals is required or no such CA exists, othervise the number of approvals
      */
     private int getNumOfApprovalRequired(Admin admin,int action, int caid, int certprofileid) {
-    	return caadminsession.getNumOfApprovalRequired(admin, action, caid, certprofileid);
+    	return caAdminSession.getNumOfApprovalRequired(admin, action, caid, certprofileid);
 	}
     
-    /** Gets connection to certificate store session bean
-     * @return Connection
-     */
-    private ICertificateStoreSessionLocal getCertificateStoreSession() {
-        if(certificatestoresession == null){
-            try{
-                ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-                certificatestoresession = home.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return certificatestoresession;
-    } //getCertificateStoreSession
-
 	/**
      * Changes data for a user in the database speciefied by username.
      * 
@@ -686,7 +592,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
     	UserDataVO userdata = new UserDataVO(username, subjectdn, caid, subjectaltname, 
                 email, status, type, endentityprofileid, certificateprofileid,
                 null,null, tokentype, hardwaretokenissuerid, null);
-        
     	userdata.setPassword(password);
         changeUser(admin, userdata, clearpwd);    	
     }
@@ -738,7 +643,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromWebService)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         try {
-			FieldValidator.validate(userdata, userdata.getEndEntityProfileId(), raadminsession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()));
+			FieldValidator.validate(userdata, userdata.getEndEntityProfileId(), raAdminSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()));
 		} catch (CustomFieldException e1) {
 			throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e1.getMessage(), e1);
 		}
@@ -750,35 +655,37 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             log.trace(">changeUser(" + userdata.getUsername() + ", " + dn + ", " + userdata.getEmail() + ")");
         }
         int oldstatus;
-        EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, userdata.getEndEntityProfileId());
-        UserDataPK pk = new UserDataPK(userdata.getUsername());
-		UserDataLocal userDataLocal = null;
+        EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin, userdata.getEndEntityProfileId());
+        //UserDataPK pk = new UserDataPK(userdata.getUsername());
+		//UserDataLocal userDataLocal = null;
+        UserData userData = null;
 		try {
-			userDataLocal = home.findByPrimaryKey(pk);
+			userData = UserData.findByUsername(entityManager, userdata.getUsername());
+			//userDataLocal = home.findByPrimaryKey(pk);
 		} catch (Exception e) {
 			String msg = intres.getLocalizedMessage("ra.erroreditentity", userdata.getUsername());
-			logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-			error("ChangeUser:", e);
+			logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+			log.error("ChangeUser:", e);
 			throw new EJBException(e);
 		}
 
         // if required, we merge the existing user dn into the dn provided by the web service.
         if (fromWebService && profile.getAllowMergeDnWebServices()) {
 
-			if (userDataLocal != null) {
-                if (userDataLocal.getSubjectDN() != null) {
+			if (userData != null) {
+                if (userData.getSubjectDN() != null) {
                     Map dnMap = new HashMap();
                     if (profile.getUse(DnComponents.DNEMAIL, 0)) {
                         dnMap.put(DnComponents.DNEMAIL, userdata.getEmail());
                     }
                     try {
-                        dn = (new DistinguishedName(userDataLocal.getSubjectDN())).mergeDN(new DistinguishedName(dn), true, dnMap).toString();
+                        dn = (new DistinguishedName(userData.getSubjectDN())).mergeDN(new DistinguishedName(dn), true, dnMap).toString();
                     } catch (InvalidNameException e) {
                         log.debug("Invalid dn. We make it empty");
                         dn = "";
                     }
                 }
-				if (userDataLocal.getSubjectAltName() != null) {
+				if (userData.getSubjectAltName() != null) {
                     Map dnMap = new HashMap();
                     if (profile.getUse(DnComponents.RFC822NAME, 0)) {
                         dnMap.put(DnComponents.RFC822NAME, userdata.getEmail());
@@ -788,7 +695,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 						if(altName==null) {
 							altName="";
 						}
-						altName = (new DistinguishedName(userDataLocal.getSubjectAltName()))
+						altName = (new DistinguishedName(userData.getSubjectAltName()))
                              .mergeDN(new DistinguishedName(altName), true, dnMap).toString();
 					} catch (InvalidNameException e) {
 						log.debug("Invalid altName. We make it empty");
@@ -810,13 +717,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(userdata.getEndEntityProfileId()), dn, udfp.getMessage());            	
-                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw udfp;
             }
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, userdata.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(userdata.getEndEntityProfileId()));            	
-                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
@@ -824,23 +731,23 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         // Check if administrator is authorized to edit user to CA.
         if (!authorizedToCA(admin, userdata.getCAId())) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(userdata.getCAId()));            	
-            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
         // Check if approvals is required.
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId(), userdata.getCertificateProfileId());
         if (numOfApprovalsRequired > 0){
-        	UserDataVO orguserdata = userDataLocal.toUserDataVO();
+        	UserDataVO orguserdata = userData.toUserDataVO();
         	EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userdata, clearpwd, orguserdata, admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
         	if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)){       		    		
-        		getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+        		approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
         		String msg = intres.getLocalizedMessage("ra.approvaledit");            	
         		throw new WaitingForApprovalException(msg);
         	}
         }
         
         // Check if the subjectDN serialnumber already exists.
-        if(caadminsession.getCAInfoOrThrowException(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
+        if(caAdminSession.getCAInfoOrThrowException(admin, userdata.getCAId()).isDoEnforceUniqueSubjectDNSerialnumber()){
             String serialnumber = getSerialnumber(userdata.getDN());
             if(serialnumber != null){
 				if(!serialnumberIsUnique(admin, userdata.getCAId(), serialnumber)){
@@ -850,48 +757,48 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         
         try {
-        	userDataLocal.setDN(dn);
-        	userDataLocal.setSubjectAltName(altName);
-        	userDataLocal.setSubjectEmail(userdata.getEmail());
-        	userDataLocal.setCaId(userdata.getCAId());
-        	userDataLocal.setType(type);
-        	userDataLocal.setEndEntityProfileId(userdata.getEndEntityProfileId());
-        	userDataLocal.setCertificateProfileId(userdata.getCertificateProfileId());
-        	userDataLocal.setTokenType(userdata.getTokenType());
-        	userDataLocal.setHardTokenIssuerId(userdata.getHardTokenIssuerId());
-        	userDataLocal.setCardNumber(userdata.getCardNumber());
+        	userData.setDN(dn);
+        	userData.setSubjectAltName(altName);
+        	userData.setSubjectEmail(userdata.getEmail());
+        	userData.setCaId(userdata.getCAId());
+        	userData.setType(type);
+        	userData.setEndEntityProfileId(userdata.getEndEntityProfileId());
+        	userData.setCertificateProfileId(userdata.getCertificateProfileId());
+        	userData.setTokenType(userdata.getTokenType());
+        	userData.setHardTokenIssuerId(userdata.getHardTokenIssuerId());
+        	userData.setCardNumber(userdata.getCardNumber());
             ExtendedInformation ei = userdata.getExtendedinformation();
-            userDataLocal.setExtendedInformation(ei);
-            oldstatus = userDataLocal.getStatus();
+            userData.setExtendedInformation(ei);
+            oldstatus = userData.getStatus();
             if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && !(userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INPROCESS)){
-              getKeyRecoverySession().unmarkUser(admin,userdata.getUsername());	
+              keyRecoverySession.unmarkUser(admin,userdata.getUsername());	
             }
             String requestCounter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
     		if ( StringUtils.equals(requestCounter, "0") && (userdata.getStatus() == UserDataConstants.STATUS_NEW) && (oldstatus != UserDataConstants.STATUS_NEW) ) {
                 // If status is set to new, we should re-set the allowed request counter to the default values
     			// But we only do this if no value is specified already, i.e. 0 or null
-    			resetRequestCounter(admin, userDataLocal, false);
+    			resetRequestCounter(admin, userData, false);
     		} else {
     			// If status is not new, we will only remove the counter if the profile does not use it
-    			resetRequestCounter(admin, userDataLocal, true);    			
+    			resetRequestCounter(admin, userData, true);    			
     		}
-    		userDataLocal.setStatus(userdata.getStatus());
+    		userData.setStatus(userdata.getStatus());
             if(newpassword != null){
                 if(clearpwd) {
                     try {
-                    	userDataLocal.setOpenPassword(newpassword);
+                    	userData.setOpenPassword(newpassword);
                     } catch (java.security.NoSuchAlgorithmException nsae) {
-                        debug("NoSuchAlgorithmException while setting password for user "+userdata.getUsername());
+                        log.debug("NoSuchAlgorithmException while setting password for user "+userdata.getUsername());
                         throw new EJBException(nsae);
                     }
                 } else {
-                	userDataLocal.setPassword(newpassword);
+                	userData.setPassword(newpassword);
                 }
             }
             // We want to create this object before re-setting the time modified, because we may want to 
             // Use the old time modified in any notifications
-            UserDataVO udata = userDataLocal.toUserDataVO();
-            userDataLocal.setTimeModified((new java.util.Date()).getTime());
+            UserDataVO udata = userData.toUserDataVO();
+            userData.setTimeModified((new java.util.Date()).getTime());
 
         	// We also want to be able to handle non-clear generated passwords in the notifiction, although UserDataVO
             // should always have a null password for autogenerated end entities the notification framework expects it to
@@ -909,22 +816,21 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             }
             if (statuschanged) {
                 String msg = intres.getLocalizedMessage("ra.editedentitystatus", userdata.getUsername(), new Integer(userdata.getStatus()));            	
-                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg );
+                logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg );
             } else {
                 String msg = intres.getLocalizedMessage("ra.editedentity", userdata.getUsername());            	
-                logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("ra.erroreditentity", userdata.getUsername());            	
-            logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
-            error("ChangeUser:", e);
+            logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogConstants.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            log.error("ChangeUser:", e);
             throw new EJBException(e);
         }
         if (log.isTraceEnabled()) {
             log.trace("<changeUser(" + userdata.getUsername() + ", password, " + dn + ", " + userdata.getEmail() + ")");
         }
-    } // changeUser
-
+    }
 
     /**
      * Deletes a user from the database. The users certificates must be revoked BEFORE this method is called.
@@ -940,43 +846,47 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         // Check if administrator is authorized to delete user.
         int caid = LogConstants.INTERNALCAID;
-        try {
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);
+    	UserData data1 = UserData.findByUsername(entityManager, username);
+    	if (data1 != null) {
+        //try {
+            //UserDataPK pk = new UserDataPK(username);
+            //UserDataLocal data1 = home.findByPrimaryKey(pk);
             caid = data1.getCaId();
 
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
 
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS)) {
                     String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
-                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
-        } catch (FinderException e) {
+    	} else {
+        //} catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
             throw new NotFoundException(msg);
         }
         try {
-            UserDataPK pk = new UserDataPK(username);
-            home.remove(pk);
+        	entityManager.remove(data1);
+            //UserDataPK pk = new UserDataPK(username);
+            //home.remove(pk);
             String msg = intres.getLocalizedMessage("ra.removedentity", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_DELETEDENDENTITY, msg);
-        } catch (EJBException e) {
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_DELETEDENDENTITY, msg);
+        } catch (Exception e) {
             String msg = intres.getLocalizedMessage("ra.errorremoveentity", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
             throw new RemoveException(msg);
         }
         if (log.isTraceEnabled()) {
             log.trace("<deleteUser(" + username + ")");
         }
-    } // deleteUser
+    }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
 		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest.class.getName(),null),
@@ -1004,13 +914,15 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
 		int resetValue = -1;
         int caid = LogConstants.INTERNALCAID;
-        try {
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);
+        UserData data1 = UserData.findByUsername(entityManager, username);
+        if (data1 != null) {
+        //try {
+            //UserDataPK pk = new UserDataPK(username);
+            //UserDataLocal data1 = home.findByPrimaryKey(pk);
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             
@@ -1027,12 +939,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 				data1.setExtendedInformation(ei);
 				data1.setTimeModified((new java.util.Date()).getTime());
 				String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);            	
-				logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+				logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
     		}
-        } catch (FinderException e) {
+        } else {
+        //} catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            throw e;
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            throw new FinderException(msg);
         }
         if (log.isTraceEnabled()) {
             log.trace("<resetRamainingLoginAttempts(" + username + "): "+resetValue);
@@ -1055,13 +968,15 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
 		int counter;
         int caid = LogConstants.INTERNALCAID;
-        try {
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);
+        UserData data1 = UserData.findByUsername(entityManager, username);
+        if (data1 != null) {
+        //try {
+            //UserDataPK pk = new UserDataPK(username);
+            //UserDataLocal data1 = home.findByPrimaryKey(pk);
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             
@@ -1080,7 +995,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         			data1.setStatus(UserDataConstants.STATUS_GENERATED);
         			data1.setTimeModified((new java.util.Date()).getTime());
         			String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
-					logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+					logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
 					resetRemainingLoginAttempts(admin, username);
     			}
     		} else if(counter != -1) {
@@ -1090,22 +1005,23 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 				ei.setRemainingLoginAttempts(--counter);
 				data1.setExtendedInformation(ei);
 				String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);            	
-				logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+				logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
 				}
 				counter = Integer.MAX_VALUE;
 			}
-        } catch (FinderException e) {
+        } else {
+        //} catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            throw e;
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            throw new FinderException(msg);
         }
         if (log.isTraceEnabled()) {
             log.trace("<decRemainingLoginAttempts(" + username + "): "+counter);
         }
-	} //decRemainingLoginAttempts
+	}
 	
     /**
      * Decreases (the optional) request counter by 1, until it reaches 0. Returns the new value. If the value is already 0, -1 is returned, but the 
@@ -1128,20 +1044,22 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         int counter = 0;
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
-        UserDataLocal data1;
-        try {
-            UserDataPK pk = new UserDataPK(username);
-            data1 = home.findByPrimaryKey(pk);
+        UserData data1 = UserData.findByUsername(entityManager, username);
+        if (data1 != null) {
+        //UserDataLocal data1;
+        //try {
+            //UserDataPK pk = new UserDataPK(username);
+            //data1 = home.findByPrimaryKey(pk);
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
                     String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
-                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
@@ -1168,7 +1086,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         					    data1.setTimeModified((new java.util.Date()).getTime());
         					}
         					String msg = intres.getLocalizedMessage("ra.decreasedentityrequestcounter", username, counter);            	
-        					logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+        					logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
         				} else {
             				if (log.isDebugEnabled()) {
             					log.debug("Counter value was already 0, not decreased in db.");
@@ -1189,13 +1107,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 				}
         	} else {
 				if (log.isDebugEnabled()) {
-					debug("No extended information exists for user: "+data1.getUsername());
+					log.debug("No extended information exists for user: "+data1.getUsername());
 				}
         	}
-        } catch (FinderException e) {
+        } else {
+        //} catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            throw e;
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            throw new FinderException(msg);
         }
         if ( counter<=0 ) {
             setUserStatus(admin, data1, UserDataConstants.STATUS_GENERATED);
@@ -1204,7 +1123,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             log.trace("<decRequestCounter(" + username + "): "+counter);
         }
         return counter;
-    } // decRequestCounter
+    }
 
 	/**
 	 * Removes the certificate serial number from the user data.
@@ -1221,34 +1140,39 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 			log.trace(">cleanUserCertDataSN(" + username + ")");
 		}
 		final int caid = LogConstants.INTERNALCAID;
-		// Check if administrator is authorized to edit user.
 		try {
-			final UserDataPK pk = new UserDataPK(username);
-			final UserDataLocal data1 = home.findByPrimaryKey(pk);
+		// Check if administrator is authorized to edit user.
+		UserData data1 = UserData.findByUsername(entityManager, username);
+		if (data1 != null) {
+		//try {
+			//final UserDataPK pk = new UserDataPK(username);
+			//final UserDataLocal data1 = home.findByPrimaryKey(pk);
 			if (!authorizedToCA(admin, caid)) {
 				String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
-    			logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+    			logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
     			throw new AuthorizationDeniedException(msg);
     		}
     		if ( getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations() &&
     				!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS) ) {
     			String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));
-				logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+				logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
 				throw new AuthorizationDeniedException(msg);
 			}
 			final ExtendedInformation ei = data1.getExtendedInformation();
 			if ( ei==null) {
 				if (log.isDebugEnabled()) {
-					debug("No extended information exists for user: "+data1.getUsername());
+					log.debug("No extended information exists for user: "+data1.getUsername());
 				}
 				return;
 			}
 			ei.setCertificateSerialNumber(null);
 			data1.setExtendedInformation(ei);
-		} catch (FinderException e) {
+		} else {
+		//} catch (FinderException e) {
 			String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
-			logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-			throw e;
+			logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+			throw new FinderException(msg);
+		}
 		} finally {
 			if (log.isTraceEnabled()) {
 				log.trace("<cleanUserCertDataSN(" + username + ")");
@@ -1271,47 +1195,45 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
-        final UserDataLocal data1;
+        UserData data1 = UserData.findByUsername(entityManager, username);
+        if (data1 == null) {
+        /*final UserDataLocal data1;
         try {
             UserDataPK pk = new UserDataPK(username);
             data1 = home.findByPrimaryKey(pk);
-        } catch (FinderException e) {
+        } catch (FinderException e) {*/
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);                
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            throw e;
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            throw new FinderException(msg);
         }
         setUserStatus(admin, data1, status);
     }
-    private void setUserStatus(Admin admin, UserDataLocal data1, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
+
+    private void setUserStatus(Admin admin, UserData data1, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
             final int caid = data1.getCaId();
             final String username = data1.getUsername();
-
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
-
-
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
                     String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
-                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
-            
             // Check if approvals is required.
             int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, data1.getCertificateProfileId());
             ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status ,  admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)){       		    		
-            	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+            	approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
 	            String msg = intres.getLocalizedMessage("ra.approvaledit");            	
             	throw new WaitingForApprovalException(msg);
             }  
-            
             if(data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY && !(status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INPROCESS || status == UserDataConstants.STATUS_INITIALIZED)){
-                getKeyRecoverySession().unmarkUser(admin,username);	
+                keyRecoverySession.unmarkUser(admin,username);	
             }
     		if ( (status == UserDataConstants.STATUS_NEW) && (data1.getStatus() != UserDataConstants.STATUS_NEW) ) {
                 // If status is set to new, when it is not already new, we should re-set the allowed request counter to the default values
@@ -1326,16 +1248,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             data1.setStatus(status);
             data1.setTimeModified((new java.util.Date()).getTime());
             String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, new Integer(status));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             // Send notifications when transitioning user through work-flow, if they should be sent
             UserDataVO userdata = data1.toUserDataVO();
             sendNotification(admin, userdata, status);
-
         if (log.isTraceEnabled()) {
             log.trace("<setUserStatus(" + username + ", " + status + ")");
         }
-    } // setUserStatus
+    }
 
     /**
      * Sets a new password for a user.
@@ -1347,7 +1267,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      */
     public void setPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException {
         setPassword(admin, username, password, false);
-    } // setPassword
+    }
 
     /**
      * Sets a clear text password for a user.
@@ -1360,7 +1280,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      */
     public void setClearTextPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException {
         setPassword(admin, username, password, true);
-    } // setClearTextPassword
+    }
 
     /**
      * Sets a password, hashed or clear text, for a user.
@@ -1377,12 +1297,16 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         // Find user
         String newpasswd = password;
-        UserDataPK pk = new UserDataPK(username);
-        UserDataLocal data = home.findByPrimaryKey(pk);
+        UserData data = UserData.findByUsername(entityManager, username);
+        if (data == null) {
+        	throw new FinderException("Could not find user " + username);
+        }
+        //UserDataPK pk = new UserDataPK(username);
+        //UserDataLocal data = home.findByPrimaryKey(pk);
         int caid = data.getCaId();
         String dn = data.getSubjectDN();
 
-        EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, data.getEndEntityProfileId());
+        EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin, data.getEndEntityProfileId());
 
         if (profile.useAutoGeneratedPasswd()) {
             newpasswd = profile.getAutoGeneratedPasswd();
@@ -1393,21 +1317,21 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                 profile.doesPasswordFulfillEndEntityProfile(password, true);
             } catch (UserDoesntFullfillEndEntityProfile ufe) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(data.getEndEntityProfileId()), dn, ufe.getMessage());            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw ufe;
             }
 
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
 
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -1424,15 +1348,15 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                 data.setTimeModified((new java.util.Date()).getTime());
             }
             String msg = intres.getLocalizedMessage("ra.editpwdentity", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
         } catch (java.security.NoSuchAlgorithmException nsae) {
-            error("NoSuchAlgorithmException while setting password for user " + username);
+            log.error("NoSuchAlgorithmException while setting password for user " + username);
             throw new EJBException(nsae);
         }
         if (log.isTraceEnabled()) {
             log.trace("<setPassword(" + username + ", hiddenpwd), " + cleartext);
         }
-    } // setPassword
+    }
 
     /**
      * Verifies a password for a user.
@@ -1448,36 +1372,40 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         boolean ret = false;
         // Find user
-        UserDataPK pk = new UserDataPK(username);
-        UserDataLocal data = home.findByPrimaryKey(pk);
+        UserData data = UserData.findByUsername(entityManager, username);
+        if (data == null) {
+        	throw new FinderException("Could not find user " + username);
+        }
+        //UserDataPK pk = new UserDataPK(username);
+        //UserDataLocal data = home.findByPrimaryKey(pk);
         int caid = data.getCaId();
 
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
 
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
 
         try {
             ret = data.comparePassword(password);
         } catch (java.security.NoSuchAlgorithmException nsae) {
-            debug("NoSuchAlgorithmException while verifying password for user " + username);
+            log.debug("NoSuchAlgorithmException while verifying password for user " + username);
             throw new EJBException(nsae);
         }
         if (log.isTraceEnabled()) {
             log.trace("<verifyPassword(" + username + ", hiddenpwd)");
         }
         return ret;
-    } // verifyPassword
+    }
 
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER = {
 		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(),null),
@@ -1488,25 +1416,29 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      */
     public void revokeAndDeleteUser(Admin admin, String username, int reason) throws AuthorizationDeniedException,
 		ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException {
-        UserDataPK pk = new UserDataPK(username);
+    	UserData data = UserData.findByUsername(entityManager, username);
+    	if (data == null) {
+    		throw new NotFoundException ("User '" + username + "' not found.");
+    	}
+        /*UserDataPK pk = new UserDataPK(username);
         UserDataLocal data;
         try {
             data = home.findByPrimaryKey(pk);
 		} catch (FinderException e) {
 			throw new NotFoundException ("User '" + username + "' not found."); 
-        }
+        }*/
     	// Authorized?
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
 
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
@@ -1517,7 +1449,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 		        RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin,
 		        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
 		        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
-		        	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+		        	approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
 		            String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
 		        	throw new WaitingForApprovalException(msg);
 		        }
@@ -1550,26 +1482,30 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         if (log.isTraceEnabled()) {
             log.trace(">revokeUser(" + username + ")");
         }
-        UserDataPK pk = new UserDataPK(username);
-        UserDataLocal data = home.findByPrimaryKey(pk);
+        UserData data = UserData.findByUsername(entityManager, username);
+        if (data == null) {
+        	throw new FinderException("Could not find user " + username);
+        }
+        //UserDataPK pk = new UserDataPK(username);
+        //UserDataLocal data = home.findByPrimaryKey(pk);
 
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
 
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
         if ( getUserStatus(admin, username) == UserDataConstants.STATUS_REVOKED ) {
             String msg = intres.getLocalizedMessage("ra.errorbadrequest", new Integer(data.getEndEntityProfileId()));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
             throw new AlreadyRevokedException(msg);
         }
         // Check if approvals is required.
@@ -1577,17 +1513,17 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin,
         		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
-        	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+        	approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
         	throw new WaitingForApprovalException(msg);
         }
         // Perform revokation
         
-        Collection certs = this.certificatesession.findCertificatesByUsername(admin, username);
+        Collection<Certificate> certs = this.certificateStoreSession.findCertificatesByUsername(admin, username);
         // Revoke all certs
-        Iterator j = certs.iterator();
+        Iterator<Certificate> j = certs.iterator();
         while (j.hasNext()) {
-        	Certificate cert = (Certificate)j.next();
+        	Certificate cert = j.next();
         	// Revoke one certificate at a time
         	try {
             	revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, reason);        		
@@ -1606,7 +1542,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
 			throw new EJBException("This should never happen",e);
 		}
         String msg = intres.getLocalizedMessage("ra.revokedentity", username);            	
-        logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
+        logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
         if (log.isTraceEnabled()) {
         	log.trace("<revokeUser()");
         }
@@ -1631,51 +1567,55 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno + ", IssuerDN: " + issuerdn + ", username, " + username + ")");
         }
-        UserDataPK pk = new UserDataPK(username);	// TODO: Fetch this from certstoresession instead
+        UserData data = UserData.findByUsername(entityManager, username);
+        if (data == null) {
+        	throw new FinderException("Could not find user " + username);
+        }
+        /*UserDataPK pk = new UserDataPK(username);	// TODO: Fetch this from certstoresession instead
         UserDataLocal data;
         try {
             data = home.findByPrimaryKey(pk);
         } catch (ObjectNotFoundException oe) {
             throw new FinderException(oe.getMessage()+": username");
-        }
+        }*/
         // Check that the user have revokation rigths.
-        authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY);
+        authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY);
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
-        Certificate cert = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, certserno);
+        Certificate cert = certificateStoreSession.findCertificateByIssuerAndSerno(admin, issuerdn, certserno);
         if ( cert == null ) {
             String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
         	throw new FinderException(msg);
         }
-        CertificateStatus revinfo = certificatesession.getStatus(issuerdn, certserno);
+        CertificateStatus revinfo = certificateStoreSession.getStatus(issuerdn, certserno);
         if ( revinfo == null ) {
             String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
         	throw new FinderException(msg);
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (reason == RevokedCertInfo.NOT_REVOKED) {
             if ( revinfo.revocationReason != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ) {
                 String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
                 throw new AlreadyRevokedException(msg);
             }            
         } else {
             if ( revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED ) {
                 String msg = intres.getLocalizedMessage("ra.errorrevocationexists");            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
                 throw new AlreadyRevokedException(msg);
             }            
         }
@@ -1684,33 +1624,33 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin,
         		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
-        	getApprovalSession().addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+        	approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
         	throw new WaitingForApprovalException(msg);
         }
         // Perform revokation, first we try to find the certificate profile the certificate was issued under
         // Get it first from the certificate itself. This should be the correct one
-        CertificateInfo info = certificatesession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+        CertificateInfo info = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
         int certificateProfileId = 0;
         if (info != null) {
         	certificateProfileId = info.getCertificateProfileId();
         }
         // If for some reason the certificate profile id was not set in the certificate data, try to get it from the certreq history
         if (certificateProfileId == 0) {
-            CertReqHistory certReqHistory = certificatesession.getCertReqHistory(admin, certserno, issuerdn);
+            CertReqHistory certReqHistory = certificateStoreSession.getCertReqHistory(admin, certserno, issuerdn);
             if (certReqHistory != null) {
             	certificateProfileId = certReqHistory.getUserDataVO().getCertificateProfileId();
             }
         }
         // Finally find the publishers for the certificate profileId that we found
-        Collection publishers = new ArrayList();        
-        CertificateProfile prof = certificatesession.getCertificateProfile(admin, certificateProfileId);
+        Collection<Integer> publishers = new ArrayList<Integer>();        
+        CertificateProfile prof = certificateStoreSession.getCertificateProfile(admin, certificateProfileId);
         if (prof != null) {
         	publishers = prof.getPublisherList();
         }
         
         // Revoke certificate in database and all publishers
-        certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason, data.getSubjectDN());
+        certificateStoreSession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason, data.getSubjectDN());
         // Reset the revocation code identifier used in XKMS
         ExtendedInformation inf = data.getExtendedInformation();
         if (inf != null) {
@@ -1719,7 +1659,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         if (log.isTraceEnabled()) {
         	log.trace("<revokeCert()");
         }
-    } // revokeCert
+    }
 
     /** 
      * Reactivates the certificate with certificate serno.
@@ -1750,8 +1690,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Admin getAdmin(Certificate certificate) {
-		String adminUsername = getCertificateStoreSession().findUsernameByCertSerno(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getSerialNumber(certificate),CertTools.getIssuerDN(certificate));
+		String adminUsername = certificateStoreSession.findUsernameByCertSerno(new Admin(Admin.TYPE_INTERNALUSER),CertTools.getSerialNumber(certificate),CertTools.getIssuerDN(certificate));
 		String adminEmail = null;
 		if (adminUsername != null) {
 			Connection con = null;
@@ -1787,14 +1728,17 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public UserDataVO findUser(Admin admin, String username) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUser(" + username + ")");
         }
-        UserDataPK pk = new UserDataPK(username);
+        //UserDataPK pk = new UserDataPK(username);
         UserDataVO ret = null;
-        try {
-            UserDataLocal data = home.findByPrimaryKey(pk);
+        UserData data = UserData.findByUsername(entityManager, username);
+        if (data != null) {
+        //try {
+            //UserDataLocal data = home.findByPrimaryKey(pk);
             if (data != null) {
                 if (!authorizedToCA(admin, data.getCaId())) {
                     String msg = intres.getLocalizedMessage("ra.errorauthcaexist", new Integer(data.getCaId()), username);
@@ -1816,16 +1760,16 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                 ret.setPassword(data.getClearPassword());
                 ret.setCardNumber(data.getCardNumber());        	
             }
-        } catch (ObjectNotFoundException oe) {
+        /*} catch (ObjectNotFoundException oe) {
             // NOPMD ignore will return null 
         } catch (FinderException fe) {
-            // NOPMD ignore will return null
+            // NOPMD ignore will return null*/
         }
         if (log.isTraceEnabled()) {
             log.trace("<findUser(" + username + "): " + (ret == null ? "null":ret.getDN()));
         }
         return ret;
-    } // findUser
+    }
 
     /**
      * Finds a user by its subject and issuer DN.
@@ -1837,6 +1781,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public UserDataVO findUserBySubjectAndIssuerDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
@@ -1844,15 +1789,16 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         if (log.isDebugEnabled()) {
-        	debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerdn);
+        	log.debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerdn);
         }
         UserDataVO returnval = null;
 
-        UserDataLocal data = null;
-
+        UserData data = UserData.findBySubjectDNAndCAId(entityManager, dn, issuerdn.hashCode());
+        if (data == null) {
+        /*UserDataLocal data = null;
         try {
             data = home.findBySubjectDNAndCAId(dn, issuerdn.hashCode());
-        } catch (FinderException e) {
+        } catch (FinderException e) {*/
             if (log.isDebugEnabled()) {
             	log.debug("Cannot find user with DN='" + dn + "'");
             }
@@ -1862,7 +1808,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             log.trace("<findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
         }
         return returnval;
-    } // findUserBySubjectDN
+    }
 
     /**
      * Finds a user by its subject DN.
@@ -1873,6 +1819,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public UserDataVO findUserBySubjectDN(Admin admin, String subjectdn) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUserBySubjectDN(" + subjectdn + ")");
@@ -1880,15 +1827,16 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         if (log.isDebugEnabled()) {
-        	debug("Looking for users with subjectdn: " + dn);
+        	log.debug("Looking for users with subjectdn: " + dn);
         }
         UserDataVO returnval = null;
 
-        UserDataLocal data = null;
-
+        UserData data = UserData.findBySubjectDN(entityManager, dn);
+        if (data == null) {
+        /*UserDataLocal data = null;
         try {
             data = home.findBySubjectDN(dn);
-        } catch (FinderException e) {
+        } catch (FinderException e) {*/
             if (log.isDebugEnabled()) {
             	log.debug("Cannot find user with DN='" + dn + "'");
             }
@@ -1900,7 +1848,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         return returnval;
     } // findUserBySubjectDN
 
-	private UserDataVO returnUserDataVO(Admin admin, UserDataVO returnval, UserDataLocal data) throws AuthorizationDeniedException {
+	private UserDataVO returnUserDataVO(Admin admin, UserDataVO returnval, UserData data) throws AuthorizationDeniedException {
 		if (data != null) {
         	if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
         		// Check if administrator is authorized to view user.
@@ -1934,39 +1882,38 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUserByEmail(" + email + ")");
         }
         if (log.isDebugEnabled()) {
-        	debug("Looking for user with email: " + email);
+        	log.debug("Looking for user with email: " + email);
         }
-        ArrayList returnval = new ArrayList();
+        ArrayList<UserDataVO> returnval = new ArrayList<UserDataVO>();
 
-        Collection result = null;
+        Collection<UserData> result = UserData.findBySubjectEmail(entityManager, email);
+        /*Collection result = null;
         try {
             result = home.findBySubjectEmail(email);
         } catch (FinderException e) {
             if (log.isDebugEnabled()) {
             	log.debug("Cannot find user with Email='" + email + "'");
             }
-        }
+        }*/
 
-        Iterator iter = result.iterator();
+        Iterator<UserData> iter = result.iterator();
         while (iter.hasNext()) {
-            UserDataLocal data = (UserDataLocal) iter.next();
-
+            UserData data = iter.next();
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
                     break;
                 }
             }
-
             if (!authorizedToCA(admin, data.getCaId())) {
                 break;
             }
-
             UserDataVO user = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
@@ -1979,7 +1926,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             log.trace("<findUserByEmail(" + email + ")");
         }
         return returnval;
-    } // findUserBySubjectDN
+    }
 
    	/**
      * Method that checks if user with specified users certificate exists in database
@@ -1990,6 +1937,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
     	checkIfCertificateBelongToUser(admin, certificatesnr, issuerdn);
     }
@@ -2002,6 +1950,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void checkIfCertificateBelongToUser(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
@@ -2012,14 +1961,15 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
             }
         	return;
         }
-        String username = certificatesession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
+        String username = certificateStoreSession.findUsernameByCertSerno(admin, certificatesnr, issuerdn);
         if (username != null) {
-            UserDataPK pk = new UserDataPK(username);
+        	if (UserData.findByUsername(entityManager, username) == null) {
+            /*UserDataPK pk = new UserDataPK(username);
             try {
             	home.findByPrimaryKey(pk);
-            } catch (FinderException e) {
+            } catch (FinderException e) {*/
                 String msg = intres.getLocalizedMessage("ra.errorcertnouser", issuerdn, certificatesnr.toString(16));
-                logsession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ADMINISTRATORLOGGEDIN, msg);
+                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ADMINISTRATORLOGGEDIN, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
@@ -2036,24 +1986,25 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection findAllUsersByStatus(Admin admin, int status) throws FinderException {
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatus(" + status + ")");
         }
         if (log.isDebugEnabled()) {
-        	debug("Looking for users with status: " + status);
+        	log.debug("Looking for users with status: " + status);
         }
 
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
-        Collection returnval = null;
+        Collection<UserDataVO> returnval = null;
 
         try {
             returnval = query(admin, query, false, null, null, false,0);
         } catch (IllegalQueryException e) {
         }
         if (log.isDebugEnabled()) {
-        	debug("found " + returnval.size() + " user(s) with status=" + status);
+        	log.debug("found " + returnval.size() + " user(s) with status=" + status);
         }
         if (log.isTraceEnabled()) {
             log.trace("<findAllUsersByStatus(" + status + ")");
@@ -2068,32 +2019,32 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-     public Collection findAllUsersByCaId(Admin admin, int caid) {
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	public Collection findAllUsersByCaId(Admin admin, int caid) {
          if (log.isTraceEnabled()) {
              log.trace(">findAllUsersByCaId("+caid+")");
          }
          if (log.isDebugEnabled()) {
-        	 debug("Looking for users with caid: " + caid);
+        	 log.debug("Looking for users with caid: " + caid);
          }
          Query query = new Query(Query.TYPE_USERQUERY);
          query.add(UserMatch.MATCH_WITH_CA, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(caid));
-         Collection returnval = null;
+         Collection<UserDataVO> returnval = null;
          try{
            returnval = query(admin, query, false, null, null, false,0);  
          }catch(IllegalQueryException e){
         	 // Ignore ??
-        	 debug("Illegal query", e);
-        	 returnval = new ArrayList();
+        	 log.debug("Illegal query", e);
+        	 returnval = new ArrayList<UserDataVO>();
          }
          if (log.isDebugEnabled()) {
-             debug("found "+returnval.size()+" user(s) with caid="+caid);        	 
+             log.debug("found "+returnval.size()+" user(s) with caid="+caid);        	 
          }
          if (log.isTraceEnabled()) {
              log.trace("<findAllUsersByCaId("+caid+")");
          }
          return returnval;         
-     }
-
+	}
 
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
@@ -2102,17 +2053,18 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    public Collection findAllUsersWithLimit(Admin admin) throws FinderException {
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Collection findAllUsersWithLimit(Admin admin) {
         if (log.isTraceEnabled()) {
-        	trace(">findAllUsersWithLimit()");
+        	log.trace(">findAllUsersWithLimit()");
         }
-        Collection returnval = null;
+        Collection<UserDataVO> returnval = null;
         try {
             returnval = query(admin, null, true, null, null, false, 0);
         } catch (IllegalQueryException e) {
         }
         if (log.isTraceEnabled()) {
-        	trace("<findAllUsersWithLimit()");
+        	log.trace("<findAllUsersWithLimit()");
         }
         return returnval;
     }
@@ -2124,13 +2076,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException {
         if (log.isTraceEnabled()) {
-        	trace(">findAllUsersByStatusWithLimit()");
+        	log.trace(">findAllUsersByStatusWithLimit()");
         }
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
-        Collection returnval = null;
+        Collection<UserDataVO> returnval = null;
 
         try {
             returnval = query(admin, query, false, null, null, onlybatchusers, 0);
@@ -2138,7 +2091,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
 
         if (log.isTraceEnabled()) {
-        	trace("<findAllUsersByStatusWithLimit()");
+        	log.trace("<findAllUsersByStatusWithLimit()");
         }
         return returnval;
     }
@@ -2157,6 +2110,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.transaction type="Supports"
      * @see se.anatom.ejbca.util.query.Query
      */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection query(Admin admin, Query query, String caauthorizationstring, String endentityprofilestring, int numberofrows) throws IllegalQueryException {
         return query(admin, query, true, caauthorizationstring, endentityprofilestring, false, numberofrows);
     }
@@ -2178,7 +2132,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         ResultSet rs = null;
         String caauthorizationstring = StringTools.strip(caauthorizationstr);
         String endentityprofilestring = StringTools.strip(endentityprofilestr);
-        ArrayList returnval = new ArrayList();
+        ArrayList<UserDataVO> returnval = new ArrayList<UserDataVO>();
         GlobalConfiguration globalconfiguration = getGlobalConfiguration(admin);
         RAAuthorization raauthorization = null;
         String caauthstring = caauthorizationstring;
@@ -2200,7 +2154,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
 
         if (caauthorizationstring == null || endentityprofilestring == null) {
-            raauthorization = new RAAuthorization(admin, raadminsession, authorizationsession, caadminsession);
+            raauthorization = new RAAuthorization(admin, raAdminSession, authorizationSession, caAdminSession);
             caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
                 endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
@@ -2283,8 +2237,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-    } // query
-    
+    }
 
     /**
      * Methods that checks if a user exists in the database having the given endentityprofileid. This function is mainly for avoiding
@@ -2295,6 +2248,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid) {
         if (log.isTraceEnabled()) {
         	log.trace(">checkForEndEntityProfileId()");
@@ -2337,6 +2291,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForCertificateProfileId(Admin admin, int certificateprofileid) {
         if (log.isTraceEnabled()) {
         	log.trace(">checkForCertificateProfileId()");
@@ -2369,7 +2324,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-    } // checkForCertificateProfileId
+    }
 
     /**
      * Methods that checks if a user exists in the database having the given caid. This function is mainly for avoiding
@@ -2380,6 +2335,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForCAId(Admin admin, int caid) {
         if (log.isTraceEnabled()) {
         	log.trace(">checkForCAId()");
@@ -2412,8 +2368,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-    } // checkForCAId
-
+    }
 
     /**
      * Methods that checks if a user exists in the database having the given hard token profile id. This function is mainly for avoiding
@@ -2424,9 +2379,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForHardTokenProfileId(Admin admin, int profileid) {
 		if (log.isTraceEnabled()) {
-			trace(">checkForHardTokenProfileId()");
+			log.trace(">checkForHardTokenProfileId()");
 		}
         Connection con = null;
         PreparedStatement ps = null;
@@ -2447,7 +2403,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                 count = rs.getInt(1);
             }
     		if (log.isTraceEnabled()) {
-    			trace("<checkForHardTokenProfileId()");
+    			log.trace("<checkForHardTokenProfileId()");
     		}
             return count > 0;
         } catch (Exception e) {
@@ -2455,10 +2411,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         } finally {
             JDBCUtil.close(con, ps, rs);
         }
-    } // checkForHardTokenProfileId
+    }
 
 
-    private void  print(Admin admin, EndEntityProfile profile, UserDataVO userdata){
+    private void print(Admin admin, EndEntityProfile profile, UserDataVO userdata){
     	try{
       	  if(profile.getUsePrinting()){
       	    String[] pINs = new String[1];
@@ -2467,9 +2423,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
       	  }
     	}catch(PrinterException e){
     		String msg = intres.getLocalizedMessage("ra.errorprint", userdata.getUsername(), e.getMessage());
-    		error(msg, e);
+    		log.error(msg, e);
     		try{
-    			logsession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(),userdata.getUsername(), null, LogConstants.EVENT_ERROR_NOTIFICATION, msg);
+    			logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(),userdata.getUsername(), null, LogConstants.EVENT_ERROR_NOTIFICATION, msg);
     		}catch(Exception f){
     			throw new EJBException(f);
     		}
@@ -2491,19 +2447,19 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         // Make check if we should send notifications at all
         if ( ((data.getType() & SecConst.USER_SENDNOTIFICATION) != 0) ) {
             int profileId = data.getEndEntityProfileId();
-            EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);
-            Collection l = profile.getUserNotifications();
+            EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin, profileId);
+            Collection<UserNotification> l = profile.getUserNotifications();
     		if (log.isDebugEnabled()) {
-    			debug("Number of user notifications: "+l.size());
+    			log.debug("Number of user notifications: "+l.size());
     		}
-            Iterator i = l.iterator();
+            Iterator<UserNotification> i = l.iterator();
         	String rcptemail = useremail; // Default value
             while (i.hasNext()) {
-            	UserNotification not = (UserNotification)i.next(); 
+            	UserNotification not = i.next(); 
             	Collection events = not.getNotificationEventsCollection();
             	if (events.contains(String.valueOf(newstatus))) {
             		if (log.isDebugEnabled()) {
-            			debug("Status is "+newstatus+", notification sent for notificationevents: "+not.getNotificationEvents());
+            			log.debug("Status is "+newstatus+", notification sent for notificationevents: "+not.getNotificationEvents());
             		}
                     try {
                     	if (StringUtils.equals(not.getNotificationRecipient(), UserNotification.RCPT_USER)) {
@@ -2513,7 +2469,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                     		// Plug-in mechanism for retrieving custom notification email recipient addresses
                     		if (not.getNotificationRecipient().length() < 6) {
                         		String msg = intres.getLocalizedMessage("ra.errorcustomrcptshort", not.getNotificationRecipient());
-                    			error(msg);
+                    			log.error(msg);
                     		} else {
                         		String cp = not.getNotificationRecipient().substring(7);
                         		if (StringUtils.isNotEmpty(cp)) {
@@ -2521,15 +2477,15 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                         			rcptemail = plugin.getRecipientEmails(data);
                         			if (StringUtils.isEmpty(rcptemail)) {
                                 		String msg = intres.getLocalizedMessage("ra.errorcustomnoemail", not.getNotificationRecipient());
-                            			error(msg);
+                            			log.error(msg);
                         			} else {
                         	    		if (log.isDebugEnabled()) {
-                        	    			debug("Custom notification recipient plugin returned email: "+ rcptemail);
+                        	    			log.debug("Custom notification recipient plugin returned email: "+ rcptemail);
                         	    		}
                         			}
                         		} else {
                             		String msg = intres.getLocalizedMessage("ra.errorcustomnoclasspath", not.getNotificationRecipient());
-                        			error(msg);
+                        			log.error(msg);
                         		}
                     		}
                     	} else {
@@ -2555,12 +2511,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
                         String message = paramGen.interpolate(not.getNotificationMessage());
                         MailSender.sendMailOrThrow(fromemail, Arrays.asList(rcptemail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
                         String logmsg = intres.getLocalizedMessage("ra.sentnotification", data.getUsername(), rcptemail);
-                        logsession.log(admin, data.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
+                        logSession.log(admin, data.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
                     } catch (Exception e) {
                     	String msg = intres.getLocalizedMessage("ra.errorsendnotification", data.getUsername(), rcptemail);
-                    	error(msg, e);
+                    	log.error(msg, e);
                         try{
-                            logsession.log(admin, data.getCAId(), LogConstants.MODULE_RA, new java.util.Date(),data.getUsername(), null, LogConstants.EVENT_ERROR_NOTIFICATION, msg);
+                            logSession.log(admin, data.getCAId(), LogConstants.MODULE_RA, new java.util.Date(),data.getUsername(), null, LogConstants.EVENT_ERROR_NOTIFICATION, msg);
                         }catch(Exception f){
                             throw new EJBException(f);
                         }
@@ -2579,7 +2535,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         if (log.isTraceEnabled()) {
             log.trace("<sendNotification: user="+data.getUsername()+", email="+useremail);
         }
-    } // sendNotification
+    }
 
     /**
      * Method checking if username already exists in database.
@@ -2589,11 +2545,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsUser(Admin admin, String username) {
         boolean returnval = true;
-        try {
+        if (UserData.findByUsername(entityManager, username) == null) {
+        /*try {
             home.findByPrimaryKey(new UserDataPK(username));
-        } catch (FinderException fe) {
+        } catch (FinderException fe) {*/
             returnval = false;
         }
         return returnval;
@@ -2613,13 +2571,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
+    //Redundant.. @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean prepareForKeyRecovery(Admin admin, String username, int endEntityProfileId, Certificate certificate) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
     	boolean ret;
-    	GlobalConfiguration gc = raadminsession.loadGlobalConfiguration(admin);
+    	GlobalConfiguration gc = raAdminSession.loadGlobalConfiguration(admin);
     	if (certificate == null) {
-    		ret = getKeyRecoverySession().markNewestAsRecoverable(admin, username, endEntityProfileId, gc);
+    		ret = keyRecoverySession.markNewestAsRecoverable(admin, username, endEntityProfileId, gc);
     	} else {
-    		ret = getKeyRecoverySession().markAsRecoverable(admin, certificate, endEntityProfileId, gc);
+    		ret = keyRecoverySession.markAsRecoverable(admin, certificate, endEntityProfileId, gc);
     	}
         try {
 			setUserStatus(admin, username, UserDataConstants.STATUS_KEYRECOVERY);
@@ -2638,12 +2597,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @param admin administrator
      * @param data1 UserDataLocal, the new user
      */
-    private void resetRequestCounter(Admin admin, UserDataLocal data1, boolean onlyRemoveNoUpdate) {
+    private void resetRequestCounter(Admin admin, UserData data1, boolean onlyRemoveNoUpdate) {
     	if (log.isTraceEnabled()) {
         	log.trace(">resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
     	}
     	int epid = data1.getEndEntityProfileId();
-    	EndEntityProfile prof = raadminsession.getEndEntityProfile(admin, epid);
+    	EndEntityProfile prof = raAdminSession.getEndEntityProfile(admin, epid);
     	String value = null;
     	if (prof != null) {
         	value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);    		
@@ -2659,7 +2618,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
     	if (ei != null) {
     		String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
     		if (log.isDebugEnabled()) {
-    			debug("Old counter is: "+counter+", new counter will be: "+value);
+    			log.debug("Old counter is: "+counter+", new counter will be: "+value);
     		}
     		// If this end entity profile does not use ALLOWEDREQUESTS, this value will be set to null
     		// We only re-set this value if the COUNTER was used in the first place, if never used, we will not fiddle with it
@@ -2668,27 +2627,26 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
     				ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
     				data1.setExtendedInformation(ei);    			
     	    		if (log.isDebugEnabled()) {
-    	    			debug("Re-set request counter for user '"+data1.getUsername()+"' to:"+value);
+    	    			log.debug("Re-set request counter for user '"+data1.getUsername()+"' to:"+value);
     	    		}
     			} else {
     	    		if (log.isDebugEnabled()) {
-    	    			debug("No re-setting counter because we should only remove");
+    	    			log.debug("No re-setting counter because we should only remove");
     	    		}
     			}
     		} else {
         		if (log.isDebugEnabled()) {
-        			debug("Request counter not used, not re-setting it.");
+        			log.debug("Request counter not used, not re-setting it.");
         		}
     		}
     	} else {
     		if (log.isDebugEnabled()) {
-    			debug("No extended information exists for user: "+data1.getUsername());
+    			log.debug("No extended information exists for user: "+data1.getUsername());
     		}
     	}
     	if (log.isTraceEnabled()) {
         	log.trace("<resetRequestCounter("+data1.getUsername()+", "+onlyRemoveNoUpdate+")");    		
     	}
-
     }
 
     /**
@@ -2704,32 +2662,34 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
         int status;
-        try {
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data1 = home.findByPrimaryKey(pk);
+        UserData data1 = UserData.findByUsername(entityManager, username);
+        if (data1 != null) {
+        //try {
+            //UserDataPK pk = new UserDataPK(username);
+            //UserDataLocal data1 = home.findByPrimaryKey(pk);
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
-                logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
                     String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
-                    logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                    logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
              status = data1.getStatus();
-        } catch (FinderException e) {
+        } else {
+        //} catch (FinderException e) {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-            logsession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            throw e;
+            logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            throw new FinderException(msg);
         }
     	if (log.isTraceEnabled()) {
             log.trace("<getUserStatus(" + username + ", " + status + ")");
     	}
         return status;
-    } // getUserStatus
-
-} // LocalUserAdminSessionBean
+    }
+}

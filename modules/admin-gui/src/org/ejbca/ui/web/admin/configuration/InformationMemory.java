@@ -18,6 +18,8 @@
  */
 
 package org.ejbca.ui.web.admin.configuration;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,13 +27,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -45,24 +47,55 @@ import org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization;
 import org.ejbca.ui.web.admin.loginterface.LogAuthorization;
 import org.ejbca.ui.web.admin.rainterface.EndEntityProfileNameProxy;
 
-
 /**
  * A class used to improve performance by proxying authorization information about the administrator.
  * It should be used in all jsp interface bean classes. 
  * @author  TomSelleck
  * @version $Id$
  */
-public class InformationMemory implements java.io.Serializable {
+public class InformationMemory implements Serializable {
     
+    // Private fields
+    private Admin administrator;
+    // Session Bean interfaces
+    private CAAdminSessionLocal caadminsession;
+    private RaAdminSessionLocal raadminsession;
+    private AuthorizationSessionLocal authorizationsession;
+    private PublisherSessionLocal publishersession;
+    private CertificateStoreSessionLocal certificatestoresession;
+    private UserDataSourceSessionLocal userdatasourcesession = null;
+    
+    // Memory variables.
+    LogAuthorization logauthorization = null;
+    RAAuthorization raauthorization = null;
+    CAAuthorization caauthorization = null;
+    HardTokenAuthorization hardtokenauthorization = null;
+    
+    HashMap endentityprofileidtonamemap = null;
+    HashMap caidtonamemap = null;
+    HashMap certificateprofileidtonamemap = null;    
+    HashMap endentityavailablecas = null;
+    HashMap publisheridtonamemap = null;
+
+    TreeMap authgroups = null;
+    TreeMap publishernames = null;
+    HashMap admingrpidmap = null;
+    
+    HashSet authorizedaccessrules = null;
+    
+    GlobalConfiguration globalconfiguration = null;
+    EndEntityProfileNameProxy endentityprofilenameproxy = null;
+    CertificateProfileNameProxy certificateprofilenameproxy = null;
+
     /** Creates a new instance of ProfileNameProxy */
     public InformationMemory(Admin administrator,
-                             ICAAdminSessionLocal  caadminsession,
-                             IRaAdminSessionLocal raadminsession, 
-                             IAuthorizationSessionLocal authorizationsession,
-                             ICertificateStoreSessionLocal certificatestoresession,
-                             IHardTokenSessionLocal hardtokensession,
-							 IPublisherSessionLocal publishersession,
-							 IUserDataSourceSessionLocal userdatasourcesession,
+                             CAAdminSessionLocal  caadminsession,
+                             RaAdminSessionLocal raadminsession, 
+                             AuthorizationSessionLocal authorizationsession,
+                             CertificateStoreSessionLocal certificatestoresession,
+                             HardTokenSessionLocal hardtokensession,
+							 PublisherSessionLocal publishersession,
+							 UserDataSourceSessionLocal userdatasourcesession,
                              GlobalConfiguration globalconfiguration){
       this.caadminsession = caadminsession;                           
       this.administrator = administrator;
@@ -533,37 +566,4 @@ public class InformationMemory implements java.io.Serializable {
     public void userDataSourceEdited(){      
     	authorizedaccessrules = null;
     }
-    
-    
-    // Private fields
-    private Admin administrator;
-    // Session Bean interfaces
-    private ICAAdminSessionLocal caadminsession;
-    private IRaAdminSessionLocal raadminsession;
-    private IAuthorizationSessionLocal authorizationsession;
-    private IPublisherSessionLocal publishersession;
-    private ICertificateStoreSessionLocal certificatestoresession;
-    private IUserDataSourceSessionLocal userdatasourcesession = null;
-    
-    // Memory variables.
-    LogAuthorization logauthorization = null;
-    RAAuthorization raauthorization = null;
-    CAAuthorization caauthorization = null;
-    HardTokenAuthorization hardtokenauthorization = null;
-    
-    HashMap endentityprofileidtonamemap = null;
-    HashMap caidtonamemap = null;
-    HashMap certificateprofileidtonamemap = null;    
-    HashMap endentityavailablecas = null;
-    HashMap publisheridtonamemap = null;
-
-    TreeMap authgroups = null;
-    TreeMap publishernames = null;
-    HashMap admingrpidmap = null;
-    
-    HashSet authorizedaccessrules = null;
-    
-    GlobalConfiguration globalconfiguration = null;
-    EndEntityProfileNameProxy endentityprofilenameproxy = null;
-    CertificateProfileNameProxy certificateprofilenameproxy = null;
 }
