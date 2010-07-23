@@ -52,12 +52,6 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 
     private static final long serialVersionUID = 1L;
 
-    public void ejbCreate() {
-    }
-
-    public void ejbRemove() {
-    }
-
     /**
      * Verify that EJBCA isn't running in production mode.
      */
