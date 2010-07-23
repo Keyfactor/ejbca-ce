@@ -21,9 +21,12 @@ import java.sql.Statement;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
@@ -89,14 +92,13 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
     
     private static final Logger log = Logger.getLogger(LocalCertificateStoreOnlyDataSessionBean.class);
     
-    /**
-     * The home interface of Certificate entity bean
-     */
-    private CertificateDataLocalHome certHome = null;
     private final CertificateDataUtil.Adapter adapter;
 
-    /** The come interface of the protection session bean */
-    private TableProtectSessionLocalejb3 protect = null;
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
+
+    @EJB
+    private TableProtectSessionLocalejb3 tableProtectSession;
     
     public LocalCertificateStoreOnlyDataSessionBean() {
         super();
@@ -111,7 +113,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="local"
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    // Redundant.. @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getDatabaseStatus() {
 		String returnval = "";
 		Connection con = null;
@@ -137,7 +139,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @ejb.interface-method
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(issuerDN, serno, certHome, protect, adapter);
+        return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, tableProtectSession, adapter);
     }
 
     /**
@@ -150,8 +152,8 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @ejb.interface-method
      */
     public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
-    	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, certHome, adapter);
-    } //findCertificateByIssuerAndSerno
+    	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager, adapter);
+    }
 
     /**
      * Lists all active (status = 20) certificates of a specific type and if
@@ -222,8 +224,8 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @ejb.interface-method
      */
     public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
-        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, certHome, adapter);
-    } // findCertificatesByType
+        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, entityManager, adapter);
+    }
 
     /**
      * Finds certificate(s) for a given username.
@@ -234,7 +236,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @ejb.interface-method
      */
     public Collection findCertificatesByUsername(Admin admin, String username) {
-    	return CertificateDataUtil.findCertificatesByUsername(admin, username, certHome, adapter);
+    	return CertificateDataUtil.findCertificatesByUsername(admin, username, entityManager, adapter);
     }
 
     private class MyAdapter implements CertificateDataUtil.Adapter {
@@ -269,5 +271,4 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
             log.error(s, e);        	
         }
     }
-
 }

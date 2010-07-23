@@ -22,6 +22,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -148,16 +150,27 @@ public class CertificateProfileData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static CertificateProfileData findById(EntityManager entityManager, Integer id) {
 		return entityManager.find(CertificateProfileData.class,  id);
 	}
 	
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
 	public static CertificateProfileData findByProfileName(EntityManager entityManager, String certificateProfileName) {
-		Query query = entityManager.createQuery("from CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
-		query.setParameter("certificateProfileName", certificateProfileName);
-		return (CertificateProfileData) query.getSingleResult();
+		CertificateProfileData ret = null;
+		try {
+			Query query = entityManager.createQuery("from CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
+			query.setParameter("certificateProfileName", certificateProfileName);
+			ret = (CertificateProfileData) query.getSingleResult();
+		} catch (NoResultException e) {
+		}
+		return ret;
 	}
 
+	/** @return return the query results as a List. */
 	public static Collection<CertificateProfileData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("from CertificateProfileData a");
 		return query.getResultList();

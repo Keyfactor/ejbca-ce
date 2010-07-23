@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
+import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
@@ -60,25 +60,29 @@ public class CertificateDataUtil {
                  X509Certificate certificate, int event, String comment);
     }
     public static Certificate findCertificateByFingerprint(Admin admin, String fingerprint,
-                                                           CertificateDataLocalHome certHome,
+                                                           EntityManager entityManager,
                                                            Adapter adapter) {
         adapter.getLogger().trace(">findCertificateByFingerprint()");
         Certificate ret = null;
 
         try {
-            CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
+        	CertificateData res = CertificateData.findByFingerprint(entityManager, fingerprint);
+        	if (res == null) {
+        		return null;
+        	}
+            //CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
             ret = res.getCertificate();
             adapter.getLogger().trace("<findCertificateByFingerprint()");
-        } catch (FinderException fe) {
+        //} catch (FinderException fe) {
             // Return null;
         } catch (Exception e) {
             adapter.getLogger().error("Error finding certificate with fp: " + fingerprint);
             throw new EJBException(e);
         }
         return ret;
-    } // findCertificateByFingerprint
+    }
 
-    public static Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno, CertificateDataLocalHome certHome, Adapter adapter) {
+    public static Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno, EntityManager entityManager, Adapter adapter) {
         if (adapter.getLogger().isTraceEnabled()) {
         	adapter.getLogger().trace(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
@@ -87,19 +91,20 @@ public class CertificateDataUtil {
         if (adapter.getLogger().isDebugEnabled()) {
         	adapter.debug("Looking for cert with (transformed)DN: " + dn);
         }
-        try {
-            Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
+        //try {
+        	Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
+            //Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
             Certificate ret = null;
             if (coll != null) {
                 if (coll.size() > 1) {
                 	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
                     adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_DATABASE, msg);	
                 }
-                Iterator iter = coll.iterator();
+                Iterator<CertificateData> iter = coll.iterator();
                 Certificate cert = null;
                 // There are several certs, we will try to find the latest issued one
                 if (iter.hasNext()) {
-                    cert = ((CertificateDataLocal) iter.next()).getCertificate();
+                    cert = iter.next().getCertificate();
                     if (ret != null) {
                     	if (CertTools.getNotBefore(cert).after(CertTools.getNotBefore(ret))) {
                     		// cert is never than ret
@@ -114,13 +119,13 @@ public class CertificateDataUtil {
             	adapter.getLogger().trace("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
             }
             return ret;
-        } catch (Exception fe) {
+        /*} catch (Exception fe) {
             throw new EJBException(fe);
-        }
-    } //findCertificateByIssuerAndSerno
+        }*/
+    }
 
-    public static Collection findCertificatesByType(Admin admin, int type, String issuerDN,
-                                                    CertificateDataLocalHome certHome,
+    public static Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN,
+                                                    EntityManager entityManager,
                                                     Adapter adapter) {
         adapter.getLogger().trace(">findCertificatesByType()");
         if (null == admin
@@ -149,7 +154,7 @@ public class CertificateDataUtil {
         PreparedStatement ps = null;
         ResultSet result = null;
         try {
-            ArrayList vect;
+            ArrayList<Certificate> vect;
             // Status 20 = CertificateDataBean.CERT_ACTIVE, 21 = CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION 
             StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE (status="+SecConst.CERT_ACTIVE+" or status="+SecConst.CERT_NOTIFIEDABOUTEXPIRATION+") AND ");
             stmt.append(" type IN (");
@@ -173,15 +178,14 @@ public class CertificateDataUtil {
             ps = con.prepareStatement(stmt.toString());
             result = ps.executeQuery();
 
-            vect = new ArrayList();
+            vect = new ArrayList<Certificate>();
             while (result.next()) {
                 Certificate cert = findCertificateByFingerprint(admin, result.getString(1),
-                                                                certHome, adapter);
+                                                                entityManager, adapter);
                 if (cert != null) {
                     vect.add(cert);
                 }
             }
-
             adapter.getLogger().trace("<findCertificatesByType()");
             return vect;
         } catch (Exception e) {
@@ -189,38 +193,37 @@ public class CertificateDataUtil {
         } finally {
             JDBCUtil.close(con, ps, result);
         }
-    } // findCertificatesByType
+    }
     
-    public static Collection findCertificatesByUsername(Admin admin, String username, CertificateDataLocalHome certHome, Adapter adapter) {
+    public static Collection<Certificate> findCertificatesByUsername(Admin admin, String username, EntityManager entityManager, Adapter adapter) {
     	if (adapter.getLogger().isTraceEnabled()) {
     		adapter.getLogger().trace(">findCertificatesByUsername(),  username=" + username);
     	}
-        try {
+        //try {
             // Strip dangerous chars
             username = StringTools.strip(username);
-
             // This method on the entity bean does the ordering in the database
-            Collection coll = certHome.findByUsername(username);
-            ArrayList ret = new ArrayList();
-
+            Collection<CertificateData> coll = CertificateData.findByUsername(entityManager, username);
+            //Collection coll = certHome.findByUsername(username);
+            ArrayList<Certificate> ret = new ArrayList<Certificate>();
             if (coll != null) {
-                Iterator iter = coll.iterator();
+                Iterator<CertificateData> iter = coll.iterator();
                 while (iter.hasNext()) {
-                    ret.add(((CertificateDataLocal) iter.next()).getCertificate());
+                    ret.add(iter.next().getCertificate());
                 }
             }
         	if (adapter.getLogger().isTraceEnabled()) {
         		adapter.getLogger().trace("<findCertificatesByUsername(), username=" + username);
         	}
             return ret;
-        } catch (javax.ejb.FinderException fe) {
+        /*} catch (javax.ejb.FinderException fe) {
             throw new EJBException(fe);
-        }
-    } // findCertificatesByUsername
+        }*/
+    }
 
 
     static public CertificateStatus getStatus(String issuerDN, BigInteger serno,
-                                              CertificateDataLocalHome certHome, TableProtectSessionLocalejb3 protect, Adapter adapter) {
+                                              EntityManager entityManager, TableProtectSessionLocalejb3 protect, Adapter adapter) {
         if (adapter.getLogger().isTraceEnabled()) {
             adapter.getLogger().trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
@@ -228,16 +231,17 @@ public class CertificateDataUtil {
         final String dn = CertTools.stringToBCDNString(issuerDN);
 
         try {
-            Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
+        	Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
+            //Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
             if (coll != null) {
                 if (coll.size() > 1) {
                 	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
                     //adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
                 	adapter.error(msg);
                 }
-                Iterator iter = coll.iterator();
+                Iterator<CertificateData> iter = coll.iterator();
                 if (iter.hasNext()) {
-                	final CertificateDataLocal data = (CertificateDataLocal) iter.next();
+                	final CertificateData data = iter.next();
                 	if (protect != null) {
                 		verifyProtection(data, protect, adapter);
                 	}
@@ -255,7 +259,7 @@ public class CertificateDataUtil {
             throw new EJBException(e);
         }
         return CertificateStatus.NOT_AVAILABLE;
-    } //isRevoked
+    }
     
     /** Algorithm:
      * if status is CERT_REVOKED the certificate is revoked and reason and date is picked up
@@ -266,7 +270,7 @@ public class CertificateDataUtil {
      * @param data
      * @return CertificateStatus, can be compared (==) with CertificateStatus.OK, CertificateStatus.REVOKED and CertificateStatus.NOT_AVAILABLE
      */
-    private final static CertificateStatus getIt( CertificateDataLocal data) {
+    private final static CertificateStatus getIt(CertificateData data) {
     	if ( data == null ) {
     		return CertificateStatus.NOT_AVAILABLE;
     	}
@@ -291,37 +295,38 @@ public class CertificateDataUtil {
     }
 
     static public void verifyProtection(Admin admin, String issuerDN, BigInteger serno,
-    		CertificateDataLocalHome certHome, TableProtectSessionLocalejb3 protect, Adapter adapter) {
+    		EntityManager entityManager, TableProtectSessionLocalejb3 tableProtectSession, Adapter adapter) {
     	if (adapter.getLogger().isTraceEnabled()) {
     		adapter.getLogger().trace(">verifyProtection, dn:" + issuerDN + ", serno=" + serno.toString(16));
     	}
-		try {
-			if (protect != null) {
+		//try {
+			if (tableProtectSession != null) {
 				// First make a DN in our well-known format
-				Collection coll = certHome.findByIssuerDNSerialNumber(CertTools.stringToBCDNString(issuerDN), serno.toString());
+				Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, CertTools.stringToBCDNString(issuerDN), serno.toString());
+				//Collection coll = certHome.findByIssuerDNSerialNumber(CertTools.stringToBCDNString(issuerDN), serno.toString());
 				if (coll != null) {
 					if (coll.size() > 1) {
 						String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
 						adapter.error(msg);
 					}
-					Iterator iter = coll.iterator();
+					Iterator<CertificateData> iter = coll.iterator();
 					if (iter.hasNext()) {
-						CertificateDataLocal data = (CertificateDataLocal) iter.next();
-						verifyProtection(data, protect, adapter);
+						CertificateData data = iter.next();
+						verifyProtection(data, tableProtectSession, adapter);
 					}
 				}
 			}
-		} catch (FinderException e) {
+		/*} catch (FinderException e) {
 			throw new EJBException(e);	// This should exist here
-		}
+		}*/
     }
 
 
-    static void verifyProtection(CertificateDataLocal data, TableProtectSessionLocalejb3 protect, Adapter adapter) {
+    static void verifyProtection(CertificateData data, TableProtectSessionLocalejb3 tableProtectSession, Adapter adapter) {
 		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
 		
 			// The verify method will log failed verifies itself
-			TableVerifyResult res = protect.verify(entry);
+			TableVerifyResult res = tableProtectSession.verify(entry);
 			if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
 				//adapter.error("Verify failed, but we go on anyway.");
 			}
