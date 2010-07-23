@@ -117,10 +117,10 @@ public class PublisherData implements Serializable {
 
 	//
 	// Search functions. 
-	//
+	// 
 
-	public static PublisherData findById(EntityManager entityManager, Integer id) {
-		return entityManager.find(PublisherData.class,  id);
+	public static PublisherData findById(EntityManager entityManager, Integer id) {	    
+	    return entityManager.find(PublisherData.class,  id);
 	}
 
 	public static PublisherData findByName(EntityManager entityManager, java.lang.String name) {

@@ -28,8 +28,10 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.management.remote.NotificationResult;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
@@ -214,7 +216,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection<Integer> publisherids, Certificate cert, String username,
             String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
             long lastUpdate, ExtendedInformation extendedinformation) {
-    
+
         boolean returnval = true;
         for (Integer id : publisherids) {
             int publishStatus = PublisherQueueData.STATUS_PENDING;
@@ -505,25 +507,25 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         if (log.isTraceEnabled()) {
             log.trace(">renamePublisher(from " + oldname + " to " + newname + ")");
         }
-        boolean success = false;
 
-        PublisherData.findByName(entityManager, newname);
+        try {
+            PublisherData.findByName(entityManager, newname);
+        } catch (NoResultException e) {
+            try {
+                PublisherData htp = PublisherData.findByName(entityManager, oldname);
+                htp.setName(newname);
+                String msg = intres.getLocalizedMessage("publisher.renamedpublisher", oldname, newname);
+                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+                log.trace("<renamePublisher()");
+                return;
+            } catch (NoResultException f) {
 
-        PublisherData htp = PublisherData.findByName(entityManager, oldname);
-        htp.setName(newname);
-        success = true;
-
-        if (success) {
-            String msg = intres.getLocalizedMessage("publisher.renamedpublisher", oldname, newname);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
-        } else {
-            String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldname, newname);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
+            }
         }
-        if (!success) {
-            throw new PublisherExistsException();
-        }
-        log.trace("<renamePublisher()");
+        String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldname, newname);
+        logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
+        throw new PublisherExistsException();
+
     } // renameHardTokenProfile
 
     /**
@@ -566,7 +568,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
 
         for (PublisherData next : PublisherData.findAll(entityManager)) {
-     
+
             returnval.put(next.getId(), next.getName());
         }
 
@@ -585,7 +587,15 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public BasePublisher getPublisher(Admin admin, String name) {
 
-        return getPublisher(PublisherData.findByName(entityManager, name));
+        BasePublisher result = null;
+
+        try {
+            result = getPublisher(PublisherData.findByName(entityManager, name));
+        } catch (NoResultException e) {
+            result = null;
+        }
+
+        return result;
 
     } // getPublisher
 
