@@ -335,7 +335,14 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         data1.setCertificateProfileId(certificateProfileId);
         data1.setTag(tag);
         data1.setUpdateTime(updateTime);
-        entityManager.persist(data1);
+        try {
+        	entityManager.persist(data1);
+        } catch (Exception e) {
+        	// For backward compatibility. We should drop the throw entirely and rely on the return value.
+        	CreateException ce = new CreateException();
+        	ce.setStackTrace(e.getStackTrace());
+        	throw ce;
+        }
         String msg = intres.getLocalizedMessage("store.storecert");            	
         logSession.log(admin, incert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
         if (protect) {

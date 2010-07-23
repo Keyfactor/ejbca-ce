@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -192,31 +193,18 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     private static Logger log = Logger.getLogger(RSASignSessionBean.class);
     
-    /* Local interface to certificate store */
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
-
-    /* Local interface to Authentication session */
     @EJB
     private AuthenticationSessionLocal authenticationSession;
-
-    /* Local interface to Publisher session */
     @EJB
     private PublisherSessionLocal publisherSession;
-
-    /* The local interface of the job runner session bean used to create crls.*/
     @EJB
     private CreateCRLSessionLocal crlSession;
-
-    /* The local interface of CA administration.*/
     @EJB
     private CAAdminSessionLocal caAdminSession;
-
-    /**
-     * The local interface of the log session bean
-     */
     @EJB
-    private LogSessionLocal logsession;
+    private LogSessionLocal logSession;
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -225,12 +213,11 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     /**
      * Default create for SessionBean without any creation Arguments.
      *
-     * @throws CreateException if bean instance can't be created
      * @ejb.create-method 
      */
-    public void ejbCreate() throws CreateException {
+	@PostConstruct
+    public void ejbCreate() {
         log.trace(">ejbCreate()");
-
         try {
             // Install BouncyCastle provider
         	CryptoProviderTools.installBCProvider();
@@ -250,7 +237,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
         }
-
         log.trace("<ejbCreate()");
     }
 	/**
@@ -308,9 +294,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 		}
 		final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 		
-		final Collection c = certificateStoreSession.findCertificatesByUsername(admin, userName);
+		final Collection<Certificate> c = certificateStoreSession.findCertificatesByUsername(admin, userName);
 		if ( c.size()>1 ) {
-			this.log.warn( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
+			log.warn( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
 			return false; // already proved that not checking index for serial number.
 		}
 		if ( c.size()<1 ) {// storing initial certificate if no test certificate created.
@@ -323,10 +309,10 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 		try { // storing a second certificate with same issuer 
 		    certificateStoreSession.storeCertificate(admin, cert2, userName, "fedcba9876543210", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
 		} catch (CreateException e) {
-			this.log.info("Unique index in CertificateData table for certificate serial number");
+			log.info("Unique index in CertificateData table for certificate serial number");
 			return true;// Exception is thrown when unique index is working and a certificate with same serial number is in the database.
 		}
-		this.log.warn( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
+		log.warn( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
 		return false;// It was possible to store a second certificate with same serial number. Unique number not working.
 	}
 
@@ -350,7 +336,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     	}
     }
 
-
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain, including the
      * provided client certificate.
@@ -366,7 +351,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     public byte[] createPKCS7(Admin admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
         Integer caid = new Integer(CertTools.getIssuerDN(cert).hashCode());
         return createPKCS7(caid.intValue(), cert, includeChain);
-    } // createPKCS7
+    }
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain of the specified CA.
@@ -385,7 +370,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error(msg, e);
             throw new EJBException(e);
         }
-    } // createPKCS7
+    }
 
     /**
      * Internal helper method
@@ -427,7 +412,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException {
         // Default key usage is defined in certificate profiles
         return createCertificate(admin, username, password, pk, -1);
-    } // createCertificate
+    }
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -569,7 +554,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         	log.trace("<createCertificate(pk, certType)");
         }
         return ret;
-    } // createCertificate
+    }
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a self-signed
@@ -613,7 +598,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         	log.trace("<createCertificate(cert)");
         }
         return ret;
-    } // createCertificate
+    }
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
@@ -730,19 +715,19 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // Verify the request
             if (req.verify() == false) {
             	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-            	logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+            	logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new SignRequestSignatureException(msg);
             }
             
             if (req.getUsername() == null) {
             	String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
-            	logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+            	logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new SignRequestException(msg);
                 //ret.setFailInfo(FailInfo.BAD_REQUEST);
                 //ret.setStatus(ResponseStatus.FAILURE);
             } else if (req.getPassword() == null) {
             	String msg = intres.getLocalizedMessage("signsession.nopasswordinrequest");
-                logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new SignRequestException(msg);
             } else {        
             	ResponseStatus status = ResponseStatus.SUCCESS;
@@ -754,7 +739,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             		data = authUser(admin, req.getUsername(), req.getPassword());
                     PublicKey reqpk = req.getRequestPublicKey();
                     if (reqpk == null) {
-                        logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.nokeyinrequest"));
+                        logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.nokeyinrequest"));
                         throw new InvalidKeyException("Key is null!");
                     }
                     // We need to make sure we use the users registered CA here
@@ -762,7 +747,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
                     	failText = intres.getLocalizedMessage("signsession.wrongauthority", new Integer(ca.getCAId()), new Integer(data.getCAId()));
                         status = ResponseStatus.FAILURE;
                         failInfo = FailInfo.WRONG_AUTHORITY;
-                        logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, failText);
+                        logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, failText);
                     }
 
                     if (status.equals(ResponseStatus.SUCCESS)) {
@@ -802,7 +787,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
                 	failText = intres.getLocalizedMessage("signsession.nosuchuser", req.getUsername());
                     status = ResponseStatus.FAILURE;
                     failInfo = FailInfo.INCORRECT_DATA;
-                    logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, failText);
+                    logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, failText);
             	}
                 
                 //Create the response message with all nonces and checks etc
@@ -890,7 +875,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // Verify the request
             if (req.verify() == false) {
             	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-            	logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.popverificationfailed"));
+            	logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.popverificationfailed"));
                 throw new SignRequestSignatureException(msg);
             }
             //Create the response message with all nonces and checks etc
@@ -914,7 +899,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (CATokenOfflineException ctoe) {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
-            logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
+            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
         log.trace("<createRequestFailedResponse(IRequestMessage)");
@@ -956,7 +941,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // Verify the request
             if (req.verify() == false) {
             	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-            	logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+            	logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new SignRequestSignatureException(msg);
             }
         } catch (IllegalKeyStoreException e) {
@@ -970,7 +955,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         }  catch (CATokenOfflineException ctoe) {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
-            logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
+            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
         log.trace("<decryptAndVerifyRequest(IRequestMessage)");
@@ -1000,7 +985,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             CATokenContainer catoken = ca.getCAToken();
             if (ca.getStatus() != SecConst.CA_ACTIVE) {
             	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-            	logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
+            	logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
                 throw new EJBException(msg);
             }
             // See if we need some key material to decrypt request
@@ -1043,7 +1028,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (CATokenOfflineException ctoe) {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
         	log.error(msg, ctoe);
-            logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg, ctoe);
+            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg, ctoe);
             throw new CADoesntExistsException(msg);
         }
         log.trace("<getCRL(IRequestMessage)");
@@ -1110,7 +1095,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         
         if (ca.getStatus() != SecConst.CA_ACTIVE) {
         	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-        	logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+        	logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
         	throw new EJBException(msg);
         }
         return ca;
@@ -1130,13 +1115,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 	}
 
     private UserDataVO authUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
-        // Authorize user and get DN
-
-      
-            return authenticationSession.authenticateUser(admin, username, password);
-        
-
-    } // authUser
+    	// Authorize user and get DN
+    	return authenticationSession.authenticateUser(admin, username, password);
+    }
 
     /** Finishes user, i.e. set status to generated, if it should do so.
      * The authentication session is responsible for determining if this should be done or not */ 
@@ -1154,7 +1135,8 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
         	log.info(msg);
         }
-    } // finishUser
+    }
+
 	/**
 	 * Clean the certificate serial number of user from database
 	 * @param data of user
@@ -1233,7 +1215,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         CA ca = caAdminSession.getCA(admin, data.getCAId());
         if (ca.getStatus() != SecConst.CA_ACTIVE) {
         	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-        	logsession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+        	logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
         	throw new EJBException(msg);
         }
         Certificate cert;
@@ -1251,23 +1233,25 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     	}
         return cert;
     }
-    private String listUsers(Set users) {
-        Iterator i = users.iterator();
+    private String listUsers(Set<String> users) {
+        Iterator<String> i = users.iterator();
         String s = "";
         while ( i.hasNext() ) {
-        	if (s .length()>0 ) {
+        	if (s.length()>0 ) {
         		s += " ";
         	}
             s += "'"+i.next()+"'";
         }
         return s;
     }
+
     private class NoUniqueCertSerialNumberIndexException extends Exception {
     	final EjbcaException ejbcaException;
     	public NoUniqueCertSerialNumberIndexException( EjbcaException e ) {
     		this.ejbcaException = e;
     	}
     }
+
     /**
      * Creates the certificate, does NOT check any authorization on user, profiles or CA!
      * This must be done earlier
@@ -1289,11 +1273,11 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     		log.trace(">createCertificate(pk, ku, notAfter)");
     	}
         try {
-            logsession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
+            logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType() == SecConst.USER_INVALID) {
             	String msg = intres.getLocalizedMessage("signsession.usertypeinvalid", data.getUsername());
-            	logsession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+            	logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
             	if (log.isTraceEnabled()) {
             		log.trace("<createCertificate(pk, ku, notAfter)");
             	}
@@ -1302,7 +1286,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             final Certificate cacert = ca.getCACertificate();
             final String caSubjectDN = CertTools.getSubjectDN(cacert);
             if ( ca.isDoEnforceUniqueDistinguishedName() ){
-                final Set users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(admin, caSubjectDN, data.getDN());
+                final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(admin, caSubjectDN, data.getDN());
                 if ( users.size()>0 && !users.contains(data.getUsername()) ) {
                 	String msg = intres.getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users));
                 	log.info(msg);
@@ -1310,7 +1294,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
                 }
             }
             if ( ca.isDoEnforceUniquePublicKeys() ){
-                final Set users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(admin, caSubjectDN, KeyTools.createSubjectKeyId(pk).getKeyIdentifier());
+                final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(admin, caSubjectDN, KeyTools.createSubjectKeyId(pk).getKeyIdentifier());
                 if ( users.size()>0 && !users.contains(data.getUsername()) ) {
                 	String msg = intres.getLocalizedMessage("signsession.key_exists_for_another_user", "'"+data.getUsername()+"'", listUsers(users));
                 	log.info(msg);
@@ -1338,23 +1322,23 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
             // Check that CAid is among available CAs
             boolean caauthorized = false;
-            Iterator iter = certProfile.getAvailableCAs().iterator();
+            Iterator<Integer> iter = certProfile.getAvailableCAs().iterator();
             while (iter.hasNext()) {
-                int next = ((Integer) iter.next()).intValue();
+                int next = iter.next().intValue();
                 if (next == data.getCAId() || next == CertificateProfile.ANYCA) {
                     caauthorized = true;
                 }
             }
             if (!caauthorized) {
                 String msg = intres.getLocalizedMessage("signsession.errorcertprofilenotauthorized", new Integer(data.getCAId()), new Integer(certProfile.getType()));
-                logsession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new EJBException(msg);
             }
 
             // Sign Session bean is only able to issue certificates with a End Entity or SubCA type certificate profile.
             if ( (certProfile.getType() != CertificateProfile.TYPE_ENDENTITY) && (certProfile.getType() != CertificateProfile.TYPE_SUBCA) ) {
                 String msg = intres.getLocalizedMessage("signsession.errorcertprofiletype", new Integer(certProfile.getType()));
-                logsession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                 throw new EJBException(msg);
             }
 
@@ -1364,13 +1348,13 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         	}
             if (keyLength == -1) {
                 String text = intres.getLocalizedMessage("signsession.unsupportedkeytype", pk.getClass().getName()); 
-                logsession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
+                logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
                 throw new IllegalKeyException(text);
             }
             if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
                     || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
                 String text = intres.getLocalizedMessage("signsession.illegalkeylength", new Integer(keyLength)); 
-                logsession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
+                logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CREATECERTIFICATE, text);
                 throw new IllegalKeyException(text);
             }
 
@@ -1390,12 +1374,12 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 			if ( useCustomSN ) {
 				if ( !isUniqueCertificateSerialNumberIndex() ) {
 					final String msg = intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex");
-					this.log.error(msg);
+					log.error(msg);
 					throw new NoUniqueCertSerialNumberIndexException(new EjbcaException(msg));
 				}
 				if ( !certProfile.getAllowCertSerialNumberOverride() ) {
 					final String msg = intres.getLocalizedMessage("signsession.certprof_not_allowing_cert_sn_override", new Integer(certProfileId));
-					this.log.info(msg);
+					log.info(msg);
 					throw new NoUniqueCertSerialNumberIndexException(new EjbcaException(msg));
 				}
 				maxRetrys = 1;
@@ -1424,14 +1408,14 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 			if ( storeEx!=null ) {
 				if ( useCustomSN ) {
 					final String msg = intres.getLocalizedMessage("signsession.cert_serial_number_allready_in_database", serialNo);
-					this.log.info(msg);
+					log.info(msg);
 					throw new NoUniqueCertSerialNumberIndexException(new EjbcaException(msg));
 				}
-				this.log.error("Can not store certificate in database in 5 tries, aborting: ", storeEx);
+				log.error("Can not store certificate in database in 5 tries, aborting: ", storeEx);
 				throw storeEx;
 			}
 
-            logsession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogConstants.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
+            logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogConstants.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
             if (log.isDebugEnabled()) {
                 log.debug("Generated certificate with SerialNumber '" + serialNo + "' for user '" + data.getUsername() + "'.");
                 log.debug(cert.toString());                	
@@ -1442,24 +1426,22 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
                 certificateStoreSession.addCertReqHistoryData(admin,cert,data);
             }
             // Store certificate in certificate profiles publishers.
-            Collection publishers = certProfile.getPublisherList();
+            Collection<Integer> publishers = certProfile.getPublisherList();
             if (publishers != null) {
                 publisherSession.storeCertificate(admin, publishers, cert, data.getUsername(), data.getPassword(), data.getDN(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, tag, certProfileId, updateTime, data.getExtendedinformation());
             }
-
             // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance 
             int revreason = getIssuanceRevocationReason(data);
             if (revreason != RevokedCertInfo.NOT_REVOKED) {
                 certificateStoreSession.revokeCertificate(admin, cert, publishers, revreason, data.getDN());
             }                
-
         	if (log.isTraceEnabled()) {
         		log.trace("<createCertificate(pk, ku, notAfter)");
         	}
             return cert;
         } catch (CATokenOfflineException ctoe) {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            logsession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
+            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw ctoe;
         } catch (EjbcaException ke) {
             throw ke;
@@ -1469,9 +1451,8 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error(e);
             throw new EJBException(e);
         }
-    } // createCertificate
+    }
 
-    
     /**
      * Sign an array of bytes with CA.
      * 
@@ -1549,6 +1530,4 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         return ret;
     }
-
-
-} //RSASignSessionBean
+}
