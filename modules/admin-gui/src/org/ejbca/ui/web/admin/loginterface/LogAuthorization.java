@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -36,12 +36,12 @@ public class LogAuthorization implements Serializable {
     private String querystring = null;
     private String caidstring = null;
     private Collection authorizedmodules = null;
-    private IAuthorizationSessionLocal authorizationsession;
-    private ICAAdminSessionLocal caAdminSession;
+    private AuthorizationSession authorizationsession;
+    private CAAdminSession caAdminSession;
     private Admin administrator;
     
     /** Creates a new instance of LogAuthorization. */
-    public LogAuthorization(Admin administrator, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caAdminSession) {
+    public LogAuthorization(Admin administrator, AuthorizationSession authorizationsession, CAAdminSession caAdminSession) {
        this.administrator = administrator;
        this.authorizationsession = authorizationsession;
        this.caAdminSession = caAdminSession;

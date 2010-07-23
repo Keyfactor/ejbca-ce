@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -43,23 +43,21 @@ public class CAAuthorization implements Serializable {
 	private TreeMap allcanames = null;
     private TreeMap allprofilenames = null;
     private Admin admin;
-    private ICAAdminSessionLocal caadminsession;
-    private IAuthorizationSessionLocal authorizationsession;
-    private ICertificateStoreSessionLocal certificatestoresession;
+    private CAAdminSession caadminsession;
+    private AuthorizationSession authorizationsession;
+    private CertificateStoreSession certificatestoresession;
 
     /** Creates a new instance of CAAuthorization. */
     public CAAuthorization(Admin admin,  
-                           ICAAdminSessionLocal caadminsession,
-                           ICertificateStoreSessionLocal certificatestoresession, 
-                           IAuthorizationSessionLocal authorizationsession) {
+                           CAAdminSession caadminsession,
+                           CertificateStoreSession certificatestoresession, 
+                           AuthorizationSession authorizationsession) {
       this.admin=admin;
       this.caadminsession=caadminsession;      
       this.certificatestoresession=certificatestoresession;
       this.authorizationsession=authorizationsession;
     }
 
-    
-    
     /**
      * Method returning a Collection of authorized CA id's (Integer).
      *

@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -41,12 +41,12 @@ public class RAAuthorization implements Serializable {
     private TreeMap authcreateprofilenames = null;
 	private TreeMap authviewprofilenames = null;
     private Admin admin;
-    private IAuthorizationSessionLocal authorizationsession;
-    private IRaAdminSessionLocal raadminsession;
-    private ICAAdminSessionLocal caAdminSession;
+    private AuthorizationSession authorizationsession;
+    private RaAdminSession raadminsession;
+    private CAAdminSession caAdminSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(Admin admin, IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caAdminSession) {
+    public RAAuthorization(Admin admin, RaAdminSession raadminsession, AuthorizationSession authorizationsession, CAAdminSession caAdminSession) {
     	this.admin = admin;
     	this.raadminsession = raadminsession;
     	this.authorizationsession = authorizationsession;
@@ -124,15 +124,15 @@ public class RAAuthorization implements Serializable {
      */
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
-      	Collection result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, raadminsession.getEndEntityProfileIdToNameMap(admin).keySet());     	
+      	Collection<Integer> result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, raadminsession.getEndEntityProfileIdToNameMap(admin).keySet());     	
       	result.retainAll(this.raadminsession.getAuthorizedEndEntityProfileIds(admin));
-      	Iterator iter = result.iterator();
+      	Iterator<Integer> iter = result.iterator();
       	                    
         while(iter.hasNext()){
           if(authendentityprofilestring == null) {
-            authendentityprofilestring = " endEntityProfileId = " + ((Integer) iter.next()).toString();   
+            authendentityprofilestring = " endEntityProfileId = " + iter.next().toString();   
           } else {    
-            authendentityprofilestring = authendentityprofilestring + " OR endEntityProfileId = " + ((Integer) iter.next()).toString();
+            authendentityprofilestring = authendentityprofilestring + " OR endEntityProfileId = " + iter.next().toString();
           }
         }
         
@@ -140,7 +140,6 @@ public class RAAuthorization implements Serializable {
           authendentityprofilestring = "( " + authendentityprofilestring + " )"; 
         }
       }
-        
       return authendentityprofilestring; 
     }
     
@@ -148,10 +147,10 @@ public class RAAuthorization implements Serializable {
     public TreeMap getAuthorizedEndEntityProfileNames(){
       if(authprofilenames==null){
         authprofilenames = new TreeMap();  
-        Iterator iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();      
+        Iterator<Integer> iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();      
         HashMap idtonamemap = raadminsession.getEndEntityProfileIdToNameMap(admin);
         while(iter.hasNext()){
-          Integer id = (Integer) iter.next();
+          Integer id = iter.next();
           authprofilenames.put(idtonamemap.get(id),id);
         }
       }
@@ -162,7 +161,6 @@ public class RAAuthorization implements Serializable {
 		if(authcreateprofilenames == null){
 			authcreateprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.CREATE_RIGHTS);
 		}
-	       
 		return authcreateprofilenames;  
 	}
 	      
@@ -170,8 +168,6 @@ public class RAAuthorization implements Serializable {
 	  if(authviewprofilenames == null){
 	  	  authviewprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.VIEW_RIGHTS);
 	  }
-	  
-      
 	  return authviewprofilenames;
 	}    
     
@@ -187,14 +183,13 @@ public class RAAuthorization implements Serializable {
 	public TreeMap authEndEntityProfileNames(String rights) {
 	  TreeMap returnval = new TreeMap();	
 	  HashMap profilemap = this.raadminsession.getEndEntityProfileIdToNameMap(admin);
-	  Iterator iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();
+	  Iterator<Integer> iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();
 	  while(iter.hasNext()){
-		Integer next = ((Integer) iter.next());  
+		Integer next = iter.next();  
 		if(this.endEntityAuthorization(admin, next.intValue(), rights)) { 
 		  returnval.put(profilemap.get(next), next);  
 		}
 	  }
-	  
 	  return returnval;
 	}     
     
@@ -204,7 +199,6 @@ public class RAAuthorization implements Serializable {
 	 */
 	public boolean endEntityAuthorization(Admin admin, int profileid, String rights){
 	  boolean returnval = false;
-      
 	  // TODO FIX
 	  if(admin.getAdminInformation().isSpecialUser()){
 		  returnval = true;
@@ -213,7 +207,6 @@ public class RAAuthorization implements Serializable {
 			   returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
 		  }catch(AuthorizationDeniedException e){}		  
 	  }
-
 	  return returnval;
 	}    
 }
