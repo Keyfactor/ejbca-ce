@@ -23,10 +23,16 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
@@ -130,8 +136,11 @@ import org.ejbca.util.query.Query;
  *
  * @version $Id$
  */
-public class LocalLogSessionBean extends BaseSessionBean {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "LogSessionRemote")
+public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
 
+    private static final Logger log = Logger.getLogger(LocalLogSessionBean.class);
+    
 	/** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
@@ -144,7 +153,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
     /** The home interface of  LogConfigurationData entity bean */
     private LogConfigurationDataLocalHome logconfigurationhome;
 
-    private ILogSessionLocal logSession = null;
+    @EJB
+    private LogSessionLocal logsession;
 
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList logdevices;
@@ -183,21 +193,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
             dev.destructor();
         }
     }
-
-    /**
-     * We need to reference the bean, rather than the internal class method to get container managed transaction.
-     */
-	private ILogSessionLocal getLogSession() {
-		try{
-			if(logSession == null){
-				logSession = ((ILogSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ILogSessionLocalHome.COMP_NAME)).create();
-			}
-		} catch(Exception e){
-			throw new EJBException(e);
-		}
-		return logSession;
-	}
-
+    
     /**
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
@@ -281,7 +277,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public void setTestDeviceOnLogSession(Class implClass, String name) {
-    	getLogSession().setTestDevice(implClass, name);
+    	logsession.setTestDevice(implClass, name);
     }
 
     /**
@@ -294,7 +290,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public void restoreTestDeviceOnLogSession() {
-    	getLogSession().restoreTestDevice();
+    	logsession.restoreTestDevice();
     }
 
     
@@ -357,7 +353,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     	while (i.hasNext()) {
     		ILogDevice dev = (ILogDevice) i.next();
     		try {
-   				getLogSession().doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
+   				logsession.doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
     		} catch (Throwable e) {
             	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
             			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
@@ -422,7 +418,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      */
     public Collection query(String deviceName, Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
-        trace(">query()");
+        log.trace(">query()");
     	Collection result = null;
     	Iterator i = logdevices.iterator();
         while (i.hasNext()) {
@@ -508,7 +504,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
      */
 	public void testRollbackInternal(long rollbackTestTime) {
 		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-		getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
+		logsession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, "Test of rollback resistance of log-system.", null);
 		throw new EJBException("Test of rollback resistance of log-system.");
 	}
