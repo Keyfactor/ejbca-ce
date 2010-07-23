@@ -13,16 +13,19 @@
 
 package org.ejbca.samples;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
-import org.ejbca.core.ejb.BaseSessionBean;
-import org.ejbca.core.ejb.log.ILogSessionHome;
-import org.ejbca.core.ejb.log.ILogSessionRemote;
+import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -81,9 +84,14 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  * 
  */
-public class NullAuthenticationSessionBean extends BaseSessionBean {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "NullAuthenticationSession")
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+public class NullAuthenticationSessionBean {
+    private static final Logger log = Logger.getLogger(NullAuthenticationSessionBean.class);
+    
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;
+    @EJB
+    private LogSessionRemote logsession;
 
 
     /**
@@ -92,14 +100,9 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        trace(">ejbCreate()");
-        try {
-            ILogSessionHome logsessionhome = (ILogSessionHome) getLocator().getLocalHome(ILogSessionHome.COMP_NAME);
-            logsession = logsessionhome.create();
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-        trace("<ejbCreate()");
+        log.trace(">ejbCreate()");
+
+        log.trace("<ejbCreate()");
     }
 
     /**
@@ -115,7 +118,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
      */
     public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
-        trace(">authenticateUser(" + username + ", hiddenpwd)");
+        log.trace(">authenticateUser(" + username + ", hiddenpwd)");
 
         try {
             // Does the username contain a DN?
@@ -127,11 +130,9 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                 if (emails.size() > 0) {
                 	email = (String)emails.get(0);
                 }
-                try{
+            
                   logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");
-                }catch(RemoteException re){
-                  throw new EJBException(re);
-                }
+               
 
                 String altName = (email == null) ? null : ("rfc822Name=" + email);
 
@@ -139,14 +140,12 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                 UserDataVO ret = new UserDataVO(username, dn, admin.getCaId(), altName, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.PROFILE_NO_PROFILE, SecConst.PROFILE_NO_PROFILE, 
                 		                        null, null, SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
                 ret.setPassword(password);
-                trace("<authenticateUser("+username+", hiddenpwd)");
+                log.trace("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             }
-            try{
+         
               logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");
-            }catch(RemoteException re){
-              throw new EJBException(re);
-            }
+           
 
             throw new AuthLoginException("User " + username + " does not contain a DN.");
         } catch (AuthLoginException le) {
@@ -165,7 +164,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
      */
     public void finishUser(Admin admin, String username, String password)
         throws ObjectNotFoundException {
-        trace(">finishUser(" + username + ", hiddenpwd)");
-        trace("<finishUser(" + username + ", hiddenpwd)");
+        log.trace(">finishUser(" + username + ", hiddenpwd)");
+        log.trace("<finishUser(" + username + ", hiddenpwd)");
     } //finishUser
 }
