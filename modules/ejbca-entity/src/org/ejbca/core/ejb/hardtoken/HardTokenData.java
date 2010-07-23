@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.hardtoken;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -106,8 +107,8 @@ public class HardTokenData implements Serializable {
 	public void setDataUnsafe(Serializable data) { this.data = data; }
 
 	@Transient
-	private HashMap getData() { return (HashMap) getDataUnsafe(); }
-	private void setData(HashMap data) { setDataUnsafe(data); }
+	public HashMap getData() { return (HashMap) getDataUnsafe(); }
+	public void setData(HashMap data) { setDataUnsafe(data); }
 
 	@Transient
 	public Date getCreateTime() { return new Date(getCtime()); }
@@ -121,13 +122,15 @@ public class HardTokenData implements Serializable {
     // Search functions. 
     //
 
+	/** @return the found entity instance or null if the entity does not exist */
     public static HardTokenData findByTokenSN(EntityManager entityManager, String tokenSN) {
     	return entityManager.find(HardTokenData.class, tokenSN);
     }
 
-    public static HardTokenData findByUsername(EntityManager entityManager, String username) {
+	/** @return return the query results as a List. */
+    public static List<HardTokenData> findByUsername(EntityManager entityManager, String username) {
     	Query query = entityManager.createQuery("from HardTokenData a WHERE a.username=:username");
     	query.setParameter("username", username);
-    	return (HardTokenData) query.getSingleResult();
+    	return query.getResultList();
     }
 }
