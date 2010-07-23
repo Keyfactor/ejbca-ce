@@ -20,16 +20,22 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.rmi.RemoteException;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.naming.NamingException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
-import org.ejbca.core.ejb.BaseSessionBean;
-import org.ejbca.core.ejb.log.ILogSessionHome;
-import org.ejbca.core.ejb.log.ILogSessionRemote;
+import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -66,14 +72,21 @@ import org.ejbca.core.model.ra.UserDataVO;
  *   
  * @version $Id$
  */
-public class RemoteAuthenticationSessionBean extends BaseSessionBean {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "PublisherSessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class RemoteAuthenticationSessionBean {
+    private static final Logger log = Logger.getLogger(RemoteAuthenticationSessionBean.class);
     private static String REMOTE_PROTOCOL_VER = "1.0";
 
     /** URL to remote authentication server */
-    String remoteurl = null;
+    private String remoteurl = null;
 
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
+    
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;
+    @EJB
+    private LogSessionRemote logsession;
 
 
 
@@ -83,18 +96,13 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        trace(">ejbCreate()");
+        log.trace(">ejbCreate()");
 
         // Get the URL from the environment from deployment descriptor
-        remoteurl = getLocator().getString("java:comp/env/AuthURL");
-        try {
-            ILogSessionHome logsessionhome = (ILogSessionHome) getLocator().getLocalHome(ILogSessionHome.COMP_NAME);
-            logsession = logsessionhome.create();
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
+        remoteurl = ServiceLocator.getInstance().getString("java:comp/env/AuthURL");
+      
 
-        trace("<ejbCreate()");
+        log.trace("<ejbCreate()");
     }
 
     /**
@@ -117,17 +125,15 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         try {
             ret = getDNfromRemote(REMOTE_PROTOCOL_VER, username, password);
         } catch (Exception e) {
-            error("Authentication failed.", e);
+            log.error("Authentication failed.", e);
             throw new EJBException(e);
         }
 
         // Only end users can be authenticated on remote database (so far...)
         ret.setType(SecConst.USER_ENDUSER);
-        try{
+ 
           logsession.log(admin, ret.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,"Autenticated user");
-        }catch(RemoteException re){
-           throw new EJBException(re);
-        }
+      
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser("+username+", hiddenpwd)");
     	}
