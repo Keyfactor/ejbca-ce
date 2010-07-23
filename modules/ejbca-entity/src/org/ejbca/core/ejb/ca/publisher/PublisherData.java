@@ -77,7 +77,7 @@ public class PublisherData implements Serializable {
 	/**
 	 * Method that saves the publisher data to database.
 	 */
-	public void setPublisher(BasePublisher publisher) throws UnsupportedEncodingException {
+	public void setPublisher(BasePublisher publisher) {
 		// We must base64 encode string for UTF safety
 		HashMap a = new Base64PutHashMap();
 		a.putAll((HashMap)publisher.saveData());
@@ -85,10 +85,14 @@ public class PublisherData implements Serializable {
 		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
 		encoder.writeObject(a);
 		encoder.close();
-		if (log.isDebugEnabled()) {
-			log.debug("Profiledata: \n" + baos.toString("UTF8"));
-		}
-		setData(baos.toString("UTF8"));
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("Profiledata: \n" + baos.toString("UTF8"));
+            }
+            setData(baos.toString("UTF8"));
+        } catch (UnsupportedEncodingException e) {
+            log.error("UTF8 encoding not supported.", e);
+        }
 		this.publisher = publisher;
 		setUpdateCounter(getUpdateCounter() + 1);
 	}
@@ -99,7 +103,7 @@ public class PublisherData implements Serializable {
 	 * @return null
 	 * @ejb.create-method view-type="local"
 	 */
-	public PublisherData(Integer id, String name, BasePublisher publisher) throws UnsupportedEncodingException {
+	public PublisherData(Integer id, String name, BasePublisher publisher)  {
 		setId(id);
 		setName(name);
 		this.setUpdateCounter(0);
