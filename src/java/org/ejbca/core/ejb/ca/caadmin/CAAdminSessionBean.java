@@ -237,9 +237,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CAAdminSessionBean.class);
 
-    /** The local home interface of CAData. */
-    //private CADataLocalHome cadatahome;
-
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
     @Resource
