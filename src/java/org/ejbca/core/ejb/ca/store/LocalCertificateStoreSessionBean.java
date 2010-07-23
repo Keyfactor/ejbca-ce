@@ -34,23 +34,24 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ProtectConfiguration;
-import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocalejb3;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
@@ -199,8 +200,12 @@ import org.ejbca.util.keystore.KeyTools;
  * @version $Id$
  * 
  */
-public class LocalCertificateStoreSessionBean extends BaseSessionBean {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreOnlyDataSessionRemote")
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+public class LocalCertificateStoreSessionBean  implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
 
+    private final static Logger log = Logger.getLogger(LocalCertificateStoreSessionBean.class);
+    
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
@@ -222,15 +227,17 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * The local interface of the log session bean
      */
-    private ILogSessionLocal logsession = null;
-
+    @EJB
+    private ILogSessionLocal logsession;
     /**
      * The local interface of the authorization session bean
      */
-    private IAuthorizationSessionLocal authorizationsession = null;
+    @EJB
+    private AuthorizationSessionLocal authorizationsession;
 
     /** The come interface of the protection session bean */
-    private TableProtectSessionLocalHome protecthome = null;
+    @EJB
+    private TableProtectSessionLocalejb3 protectLocal;
     
     /** If protection of database entries are enabled of not, default not */
     private boolean protect = ProtectConfiguration.getCertProtectionEnabled();
@@ -238,7 +245,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * The local interface of the publisher session bean
      */
-    private IPublisherSessionLocal publishersession = null;
+    @EJB
+    private PublisherSessionLocal publishersession;
 
     final private CertificateDataUtil.Adapter adapter;
     
@@ -253,64 +261,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() throws CreateException {
-        certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
-        certReqHistoryHome = (CertReqHistoryDataLocalHome) getLocator().getLocalHome(CertReqHistoryDataLocalHome.COMP_NAME);
-        certprofilehome = (CertificateProfileDataLocalHome) getLocator().getLocalHome(CertificateProfileDataLocalHome.COMP_NAME);
-        if (protect) {
-        	protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
-        }
-
+        certHome = (CertificateDataLocalHome) ServiceLocator.getInstance().getLocalHome(CertificateDataLocalHome.COMP_NAME);
+        certReqHistoryHome = (CertReqHistoryDataLocalHome) ServiceLocator.getInstance().getLocalHome(CertReqHistoryDataLocalHome.COMP_NAME);
+        certprofilehome = (CertificateProfileDataLocalHome) ServiceLocator.getInstance().getLocalHome(CertificateProfileDataLocalHome.COMP_NAME);
     }
-
-    /**
-     * Gets connection to log session bean
-     */
-    protected ILogSessionLocal getLogSession() {
-        if (logsession == null) {
-            try {
-                ILogSessionLocalHome home = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-                logsession = home.create();
-            } catch (Exception e) {
-                throw new EJBException(e);
-            }
-        }
-        return logsession;
-    } //getLogSession
-
-
-    /**
-     * Gets connection to authorization session bean
-     *
-     * @return Connection
-     */
-    private IAuthorizationSessionLocal getAuthorizationSession() {
-        if (authorizationsession == null) {
-            try {
-                IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-                authorizationsession = home.create();
-            } catch (Exception e) {
-                throw new EJBException(e);
-            }
-        }
-        return authorizationsession;
-    } //getAuthorizationSession
-
-    /**
-     * Gets connection to publisher session bean
-     *
-     * @return Connection
-     */
-    private IPublisherSessionLocal getPublisherSession() {
-        if (publishersession == null) {
-            try {
-                IPublisherSessionLocalHome home = (IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
-                publishersession = home.create();
-            } catch (Exception e) {
-                throw new EJBException(e);
-            }
-        }
-        return publishersession;
-    } //getPublisherSession
 
     /**
      * Used by healthcheck. Validate database connection.
@@ -319,6 +273,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="local"
      */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getDatabaseStatus() {
 		String returnval = "";
 		Connection con = null;
@@ -350,6 +305,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
                                     int status, int type, int certificateProfileId, String tag, long updateTime) throws CreateException {
     	if (log.isTraceEnabled()) {
@@ -404,11 +360,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         data1.setTag(tag);
         data1.setUpdateTime(updateTime);
         String msg = intres.getLocalizedMessage("store.storecert");            	
-        getLogSession().log(admin, incert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
+        logsession.log(admin, incert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
         if (protect) {
         	CertificateInfo entry = new CertificateInfo(pk.fingerprint, cafp, data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), status, type, data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), username, tag, certificateProfileId, updateTime);
-        	TableProtectSessionLocal protect = protecthome.create();
-        	protect.protect(entry);
+        	protectLocal.protect(entry);
         }
         log.trace("<storeCertificate()");
         return true;
@@ -427,7 +382,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection listAllCertificates(Admin admin, String issuerdn) {
-    	trace(">listAllCertificates()");
+    	log.trace(">listAllCertificates()");
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet result = null;
@@ -441,7 +396,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             while (result.next()) {
                 vect.add(result.getString(1));
             }
-            trace("<listAllCertificates()");
+            log.trace("<listAllCertificates()");
             return vect;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -462,7 +417,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection listRevokedCertInfo(Admin admin, String issuerdn, long lastbasecrldate) {
-    	trace(">listRevokedCertInfo()");
+    	log.trace(">listRevokedCertInfo()");
 
     	Connection con = null;
     	PreparedStatement ps = null;
@@ -493,7 +448,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     			ps.setInt(2, SecConst.CERT_REVOKED);            	
     		}
     		result = ps.executeQuery();
-    		trace("listRevokedCertInfo(): query done");
+    		log.trace("listRevokedCertInfo(): query done");
     		ArrayList vect = new ArrayList();
     		while (result.next()) {
     			String fp = result.getString(1);
@@ -513,7 +468,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     			// Add to the result
     			vect.add(certinfo);
     		}
-    		trace("<listRevokedCertInfo()");
+    		log.trace("<listRevokedCertInfo()");
     		return vect;
     	} catch (Exception e) {
     		throw new EJBException(e);
@@ -541,7 +496,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         dn = CertTools.stringToBCDNString(dn);
         String issuerdn = StringTools.strip(issuerDN);
         issuerdn = CertTools.stringToBCDNString(issuerdn);
-        debug("Looking for cert with (transformed)DN: " + dn);
+        log.debug("Looking for cert with (transformed)DN: " + dn);
         try {
             Collection coll = certHome.findBySubjectDNAndIssuerDN(dn, issuerdn);
             Collection ret = new ArrayList();
@@ -640,7 +595,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         // First make a DN in our well-known format
         String dn = StringTools.strip(subjectDN);
         dn = CertTools.stringToBCDNString(dn);
-        debug("Looking for cert with (transformed)DN: " + dn);
+        log.debug("Looking for cert with (transformed)DN: " + dn);
         try {
             Collection coll = certHome.findBySubjectDN(dn);
             Collection ret = new ArrayList();
@@ -667,7 +622,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         	log.trace(">findCertificatesByExpireTime(), time=" + expireTime);
     	}
         // First make expiretime in well know format
-        debug("Looking for certs that expire before: " + expireTime);
+        log.debug("Looking for certs that expire before: " + expireTime);
 
         try {
             Collection coll = certHome.findByExpireDate(expireTime.getTime());
@@ -702,7 +657,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public Collection findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) {
     	if (log.isTraceEnabled()) {
-        	trace(">findCertificatesByExpireTimeWithLimit: "+expiretime);    		
+        	log.trace(">findCertificatesByExpireTimeWithLimit: "+expiretime);    		
     	}
 
         Connection con = null;
@@ -725,7 +680,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 }
             }
         	if (log.isTraceEnabled()) {
-        		trace("<findCertificatesByExpireTimeWithLimit()");
+        		log.trace("<findCertificatesByExpireTimeWithLimit()");
         	}
             return returnval;
         } catch (Exception e) {
@@ -763,7 +718,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection sernos) {
-    	trace(">findCertificateByIssuerAndSernos()");
+    	log.trace(">findCertificateByIssuerAndSernos()");
 
         Connection con = null;
         PreparedStatement ps = null;
@@ -781,7 +736,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
 
         String dn = CertTools.stringToBCDNString(issuerDN);
-        debug("Looking for cert with (transformed)DN: " + dn);
+        log.debug("Looking for cert with (transformed)DN: " + dn);
 
         try {
 
@@ -818,7 +773,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 }
             }
 
-            trace("<findCertificateByIssuerAndSernos()");
+            log.trace("<findCertificateByIssuerAndSernos()");
             return vect;
         } catch (Exception fe) {
             throw new EJBException(fe);
@@ -946,7 +901,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public CertificateInfo getCertificateInfo(Admin admin, String fingerprint) {
-    	trace(">getCertificateInfo()");
+    	log.trace(">getCertificateInfo()");
         CertificateInfo ret = null;
 
         Connection con = null;
@@ -989,7 +944,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         } finally {
         	JDBCUtil.close(con, ps, rs);
         }
-        trace("<getCertificateInfo()");
+        log.trace("<getCertificateInfo()");
         return ret;
     } // getCertificateInfo
 
@@ -1079,6 +1034,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void setArchivedStatus(Admin admin, String fingerprint) throws AuthorizationDeniedException {
     	if (admin.getAdminType() != Admin.TYPE_INTERNALUSER) {
     		throw new AuthorizationDeniedException("Unauthorized");
@@ -1093,7 +1049,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		}
     	} catch (FinderException e) {
     		String msg = intres.getLocalizedMessage("store.errorcertinfo", fingerprint);            	
-    		getLogSession().log(admin, 0, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, msg);
+    		logsession.log(admin, 0, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, msg);
     		throw new EJBException(e);
     	}
     }
@@ -1110,6 +1066,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason, String userDataDN) {
     	if (log.isTraceEnabled()) {
         	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
@@ -1120,7 +1077,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 	        setRevokeStatus(admin, certificate, publishers, reason, userDataDN);
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("store.errorfindcertserno", serno.toString(16));            	
-            getLogSession().log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg);
+            logsession.log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg);
             throw new EJBException(e);
         }
     	if (log.isTraceEnabled()) {
@@ -1160,10 +1117,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     		rev.setUpdateTime(now.getTime());
     		rev.setRevocationReason(reason);            	  
     		String msg = intres.getLocalizedMessage("store.revokedcert", new Integer(reason));            	
-    		getLogSession().log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
+    		logsession.log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
     		if (publishers != null) {
-    			getPublisherSession().revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
+    			publishersession.revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
     		}            	  
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
@@ -1199,26 +1156,19 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
     			}                	  
     			String msg = intres.getLocalizedMessage("store.republishunrevokedcert", new Integer(reason));            	
-    			getLogSession().log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
+    			logsession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
     		} catch (Exception ex) {
     			// We catch the exception thrown above, to log the message, but it is only informational, so we dont re-throw anything
-    			getLogSession().log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, ex.getMessage());
+    			logsession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, ex.getMessage());
     		}
     	} else {
     		String msg = intres.getLocalizedMessage("store.ignorerevoke", serialNo, new Integer(rev.getStatus()), new Integer(reason));            	
-    		getLogSession().log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
+    		logsession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
     	}
     	// Update database protection
     	if (protect) {
     		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason(), username, rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
-    		TableProtectSessionLocal protect;
-    		try {
-    			protect = protecthome.create();
-    			protect.protect(entry);
-    		} catch (CreateException e) {
-    			String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
-    			error(msg, e);
-    		}
+    		protectLocal.protect(entry);
     	}
     	if (log.isTraceEnabled()) {
         	log.trace("<private setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
@@ -1233,6 +1183,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason, String userDataDN) {
         if (cert instanceof X509Certificate) {
             setRevokeStatus(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert), publishers, reason, userDataDN);
@@ -1251,6 +1202,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void revokeAllCertByCA(Admin admin, String issuerdn, int reason) {
         Connection con = null;
         PreparedStatement ps = null;
@@ -1287,10 +1239,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             revoked = ps2.executeUpdate();
 
     		String msg = intres.getLocalizedMessage("store.revokedallbyca", issuerdn, new Integer(revoked + temprevoked), new Integer(reason));            	
-            getLogSession().log(admin, bcdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
+            logsession.log(admin, bcdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
         } catch (Exception e) {
     		String msg = intres.getLocalizedMessage("store.errorrevokeallbyca", issuerdn);            	
-            getLogSession().log(admin, bcdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg, e);
+            logsession.log(admin, bcdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg, e);
             throw new EJBException(e);
         } finally {
             JDBCUtil.close(con, ps, null);
@@ -1320,20 +1272,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         		String fingerprint = CertTools.getFingerprintAsString(certificate);
         		CertificateInfo info = getCertificateInfo(admin, fingerprint);
         		if (info != null) {
-            		if (protect) {
-            			TableProtectSessionLocal protect;
-            			try {
-            				protect = protecthome.create();
-            				// The verify method will log failed verifies itself
-            				TableVerifyResult res = protect.verify(info);
-            				if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
-            					//error("Verify failed, but we go on anyway.");
-            				}
-            			} catch (CreateException e) {
-            				String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
-            				error(msg, e);
-            			}
-            		}
+                    if (protect) {
+
+                        // The verify method will log failed verifies itself
+                        TableVerifyResult res = protectLocal.verify(info);
+                        if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
+                            // error("Verify failed, but we go on anyway.");
+                        }
+
+                    }
             		if (info.getStatus() != SecConst.CERT_REVOKED) {
             			returnval = false;
             		}        			
@@ -1370,8 +1317,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 Iterator iter = coll.iterator();
                 while (iter.hasNext()) {
                     CertificateDataLocal data = (CertificateDataLocal) iter.next();
-                    if (protecthome != null) {
-                        CertificateDataUtil.verifyProtection(data, protecthome, adapter);
+                    if (protectLocal != null) {
+                        CertificateDataUtil.verifyProtection(data, protectLocal, adapter);
                     }
                     // if any of the certificates with this serno is revoked, return true
                     if (data.getStatus() == SecConst.CERT_REVOKED) {
@@ -1404,7 +1351,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(issuerDN, serno, certHome, protecthome, adapter);
+        return CertificateDataUtil.getStatus(issuerDN, serno, certHome, protectLocal, adapter);
     }
 
     /**
@@ -1446,7 +1393,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void verifyProtection(Admin admin, String issuerDN, BigInteger serno) {
-        CertificateDataUtil.verifyProtection(admin, issuerDN, serno, certHome, protecthome, adapter);
+        CertificateDataUtil.verifyProtection(admin, issuerDN, serno, certHome, protectLocal, adapter);
     }
 
     /**
@@ -1458,6 +1405,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method     
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addCertReqHistoryData(Admin admin, Certificate cert, UserDataVO useradmindata){
     	if (log.isTraceEnabled()) {
         	log.trace(">addCertReqHistoryData(" + CertTools.getSerialNumberAsString(cert) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
@@ -1467,10 +1415,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
             certReqHistoryHome.create(cert,useradmindata);
         	String msg = intres.getLocalizedMessage("store.storehistory", useradmindata.getUsername());            	
-            getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);            
+            logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);            
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorstorehistory", useradmindata.getUsername());            	
-            getLogSession().log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
+            logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
     	if (log.isTraceEnabled()) {
@@ -1485,6 +1433,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"    
      * @ejb.interface-method  
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeCertReqHistoryData(Admin admin, String certFingerprint){
     	if (log.isTraceEnabled()) {
         	log.trace(">removeCertReqHistData(" + certFingerprint + ")");
@@ -1493,14 +1442,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = certFingerprint;
         	String msg = intres.getLocalizedMessage("store.removehistory", certFingerprint);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
             this.certReqHistoryHome.remove(pk);
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorremovehistory", certFingerprint);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
-        trace("<removeCertReqHistData()");       	
+        log.trace("<removeCertReqHistData()");       	
     }
     
     /**
@@ -1561,6 +1510,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void initializeAndUpgradeProfiles(Admin admin) {
     	try {
     		Collection result = certprofilehome.findAll();
@@ -1587,6 +1537,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addCertificateProfile(Admin admin, String certificateprofilename,
                                       CertificateProfile certificateprofile) throws CertificateProfileExistsException {
         addCertificateProfile(admin, findFreeCertificateProfileId(), certificateprofilename, certificateprofile);
@@ -1602,11 +1553,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename,
                                       CertificateProfile certificateprofile) throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(certificateprofilename)) {
         	String msg = intres.getLocalizedMessage("store.errorcertprofilefixed", certificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             throw new CertificateProfileExistsException(msg);
         }
 
@@ -1619,10 +1571,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 try {
                     certprofilehome.create(new Integer(certificateprofileid), certificateprofilename, certificateprofile);
                 	String msg = intres.getLocalizedMessage("store.addedcertprofile", certificateprofilename);            	
-                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+                    logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
                 } catch (Exception f) {
                 	String msg = intres.getLocalizedMessage("store.errorcreatecertprofile", certificateprofilename);            	
-                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+                    logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
                 }
             }
         }
@@ -1637,12 +1589,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename, Collection authorizedCaIds) throws CertificateProfileExistsException {
         CertificateProfile certificateprofile = null;
 
         if (isCertificateProfileNameFixed(newcertificateprofilename)) {
         	String msg = intres.getLocalizedMessage("store.errorcertprofilefixed", newcertificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             throw new CertificateProfileExistsException(msg);
         }
 
@@ -1651,7 +1604,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             boolean issuperadministrator = false;
             try {
-                issuperadministrator = getAuthorizationSession().isAuthorizedNoLog(admin, "/super_administrator");
+                issuperadministrator = authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
             } catch (AuthorizationDeniedException ade) {
             }
 
@@ -1663,13 +1616,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             try {
                 certprofilehome.findByCertificateProfileName(newcertificateprofilename);
             	String msg = intres.getLocalizedMessage("store.erroraddprofilewithtempl", newcertificateprofilename, originalcertificateprofilename);            	
-                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
                 throw new CertificateProfileExistsException();
             } catch (FinderException e) {
                 try {
                     certprofilehome.create(new Integer(findFreeCertificateProfileId()), newcertificateprofilename, certificateprofile);
                 	String msg = intres.getLocalizedMessage("store.addedprofilewithtempl", newcertificateprofilename, originalcertificateprofilename);            	
-                    getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+                    logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
                 } catch (CreateException f) {
                 }
             }
@@ -1685,15 +1638,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeCertificateProfile(Admin admin, String certificateprofilename) {
         try {
             CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
             pdl.remove();
         	String msg = intres.getLocalizedMessage("store.removedprofile", certificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorremoveprofile", certificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
         }
     } // removeCertificateProfile
 
@@ -1703,32 +1657,33 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void renameCertificateProfile(Admin admin, String oldcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(newcertificateprofilename)) {
         	String msg = intres.getLocalizedMessage("store.errorcertprofilefixed", newcertificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             throw new CertificateProfileExistsException(msg);
         }
         if (isCertificateProfileNameFixed(oldcertificateprofilename)) {
         	String msg = intres.getLocalizedMessage("store.errorcertprofilefixed", oldcertificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             throw new CertificateProfileExistsException(msg);
         }
 
         try {
             certprofilehome.findByCertificateProfileName(newcertificateprofilename);
         	String msg = intres.getLocalizedMessage("store.errorcertprofileexists", newcertificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             throw new CertificateProfileExistsException();
         } catch (FinderException e) {
             try {
                 CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(oldcertificateprofilename);
                 pdl.setCertificateProfileName(newcertificateprofilename);
             	String msg = intres.getLocalizedMessage("store.renamedprofile", oldcertificateprofilename, newcertificateprofilename);            	
-                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
             } catch (FinderException f) {
             	String msg = intres.getLocalizedMessage("store.errorrenameprofile", oldcertificateprofilename, newcertificateprofilename);            	
-                getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             }
         }
     } // renameCertificateProfile
@@ -1740,15 +1695,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void changeCertificateProfile(Admin admin, String certificateprofilename, CertificateProfile certificateprofile) {
         try {
             CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
             pdl.setCertificateProfile(certificateprofile);
         	String msg = intres.getLocalizedMessage("store.editedprofile", certificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("store.erroreditprofile", certificateprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
         }
     }// changeCertificateProfile
 
@@ -2096,7 +2052,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             		while (availablecas.hasNext()) {
             			if (((Integer) availablecas.next()).intValue() == caid ) {
             				exists = true;
-            				debug("CA exists in certificate profile "+cd.getCertificateProfileName());
+            				log.debug("CA exists in certificate profile "+cd.getCertificateProfileName());
             				break;
             			}
             		}
@@ -2206,26 +2162,26 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          */
         public void log(Admin admin, int caid, int module, Date time, String username,
                         X509Certificate certificate, int event, String comment) {
-            getLogSession().log(admin, caid, module, new java.util.Date(),
+            logsession.log(admin, caid, module, new java.util.Date(),
                                 username, certificate, event, comment);
         }
         /* (non-Javadoc)
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#debug(java.lang.String)
          */
         public void debug(String s) {
-            LocalCertificateStoreSessionBean.this.debug(s);
+            log.debug(s);
         }
         /* (non-Javadoc)
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
          */
         public void error(String s) {
-            LocalCertificateStoreSessionBean.this.error(s);        	
+            log.error(s);        	
         }
         /* (non-Javadoc)
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
          */
         public void error(String s, Exception e) {
-            LocalCertificateStoreSessionBean.this.error(s, e);        	
+            log.error(s, e);        	
         }
     }
 } // CertificateStoreSessionBean

@@ -20,12 +20,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
-import org.ejbca.core.ejb.BaseSessionBean;
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
@@ -103,10 +107,14 @@ import org.ejbca.util.JDBCUtil;
  *   ejb-name="HardTokenSession"
  *
  */
-public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "HardTokenBatchJobSessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class LocalEjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessionRemote, HardTokenBatchJobSessionLocal  {
 
     public static final int MAX_RETURNED_QUEUE_SIZE = 300;
 
+    private static final Logger log = Logger.getLogger(LocalEjbcaHardTokenBatchJobSessionBean.class);
+    
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
@@ -114,10 +122,12 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearPassword, timeCreated, timeModified, endEntityProfileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
 
     /** The local interface of  hard token session bean */
-    private IHardTokenSessionLocal hardtokensession = null;
+    @EJB
+    private HardTokenSessionLocal hardtokensession;
 
     /** The remote interface of  log session bean */
-    private ILogSessionLocal logsession = null;
+    @EJB
+    private LogSessionLocal logsession;
 
 
 
@@ -128,37 +138,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
     public void ejbCreate() throws CreateException {
     }
-
-
-    /** Gets connection to hard token session bean
-     * @return IHardTokenSessionLocal
-     */
-    private IHardTokenSessionLocal getHardTokenSession() {
-        if(hardtokensession == null){
-          try{
-            IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) getLocator().getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-            hardtokensession = hardtokensessionhome.create();
-          }catch(Exception e){
-             throw new EJBException(e);
-          }
-        }
-        return hardtokensession;
-    } //getHardTokenSession
-
-    /** Gets connection to log session bean
-     * @return Connection
-     */
-    private ILogSessionLocal getLogSession() {
-        if(logsession == null){
-          try{
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-            logsession = logsessionhome.create();
-          }catch(Exception e){
-             throw new EJBException(e);
-          }
-        }
-        return logsession;
-    } //getLogSession
 
 
 
@@ -173,11 +152,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      */
     public UserDataVO getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       log.trace(">getNextHardTokenToGenerate()");
-      debug("alias " + alias);
+      log.debug("alias " + alias);
       UserDataVO returnval=null;
-      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
+      int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
 
-      debug("issuerid " + issuerid);
+      log.debug("issuerid " + issuerid);
 
       if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
         Connection con = null;
@@ -186,7 +165,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
         try{
            // Construct SQL query.
-        	debug("HERE");
+        	log.debug("HERE");
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
@@ -206,16 +185,16 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
                                                ,  rs.getInt(12), rs.getInt(13),null);
               returnval.setPassword(rs.getString(7));
-              debug("found user" + returnval.getUsername());
+              log.debug("found user" + returnval.getUsername());
             }
             if(returnval !=null){
-              getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
+              hardtokensession.getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
               String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);            	
-              getLogSession().log(admin, returnval.getCAId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
+              logsession.log(admin, returnval.getCAId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
             }
         }catch(Exception e){
         	String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);            	
-        	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
+        	logsession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
         	throw new EJBException(e);
         } finally {
             JDBCUtil.close(con, ps, rs);
@@ -239,7 +218,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     public Collection getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       log.trace(">getNextHardTokensToGenerate()");
       ArrayList returnval = new ArrayList();
-      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
+      int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
 
       if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
         ResultSet rs = null;
@@ -261,14 +240,14 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
                                                ,  rs.getInt(12), rs.getInt(13), null);
               data.setPassword(rs.getString(7));
-              getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, data);
+              hardtokensession.getIsHardTokenProfileAvailableToIssuer(admin, issuerid, data);
               returnval.add(data);
               String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);            	
-              getLogSession().log(admin, data.getCAId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
+              logsession.log(admin, data.getCAId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),data.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
             }
         }catch(Exception e){
         	String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);            	
-        	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
+        	logsession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
         	throw new EJBException(e);
         }finally{
            JDBCUtil.close(con, ps, rs);
@@ -294,9 +273,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public UserDataVO getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException{
-      trace(">getNextHardTokenToGenerateInQueue()");
+      log.trace(">getNextHardTokenToGenerateInQueue()");
       UserDataVO returnval=null;
-      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
+      int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
 
       if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
         Connection con = null;
@@ -321,19 +300,19 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
               returnval.setPassword(rs.getString(7));
             }
             if(returnval !=null){
-              getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
+              hardtokensession.getIsHardTokenProfileAvailableToIssuer(admin, issuerid, returnval);
               String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);            	
-              getLogSession().log(admin, returnval.getCAId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
+              logsession.log(admin, returnval.getCAId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
             }
         }catch(Exception e){
         	String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);            	
-        	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
+        	logsession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
         	throw new EJBException(e);
         }finally{
            JDBCUtil.close(con, ps, rs);
         }
       }
-      trace("<getNextHardTokenToGenerateInQueue()");
+      log.trace("<getNextHardTokenToGenerateInQueue()");
       return returnval;
     }// getNextHardTokenToGenerateInQueue
 
@@ -348,9 +327,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @ejb.interface-method view-type="both"
      */
     public int getNumberOfHardTokensToGenerate(Admin admin, String alias){
-      trace(">getNumberOfHardTokensToGenerate()");
+      log.trace(">getNumberOfHardTokensToGenerate()");
       int count = 0;
-      int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
+      int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
 
       if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
         Connection con = null;
@@ -376,7 +355,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            JDBCUtil.close(con, ps, rs);
         }
       }
-      trace("<getNumberOfHardTokensToGenerate()");
+      log.trace("<getNumberOfHardTokensToGenerate()");
       return count;
     }// getNumberOfHardTokensToGenerate
 
