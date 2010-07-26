@@ -225,6 +225,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // Set up the serial number generator for Certificate Serial numbers
             // The serial number generator is a Singleton, so it can be initialized here and 
             // used by X509CA
+        	// TODO: Read this from a property file via Commons Config
             String randomAlgorithm = ServiceLocator.getInstance().getString("java:comp/env/randomAlgorithm");
             if (randomAlgorithm != null) {
                 SernoGenerator.instance().setAlgorithm(randomAlgorithm);
