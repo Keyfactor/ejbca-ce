@@ -207,12 +207,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 	private static IProtectedLogToken protectedLogTokenCache = null;
 	private Certificate certificateCache = null;
 
-	public void ejbCreate() {
-	}
-
-	public void ejbRemove() {
-	}
-
 	/**
 	 * Persists a new token to the database.
 	 * @ejb.interface-method view-type="both"
@@ -226,11 +220,9 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 			switch (tokenType) {
 			case IProtectedLogToken.TYPE_CA:
 				entityManager.persist(new ProtectedLogTokenData(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId())));
-				//getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId()));
 				break;
 			case IProtectedLogToken.TYPE_NONE:
 				entityManager.persist(new ProtectedLogTokenData(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId())));
-				//getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), String.valueOf(token.getCAId()));
 				break;
 			case IProtectedLogToken.TYPE_ASYM_KEY:
 			case IProtectedLogToken.TYPE_SYM_KEY:
@@ -240,7 +232,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 				oos.close();
 				byte[] rawKeyData = encryptKeyData(baos.toByteArray(), token.getTokenCertificate());
 				entityManager.persist(new ProtectedLogTokenData(token.getIdentifier(), tokenType, token.getTokenCertificate(), new String(Base64.encode(rawKeyData, false))));
-				//getProtectedLogTokenData().create(token.getIdentifier(), tokenType, token.getTokenCertificate(), new String(Base64.encode(rawKeyData, false)));
 				break;
 			}
 		} catch (Exception e) {
@@ -269,7 +260,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 		try {
 			ProtectedLogTokenData pltd = ProtectedLogTokenData.findByTokenIdentifier(entityManager, tokenIdentifier);
 			if (pltd != null) {
-				//ProtectedLogTokenDataLocal protectedLogTokenDataLocal = getProtectedLogTokenData().findByTokenIdentifier(tokenIdentifier);
 				int tokenType = pltd.getTokenType();
 				switch (tokenType) {
 				case IProtectedLogToken.TYPE_CA:
@@ -292,7 +282,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 					}
 				}
 			} else { 
-		//} catch (ObjectNotFoundException e) {
 				log.error(intres.getLocalizedMessage("protectedlog.error.tokennotfound", tokenIdentifier));
 			}
 		} catch (Exception e) {
@@ -338,17 +327,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 			if (pltd != null) {
 				entityManager.remove(pltd);
 			}
-			/*try {
-				// Find token
-				ProtectedLogTokenDataLocal protectedLogTokenDataLocal = getProtectedLogTokenData().findByTokenIdentifier(tokenIdentifiers[i].intValue());
-				// Nuke token
-				protectedLogTokenDataLocal.remove();
-			} catch (FinderException e) {
-				// Ignore, it's obviously gone..
-			} catch (RemoveException e) {
-				log.error("", e);
-				throw new EJBException(e);
-			}*/
 		}
 		log.trace("<removeTokens");
 	}
@@ -366,15 +344,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 				protectedLogExportRow.getLogDataHash(), protectedLogExportRow.getPreviosExportHash(), protectedLogExportRow.getCurrentHashAlgorithm(),
 				protectedLogExportRow.getSignatureCertificateAsByteArray(), protectedLogExportRow.getDeleted(), protectedLogExportRow.getSignature()
 				));
-		/*try {
-			getProtectedLogExportData().create(
-					protectedLogExportRow.getTimeOfExport(), protectedLogExportRow.getExportEndTime(), protectedLogExportRow.getExportStartTime(),
-					protectedLogExportRow.getLogDataHash(), protectedLogExportRow.getPreviosExportHash(), protectedLogExportRow.getCurrentHashAlgorithm(),
-					protectedLogExportRow.getSignatureCertificateAsByteArray(), protectedLogExportRow.getDeleted(), protectedLogExportRow.getSignature());
-		} catch (CreateException e) {
-			log.error("", e);
-			throw new EJBException(e);
-		}*/
 		log.trace("<addExport");
 	}
 
@@ -448,30 +417,16 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 		if (log.isTraceEnabled()) {
 			log.trace(">addProtectedLogEventRow: "+protectedLogEventRow.getEventIdentifier().getNodeGUID()+", "+protectedLogEventRow.getEventIdentifier().getCounter());
 		}
-		//try {
-			entityManager.persist(new ProtectedLogData(
-					protectedLogEventRow.getAdminType(), protectedLogEventRow.getAdmindata(), protectedLogEventRow.getCaid(),
-					protectedLogEventRow.getModule(), protectedLogEventRow.getEventTime(), protectedLogEventRow.getUsername(),
-					protectedLogEventRow.getCertificateSerialNumber(), protectedLogEventRow.getCertificateIssuerDN(),
-					protectedLogEventRow.getEventId(), protectedLogEventRow.getEventComment(),
-					protectedLogEventRow.getEventIdentifier(), protectedLogEventRow.getNodeIP(),
-					protectedLogEventRow.getLinkedInEventIdentifiers(), protectedLogEventRow.getLinkedInEventsHash(),
-					protectedLogEventRow.getCurrentHashAlgorithm(), protectedLogEventRow.getProtectionKeyIdentifier(),
-					protectedLogEventRow.getProtectionKeyAlgorithm(), protectedLogEventRow.getProtection()
-					));
-			/*getProtectedLogData().create(
-					protectedLogEventRow.getAdminType(), protectedLogEventRow.getAdmindata(), protectedLogEventRow.getCaid(),
-					protectedLogEventRow.getModule(), protectedLogEventRow.getEventTime(), protectedLogEventRow.getUsername(),
-					protectedLogEventRow.getCertificateSerialNumber(), protectedLogEventRow.getCertificateIssuerDN(),
-					protectedLogEventRow.getEventId(), protectedLogEventRow.getEventComment(),
-					protectedLogEventRow.getEventIdentifier(), protectedLogEventRow.getNodeIP(),
-					protectedLogEventRow.getLinkedInEventIdentifiers(), protectedLogEventRow.getLinkedInEventsHash(),
-					protectedLogEventRow.getCurrentHashAlgorithm(), protectedLogEventRow.getProtectionKeyIdentifier(),
-					protectedLogEventRow.getProtectionKeyAlgorithm(), protectedLogEventRow.getProtection());
-		} catch (Exception e) {
-			log.error("", e);
-			throw new EJBException(e);
-		}*/
+		entityManager.persist(new ProtectedLogData(
+				protectedLogEventRow.getAdminType(), protectedLogEventRow.getAdmindata(), protectedLogEventRow.getCaid(),
+				protectedLogEventRow.getModule(), protectedLogEventRow.getEventTime(), protectedLogEventRow.getUsername(),
+				protectedLogEventRow.getCertificateSerialNumber(), protectedLogEventRow.getCertificateIssuerDN(),
+				protectedLogEventRow.getEventId(), protectedLogEventRow.getEventComment(),
+				protectedLogEventRow.getEventIdentifier(), protectedLogEventRow.getNodeIP(),
+				protectedLogEventRow.getLinkedInEventIdentifiers(), protectedLogEventRow.getLinkedInEventsHash(),
+				protectedLogEventRow.getCurrentHashAlgorithm(), protectedLogEventRow.getProtectionKeyIdentifier(),
+				protectedLogEventRow.getProtectionKeyAlgorithm(), protectedLogEventRow.getProtection()
+		));
 		if (log.isTraceEnabled()) {
 			log.trace("<addProtectedLogEventRow");
 		}
@@ -490,25 +445,13 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 		}
 		ProtectedLogData pld = ProtectedLogData.findByNodeGUIDandCounter(entityManager, identifier.getNodeGUID(), identifier.getCounter());
 		if (pld == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Can not find logEventRow: "+identifier.getNodeGUID()+", "+identifier.getCounter());
+			}
 			return null;
 		}
 		log.trace("<getProtectedLogEventRow");
 		return pld.toProtectedLogEventRow();
-		/*ProtectedLogEventRow protectedLogEventRow = null;
-		try {
-			if (identifier != null) {
-				ProtectedLogDataLocal protectedLogDataLocal = getProtectedLogData().findByNodeGUIDandCounter(identifier.getNodeGUID(), identifier.getCounter());
-				protectedLogEventRow = protectedLogDataLocal.toProtectedLogEventRow();
-			}
-		} catch (FinderException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Can not find logEventRow: "+identifier.getNodeGUID()+", "+identifier.getCounter());
-			}
-		}
-		if (log.isTraceEnabled()) {
-			log.trace("<getProtectedLogEventRow");
-		}
-		return protectedLogEventRow;*/
 	}
 
 	/**
@@ -546,42 +489,37 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 		}
 		// TODO: Double check the algo on this one to make it more efficient
 		ProtectedLogEventRow[] protectedLogEventRows = null;
-		//try {
-			Collection<ProtectedLogData> protectedLogDatas = ProtectedLogData.findNewProtectedLogEvents(entityManager, nodeToExclude, newerThan);
-			//Collection protectedLogDataLocals = getProtectedLogData().findNewProtectedLogEvents(nodeToExclude, newerThan);
-			ArrayList<ProtectedLogEventRow> protectedLogEventRowArrayList = new ArrayList<ProtectedLogEventRow>();
-			Iterator<ProtectedLogData> i = protectedLogDatas.iterator();
-			while (i.hasNext()) {
-				ProtectedLogData protectedLogDataLocal = i.next();
-				boolean addProtectedLogEventRow = true;
-				ProtectedLogEventRow protectedLogEventRowToRemove = null;
-				Iterator<ProtectedLogEventRow> j = protectedLogEventRowArrayList.iterator();
-				while (j.hasNext()) {
-					ProtectedLogEventRow protectedLogEventRow = (ProtectedLogEventRow) j.next();
-					if (protectedLogDataLocal.getNodeGUID() == protectedLogEventRow.getEventIdentifier().getNodeGUID()) {
-						if (protectedLogDataLocal.getEventTime() > protectedLogEventRow.getEventTime()) {
-							// Replace if in array and newer (added later)
-							protectedLogEventRowToRemove = protectedLogEventRow;
-							break;
-						} else {
-							// Skip if in array and older
-							addProtectedLogEventRow = false;
-						}
+		Collection<ProtectedLogData> protectedLogDatas = ProtectedLogData.findNewProtectedLogEvents(entityManager, nodeToExclude, newerThan);
+		ArrayList<ProtectedLogEventRow> protectedLogEventRowArrayList = new ArrayList<ProtectedLogEventRow>();
+		Iterator<ProtectedLogData> i = protectedLogDatas.iterator();
+		while (i.hasNext()) {
+			ProtectedLogData protectedLogDataLocal = i.next();
+			boolean addProtectedLogEventRow = true;
+			ProtectedLogEventRow protectedLogEventRowToRemove = null;
+			Iterator<ProtectedLogEventRow> j = protectedLogEventRowArrayList.iterator();
+			while (j.hasNext()) {
+				ProtectedLogEventRow protectedLogEventRow = (ProtectedLogEventRow) j.next();
+				if (protectedLogDataLocal.getNodeGUID() == protectedLogEventRow.getEventIdentifier().getNodeGUID()) {
+					if (protectedLogDataLocal.getEventTime() > protectedLogEventRow.getEventTime()) {
+						// Replace if in array and newer (added later)
+						protectedLogEventRowToRemove = protectedLogEventRow;
+						break;
+					} else {
+						// Skip if in array and older
+						addProtectedLogEventRow = false;
 					}
 				}
-				if (protectedLogEventRowToRemove != null) {
-					protectedLogEventRowArrayList.remove(protectedLogEventRowToRemove);
-					protectedLogEventRowToRemove = null;
-				}
-				if (addProtectedLogEventRow) {
-					ProtectedLogEventRow newProtectedLogEventRow = protectedLogDataLocal.toProtectedLogEventRow();
-					protectedLogEventRowArrayList.add(newProtectedLogEventRow);
-				}
-				protectedLogEventRows = (ProtectedLogEventRow[]) protectedLogEventRowArrayList.toArray(new ProtectedLogEventRow[0]);
 			}
-			// Get newest for every one
-		/*} catch (FinderException e) {
-		}*/
+			if (protectedLogEventRowToRemove != null) {
+				protectedLogEventRowArrayList.remove(protectedLogEventRowToRemove);
+				protectedLogEventRowToRemove = null;
+			}
+			if (addProtectedLogEventRow) {
+				ProtectedLogEventRow newProtectedLogEventRow = protectedLogDataLocal.toProtectedLogEventRow();
+				protectedLogEventRowArrayList.add(newProtectedLogEventRow);
+			}
+			protectedLogEventRows = (ProtectedLogEventRow[]) protectedLogEventRowArrayList.toArray(new ProtectedLogEventRow[0]);
+		}
 		if (log.isTraceEnabled()) {
 			log.trace("<findNewestProtectedLogEventsForAllOtherNodesInternal");
 		}
@@ -1014,7 +952,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 			if (certificateCache != null && certificate != null && Arrays.equals(certificateCache.getEncoded(), certificate.getEncoded())) {
 				// We checked the signature last time, so it's ok.
 			} else {
-				//int caid = CertTools.getIssuerDN(certificate).hashCode();
 				int caid = CertTools.getIssuerDN(certificate).hashCode();
 				CAInfo caInfo = caAdminSession.getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caid);
 				CertTools.verify(certificate, caInfo.getCertificateChain());
@@ -1120,7 +1057,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 		}
 		try {
 			entityManager.persist(new ProtectedLogExportData(0, exportEndTime, exportStartTime, null, null, null, null, false, null));
-			//getProtectedLogExportData().create(0, exportEndTime, exportStartTime, null, null, null, null, false, null);
 			log.trace("<reserveExport");
 			return getLastExport();
 		} catch (Exception e) {
@@ -1134,12 +1070,11 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 	 * ejb.interface-method view-type="both"
 	 * @ejb.transaction type="RequiresNew"
 	 */
-	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	//Private... @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	private void completeExport(ProtectedLogExportRow protectedLogExportRow, boolean success) {
 		log.trace(">completeExport");
 		try {
 			ProtectedLogExportData protectedLogExportData = ProtectedLogExportData.findByExportStartTime(entityManager, protectedLogExportRow.getExportStartTime());
-			//ProtectedLogExportDataLocal protectedLogExportDataLocal = getProtectedLogExportData().findByExportStartTime(protectedLogExportRow.getExportStartTime());
 			if (success) {
 				protectedLogExportData.setTimeOfExport(protectedLogExportRow.getTimeOfExport());
 				protectedLogExportData.setLogDataHash(protectedLogExportRow.getLogDataHash());
@@ -1150,7 +1085,6 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 				protectedLogExportData.setSignature(protectedLogExportRow.getSignature());
 			} else {
 				entityManager.remove(protectedLogExportData);
-				//protectedLogExportDataLocal.remove();
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -1296,7 +1230,7 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 				}
 				// Make sure the hash at the next row is the same as the stored value (this means the current row are ok if the next one is)
 				if (Arrays.equals(linkedInEventsHash, nextProtectedLogEventRow.getLinkedInEventsHash())) {
-					// Recuse through the chain until a protected row is found.
+					// Recurse through the chain until a protected row is found.
 					currentProtectedLogEventRow = nextProtectedLogEventRow;
 				} else {
 					if (log.isTraceEnabled()) {
@@ -1347,24 +1281,18 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 			}
 			lastDeletingExportTime = protectedLogExportRow.getExportEndTime();
 			// Fetch the identifier for this/these last event
-			//try {
-				Collection<ProtectedLogData> protectedLogDatas = ProtectedLogData.findProtectedLogEventsByTime(entityManager, lastDeletingExportTime);
-				//Collection protectedLogDataLocals = getProtectedLogData().findProtectedLogEventsByTime(lastDeletingExportTime);
-				Iterator<ProtectedLogData> i = protectedLogDatas.iterator();
-				while (i.hasNext()) {
-					ProtectedLogData protectedLogData = i.next();
-					if (verifyProtectedLogEventRow(protectedLogData.toProtectedLogEventRow(), false) == 1) {
-						lastExportProtectedLogIdentifier.add(new ProtectedLogEventIdentifier(protectedLogData.getNodeGUID(), protectedLogData.getCounter()));
-					}
-					if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
-			        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
-						return null;
-					}
+			Collection<ProtectedLogData> protectedLogDatas = ProtectedLogData.findProtectedLogEventsByTime(entityManager, lastDeletingExportTime);
+			Iterator<ProtectedLogData> i = protectedLogDatas.iterator();
+			while (i.hasNext()) {
+				ProtectedLogData protectedLogData = i.next();
+				if (verifyProtectedLogEventRow(protectedLogData.toProtectedLogEventRow(), false) == 1) {
+					lastExportProtectedLogIdentifier.add(new ProtectedLogEventIdentifier(protectedLogData.getNodeGUID(), protectedLogData.getCounter()));
 				}
-			/*} catch (FinderException e) {
-				log.error("", e);
-				throw new EJBException(e);
-			}*/
+				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
+					log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
+					return null;
+				}
+			}
 		}
 		// Find newest protected LogEventRow.
 		ProtectedLogEventIdentifier newestProtectedLogEventIdentifier = findNewestProtectedLogEventRow();
@@ -1391,13 +1319,13 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 		while (knownNodeGUIDs.size() > processedNodeGUIDs.size()) {
 			// Pick newest know event of newestProtectedLogEventIdentifiers
 			ProtectedLogEventRow nextProtectedLogEventRow = null;
-			Iterator iterator = newestProtectedLogEventRows.iterator();
+			Iterator<ProtectedLogEventRow> iterator = newestProtectedLogEventRows.iterator();
 			while (iterator.hasNext()) {
 				if (protectedLogVerifier != null && protectedLogVerifier.isCanceled()) {
 		        	log.info(intres.getLocalizedMessage("protectedlog.canceledver"));
 					return null;
 				}
-				ProtectedLogEventRow i = (ProtectedLogEventRow) iterator.next();
+				ProtectedLogEventRow i = iterator.next();
 				int rowguid = i.getEventIdentifier().getNodeGUID();
 				if ( !processedNodeGUIDs.contains(rowguid)
 						&&  (nextProtectedLogEventRow == null || nextProtectedLogEventRow.getEventTime() < i.getEventTime()) ) {
@@ -1467,9 +1395,9 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 				}
 				// Is the the current event nextProtectedLogEventRow the last non-delete-exported event?
 				boolean isLastEvent = false;
-				Iterator iterator3 = lastExportProtectedLogIdentifier.iterator();
+				Iterator<ProtectedLogEventIdentifier> iterator3 = lastExportProtectedLogIdentifier.iterator();
 				while (iterator3.hasNext()) {
-					ProtectedLogEventIdentifier plei = (ProtectedLogEventIdentifier) iterator3.next();
+					ProtectedLogEventIdentifier plei = iterator3.next();
 					if (plei.equals(nextProtectedLogEventRow.getEventIdentifier())) {
 						isLastEvent = true;
 					}
@@ -1523,7 +1451,7 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 						ProtectedLogEventRow currentProtectedLogEventRow = linkedInEventRows[l]; //getProtectedLogEventRow(k);
 						if (currentProtectedLogEventRow == null) {
 							protectedLogActions.takeActions(IProtectedLogAction.CAUSE_MISSING_LOGROW);
-							return currentProtectedLogEventRow.getEventIdentifier();
+							return currentProtectedLogEventRow.getEventIdentifier();	// TODO: This must be a bug! Can only be null.
 						}
 						ProtectedLogEventRow toRemove = null;
 						boolean knownNodeGUID = false;
@@ -1689,7 +1617,7 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 		if (!signAll) {
 			// Add protection to chains that have frozen
 			Integer[] allNodeGUIDs = getNodeGUIDs(0, new Date().getTime());
-			ArrayList nodeGUIDsArray = new ArrayList();
+			ArrayList<Integer> nodeGUIDsArray = new ArrayList<Integer>();
 			long freezeTreshold = ProtectedLogDevice.getFreezeTreshold();
 			for (int i=0; i<allNodeGUIDs.length; i++) {
 				ProtectedLogEventRow protectedLogEventRow = getProtectedLogEventRow(findNewestLogEventRow(allNodeGUIDs[i]));
@@ -1880,11 +1808,9 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 					Certificate certificate = getToken(newesetExportedProtectedLogEventRow.getProtectionKeyIdentifier()).getTokenCertificate();
 					// if not CA-cert get the issuers cert
 					int caId = CertTools.getSubjectDN(certificate).hashCode();
-					//int caId = CertTools.getSubjectDN(certificate).hashCode();
 					CAInfo caInfo = caAdminSession.getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 					if (caInfo == null) {
 						caId = CertTools.getIssuerDN(certificate).hashCode();
-						//int caId = CertTools.getIssuerDN(certificate).hashCode();
 						caInfo = caAdminSession.getCAInfo(new Admin(Admin.TYPE_INTERNALUSER), caId);
 						if (caInfo == null) {
 					    	log.error(intres.getLocalizedMessage("protectedlog.error.noexportca"));
@@ -2132,13 +2058,5 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 	 */
 	public boolean existsAnyProtectedLogEventByTime(long time) {
 		return !ProtectedLogData.findProtectedLogEventsByTime(entityManager, time).isEmpty();
-		/*try {
-			Collection protectedLogDataLocals = getProtectedLogData().findProtectedLogEventsByTime(time);
-			Iterator i = protectedLogDataLocals.iterator();
-			return i.hasNext();
-		} catch (FinderException e) {
-		}
-		return false;*/
 	}
-
 }

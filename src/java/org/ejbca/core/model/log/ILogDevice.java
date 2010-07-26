@@ -67,7 +67,7 @@ public interface ILogDevice extends Serializable {
      * @throws IllegalQueryException when query parameters internal rules isn't fulfilled.
      * @see org.ejbca.util.query.Query
      */
-    public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException;
+    public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException;
 
     /**
      * This is called for the log device, right before the LogSessionBean is removed. Since there can exist several LogSessionBeans, this
