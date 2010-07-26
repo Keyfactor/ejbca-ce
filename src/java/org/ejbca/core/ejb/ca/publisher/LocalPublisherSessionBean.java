@@ -128,11 +128,11 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     private EntityManager entityManager;
 
     @EJB
-    private AuthorizationSessionLocal authorizationsession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private PublisherQueueSessionLocal pubqueuesession;
+    private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
-    private LogSessionLocal logsession;
+    private LogSessionLocal logSession;
 
     /**
      * Stores the certificate to the given collection of publishers. See
@@ -208,10 +208,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
                             publishStatus = PublisherQueueData.STATUS_SUCCESS;
                         }
                         String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());
-                        logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
+                        logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
                     } catch (PublisherException pe) {
                         String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), fingerprint);
-                        logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, pe);
+                        logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, pe);
                     }
                 }
                 if (publishStatus != PublisherQueueData.STATUS_SUCCESS) {
@@ -232,17 +232,17 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
                     pqvd.setUserDN(userDN);
                     String fp = CertTools.getFingerprintAsString(cert);
                     try {
-                        pubqueuesession.addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CERT, fp, pqvd, publishStatus);
+                        publisherQueueSession.addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CERT, fp, pqvd, publishStatus);
                         String msg = intres.getLocalizedMessage("publisher.storequeue", pdl.getName(), fp, status);
-                        logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
+                        logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
                     } catch (CreateException e) {
                         String msg = intres.getLocalizedMessage("publisher.errorstorequeue", pdl.getName(), fp, status);
-                        logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, e);
+                        logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logErrorEvent, msg, e);
                     }
                 }
             } else {
                 String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
-                logsession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), null, cert, logErrorEvent, msg);
+                logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), null, cert, logErrorEvent, msg);
                 returnval = false;
             }
         }
@@ -275,10 +275,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
                             publishStatus = PublisherQueueData.STATUS_SUCCESS;
                         }
                         String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());
-                        logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
+                        logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
                     } catch (PublisherException pe) {
                         String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), "CRL");
-                        logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL,
+                        logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL,
                                 msg, pe);
                     }
                 }
@@ -297,18 +297,18 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
                     pqvd.setUserDN(userDN);
                     String fp = CertTools.getFingerprintAsString(incrl);
                     try {
-                        pubqueuesession.addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CRL, fp, pqvd, PublisherQueueData.STATUS_PENDING);
+                        publisherQueueSession.addQueueData(id.intValue(), PublisherQueueData.PUBLISH_TYPE_CRL, fp, pqvd, PublisherQueueData.STATUS_PENDING);
                         String msg = intres.getLocalizedMessage("publisher.storequeue", pdl.getName(), fp, "CRL");
-                        logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
+                        logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
                     } catch (CreateException e) {
                         String msg = intres.getLocalizedMessage("publisher.errorstorequeue", pdl.getName(), fp, "CRL");
-                        logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL,
+                        logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL,
                                 msg, e);
                     }
                 }
             } else {
                 String msg = intres.getLocalizedMessage("publisher.nopublisher", id);
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
                 returnval = false;
             }
         }
@@ -334,16 +334,16 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             try {
                 getPublisher(pdl).testConnection(admin);
                 String msg = intres.getLocalizedMessage("publisher.testedpublisher", name);
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
             } catch (PublisherConnectionException pe) {
                 String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg,
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg,
                         pe);
                 throw new PublisherConnectionException(pe.getMessage());
             }
         } else {
             String msg = intres.getLocalizedMessage("publisher.nopublisher", new Integer(publisherid));
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
 
         }
         if (log.isTraceEnabled()) {
@@ -393,10 +393,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         }
         if (success) {
             String msg = intres.getLocalizedMessage("publisher.addedpublisher", name);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
         } else {
             String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
             throw new PublisherExistsException();
         }
         log.trace("<addPublisher()");
@@ -415,10 +415,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         if (htp != null) {
             htp.setPublisher(publisher);
             String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
         }
         log.trace("<changePublisher()");
     }
@@ -445,10 +445,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             try {
                 addPublisher(admin, newname, publisherdata);
                 String msg = intres.getLocalizedMessage("publisher.clonedpublisher", newname, oldname);
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
             } catch (PublisherExistsException f) {
                 String msg = intres.getLocalizedMessage("publisher.errorclonepublisher", newname, oldname);
-                logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
                 throw f;
             }
         } catch (Exception e) {
@@ -472,10 +472,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             PublisherData htp = PublisherData.findByName(entityManager, name);
             entityManager.remove(htp);
             String msg = intres.getLocalizedMessage("publisher.removedpublisher", name);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("publisher.errorremovepublisher", name);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, e);
         }
         log.trace("<removePublisher()");
     }
@@ -503,10 +503,10 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         }
         if (success) {
             String msg = intres.getLocalizedMessage("publisher.renamedpublisher", oldname, newname);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldname, newname);
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
             throw new PublisherExistsException();
         }
         log.trace("<renamePublisher()");
@@ -528,7 +528,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      */
     public Collection getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
         HashSet<Integer> returnval = new HashSet<Integer>();
-        authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {
         	returnval.add(i.next().getId());
@@ -668,7 +668,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         		getPublisher(pdl).testConnection(admin);
         	} catch (PublisherConnectionException pe) {
         		String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);
-        		logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA,
+        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA,
         				msg, pe);
         		returnval += "\n" + msg;
         	}

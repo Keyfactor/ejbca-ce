@@ -30,7 +30,7 @@ import java.io.Serializable;
  * @author  Philip Vendil
  * @version $Id$
  */
-public class AccessRule implements Serializable, Comparable {
+public class AccessRule implements Serializable, Comparable<Object> {
     // Public rule constants. 
     public static final int RULE_NOTUSED = 0;
     public static final int RULE_ACCEPT = 1;
