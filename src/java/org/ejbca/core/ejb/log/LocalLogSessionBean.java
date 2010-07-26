@@ -450,17 +450,12 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     	if (o == null) {
     		LogConfigurationData logconfigdata = LogConfigurationData.findByPK(entityManager, caid);
     		if (logconfigdata != null) {
-    		/*LogConfigurationDataLocal logconfigdata = null;
-    		try {
-    			logconfigdata = logconfigurationhome.findByPrimaryKey(new Integer(caid));*/
     			ret = logconfigdata.loadLogConfiguration();
     		} else {
-    		//} catch (FinderException e) {
     			log.debug("Can't find log configuration during load (caid="+caid+"), trying to create new.");
     			try {
     				ret = new LogConfiguration();
     				entityManager.persist(new LogConfigurationData(new Integer(caid), ret));
-    				//logconfigdata = logconfigurationhome.create(new Integer(caid), ret);
     			} catch (Exception f) {
     				String msg = intres.getLocalizedMessage("log.errorcreateconf", new Integer(caid));            	
     				log.error(msg, f);
@@ -488,21 +483,17 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration) {
         try {
-            //try {
-                log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
-                LogConfigurationData lcd = LogConfigurationData.findByPK(entityManager, caid);
-                if (lcd != null) {
-                	lcd.saveLogConfiguration(logconfiguration);
-                	//(logconfigurationhome.findByPrimaryKey(new Integer(caid))).saveLogConfiguration(logconfiguration);
-                	// Update cache
-                	logConfCache.put(Integer.valueOf(caid), logconfiguration);
-                } else { 
-            //} catch (FinderException e) {
-                	String msg = intres.getLocalizedMessage("log.createconf", new Integer(caid));            	
-                	log.info(msg);
-                	entityManager.persist(new LogConfigurationData(new Integer(caid), logconfiguration));
-                	//logconfigurationhome.create(new Integer(caid), logconfiguration);
-                }
+        	log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
+        	LogConfigurationData lcd = LogConfigurationData.findByPK(entityManager, caid);
+        	if (lcd != null) {
+        		lcd.saveLogConfiguration(logconfiguration);
+        		// Update cache
+        		logConfCache.put(Integer.valueOf(caid), logconfiguration);
+        	} else { 
+        		String msg = intres.getLocalizedMessage("log.createconf", new Integer(caid));            	
+        		log.info(msg);
+        		entityManager.persist(new LogConfigurationData(new Integer(caid), logconfiguration));
+        	}
         } catch (Exception e) {
             log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_EDITLOGCONFIGURATION, "");
             throw new EJBException(e);
