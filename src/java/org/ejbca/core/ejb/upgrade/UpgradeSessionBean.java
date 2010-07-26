@@ -156,7 +156,7 @@ import org.ejbca.util.keystore.KeyTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "UpgradeSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-public class UpgradeSessionBean {
+public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote{
 
 	private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 	
@@ -189,12 +189,12 @@ public class UpgradeSessionBean {
     			final String[] oldVersionArray = sOldVersion.split("\\.");	// Split around the '.'-char
     			oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
     		}
-    		if ( isPost ) {
+    		if (isPost) {
     			return postUpgrade(oldVersion);
     		}
     		return upgrade(admin, dbtype, oldVersion);
     	} finally {
-    		this.log.trace("<upgrade()");
+    		log.trace("<upgrade()");
     	}
     }
     private boolean postUpgrade(int oldVersion) {
@@ -297,70 +297,53 @@ public class UpgradeSessionBean {
 		log.error("(this is not an error) Starting upgrade from ejbca 3.7.x to ejbca 3.8.x");
 		boolean ret = migradeDatabase("/37_38/37_38-upgrade-"+dbtype+".sql");
 		
-		//AdminGroupDataLocalHome adminGroupHome = (AdminGroupDataLocalHome) ServiceLocator.getInstance().getLocalHome(AdminGroupDataLocalHome.COMP_NAME);
 		// Change the name of AdminGroups with conflicting names
-		//try {
-			Collection<AdminGroupData> adminGroupDatas = AdminGroupData.findAll(entityManager);
-			//Collection adminGroupDatas = adminGroupHome.findAll();
-			Iterator<AdminGroupData> i = adminGroupDatas.iterator();
-			ArrayList<String> groupNames = new ArrayList<String>();
-			while (i.hasNext()) {
-				AdminGroupData adminGroupData = i.next();
-				String currentName = adminGroupData.getAdminGroupName();
-				if (groupNames.contains(currentName)) {
-					if (currentName.equals(AdminGroup.PUBLICWEBGROUPNAME)) {
-						// We don't need a group for each CA any longer
-						try {
-							adminGroupData.removeAccessRulesObjects(entityManager, adminGroupData.getAccessRuleObjects());
-							adminGroupData.removeAdminEntities(entityManager, adminGroupData.getAdminEntityObjects());
-							entityManager.remove(adminGroupData);
-							//adminGroupData.remove();
-						} catch (EJBException e) {
-							log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
-						} catch (IllegalArgumentException e) {
-							log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
-						}
-					} else {
-						// Conflicting name. We need to change it.
-						adminGroupData.setAdminGroupName(currentName + "_" + caAdminSession.getCAIdToNameMap(administrator).get(adminGroupData.getCaId()));
+		Collection<AdminGroupData> adminGroupDatas = AdminGroupData.findAll(entityManager);
+		Iterator<AdminGroupData> i = adminGroupDatas.iterator();
+		ArrayList<String> groupNames = new ArrayList<String>();
+		while (i.hasNext()) {
+			AdminGroupData adminGroupData = i.next();
+			String currentName = adminGroupData.getAdminGroupName();
+			if (groupNames.contains(currentName)) {
+				if (currentName.equals(AdminGroup.PUBLICWEBGROUPNAME)) {
+					// We don't need a group for each CA any longer
+					try {
+						adminGroupData.removeAccessRulesObjects(entityManager, adminGroupData.getAccessRuleObjects());
+						adminGroupData.removeAdminEntities(entityManager, adminGroupData.getAdminEntityObjects());
+						entityManager.remove(adminGroupData);
+						//adminGroupData.remove();
+					} catch (EJBException e) {
+						log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
+					} catch (IllegalArgumentException e) {
+						log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
 					}
 				} else {
-					groupNames.add(currentName);
+					// Conflicting name. We need to change it.
+					adminGroupData.setAdminGroupName(currentName + "_" + caAdminSession.getCAIdToNameMap(administrator).get(adminGroupData.getCaId()));
 				}
+			} else {
+				groupNames.add(currentName);
 			}
-		/*} catch (FinderException e) {
-			throw new EJBException(e);	// There should be at least one group..
-		}*/
+		}
 		// Read the CA Id from each AdminGroup and write it to each entity
-		//try {
-			//Collection adminGroupDatas = adminGroupHome.findAll();
-			Iterator<AdminGroupData> iter = AdminGroupData.findAll(entityManager).iterator();
-			while (iter.hasNext()) {
-				AdminGroupData adminGroupData = iter.next();
-				Collection<AdminEntityData> adminEntityObjects = adminGroupData.getAdminEntities();
-				Iterator<AdminEntityData> i2 = adminEntityObjects.iterator();
-				while (i2.hasNext()) {
-					AdminEntityData adminEntityData = i2.next();
-					adminEntityData.setCaId(adminGroupData.getCaId());
-				}
+		Iterator<AdminGroupData> iter = AdminGroupData.findAll(entityManager).iterator();
+		while (iter.hasNext()) {
+			AdminGroupData adminGroupData = iter.next();
+			Collection<AdminEntityData> adminEntityObjects = adminGroupData.getAdminEntities();
+			Iterator<AdminEntityData> i2 = adminEntityObjects.iterator();
+			while (i2.hasNext()) {
+				AdminEntityData adminEntityData = i2.next();
+				adminEntityData.setCaId(adminGroupData.getCaId());
 			}
-		/*} catch (FinderException e) {
-			throw new EJBException(e);	// There should be at least one group..
-		}*/
+		}
 		// Update access rules to not use a caid in the primary key
-		//try {
-			//Collection adminGroupDatas = adminGroupHome.findAll();
-			Iterator<AdminGroupData> i3 = AdminGroupData.findAll(entityManager).iterator();
-			while (i3.hasNext()) {
-				AdminGroupData adminGroupData = i3.next();
-				Collection<AccessRule> accessRules = adminGroupData.getAccessRuleObjects();
-				adminGroupData.removeAccessRulesObjects(entityManager, accessRules);
-				adminGroupData.addAccessRules(entityManager, accessRules);
-			}
-		/*} catch (FinderException e) {
-			throw new EJBException(e);	// There should be at least one group..
-		}*/
-	
+		Iterator<AdminGroupData> i3 = AdminGroupData.findAll(entityManager).iterator();
+		while (i3.hasNext()) {
+			AdminGroupData adminGroupData = i3.next();
+			Collection<AccessRule> accessRules = adminGroupData.getAccessRuleObjects();
+			adminGroupData.removeAccessRulesObjects(entityManager, accessRules);
+			adminGroupData.addAccessRules(entityManager, accessRules);
+		}
 		log.error("(this is not an error) Finished migrating database.");
         return ret;
 	}
@@ -381,60 +364,54 @@ public class UpgradeSessionBean {
 		boolean ret = migradeDatabase("/39_310/39_310-upgrade-"+dbtype+".sql");
 		if (ret) {
 			List<Integer> approvalIds = approvalSession.getAllPendingApprovalIds();
-			//ApprovalDataLocalHome approvalHome = (ApprovalDataLocalHome) getLocator().getLocalHome(ApprovalDataLocalHome.COMP_NAME);
 			for (int i=0; i<approvalIds.size(); i++) {
 				Integer approvalId = approvalIds.get(i);
-				//try {
-					Collection<ApprovalData> approvalDatas = ApprovalData.findByApprovalId(entityManager, approvalId.intValue());
-					//Collection approvalDataLocals = approvalHome.findByApprovalId(approvalId.intValue());
-					if (approvalDatas.size() < 1 || approvalDatas.size() > 1) {
-						log.warn("There is an error in the database. You have " + approvalDatas.size() + " entries w approvalId " + approvalId.intValue());
+				Collection<ApprovalData> approvalDatas = ApprovalData.findByApprovalId(entityManager, approvalId.intValue());
+				if (approvalDatas.size() < 1 || approvalDatas.size() > 1) {
+					log.warn("There is an error in the database. You have " + approvalDatas.size() + " entries w approvalId " + approvalId.intValue());
+				}
+				final Iterator<ApprovalData> iterator = approvalDatas.iterator();
+				while (iterator.hasNext()) {
+					final ApprovalData approvalData = iterator.next();
+					final ApprovalRequest approvalRequest = approvalData.getApprovalRequest();
+					final Admin requestAdmin = approvalRequest.getRequestAdmin();
+					if (requestAdmin.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
+						// Upgrade the request admin if it of type CLIENT_CERT_USER
+						final Certificate adminCert = requestAdmin.getAdminInformation().getX509Certificate();
+						approvalRequest.setRequestAdmin(userAdminSession.getAdmin(adminCert));
+						approvalData.setApprovalRequest(approvalRequest);
+
+					} else {
+						log.debug("Ignoring upgrade of approval request initialed by admin of type " + requestAdmin.getAdminType());
 					}
-					final Iterator<ApprovalData> iterator = approvalDatas.iterator();
-					while (iterator.hasNext()) {
-						final ApprovalData approvalData = iterator.next();
-						final ApprovalRequest approvalRequest = approvalData.getApprovalRequest();
-						final Admin requestAdmin = approvalRequest.getRequestAdmin();
-						if (requestAdmin.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
-							// Upgrade the request admin if it of type CLIENT_CERT_USER
-							final Certificate adminCert = requestAdmin.getAdminInformation().getX509Certificate();
-							approvalRequest.setRequestAdmin(userAdminSession.getAdmin(adminCert));
-							approvalData.setApprovalRequest(approvalRequest);
-							
-						} else {
-							log.debug("Ignoring upgrade of approval request initialed by admin of type " + requestAdmin.getAdminType());
-						}
-						final Collection<Approval> approvals = approvalData.getApprovals();
-						final Iterator<Approval> iterator2 = approvals.iterator();
-						while (iterator2.hasNext()) {
-							final Approval approval = iterator2.next();
-							// Lookup admin certificate that was used to approve this request and set a proper Admin that includes the admin certificate
-							final String issuerDN = approval.getAdminCertIssuerDN();
-							final BigInteger serialNumber = approval.getAdminCertSerialNumber();
-							if (issuerDN != null && serialNumber != null) {
-								final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), issuerDN, serialNumber);
-								if (certificate == null) {
-									// The approval was created with a certificate does not exist in the EJBCA database (an external Admin)
-									log.warn("External Admin with issuerDN '" + issuerDN + "' and serialNumer '" + serialNumber + "' does not have a certificate in the EJBCA database. Approval Admin will be set to Admin.TYPE_INTERNALUSER as a workaround.");
-									approval.setApprovalAdmin(approval.isApproved(), new Admin(Admin.TYPE_INTERNALUSER));
-								} else {
-									// Create a new Admin object from the certificate
-									approval.setApprovalAdmin(approval.isApproved(), userAdminSession.getAdmin(certificate));
-								}
+					final Collection<Approval> approvals = approvalData.getApprovals();
+					final Iterator<Approval> iterator2 = approvals.iterator();
+					while (iterator2.hasNext()) {
+						final Approval approval = iterator2.next();
+						// Lookup admin certificate that was used to approve this request and set a proper Admin that includes the admin certificate
+						final String issuerDN = approval.getAdminCertIssuerDN();
+						final BigInteger serialNumber = approval.getAdminCertSerialNumber();
+						if (issuerDN != null && serialNumber != null) {
+							final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), issuerDN, serialNumber);
+							if (certificate == null) {
+								// The approval was created with a certificate does not exist in the EJBCA database (an external Admin)
+								log.warn("External Admin with issuerDN '" + issuerDN + "' and serialNumer '" + serialNumber + "' does not have a certificate in the EJBCA database. Approval Admin will be set to Admin.TYPE_INTERNALUSER as a workaround.");
+								approval.setApprovalAdmin(approval.isApproved(), new Admin(Admin.TYPE_INTERNALUSER));
 							} else {
-								log.error("Approval in ApprovalData w approvalId " + approvalId + " lacks issuerDN or serialNumber");
+								// Create a new Admin object from the certificate
+								approval.setApprovalAdmin(approval.isApproved(), userAdminSession.getAdmin(certificate));
 							}
+						} else {
+							log.error("Approval in ApprovalData w approvalId " + approvalId + " lacks issuerDN or serialNumber");
 						}
 					}
-				/*} catch (FinderException e) {
-					log.error("Could not fetch pending approval with id " + ((Integer)approvalIds.get(i)).intValue());
-			        return false;
-				}*/
+				}
 			}
 		}
 		log.error("(this is not an error) Finished migrating database.");
         return ret;
 	}
+
 	private boolean postMigrateDatabase310() {
 		log.error("(this is not an error) Starting post upgrade from ejbca 3.9.x to ejbca 3.10.x");
 		final String lKeyID = "subjectKeyId";
