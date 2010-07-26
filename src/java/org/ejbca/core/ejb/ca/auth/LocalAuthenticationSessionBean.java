@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.auth;
 
 import java.util.Date;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
@@ -23,15 +22,14 @@ import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.UserDataLocal;
-import org.ejbca.core.ejb.ra.UserDataLocalHome;
-import org.ejbca.core.ejb.ra.UserDataPK;
+import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -106,31 +104,16 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 
     private static final Logger log = Logger.getLogger(LocalAuthenticationSessionBean.class);
     
-    /** home interface to user entity bean */
-    private UserDataLocalHome userHome = null;
-    
-    /** interface to user admin session bean */
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
+
     @EJB
     private UserAdminSessionLocal usersession;
-    
-    /** The remote interface of the log session bean */
     @EJB
     private LogSessionLocal logsession;
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-    
-    /**
-     * Default create for SessionBean without any creation Arguments.
-     *
-     * @throws CreateException if bean instance can't be created
-     * @ejb.create-method
-     */
-    public void ejbCreate() throws CreateException {
-        log.trace(">ejbCreate()");
-        userHome = (UserDataLocalHome)ServiceLocator.getInstance().getLocalHome(UserDataLocalHome.COMP_NAME);
-        log.trace("<ejbCreate()");
-    }
     
     /**
      * Authenticates a user to the user database and returns the user DN.
@@ -152,9 +135,10 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
     	}
         try {
             // Find the user with username username, or throw FinderException
-            UserDataPK pk = new UserDataPK(username);
-            UserDataLocal data = userHome.findByPrimaryKey(pk);
-
+            UserData data = UserData.findByUsername(entityManager, username);
+            if (data == null) {
+            	throw new ObjectNotFoundException("Could not find username " + username);
+            }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
            	usersession.decRemainingLoginAttempts(admin, data.getUsername());
 			
@@ -201,7 +185,7 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
             log.error(msg, e);
             throw new EJBException(e);
         }
-    } //authenticateUser
+    }
 
     /**
      * Set the status of a user to finished, called when a user has been successfully processed. If
@@ -240,6 +224,7 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 			log.trace("<finishUser("+username+", hiddenpwd)");
 		}
     }
+
 	/**
 	 * Cleans the certificate serial number from the user data. Should be called after the data has been used.
 	 * @param data
@@ -322,5 +307,5 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 		    log.error("ApprovalException: ", e);
 			throw new EJBException(e);
 		}
-	} //finishUser
+	}
 }
