@@ -18,7 +18,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.ejb.EJBException;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -94,7 +93,7 @@ public class PublisherData implements Serializable {
             }
             setData(baos.toString("UTF8"));
         } catch (UnsupportedEncodingException e) {
-            throw new EJBException(e);
+            throw new RuntimeException(e);
         }
 		this.publisher = publisher;
 		setUpdateCounter(getUpdateCounter() + 1);
