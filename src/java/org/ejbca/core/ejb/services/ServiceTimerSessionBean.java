@@ -43,7 +43,6 @@ import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
-
 /**
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
@@ -242,7 +241,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
     
     /**
      * Constant indicating the Id of the "service loader" service.
-     * Used in a clustered environment to perodically load available
+     * Used in a clustered environment to periodically load available
      * services
      */
     private static final Integer SERVICELOADER_ID = Integer.valueOf(0);
@@ -420,7 +419,6 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
      */
 	public void load(){
 		// Get all services
-
 		Collection<Timer> currentTimers = sessionContext.getTimerService().getTimers();
 		Iterator<Timer> iter = currentTimers.iterator();
 		HashSet<Serializable> existingTimers = new HashSet<Serializable>();
@@ -430,7 +428,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 				Serializable info = timer.getInfo();
 				existingTimers.add(info);    			
 			} catch (Throwable e) {
-				// We need this try because weblogic seems to suck...
+				// EJB 2.1 only?: We need this try because weblogic seems to suck...
 				log.debug("Error invoking timer.getInfo(): ", e);
 			}
 		}
@@ -462,7 +460,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
      * @ejb.interface-method view-type="both"
      */
 	public void unload(){
-		// Get all servicess
+		// Get all services
 		Collection<Timer> currentTimers = sessionContext.getTimerService().getTimers();
 		Iterator<Timer> iter = currentTimers.iterator();
 		while(iter.hasNext()){
@@ -470,20 +468,18 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 				Timer timer = iter.next();			
 				timer.cancel(); 							
 			} catch (Exception e) {
-				// We need to catch this because Weblogic 10 throws an exception if we
+				// EJB 2.1 only?: We need to catch this because Weblogic 10 throws an exception if we
 				// have not scheduled this timer, so we don't have anything to cancel.
 				// Only weblogic though...
 				log.info("Caught exception canceling timer: "+e.getMessage());
 			}
 		}
 	}
-	
-	
+
     /**
      * Adds a timer to the bean, and cancels all existing timeouts for this id.
      *
      * @param id the id of the timer
-     * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
 	public void addTimer(long interval, Integer id){
@@ -495,7 +491,6 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
     /**
      * cancels a timer with the given Id
      *
-     * @throws EJBException             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
 	public void cancelTimer(Integer id){
@@ -508,7 +503,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 					  next.cancel();
 				  }
 			  } catch (Exception e) {
-				  // We need to catch this because Weblogic 10 throws an exception if we
+				  // EJB 2.1 only?: We need to catch this because Weblogic 10 throws an exception if we
 				  // have not scheduled this timer, so we don't have anything to cancel.
 				  // Only weblogic though...
 				  log.info("Caught exception canceling timer: "+e.getMessage());
