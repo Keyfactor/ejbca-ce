@@ -49,12 +49,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -239,8 +236,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
-    @Resource
-    private SessionContext sessionContext;
+
     @EJB
     private LogSessionLocal logSession;
     @EJB
@@ -262,17 +258,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     private final Map<Integer, Integer> caCertToCaId = new HashMap<Integer, Integer>();
 
-    /**
-     * Default create for SessionBean without any creation Arguments.
-     * 
-     * @throws CreateException
-     *             if bean instance can't be created
-     * TODO: Convert this to a regular constructor!
-     */
-    @PostConstruct
-    public void ejbCreate() /*throws CreateException*/ {
-        //cadatahome = (CADataLocalHome) ServiceLocator.getInstance().getLocalHome(CADataLocalHome.COMP_NAME);
-        // Install BouncyCastle provider
+    public CAAdminSessionBean() {
         CryptoProviderTools.installBCProvider();
     }
 
@@ -288,26 +274,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
-    //Redundant, class level attribute is the same.. @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void initializeAndUpgradeCAs(Admin admin) {
-        //try {
-            Collection<CAData> result = CAData.findAll(entityManager);	//cadatahome.findAll();
-            Iterator<CAData> iter = result.iterator();
-            while (iter.hasNext()) {
-                CAData cadata = iter.next();
-                String caname = cadata.getName();
-                try {
-                    cadata.upgradeCA();
-                    log.info("Initialized CA: " + caname + ", with expire time: " + new Date(cadata.getExpireTime()));
-                } catch (UnsupportedEncodingException e) {
-                    log.error("UnsupportedEncodingException trying to load CA with name: " + caname, e);
-                } catch (IllegalKeyStoreException e) {
-                    log.error("IllegalKeyStoreException trying to load CA with name: " + caname, e);
-                }
-            }
-        /*} catch (FinderException e) {
-            log.error("FinderException trying to load CAs: ", e);
-        }*/
+    	Collection<CAData> result = CAData.findAll(entityManager);
+    	Iterator<CAData> iter = result.iterator();
+    	while (iter.hasNext()) {
+    		CAData cadata = iter.next();
+    		String caname = cadata.getName();
+    		try {
+    			cadata.upgradeCA();
+    			log.info("Initialized CA: " + caname + ", with expire time: " + new Date(cadata.getExpireTime()));
+    		} catch (UnsupportedEncodingException e) {
+    			log.error("UnsupportedEncodingException trying to load CA with name: " + caname, e);
+    		} catch (IllegalKeyStoreException e) {
+    			log.error("IllegalKeyStoreException trying to load CA with name: " + caname, e);
+    		}
+    	}
     }
 
     /**
@@ -329,6 +310,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException,
             CATokenAuthenticationFailedException {
+    	log.trace(">createCA");
         int castatus = SecConst.CA_OFFLINE;
         // Check that administrator has superadminstrator rights.
         try {
@@ -340,38 +322,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new AuthorizationDeniedException(msg);
         }
         // Check that CA doesn't already exists
-        //try {
-            int caid = cainfo.getCAId();
-            if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
-                String msg = intres.getLocalizedMessage("caadmin.wrongcaid", new Integer(caid));
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
-                throw new CAExistsException(msg);
-            }
-            if (CAData.findById(entityManager, caid) != null) {
-                String msg = intres.getLocalizedMessage("caadmin.caexistsid", new Integer(caid));
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
-                throw new CAExistsException(msg);
-            }
-            /*cadatahome.findByPrimaryKey(new Integer(caid));
-            String msg = intres.getLocalizedMessage("caadmin.caexistsid", new Integer(caid));
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
-            throw new CAExistsException(msg);
-        } catch (javax.ejb.FinderException fe) {
-        }*/
-
-        //try {
-        	if (CAData.findByName(entityManager, cainfo.getName()) != null) {
-                String msg = intres.getLocalizedMessage("caadmin.caexistsname", cainfo.getName());
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
-                throw new CAExistsException(msg);
-        	}
-            /*cadatahome.findByName(cainfo.getName());
-            String msg = intres.getLocalizedMessage("caadmin.caexistsname", cainfo.getName());
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
-            throw new CAExistsException(msg);
-        } catch (javax.ejb.FinderException fe) {
-        }*/
-
+        int caid = cainfo.getCAId();
+        if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
+        	String msg = intres.getLocalizedMessage("caadmin.wrongcaid", new Integer(caid));
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
+        	throw new CAExistsException(msg);
+        }
+        if (CAData.findById(entityManager, caid) != null) {
+        	String msg = intres.getLocalizedMessage("caadmin.caexistsid", new Integer(caid));
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
+        	throw new CAExistsException(msg);
+        }
+        if (CAData.findByName(entityManager, cainfo.getName()) != null) {
+        	String msg = intres.getLocalizedMessage("caadmin.caexistsname", cainfo.getName());
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
+        	throw new CAExistsException(msg);
+        }
         // Create CAToken
         CATokenInfo catokeninfo = cainfo.getCATokenInfo();
         CATokenContainer catoken = new CATokenContainerImpl(catokeninfo, cainfo.getCAId());
@@ -543,7 +509,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Update local OCSP's CA certificate cache
         CertificateCacheInternal.getInstance().update(ca.getCACertificate());
-    } // createCA
+    	log.trace("<createCA");
+    }
 
     private void createCRLs(Admin admin, CA ca, CAInfo cainfo) throws CATokenOfflineException {
         final String fp = this.crlSession.run(admin, ca);
@@ -587,9 +554,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Check if extended service certificates are about to be renewed.
-        Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+        Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
         while (iter.hasNext()) {
-            Object next = iter.next();
+        	ExtendedCAServiceInfo next = iter.next();
             // No OCSP Certificate exists that can be renewed.
             if (next instanceof XKMSCAServiceInfo) {
                 xkmsrenewcert = ((XKMSCAServiceInfo) next).getRenewFlag();
@@ -1266,7 +1233,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection<Integer> getAvailableCAs(Admin admin) {
+    public Collection getAvailableCAs(Admin admin) {
         return authorizationSession.getAuthorizedCAIds(admin, getAvailableCAs());
     }
 

@@ -70,9 +70,6 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.ValidityDate;
 
-
-
-
 /**
  * CA is a base class that should be inherited by all CA types
  *
@@ -117,8 +114,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
 	private static final String DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER = "doEnforceUniqueSubjectDNSerialnumber";
 	private static final String USE_CERTREQ_HISTORY 			 = "useCertreqHistory";
+
+    private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
     
-    // Public Methods
+    private ArrayList<Certificate> certificatechain = null;
+    private ArrayList<Certificate> requestcertchain = null;
+    
+    private CAInfo cainfo = null;
+
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public CA(CAInfo cainfo){
        data = new HashMap();
@@ -142,10 +145,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
        setUseCertReqHistory(cainfo.isUseCertReqHistory());
 	   
-	   Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
-	   ArrayList extendedservicetypes = new ArrayList(); 
+	   Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
+	   ArrayList<Integer> extendedservicetypes = new ArrayList<Integer>(); 
 	   while(iter.hasNext()){
-	   	 ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
+	   	 ExtendedCAServiceInfo next = iter.next();
 	   	 if(next instanceof OCSPCAServiceInfo){
 	   	   setExtendedCAService(new OCSPCAService(next));
 	   	   extendedservicetypes.add(new Integer(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
@@ -176,7 +179,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return this.cainfo;    	
     }
 
-    // Public Methods.
     public String getSubjectDN(){
     	return cainfo.getSubjectDN();
     }
@@ -298,12 +300,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     /** Returns a collection of CA certificates, or null if no request certificate chain exists
      */
-    public Collection getRequestCertificateChain(){
+    public Collection<Certificate> getRequestCertificateChain(){
     	if(requestcertchain == null){
-    		Collection storechain = (Collection) data.get(REQUESTCERTCHAIN);
+    		Collection<String> storechain = (Collection<String>) data.get(REQUESTCERTCHAIN);
     		if (storechain != null) {
-    			Iterator iter = storechain.iterator();
-    			this.requestcertchain = new ArrayList();
+    			Iterator<String> iter = storechain.iterator();
+    			this.requestcertchain = new ArrayList<Certificate>();
     			while(iter.hasNext()){
     				String b64Cert = (String) iter.next();
     				try {
@@ -317,11 +319,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	return requestcertchain; 
     }
     
-    public void setRequestCertificateChain(Collection requestcertificatechain){
-      Iterator iter = requestcertificatechain.iterator();
-      ArrayList storechain = new ArrayList();
+    public void setRequestCertificateChain(Collection<Certificate> requestcertificatechain){
+      Iterator<Certificate> iter = requestcertificatechain.iterator();
+      ArrayList<String> storechain = new ArrayList<String>();
       while(iter.hasNext()){
-        Certificate cert = (Certificate) iter.next();
+        Certificate cert = iter.next();
         try{ 
           String b64Cert = new String(Base64.encode(cert.getEncoded()));
           storechain.add(b64Cert);
@@ -331,7 +333,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
       }
       data.put(REQUESTCERTCHAIN,storechain);  
       
-      this.requestcertchain = new ArrayList();
+      this.requestcertchain = new ArrayList<Certificate>();
       this.requestcertchain.addAll(requestcertificatechain);
     }
 
@@ -339,16 +341,16 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * if no CA-certificates exist. The root CA certificate will thus be in the last position.
      * @return Collection of Certificate
      */
-	public Collection getCertificateChain(){
+	public Collection<Certificate> getCertificateChain(){
 	  if(certificatechain == null){
-		Collection storechain = (Collection) data.get(CERTIFICATECHAIN);
+		Collection<String> storechain = (Collection<String>) data.get(CERTIFICATECHAIN);
 		if (storechain == null) {
 			return null;
 		}
-		Iterator iter = storechain.iterator();
-		this.certificatechain = new ArrayList();
+		Iterator<String> iter = storechain.iterator();
+		this.certificatechain = new ArrayList<Certificate>();
 		while(iter.hasNext()){
-		  String b64Cert = (String) iter.next();
+		  String b64Cert = iter.next();
 		  try{
 			  Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()));
 			  if (cert != null) {
@@ -369,11 +371,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	  return certificatechain; 
 	}
     
-	public void setCertificateChain(Collection certificatechain){
-	  Iterator iter = certificatechain.iterator();
-	  ArrayList storechain = new ArrayList();
+	public void setCertificateChain(Collection<Certificate> certificatechain){
+	  Iterator<Certificate> iter = certificatechain.iterator();
+	  ArrayList<String> storechain = new ArrayList<String>();
 	  while(iter.hasNext()){
-		Certificate cert = (Certificate) iter.next();
+		Certificate cert = iter.next();
 		try{ 
 		  String b64Cert = new String(Base64.encode(cert.getEncoded()));
 		  storechain.add(b64Cert);
@@ -383,7 +385,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	  }
 	  data.put(CERTIFICATECHAIN,storechain);  
       
-	  this.certificatechain = new ArrayList();
+	  this.certificatechain = new ArrayList<Certificate>();
 	  this.certificatechain.addAll(certificatechain);
 	  this.cainfo.setCertificateChain(certificatechain);
 	}
@@ -467,19 +469,18 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	 * 
 	 * @return Collection of Integer, never null
 	 */
-	public Collection getApprovalSettings(){
+	public Collection<Integer> getApprovalSettings(){
 		if(data.get(APPROVALSETTINGS) == null){
-			return new ArrayList();
+			return new ArrayList<Integer>();
 		}
-		
-		return (Collection) data.get(APPROVALSETTINGS);
+		return (Collection<Integer>) data.get(APPROVALSETTINGS);
 	}
 	
 	/**
 	 * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
 	 * action that requires approvals
 	 */
-	public  void setApprovalSettings(Collection approvalSettings){
+	public void setApprovalSettings(Collection<Integer> approvalSettings){
        data.put(APPROVALSETTINGS,approvalSettings);
 	}
 	
@@ -691,7 +692,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             	  ocspServiceReq.setPrivKey(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
             	  ocspServiceReq.setPrivKeyProvider(getCAToken().getProvider());
             	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
-            	  List chain = Arrays.asList(signerChain);
+            	  List<X509Certificate> chain = Arrays.asList(signerChain);
             	  ocspServiceReq.setCertificateChain(chain);
             	  // Super class handles signing with the OCSP signing certificate
             	  log.debug("extendedService, with ca cert)");
@@ -815,20 +816,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	 *
 	 */
 		
-	public Collection getExternalCAServiceTypes(){
+	public Collection<Integer> getExternalCAServiceTypes(){
 		if(data.get(EXTENDEDCASERVICES) == null) {
-		  return new ArrayList();
+		  return new ArrayList<Integer>();
 		}
-		return (Collection) data.get(EXTENDEDCASERVICES);	  	 
+		return (Collection<Integer>) data.get(EXTENDEDCASERVICES);
 	}
     
-    private HashMap extendedcaservicemap = new HashMap();
-    
-    private ArrayList certificatechain = null;
-    private ArrayList requestcertchain = null;
-    
-    private CAInfo cainfo = null;
-
     /**
      * Method to upgrade new (or existing externacaservices)
      * This method needs to be called outside the regular upgrade
