@@ -173,7 +173,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private RaAdminSessionLocal raadminSession;
+    private RaAdminSessionLocal raAdminSession;
     @EJB
     private UserAdminSessionLocal userAdminSession = null;
     @EJB
@@ -432,7 +432,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 		byte[] ret = null;
 		try {
 			// Get key recovery info
-			boolean usekeyrecovery = raadminSession.loadGlobalConfiguration(admin).getEnableKeyRecovery();
+			boolean usekeyrecovery = raAdminSession.loadGlobalConfiguration(admin).getEnableKeyRecovery();
 			if (log.isDebugEnabled()) {
 				log.debug("usekeyrecovery: "+usekeyrecovery);
 			}
@@ -447,7 +447,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 				log.debug("loadkeys: "+loadkeys);
 			}
 			int endEntityProfileId = userdata.getEndEntityProfileId();
-			EndEntityProfile endEntityProfile = raadminSession.getEndEntityProfile(admin, endEntityProfileId);
+			EndEntityProfile endEntityProfile = raAdminSession.getEndEntityProfile(admin, endEntityProfileId);
 			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 			if (log.isDebugEnabled()) {
 				log.debug("reusecertificate: "+reusecertificate);

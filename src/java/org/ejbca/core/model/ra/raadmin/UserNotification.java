@@ -148,9 +148,9 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
      * 
      * @return A Collection with String values (String.valueOf(UserDataConstants.STATUS_NEW etc), or an empty Collection, never null.
      */
-    public Collection getNotificationEventsCollection(){
+    public Collection<String> getNotificationEventsCollection(){
     	String events = getNotificationEvents();
-    	ArrayList ret = new ArrayList();
+    	ArrayList<String> ret = new ArrayList<String>();
     	if (StringUtils.isNotEmpty(events)) {
     		StringTokenizer tokenizer = new StringTokenizer(events, ";", false);
             while (tokenizer.hasMoreTokens()) {
