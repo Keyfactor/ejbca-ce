@@ -43,7 +43,6 @@ import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
 
-
 /** For some setups there are requirements for integrity protection of 
  * database rows. 
  *
@@ -91,9 +90,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocalejb3, Ta
 
     private static final String HMAC_ALG = "HMac-SHA256";
 	
-    /** The home interface of  LogEntryData entity bean */
-    //private TableProtectDataLocalHome protectentryhome;
-
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
@@ -108,7 +104,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocalejb3, Ta
     public void ejbCreate() {
         try {
         	CryptoProviderTools.installBCProvider();
-            //protectentryhome = (TableProtectDataLocalHome) getLocator().getLocalHome(TableProtectDataLocalHome.COMP_NAME);
             if (keyType == ProtectConfiguration.PROTECTIONTYPE_ENC_SOFT_HMAC) {
             	key = StringTools.pbeDecryptStringWithSha256Aes192(ProtectConfiguration.getProtectionKey());
             } else {
@@ -127,7 +122,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocalejb3, Ta
      * @ejb.interface-method
      * @ejb.transaction type="Required"
      */
-    // Redundant.. @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void protectExternal(Protectable entry, String dataSource) {
     	if (!ProtectConfiguration.getProtectionEnabled()) {
     		return;
@@ -202,28 +196,24 @@ public class TableProtectSessionBean implements TableProtectSessionLocalejb3, Ta
     		String signature = createHmac(key, HMAC_ALG, hash);
     		String id = GUIDGenerator.generateGUID(this);
 			TableProtectData data = TableProtectData.findByDbTypeAndKey(entityManager, dbType, dbKey);
-    		//try {
-    			//TableProtectDataLocal data = protectentryhome.findByDbTypeAndKey(dbType, dbKey);
-    			if (data != null) {
-                    String msg = intres.getLocalizedMessage("protect.rowexistsupdate", dbType, dbKey);            	
-    				log.info(msg);
-    				data.setHashVersion(hashVersion);
-    				data.setHash(hash);
-    				data.setProtectionAlg(HMAC_ALG);
-    				data.setSignature(signature);
-    				data.setTime((new Date()).getTime());
-    				data.setDbKey(dbKey);
-    				data.setDbType(dbType);
-    				data.setKeyType(keyType);
-    			} else {
-    		//} catch (FinderException e1) {
-    			try {
-    				entityManager.persist(new TableProtectData(id, hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyType));
-    				//protectentryhome.create(id, hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyType);
-    			} catch (Exception e) {
-    	            String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
-    				log.error(msg, e);
-    			}
+			if (data != null) {
+				String msg = intres.getLocalizedMessage("protect.rowexistsupdate", dbType, dbKey);            	
+				log.info(msg);
+				data.setHashVersion(hashVersion);
+				data.setHash(hash);
+				data.setProtectionAlg(HMAC_ALG);
+				data.setSignature(signature);
+				data.setTime((new Date()).getTime());
+				data.setDbKey(dbKey);
+				data.setDbType(dbType);
+				data.setKeyType(keyType);
+			} else {
+				try {
+					entityManager.persist(new TableProtectData(id, hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyType));
+				} catch (Exception e) {
+					String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
+					log.error(msg, e);
+				}
     		}
     	} catch (Exception e) {
             String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
@@ -254,7 +244,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocalejb3, Ta
     	try {
     		TableProtectData data = TableProtectData.findByDbTypeAndKey(entityManager, dbType, dbKey);
     		if (data != null) {
-    			//TableProtectDataLocal data = protectentryhome.findByDbTypeAndKey(dbType, dbKey);
     			int hashVersion = data.getHashVersion();
     			String hash = entry.getHash(hashVersion);
     			if (!StringUtils.equals(alg, data.getProtectionAlg())) {
@@ -284,7 +273,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocalejb3, Ta
     				}    			
     			}
     		} else {
-		//} catch (ObjectNotFoundException e) {
     			if (warnOnMissingRow) {
     				String msg = intres.getLocalizedMessage("protect.errorverifynorow", dbType, dbKey);            	
     				log.error(msg);				
