@@ -18,8 +18,6 @@ import java.util.Date;
 
 import org.ejbca.core.model.SecConst;
 
-
-
 /**
  * Value Object containing all the information about an approval
  * such as approvalid, approvaltype, endentityprofileid, caid, 
@@ -29,7 +27,6 @@ import org.ejbca.core.model.SecConst;
  * @author Philip Vendil
  * @version $Id$
  */
-
 public class ApprovalDataVO implements Serializable { 	
 
 	private static final long serialVersionUID = -1L;
@@ -43,10 +40,8 @@ public class ApprovalDataVO implements Serializable {
 	public static final int STATUS_EXECUTED           = -5;
 	public static final int STATUS_EXECUTIONFAILED    = -6;
 	public static final int STATUS_EXECUTIONDENIED    = -7;
-	
-	
-	// Approval types
 
+	// Approval types
 	public static final int APPROVALTYPE_DUMMY                       = 0;
 	public static final int APPROVALTYPE_VIEWHARDTOKENDATA           = 1;
 	public static final int APPROVALTYPE_ADDENDENTITY                = 2;
@@ -84,7 +79,7 @@ public class ApprovalDataVO implements Serializable {
     private String reqadmincertissuerdn = null;
     private String reqadmincertsn = null;
     private int status = 0;
-    private Collection approvals = null;
+    private Collection<Approval> approvals = null;
     private ApprovalRequest approvalRequest = null;
     private Date requestDate = null;
     private Date expireDate = null;
@@ -112,7 +107,7 @@ public class ApprovalDataVO implements Serializable {
      *                      means that the request/approval never expires
 	 * @param remainingApprovals Indicates the number of approvals that remains in order to execute the action.
 	 */
-	public ApprovalDataVO(int id, int approvalId, int approvalType, int endEntityProfileiId, int cAId, String reqadmincertissuerdn, String reqadmincertsn, int status, Collection approvals, ApprovalRequest approvalRequest, Date requestDate, Date expireDate, int remainingApprovals) {
+	public ApprovalDataVO(int id, int approvalId, int approvalType, int endEntityProfileiId, int cAId, String reqadmincertissuerdn, String reqadmincertsn, int status, Collection<Approval> approvals, ApprovalRequest approvalRequest, Date requestDate, Date expireDate, int remainingApprovals) {
 		super();
 		this.id = id;
 		this.approvalId = approvalId;
@@ -151,7 +146,7 @@ public class ApprovalDataVO implements Serializable {
 	 * 
 	 * @return Returns the approvals.
 	 */
-	public Collection getApprovals() {
+	public Collection<Approval> getApprovals() {
 		return approvals;
 	}
 	
