@@ -26,24 +26,19 @@ import java.util.Iterator;
  */
 public class AccessTree implements Serializable {
 
-    // Private fields
     private AccessTreeNode rootnode = null;
 	
-	/** Creates a new instance of AccessTree */
-    //public AccessTree() {}
-
-    // Public methods
     /** Builds an accesstree out of the given admingroup data. */
-    public void buildTree(Collection admingroups) {
+    public void buildTree(Collection<AdminGroup> admingroups) {
     	AccessTreeNode newRootnode = new AccessTreeNode("/");
                   
-        Iterator iter = admingroups.iterator();
+        Iterator<AdminGroup> iter = admingroups.iterator();
         // Add all admingroups accessrules.
         while(iter.hasNext()){
-          AdminGroup admingroup = (AdminGroup) iter.next(); 
-          Iterator iter2 = admingroup.getAccessRules().iterator();
+          AdminGroup admingroup = iter.next(); 
+          Iterator<AccessRule> iter2 = admingroup.getAccessRules().iterator();
           while(iter2.hasNext()){
-            AccessRule accessrule = (AccessRule) iter2.next();  
+            AccessRule accessrule = iter2.next();  
             newRootnode.addAccessRule(accessrule.getAccessRule(),accessrule,admingroup); // Without heading '/' 
           }
         }
@@ -52,12 +47,11 @@ public class AccessTree implements Serializable {
 
     /** A method to check if someone is authorized to view the given resource */
     public boolean isAuthorized(AdminInformation admininformation, String resource){
-          String checkresource = resource;
+    	String checkresource = resource;
         // Must begin with '/'.
         if((checkresource.toCharArray())[0] != '/') {
           checkresource = "/" + checkresource;
         }
-
         // Check if user is authorized in the tree.
         return rootnode.isAuthorized(admininformation, checkresource);
     }

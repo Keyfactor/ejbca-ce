@@ -78,6 +78,7 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static AuthorizationTreeUpdateData findByPrimeKey(EntityManager entityManager, Integer primeKey) {
 		return entityManager.find(AuthorizationTreeUpdateData.class,  primeKey);
 	}

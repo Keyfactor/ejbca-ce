@@ -108,9 +108,9 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
     private EntityManager entityManager;
 
     @EJB
-    private UserAdminSessionLocal usersession;
+    private UserAdminSessionLocal userSession;
     @EJB
-    private LogSessionLocal logsession;
+    private LogSessionLocal logSession;
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -140,7 +140,7 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
             	throw new ObjectNotFoundException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
-           	usersession.decRemainingLoginAttempts(admin, data.getUsername());
+           	userSession.decRemainingLoginAttempts(admin, data.getUsername());
 			
            	int status = data.getStatus();
             if ( (status == UserDataConstants.STATUS_NEW) || (status == UserDataConstants.STATUS_FAILED) || (status == UserDataConstants.STATUS_INPROCESS) || (status == UserDataConstants.STATUS_KEYRECOVERY)) {
@@ -155,26 +155,26 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
                 if (data.comparePassword(password) == false)
                 {
                 	String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
-                	logsession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+                	logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
                 	throw new AuthLoginException(msg);
                 }
                 
                 // Resets the remaining login attempts as this was a successful login
-                usersession.resetRemainingLoginAttempts(admin, data.getUsername());
+                userSession.resetRemainingLoginAttempts(admin, data.getUsername());
             	
                 String msg = intres.getLocalizedMessage("authentication.authok", username);            	
-                logsession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+                logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}
                 return ret;
             }
         	String msg = intres.getLocalizedMessage("authentication.wrongstatus", UserDataConstants.getStatusText(status), Integer.valueOf(status), username);            	
-        	logsession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+        	logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
             throw new AuthStatusException(msg);
         } catch (ObjectNotFoundException oe) {
         	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
-        	logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
             throw oe;
         } catch (AuthStatusException se) {
             throw se;
@@ -206,14 +206,14 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 		}
         try {
             // Change status of the user with username username
-        	UserDataVO data = usersession.findUser(admin, username);
+        	UserDataVO data = userSession.findUser(admin, username);
         	if (data == null) {
         		throw new FinderException("User '"+username+"' can not be found.");
         	}
         	finishUser(data);
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("authentication.usernotfound", username);               
-            logsession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw new ObjectNotFoundException(e.getMessage());
         } catch (AuthorizationDeniedException e) {
             // Should never happen
@@ -239,10 +239,10 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 		// this is a bit ugly, but what can a man do...
 		Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
 		try {
-			usersession.cleanUserCertDataSN(statusadmin, data.getUsername());
+			userSession.cleanUserCertDataSN(statusadmin, data.getUsername());
 		} catch (FinderException e) {
 			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
-			logsession.log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+			logSession.log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
 			throw new ObjectNotFoundException(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			// Should never happen
@@ -282,17 +282,17 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 		try {
 			
 			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter
-			int counter = usersession.decRequestCounter(statusadmin, data.getUsername());
+			int counter = userSession.decRequestCounter(statusadmin, data.getUsername());
 			if (counter <= 0) {
 				String msg = intres.getLocalizedMessage("authentication.statuschanged", data.getUsername());
-				logsession.log(statusadmin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);
+				logSession.log(statusadmin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);
 			} 
 			if (log.isTraceEnabled()) {
 				log.trace("<finishUser("+data.getUsername()+", hiddenpwd)");
 			}
 		} catch (FinderException e) {
 			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
-			logsession.log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+			logSession.log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
 			throw new ObjectNotFoundException(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			// Should never happen

@@ -33,23 +33,19 @@ public class Authorizer extends Object implements java.io.Serializable {
     
     private static final Logger log = Logger.getLogger(Authorizer.class);    
 
-    // Private fields.
-    private AccessTree            accesstree;
-    private int                   module;
-    
-    private LogSessionLocal               logsession;
-    private AuthorizationProxy             authorizationproxy;
+    private AccessTree accesstree;
+    private int module;
+    private LogSessionLocal logSession;
+    private AuthorizationProxy authorizationProxy;
 
     /** Creates new EjbcaAthorization */
-    public Authorizer(Collection admingroups, LogSessionLocal logsession, int module) {
+    public Authorizer(Collection<AdminGroup> admingroups, LogSessionLocal logsession, int module) {
         accesstree = new AccessTree();
-        authorizationproxy = new AuthorizationProxy(accesstree);
+        authorizationProxy = new AuthorizationProxy(accesstree);
         buildAccessTree(admingroups);
-        this.logsession = logsession;
+        this.logSession = logsession;
         this.module=module;
     }
-    
-    // Public methods.
     
     /**
      * Method to check if a user is authorized to a resource
@@ -60,19 +56,16 @@ public class Authorizer extends Object implements java.io.Serializable {
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
-        
         if(admin == null) {
             throw  new AuthorizationDeniedException("Administrator is null, and therefore not authorized to resource : " + resource);
         }
-        
         AdminInformation admininformation = admin.getAdminInformation();
-        
-        if(!authorizationproxy.isAuthorized(admininformation, resource)  && !authorizationproxy.isAuthorized(admininformation, "/super_administrator")){
+        if(!authorizationProxy.isAuthorized(admininformation, resource)  && !authorizationProxy.isAuthorized(admininformation, "/super_administrator")){
         	try {
         		if(!admininformation.isSpecialUser()) {
-        			logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
+        			logSession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
         		} else {
-        			logsession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
+        			logSession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
         		}
         	} catch (Throwable e) {
         		log.info("Missed to log 'Admin not authorized to resource', admin="+admin.toString()+", resource="+resource, e);
@@ -81,14 +74,13 @@ public class Authorizer extends Object implements java.io.Serializable {
         }
         try {
             if(!admininformation.isSpecialUser()) {
-                logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
+                logSession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
             } else {
-                logsession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
+                logSession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
             }        	
         } catch (Throwable e) {
         	log.info("Missed to log 'Admin authorized to resource', admin="+admin.toString()+", resource="+resource, e);
         }
-        
         return true;
     }
     
@@ -105,9 +97,8 @@ public class Authorizer extends Object implements java.io.Serializable {
         if(admin == null) {
             throw  new AuthorizationDeniedException("Administrator is null, and therefore not authorized to resource : " + resource);
         }
-        
         // Check in accesstree.
-        if(!authorizationproxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationproxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
+        if(!authorizationProxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationProxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
             throw new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
         }
         return true;
@@ -128,12 +119,12 @@ public class Authorizer extends Object implements java.io.Serializable {
         
         AdminInformation admininformation = admin.getAdminInformation();
         
-        if(!authorizationproxy.isGroupAuthorized(admininformation.getGroupId(), resource)){
+        if(!authorizationProxy.isGroupAuthorized(admininformation.getGroupId(), resource)){
         	try {
         		if(!admininformation.isSpecialUser()) {
-        			logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+        			logSession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
         		} else {
-        			logsession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+        			logSession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
         		}
         	} catch (Throwable e) {
         		log.info("Missed to log 'Admin group not authorized to resource', admin="+admin.toString()+", resource="+resource, e);
@@ -142,9 +133,9 @@ public class Authorizer extends Object implements java.io.Serializable {
         }
         try {
         	if(!admininformation.isSpecialUser()) {
-        		logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
+        		logSession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
         	} else {
-        		logsession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+        		logSession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
         	}
         } catch (Throwable e) {
         	log.info("Missed to log 'Admin group authorized to resource', admin="+admin.toString()+", resource="+resource, e);
@@ -163,7 +154,7 @@ public class Authorizer extends Object implements java.io.Serializable {
      */
     public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) throws AuthorizationDeniedException {
         // Check in accesstree.
-        if(!authorizationproxy.isGroupAuthorized(adminGroupId, resource)) {
+        if(!authorizationProxy.isGroupAuthorized(adminGroupId, resource)) {
             throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
         }
         return true;
@@ -174,10 +165,9 @@ public class Authorizer extends Object implements java.io.Serializable {
      * is authorized to access.
      * @return Collection of Integer
      */
-    public Collection getAuthorizedCAIds(Admin admin, Collection availableCaIds) {         
-        ArrayList returnval = new ArrayList();  
-        Iterator iter = availableCaIds.iterator();
-        
+    public Collection<Integer> getAuthorizedCAIds(Admin admin, Collection<Integer> availableCaIds) {         
+        ArrayList<Integer> returnval = new ArrayList<Integer>();  
+        Iterator<Integer> iter = availableCaIds.iterator();
         while(iter.hasNext()){
             Integer caid = (Integer) iter.next();
             try{           
@@ -200,12 +190,11 @@ public class Authorizer extends Object implements java.io.Serializable {
      * @param rapriviledge should be one of the end entity profile authorization constants defined in AvailableAccessRules.
      * @param availableEndEntityProfileId a list of available EEP ids to test for authorization
      */ 
-    public Collection getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge, Collection availableEndEntityProfileId){
-        ArrayList returnval = new ArrayList();  
-        Iterator iter = availableEndEntityProfileId.iterator();
-        
+    public Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge, Collection<Integer> availableEndEntityProfileId){
+        ArrayList<Integer> returnval = new ArrayList<Integer>();  
+        Iterator<Integer> iter = availableEndEntityProfileId.iterator();
         while(iter.hasNext()){
-            Integer profileid = (Integer) iter.next();
+            Integer profileid = iter.next();
             try{
                 isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
                 returnval.add(profileid); 
@@ -214,17 +203,13 @@ public class Authorizer extends Object implements java.io.Serializable {
             		log.debug("Admin not authorized to end entity profile: "+profileid);
             	}            	
             }
-            
         }
-        
         return returnval;
     }
     
     /** Metod to load the access data from database. */
-    public void buildAccessTree(Collection admingroups){
+    public void buildAccessTree(Collection<AdminGroup> admingroups){
         accesstree.buildTree(admingroups);
-        authorizationproxy.clear();
+        authorizationProxy.clear();
     }
-    
-    
 }

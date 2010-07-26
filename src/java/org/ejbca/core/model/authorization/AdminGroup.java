@@ -24,34 +24,38 @@ import java.io.Serializable;
  *
  * @version $Id$
  */
-public class AdminGroup implements Serializable, Comparable {
+public class AdminGroup implements Serializable, Comparable<Object> {
                                
     public static final String DEFAULTGROUPNAME = "DEFAULT";
     public static final String PUBLICWEBGROUPNAME = "Public Web Users";
     public static final String TEMPSUPERADMINGROUP = "Temporary Super Administrator Group";
     
+    private int admingroupid;
+    private String admingroupname;
+    private ArrayList<AccessRule> accessrules;
+    private ArrayList<AdminEntity> adminentities;
+
     /** Creates a new instance of AdminGroup */
     public AdminGroup(String admingroupname) {      
-      this.admingroupname=admingroupname;
-      accessrules = new ArrayList();
-      adminentities = new ArrayList();
+      this.admingroupname = admingroupname;
+      accessrules = new ArrayList<AccessRule>();
+      adminentities = new ArrayList<AdminEntity>();
     }
 
-    public AdminGroup(int admingroupid, String admingroupname, ArrayList accessrules, ArrayList adminentities){
-      this.admingroupid=admingroupid;
-      this.admingroupname=admingroupname;
-      this.accessrules=accessrules;
-      this.adminentities=adminentities;
+    public AdminGroup(int admingroupid, String admingroupname, ArrayList<AccessRule> accessrules, ArrayList<AdminEntity> adminentities){
+      this.admingroupid = admingroupid;
+      this.admingroupname = admingroupname;
+      this.accessrules = accessrules;
+      this.adminentities = adminentities;
     }
 
-    // Public methods
     /** Returns the number of accessrules applied to this admingroup */
     public int getNumberOfAccessRules() {
       return accessrules.size();
     }
 
     /** Returns a ArrayList of AccessRule containing all the admingroup's accessrules.*/
-    public Collection getAccessRules() {
+    public Collection<AccessRule> getAccessRules() {
       return accessrules;
     }
 
@@ -61,7 +65,7 @@ public class AdminGroup implements Serializable, Comparable {
     }
 
     /** Returns an ArrayList of AdminEntity containing all the admingroup's admin entities.*/
-    public Collection getAdminEntities() {
+    public Collection<AdminEntity> getAdminEntities() {
       return adminentities;
     }
     
@@ -75,14 +79,14 @@ public class AdminGroup implements Serializable, Comparable {
     
     /** Method that given an array of available access rules returns which isn't already
      * in use by the rule set. */
-    public Collection nonUsedAccessRules(Collection availableaccessrules){
-      ArrayList nonusedaccessrules = new ArrayList();
+    public Collection<String> nonUsedAccessRules(Collection<String> availableaccessrules){
+      ArrayList<String> nonusedaccessrules = new ArrayList<String>();
       int result;
       Collections.sort(accessrules);
       if(availableaccessrules != null){
-        Iterator iter = availableaccessrules.iterator();
+        Iterator<String> iter = availableaccessrules.iterator();
         while(iter.hasNext()){
-          String availableaccessrule = (String) iter.next();   
+          String availableaccessrule = iter.next();   
           result = Collections.binarySearch(accessrules,new AccessRule(availableaccessrule, 0, false));
           if(result < 0){
             // Access rule isn't in use.
@@ -95,14 +99,14 @@ public class AdminGroup implements Serializable, Comparable {
     
     /** Method that given an array of available access rules returns which isn't already
      * in use by the rule set. */
-    public Collection nonUsedAccessRuleObjects(Collection availableaccessrules){
-      ArrayList nonusedaccessrules = new ArrayList();
+    public Collection<AccessRule> nonUsedAccessRuleObjects(Collection<String> availableaccessrules){
+      ArrayList<AccessRule> nonusedaccessrules = new ArrayList<AccessRule>();
       int result;
       Collections.sort(accessrules);
       if(availableaccessrules != null){
-        Iterator iter = availableaccessrules.iterator();
+        Iterator<String> iter = availableaccessrules.iterator();
         while(iter.hasNext()){
-          String availableaccessrule = (String) iter.next();   
+          String availableaccessrule = iter.next();   
           result = Collections.binarySearch(accessrules,new AccessRule(availableaccessrule, 0, false));
           if(result < 0){
             // Access rule isn't in use.
@@ -112,17 +116,8 @@ public class AdminGroup implements Serializable, Comparable {
       }
       return nonusedaccessrules;
     }
-    
- 
+
     public int compareTo(Object o) {
         return admingroupname.compareTo(((AdminGroup)o).getAdminGroupName());              
-    }
-    
-    // Private methods
-
-    // Private fields
-    private int       admingroupid;
-    private String    admingroupname;
-    private ArrayList accessrules;
-    private ArrayList adminentities;
- }
+    }    
+}

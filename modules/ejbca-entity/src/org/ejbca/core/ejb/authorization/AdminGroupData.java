@@ -162,10 +162,10 @@ public class AdminGroupData implements Serializable {
 	/**
 	 * Removes a Collection of (String) accessrules from the database.
 	 */
-	public void removeAccessRules(EntityManager entityManager, Collection<AccessRule> accessrules) {
-		Iterator<AccessRule> iter = accessrules.iterator();
+	public void removeAccessRules(EntityManager entityManager, Collection<String> accessrules) {
+		Iterator<String> iter = accessrules.iterator();
 		while (iter.hasNext()) {
-			AccessRule accessrule = iter.next();
+			String accessrule = iter.next();
 			Iterator<AccessRulesData> i = getAccessRules().iterator();
 			while (i.hasNext()) {
 				AccessRulesData ar = i.next();
@@ -332,12 +332,11 @@ public class AdminGroupData implements Serializable {
 	 * @throws NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
-	public static AdminGroupData findByGroupNameAndCAId(EntityManager entityManager, String adminGroupName,  int caId) {
+	public static AdminGroupData findByGroupName(EntityManager entityManager, String adminGroupName) {
 		AdminGroupData ret = null;
 		try {
-			Query query = entityManager.createQuery("from AdminGroupData a WHERE adminGroupName=:adminGroupName AND a.caId=:caId");
+			Query query = entityManager.createQuery("from AdminGroupData a WHERE adminGroupName=:adminGroupName");
 			query.setParameter("adminGroupName", adminGroupName);
-			query.setParameter("caId", caId);
 			ret = (AdminGroupData) query.getSingleResult();
 		} catch (NoResultException e) {
 		}
