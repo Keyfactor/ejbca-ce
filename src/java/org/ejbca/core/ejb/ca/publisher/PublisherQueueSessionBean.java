@@ -25,20 +25,18 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.RemoveException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.util.JDBCUtil;
-
 
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchonously. 
@@ -82,26 +80,13 @@ import org.ejbca.util.JDBCUtil;
  * @author Tomas Gustavsson
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "PublisherSessionRemote")
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "PublisherQueueSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, PublisherQueueSessionLocal  {
     private static final Logger log = Logger.getLogger(PublisherQueueSessionBean.class);
-    
-    
-    /**
-     * The local home interface of publisher entity bean.
-     */
-    private PublisherQueueDataLocalHome queuehome = null;
 
-    /**
-     * Default create for SessionBean without any creation Arguments.
-     *
-     * @throws CreateException if bean instance can't be created
-     */
-    public void ejbCreate() throws CreateException {
-        queuehome = (PublisherQueueDataLocalHome) ServiceLocator.getInstance().getLocalHome(PublisherQueueDataLocalHome.COMP_NAME);
-    }
-
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
 
     /**
      * Adds an entry to the publisher queue.
@@ -116,13 +101,16 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if (log.isTraceEnabled()) {
             log.trace(">addQueueData(publisherId: " + publisherId + ")");
     	}
-    	queuehome.create(publisherId, publishType, fingerprint, queueData, publishStatus);
+    	try {
+        	entityManager.persist(new org.ejbca.core.ejb.ca.publisher.PublisherQueueData(publisherId, publishType, fingerprint, queueData, publishStatus));
+    	} catch (Exception e) {
+    		throw new CreateException(e.getMessage());
+    	}
     	log.trace("<addQueueData()");
-    } // addEntry
+    }
 
     /**
      * Removes an entry from the publisher queue.
-	 *
      *
      * @ejb.interface-method view-type="both"
      */
@@ -131,14 +119,13 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
             log.trace(">removeQueueData(pk: " + pk + ")");
     	}
     	try {
-			queuehome.remove(pk);
-		} catch (EJBException e) {
-			log.info(e);
-		} catch (RemoveException e) {
+    		org.ejbca.core.ejb.ca.publisher.PublisherQueueData pqd = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findByPk(entityManager, pk);
+    		entityManager.remove(pqd);
+		} catch (Exception e) {
 			log.info(e);
 		}
-	log.trace("<removeQueueData()");
-    } // addEntry
+		log.trace("<removeQueueData()");
+    }
 
     /**
      * Finds all entries with status PublisherQueueData.STATUS_PENDING for a specific publisherId.
@@ -151,24 +138,20 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisher(publisherId: " + publisherId + ")");
     	}
-    	Collection datas = null;
-    	Collection ret = new ArrayList();
-		try {
-			datas = queuehome.findDataByPublisherIdAndStatus(publisherId, PublisherQueueData.STATUS_PENDING);
-		} catch (FinderException e) {
+    	Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherQueueData.STATUS_PENDING);
+    	if (datas.size() == 0) {
 			log.debug("No publisher queue entries found for publisher "+publisherId);
-		}
-		if (datas != null) {
-	    	Iterator iter = datas.iterator();
-	    	while (iter.hasNext()) {
-	    		PublisherQueueDataLocal d = (PublisherQueueDataLocal)iter.next();
-	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), new Date(d.getTimeCreated()), new Date(d.getLastUpdate()), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
-	    		ret.add(pqd);
-	    	}			
-		}
+    	}
+    	Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();
+    	Iterator<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> iter = datas.iterator();
+    	while (iter.hasNext()) {
+    		org.ejbca.core.ejb.ca.publisher.PublisherQueueData d = iter.next();
+    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), new Date(d.getTimeCreated()), new Date(d.getLastUpdate()), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
+    		ret.add(pqd);
+    	}			
 		log.trace("<getPendingEntriesForPublisher()");
     	return ret;
-    } // getPendingEntriesForPublisher
+    }
 
     /**
      * Gets the number of pending entries for a publisher.
@@ -179,7 +162,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
      */
     public int getPendingEntriesCountForPublisher(int publisherId) {
     	return getPendingEntriesCountForPublisherInIntervals(publisherId, new int[]{0}, new int[]{-1})[0];
-    } // getPendingEntriesCountForPublisher
+    }
     
     /**
      * Gets an array with the number of new pending entries for a publisher in each intervals specified by 
@@ -200,17 +183,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if(lowerBounds.length != upperBounds.length) {
     		throw new IllegalArgumentException("lowerBounds and upperBounds must have equal length");
     	}
-    	
     	int[] result = new int[lowerBounds.length];
     	Connection con = null;
     	PreparedStatement ps = null;
     	ResultSet rs = null;
-    	
     	try {
 	    	con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
 	    	StringBuilder sql = new StringBuilder();
 	    	long now = new Date().getTime();
-	    	
 	    	for(int i = 0; i < lowerBounds.length; i++) {
 	    		sql.append("select count(*) from PublisherQueueData where publisherId=");
 	    		sql.append(publisherId);
@@ -232,7 +212,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	    		log.debug("Executing SQL: "+sql.toString());    			
 			}
 	    	ps = con.prepareStatement(sql.toString());
-			
 			rs = ps.executeQuery();
 			for(int i = 0; i < lowerBounds.length && rs.next(); i++) {
 				result[i] = rs.getInt(1);
@@ -244,7 +223,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	}
     	log.trace("<getPendingEntriesCountForPublisherInIntervals()");
     	return result;
-    } // getPendingEntriesCountForPublisher
+    }
     
     /**
      * Finds all entries with status PublisherQueueData.STATUS_PENDING for a specific publisherId.
@@ -259,7 +238,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisherWithLimit(publisherId: " + publisherId + ")");
     	}
-    	Collection ret = new ArrayList();
+    	Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();
     	Connection con = null;
     	PreparedStatement ps = null;
     	ResultSet result = null;
@@ -296,16 +275,16 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     			int publishType = result.getInt(5);
     			String fingerprint = result.getString(6);
 	    		PublisherQueueData pqd = new PublisherQueueData(pk, timeCreated, lastUpdate, PublisherQueueData.STATUS_PENDING, tryCounter, publishType, fingerprint, publisherId, null);
-	    		try {
-					PublisherQueueDataLocal dl = queuehome.findByPrimaryKey(pk);
-					PublisherQueueVolatileData vol = dl.getPublisherQueueVolatileData();
-					pqd.setVolatileData(vol);
-					ret.add(pqd); // We finally have an object to return...
-					if (log.isDebugEnabled()) {
-						log.debug("Return pending record with pk "+pk+", and timeCreated "+timeCreated);
-					}
-				} catch (FinderException e) {
-					log.debug("All of a sudden entry with primaryKey vanished: "+pk);
+	    		org.ejbca.core.ejb.ca.publisher.PublisherQueueData dl = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findByPk(entityManager, pk);
+	    		if (dl != null) {
+	    			PublisherQueueVolatileData vol = dl.getPublisherQueueVolatileData();
+	    			pqd.setVolatileData(vol);
+	    			ret.add(pqd); // We finally have an object to return...
+	    			if (log.isDebugEnabled()) {
+	    				log.debug("Return pending record with pk "+pk+", and timeCreated "+timeCreated);
+	    			}
+	    		} else {
+	    			log.debug("All of a sudden entry with primaryKey vanished: "+pk);
 				}
     		}
     	} catch (SQLException e) {
@@ -315,7 +294,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	}
     	log.trace("<getPendingEntriesForPublisherWithLimit()");
     	return ret;
-    } // getPendingEntriesForPublisherWithLimit
+    }
 
     /**
      * Finds all entries for a specific fingerprint.
@@ -328,26 +307,22 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if (log.isTraceEnabled()) {
             log.trace(">getEntriesByFingerprint(fingerprint: " + fingerprint + ")");
     	}
-    	Collection datas = null;
-    	Collection ret = new ArrayList();
-		try {
-			datas = queuehome.findDataByFingerprint(fingerprint);
-		} catch (FinderException e) {
+    	Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();
+    	Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findDataByFingerprint(entityManager, fingerprint);
+    	if (datas.size() == 0) {
 			log.debug("No publisher queue entries found for fingerprint "+fingerprint);
-		}
-		if (datas != null) {
-	    	Iterator iter = datas.iterator();
+		} else {
+	    	Iterator<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> iter = datas.iterator();
 	    	while (iter.hasNext()) {
-	    		PublisherQueueDataLocal d = (PublisherQueueDataLocal)iter.next();
+	    		org.ejbca.core.ejb.ca.publisher.PublisherQueueData d = iter.next();
 	    		PublisherQueueData pqd = new PublisherQueueData(d.getPk(), new Date(d.getTimeCreated()), new Date(d.getLastUpdate()), d.getPublishStatus(), d.getTryCounter(), d.getPublishType(), d.getFingerprint(), d.getPublisherId(), d.getPublisherQueueVolatileData());
 	    		ret.add(pqd);
 	    	}			
 		}
 		log.trace("<getEntriesByFingerprint()");
     	return ret;
-    } // getEntriesByFingerprint
+    }
 
-    
     /** Updates a record with new status
      * 
      * @param pk primary key of data entry
@@ -360,8 +335,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if (log.isTraceEnabled()) {
             log.trace(">updateData(pk: " + pk + ", status: "+status+")");
     	}
-    	try {
-    		PublisherQueueDataLocal data = queuehome.findByPrimaryKey(pk);
+    	org.ejbca.core.ejb.ca.publisher.PublisherQueueData data = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findByPk(entityManager, pk);
+    	if (data != null) {
     		if (status > 0) {
         		data.setPublishStatus(status);    			
     		}
@@ -369,10 +344,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     		if (tryCounter > -1) {
     			data.setTryCounter(tryCounter);
     		}
-		} catch (FinderException e) {
+		} else {
 			log.debug("Trying to set status on nonexisting data, pk: "+pk);
 		}
 		log.trace("<updateData()");
     }
-
-} // LocalPublisherSessionBean
+}

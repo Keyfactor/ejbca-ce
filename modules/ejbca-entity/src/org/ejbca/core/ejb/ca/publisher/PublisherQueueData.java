@@ -15,9 +15,9 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -195,17 +195,20 @@ public class PublisherQueueData implements Serializable {
 	// Search functions. 
 	//
 
-	public static PublisherQueueData findById(EntityManager entityManager, Integer id) {
-		return entityManager.find(PublisherQueueData.class,  id);
+	/** @return the found entity instance or null if the entity does not exist */
+	public static PublisherQueueData findByPk(EntityManager entityManager, String pk) {
+		return entityManager.find(PublisherQueueData.class, pk);
 	}
 	
-	public static PublisherQueueData findDataByFingerprint(EntityManager entityManager, String fingerprint) {
+	/** @return return the query results as a List. */
+	public static List<PublisherQueueData> findDataByFingerprint(EntityManager entityManager, String fingerprint) {
 		Query query = entityManager.createQuery("from PublisherQueueData a WHERE a.fingerprint=:fingerprint");
 		query.setParameter("fingerprint", fingerprint);
-		return (PublisherQueueData) query.getSingleResult();
+		return query.getResultList();
 	}
 
-	public static Collection<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus) {
+	/** @return return the query results as a List. */
+	public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus) {
 		Query query = entityManager.createQuery("from PublisherQueueData a WHERE a.publisherId=:publisherId and a.publishStatus=:publishStatus");
 		query.setParameter("publisherId", publisherId);
 		query.setParameter("publishStatus", publishStatus);

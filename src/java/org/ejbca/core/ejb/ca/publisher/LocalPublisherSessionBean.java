@@ -59,6 +59,8 @@ import org.ejbca.util.CertTools;
 /**
  * Handles management of Publishers.
  * 
+ * @version $Id$
+ * 
  * @ejb.bean description="Session bean handling interface with publisher data"
  *           display-name="PublisherSessionSB" name="PublisherSession"
  *           jndi-name="PublisherSession"
