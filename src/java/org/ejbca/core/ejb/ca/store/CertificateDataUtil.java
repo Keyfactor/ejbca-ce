@@ -45,7 +45,6 @@ import org.ejbca.util.StringTools;
  * 
  * @author lars
  * @version $Id$
- *
  */
 public class CertificateDataUtil {
     /** Internal localization of logs and errors */
@@ -59,22 +58,17 @@ public class CertificateDataUtil {
         void log(Admin admin, int caid, int module, Date time, String username,
                  X509Certificate certificate, int event, String comment);
     }
-    public static Certificate findCertificateByFingerprint(Admin admin, String fingerprint,
-                                                           EntityManager entityManager,
-                                                           Adapter adapter) {
+
+    public static Certificate findCertificateByFingerprint(Admin admin, String fingerprint, EntityManager entityManager, Adapter adapter) {
         adapter.getLogger().trace(">findCertificateByFingerprint()");
         Certificate ret = null;
-
         try {
         	CertificateData res = CertificateData.findByFingerprint(entityManager, fingerprint);
         	if (res == null) {
         		return null;
         	}
-            //CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
             ret = res.getCertificate();
             adapter.getLogger().trace("<findCertificateByFingerprint()");
-        //} catch (FinderException fe) {
-            // Return null;
         } catch (Exception e) {
             adapter.getLogger().error("Error finding certificate with fp: " + fingerprint);
             throw new EJBException(e);
@@ -91,37 +85,30 @@ public class CertificateDataUtil {
         if (adapter.getLogger().isDebugEnabled()) {
         	adapter.debug("Looking for cert with (transformed)DN: " + dn);
         }
-        //try {
-        	Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
-            //Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
-            Certificate ret = null;
-            if (coll != null) {
-                if (coll.size() > 1) {
-                	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
-                    adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_DATABASE, msg);	
-                }
-                Iterator<CertificateData> iter = coll.iterator();
-                Certificate cert = null;
-                // There are several certs, we will try to find the latest issued one
-                if (iter.hasNext()) {
-                    cert = iter.next().getCertificate();
-                    if (ret != null) {
-                    	if (CertTools.getNotBefore(cert).after(CertTools.getNotBefore(ret))) {
-                    		// cert is never than ret
-                    		ret = cert;
-                    	}
-                    } else {
-                    	ret = cert;
-                    }
-                }
-            }
-            if (adapter.getLogger().isTraceEnabled()) {
-            	adapter.getLogger().trace("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
-            }
-            return ret;
-        /*} catch (Exception fe) {
-            throw new EJBException(fe);
-        }*/
+        Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
+        Certificate ret = null;
+        if (coll.size() > 1) {
+        	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
+        	adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_DATABASE, msg);	
+        }
+        Iterator<CertificateData> iter = coll.iterator();
+        Certificate cert = null;
+        // There are several certs, we will try to find the latest issued one
+        if (iter.hasNext()) {
+        	cert = iter.next().getCertificate();
+        	if (ret != null) {
+        		if (CertTools.getNotBefore(cert).after(CertTools.getNotBefore(ret))) {
+        			// cert is never than ret
+        			ret = cert;
+        		}
+        	} else {
+        		ret = cert;
+        	}
+        }
+        if (adapter.getLogger().isTraceEnabled()) {
+        	adapter.getLogger().trace("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+        }
+        return ret;
     }
 
     public static Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN,
@@ -199,26 +186,19 @@ public class CertificateDataUtil {
     	if (adapter.getLogger().isTraceEnabled()) {
     		adapter.getLogger().trace(">findCertificatesByUsername(),  username=" + username);
     	}
-        //try {
-            // Strip dangerous chars
-            username = StringTools.strip(username);
-            // This method on the entity bean does the ordering in the database
-            Collection<CertificateData> coll = CertificateData.findByUsername(entityManager, username);
-            //Collection coll = certHome.findByUsername(username);
-            ArrayList<Certificate> ret = new ArrayList<Certificate>();
-            if (coll != null) {
-                Iterator<CertificateData> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret.add(iter.next().getCertificate());
-                }
-            }
-        	if (adapter.getLogger().isTraceEnabled()) {
-        		adapter.getLogger().trace("<findCertificatesByUsername(), username=" + username);
-        	}
-            return ret;
-        /*} catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
-        }*/
+    	// Strip dangerous chars
+    	username = StringTools.strip(username);
+    	// This method on the entity bean does the ordering in the database
+    	Collection<CertificateData> coll = CertificateData.findByUsername(entityManager, username);
+    	ArrayList<Certificate> ret = new ArrayList<Certificate>();
+    	Iterator<CertificateData> iter = coll.iterator();
+    	while (iter.hasNext()) {
+    		ret.add(iter.next().getCertificate());
+    	}
+    	if (adapter.getLogger().isTraceEnabled()) {
+    		adapter.getLogger().trace("<findCertificatesByUsername(), username=" + username);
+    	}
+    	return ret;
     }
 
 
@@ -232,26 +212,23 @@ public class CertificateDataUtil {
 
         try {
         	Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
-            //Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
-            if (coll != null) {
-                if (coll.size() > 1) {
-                	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
-                    //adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
-                	adapter.error(msg);
-                }
-                Iterator<CertificateData> iter = coll.iterator();
-                if (iter.hasNext()) {
-                	final CertificateData data = iter.next();
-                	if (protect != null) {
-                		verifyProtection(data, protect, adapter);
-                	}
-                    final CertificateStatus result = getIt(data);
-                	if (adapter.getLogger().isTraceEnabled()) {
-                		adapter.getLogger().trace("<getStatus() returned " + result + " for cert number "+serno);
-                	}
-                	return result;
-                }
-            }
+        	if (coll.size() > 1) {
+        		String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
+        		//adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
+        		adapter.error(msg);
+        	}
+        	Iterator<CertificateData> iter = coll.iterator();
+        	if (iter.hasNext()) {
+        		final CertificateData data = iter.next();
+        		if (protect != null) {
+        			verifyProtection(data, protect, adapter);
+        		}
+        		final CertificateStatus result = getIt(data);
+        		if (adapter.getLogger().isTraceEnabled()) {
+        			adapter.getLogger().trace("<getStatus() returned " + result + " for cert number "+serno);
+        		}
+        		return result;
+        	}
             if (adapter.getLogger().isTraceEnabled()) {
             	adapter.getLogger().trace("<getStatus() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
             }
@@ -299,36 +276,27 @@ public class CertificateDataUtil {
     	if (adapter.getLogger().isTraceEnabled()) {
     		adapter.getLogger().trace(">verifyProtection, dn:" + issuerDN + ", serno=" + serno.toString(16));
     	}
-		//try {
-			if (tableProtectSession != null) {
-				// First make a DN in our well-known format
-				Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, CertTools.stringToBCDNString(issuerDN), serno.toString());
-				//Collection coll = certHome.findByIssuerDNSerialNumber(CertTools.stringToBCDNString(issuerDN), serno.toString());
-				if (coll != null) {
-					if (coll.size() > 1) {
-						String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
-						adapter.error(msg);
-					}
-					Iterator<CertificateData> iter = coll.iterator();
-					if (iter.hasNext()) {
-						CertificateData data = iter.next();
-						verifyProtection(data, tableProtectSession, adapter);
-					}
-				}
-			}
-		/*} catch (FinderException e) {
-			throw new EJBException(e);	// This should exist here
-		}*/
+    	if (tableProtectSession != null) {
+    		// First make a DN in our well-known format
+    		Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, CertTools.stringToBCDNString(issuerDN), serno.toString());
+    		if (coll.size() > 1) {
+    			String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
+    			adapter.error(msg);
+    		}
+    		Iterator<CertificateData> iter = coll.iterator();
+    		if (iter.hasNext()) {
+    			CertificateData data = iter.next();
+    			verifyProtection(data, tableProtectSession, adapter);
+    		}
+    	}
     }
-
 
     static void verifyProtection(CertificateData data, TableProtectSessionLocalejb3 tableProtectSession, Adapter adapter) {
 		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
-		
-			// The verify method will log failed verifies itself
-			TableVerifyResult res = tableProtectSession.verify(entry);
-			if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
-				//adapter.error("Verify failed, but we go on anyway.");
-			}
+		// The verify method will log failed verifies itself
+		TableVerifyResult res = tableProtectSession.verify(entry);
+		if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
+			//adapter.error("Verify failed, but we go on anyway.");
+		}
     }
 }
