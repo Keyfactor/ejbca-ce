@@ -356,7 +356,6 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
      * Renames a service
      *
      * @throws ServiceExistsException if service already exists.
-     * @throws EJBException             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
     public void renameService(Admin admin, String oldname, String newname) throws ServiceExistsException {
