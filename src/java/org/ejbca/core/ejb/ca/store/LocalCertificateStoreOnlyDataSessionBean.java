@@ -113,7 +113,6 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="local"
      */
-    // Redundant.. @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getDatabaseStatus() {
 		String returnval = "";
 		Connection con = null;
@@ -240,31 +239,31 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
     }
 
     private class MyAdapter implements CertificateDataUtil.Adapter {
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#getLogger()
          */
         public Logger getLogger() {
             return log;
         }
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
          */
         public void log(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment) {
             // no log bean available
         }
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#debug(java.lang.String)
          */
         public void debug(String s) {
             log.debug(s);
         }
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
          */
         public void error(String s) {
             log.error(s);
         }
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
          */
         public void error(String s, Exception e) {

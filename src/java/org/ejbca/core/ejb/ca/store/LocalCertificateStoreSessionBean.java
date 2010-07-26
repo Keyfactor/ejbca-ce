@@ -239,7 +239,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="local"
      */
-    // Redundant.. @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getDatabaseStatus() {
 		String returnval = "";
 		Connection con = null;
@@ -295,7 +294,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     					if (cacert == null) {
     						throw new FinderException();
     					}
-    					//CertificateDataLocal cacert = certHome.findByPrimaryKey(new CertificateDataPK(cafp));
     					String nextcafp = cacert.getCaFingerprint();
     					int bar = 0; // never go more than 5 rounds, who knows what strange things can exist in the CAFingerprint column, make sure we never get stuck here
     					while ((!StringUtils.equals(cafingerp, nextcafp)) && (bar++ < 5)) {
@@ -303,7 +301,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         					if (cacert == null) {
         						throw new FinderException();
         					}
-    						//cacert = certHome.findByPrimaryKey(new CertificateDataPK(nextcafp));
     						cafingerp = nextcafp;
     						nextcafp = cacert.getCaFingerprint();
     					}
@@ -325,9 +322,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	
     	CertificateData data1 = new CertificateData(incert);
     	String data1Fingerprint = data1.getFingerprint();
-        //CertificateDataPK pk = new CertificateDataPK();
-        //pk.fingerprint = CertTools.getFingerprintAsString(incert);
-        //final CertificateDataLocal data1 = certHome.create(incert, pubk);
         data1.setUsername(username);
         data1.setCaFingerprint(cafp);
         data1.setStatus(status);
@@ -481,23 +475,16 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         String issuerdn = StringTools.strip(issuerDN);
         issuerdn = CertTools.stringToBCDNString(issuerdn);
         log.debug("Looking for cert with (transformed)DN: " + dn);
-        //try {
-            Collection<CertificateData> coll = CertificateData.findBySubjectDNAndIssuerDN(entityManager, dn, issuerdn);
-            //Collection coll = certHome.findBySubjectDNAndIssuerDN(dn, issuerdn);
-            Collection<Certificate> ret = new ArrayList<Certificate>();
-            if (coll != null) {
-                Iterator<CertificateData> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret.add(iter.next().getCertificate());
-                }
-            }
-        	if (log.isTraceEnabled()) {
-                log.trace("<findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
-        	}
-            return ret;
-        /*} catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
-        }*/
+        Collection<Certificate> ret = new ArrayList<Certificate>();
+        Collection<CertificateData> coll = CertificateData.findBySubjectDNAndIssuerDN(entityManager, dn, issuerdn);
+        Iterator<CertificateData> iter = coll.iterator();
+        while (iter.hasNext()) {
+        	ret.add(iter.next().getCertificate());
+        }
+        if (log.isTraceEnabled()) {
+        	log.trace("<findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
+        }
+        return ret;
     }
 
     private Set<String> getSet(Collection<CertificateData> coll) {
@@ -530,15 +517,13 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         }
         try {
             return getSet(CertificateData.findBySubjectDNAndIssuerDN(entityManager, transformedSubjectDN, transformedIssuerDN));
-            /*return getSet(this.certHome.findBySubjectDNAndIssuerDN(transformedSubjectDN, transformedIssuerDN));
-        } catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);*/
         } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
             }
         }
     }
+
     /**
      * @param admin
      * @param issuerDN
@@ -559,9 +544,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         }
         try {
         	return getSet(CertificateData.findByIssuerDNAndSubjectKeyId(entityManager, transformedIssuerDN, sSubjectKeyId));
-        	/*return getSet(this.certHome.findByIssuerDNAndSubjectKeyId(transformedIssuerDN, sSubjectKeyId));
-        } catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);*/
         } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
@@ -585,23 +567,16 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         String dn = StringTools.strip(subjectDN);
         dn = CertTools.stringToBCDNString(dn);
         log.debug("Looking for cert with (transformed)DN: " + dn);
-        //try {
-        	Collection<CertificateData> coll = CertificateData.findBySubjectDN(entityManager, dn);
-            //Collection coll = certHome.findBySubjectDN(dn);
-            Collection<Certificate> ret = new ArrayList<Certificate>();
-            if (coll != null) {
-                Iterator<CertificateData> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret.add(iter.next().getCertificate());
-                }
-            }
-        	if (log.isTraceEnabled()) {
-                log.trace("<findCertificatesBySubject(), dn='" + subjectDN + "'");
-        	}
-            return ret;
-        /*} catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
-        }*/
+        Collection<Certificate> ret = new ArrayList<Certificate>();
+        Collection<CertificateData> coll = CertificateData.findBySubjectDN(entityManager, dn);
+        Iterator<CertificateData> iter = coll.iterator();
+        while (iter.hasNext()) {
+        	ret.add(iter.next().getCertificate());
+        }
+        if (log.isTraceEnabled()) {
+        	log.trace("<findCertificatesBySubject(), dn='" + subjectDN + "'");
+        }
+        return ret;
     }
 
     /**
@@ -613,26 +588,19 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	}
         // First make expiretime in well know format
         log.debug("Looking for certs that expire before: " + expireTime);
-        //try {
-        	Collection<CertificateData> coll = CertificateData.findByExpireDate(entityManager, expireTime.getTime());
-            //Collection coll = certHome.findByExpireDate(expireTime.getTime());
-            Collection<Certificate> ret = new ArrayList<Certificate>();
-            if (coll != null) {
-            	if (log.isDebugEnabled()) {
-                	log.debug("Found "+coll.size()+" certificates that expire before "+expireTime);            		
-            	}
-                Iterator<CertificateData> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret.add(iter.next().getCertificate());
-                }
-            }
-        	if (log.isTraceEnabled()) {
-                log.trace("<findCertificatesByExpireTime(), time=" + expireTime);
-        	}
-            return ret;
-        /*} catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
-        }*/
+        Collection<CertificateData> coll = CertificateData.findByExpireDate(entityManager, expireTime.getTime());
+        Collection<Certificate> ret = new ArrayList<Certificate>();
+        if (log.isDebugEnabled()) {
+        	log.debug("Found "+coll.size()+" certificates that expire before "+expireTime);            		
+        }
+        Iterator<CertificateData> iter = coll.iterator();
+        while (iter.hasNext()) {
+        	ret.add(iter.next().getCertificate());
+        }
+        if (log.isTraceEnabled()) {
+        	log.trace("<findCertificatesByExpireTime(), time=" + expireTime);
+        }
+        return ret;
     }
 
     /**
@@ -699,7 +667,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      *
      * @param admin
      * @param issuerDN the subjectDN of a CA certificate
-     * @param sernos a collection of certificate serialnumbers
+     * @param sernos a Collection<BigInteger> of certificate serialnumbers
      * @return Collection a list of certificates; never <tt>null</tt>
      * @ejb.interface-method
      */
@@ -771,23 +739,16 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesBySerno(),  serno=" + serno);
     	}
-        //try {
-            Collection<CertificateData> coll = CertificateData.findBySerialNumber(entityManager, serno.toString());
-            //Collection coll = certHome.findBySerialNumber(serno.toString());
-            ArrayList<Certificate> ret = new ArrayList<Certificate>();
-            if (coll != null) {
-                Iterator<CertificateData> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret.add(iter.next().getCertificate());
-                }
-            }
-        	if (log.isTraceEnabled()) {
-                log.trace("<findCertificatesBySerno(), serno=" + serno);
-        	}
-            return ret;
-        /*} catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
-        }*/
+    	ArrayList<Certificate> ret = new ArrayList<Certificate>();
+    	Collection<CertificateData> coll = CertificateData.findBySerialNumber(entityManager, serno.toString());
+    	Iterator<CertificateData> iter = coll.iterator();
+    	while (iter.hasNext()) {
+    		ret.add(iter.next().getCertificate());
+    	}
+    	if (log.isTraceEnabled()) {
+    		log.trace("<findCertificatesBySerno(), serno=" + serno);
+    	}
+    	return ret;
     }
 
     /**
@@ -803,23 +764,16 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     		log.trace(">findUsernameByCertSerno(), serno: " + serno.toString(16) + ", issuerdn: " + issuerdn);    		
     	}
         String dn = CertTools.stringToBCDNString(issuerdn);
-        //try {
-        	Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
-            //Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
-            String ret = null;
-            if (coll != null) {
-                Iterator<CertificateData> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret = iter.next().getUsername();
-                }
-            }
-        	if (log.isTraceEnabled()) {
-                log.trace("<findUsernameByCertSerno(), ret=" + ret);
-        	}
-            return ret;
-        /*} catch (javax.ejb.FinderException fe) {
-            throw new EJBException(fe);
-        }*/
+        Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
+        String ret = null;
+        Iterator<CertificateData> iter = coll.iterator();
+        while (iter.hasNext()) {
+        	ret = iter.next().getUsername();
+        }
+        if (log.isTraceEnabled()) {
+        	log.trace("<findUsernameByCertSerno(), ret=" + ret);
+        }
+        return ret;
     }
 
     /**
@@ -848,20 +802,14 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         	log.trace(">findCertificatesByUsername(),  username=" + username);
     	}
         ArrayList<Certificate> ret = new ArrayList<Certificate>();
-        //try {
-            // Strip dangerous chars
-            username = StringTools.strip(username);
-            // This method on the entity bean does the ordering in the database
-            Collection<CertificateData> coll = CertificateData.findByUsernameAndStatus(entityManager, username, status);
-            //Collection coll = certHome.findByUsernameAndStatus(username, status);
-            if (coll != null) {
-                Iterator<CertificateData> iter = coll.iterator();
-                while (iter.hasNext()) {
-                    ret.add(iter.next().getCertificate());
-                }
-            }
-        /*} catch (javax.ejb.FinderException e) {	// Ignore
-        }*/
+        // Strip dangerous chars
+        username = StringTools.strip(username);
+        // This method on the entity bean does the ordering in the database
+        Collection<CertificateData> coll = CertificateData.findByUsernameAndStatus(entityManager, username, status);
+        Iterator<CertificateData> iter = coll.iterator();
+        while (iter.hasNext()) {
+        	ret.add(iter.next().getCertificate());
+        }
     	if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByUsername(), username=" + username);
     	}
@@ -1014,16 +962,11 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	}
     	CertificateData rev = CertificateData.findByFingerprint(entityManager, fingerprint);
     	if (rev != null) {
-    	/*try {
-    		CertificateDataPK revpk = new CertificateDataPK();
-    		revpk.fingerprint = fingerprint;
-    		CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);*/ 
     		rev.setStatus(SecConst.CERT_ARCHIVED);
     		if (log.isDebugEnabled()) {
     			log.debug("Set status ARCHIVED for certificate with fp: "+fingerprint+", revocation reason is: "+rev.getRevocationReason());
     		}
     	} else {
-    	//} catch (FinderException e) {
     		String msg = intres.getLocalizedMessage("store.errorcertinfo", fingerprint);            	
     		logSession.log(admin, 0, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, msg);
     		throw new EJBException(msg);
@@ -1047,9 +990,8 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	if (log.isTraceEnabled()) {
         	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
     	}
-        Certificate certificate = null;
         try {
-            certificate = (Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
+        	Certificate certificate = findCertificateByIssuerAndSerno(admin, issuerdn, serno);
 	        setRevokeStatus(admin, certificate, publishers, reason, userDataDN);
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("store.errorfindcertserno", serno.toString(16));            	
@@ -1082,9 +1024,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	if (rev == null) {
     		throw new FinderException("No certificate with fingerprint " + CertTools.getFingerprintAsString(certificate));
     	}
-    	/*CertificateDataPK revpk = new CertificateDataPK();
-    	revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
-    	CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);*/ 
     	String username = rev.getUsername();
     	String cafp = rev.getCaFingerprint();
     	int type = rev.getType();
@@ -1282,11 +1221,9 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
-
         boolean ret = false;
         try {
         	Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
-            //Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
             if (coll.size() > 0) {
                 if (coll.size() > 1) {
                     String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));             
@@ -1391,9 +1328,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	}
         try {
         	entityManager.persist(new CertReqHistoryData(cert, useradmindata));
-            /*CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
-            pk.fingerprint = CertTools.getFingerprintAsString(cert);
-            certReqHistoryHome.create(cert,useradmindata);*/
         	String msg = intres.getLocalizedMessage("store.storehistory", useradmindata.getUsername());            	
             logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);            
         } catch (Exception e) {
@@ -1419,11 +1353,8 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         	log.trace(">removeCertReqHistData(" + certFingerprint + ")");
     	}
         try {          
-            /*CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
-            pk.fingerprint = certFingerprint;*/
         	String msg = intres.getLocalizedMessage("store.removehistory", certFingerprint);            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
-            //this.certReqHistoryHome.remove(pk);
             entityManager.remove(CertReqHistoryData.findById(entityManager, certFingerprint));
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorremovehistory", certFingerprint);            	
@@ -1444,19 +1375,13 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public CertReqHistory getCertReqHistory(Admin admin, BigInteger certificateSN, String issuerDN){
     	CertReqHistory retval = null;
-    	//try{
-    		Collection<CertReqHistoryData> result = CertReqHistoryData.findByIssuerDNSerialNumber(entityManager, issuerDN, certificateSN.toString());
-    		//Collection result = certReqHistoryHome.findByIssuerDNSerialNumber(issuerDN, certificateSN.toString());
-    		if(result.iterator().hasNext()) {
-    			retval = result.iterator().next().getCertReqHistory();
-    		}
-    	/*}catch(FinderException fe){
-    		// Do nothing but return null
-    	}*/
+    	Collection<CertReqHistoryData> result = CertReqHistoryData.findByIssuerDNSerialNumber(entityManager, issuerDN, certificateSN.toString());
+    	if(result.iterator().hasNext()) {
+    		retval = result.iterator().next().getCertReqHistory();
+    	}
     	return retval;
     }
-    
-    
+
     /**
      * Retrieves all cert request datas belonging to a user.
      * @param admin
@@ -1466,16 +1391,11 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public List getCertReqHistory(Admin admin, String username){
     	ArrayList<CertReqHistory> retval = new ArrayList<CertReqHistory>();
-    	//try{
-    		Collection<CertReqHistoryData> result = CertReqHistoryData.findByUsername(entityManager, username);
-    		//Collection result = certReqHistoryHome.findByUsername(username);
-    		Iterator<CertReqHistoryData> iter = result.iterator();
-    		while(iter.hasNext()) {
-    			retval.add(iter.next().getCertReqHistory());
-    		}
-    	/*}catch(FinderException fe){
-    		// Do nothing but return null
-    	}*/
+    	Collection<CertReqHistoryData> result = CertReqHistoryData.findByUsername(entityManager, username);
+    	Iterator<CertReqHistoryData> iter = result.iterator();
+    	while(iter.hasNext()) {
+    		retval.add(iter.next().getCertReqHistory());
+    	}
     	return retval;
     }
     
@@ -1491,20 +1411,15 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void initializeAndUpgradeProfiles(Admin admin) {
-    	//try {
-    		Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-    		//Collection result = certprofilehome.findAll();
-    		Iterator<CertificateProfileData> iter = result.iterator();
-    		while(iter.hasNext()) {
-    			CertificateProfileData pdata = iter.next();
-    			String name = pdata.getCertificateProfileName();
-    			pdata.upgradeProfile();
-    			float version = pdata.getCertificateProfile().getVersion();
-    			log.debug("Loaded certificate profile: "+name+" with version "+version);
-    		}
-    	/*} catch (FinderException e) {
-    		log.error("FinderException trying to load profiles: ", e);
-    	}*/
+    	Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+    	Iterator<CertificateProfileData> iter = result.iterator();
+    	while(iter.hasNext()) {
+    		CertificateProfileData pdata = iter.next();
+    		String name = pdata.getCertificateProfileName();
+    		pdata.upgradeProfile();
+    		float version = pdata.getCertificateProfile().getVersion();
+    		log.debug("Loaded certificate profile: "+name+" with version "+version);
+    	}
     }
 
     /**
@@ -1543,18 +1458,14 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
 
         if (isFreeCertificateProfileId(certificateprofileid)) {
         	if (CertificateProfileData.findByProfileName(entityManager, certificateprofilename) != null) {
-            /*try {
-                certprofilehome.findByCertificateProfileName(certificateprofilename);*/
             	String msg = intres.getLocalizedMessage("store.errorcertprofileexists", certificateprofilename);            	
                 throw new CertificateProfileExistsException(msg);
         	} else {
-            //} catch (FinderException e) {
                 try {
                 	entityManager.persist(new CertificateProfileData(new Integer(certificateprofileid), certificateprofilename, certificateprofile));
-                    //certprofilehome.create(new Integer(certificateprofileid), certificateprofilename, certificateprofile);
                 	String msg = intres.getLocalizedMessage("store.addedcertprofile", certificateprofilename);            	
                     logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
-                } catch (Exception f) {
+                } catch (Exception e) {
                 	String msg = intres.getLocalizedMessage("store.errorcreatecertprofile", certificateprofilename);            	
                     logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
                 }
@@ -1596,22 +1507,16 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
             }
 
             if (CertificateProfileData.findByProfileName(entityManager, newcertificateprofilename) != null) {
-            /*try {
-                certprofilehome.findByCertificateProfileName(newcertificateprofilename);*/
             	String msg = intres.getLocalizedMessage("store.erroraddprofilewithtempl", newcertificateprofilename, originalcertificateprofilename);            	
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
                 throw new CertificateProfileExistsException();
             } else {
-            //} catch (FinderException e) {
-                //try {
-                	entityManager.persist(new CertificateProfileData(new Integer(findFreeCertificateProfileId()), newcertificateprofilename, certificateprofile));
-                    //certprofilehome.create(new Integer(findFreeCertificateProfileId()), newcertificateprofilename, certificateprofile);
-                	String msg = intres.getLocalizedMessage("store.addedprofilewithtempl", newcertificateprofilename, originalcertificateprofilename);            	
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
-                /*} catch (CreateException f) {
-                }*/
+            	entityManager.persist(new CertificateProfileData(new Integer(findFreeCertificateProfileId()), newcertificateprofilename, certificateprofile));
+            	String msg = intres.getLocalizedMessage("store.addedprofilewithtempl", newcertificateprofilename, originalcertificateprofilename);            	
+            	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
             }
         } catch (CloneNotSupportedException f) {
+        	throw new EJBException(f);	// If this happens it's a programming error. Throw an exception!
         }
     }
 
@@ -1627,8 +1532,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         try {
         	CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, certificateprofilename);
         	entityManager.remove(pdl);
-            //CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
-            //pdl.remove();
         	String msg = intres.getLocalizedMessage("store.removedprofile", certificateprofilename);            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
         } catch (Exception e) {
@@ -1656,22 +1559,16 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
             throw new CertificateProfileExistsException(msg);
         }
         if (CertificateProfileData.findByProfileName(entityManager, newcertificateprofilename) != null) {
-        /*try {
-            certprofilehome.findByCertificateProfileName(newcertificateprofilename);*/
         	String msg = intres.getLocalizedMessage("store.errorcertprofileexists", newcertificateprofilename);            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             throw new CertificateProfileExistsException();
         } else {
-        //} catch (FinderException e) {
         	CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, oldcertificateprofilename);
         	if (pdl != null) {
-            //try {
-                //CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(oldcertificateprofilename);
                 pdl.setCertificateProfileName(newcertificateprofilename);
             	String msg = intres.getLocalizedMessage("store.renamedprofile", oldcertificateprofilename, newcertificateprofilename);            	
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
         	} else {
-            //} catch (FinderException f) {
             	String msg = intres.getLocalizedMessage("store.errorrenameprofile", oldcertificateprofilename, newcertificateprofilename);            	
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             }
@@ -1689,13 +1586,10 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     public void changeCertificateProfile(Admin admin, String certificateprofilename, CertificateProfile certificateprofile) {
     	CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, certificateprofilename);
     	if (pdl != null) {
-        /*try {
-            CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);*/
             pdl.setCertificateProfile(certificateprofile);
         	String msg = intres.getLocalizedMessage("store.editedprofile", certificateprofilename);            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
     	} else {
-        //} catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("store.erroreditprofile", certificateprofilename);            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
         }
@@ -1713,8 +1607,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype, Collection authorizedCaIds) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
-        Collection<CertificateProfileData> result = null;
-
         HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizedCaIds);
 
         // Add fixed certificate profiles.
@@ -1735,40 +1627,35 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
         }
-        //try {
-        	result = CertificateProfileData.findAll(entityManager);
-            //result = certprofilehome.findAll();
-            Iterator<CertificateProfileData> i = result.iterator();
-            while (i.hasNext()) {
-                CertificateProfileData next = i.next();
-                CertificateProfile profile = next.getCertificateProfile();
-                // Check if all profiles available CAs exists in authorizedcaids.
-                if (certprofiletype == 0 || certprofiletype == profile.getType()
-                        || (profile.getType() == SecConst.CERTTYPE_ENDENTITY &&
-                        certprofiletype == SecConst.CERTTYPE_HARDTOKEN)) {
-                    Iterator<Integer> availablecas = profile.getAvailableCAs().iterator();
-                    boolean allexists = true;
-                    while (availablecas.hasNext()) {
-                        Integer nextcaid = availablecas.next();
-                        if (nextcaid.intValue() == CertificateProfile.ANYCA) {
-                            allexists = true;
-                            break;
-                        }
-                        if (!authorizedcaids.contains(nextcaid)) {
-                            allexists = false;
-                            break;
-                        }
-                    }
-                    if (allexists) {
-                        returnval.add(next.getId());
-                    }
-                }
-            }
-        /*} catch (FinderException e) {
-        }*/
+        Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+        Iterator<CertificateProfileData> i = result.iterator();
+        while (i.hasNext()) {
+        	CertificateProfileData next = i.next();
+        	CertificateProfile profile = next.getCertificateProfile();
+        	// Check if all profiles available CAs exists in authorizedcaids.
+        	if (certprofiletype == 0 || certprofiletype == profile.getType()
+        			|| (profile.getType() == SecConst.CERTTYPE_ENDENTITY &&
+        					certprofiletype == SecConst.CERTTYPE_HARDTOKEN)) {
+        		Iterator<Integer> availablecas = profile.getAvailableCAs().iterator();
+        		boolean allexists = true;
+        		while (availablecas.hasNext()) {
+        			Integer nextcaid = availablecas.next();
+        			if (nextcaid.intValue() == CertificateProfile.ANYCA) {
+        				allexists = true;
+        				break;
+        			}
+        			if (!authorizedcaids.contains(nextcaid)) {
+        				allexists = false;
+        				break;
+        			}
+        		}
+        		if (allexists) {
+        			returnval.add(next.getId());
+        		}
+        	}
+        }
         return returnval;
-    } // getAuthorizedCertificateProfileNames
-
+    }
 
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name (String).
@@ -1778,7 +1665,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public HashMap getCertificateProfileIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        Collection<CertificateProfileData> result = null;
         returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_ENDUSER),
                 EndUserCertificateProfile.CERTIFICATEPROFILENAME);
         returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_SUBCA),
@@ -1799,16 +1685,12 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
                 HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME);
         returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN),
                 HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME);
-        //try {
-        	result = CertificateProfileData.findAll(entityManager);
-            //result = certprofilehome.findAll();
-            Iterator<CertificateProfileData> i = result.iterator();
-            while (i.hasNext()) {
-                CertificateProfileData next = i.next();
-                returnval.put(next.getId(), next.getCertificateProfileName());
-            }
-        /*} catch (FinderException e) {
-        }*/
+        Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+        Iterator<CertificateProfileData> i = result.iterator();
+        while (i.hasNext()) {
+        	CertificateProfileData next = i.next();
+        	returnval.put(next.getId(), next.getCertificateProfileName());
+        }
         return returnval;
     }
 
@@ -1852,11 +1734,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         if (cpd != null) {
             returnval = cpd.getCertificateProfile();
         }
-        /*try {
-            returnval = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getCertificateProfile();
-        } catch (FinderException e) {
-            // return null if we cant find it
-        }*/
         return returnval;
     }
 
@@ -1907,11 +1784,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
             if (cpd != null) {
                 returnval = cpd.getCertificateProfile();
             }
-            /*try {
-                returnval = (certprofilehome.findByPrimaryKey(new Integer(id))).getCertificateProfile();
-            } catch (FinderException e) {
-                // return null if we cant find it
-            }*/
         }
         return returnval;
     }
@@ -1962,12 +1834,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         } else {
         	log.debug("No certificate profile found with name: "+certificateprofilename);
         }
-        /*try {
-            Integer id = (certprofilehome.findByCertificateProfileName(certificateprofilename)).getId();
-            returnval = id.intValue();
-        } catch (FinderException e) {
-        	log.debug("No certificate profile found with name: "+certificateprofilename);
-        }*/
     	if (log.isTraceEnabled()) {
         	log.trace("<getCertificateProfileId: "+certificateprofilename);
     	}
@@ -2026,11 +1892,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
             } else {
             	log.debug("No certificate profile found with id: "+id);
             }
-            /*try {
-                returnval = (certprofilehome.findByPrimaryKey(new Integer(id))).getCertificateProfileName();
-            } catch (FinderException e) {
-            	log.debug("No certificate profile found with id: "+id);
-            }*/
         }
     	if (log.isTraceEnabled()) {
         	log.trace("<getCertificateProfileName: "+id);
@@ -2048,26 +1909,22 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public boolean existsCAInCertificateProfiles(Admin admin, int caid) {
         boolean exists = false;
-        //try {
-        	Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-            //Collection result = certprofilehome.findAll();
-            Iterator<CertificateProfileData> i = result.iterator();
-            while (i.hasNext() && !exists) {
-            	CertificateProfileData cd = i.next();
-            	CertificateProfile certProfile = cd.getCertificateProfile(); 
-            	if (certProfile.getType() == CertificateProfile.TYPE_ENDENTITY) {
-            		Iterator<Integer> availablecas = certProfile.getAvailableCAs().iterator();
-            		while (availablecas.hasNext()) {
-            			if (availablecas.next().intValue() == caid ) {
-            				exists = true;
-            				log.debug("CA exists in certificate profile "+cd.getCertificateProfileName());
-            				break;
-            			}
-            		}
-            	}
-            }
-        /*} catch (FinderException e) {
-        }*/
+        Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+        Iterator<CertificateProfileData> i = result.iterator();
+        while (i.hasNext() && !exists) {
+        	CertificateProfileData cd = i.next();
+        	CertificateProfile certProfile = cd.getCertificateProfile(); 
+        	if (certProfile.getType() == CertificateProfile.TYPE_ENDENTITY) {
+        		Iterator<Integer> availablecas = certProfile.getAvailableCAs().iterator();
+        		while (availablecas.hasNext()) {
+        			if (availablecas.next().intValue() == caid ) {
+        				exists = true;
+        				log.debug("CA exists in certificate profile "+cd.getCertificateProfileName());
+        				break;
+        			}
+        		}
+        	}
+        }
         return exists;
     }
 
@@ -2080,21 +1937,17 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public boolean existsPublisherInCertificateProfiles(Admin admin, int publisherid) {
         boolean exists = false;
-        //try {
-        	Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-            //Collection result = certprofilehome.findAll();
-            Iterator<CertificateProfileData> i = result.iterator();
-            while (i.hasNext() && !exists) {
-            	Iterator<Integer> availablepublishers = i.next().getCertificateProfile().getPublisherList().iterator();
-                while (availablepublishers.hasNext()) {
-                    if (availablepublishers.next().intValue() == publisherid) {
-                        exists = true;
-                        break;
-                    }
-                }
-            }
-        /*} catch (FinderException e) {
-        }*/
+        Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+        Iterator<CertificateProfileData> i = result.iterator();
+        while (i.hasNext() && !exists) {
+        	Iterator<Integer> availablepublishers = i.next().getCertificateProfile().getPublisherList().iterator();
+        	while (availablepublishers.hasNext()) {
+        		if (availablepublishers.next().intValue() == publisherid) {
+        			exists = true;
+        			break;
+        		}
+        	}
+        }
         return exists;
     }
 
@@ -2106,18 +1959,13 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         int id = random.nextInt();
         boolean foundfree = false;
         while (!foundfree) {
-            //try {
-                if (id > SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
-                	if (CertificateProfileData.findById(entityManager, id) == null) {
-                        foundfree = true;
-                	}
-                    //certprofilehome.findByPrimaryKey(new Integer(id));
-                } else {
-                    id = random.nextInt();
-                }
-            /*} catch (FinderException e) {
-                foundfree = true;
-            }*/
+        	if (id > SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
+        		if (CertificateProfileData.findById(entityManager, id) == null) {
+        			foundfree = true;
+        		}
+        	} else {
+        		id = random.nextInt();
+        	}
         }
         return id;
     }
@@ -2146,27 +1994,22 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
 
     private boolean isFreeCertificateProfileId(int id) {
         boolean foundfree = false;
-        //try {
-            if (id > SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
-            	if (CertificateProfileData.findById(entityManager, id) == null) {
-                    foundfree = true;
-            	}
-                //certprofilehome.findByPrimaryKey(new Integer(id));
-            }
-        /*} catch (FinderException e) {
-            foundfree = true;
-        }*/
+        if (id > SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
+        	if (CertificateProfileData.findById(entityManager, id) == null) {
+        		foundfree = true;
+        	}
+        }
         return foundfree;
     }
 
     private class MyAdapter implements CertificateDataUtil.Adapter {
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#getLogger()
          */
         public Logger getLogger() {
             return log;
         }
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
          */
         public void log(Admin admin, int caid, int module, Date time, String username,
@@ -2174,19 +2017,19 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
             logSession.log(admin, caid, module, new java.util.Date(),
                                 username, certificate, event, comment);
         }
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#debug(java.lang.String)
          */
         public void debug(String s) {
             log.debug(s);
         }
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
          */
         public void error(String s) {
             log.error(s);        	
         }
-        /* (non-Javadoc)
+        /*
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
          */
         public void error(String s, Exception e) {

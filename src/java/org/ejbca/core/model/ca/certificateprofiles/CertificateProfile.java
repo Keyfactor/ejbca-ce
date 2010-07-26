@@ -582,7 +582,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setAvailableBitLengths(int[] availablebitlengths){
-      ArrayList availbitlengths = new ArrayList(availablebitlengths.length);
+      ArrayList<Integer> availbitlengths = new ArrayList<Integer>(availablebitlengths.length);
 
       int minimumavailablebitlength = 99999999;
       int maximumavailablebitlength = 0;
@@ -634,22 +634,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean[] getKeyUsage(){
-      ArrayList keyusage = (ArrayList) data.get(KEYUSAGE);
+      ArrayList<Boolean> keyusage = (ArrayList<Boolean>) data.get(KEYUSAGE);
       boolean[] returnval = new boolean[keyusage.size()];
-
       for(int i=0; i < keyusage.size(); i++){
-        returnval[i] = ((Boolean) keyusage.get(i)).booleanValue();
+        returnval[i] = keyusage.get(i).booleanValue();
       }
-
       return returnval;
     }
 
     public boolean getKeyUsage(int keyusageconstant){
-      return ((Boolean) ((ArrayList) data.get(KEYUSAGE)).get(keyusageconstant)).booleanValue();
+      return ((ArrayList<Boolean>) data.get(KEYUSAGE)).get(keyusageconstant).booleanValue();
     }
 
     public void setKeyUsage(boolean[] keyusage){
-      ArrayList keyuse = new ArrayList(keyusage.length);
+      ArrayList<Boolean> keyuse = new ArrayList<Boolean>(keyusage.length);
 
       for(int i=0;i< keyusage.length;i++){
         keyuse.add(Boolean.valueOf(keyusage[i]));
@@ -658,7 +656,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setKeyUsage(int keyusageconstant, boolean value){
-      ((ArrayList) data.get(KEYUSAGE)).set(keyusageconstant, Boolean.valueOf(value));
+      ((ArrayList<Boolean>) data.get(KEYUSAGE)).set(keyusageconstant, Boolean.valueOf(value));
     }
 
     public void setAllowKeyUsageOverride(boolean override) {
@@ -895,8 +893,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      *
      * If it contains the constant ANYCA then the profile is applicable to all CAs
      */
-    public Collection getAvailableCAs(){
-      return (Collection) data.get(AVAILABLECAS);   
+    public Collection<Integer> getAvailableCAs(){
+      return (Collection<Integer>) data.get(AVAILABLECAS);   
     }
     
     /**
@@ -905,8 +903,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param availablecas a Collection of caids (Integer)
      */
     
-    public void setAvailableCAs(Collection availablecas){
-      data.put(AVAILABLECAS, availablecas);   
+    public void setAvailableCAs(Collection<Integer> availablecas){
+      data.put(AVAILABLECAS, availablecas);
     }
     
     public boolean isApplicableToAnyCA(){
@@ -918,37 +916,34 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * created with this profile should be published to.
      * Never returns null.
      */
-    
-    public Collection getPublisherList(){
+    public Collection<Integer> getPublisherList(){
     	Object o = data.get(USEDPUBLISHERS);
     	if (o == null) {
-    		o = new ArrayList();
+    		o = new ArrayList<Integer>();
     	}
-    	return (Collection)o;   
+    	return (Collection<Integer>)o;
     }
     
     /**
      * Saves the CertificateProfile's list of publishers that certificates created with this profile 
      * should be published to.
      *
-     * @param publishers a Collection of publisherids (Integer)
+     * @param publishers a Collection<Integer> of publisher Ids
      */ 
     
-    public void setPublisherList(Collection publisher){
+    public void setPublisherList(Collection<Integer> publisher){
       data.put(USEDPUBLISHERS, publisher);   
     }   
     	
     /**
-     * Method indicating that Path Length Constain should be used in the BasicConstaint
-     * 
+     * Method indicating that Path Length Constraint should be used in the BasicConstaint
      */
     public boolean getUsePathLengthConstraint(){
     	return ((Boolean) data.get(USEPATHLENGTHCONSTRAINT)).booleanValue();	
     }
     
     /**
-     * Method indicating that Path Length Constain should be used in the BasicConstaint
-     * 
+     * Method indicating that Path Length Constraint should be used in the BasicConstaint
      */
     public void setUsePathLengthConstraint(boolean use) {
 		data.put(USEPATHLENGTHCONSTRAINT, Boolean.valueOf(use));			
