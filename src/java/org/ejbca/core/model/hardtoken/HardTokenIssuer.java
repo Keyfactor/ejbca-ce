@@ -37,24 +37,23 @@ public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializ
     // Default Values
     public static final float LATEST_VERSION = 1;
 
-    // Protexted Constants, must be overloaded by all deriving classes.   
+    // Protected Constants, must be overloaded by all deriving classes.   
     protected static final String AVAILABLEHARDTOKENSPROFILES  = "availablehardtokensprofiles"; 
 	protected static final String DESCRIPTION                  = "description"; 
-    // Public Constructors.
     
     public HardTokenIssuer(){
-      data.put(AVAILABLEHARDTOKENSPROFILES,new ArrayList());
+      data.put(AVAILABLEHARDTOKENSPROFILES,new ArrayList<Integer>());
       data.put(DESCRIPTION,"");         
     }
     
     // Public Methods
     
     // Availablehardtokens defines which hard tokens the issuer is able to issue. 
-    public ArrayList getAvailableHardTokenProfiles(){
-      return  (ArrayList) data.get(AVAILABLEHARDTOKENSPROFILES); 
+    public ArrayList<Integer> getAvailableHardTokenProfiles(){
+      return (ArrayList<Integer>) data.get(AVAILABLEHARDTOKENSPROFILES); 
     }
     
-    public void setAvailableHardTokenProfiles(ArrayList availablehardtokens){
+    public void setAvailableHardTokenProfiles(ArrayList<Integer> availablehardtokens){
       data.put(AVAILABLEHARDTOKENSPROFILES,availablehardtokens); 
     }    
     
@@ -70,13 +69,12 @@ public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializ
        data.put(field,value);   
     }
     
-    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
-
+    /** Implementation of UpgradableDataHashMap function upgrade. */
     public void upgrade(){	
     }
     
