@@ -131,13 +131,13 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      * Method that returns the fetched UserDataSourceVOs with the isModifyableset set.
      * This method should be used by external UserDataSource callers
      */    
-    public  Collection fetchUserDataSourceVOs(Admin admin, String searchstring) throws UserDataSourceException{
-    	Collection result = fetch(admin,searchstring);
+    public  Collection<UserDataSourceVO> fetchUserDataSourceVOs(Admin admin, String searchstring) throws UserDataSourceException{
+    	Collection<UserDataSourceVO> result = fetch(admin,searchstring);
     	
     	Set isModifyable = getModifiableFields();
-    	Iterator iter = result.iterator();
+    	Iterator<UserDataSourceVO> iter = result.iterator();
     	while(iter.hasNext()){
-    		UserDataSourceVO next = (UserDataSourceVO) iter.next();
+    		UserDataSourceVO next = iter.next();
     		next.setIsModifyableSet(isModifyable);
     	}
     	return result;
