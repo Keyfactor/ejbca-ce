@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.util.SimpleTime;
 
@@ -99,8 +100,8 @@ public class CAInfo implements Serializable {
     protected long deltacrlperiod = 0; 
     protected Collection crlpublishers;  
 	protected boolean finishuser;  
-	protected Collection extendedcaserviceinfos;
-	protected Collection approvalSettings;
+	protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
+	protected Collection<Integer> approvalSettings;
 	protected int numOfReqApprovals;
 	protected boolean includeInHealthCheck;
 	protected boolean doEnforceUniquePublicKeys;
@@ -169,8 +170,8 @@ public class CAInfo implements Serializable {
 	 * 
 	 * @return Collection of ExtendedCAServiceInfo
 	 */
-	public Collection getExtendedCAServiceInfos(){ return this.extendedcaserviceinfos;}
-	public void setExtendedCAServiceInfos(Collection extendedcaserviceinfos){ this.extendedcaserviceinfos = extendedcaserviceinfos;}
+	public Collection<ExtendedCAServiceInfo> getExtendedCAServiceInfos(){ return this.extendedcaserviceinfos;}
+	public void setExtendedCAServiceInfos(Collection<ExtendedCAServiceInfo> extendedcaserviceinfos){ this.extendedcaserviceinfos = extendedcaserviceinfos;}
 
 	/**
 	 * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
@@ -178,12 +179,12 @@ public class CAInfo implements Serializable {
 	 * 
 	 * Never null
 	 */
-	public Collection getApprovalSettings() {return approvalSettings;}
+	public Collection<Integer> getApprovalSettings() {return approvalSettings;}
 	/**
 	 * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
 	 * action that requires approvals
 	 */
-	public void setApprovalSettings(Collection approvalSettings) {this.approvalSettings = approvalSettings;}
+	public void setApprovalSettings(Collection<Integer> approvalSettings) {this.approvalSettings = approvalSettings;}
 	
 	/**
 	 * Returns true if the action requires approvals.
