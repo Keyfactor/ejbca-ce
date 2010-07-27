@@ -31,6 +31,7 @@
         <auth-constraint />
     </security-constraint> 
 
+<!--
     <ejb-local-ref id="EJBLocalRef_1">
         <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
@@ -59,5 +60,5 @@
         <local>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal</local>
         <ejb-link>CreateCRLSession</ejb-link>
     </ejb-local-ref>
-
+-->
 </web-app>

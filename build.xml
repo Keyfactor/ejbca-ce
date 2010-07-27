@@ -158,8 +158,6 @@
     <!-- =================================================================== -->
     <target name="doc.war" if="doc.war.enabled">
     	<antcall target="doc" />
-		<replace file="${eardd.src}/META-INF/application.xml"
-		token="!--@doc.war@-->" value="module>&lt;web>&lt;web-uri>doc.war&lt;/web-uri>&lt;context-root>/${app.name}/doc&lt;/context-root>&lt;/web>&lt;/module>"/>
 		<war destfile="${docwar}" webxml="${mainsrc}/publicweb/empty_webxml.xml">
             <fileset dir="${doc.src}" />
         </war>
@@ -193,11 +191,13 @@
                 <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
             </manifest>
+        	<!--
             <fileset dir="${src.dd}">
             	<exclude name="WEB-INF/**"/>
             	<exclude name="status/**"/>
             	<exclude name="cmp/**"/>
             </fileset>
+            -->
             <fileset dir="${build}">            	
         	    <exclude name="org/ejbca/core/protocol/ws/**"/>
             </fileset>
@@ -207,7 +207,7 @@
             <fileset dir="${ejbca.home}/src">
 				<include name="internal.properties"/>
 			</fileset>	
-            <fileset dir="${src}/upgrade"/>
+            <fileset dir="src/upgrade"/>
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
         	</fileset>	
@@ -369,6 +369,13 @@
 	</target>
 	
 	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war, externalra-service">
+		<!-- Make sure we have an application.xml since we don't do preprocessing any longer.. -->
+		<mkdir dir="${eardd.src}/META-INF"/>
+		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true"/>
+		<condition property="doc.war.enabled.replace-string" else="!--@doc.war@-->" value="module>&lt;web>&lt;web-uri>doc.war&lt;/web-uri>&lt;context-root>/${app.name}/doc&lt;/context-root>&lt;/web>&lt;/module>">
+			<istrue value="${doc.war.enabled}"/>
+		</condition>
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@doc.war@-->" value="${doc.war.enabled.replace-string}"/>
 		<condition property="ejbcaws.enabled.replace-string" else="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${ejbcaws.enabled}"/>
 		</condition>
@@ -421,6 +428,7 @@
         	<zipfileset prefix="lib" dir="modules/dist">
                 <include name="externalra-service.jar" />
                 <include name="ejbca-ejb3-interface.jar" />
+                <include name="ejbca-entity.jar" />
         	</zipfileset>
 	</ear>
 

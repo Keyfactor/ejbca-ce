@@ -162,6 +162,7 @@
       <env-entry-value>https</env-entry-value>
    </env-entry>
 
+<!--
    <ejb-local-ref id="EJBLocalRef_1">
       <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
       <ejb-ref-type>Session</ejb-ref-type>
@@ -288,4 +289,5 @@
       <local>org.ejbca.core.ejb.ra.ICertificateRequestSessionLocal</local>
       <ejb-link>CertificateRequestSession</ejb-link>
    </ejb-local-ref>
+-->
 </web-app>

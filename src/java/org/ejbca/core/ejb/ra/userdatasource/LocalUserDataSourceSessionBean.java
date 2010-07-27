@@ -511,7 +511,7 @@ public class LocalUserDataSourceSessionBean implements UserDataSourceSessionLoca
         Collection<UserDataSourceData> result = UserDataSourceData.findAll(entityManager);
         Iterator<UserDataSourceData> i = result.iterator();
         while (i.hasNext()) {
-        	UserDataSourceDataLocal next = (UserDataSourceDataLocal) i.next();
+        	UserDataSourceData next = i.next();
         	returnval.put(next.getId(), next.getName());
         }
         return returnval;
