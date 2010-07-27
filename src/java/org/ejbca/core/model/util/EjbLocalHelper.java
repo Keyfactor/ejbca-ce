@@ -14,27 +14,51 @@ package org.ejbca.core.model.util;
 
 import javax.ejb.CreateException;
 
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
-import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
-import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.approval.ApprovalSession;
+import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionRemote;
+import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
+import org.ejbca.core.ejb.log.LogSession;
+import org.ejbca.core.ejb.log.LogSessionRemote;
+import org.ejbca.core.ejb.log.OldLogSession;
+import org.ejbca.core.ejb.log.OldLogSessionRemote;
+import org.ejbca.core.ejb.log.ProtectedLogSession;
+import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
+import org.ejbca.core.ejb.protect.TableProtectSession;
+import org.ejbca.core.ejb.protect.TableProtectSessionRemoteejb3;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
+import org.ejbca.core.ejb.services.ServiceSession;
+import org.ejbca.core.ejb.services.ServiceSessionRemote;
+import org.ejbca.core.ejb.services.ServiceTimerSession;
+import org.ejbca.core.ejb.services.ServiceTimerSessionRemote;
 
 /**
  * Helper methods to get EJB session interfaces.
@@ -42,95 +66,182 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
  * @version $Id$
  */
 public class EjbLocalHelper {
+	// TODO: Find out how to do appserver agnostic local EJB lookup in JEE5
+	// For now we will return the remote stub instead, just to get things working..
 
-    private ISignSessionLocal signsession = null;
-    public ISignSessionLocal getSignSession() throws CreateException {
-    	if(signsession == null){	
-    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-    			signsession = signhome.create();
+    private SignSession signsession = null;
+    public SignSession getSignSession() throws CreateException {
+    	if(signsession == null){
+    		signsession = JndiHelper.getRemoteSession(SignSessionRemote.class);
     	}
     	return signsession;
     }
     
-    private ICAAdminSessionLocal casession = null;
-    public ICAAdminSessionLocal getCAAdminSession() throws CreateException {
+    private CAAdminSession casession = null;
+    public CAAdminSession getCAAdminSession() throws CreateException {
     	if(casession == null){	
-    			ICAAdminSessionLocalHome cahome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-    			casession = cahome.create();
+    		casession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
     	}
     	return casession;
     }
 
-	private IAuthenticationSessionLocal authsession = null;
-    public IAuthenticationSessionLocal getAuthenticationSession() throws CreateException {
+	private AuthenticationSession authsession = null;
+    public AuthenticationSession getAuthenticationSession() throws CreateException {
     	if(authsession == null){	
-    			IAuthenticationSessionLocalHome cahome = (IAuthenticationSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IAuthenticationSessionLocalHome.COMP_NAME);
-    			authsession = cahome.create();
+    		authsession = JndiHelper.getRemoteSession(AuthenticationSessionRemote.class);
     	}
     	return authsession;
     }
 
-	private IAuthorizationSessionLocal authorizationSession = null;
-    public IAuthorizationSessionLocal getAuthorizationSession() throws CreateException {
+	private AuthorizationSession authorizationSession = null;
+    public AuthorizationSession getAuthorizationSession() throws CreateException {
     	if(authorizationSession == null){	
-    			IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-    			authorizationSession = home.create();
+    		authorizationSession = JndiHelper.getRemoteSession(AuthorizationSessionRemote.class);
     	}
     	return authorizationSession;
     }
 
-    private IKeyRecoverySessionLocal keyrecoverysession = null;
-    public IKeyRecoverySessionLocal getKeyRecoverySession() throws CreateException {
+    private KeyRecoverySession keyrecoverysession = null;
+    public KeyRecoverySession getKeyRecoverySession() throws CreateException {
     	if(keyrecoverysession == null){	
-    			IKeyRecoverySessionLocalHome home = (IKeyRecoverySessionLocalHome)ServiceLocator.getInstance().getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
-    			keyrecoverysession = home.create();
+    		keyrecoverysession = JndiHelper.getRemoteSession(KeyRecoverySessionRemote.class);
     	}
     	return keyrecoverysession;
     }
 
-	private ICertificateStoreSessionLocal certificatestoresession = null;
-	public ICertificateStoreSessionLocal getCertStoreSession() throws CreateException {
+	private CertificateStoreSession certificatestoresession = null;
+	public CertificateStoreSession getCertStoreSession() throws CreateException {
 		if(certificatestoresession == null){
-			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-			certificatestoresession = home.create();
+			certificatestoresession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
 		}
 		return certificatestoresession;
 	}
 	
-	private IUserAdminSessionLocal usersession = null;
-	public IUserAdminSessionLocal getUserAdminSession() throws CreateException {
+	private CertificateStoreOnlyDataSession certificateStoreOnlyDataSession = null;
+	public CertificateStoreOnlyDataSession getCertificateStoreOnlyDataSession() throws CreateException {
+		if(certificateStoreOnlyDataSession == null){
+			certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreOnlyDataSessionRemote.class);
+		}
+		return certificateStoreOnlyDataSession;
+	}
+	
+	private UserAdminSession usersession = null;
+	public UserAdminSession getUserAdminSession() throws CreateException {
 		if(usersession == null){
-			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-			usersession = home.create();
+			usersession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
 		}
 		return usersession;
 	}
 	
-	private IRaAdminSessionLocal rasession = null;
-	public IRaAdminSessionLocal getRAAdminSession() throws CreateException {
+	private RaAdminSession rasession = null;
+	public RaAdminSession getRAAdminSession() throws CreateException {
 		if(rasession == null){
-			IRaAdminSessionLocalHome home = (IRaAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-			rasession = home.create();
+			rasession = JndiHelper.getRemoteSession(RaAdminSessionRemote.class);
 		}
 		return rasession;
 	}
 
-	private IApprovalSessionLocal approvalsession = null;	
-	public IApprovalSessionLocal getApprovalSession() throws CreateException {
+	private ApprovalSession approvalsession = null;	
+	public ApprovalSession getApprovalSession() throws CreateException {
 		if(approvalsession == null){
-			IApprovalSessionLocalHome home = (IApprovalSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IApprovalSessionLocalHome.COMP_NAME); 
-			approvalsession = home.create();
+			approvalsession = JndiHelper.getRemoteSession(ApprovalSessionRemote.class);
 		}
 		return approvalsession;
 	}
 
-	private IHardTokenSessionLocal hardtokensession = null;
-	public IHardTokenSessionLocal getHardTokenSession() throws CreateException {
+	private HardTokenSession hardtokensession = null;
+	public HardTokenSession getHardTokenSession() throws CreateException {
 		if(hardtokensession == null){
-			IHardTokenSessionLocalHome home = (IHardTokenSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-			hardtokensession = home.create();
+			hardtokensession = JndiHelper.getRemoteSession(HardTokenSessionRemote.class);
 		}
 		return hardtokensession;
 	}
 
+	private ProtectedLogSession protectedLogSession = null;
+	public ProtectedLogSession getProtectedLogSession() throws CreateException {
+		if(protectedLogSession == null){
+			protectedLogSession = JndiHelper.getRemoteSession(ProtectedLogSessionRemote.class);
+		}
+		return protectedLogSession;
+	}
+
+	private LogSession logSession = null;
+	public LogSession getLogSession() throws CreateException {
+		if(logSession == null){
+			logSession = JndiHelper.getRemoteSession(LogSessionRemote.class);
+		}
+		return logSession;
+	}
+	
+	private OldLogSession oldLogSession = null;
+	public OldLogSession getOldLogSession() throws CreateException {
+		if(oldLogSession == null){
+			oldLogSession = JndiHelper.getRemoteSession(OldLogSessionRemote.class);
+		}
+		return oldLogSession;
+	}
+	
+	private TableProtectSession tableProtectSession = null;
+	public TableProtectSession getTableProtectSession() throws CreateException {
+		if(tableProtectSession == null){
+			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemoteejb3.class);
+		}
+		return tableProtectSession;
+	}
+
+	private PublisherQueueSession publisherQueueSession = null;
+	public PublisherQueueSession getPublisherQueueSession() throws CreateException {
+		if(publisherQueueSession == null){
+			publisherQueueSession = JndiHelper.getRemoteSession(PublisherQueueSessionRemote.class);
+		}
+		return publisherQueueSession;
+	}
+
+	private UserDataSourceSession userDataSourceSession = null;
+	public UserDataSourceSession getUserDataSourceSession() {
+		if (userDataSourceSession == null) {
+			userDataSourceSession = JndiHelper.getRemoteSession(UserDataSourceSessionRemote.class);
+		}
+		return userDataSourceSession;
+	}
+
+	private CreateCRLSession createCRLSession = null;
+	public CreateCRLSession getCreateCrlSession() {
+		if (createCRLSession == null) {
+			createCRLSession = JndiHelper.getRemoteSession(CreateCRLSessionRemote.class);
+		}
+		return createCRLSession;
+	}
+
+	private PublisherSession publisherSession = null;
+	public PublisherSession getPublisherSession() {
+		if (publisherSession == null) {
+			publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
+		}
+		return publisherSession;
+	}
+	
+	private ServiceSession serviceSession = null;
+	public ServiceSession getServiceSession() {
+		if (serviceSession == null) {
+			serviceSession = JndiHelper.getRemoteSession(ServiceSessionRemote.class);
+		}
+		return serviceSession;
+	}
+
+	private ServiceTimerSession serviceTimerSession;
+	public ServiceTimerSession getServiceTimerSession() {
+		if (serviceTimerSession == null) {
+			serviceTimerSession = JndiHelper.getRemoteSession(ServiceTimerSessionRemote.class);
+		}
+		return serviceTimerSession;
+	}
+
+	private HardTokenBatchJobSession hardTokenBatchJobSession;
+	public HardTokenBatchJobSession getHardTokenBatchSession() {
+		if (hardTokenBatchJobSession == null) {
+			hardTokenBatchJobSession = JndiHelper.getRemoteSession(HardTokenBatchJobSessionRemote.class);
+		}
+		return hardTokenBatchJobSession;
+	}
 }

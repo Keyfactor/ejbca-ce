@@ -23,9 +23,6 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -64,11 +61,11 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 		
 		// Build Query
 		String cASelectString = "";
-		Collection ids = getCAIdsToCheck(false);
+		Collection<Integer> ids = getCAIdsToCheck(false);
 		if(ids.size() >0){
-			Iterator iter = ids.iterator();
+			Iterator<Integer> iter = ids.iterator();
 			while(iter.hasNext()){
-				Integer caid = (Integer) iter.next();
+				Integer caid = iter.next();
 				CAInfo caInfo = getCAAdminSession().getCAInfo(getAdmin(), caid);
 				if (caInfo==null) {
 					String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, null);
@@ -147,8 +144,6 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 				result = ps.executeQuery();
 
 				// Certificate store session bean for retrieving the certificate.
-				ICertificateStoreSessionLocalHome cs = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-				ICertificateStoreSessionLocal cl = cs.create();
 				int count=0;
 				while(result.next()){
 					count++;
@@ -158,7 +153,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 					//String certBase64 = result.getString(2);
 					// Get the certificate through a session bean
 					log.debug("Found a certificate we should notify. Username="+username+", fp="+fingerprint);
-					Certificate cert = cl.findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
+					Certificate cert = getCertificateSession().findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
 					UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
 					if(userData != null){
 						if(isSendToEndUsers()){

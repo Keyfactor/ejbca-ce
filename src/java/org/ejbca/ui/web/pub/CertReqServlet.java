@@ -34,8 +34,6 @@ import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -49,13 +47,13 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.ConfigurationHolder;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -78,8 +76,6 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.keystore.KeyTools;
-
-
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a browser. A new
@@ -106,15 +102,26 @@ import org.ejbca.util.keystore.KeyTools;
  * @version $Id$
  */
 public class CertReqServlet extends HttpServlet {
-    private static final Logger log = Logger.getLogger(CertReqServlet.class);
+
+	private static final long serialVersionUID = 1L;
+	private static final Logger log = Logger.getLogger(CertReqServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    private IUserAdminSessionHome useradminhome = null;
-    private ICertificateStoreSessionHome storehome = null;
-    private IRaAdminSessionHome raadminhome = null;
     @EJB
-    private SignSessionLocal signsession;
+	private AuthenticationSession authenticationSession;
+    @EJB
+	private CAAdminSession caAdminSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+	private KeyRecoverySession keyRecoverySession;
+    @EJB
+    private RaAdminSessionLocal raAdminSession;            
+    @EJB
+    private SignSessionLocal signSession;
+    @EJB
+    private UserAdminSessionLocal userAdminSession;
 
     /**
      * Servlet init
@@ -127,20 +134,8 @@ public class CertReqServlet extends HttpServlet {
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
-        try {
-            // Install BouncyCastle provider
-            CryptoProviderTools.installBCProvider();
-
-            // Get EJB context and home interfaces
-            InitialContext ctx = new InitialContext();
-            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup(IUserAdminSessionHome.JNDI_NAME), IUserAdminSessionHome.class);
-            raadminhome = (IRaAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup(IRaAdminSessionHome.JNDI_NAME), IRaAdminSessionHome.class);
-            storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(ctx.lookup(ICertificateStoreSessionHome.JNDI_NAME),
-                    ICertificateStoreSessionHome.class);
-        } catch (Exception e) {
-            throw new ServletException(e);
-        }
+        // Install BouncyCastle provider
+        CryptoProviderTools.installBCProvider();
     }
 
     private class RequestInstance {
@@ -189,9 +184,6 @@ public class CertReqServlet extends HttpServlet {
 
                 Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
 
-                IUserAdminSessionRemote adminsession = useradminhome.create();
-                ICertificateStoreSessionRemote storesession = storehome.create();
-                IRaAdminSessionRemote raadminsession = raadminhome.create();            
                 RequestHelper helper = new RequestHelper(administrator, debug);
 
                 log.info(intres.getLocalizedMessage("certreq.receivedcertreq", username, request.getRemoteAddr()));
@@ -200,9 +192,9 @@ public class CertReqServlet extends HttpServlet {
                 // Check user
                 int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
 
-                usekeyrecovery = (raadminsession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
+                usekeyrecovery = (raAdminSession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
 
-                UserDataVO data = adminsession.findUser(administrator, username);
+                UserDataVO data = userAdminSession.findUser(administrator, username);
 
                 if (data == null) {
                     throw new ObjectNotFoundException();
@@ -213,12 +205,12 @@ public class CertReqServlet extends HttpServlet {
 
                 int endEntityProfileId = data.getEndEntityProfileId();
                 int certificateProfileId = data.getCertificateProfileId();
-                EndEntityProfile endEntityProfile = raadminsession.getEndEntityProfile(administrator, endEntityProfileId);
+                EndEntityProfile endEntityProfile = raAdminSession.getEndEntityProfile(administrator, endEntityProfileId);
                 boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
                 // Set a new certificate profile, if we have requested one specific
                 if (StringUtils.isNotEmpty(certprofile)) {
                 	boolean clearpwd = StringUtils.isNotEmpty(data.getPassword());
-                	int id = storesession.getCertificateProfileId(administrator, certprofile);
+                	int id = certificateStoreSession.getCertificateProfileId(administrator, certprofile);
                 	// Change the value if there exists a certprofile with the requested name, and it is not the same as 
                 	// the one already registered to be used by default
                 	if ( (id > 0) ) {
@@ -230,21 +222,21 @@ public class CertReqServlet extends HttpServlet {
                             	// This admin can be the public web user, which may not be allowed to change status,
                             	// this is a bit ugly, but what can a man do...
                             	Admin tempadmin = new Admin(Admin.TYPE_INTERNALUSER);
-                            	adminsession.changeUser(tempadmin, data, clearpwd);            		            			
+                            	userAdminSession.changeUser(tempadmin, data, clearpwd);            		            			
                     		} else {
-                    			String defaultCertificateProfileName = storesession.getCertificateProfileName(administrator, certificateProfileId);
+                    			String defaultCertificateProfileName = certificateStoreSession.getCertificateProfileName(administrator, certificateProfileId);
                         		log.info(intres.getLocalizedMessage("certreq.badcertprofile", certprofile, defaultCertificateProfileName));
                     		}
                 		}
                 	} else {
-            			String defaultCertificateProfileName = storesession.getCertificateProfileName(administrator, certificateProfileId);
+            			String defaultCertificateProfileName = certificateStoreSession.getCertificateProfileName(administrator, certificateProfileId);
                 		log.info(intres.getLocalizedMessage("certreq.nosuchcertprofile", certprofile, defaultCertificateProfileName));
                 	}
                 }
 
                 // get users Token Type.
                 tokentype = data.getTokenType();
-                GenerateToken tgen = new GenerateToken(true);
+                GenerateToken tgen = new GenerateToken(authenticationSession, caAdminSession, keyRecoverySession, signSession);
                 if(tokentype == SecConst.TOKEN_SOFT_P12){
                   KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
                   if (StringUtils.equals(openvpn, "on")) {            	  
@@ -268,7 +260,7 @@ public class CertReqServlet extends HttpServlet {
                       byte[] reqBytes=getParameter("keygen").getBytes();
                       if ((reqBytes != null) && (reqBytes.length>0)) {
                           log.debug("Received NS request: "+new String(reqBytes));
-                          byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
+                          byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
                           RequestHelper.sendNewCertToNSClient(certs, response);
                       } else {
                     	  throw new SignRequestException("No request bytes received.");
@@ -278,7 +270,7 @@ public class CertReqServlet extends HttpServlet {
                       byte[] reqBytes = getParameter("iidPkcs10").getBytes();
                       if ((reqBytes != null) && (reqBytes.length>0)) {
                           log.debug("Received iidPkcs10 request: "+new String(reqBytes));
-                          byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
+                          byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
                           response.setContentType("text/html");
                           RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), getServletContext(), getInitParameter("responseIidTemplate"),classid);
                       } else {
@@ -292,7 +284,7 @@ public class CertReqServlet extends HttpServlet {
                       }
                       if ((reqBytes != null) && (reqBytes.length>0)) {
                           log.debug("Received IE request: "+new String(reqBytes));
-                          byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
+                          byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
                           debug.ieCertFix(b64cert);
                           RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"),classid);
                       } else {
@@ -315,7 +307,7 @@ public class CertReqServlet extends HttpServlet {
                 	  }
                 	  
                       if ((reqBytes != null) && (reqBytes.length>0)) {
-                          pkcs10Req(response, username, password, resulttype, signsession, helper, reqBytes);
+                          pkcs10Req(response, username, password, resulttype, signSession, helper, reqBytes);
                       } else {
                     	  throw new SignRequestException("No request bytes received.");
                       }
@@ -338,7 +330,7 @@ public class CertReqServlet extends HttpServlet {
 
                       if ((reqBytes != null) && (reqBytes.length>0)) {
                           log.debug("Received CVC request: "+new String(reqBytes));
-                          byte[] b64cert=helper.cvcCertRequest(signsession, reqBytes, username, password);
+                          byte[] b64cert=helper.cvcCertRequest(signSession, reqBytes, username, password);
                           CVCertificate cvccert = (CVCertificate) CertificateParser.parseCVCObject(Base64.decode(b64cert));
                           String filename = "";
                           CAReferenceField carf = cvccert.getCertificateBody().getAuthorityReference();

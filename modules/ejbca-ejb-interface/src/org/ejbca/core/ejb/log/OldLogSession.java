@@ -10,14 +10,23 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ra;
 
-import javax.ejb.Local;
+package org.ejbca.core.ejb.log;
+
+import java.security.cert.Certificate;
+import java.util.Collection;
+import java.util.Date;
+
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.query.IllegalQueryException;
+import org.ejbca.util.query.Query;
 
 /**
- * Local interface for UserAdminSession.
+ * @version $Id$
  */
-@Local
-public interface UserAdminSessionLocal extends UserAdminSession {
+public interface OldLogSession {
 
+	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
+	
+	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException ;
 }

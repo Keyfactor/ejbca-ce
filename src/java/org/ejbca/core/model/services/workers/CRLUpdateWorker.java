@@ -14,12 +14,8 @@ package org.ejbca.core.model.services.workers;
 
 import java.util.Collection;
 
-import javax.ejb.CreateException;
-
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -35,8 +31,6 @@ public class CRLUpdateWorker extends BaseWorker {
     private static final Logger log = Logger.getLogger(CRLUpdateWorker.class);	
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-
-    private ICreateCRLSessionLocal createcrlsession = null;
 
     /** Semaphore that tries to make sure that this CRL creation job does not run several times on the same machine.
      * Since CRL generation can sometimes take a lot of time, this is needed.
@@ -55,7 +49,7 @@ public class CRLUpdateWorker extends BaseWorker {
 			try {
 				running = true;
 			    long polltime = getNextInterval();
-			    ICAAdminSessionLocal session = getCAAdminSession();
+			    CAAdminSession session = getCAAdminSession();
 			    if (session != null) {
 			    	// Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
 			    	// selecting CAs did not exist, no CA = Any CA.
@@ -70,19 +64,5 @@ public class CRLUpdateWorker extends BaseWorker {
     		String msg = intres.getLocalizedMessage("services.alreadyrunninginvm", CRLUpdateWorker.class.getName());            	
 			log.info(msg);
 		}
-	}
-
-	
-	public ICreateCRLSessionLocal getCreateCRLSession(){
-		if(createcrlsession == null){
-			try {
-	            ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) getLocator().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-				this.createcrlsession = home.create();
-			} catch (CreateException e) {
-				log.error(e);
-			}
-		}
-  
-		return createcrlsession;
 	}
 }

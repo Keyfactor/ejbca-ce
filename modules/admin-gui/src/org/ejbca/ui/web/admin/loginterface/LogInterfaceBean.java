@@ -22,15 +22,13 @@ import java.util.Iterator;
 import javax.servlet.http.HttpServletRequest;
 
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.log.LogSession;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.HTMLTools;
@@ -62,13 +60,9 @@ public class LogInterfaceBean implements java.io.Serializable {
 
       if(!initialized){
         admin = ejbcawebbean.getAdminObject();
-        
-        final ServiceLocator locator = ServiceLocator.getInstance();
-        ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) locator.getLocalHome(ILogSessionLocalHome.COMP_NAME);
-        logsession = logsessionhome.create(); 
-        
-        ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-        certificatesession = certificatesessionhome.create();
+        EjbLocalHelper ejb = new EjbLocalHelper();
+        logsession = ejb.getLogSession(); 
+        certificatesession = ejb.getCertStoreSession();
         
         this.informationmemory = ejbcawebbean.getInformationMemory();
         
@@ -347,8 +341,8 @@ public class LogInterfaceBean implements java.io.Serializable {
     
 
     // Private fields.
-    private ICertificateStoreSessionLocal  certificatesession;
-    private ILogSessionLocal               logsession;
+    private CertificateStoreSession certificatesession;
+    private LogSession logsession;
     private LogEntriesView                 logentriesview;
     private Admin                          admin;
     private SubjectDNProxy                 dnproxy;  

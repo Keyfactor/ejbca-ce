@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
+import org.ejbca.core.model.log.Admin;
+
 /**
  * @author mikek
  * 
@@ -96,4 +98,6 @@ public interface PublisherQueueSession {
      *            an updated try counter, or -1 to not update counter
      */
     public void updateData(java.lang.String pk, int status, int tryCounter);
+
+    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(Admin admin, int publisherId);
 }

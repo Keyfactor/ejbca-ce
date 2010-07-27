@@ -23,10 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -54,20 +53,8 @@ public class GetCRLServlet extends HttpServlet {
     private static final String COMMAND_DELTACRL = "deltacrl";
     private static final String ISSUER_PROPERTY = "issuer";
 
-    private ICreateCRLSessionLocalHome createCrlSessionHome = null;
-
-    private synchronized ICreateCRLSessionLocalHome getCreateCRLSessionHome() throws IOException {
-        try{
-            if(createCrlSessionHome == null){
-              createCrlSessionHome = (ICreateCRLSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-            }
-          } catch(Exception e){
-             throw new java.io.IOException("Authorization Denied");
-          }
-          return createCrlSessionHome;
-    }
-      
-
+    private EjbLocalHelper ejb = new EjbLocalHelper();
+    
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
     }
@@ -118,7 +105,7 @@ public class GetCRLServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
                 Admin admin = ejbcawebbean.getAdminObject();
-                byte[] crl = getCreateCRLSessionHome().create().getLastCRL(admin, issuerdn, false);
+                byte[] crl = ejb.getCreateCrlSession().getLastCRL(admin, issuerdn, false);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
         		String basename = getBaseFileName(dn);
@@ -141,7 +128,7 @@ public class GetCRLServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_DELTACRL) && issuerdn != null) {
         	try {
         		Admin admin = ejbcawebbean.getAdminObject();
-        		byte[] crl = getCreateCRLSessionHome().create().getLastCRL(admin, issuerdn, true);
+        		byte[] crl = ejb.getCreateCrlSession().getLastCRL(admin, issuerdn, true);
         		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         		String dn = CertTools.getIssuerDN(x509crl);
         		String basename = getBaseFileName(dn);

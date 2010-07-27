@@ -23,9 +23,7 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -35,6 +33,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * Approval Request created when trying to edit an end entity.
@@ -167,10 +166,10 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public void execute() throws ApprovalRequestExecutionException {
 		log.debug("Executing Change Status  for user:" + username);
 		try{
-			ServiceLocator locator = ServiceLocator.getInstance();
+			/*ServiceLocator locator = ServiceLocator.getInstance();
 			IUserAdminSessionLocalHome userdatahome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-			IUserAdminSessionLocal usersession = userdatahome.create();
-		
+			IUserAdminSessionLocal usersession = userdatahome.create();*/
+			UserAdminSession usersession = new EjbLocalHelper().getUserAdminSession();
 		    usersession.setUserStatus(getRequestAdmin(), username, newstatus);
 		}catch (CreateException e) {
 			throw new ApprovalRequestExecutionException("Error creating new userdata session", e);

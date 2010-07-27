@@ -33,10 +33,9 @@ import javax.ejb.EJBException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectedLogConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.log.IProtectedLogSessionLocal;
-import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
+import org.ejbca.core.ejb.log.ProtectedLogSession;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -57,7 +56,7 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 
 	private static Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 
-	private IProtectedLogSessionLocal protectedLogSession = null;
+	private ProtectedLogSession protectedLogSession = null;
 	
 	/**
 	 * A handle to the unique Singleton instance.
@@ -185,10 +184,10 @@ public class ProtectedLogDevice implements ILogDevice, Serializable {
 		return deviceName;
 	}
 	
-	private IProtectedLogSessionLocal getProtectedLogSession() {
+	private ProtectedLogSession getProtectedLogSession() {
 		try {
 			if (protectedLogSession == null) {
-				protectedLogSession = ((IProtectedLogSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IProtectedLogSessionLocalHome.COMP_NAME)).create();
+				protectedLogSession = new EjbLocalHelper().getProtectedLogSession();
 			}
 			return protectedLogSession;
 		} catch (Exception e) {

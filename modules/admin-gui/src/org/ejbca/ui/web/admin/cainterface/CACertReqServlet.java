@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.cainterface;
 import java.io.IOException;
 import java.security.cert.Certificate;
 
-import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,10 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -68,20 +65,7 @@ public class CACertReqServlet extends HttpServlet {
 	private static final String COMMAND_CERTPKCS7 = "certpkcs7";
     private static final String FORMAT_PROPERTY_NAME = "format";
 	
-	private ISignSessionLocal signsession = null;
-   
-   private synchronized ISignSessionLocal getSignSession(){
-   	  if(signsession == null){	
-		try {
-		    ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-		    signsession = signhome.create();
-		}catch(Exception e){
-			throw new EJBException(e);      	  	    	  	
-		}
-   	  }
-   	  return signsession;
-   }
-   
+	private EjbLocalHelper ejb = new EjbLocalHelper();
    
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -252,7 +236,7 @@ public class CACertReqServlet extends HttpServlet {
 		if (command.equalsIgnoreCase(COMMAND_CERTPKCS7)) {
 			 try {
 				Certificate cert = cabean.getProcessedCertificate();		
-		        byte[] pkcs7 =  getSignSession().createPKCS7(ejbcawebbean.getAdminObject(), cert, true);							 	
+		        byte[] pkcs7 = ejb.getSignSession().createPKCS7(ejbcawebbean.getAdminObject(), cert, true);							 	
 			    byte[] b64cert = org.ejbca.util.Base64.encode(pkcs7);	
 			    RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);																		 					
 			 } catch (Exception e) {

@@ -17,9 +17,8 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectedLogConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.log.IProtectedLogSessionLocal;
-import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
+import org.ejbca.core.ejb.log.ProtectedLogSession;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.CertTools;
 
 /**
@@ -33,7 +32,7 @@ public class ProtectedLogExporter {
 
 	private static ProtectedLogExporter instance = null;
 
-	private IProtectedLogSessionLocal protectedLogSession = null;
+	private ProtectedLogSession protectedLogSession = null;
 
 	private boolean isRunning = false;
 	private boolean isCanceled = false;
@@ -55,10 +54,11 @@ public class ProtectedLogExporter {
 		return instance;
 	}
 
-	private IProtectedLogSessionLocal getProtectedLogSession() {
+	private ProtectedLogSession getProtectedLogSession() {
 		try {
 			if (protectedLogSession == null) {
-				protectedLogSession = ((IProtectedLogSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IProtectedLogSessionLocalHome.COMP_NAME)).create();
+				//protectedLogSession = ((IProtectedLogSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IProtectedLogSessionLocalHome.COMP_NAME)).create();
+				protectedLogSession = new EjbLocalHelper().getProtectedLogSession();
 			}
 			return protectedLogSession;
 		} catch (Exception e) {

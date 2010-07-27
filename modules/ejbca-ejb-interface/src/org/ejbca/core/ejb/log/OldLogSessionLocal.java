@@ -10,14 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ra;
+
+package org.ejbca.core.ejb.log;
 
 import javax.ejb.Local;
 
 /**
- * Local interface for UserAdminSession.
+ * @version $Id$
  */
 @Local
-public interface UserAdminSessionLocal extends UserAdminSession {
+public interface OldLogSessionLocal extends OldLogSession {
 
 }

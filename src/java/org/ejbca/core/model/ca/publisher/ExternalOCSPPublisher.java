@@ -23,14 +23,13 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.protect.TableProtectSessionHome;
-import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
+import org.ejbca.core.ejb.protect.TableProtectSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
@@ -249,9 +248,10 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     		String subject = CertTools.getSubjectDN(cert);
     		long expire = cert.getNotAfter().getTime();
     		CertificateInfo entry = new CertificateInfo(fp, cafp, serno, issuer, subject, status, type, expire, revocationDate, revocationReason, username, tag, certificateProfileId, lastUpdate);
-    		TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
+    		//TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
             try {
-				TableProtectSessionRemote remote = home.create();
+				//TableProtectSessionRemote remote = home.create();
+            	TableProtectSession remote = new EjbRemoteHelper().getTableProtectSession();
 				remote.protectExternal(entry, getDataSource());
 			} catch (Exception e) {
 				String msg = intres.getLocalizedMessage("protect.errorcreatesession");

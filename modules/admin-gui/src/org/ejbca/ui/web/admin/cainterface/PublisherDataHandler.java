@@ -15,10 +15,10 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -34,12 +34,17 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  * @version $Id$
  */
 public class PublisherDataHandler implements Serializable {
+	   
+    private PublisherSession publishersession; 
+    private AuthorizationSession authorizationsession;
+    private CAAdminSession caadminsession;
+    private CertificateStoreSession certificatestoresession;
+    private Admin administrator;
+    private InformationMemory info;
 
-    
-    
     /** Creates a new instance of PublisherDataHandler */
-    public PublisherDataHandler(Admin administrator, IPublisherSessionLocal publishersession, IAuthorizationSessionLocal authorizationsession, 
-                                ICAAdminSessionLocal caadminsession,ICertificateStoreSessionLocal certificatestoresession, InformationMemory info) {
+    public PublisherDataHandler(Admin administrator, PublisherSession publishersession, AuthorizationSession authorizationsession, 
+                                CAAdminSession caadminsession, CertificateStoreSession certificatestoresession, InformationMemory info) {
        this.publishersession = publishersession;           
        this.authorizationsession = authorizationsession;
        this.caadminsession = caadminsession;
@@ -164,11 +169,4 @@ public class PublisherDataHandler implements Serializable {
               
        return false;  
     }    
-   
-    private IPublisherSessionLocal         publishersession; 
-    private Admin                          administrator;
-    private IAuthorizationSessionLocal     authorizationsession;
-    private ICAAdminSessionLocal           caadminsession;
-    private ICertificateStoreSessionLocal  certificatestoresession;
-    private InformationMemory              info;
 }

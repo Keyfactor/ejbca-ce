@@ -50,8 +50,11 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -171,15 +174,21 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
     private static final Logger log = Logger.getLogger(LocalCertificateRequestSessionBean.class);
     
     @EJB
+    private AuthenticationSessionLocal authenticationSession;
+    @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private HardTokenSessionLocal hardTokenSession;
+    @EJB
+    private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
     private RaAdminSessionLocal raAdminSession;
     @EJB
-    private UserAdminSessionLocal userAdminSession = null;
+    private UserAdminSessionLocal userAdminSession;
     @EJB
-    private SignSessionLocal signSession = null;
-    @EJB
-    private HardTokenSessionLocal hardTokenSession = null;
+    private SignSessionLocal signSession;
     @Resource
     private SessionContext sessionContext;
 
@@ -456,7 +465,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 			String password = userdata.getPassword();
 			String username = userdata.getUsername();
 			int caid = userdata.getCAId();
-		    GenerateToken tgen = new GenerateToken(false);
+		    GenerateToken tgen = new GenerateToken(authenticationSession, caAdminSession, keyRecoverySession, signSession);
 		    KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 			String alias = keyStore.aliases().nextElement();
 		    X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);

@@ -30,19 +30,12 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.ICertificateRequestSessionHome;
-import org.ejbca.core.ejb.ra.ICertificateRequestSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ra.CertificateRequestSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -60,6 +53,7 @@ import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
@@ -101,29 +95,23 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private String responseProt = null;
 	
 	private final Admin admin;
-	private final ISignSessionRemote signsession;
-	private final IUserAdminSessionRemote usersession;
-	private final ICAAdminSessionRemote casession;
-	private final IRaAdminSessionRemote rasession;
-	private final ICertificateStoreSessionRemote storesession;
-	private final ICertificateRequestSessionRemote reqsession;
+	private final SignSession signsession;
+	private final UserAdminSession usersession;
+	private final CAAdminSession casession;
+	private final RaAdminSession rasession;
+	private final CertificateStoreSession storesession;
+	private final CertificateRequestSession reqsession;
 	
 	public CrmfMessageHandler(final Admin admin) throws CreateException, RemoteException {
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
-		final ISignSessionHome signHome = (ISignSessionHome)ServiceLocator.getInstance().getRemoteHome(ISignSessionHome.JNDI_NAME, ISignSessionHome.class);		
-		final IUserAdminSessionHome userHome = (IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class);
-		final ICAAdminSessionHome caHome = (ICAAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class);
-		final IRaAdminSessionHome raHome = (IRaAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IRaAdminSessionHome.JNDI_NAME, IRaAdminSessionHome.class);
-		final ICertificateStoreSessionHome storeHome = (ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class);
-		final ICertificateRequestSessionHome reqHome = (ICertificateRequestSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateRequestSessionHome.JNDI_NAME, ICertificateRequestSessionHome.class);
-
-		this.signsession = signHome.create();
-		this.usersession = userHome.create();
-		this.casession = caHome.create();
-		this.rasession = raHome.create();
-		this.storesession = storeHome.create();
-		this.reqsession = reqHome.create();
+		EjbRemoteHelper ejb = new EjbRemoteHelper();
+		this.signsession = ejb.getSignSession();
+		this.usersession = ejb.getUserAdminSession();
+		this.casession = ejb.getCAAdminSession();
+		this.rasession = ejb.getRAAdminSession();
+		this.storesession = ejb.getCertStoreSession();
+		this.reqsession = ejb.getCertficateRequestSession();
 
 		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams

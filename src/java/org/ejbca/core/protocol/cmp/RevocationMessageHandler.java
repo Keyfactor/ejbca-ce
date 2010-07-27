@@ -34,11 +34,8 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -48,6 +45,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
@@ -74,22 +72,21 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 	
 	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
 	private String raAuthenticationSecret = null;
-	/** Parameter used to determine the type of prtection for the response message */
+	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	
 	private Admin admin;
-	private IUserAdminSessionRemote usersession = null;
-	private ICertificateStoreSessionRemote storesession = null;
+	private UserAdminSession usersession = null;
+	private CertificateStoreSession storesession = null;
 	
 	public RevocationMessageHandler(Admin admin) throws CreateException, RemoteException {
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
-		IUserAdminSessionHome userHome = (IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class);
-		ICertificateStoreSessionHome storeHome = (ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class);
-		this.usersession = userHome.create();
-		this.storesession = storeHome.create();
+		EjbRemoteHelper ejb = new EjbRemoteHelper();
+		this.usersession = ejb.getUserAdminSession();
+		this.storesession = ejb.getCertStoreSession();
 
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
@@ -250,11 +247,11 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 				String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
 				log.error(errMsg, e);			
 				resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
-			} catch (RemoteException e) {
+			/*} catch (RemoteException e) {
 				// Fatal error
 				String errMsg = intres.getLocalizedMessage("cmp.errorrevoke");
 				log.error(errMsg, e);			
-				resp = null;
+				resp = null;*/
 			}							
 		} else {
 			// If we don't have any protection to verify, we fail

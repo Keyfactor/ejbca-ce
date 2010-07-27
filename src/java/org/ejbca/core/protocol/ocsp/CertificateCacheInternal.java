@@ -17,10 +17,9 @@ import java.util.Collection;
 
 import javax.ejb.EJBException;
 
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 
 /**
@@ -59,12 +58,12 @@ public class CertificateCacheInternal extends CertificateCache {
     	return getStoreSession().findCertificatesByType(adm, type, issuerDN);    		
     }
 
-    private ICertificateStoreSessionLocal m_certStore = null;
-    private synchronized ICertificateStoreSessionLocal getStoreSession(){
+    private CertificateStoreSession m_certStore = null;
+    private synchronized CertificateStoreSession getStoreSession(){
     	if(m_certStore == null){	
     		try {
-    			ICertificateStoreSessionLocalHome storehome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-    			m_certStore = storehome.create();
+    			EjbLocalHelper ejb = new EjbLocalHelper();
+    			m_certStore = ejb.getCertStoreSession();
     		}catch(Exception e){
     			throw new EJBException(e);
     		}

@@ -17,11 +17,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
@@ -39,17 +39,17 @@ import org.ejbca.util.Base64PutHashMap;
  */
 public class HardTokenProfileDataHandler implements Serializable {
 
-    private IHardTokenSessionLocal         hardtokensession; 
-    private Admin                          administrator;
-    private IAuthorizationSessionLocal     authorizationsession;
-    private ICertificateStoreSessionLocal  certificatesession;
-    private IUserAdminSessionLocal         useradminsession;
-    private ICAAdminSessionLocal           caadminsession; 
-    private InformationMemory              info;
+    private HardTokenSession hardtokensession; 
+    private AuthorizationSession authorizationsession;
+    private CertificateStoreSession certificatesession;
+    private UserAdminSession useradminsession;
+    private CAAdminSession caadminsession; 
+    private Admin administrator;
+    private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
-    public HardTokenProfileDataHandler(Admin administrator, IHardTokenSessionLocal hardtokensession, ICertificateStoreSessionLocal certificatesession, IAuthorizationSessionLocal authorizationsession, 
-                                       IUserAdminSessionLocal useradminsession, ICAAdminSessionLocal caadminsession, InformationMemory info) {
+    public HardTokenProfileDataHandler(Admin administrator, HardTokenSession hardtokensession, CertificateStoreSession certificatesession, AuthorizationSession authorizationsession, 
+                                       UserAdminSession useradminsession, CAAdminSession caadminsession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
        this.certificatesession = certificatesession;

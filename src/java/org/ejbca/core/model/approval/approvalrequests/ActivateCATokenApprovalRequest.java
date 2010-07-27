@@ -15,18 +15,13 @@ package org.ejbca.core.model.approval.approvalrequests;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -37,6 +32,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 
 /**
  * Approval Request created when trying to activate a CA Token.
@@ -96,11 +92,11 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[getApprovalType()] + " (" + getApprovalType() + ").");
 
 		try {
-		    Context ctx = new javax.naming.InitialContext();
+		    /*Context ctx = new javax.naming.InitialContext();
 		    ICAAdminSessionHome caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),
 		    		ICAAdminSessionHome.class);
-			ICAAdminSessionRemote caadminsession = caadminsessionhome.create();
-			
+			ICAAdminSessionRemote caadminsession = caadminsessionhome.create();*/
+			CAAdminSession caadminsession = new EjbRemoteHelper().getCAAdminSession();
 			// Use 'null' for GlobalConfiguration here since it's only used to extract approval information in the underlying code..
 			caadminsession.activateCAToken(getRequestAdmin(), getCAId(), authenticationCode, null);
 		} catch (CATokenAuthenticationFailedException e) {
@@ -109,12 +105,12 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 			throw new ApprovalRequestExecutionException("Authorization denied to activate CA Token :" + e.getMessage(), e);
 		} catch (CATokenOfflineException e) {
 			throw new ApprovalRequestExecutionException("CA Token still off-line :" + e.getMessage(), e);
-		} catch (CreateException e) {
+		/*} catch (CreateException e) {
 			throw new ApprovalRequestExecutionException("Error creating userdata session", e);
 		} catch (NamingException e) {
 			throw new EJBException(e);
 		} catch (RemoteException e) {
-			throw new EJBException(e);
+			throw new EJBException(e);*/
 		} catch (ApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
