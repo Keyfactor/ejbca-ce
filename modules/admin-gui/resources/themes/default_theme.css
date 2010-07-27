@@ -334,6 +334,40 @@ div#code input[type="submit"] {
 	margin-left: 1em;
 }
 
+/* Page: SUP > Log configuration */
+table#logconfiguration {
+	margin-bottom: .25em;
+}
+table#logconfiguration td {
+	padding: .2em;
+	font-size: .9em;
+}
+table#logconfiguration td span {
+	display: block;
+	margin-bottom: .5em;
+}
+table#logconfiguration td h3 {
+	margin: .2em 0em;
+	text-align: center;
+}
+table#logconfiguration td.field {
+	padding-left: .4em;
+	text-align: left;
+}
+table#logconfiguration td.checkbox {
+	text-align: center;
+}
+table#logconfigbuttons td {
+	padding: .5em .25em;
+}
+table#logconfigbuttons td input[type="button"] {
+	margin-top: .3em;
+	margin-right: .5em;
+}
+table#logconfigbuttons td input[type="submit"] {
+	margin-right: 1em;
+}
+
 /* Page: SYS > Administrators Groups */
 form#groupList p {
 	margin-top: 1.25em;

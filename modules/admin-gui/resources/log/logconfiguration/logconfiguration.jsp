@@ -211,43 +211,43 @@
       </td>
     </tr>
    </table>
-   <table width="100%" border="0" cellspacing="3" cellpadding="3"> 
+   <table id="logconfiguration" width="100%" border="0" cellspacing="3" cellpadding="3"> 
     <tr > 
       <td colspan="4" width="100%" valign="top" halign="left"> 
-      	<%= ejbcawebbean.getText("LOGCONFIGURATIONINFO") %>
+      	<span><%= ejbcawebbean.getText("LOGCONFIGURATIONINFO") %></span>
       </td>
 <!--
-      <td width="40%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("USELOGDB") %></h3> 
-      
-      </td>
-      <td width="10%" valign="top"> 
+      <td width="1%" class="checkbox" valign="top"> 
         <input type="checkbox" name="<%=CHECKBOX_USELOGTODB %>" value="<%=CHECKBOX_VALUE %>" 
                                                                                           <% if(logconfiguration.useLogDB())
                                                                                                 out.write(" CHECKED "); %>>
       </td>
-      <td width="40%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("USEEXTERNALLOGDEVICES") %></h3>  
+      <td width="49%" class="field" valign="top"> 
+        <h3><%= ejbcawebbean.getText("USELOGDB") %></h3> 
+      
       </td>
-      <td width="10%" valign="top"> 
+      <td width="1%" class="checkbox" valign="top"> 
         <input type="checkbox" name="<%=CHECKBOX_USEEXTERNALLOG %>" value="<%=CHECKBOX_VALUE %>" 
                                                                                           <% if(logconfiguration.useExternalLogDevices())
                                                                                                 out.write(" CHECKED "); %>>
       </td>
+      <td width="49%" class="field" valign="top"> 
+        <h3><%= ejbcawebbean.getText("USEEXTERNALLOGDEVICES") %></h3>  
+      </td>
 -->
     </tr>
     <tr> 
-      <td width="40%" valign="top" id="InfoRow1"> 
-        <div align="center"><h3><%= ejbcawebbean.getText("INFOEVENTS") %></h3></div>
-      </td>
-      <td width="10%" valign="top" id="InfoRow1"> 
+      <td width="1%" class="checkbox" valign="top" id="InfoRow1"> 
           &nbsp;
       </td>
-      <td width="40%" valign="top" id="ErrorRow1"> 
-        <div align="center"><h3><%= ejbcawebbean.getText("ERROREVENTS") %></h3></div>
+      <td width="49%" class="field" valign="top" id="InfoRow1"> 
+          <h3><%= ejbcawebbean.getText("INFOEVENTS") %></h3>
       </td>
-      <td width="10%" valign="top" id="ErrorRow1"> 
+      <td width="1%" class="checkbox" valign="top" id="ErrorRow1"> 
           &nbsp;
+      </td>
+      <td width="49%" class="field" valign="top" id="ErrorRow1"> 
+          <h3><%= ejbcawebbean.getText("ERROREVENTS") %></h3>
       </td>
     </tr>
    <%   int totalrows = inforows.length;
@@ -255,14 +255,7 @@
           totalrows = errorrows.length;
         for(int i= 0; i < totalrows; i++){ %>
     <tr> 
-      <td width="40%" valign="top" id="InfoRow<%= i%2 %>"> 
-         <% if(inforows.length > i){ %>
-         &nbsp; &nbsp;<%= inforows[i] %>
-         <% } else{ %>
-           &nbsp;
-         <% } %>
-      </td>  
-      <td width="10%" valign="top" id="InfoRow<%= i%2 %>"> 
+      <td width="1%" class="checkbox" valign="top" id="InfoRow<%= i%2 %>"> 
          <% if(inforows.length > i){ %>
         <input type="checkbox" name="<%=CHECKBOX_INFOLOGROW + i%>" value="<%=CHECKBOX_VALUE %>" 
         <% 
@@ -276,14 +269,14 @@
             &nbsp;
          <% } %>
       </td>
-      <td width="40%" valign="top" id="ErrorRow<%= i%2 %>"> 
-          <% if(errorrows.length > i){ %>
-         &nbsp; &nbsp;<%= errorrows[i] %>
+      <td width="49%" class="field" valign="top" id="InfoRow<%= i%2 %>"> 
+         <% if(inforows.length > i){ %>
+            <%= inforows[i] %>
          <% } else{ %>
             &nbsp;
          <% } %>
-      </td>
-      <td width="10%" valign="top" id="ErrorRow<%= i%2 %>"> 
+      </td>  
+      <td width="1%" class="checkbox" valign="top" id="ErrorRow<%= i%2 %>"> 
           <% if(errorrows.length > i){ %>
         <input type="checkbox" name="<%=CHECKBOX_ERRORLOGROW + i%>" value="<%=CHECKBOX_VALUE %>" 
         <% 
@@ -297,10 +290,17 @@
             &nbsp;
          <% } %>
       </td>
+      <td width="49%" class="field" valign="top" id="ErrorRow<%= i%2 %>"> 
+         <% if(errorrows.length > i){ %>
+            <%= errorrows[i] %>
+         <% } else{ %>
+            &nbsp;
+         <% } %>
+      </td>
     </tr>
      <% } %>
   </table>
-  <table width="100%" border="0" cellspacing="3" cellpadding="3">
+  <table id="logconfigbuttons" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr> 
       <td width="50%" valign="top">
           <input type="button" name="<%=BUTTON_SELECTALLINFO %>" value="<%= ejbcawebbean.getText("SELECTALLINFO") %>"
