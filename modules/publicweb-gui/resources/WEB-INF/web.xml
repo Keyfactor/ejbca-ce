@@ -116,6 +116,7 @@ The old certificates will be removed when the new ones are added.
         <auth-constraint />
     </security-constraint> 
 
+<!--
     <ejb-local-ref id="EJBLocalRef_1">
 	    <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
 	    <ejb-ref-type>Session</ejb-ref-type>
@@ -158,5 +159,5 @@ The old certificates will be removed when the new ones are added.
       <local>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal</local>
       <ejb-link>CreateCRLSession</ejb-link>
    </ejb-local-ref>
-
+-->
 </web-app>

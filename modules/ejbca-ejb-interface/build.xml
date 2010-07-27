@@ -25,7 +25,7 @@
 		<path refid="lib.jee.classpath"/>
 	</path>
 
-    <target name="build" description="Build this module" depends="compile, compile-ejb3">
+    <target name="build" description="Build this module" depends="compile-ejb3">
     	<!--
     	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${build.dir}"/>
     	-->
@@ -47,6 +47,7 @@
 		<delete file="${mod.ocsp-ejb-interface.lib}"/>
     </target>
 
+	<!--
     <target name="compile" depends="ejbca-util, ejbca-ejb-interfaces-xdoclet">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
@@ -56,6 +57,7 @@
 			<exclude name="org/ejbca/core/ejb/**/*SessionSession.java"/>
     	</javac>
     </target>
+    -->
 
 	<target name="compile-ocsp" depends="ejbca-util, ocsp-ejb-interfaces-xdoclet">
     	<mkdir dir="${build-ocsp.dir}" />
@@ -67,12 +69,11 @@
     	</javac>
     </target>
 	
-	<target name="compile-ejb3" depends="ejbca-util">
-	    	<mkdir dir="${ejb3.build.dir}" />
-	        <javac destdir="${ejb3.build.dir}" debug="on" includeantruntime="no"
-	        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
-	        	<src path="${src.dir}"/>
-	    	</javac>
-	    </target>
+    <target name="compile-ejb3" depends="ejbca-util">
+        <mkdir dir="${ejb3.build.dir}" />
+        <javac destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
+            <src path="${src.dir}"/>
+        </javac>
+    </target>
 	
 </project>

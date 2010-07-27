@@ -189,6 +189,7 @@
 		<ant dir="${ejbca.home}" antfile="build.xml" target="ocsp-jar" inheritall="false"/>
 	</target>
 
+	<!--
 	<target name="ejbca-ejb-interfaces-xdoclet">
 		<available file="${ejbca.home}/tmp/bin/gensrc" type="dir" property="ejbca-ejb-interfaces-xdoclet.ran"></available>
 		<antcall target="ejbca-ejb-interfaces-xdoclet-internal"/>
@@ -196,6 +197,7 @@
 	<target name="ejbca-ejb-interfaces-xdoclet-internal" unless="ejbca-ejb-interfaces-xdoclet.ran">
 		<ant dir="${ejbca.home}" antfile="build.xml" target="run-xdoc" inheritall="false"/>
 	</target>
+	-->
 
 	<target name="ocsp-ejb-interfaces-xdoclet">
 		<available file="${ejbca.home}/tmp/bin/ocsp-gensrc" type="dir" property="ocsp-ejb-interfaces-xdoclet.ran"></available>

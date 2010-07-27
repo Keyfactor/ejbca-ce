@@ -39,6 +39,8 @@
   <session-config>
     <session-timeout>60</session-timeout>
   </session-config>
+  
+<!--
      <ejb-local-ref id="EJBLocalRef_1">
       <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
       <ejb-ref-type>Session</ejb-ref-type>
@@ -129,5 +131,6 @@
       <local-home>org.ejbca.core.ejb.approval.IApprovalSessionLocalHome</local-home>
       <local>org.ejbca.core.ejb.approval.IApprovalSessionLocal</local>
       <ejb-link>ApprovalSession</ejb-link>
-   </ejb-local-ref> 
+   </ejb-local-ref>
+--> 
 </web-app>

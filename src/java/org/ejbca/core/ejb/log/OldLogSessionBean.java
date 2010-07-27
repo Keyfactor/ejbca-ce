@@ -36,6 +36,7 @@ import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.protect.TableProtectSession;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocalejb3;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConfiguration;
@@ -61,7 +62,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
     private EntityManager entityManager;
 
 	@EJB
-    private TableProtectSession tableProtectSession;
+    private TableProtectSessionLocalejb3 tableProtectSession;
 
     /** Columns in the database used in select */
     private final String LOGENTRYDATA_TABLE = "LogEntryData";

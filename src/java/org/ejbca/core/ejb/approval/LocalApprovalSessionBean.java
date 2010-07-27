@@ -547,7 +547,7 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
         	throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Approval request with id : " + approvalId + " doesn't exists");
         }
         while (iter.hasNext()) {
-        	ApprovalDataLocal adl = (ApprovalDataLocal) iter.next();
+        	ApprovalData adl = iter.next();
         	adl.markStepAsDone(step);
         }
         log.trace("<markAsStepDone.");

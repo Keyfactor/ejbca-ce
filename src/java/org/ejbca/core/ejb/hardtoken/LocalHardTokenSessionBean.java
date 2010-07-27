@@ -920,7 +920,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     				}
     			}
     			if(copyof != null){
-    				entityManager.persist(new HardTokenPropertyData(tokensn, HardTokenPropertyEntityBean.PROPERTY_COPYOF, copyof));
+    				entityManager.persist(new HardTokenPropertyData(tokensn, HardTokenPropertyData.PROPERTY_COPYOF, copyof));
     			}
     			String msg = intres.getLocalizedMessage("hardtoken.addedtoken", tokensn);            	
     			logSession.log(admin, bcdn.hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogConstants.EVENT_INFO_HARDTOKENDATA,msg);

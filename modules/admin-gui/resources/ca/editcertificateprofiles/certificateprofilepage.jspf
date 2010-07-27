@@ -1,4 +1,4 @@
-<%@ page import="org.ejbca.core.ejb.ca.store.CertificateDataBean, org.ejbca.core.model.ca.catoken.CATokenConstants"%>
+<%@ page import="org.ejbca.core.model.ca.catoken.CATokenConstants"%>
 <%
   CertificateProfile certprofiledata = cabean.getTempCertificateProfile();
   if(certprofiledata == null) {

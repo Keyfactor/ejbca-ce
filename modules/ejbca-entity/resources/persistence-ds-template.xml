@@ -6,8 +6,8 @@
     http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
     >
     <persistence-unit name="ejbca" transaction-type="JTA">
-        <jta-data-source>${datasource.jndi-name-prefix}${datasource.jndi-name}</jta-data-source>        
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>${datasource.jndi-name-prefix}${datasource.jndi-name}</jta-data-source>        
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <!-- We don't want Hibernate to go and change the database schema on it's own initiative.. -->

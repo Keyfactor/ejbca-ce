@@ -145,22 +145,28 @@ xkms.serviceport                = ${xkms.serviceport}
     <!-- =================================================================== -->
     <!-- Compile java sources                                                -->
     <!-- =================================================================== -->
-    <target name="compile" depends="ejbca-util.jar, run-xdoc, ejbca-entity" unless="precompiled">
+    <target name="compile" depends="ejbca-util.jar, ejbca-entity" unless="precompiled">
+    	<mkdir dir="${build}"/>
         <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath>
             	<path refid="compile.classpath" />
             	<path location="modules/dist/ejbca-ejb3-interface.jar" />
             	<path location="modules/dist/ejbca-entity.jar" />
+            	<!--
             	<path location="modules/common/lib/ejbca-ejb2-interface.jar" />
+            	-->
             </classpath>
             <exclude name="**/appserver/**" />
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
             <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
-            <!--
-            	Don't include stuff that relies on JPA until EJBCA 4
-            -->
-            <exclude name="org/ejbca/core/ejb/ca/store/CertificateData.java" />
+
+            <exclude name="org/ejbca/core/ejb/**/*EntityBean.java" />
+            <exclude name="org/ejbca/core/ejb/**/*DataBean.java" />
+            <exclude name="org/ejbca/core/ejb/**/*DataPK.java" />
+            
+            <exclude name="org/ejbca/samples/**/*.java" />
+
             <exclude name="org/ejbca/ui/cli/*Tool.java" />
             <exclude name="org/ejbca/ui/cli/*Test.java" />
             <exclude name="org/ejbca/ui/cli/Ocsp.java" />
@@ -180,14 +186,16 @@ xkms.serviceport                = ${xkms.serviceport}
 
             <exclude name="org/ejbca/core/protocol/ws/**" />
             <exclude name="org/ejbca/core/protocol/xkms/**/**" />
-            <src path="${src.java}" />
+            <src path="src/java" />
+            <!--
             <src path="${src.gen}" />
+            -->
         </javac>
         <copy todir="${build}">
-            <fileset dir="${src}">
+            <fileset dir="src">
                 <include name="intresources/*.properties"/>
             </fileset>	
-            <fileset dir="${src}/java">
+            <fileset dir="src/java">
                 <include name="dncomponents.properties"/>
                 <include name="profilemappings.properties"/>
                 <include name="certextensions.properties"/>

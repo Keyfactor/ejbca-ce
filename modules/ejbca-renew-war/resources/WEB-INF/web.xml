@@ -55,7 +55,7 @@
         <res-auth>Container</res-auth>
     </resource-ref>
      --> 
-
+<!--
     <ejb-local-ref id="EJBLocalRef_1">
 	    <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
 	    <ejb-ref-type>Session</ejb-ref-type>
@@ -91,5 +91,5 @@
 	    <local>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal</local>
 	    <ejb-link>RaAdminSession</ejb-link>
     </ejb-local-ref>
-
+-->
 </web-app>

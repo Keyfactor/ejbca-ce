@@ -60,6 +60,7 @@
         <auth-constraint />
     </security-constraint> 
 
+<!--
     <ejb-local-ref id="EJBLocalRef_1">
         <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
@@ -81,5 +82,5 @@
         <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
         <ejb-link>CertificateStoreSession</ejb-link>
     </ejb-local-ref>
-    
+-->
 </web-app>
