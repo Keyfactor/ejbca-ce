@@ -30,12 +30,12 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -68,15 +68,24 @@ import org.ejbca.util.FileTools;
 public class CADataHandler implements Serializable {
     private static final Logger log = Logger.getLogger(CADataHandler.class);
 
+    private CAAdminSession caadminsession; 
+    private Admin administrator;
+    private AuthorizationSession authorizationsession;
+    private InformationMemory info;
+    private UserAdminSession adminsession;
+    private RaAdminSession raadminsession; 
+    private CertificateStoreSession certificatesession;                          
+    private EjbcaWebBean ejbcawebbean;
+    private CreateCRLSession crlSession;
     
     /** Creates a new instance of CertificateProfileDataHandler */
     public CADataHandler(Admin administrator, 
-                         ICAAdminSessionLocal caadminsession, 
-                         IUserAdminSessionLocal adminsession, 
-                         IRaAdminSessionLocal raadminsession, 
-                         ICertificateStoreSessionLocal certificatesession,
-                         IAuthorizationSessionLocal authorizationsession,
-                         ICreateCRLSessionLocal crlSession,
+                         CAAdminSession caadminsession, 
+                         UserAdminSession adminsession, 
+                         RaAdminSession raadminsession, 
+                         CertificateStoreSession certificatesession,
+                         AuthorizationSession authorizationsession,
+                         CreateCRLSession crlSession,
                          EjbcaWebBean ejbcawebbean) {
                             
        this.caadminsession = caadminsession;           
@@ -365,13 +374,4 @@ public class CADataHandler implements Serializable {
 	 return retval;
  }
    
-  private ICAAdminSessionLocal           caadminsession; 
-  private Admin                          administrator;
-  private IAuthorizationSessionLocal     authorizationsession;
-  private InformationMemory              info;
-  private IUserAdminSessionLocal         adminsession;
-  private IRaAdminSessionLocal           raadminsession; 
-  private ICertificateStoreSessionLocal  certificatesession;                          
-  private EjbcaWebBean                   ejbcawebbean;
-  private ICreateCRLSessionLocal         crlSession;
 }

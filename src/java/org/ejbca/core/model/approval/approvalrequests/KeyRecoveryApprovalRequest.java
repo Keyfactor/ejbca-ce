@@ -25,9 +25,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -36,6 +34,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -82,10 +81,11 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	public void execute() throws ApprovalRequestExecutionException {
 		log.debug("Executing mark for recovery for user:" + username);
 		try{
-			ServiceLocator locator = ServiceLocator.getInstance();
+			/*ServiceLocator locator = ServiceLocator.getInstance();
 			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.JNDI_NAME);	
 			IUserAdminSessionLocal userAdminSession = home.create();	
-
+			*/
+			UserAdminSession userAdminSession = new EjbLocalHelper().getUserAdminSession();
 			if(recoverNewestCert){
 				userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), null);
 			}else{

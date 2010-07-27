@@ -17,11 +17,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
-
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -47,7 +43,6 @@ public class RenewCAWorker extends BaseWorker {
     /** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();	
 	
-	private ICAAdminSessionLocal caadminsession = null;
 	
 	/** Flag is keys should be regenerated or not */
 	public static final String PROP_RENEWKEYS           = "worker.renewkeys";
@@ -114,18 +109,4 @@ public class RenewCAWorker extends BaseWorker {
 	protected boolean isRenewKeys() {
 		return properties.getProperty(PROP_RENEWKEYS,"FALSE").equalsIgnoreCase("TRUE");
 	}
-
-	
-	public ICAAdminSessionLocal getCAAdminSession(){
-		if (caadminsession == null) {
-			try {
-				ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-				this.caadminsession = home.create();
-			} catch (CreateException e) {
-				log.error(e);
-			}
-		}
-		return caadminsession;
-	}
-
 }

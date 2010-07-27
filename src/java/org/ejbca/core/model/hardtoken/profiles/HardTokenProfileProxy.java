@@ -16,7 +16,7 @@ package org.ejbca.core.model.hardtoken.profiles;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -32,17 +32,21 @@ import org.ejbca.core.model.log.Admin;
  */
 public class HardTokenProfileProxy {
 
+    private HashMap profilestore;
+	private HashMap updatecount;
+    private HardTokenSessionRemote hardTokenSession;    
+    private Admin admin;
+
     /** Creates a new instance of HardTokenProfileProxy */
-    public HardTokenProfileProxy(Admin admin, IHardTokenSessionRemote hardtokensession){
+    public HardTokenProfileProxy(Admin admin, HardTokenSessionRemote hardtokensession){
                     
-      this.hardtokensession = hardtokensession;
+      this.hardTokenSession = hardtokensession;
       this.profilestore = new HashMap();
 	  this.updatecount = new HashMap();
       this.admin = admin;
 
     }
 
- 
     /**
      * Method that first check the local store if the profile is upto date.
      *
@@ -55,18 +59,11 @@ public class HardTokenProfileProxy {
       int count = 0;
 
       if(updatecount.get(id) == null ||
-	    (count = hardtokensession.getHardTokenProfileUpdateCount(admin, profileid)) > ((Integer)  updatecount.get(id)).intValue()){         
-        returnval = hardtokensession.getHardTokenProfile(admin, profileid);
+	    (count = hardTokenSession.getHardTokenProfileUpdateCount(admin, profileid)) > ((Integer)  updatecount.get(id)).intValue()){         
+        returnval = hardTokenSession.getHardTokenProfile(admin, profileid);
         profilestore.put(id, returnval);
 		updatecount.put(id, new Integer(count));
 	  }
       return returnval;
     }
-
-    // Private fields    
-    private HashMap profilestore;
-	private HashMap updatecount;
-    private IHardTokenSessionRemote hardtokensession;    
-    private Admin admin;
-
 }

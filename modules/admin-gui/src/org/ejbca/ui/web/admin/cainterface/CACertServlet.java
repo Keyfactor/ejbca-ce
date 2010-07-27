@@ -26,10 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -62,13 +61,12 @@ public class CACertServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String JKSPASSWORD_PROPERTY = "password";
 
-    private ISignSessionLocal signsession = null;
+    private SignSession signsession = null;
 
-    private synchronized ISignSessionLocal getSignSession(){
+    private synchronized SignSession getSignSession(){
     	if(signsession == null){	
     		try {
-    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-    			signsession = signhome.create();
+    			signsession = new EjbLocalHelper().getSignSession();
     		}catch(Exception e){
     			throw new EJBException(e);      	  	    	  	
     		}
@@ -129,9 +127,8 @@ public class CACertServlet extends HttpServlet {
             }
             // Root CA is level 0, next below root level 1 etc etc
             try {
-                ISignSessionLocal ss = getSignSession();
                 Admin admin = ejbcawebbean.getAdminObject();
-                Certificate[] chain = (Certificate[]) ss.getCertificateChain(admin, issuerdn.hashCode()).toArray(new Certificate[0]);
+                Certificate[] chain = (Certificate[]) getSignSession().getCertificateChain(admin, issuerdn.hashCode()).toArray(new Certificate[0]);
                                                             
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {

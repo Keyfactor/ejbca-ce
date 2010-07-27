@@ -23,7 +23,7 @@ import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -415,7 +415,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     public BaseUserDataSource userdatasourcedata = null;
     public String userdatasourcename = null;
     private TreeMap modifyableFieldTexts = null;
-    private IUserDataSourceSessionLocal userdatasourcesession = null;
+    private UserDataSourceSession userdatasourcesession = null;
 	private Admin admin = null;
 	private EjbcaWebBean ejbcawebbean = null;
 

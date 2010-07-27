@@ -20,21 +20,12 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -42,6 +33,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -64,12 +56,12 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private String authenticationcode;
 	private List caInfoList;
 	private Admin administrator;
-	private ICertificateStoreSessionLocal      certificatesession;
-	private ICAAdminSessionLocal               caadminsession;
-    private ICreateCRLSessionLocal             createCrlSession;
-	private IAuthorizationSessionLocal         authorizationsession;
-	private IUserAdminSessionLocal             adminsession;
-	private IRaAdminSessionLocal               raadminsession;
+	private CertificateStoreSession certificatesession;
+	private CAAdminSession caadminsession;
+    private CreateCRLSession createCrlSession;
+	private AuthorizationSession authorizationsession;
+	private UserAdminSession adminsession;
+	private RaAdminSession raadminsession;
 	private InformationMemory                  informationmemory;
 	public static final String MAKEOFFLINE = "makeoffline";
 	public static final String ACTIVATE    = "activate";
@@ -87,31 +79,13 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		}
 		try {
 			administrator = webBean.getAdminObject();
-			ServiceLocator locator = ServiceLocator.getInstance();
-			ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-			certificatesession = certificatesessionhome.create();
-
-			ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-			caadminsession = caadminsessionhome.create();
-
-			ICreateCRLSessionLocalHome createCrlSessionHome = (ICreateCRLSessionLocalHome) locator.getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-			createCrlSession = createCrlSessionHome.create();
-
-			IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-			authorizationsession = authorizationsessionhome.create();
-
-			IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-			adminsession = adminsessionhome.create();
-
-			IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-			raadminsession = raadminsessionhome.create();               
-
-			IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome)locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-			hardtokensessionhome.create();               
-
-			IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
-			publishersessionhome.create();               
-
+			EjbLocalHelper ejb = new EjbLocalHelper();
+			certificatesession = ejb.getCertStoreSession();
+			caadminsession = ejb.getCAAdminSession();
+			createCrlSession = ejb.getCreateCrlSession();
+			authorizationsession = ejb.getAuthorizationSession();
+			adminsession = ejb.getUserAdminSession();
+			raadminsession = ejb.getRAAdminSession();               
 			this.informationmemory = webBean.getInformationMemory();
 
 			new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);

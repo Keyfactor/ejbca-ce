@@ -16,13 +16,12 @@ package org.ejbca.ui.web.admin.configuration;
 import java.rmi.RemoteException;
 
 import javax.ejb.CreateException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 
 /**
  * A class handling the storage of a admins preferences. Currently all admin preferences are
@@ -35,10 +34,7 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
 
     /** Creates a new instance of AdminPreferences */
     public AdminPreferenceDataHandler(Admin administrator) throws RemoteException, NamingException, CreateException {
-        InitialContext jndicontext = new InitialContext();
-        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("RaAdminSession"),
-                                               IRaAdminSessionHome.class);
-        raadminsession = raadminsessionhome.create();
+        raadminsession = new EjbRemoteHelper().getRAAdminSession();
         this.administrator = administrator;
     }
 
@@ -95,6 +91,6 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
     }
     
     
-    private IRaAdminSessionRemote raadminsession;
+    private RaAdminSession raadminsession;
     private Admin                 administrator;
 }

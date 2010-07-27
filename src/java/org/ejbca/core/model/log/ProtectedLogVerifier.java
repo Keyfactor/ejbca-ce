@@ -19,10 +19,9 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectedLogConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.log.IProtectedLogSessionLocal;
-import org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome;
+import org.ejbca.core.ejb.log.ProtectedLogSession;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * Thread-safe singleton that invokes forwards a request from the verification service.
@@ -31,7 +30,7 @@ import org.ejbca.core.model.InternalResources;
  */
 public class ProtectedLogVerifier {
 
-	private IProtectedLogSessionLocal protectedLogSession = null;
+	private ProtectedLogSession protectedLogSession = null;
 
 	private static final Logger log = Logger.getLogger(ProtectedLogVerifier.class);
     private static final InternalResources intres = InternalResources.getInstance();
@@ -63,10 +62,11 @@ public class ProtectedLogVerifier {
 		return instance;
 	}
 	
-	private IProtectedLogSessionLocal getProtectedLogSession() {
+	private ProtectedLogSession getProtectedLogSession() {
 		try {
 			if (protectedLogSession == null) {
-				protectedLogSession = ((IProtectedLogSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IProtectedLogSessionLocalHome.COMP_NAME)).create();
+				//protectedLogSession = ((IProtectedLogSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IProtectedLogSessionLocalHome.COMP_NAME)).create();
+				protectedLogSession = new EjbLocalHelper().getProtectedLogSession();
 			}
 			return protectedLogSession;
 		} catch (Exception e) {

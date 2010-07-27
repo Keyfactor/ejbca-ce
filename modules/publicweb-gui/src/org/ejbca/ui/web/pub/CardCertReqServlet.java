@@ -29,8 +29,6 @@ import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -39,15 +37,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -64,6 +56,7 @@ import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.util.Base64;
@@ -97,12 +90,9 @@ import org.ejbca.util.RequestMessageUtils;
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
-    private ISignSessionHome signsessionhome = null;
-    private IUserAdminSessionHome useradminhome = null;
-    private ICertificateStoreSessionHome certificatestorehome = null;
-    private ICAAdminSessionHome caadminsessionhome = null;
-    private IHardTokenSessionHome tokenSessionHome = null;
 
+    private EjbRemoteHelper ejb;
+    
     /**
      * Servlet init
      *
@@ -116,22 +106,10 @@ public class CardCertReqServlet extends HttpServlet {
         try {
             // Install BouncyCastle provider
             CertTools.installBCProvider();
-
-            // Get EJB context and home interfaces
-            InitialContext ctx = new InitialContext();
-            signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(
-                      ctx.lookup("RSASignSession"), ISignSessionHome.class );
-            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
-                             ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
-            certificatestorehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
-                    ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-            caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),
-                                                                                             ICAAdminSessionHome.class);
-            tokenSessionHome = (IHardTokenSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("HardTokenSession"),
-                                                                                            IHardTokenSessionHome.class);
         } catch( Exception e ) {
             throw new ServletException(e);
         }
+        ejb = new EjbRemoteHelper();
     }
 
     /**
@@ -149,7 +127,6 @@ public class CardCertReqServlet extends HttpServlet {
         boolean usekeyrecovery = false;
         try {
             Admin administrator = new Admin(Admin.TYPE_RA_USER);
-            ICertificateStoreSessionRemote certificatestoresession = certificatestorehome.create();
             final String username; {
                 Object o = request.getAttribute("javax.servlet.request.X509Certificate");
                 final X509Certificate[] certs;
@@ -159,28 +136,26 @@ public class CardCertReqServlet extends HttpServlet {
                 else {
                     throw new AuthLoginException("No authenicating certificate");
                 }
-                boolean isRevoked = certificatestoresession.isRevoked(certs[0].getIssuerDN().getName(),certs[0].getSerialNumber());
+                boolean isRevoked = ejb.getCertStoreSession().isRevoked(certs[0].getIssuerDN().getName(),certs[0].getSerialNumber());
                 if (isRevoked) {
                     throw new UserCertificateRevokedException(certs[0]);
                 }
-                username = certificatestoresession.findUsernameByCertSerno(administrator, certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
+                username = ejb.getCertStoreSession().findUsernameByCertSerno(administrator, certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
                 if ( username==null || username.length()==0 ) {
                     throw new ObjectNotFoundException("Not possible to retrieve user name");
                 }
             }
-            IUserAdminSessionRemote adminsession = useradminhome.create();
-            ISignSessionRemote signsession = signsessionhome.create();
             log.debug("Got request for " + username + ".");
             debug.print("<h3>username: " + username + "</h3>");
             
-            final UserDataVO data = adminsession.findUser(administrator, username);
+            final UserDataVO data = ejb.getUserAdminSession().findUser(administrator, username);
             final X509Certificate notRevokedCerts[]; {
                 Set set = new HashSet();
-                for( Iterator i = certificatestoresession.findCertificatesByUsername(administrator, username).iterator(); i.hasNext(); ) {
+                for( Iterator i = ejb.getCertStoreSession().findCertificatesByUsername(administrator, username).iterator(); i.hasNext(); ) {
                     Object o = i.next();
                     if ( o instanceof X509Certificate ) {
                         X509Certificate cert = (X509Certificate)o;
-                        boolean isRevoked = certificatestoresession.isRevoked(cert.getIssuerDN().getName(), cert.getSerialNumber());
+                        boolean isRevoked = ejb.getCertStoreSession().isRevoked(cert.getIssuerDN().getName(), cert.getSerialNumber());
                         if (!isRevoked) {
                             set.add(cert);
                         }
@@ -197,9 +172,9 @@ public class CardCertReqServlet extends HttpServlet {
             if ( authReq!=null && signReq!=null ) {
                 final int authCertProfile;
                 final int signCertProfile;
-                final HardTokenProfile hardTokenProfile = tokenSessionHome.create().getHardTokenProfile(administrator, data.getTokenType());
+                final HardTokenProfile hardTokenProfile = ejb.getHardTokenSession().getHardTokenProfile(administrator, data.getTokenType());
                 {
-                    CertProfileID certProfileID = new CertProfileID(certificatestoresession, data, administrator, hardTokenProfile);
+                    CertProfileID certProfileID = new CertProfileID(ejb.getCertStoreSession(), data, administrator, hardTokenProfile);
                     authCertProfile = certProfileID.getProfileID("authCertProfile", SwedishEIDProfile.CERTUSAGE_AUTHENC);
                     signCertProfile = certProfileID.getProfileID("signCertProfile", SwedishEIDProfile.CERTUSAGE_SIGN);
                 }
@@ -215,20 +190,20 @@ public class CardCertReqServlet extends HttpServlet {
                 final byte[] signReqBytes = signReq.getBytes();
                 if ( authReqBytes!=null && signReqBytes!=null) {
                 	try {
-                		adminsession.changeUser(administrator, username,data.getPassword(), data.getDN(), data.getSubjectAltName(),
+                		ejb.getUserAdminSession().changeUser(administrator, username,data.getPassword(), data.getDN(), data.getSubjectAltName(),
                 				data.getEmail(), true, data.getEndEntityProfileId(), authCertProfile, data.getType(),
                 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, data.getStatus(), authCA);
-                		final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());
+                		final byte[] authb64cert=pkcs10CertRequest(administrator, ejb.getSignSession(), authReqBytes, username, data.getPassword());
 
-                		adminsession.changeUser(administrator, username, data.getPassword(), data.getDN(), data.getSubjectAltName(),
+                		ejb.getUserAdminSession().changeUser(administrator, username, data.getPassword(), data.getDN(), data.getSubjectAltName(),
                 				data.getEmail(), true, data.getEndEntityProfileId(), signCertProfile, data.getType(),
                 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, signCA);
-                		final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
+                		final byte[] signb64cert=pkcs10CertRequest(administrator, ejb.getSignSession(), signReqBytes, username, data.getPassword());
 
 
                 		for (int i=0; i<notRevokedCerts.length; i++) {
                 			try {
-                				adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
+                				ejb.getUserAdminSession().revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
                 						notRevokedCerts[i].getIssuerDN().toString(), username,
                 						RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
                 			} catch (WaitingForApprovalException e) {
@@ -251,7 +226,7 @@ public class CardCertReqServlet extends HttpServlet {
                         }
                     } finally {
                         data.setStatus(UserDataConstants.STATUS_GENERATED);
-                        adminsession.changeUser(administrator, data, true); // set back to original values
+                        ejb.getUserAdminSession().changeUser(administrator, data, true); // set back to original values
                     }
                 }
             }
@@ -327,10 +302,10 @@ public class CardCertReqServlet extends HttpServlet {
         }
     }
     private class CAID extends BaseID {
-        final private ICAAdminSessionRemote caadminsession;
+        final private CAAdminSession caadminsession;
         CAID(UserDataVO d, Admin a, HardTokenProfile hardTokenProfile) throws RemoteException, CreateException {
             super(d, a, hardTokenProfile);
-            caadminsession = caadminsessionhome.create();                       
+            caadminsession = ejb.getCAAdminSession();                       
         }
         protected int getFromName(String name) throws RemoteException {
             CAInfo caInfo = caadminsession.getCAInfo(administrator, name);
@@ -353,8 +328,8 @@ public class CardCertReqServlet extends HttpServlet {
         }
     }
     private class CertProfileID extends BaseID {
-        final ICertificateStoreSessionRemote certificatestoresession;
-        CertProfileID(ICertificateStoreSessionRemote c, UserDataVO d, Admin a,
+        final CertificateStoreSession certificatestoresession;
+        CertProfileID(CertificateStoreSession c, UserDataVO d, Admin a,
                       HardTokenProfile hardTokenProfile) throws RemoteException, CreateException {
             super(d, a, hardTokenProfile);
             certificatestoresession = c;
@@ -498,7 +473,7 @@ public class CardCertReqServlet extends HttpServlet {
      *
      * @return Base64 encoded byte[] 
      */
-    private byte[] pkcs10CertRequest(Admin administrator, ISignSessionRemote signsession, byte[] b64Encoded,
+    private byte[] pkcs10CertRequest(Admin administrator, SignSession signsession, byte[] b64Encoded,
         String username, String password) throws Exception {
         byte[] result = null;	
         Certificate cert=null;

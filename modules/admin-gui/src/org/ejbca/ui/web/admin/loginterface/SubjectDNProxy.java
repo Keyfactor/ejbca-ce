@@ -18,8 +18,7 @@ import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.util.HashMap;
 
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 
@@ -30,21 +29,14 @@ import org.ejbca.util.CertTools;
  */
 public class SubjectDNProxy implements java.io.Serializable {
 
+    private HashMap subjectdnstore;
+    private CertificateStoreSession certificatesession;
+    private Admin admin;
+
     /** Creates a new instance of SubjectDNProxy with remote access to CA part */
-    public SubjectDNProxy(Admin admin, ICertificateStoreSessionRemote certificatesession){
+    public SubjectDNProxy(Admin admin, CertificateStoreSession certificatesession){
               // Get the RaAdminSession instance.
-      this.local = false;
-      this.certificatesessionremote = certificatesession;
-      this.subjectdnstore = new HashMap();
-      this.admin = admin;
-
-    }
-
-    /** Creates a new instance of SubjectDNProxy with local access to CA part */
-    public SubjectDNProxy(Admin admin, ICertificateStoreSessionLocal certificatesession){
-              // Get the RaAdminSession instance.
-      this.local = true;
-      this.certificatesessionlocal = certificatesession;
+      this.certificatesession = certificatesession;
       this.subjectdnstore = new HashMap();
       this.admin = admin;
     }
@@ -66,11 +58,7 @@ public class SubjectDNProxy implements java.io.Serializable {
         // Try to find the certificate in database
         String certificatesnr = admindata.substring(0,admindata.indexOf(':'));
         String issuerdn = admindata.substring(admindata.indexOf('"')+1, admindata.length()-1);
-        if(local) {
-          result = certificatesessionlocal.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr.trim(), 16));
-        } else {
-          result = certificatesessionremote.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr.trim(), 16));
-        }
+        result = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr.trim(), 16));
         if(result != null){
           returnval = CertTools.getSubjectDN(result);
           subjectdnstore.put(admindata,returnval);
@@ -79,12 +67,4 @@ public class SubjectDNProxy implements java.io.Serializable {
 
       return returnval;
     }
-
-    // Private fields
-    private boolean local;
-    private HashMap subjectdnstore;
-    private ICertificateStoreSessionLocal  certificatesessionlocal;
-    private ICertificateStoreSessionRemote certificatesessionremote;
-    private Admin                          admin;
-
 }

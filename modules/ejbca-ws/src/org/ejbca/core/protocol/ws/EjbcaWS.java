@@ -68,6 +68,7 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -188,6 +189,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private WebServiceContext wsContext;	
 	
 	@EJB private ApprovalSessionLocal approvalSession;
+    @EJB private AuthenticationSessionLocal authenticationSession;
     @EJB private AuthorizationSessionLocal authorizationSession;
     @EJB private CAAdminSessionLocal caAdminSession;
     @EJB private CertificateRequestSessionLocal certificateRequestSession;
@@ -1098,7 +1100,7 @@ public class EjbcaWS implements IEjbcaWS {
 			  log.debug("reusecertificate: "+reusecertificate);
 
 			  try {
-				  GenerateToken tgen = new GenerateToken(false);
+				  GenerateToken tgen = new GenerateToken(authenticationSession, caAdminSession, keyRecoverySession, signSession);
 				  java.security.KeyStore pkcs12 = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
                   final KeyStore retval = new KeyStore(pkcs12, password);
 				  final Enumeration<String> en = pkcs12.aliases();
@@ -1237,8 +1239,8 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);
+		/*} catch (RemoteException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;

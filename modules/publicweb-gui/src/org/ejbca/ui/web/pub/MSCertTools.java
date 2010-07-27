@@ -19,8 +19,8 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.log.Admin;
@@ -162,7 +162,7 @@ public class MSCertTools {
 		return false;
 	}
 
-	public static int getOrCreateCertificateProfile(Admin admin, int templateIndex, ICertificateStoreSessionLocal certificateStoreSession) {
+	public static int getOrCreateCertificateProfile(Admin admin, int templateIndex, CertificateStoreSession certificateStoreSession) {
 		String certProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
 		// Create certificate profile if neccesary
 		boolean newCertificateProfile = false;
@@ -206,7 +206,7 @@ public class MSCertTools {
 		return certificateStoreSession.getCertificateProfileId(admin, certProfileName);
 	}
 
-	public static int getOrCreateEndEndtityProfile(Admin admin, int templateIndex, int certProfileId, int caid, String usernameShort, String fetchedSubjectDN, IRaAdminSessionLocal raAdminSession) {
+	public static int getOrCreateEndEndtityProfile(Admin admin, int templateIndex, int certProfileId, int caid, String usernameShort, String fetchedSubjectDN, RaAdminSession raAdminSession) {
 		// Create end endity profile if neccesary
 		String endEntityProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
 

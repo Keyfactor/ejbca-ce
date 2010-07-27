@@ -218,8 +218,7 @@ public interface UserAdminSession {
      */
     public void changeUser(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException,
-            java.rmi.RemoteException;
+            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
 
     /**
      * Implements IUserAdminSession::changeUser..
@@ -400,8 +399,7 @@ public interface UserAdminSession {
 
     public void revokeAndDeleteUser(org.ejbca.core.model.log.Admin admin, java.lang.String username, int reason)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.approval.ApprovalException,
-            org.ejbca.core.model.approval.WaitingForApprovalException, javax.ejb.RemoveException, org.ejbca.core.model.ra.NotFoundException,
-            java.rmi.RemoteException;
+            org.ejbca.core.model.approval.WaitingForApprovalException, javax.ejb.RemoveException, org.ejbca.core.model.ra.NotFoundException;
 
     /**
      * Method that revokes a user.
@@ -655,4 +653,14 @@ public interface UserAdminSession {
     public boolean prepareForKeyRecovery(org.ejbca.core.model.log.Admin admin, java.lang.String username, int endEntityProfileId,
             java.security.cert.Certificate certificate) throws org.ejbca.core.model.authorization.AuthorizationDeniedException,
             org.ejbca.core.model.approval.ApprovalException, org.ejbca.core.model.approval.WaitingForApprovalException;
+    
+    /**
+     * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
+     * 
+     * @return Collection of UserDataVO
+     * 
+     * TODO: Moved here from Local interface. Move back.
+     */
+    public java.util.Collection findAllUsersWithLimit(org.ejbca.core.model.log.Admin admin) throws javax.ejb.FinderException;
+
 }

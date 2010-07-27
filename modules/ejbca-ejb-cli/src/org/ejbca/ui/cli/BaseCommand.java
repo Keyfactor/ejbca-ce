@@ -28,8 +28,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -71,7 +69,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
      * Method checking if the application server is running.
      * 
      * @return true if app server is running.
-     */
+     *
     protected boolean appServerRunning() {
         // Check that the application server is running by getting a home
         // interface for user admin session
@@ -88,7 +86,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
             baseLog.error("Appserver not running: ", e);
             return false;
         }
-    }
+    }*/
 
     /** Private key with length 1024 bits */
     static byte[] keys1024bit = Base64.decode(("MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAKA5rNhYbPuVcArT"

@@ -19,18 +19,15 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.ProtectedLogConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * Exports the given log-events as a CMS/PKCS7-file signed by a configured CA with CMS services enabled.
@@ -43,35 +40,12 @@ public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler,
 
 	private static Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 	
-	private ICAAdminSessionLocal caAdminSession = null;
-	private ISignSessionLocal signSession = null;
+	private EjbLocalHelper ejb = new EjbLocalHelper();
 
 	private ByteArrayOutputStream baos = null;
 	private int exportingCAId = -1;
 	private String filename = null;
 	
-	private ICAAdminSessionLocal getCAAdminSession() {
-		try {
-			if (caAdminSession == null) {
-				caAdminSession = ((ICAAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME)).create();
-			}
-			return caAdminSession;
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	}
-	
-	private ISignSessionLocal getSignSession() {
-		try {
-			if (signSession == null) {
-				signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
-			}
-			return signSession;
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-	}
-
 	/**
 	 * @see org.ejbca.core.model.log.IProtectedLogExportHandler
 	 */
@@ -80,7 +54,12 @@ public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler,
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss.SSS");
 		filename = exportPath + sdf.format(new Date(exportEndTime)) + (forced ? ".FORCED" : "")+".p7m";
 		String exportingCA = ProtectedLogConfiguration.getCMSCaName();
-		CAInfo caInfo = getCAAdminSession().getCAInfo(internalAdmin, exportingCA);
+		CAInfo caInfo;
+		try {
+			caInfo = ejb.getCAAdminSession().getCAInfo(internalAdmin, exportingCA);
+		} catch (CreateException e) {
+			throw new EJBException();
+		}
 		if (caInfo != null) {
 			exportingCAId = caInfo.getCAId();
 		} else {
@@ -98,7 +77,7 @@ public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler,
 			// Since we write everything at once, it will take up a lot of memory..
 			log.debug("Sending "+baos.size()+" bytes to CMS service..");
 			CmsCAServiceRequest request = new CmsCAServiceRequest(baos.toByteArray(), CmsCAServiceRequest.MODE_SIGN);
-			CmsCAServiceResponse resp = (CmsCAServiceResponse) getSignSession().extendedService(internalAdmin, exportingCAId, request);
+			CmsCAServiceResponse resp = (CmsCAServiceResponse) ejb.getSignSession().extendedService(internalAdmin, exportingCAId, request);
 			byte[] export = resp.getCmsDocument();
 			log.debug("Writing "+export.length+" bytes to file..");
 			FileOutputStream fos = new FileOutputStream(filename);

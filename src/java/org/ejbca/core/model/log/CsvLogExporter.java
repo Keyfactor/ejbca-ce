@@ -23,22 +23,21 @@ import javax.ejb.CreateException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 public class CsvLogExporter implements ILogExporter {
 	
 	/** Log4j logging */
 	private static final Logger log = Logger.getLogger(CsvLogExporter.class);
 	
-	private Collection logentries = null;
+	private Collection<LogEntry> logentries = null;
 	private String signingCA = null;
 	
 	/**
@@ -80,9 +79,9 @@ public class CsvLogExporter implements ILogExporter {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			PrintWriter pw = new PrintWriter(baos);
 			try {
-				Iterator i = logentries.iterator();
+				Iterator<LogEntry> i = logentries.iterator();
 				while (i.hasNext()) {
-					LogEntry next = (LogEntry)i.next();
+					LogEntry next = i.next();
 					pw.print(next.getTime());
 					pw.print("\t");
 					pw.print(next.getAdminType());
@@ -129,7 +128,8 @@ public class CsvLogExporter implements ILogExporter {
 			try {
 				int caid = Integer.parseInt(ca);
 				CmsCAServiceRequest request = new CmsCAServiceRequest(ret, CmsCAServiceRequest.MODE_SIGN);
-				ISignSessionLocal signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
+				//ISignSessionLocal signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
+				SignSession signSession = new EjbLocalHelper().getSignSession();
 				CmsCAServiceResponse resp = (CmsCAServiceResponse)signSession.extendedService(admin, caid, request);
 				ret = resp.getCmsDocument();
 			} catch (CreateException e) {

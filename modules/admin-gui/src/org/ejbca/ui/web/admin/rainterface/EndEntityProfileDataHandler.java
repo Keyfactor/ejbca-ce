@@ -19,10 +19,10 @@ import java.util.Iterator;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.LocalRaAdminSessionBean;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -39,15 +39,15 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
 
     private static final Logger log = Logger.getLogger(EndEntityProfileDataHandler.class);    
 
-    private IRaAdminSessionLocal  raadminsession;
+    private RaAdminSession raadminsession;
     private Admin administrator;
-    private IAuthorizationSessionLocal authorizationsession;
-    private ICAAdminSessionLocal caadminsession;
+    private AuthorizationSession authorizationsession;
+    private CAAdminSession caadminsession;
     private InformationMemory info;
 
     public static final String EMPTY_PROFILE        = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE;    
     /** Creates a new instance of EndEntityProfileDataHandler */
-    public EndEntityProfileDataHandler(Admin administrator, IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caadminsession, InformationMemory info) {
+    public EndEntityProfileDataHandler(Admin administrator, RaAdminSession raadminsession, AuthorizationSession authorizationsession, CAAdminSession caadminsession, InformationMemory info) {
        this.raadminsession = raadminsession;        
        this.authorizationsession = authorizationsession;
        this.caadminsession = caadminsession;

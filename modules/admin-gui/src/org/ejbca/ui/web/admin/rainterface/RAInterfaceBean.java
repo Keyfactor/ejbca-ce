@@ -33,23 +33,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
-import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -62,6 +54,7 @@ import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -87,6 +80,8 @@ public class RAInterfaceBean implements java.io.Serializable {
     public static final String[] tokentexts = SecConst.TOKENTEXTS;
     public static final int[]    tokenids   = SecConst.TOKENIDS;
     
+    private EjbLocalHelper ejb = new EjbLocalHelper();
+    
     /** Creates new RaInterfaceBean */
     public RAInterfaceBean()  {
         users = new UsersView();
@@ -106,32 +101,17 @@ public class RAInterfaceBean implements java.io.Serializable {
         this.informationmemory = ejbcawebbean.getInformationMemory();
         
         ServiceLocator locator = ServiceLocator.getInstance();
-        adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-        adminsession = adminsessionhome.create();
-
-        raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-        raadminsession = raadminsessionhome.create();
-        
-
-        certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-        certificatesession = certificatesessionhome.create();
-
-        ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-        ICAAdminSessionLocal caadminsession = caadminsessionhome.create();
-
-        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-        authorizationsession = authorizationsessionhome.create();
+        adminsession = ejb.getUserAdminSession();
+        raadminsession = ejb.getRAAdminSession();
+        certificatesession = ejb.getCertStoreSession();
+        CAAdminSession caadminsession = ejb.getCAAdminSession();
+        authorizationsession = ejb.getAuthorizationSession();
 
         this.profiles = new EndEntityProfileDataHandler(administrator,raadminsession,authorizationsession,caadminsession,informationmemory);
         
-        IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-        hardtokensession = hardtokensessionhome.create();
-
-        IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) locator.getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
-        keyrecoverysession = keyrecoverysessionhome.create();
-        
-        IUserDataSourceSessionLocalHome userdatasourcesessionhome = (IUserDataSourceSessionLocalHome) locator.getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
-        userdatasourcesession = userdatasourcesessionhome.create();        
+        hardtokensession = ejb.getHardTokenSession();
+        keyrecoverysession = ejb.getKeyRecoverySession();
+        userdatasourcesession = ejb.getUserDataSourceSession();        
 
         initialized =true;
       } else {
@@ -852,7 +832,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     	this.temporateendentityprofile = profile;
     }
     
-    IUserDataSourceSessionLocal getUserDataSourceSession(){
+    UserDataSourceSession getUserDataSourceSession(){
     	return userdatasourcesession;
     }
     
@@ -869,16 +849,13 @@ public class RAInterfaceBean implements java.io.Serializable {
     //
     private EndEntityProfileDataHandler    profiles;
 
-    private IUserAdminSessionLocal                 adminsession;
-    private IUserAdminSessionLocalHome        adminsessionhome;
-    private ICertificateStoreSessionLocal          certificatesession;
-    private ICertificateStoreSessionLocalHome certificatesessionhome;
-    private IRaAdminSessionLocalHome            raadminsessionhome;
-    private IRaAdminSessionLocal                     raadminsession;
-    private IAuthorizationSessionLocal              authorizationsession;
-    private IHardTokenSessionLocal                  hardtokensession;
-    private IKeyRecoverySessionLocal               keyrecoverysession;
-    private IUserDataSourceSessionLocal            userdatasourcesession;
+    private UserAdminSession adminsession;
+    private CertificateStoreSession certificatesession;
+    private RaAdminSession raadminsession;
+    private AuthorizationSession authorizationsession;
+    private HardTokenSession hardtokensession;
+    private KeyRecoverySession keyrecoverysession;
+    private UserDataSourceSession userdatasourcesession;
 
     private UsersView                           users;
     private CertificateView[]                  certificates;

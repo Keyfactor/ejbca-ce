@@ -30,28 +30,17 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
-import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome;
-import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -62,6 +51,7 @@ import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
@@ -80,6 +70,8 @@ public class CAInterfaceBean implements java.io.Serializable {
 
 	private static final long serialVersionUID = 2L;
 	
+	private EjbLocalHelper ejb = new EjbLocalHelper();
+	
 	/** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() {
     }
@@ -89,43 +81,23 @@ public class CAInterfaceBean implements java.io.Serializable {
 
         if(!initialized){
           ServiceLocator locator = ServiceLocator.getInstance();
-          ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-          certificatesession = certificatesessionhome.create();
-          
-          ICreateCRLSessionLocalHome createCrlSessionHome = (ICreateCRLSessionLocalHome) locator.getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-          createCrlSession = createCrlSessionHome.create();
-          
-          ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-          caadminsession = caadminsessionhome.create();
-          
-          IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-          authorizationsession = authorizationsessionhome.create();
-          
-          IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-          adminsession = adminsessionhome.create();
-
-          IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-          raadminsession = raadminsessionhome.create();               
-          
-  		ISignSessionLocalHome home = (ISignSessionLocalHome)locator.getLocalHome(ISignSessionLocalHome.COMP_NAME );
-  	    signsession = home.create();
-  	    
-  	    IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome)locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-  	    hardtokensession = hardtokensessionhome.create();               
-  	    
-  	    IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) locator.getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
-  	    publishersession = publishersessionhome.create();               
-  	    
-  	    IPublisherQueueSessionLocalHome publisherqueuesessionhome = (IPublisherQueueSessionLocalHome) locator.getLocalHome(IPublisherQueueSessionLocalHome.COMP_NAME);
-  	    publisherqueuesession = publisherqueuesessionhome.create();
+          certificatesession = ejb.getCertStoreSession();
+          createCrlSession = ejb.getCreateCrlSession();
+          caadminsession = ejb.getCAAdminSession();
+          authorizationsession = ejb.getAuthorizationSession();
+          adminsession = ejb.getUserAdminSession();
+          raadminsession = ejb.getRAAdminSession();               
+          signsession = ejb.getSignSession();
+          hardtokensession = ejb.getHardTokenSession();               
+          publishersession = ejb.getPublisherSession();               
+          publisherqueuesession = ejb.getPublisherQueueSession();
   	      	    
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);
           cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, createCrlSession, ejbcawebbean);
-          publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, 
-          		                                        caadminsession, certificatesession,  informationmemory);
+          publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificatesession,  informationmemory);
           isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
         }
@@ -254,8 +226,7 @@ public class CAInterfaceBean implements java.io.Serializable {
 		} catch (CADoesntExistsException e) {
 			throw new RuntimeException(e);
 		}
-      ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
-      home.create().run(administrator, ca);
+      createCrlSession.run(administrator, ca);
     }
     public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
     	InitialContext jndicontext = new InitialContext();
@@ -265,8 +236,7 @@ public class CAInterfaceBean implements java.io.Serializable {
 		} catch (CADoesntExistsException e) {
 			throw new RuntimeException(e);
 		}
-    	ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
-    	home.create().runDeltaCRL(administrator, ca, -1, -1);
+    	createCrlSession.runDeltaCRL(administrator, ca, -1, -1);
     }
 
     public int getLastCRLNumber(String  issuerdn) {
@@ -437,16 +407,16 @@ public class CAInterfaceBean implements java.io.Serializable {
    // Private methods
 
     // Private fields
-    private ICertificateStoreSessionLocal      certificatesession;
-    private ICAAdminSessionLocal               caadminsession;
-    private ICreateCRLSessionLocal             createCrlSession;
-    private IAuthorizationSessionLocal         authorizationsession;
-    private IUserAdminSessionLocal             adminsession;
-    private IRaAdminSessionLocal               raadminsession;
-    private ISignSessionLocal                  signsession;
-    private IHardTokenSessionLocal             hardtokensession;
-    private IPublisherSessionLocal             publishersession;
-    private IPublisherQueueSessionLocal        publisherqueuesession;
+    private CertificateStoreSession      certificatesession;
+    private CAAdminSession               caadminsession;
+    private CreateCRLSession             createCrlSession;
+    private AuthorizationSession         authorizationsession;
+    private UserAdminSession             adminsession;
+    private RaAdminSession               raadminsession;
+    private SignSession                  signsession;
+    private HardTokenSession             hardtokensession;
+    private PublisherSession             publishersession;
+    private PublisherQueueSession        publisherqueuesession;
     private CertificateProfileDataHandler      certificateprofiles;
     private CADataHandler                      cadatahandler;
     private PublisherDataHandler               publisherdatahandler;

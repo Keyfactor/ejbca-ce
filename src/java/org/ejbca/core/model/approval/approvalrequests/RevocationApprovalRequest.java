@@ -8,16 +8,12 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -30,6 +26,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 
 public class RevocationApprovalRequest extends ApprovalRequest {
 
@@ -106,10 +103,11 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[approvalType] + " (" + approvalType + ").");
 
 		try {
-		    Context ctx = new javax.naming.InitialContext();
+		    /*Context ctx = new javax.naming.InitialContext();
 		    IUserAdminSessionHome useradminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"),
 		    		IUserAdminSessionHome.class);
-			IUserAdminSessionRemote useradminsession = useradminsessionhome.create();
+			IUserAdminSessionRemote useradminsession = useradminsessionhome.create();*/
+			UserAdminSession useradminsession = new EjbRemoteHelper().getUserAdminSession();
 			switch (approvalType) {
 				case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY:
 					useradminsession.revokeUser(getRequestAdmin(), username, reason);
@@ -124,8 +122,8 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 					log.error("Unknown approval type " + approvalType);
 					break;
 			}
-		} catch (CreateException e) {
-			throw new ApprovalRequestExecutionException("Error creating userdata session", e);
+		/*} catch (CreateException e) {
+			throw new ApprovalRequestExecutionException("Error creating userdata session", e);*/
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
 		} catch (ApprovalException e) {
@@ -140,10 +138,10 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 			throw new ApprovalRequestExecutionException("Could not find object.",e);
 		} catch (RemoveException e) {
 			throw new ApprovalRequestExecutionException("Could not remove object.",e);
-		} catch (NamingException e) {
+		/*} catch (NamingException e) {
 			throw new EJBException(e);
 		} catch (RemoteException e) {
-			throw new EJBException(e);
+			throw new EJBException(e);*/
 		}
 	} // execute
 

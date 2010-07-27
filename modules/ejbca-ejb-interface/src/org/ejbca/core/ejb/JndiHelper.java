@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb;
 
 import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
@@ -31,24 +32,31 @@ public abstract class JndiHelper {
 	public static final String APP_JNDI_PREFIX = "ejbca/";
 
 	private static final Logger log = Logger.getLogger(JndiHelper.class);
+	
+	private static Context context = null;
 
+	private static Context getContext() throws NamingException {
+		if (context == null) {
+			context = new InitialContext();
+		}
+		return context;
+	}
+	
 	/**
 	 * Helper method to get a reference to a Remote SSB interface.
 	 * 
-	 * Example usage: CAAdminSessionRemote caadminsession = JndiHelper.getRemoteSession(new javax.naming.InitialContext(), CAAdminSessionRemote.class);
+	 * Example usage: CAAdminSessionRemote caadminsession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
 	 * 
 	 * @param <T>
-	 * @param context
 	 * @param remoteInterface
 	 * @return
 	 */
-	public static <T> T getRemoteSession(Context context, Class<T> remoteInterface) {
+	public static <T> T getRemoteSession(Class<T> remoteInterface) {
 		String jndiName = APP_JNDI_PREFIX + remoteInterface.getSimpleName();
 		try {
-			return (T) context.lookup(jndiName);
+			return (T) getContext().lookup(jndiName);
 		} catch (ClassCastException e) {
-			log.error("JNDI object " + jndiName + " is not if type " +
-					remoteInterface.getName());
+			log.error("JNDI object " + jndiName + " is not if type " + remoteInterface.getName());
 		} catch (NamingException e) {
 			log.error("", e);
 		}

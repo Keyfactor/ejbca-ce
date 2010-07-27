@@ -31,13 +31,11 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.ui.web.RequestHelper;
@@ -122,14 +120,15 @@ public class AdminCertReqServlet extends HttpServlet {
     private final static byte[] NL = "\n".getBytes();
     private final static int NL_LENGTH = NL.length;
     
-    private ISignSessionLocal signsession = null;
-    private IUserAdminSessionLocal userAdminSession = null;
+    private SignSession signsession = null;
+    private UserAdminSession userAdminSession = null;
 
-    private synchronized ISignSessionLocal getSignSession(){
+    private EjbLocalHelper ejb;
+    
+    private synchronized SignSession getSignSession(){
     	if(signsession == null){	
     		try {
-    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-    			signsession = signhome.create();
+    			signsession = ejb.getSignSession();
     		}catch(Exception e){
     			throw new EJBException(e);      	  	    	  	
     		}
@@ -137,11 +136,10 @@ public class AdminCertReqServlet extends HttpServlet {
     	return signsession;
     }
 
-    private synchronized IUserAdminSessionLocal getUserAdminSession() {
+    private synchronized UserAdminSession getUserAdminSession() {
     	if (userAdminSession == null) {	
     		try {
-    			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-    			userAdminSession = home.create();
+    			userAdminSession = ejb.getUserAdminSession();
     		} catch(Exception e) {
     			throw new EJBException(e);      	  	    	  	
     		}
@@ -159,6 +157,7 @@ public class AdminCertReqServlet extends HttpServlet {
         } catch (Exception e) {
             throw new ServletException(e);
         }
+        ejb = new EjbLocalHelper();
     }
     
     
@@ -286,10 +285,9 @@ public class AdminCertReqServlet extends HttpServlet {
         try {
             p10.setUsername(username);
             p10.setPassword(password);
-            ISignSessionLocal ss = getSignSession();
-            IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+            IResponseMessage resp = getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-            pkcs7 = ss.createPKCS7(admin, cert, true);
+            pkcs7 = getSignSession().createPKCS7(admin, cert, true);
         } catch (EjbcaException e) {
             // EJBCA did not accept any of all parameters in the request.
             throw new ServletException(e);

@@ -17,22 +17,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 
 /**
  * A class used as an interface between Apply jsp pages and ejbca functions.
@@ -51,6 +45,8 @@ public class ApplyBean implements java.io.Serializable {
 	 */
 	private static final Logger log = Logger.getLogger(ApplyBean.class);
 	
+	private EjbRemoteHelper ejb;
+	
 	/**
      * Creates a new instance of CaInterfaceBean
      */
@@ -62,17 +58,7 @@ public class ApplyBean implements java.io.Serializable {
         throws Exception {
         if (!initialized) {
         	administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-
-            InitialContext jndicontext = new InitialContext();
-            Object obj1 = jndicontext.lookup(IUserAdminSessionHome.JNDI_NAME);
-            useradminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                    IUserAdminSessionHome.class);
-            obj1 = jndicontext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
-            certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                    ICertificateStoreSessionHome.class);
-            obj1 = jndicontext.lookup(IRaAdminSessionHome.JNDI_NAME);
-            rasessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-            		IRaAdminSessionHome.class);
+        	ejb = new EjbRemoteHelper();
             initialized = true;
         }
     }
@@ -89,10 +75,9 @@ public class ApplyBean implements java.io.Serializable {
      */
     public int getTokenType(String username) throws Exception {
         int returnval = 0;
-        IUserAdminSessionRemote useradminsession = useradminhome.create();
 
 		if(!username.equals(this.username) || this.useradmindata == null){        
-			this.useradmindata = useradminsession.findUser(administrator, username);
+			this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
 		}
 		
         if (useradmindata != null) {
@@ -117,10 +102,9 @@ public class ApplyBean implements java.io.Serializable {
 	 */
 	public int getCAId(String username) throws Exception {
 		int returnval = 0;		
-		IUserAdminSessionRemote useradminsession = useradminhome.create();
 
 		if(!username.equals(this.username) || this.useradmindata == null){        
-			this.useradmindata = useradminsession.findUser(administrator, username);
+			this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
 		}
 		
 		if (useradmindata != null) {
@@ -144,18 +128,16 @@ public class ApplyBean implements java.io.Serializable {
      */
     public int[] availableBitLengths(String username) throws Exception {
         int[] returnval = null;        
-        IUserAdminSessionRemote useradminsession = useradminhome.create();
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = useradminsession.findUser(administrator, username);
+        	this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
-            ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create();
             int certprofile = useradmindata.getCertificateProfileId();
 
             if (certprofile != SecConst.PROFILE_NO_PROFILE) {
-                CertificateProfile p = certstoresession.getCertificateProfile(administrator, certprofile);
+                CertificateProfile p = ejb.getCertStoreSession().getCertificateProfile(administrator, certprofile);
                 returnval = p.getAvailableBitLengths();
             }
         }
@@ -188,22 +170,19 @@ public class ApplyBean implements java.io.Serializable {
      */
     public String[] availableCertificateProfiles(String username) throws Exception {
         String[] returnval = null;        
-        IUserAdminSessionRemote useradminsession = useradminhome.create();
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = useradminsession.findUser(administrator, username);
+        	this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
-            IRaAdminSessionRemote rasession = rasessionhome.create();
-            ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create();
-            EndEntityProfile eprof = rasession.getEndEntityProfile(administrator, useradmindata.getEndEntityProfileId());
+            EndEntityProfile eprof = ejb.getRAAdminSession().getEndEntityProfile(administrator, useradmindata.getEndEntityProfileId());
             Collection c = eprof.getAvailableCertificateProfileIds();
             if (!c.isEmpty()) {
             	ArrayList names = new ArrayList();
                 for (Iterator i = c.iterator(); i.hasNext(); ) {
                 	int id = Integer.valueOf((String)i.next());
-                    String name = certstoresession.getCertificateProfileName(administrator, id);
+                    String name = ejb.getCertStoreSession().getCertificateProfileName(administrator, id);
                 	names.add(name);
                 }
                 returnval = (String[])names.toArray(new String[0]);            	
@@ -238,15 +217,13 @@ public class ApplyBean implements java.io.Serializable {
      */
     public String getUserCertificateProfile(String username) throws Exception {
         String returnval = null;        
-        IUserAdminSessionRemote useradminsession = useradminhome.create();
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = useradminsession.findUser(administrator, username);
+        	this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
-            ICertificateStoreSessionRemote certstoresession = certificatesessionhome.create();
-            returnval = certstoresession.getCertificateProfileName(administrator, useradmindata.getCertificateProfileId());
+            returnval = ejb.getCertStoreSession().getCertificateProfileName(administrator, useradmindata.getCertificateProfileId());
         }
         this.username = username;
 
@@ -256,11 +233,6 @@ public class ApplyBean implements java.io.Serializable {
         return returnval;
     }
     
-    // Private methods
-    // Private fields
-    private IUserAdminSessionHome useradminhome;
-    private ICertificateStoreSessionHome certificatesessionhome;
-    private IRaAdminSessionHome rasessionhome;
     private boolean initialized;
     private Admin administrator;
     private String username = "";

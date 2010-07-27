@@ -17,9 +17,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -35,15 +35,15 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  */
 public class CertificateProfileDataHandler implements Serializable {
 	   
-    private ICertificateStoreSessionLocal  certificatestoresession; 
-    private Admin                          administrator;
-    private IAuthorizationSessionLocal     authorizationsession;
-    private InformationMemory              info;
-    private ICAAdminSessionLocal           caadminsession;
+    private AuthorizationSession authorizationsession;
+    private CAAdminSession caadminsession;
+    private CertificateStoreSession certificatestoresession; 
+    private Admin administrator;
+    private InformationMemory info;
 
     public static final int FIXED_CERTIFICATEPROFILE_BOUNDRY        = SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY;
     /** Creates a new instance of CertificateProfileDataHandler */
-    public CertificateProfileDataHandler(Admin administrator, ICertificateStoreSessionLocal certificatesession, IAuthorizationSessionLocal authorizationsession, ICAAdminSessionLocal caadminsession, InformationMemory info) {
+    public CertificateProfileDataHandler(Admin administrator, CertificateStoreSession certificatesession, AuthorizationSession authorizationsession, CAAdminSession caadminsession, InformationMemory info) {
        this.certificatestoresession = certificatesession;           
        this.authorizationsession = authorizationsession;
        this.caadminsession = caadminsession;

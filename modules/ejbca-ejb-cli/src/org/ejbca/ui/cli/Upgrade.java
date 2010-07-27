@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli;
 
-import java.rmi.RemoteException;
-
 import javax.ejb.EJB;
 
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
@@ -51,10 +49,10 @@ public class Upgrade extends BaseCommand {
         final boolean isPost = args.length > 3;
         getLogger().debug(args[0] + " ejbcaDB='" + database + "' ejbcaUpgradeFromVersion='" + upgradeFromVersion + "' isPost='" + isPost + "'");
         // Check pre-requisites
-        if (!appServerRunning()) {
+        /*if (!appServerRunning()) {
             getLogger().error("The application server must be running.");
             return;
-        }
+        }*/
         // Upgrade the database
 
         final boolean ret = upgradeSession.upgrade(getAdmin(), database, upgradeFromVersion, isPost);

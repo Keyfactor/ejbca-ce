@@ -36,7 +36,19 @@ import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 
 public interface CAAdminSession {
-    /**
+
+	/**
+     * A method designed to be called at startuptime to speed up the (next)
+     * first request to a CA. This method will initialize the CA-cache with all
+     * CAs, if they are not already in the cache. Can have a side-effect of
+     * upgrading a CA, therefore the Required transaction setting.
+     * 
+     * @param admin
+     *            administrator calling the method
+     */
+    public void initializeAndUpgradeCAs(Admin admin);
+	
+	/**
      * Method used to create a new CA. The cainfo parameter should at least
      * contain the following information. SubjectDN Name (if null then is
      * subjectDN used). Validity a CATokenInfo Description (optional) Status

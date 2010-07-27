@@ -16,59 +16,53 @@ package org.ejbca.core.model.services;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.CRLDataLocalHome;
-import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.log.ILogSessionLocal;
-import org.ejbca.core.ejb.log.ILogSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.log.LogSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
- * 
  * An abstract base class containing common methods for workers, actions and intervals
  * 
  * @author Philip Vendil 2006 sep 27
  *
  * @version $Id$
  */
-
 public abstract class BaseServiceComponent {
-	
-    private ILogSessionLocal logsession = null;
-	private CertificateDataLocalHome certHome = null;
-	private ICertificateStoreSessionLocal certStore = null;
-	private CRLDataLocalHome crlHome = null;
-	private ICAAdminSessionLocal caadminsession = null;
-	private IUserAdminSessionLocal useradminsession = null;
+
+	// TODO: Find way to lookup/inject Local interfaces..
+    private LogSession logSession = null;
+	private CertificateStoreSession certificateStoreSession = null;
+	private CAAdminSession caAdminSession = null;
+	private UserAdminSession userAdminSession = null;
+	private PublisherQueueSession publisherQueueSession = null;
 
 	/**
      * return the environment entries locator
      * @return return the environment entries locator
      */
-    protected ServiceLocator getLocator() {
+    /*protected ServiceLocator getLocator() {
         return ServiceLocator.getInstance();
-    }
+    }*/
     
     /**
      * Gets connection to log session bean
      *
      * @return ILogSessionLocal
      */
-    protected ILogSessionLocal getLogSession() {
-        if (logsession  == null) {
+    protected LogSession getLogSession() {
+        if (logSession  == null) {
             try {
-                ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-                logsession = logsessionhome.create();
+                /*ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
+                logsession = logsessionhome.create();*/
+            	logSession = new EjbLocalHelper().getLogSession();
             } catch (CreateException e) {
                 throw new EJBException(e);
             }
         }
-        return logsession ;
+        return logSession ;
     } //getLogSession
     
     /**
@@ -76,28 +70,29 @@ public abstract class BaseServiceComponent {
      *
      * @return CertificateDataLocalHome
      */
-    protected CertificateDataLocalHome getCertificateDataHome() {
+    /*protected CertificateDataLocalHome getCertificateDataHome() {
         if (certHome  == null) {
             	certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
         }
         return certHome ;
-    } //getCertificateDataHome
+    } //getCertificateDataHome*/
 
     /**
      * Gets connection to certificate store session bean
      *
      * @return CertificateDataLocalHome
      */
-    protected ICertificateStoreSessionLocal getCertificateSession() {
-    	if (certStore == null) {
+    protected CertificateStoreSession getCertificateSession() {
+    	if (certificateStoreSession == null) {
     		try {
-    			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-    			certStore = home.create();
+    			/*ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+    			certStore = home.create();*/
+    			certificateStoreSession = new EjbLocalHelper().getCertStoreSession();
     		} catch (CreateException e) {
     			throw new EJBException(e);
     		}        	
     	}
-    	return certStore;
+    	return certificateStoreSession;
     } 
 
     /**
@@ -105,28 +100,29 @@ public abstract class BaseServiceComponent {
      *
      * @return CRLDataLocalHome
      */
-    protected CRLDataLocalHome getCRLDataHome() {
+    /*protected CRLDataLocalHome getCRLDataHome() {
         if (crlHome  == null) {
             	crlHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
         }
         return crlHome ;
-    } //getCRLDataHome
+    } //getCRLDataHome*/
 
     /**
      * Gets connection to CA Admin session
      *
      * @return ICAAdminSessionLocal
      */
-    protected ICAAdminSessionLocal getCAAdminSession() {
-        if (caadminsession  == null) {
+    protected CAAdminSession getCAAdminSession() {
+        if (caAdminSession  == null) {
             try {
-            	ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-                caadminsession = caadminsessionhome.create();
+            	/*ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+                caadminsession = caadminsessionhome.create();*/
+            	caAdminSession = new EjbLocalHelper().getCAAdminSession();
             } catch (CreateException e) {
                 throw new EJBException(e);
             }
         }
-        return caadminsession ;
+        return caAdminSession ;
     } //getCAAdminSession   
     
     /**
@@ -134,18 +130,29 @@ public abstract class BaseServiceComponent {
      *
      * @return IUserAdminSessionLocal
      */
-    protected IUserAdminSessionLocal getUserAdminSession() {
-        if (useradminsession  == null) {
+    protected UserAdminSession getUserAdminSession() {
+        if (userAdminSession  == null) {
             try {
-            	IUserAdminSessionLocalHome useradminsessionhome = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-            	useradminsession = useradminsessionhome.create();
+            	/*IUserAdminSessionLocalHome useradminsessionhome = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+            	useradminsession = useradminsessionhome.create();*/
+            	userAdminSession = new EjbLocalHelper().getUserAdminSession();
             } catch (CreateException e) {
                 throw new EJBException(e);
             }
         }
-        return useradminsession ;
+        return userAdminSession ;
     } //getUserAdminSession 
     
-
-   
+    protected PublisherQueueSession getPublisherQueueSession() {
+        if (publisherQueueSession  == null) {
+            try {
+            	/*IUserAdminSessionLocalHome useradminsessionhome = (IUserAdminSessionLocalHome) getLocator().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+            	useradminsession = useradminsessionhome.create();*/
+            	publisherQueueSession = new EjbLocalHelper().getPublisherQueueSession();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return publisherQueueSession ;
+    }   
 }

@@ -24,9 +24,7 @@ import javax.ejb.EJBException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -39,6 +37,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.CertTools;
 
 /**
@@ -79,10 +78,10 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	public void execute() throws ApprovalRequestExecutionException {
 		log.debug("Executing ChangeEndEntity for user:" + newuserdata.getUsername());
 		try{
-			ServiceLocator locator = ServiceLocator.getInstance();
+			/*ServiceLocator locator = ServiceLocator.getInstance();
 			IUserAdminSessionLocalHome userdatahome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-			IUserAdminSessionLocal usersession = userdatahome.create();
-		
+			IUserAdminSessionLocal usersession = userdatahome.create();*/
+			UserAdminSession usersession = new EjbLocalHelper().getUserAdminSession();
 		    usersession.changeUser(getRequestAdmin(), newuserdata, clearpwd);
 		}catch (CreateException e) {
 			throw new ApprovalRequestExecutionException("Error creating newuserdata session", e);
