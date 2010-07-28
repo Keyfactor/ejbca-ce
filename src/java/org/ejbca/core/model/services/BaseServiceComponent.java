@@ -18,6 +18,7 @@ import javax.ejb.EJBException;
 
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.log.LogSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
@@ -38,6 +39,7 @@ public abstract class BaseServiceComponent {
 	private CAAdminSession caAdminSession = null;
 	private UserAdminSession userAdminSession = null;
 	private PublisherQueueSession publisherQueueSession = null;
+	private PublisherSession publisherSession = null;
 
 	/**
      * return the environment entries locator
@@ -154,5 +156,11 @@ public abstract class BaseServiceComponent {
             }
         }
         return publisherQueueSession ;
+    }   
+    protected PublisherSession getPublisherSession() {
+        if (publisherSession  == null) {
+        	publisherSession = new EjbLocalHelper().getPublisherSession();
+        }
+        return publisherSession ;
     }   
 }

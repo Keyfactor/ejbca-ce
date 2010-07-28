@@ -167,8 +167,9 @@ public class LocalKeyRecoverySessionBean implements KeyRecoverySessionLocal, Key
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
-    @EJB
-    private SignSessionLocal signSession;
+	//This might lead to a circular dependency when using EJB injection..
+    /*@EJB
+    private SignSessionLocal signSession;*/
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -258,7 +259,7 @@ public class LocalKeyRecoverySessionBean implements KeyRecoverySessionLocal, Key
         boolean returnval = false;
         try {
             int caid = CertTools.getIssuerDN(certificate).hashCode();
-            KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) signSession.extendedService(admin, caid,
+            KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
                     new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
             entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(
             		CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username, response.getKeyData()));
@@ -305,7 +306,7 @@ public class LocalKeyRecoverySessionBean implements KeyRecoverySessionLocal, Key
         	}
             krd.setMarkedAsRecoverable(markedasrecoverable);
             int caid = dn.hashCode();
-            KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) signSession.extendedService(admin, caid,
+            KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
                     new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
             krd.setKeyDataFromByteArray(response.getKeyData());
             String msg = intres.getLocalizedMessage("keyrecovery.changeddata", hexSerial, dn);            	
@@ -418,7 +419,7 @@ public class LocalKeyRecoverySessionBean implements KeyRecoverySessionLocal, Key
         			if (returnval == null) {
         				int caid = krd.getIssuerDN().hashCode();
 
-        				KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) signSession.extendedService(admin, caid,
+        				KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
         						new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray()));
         				KeyPair keys = response.getKeyPair();
         				certificate = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(admin, krd.getIssuerDN(), krd.getCertificateSN());

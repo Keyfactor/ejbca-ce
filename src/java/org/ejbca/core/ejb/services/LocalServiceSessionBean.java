@@ -20,10 +20,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.Timer;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
@@ -146,8 +149,11 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
-	@EJB
-	private ServiceTimerSessionLocal serviceTimerSession;
+    @Resource
+    private SessionContext sessionContext;
+	//This might lead to a circular dependency when using EJB injection..
+    /*@EJB
+	private ServiceTimerSessionLocal serviceTimerSession;*/
 	@EJB
     private AuthorizationSessionLocal authorizationSession;
 	@EJB
@@ -337,7 +343,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         	if(isAuthorizedToEditService(admin,serviceConfiguration)){        	        		
         		IWorker worker = getWorker(serviceConfiguration, name);
         		if(worker != null){
-        			serviceTimerSession.cancelTimer(htp.getId());
+        			cancelTimer(htp.getId());
         		}
         		entityManager.remove(htp);
         		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
@@ -352,7 +358,37 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         return retval;
     }
 
+	public void cancelTimer(Integer id){
+		  Collection<Timer> timers = sessionContext.getTimerService().getTimers();
+		  Iterator<Timer> iter = timers.iterator();
+		  while(iter.hasNext()){
+			  try {
+				  Timer next = iter.next();
+				  if(id.equals(next.getInfo())){
+					  next.cancel();
+				  }
+			  } catch (Exception e) {
+				  // EJB 2.1 only?: We need to catch this because Weblogic 10 throws an exception if we
+				  // have not scheduled this timer, so we don't have anything to cancel.
+				  // Only weblogic though...
+				  log.info("Caught exception canceling timer: "+e.getMessage());
+			  }
+		  }
+	}
+
     /**
+     * Adds a timer to the bean, and cancels all existing timeouts for this id.
+     *
+     * @param id the id of the timer
+     * @ejb.interface-method view-type="both"
+     */
+	public void addTimer(long interval, Integer id){
+		// Cancel old timers before adding new one
+		cancelTimer(id);
+		sessionContext.getTimerService().createTimer(interval, id);
+	}
+
+	/**
      * Renames a service
      *
      * @throws ServiceExistsException if service already exists.
@@ -544,9 +580,9 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
     		if(isAuthorizedToEditService(admin,serviceConfiguration)){
     			IWorker worker = getWorker(serviceConfiguration, name);
     			if(worker != null){
-    				serviceTimerSession.cancelTimer(htp.getId());
+    				cancelTimer(htp.getId());
     				if(serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-    					serviceTimerSession.addTimer(worker.getNextInterval() *1000, htp.getId());
+    					addTimer(worker.getNextInterval() *1000, htp.getId());
     				}
     			}
     		}else{

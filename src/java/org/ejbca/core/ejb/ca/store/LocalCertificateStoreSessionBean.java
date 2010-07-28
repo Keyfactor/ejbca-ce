@@ -202,7 +202,7 @@ import org.ejbca.util.keystore.KeyTools;
  * @version $Id$
  * 
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreOnlyDataSessionRemote")
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class LocalCertificateStoreSessionBean  implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
 

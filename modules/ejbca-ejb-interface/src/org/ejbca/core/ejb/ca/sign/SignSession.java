@@ -539,28 +539,4 @@ public interface SignSession {
             org.ejbca.core.model.ca.catoken.CATokenOfflineException, java.security.NoSuchAlgorithmException, java.security.InvalidKeyException,
             java.security.SignatureException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 
-    /**
-     * Method used to perform a extended CA Service, like OCSP CA Service.
-     * 
-     * @param admin
-     *            Information about the administrator or admin preforming the
-     *            event.
-     * @param caid
-     *            the ca that should perform the service
-     * @param request
-     *            a service request.
-     * @return A corresponding response.
-     * @throws IllegalExtendedCAServiceRequestException
-     *             if the request was invalid.
-     * @throws ExtendedCAServiceNotActiveException
-     *             thrown when the service for the given CA isn't activated
-     * @throws CADoesntExistsException
-     *             The given caid doesn't exists.
-     */
-    public org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse extendedService(org.ejbca.core.model.log.Admin admin, int caid,
-            org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest request)
-            throws org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException,
-            org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException,
-            org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-
 }

@@ -1449,7 +1449,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     	  
     	  HardTokenEncryptCAServiceRequest request = new HardTokenEncryptCAServiceRequest(HardTokenEncryptCAServiceRequest.COMMAND_DECRYPTDATA,encdata);
     	  try {
-    		HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) signsession.extendedService(admin, encryptcaid, request);
+    		HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
 			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(response.getData()));
 			data = (HashMap) ois.readObject();
 		} catch (Exception e) {
@@ -1492,7 +1492,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     			ObjectOutputStream ois = new ObjectOutputStream(baos);
     			ois.writeObject(tokendata.saveData());
     			HardTokenEncryptCAServiceRequest request = new HardTokenEncryptCAServiceRequest(HardTokenEncryptCAServiceRequest.COMMAND_ENCRYPTDATA,baos.toByteArray());
-    			HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) signsession.extendedService(admin, encryptcaid, request);
+    			HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
     			HashMap data = new HashMap();
     			data.put(ENCRYPTEDDATA, response.getData());
     			retval = data;

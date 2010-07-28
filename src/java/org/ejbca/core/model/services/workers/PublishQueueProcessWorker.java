@@ -17,6 +17,7 @@ import java.util.HashMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
@@ -68,7 +69,8 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
 					for (int i = 0; i < ids.length; i++) {
 						int publisherId = Integer.valueOf(ids[i]).intValue();
 						// Get everything from the queue for this publisher id
-						getPublisherQueueSession().plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisherId);
+						BasePublisher publisher = getPublisherSession().getPublisher(getAdmin(), publisherId);
+						getPublisherQueueSession().plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisherId, publisher);
 					}
 				} else {
 					log.debug("No publisher ids configured for worker.");

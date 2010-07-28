@@ -20,7 +20,7 @@ import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -46,7 +46,7 @@ public class OCSPServlet extends OCSPServletBase {
     private CertificateStoreSessionLocal certificateStoreSessionLocal;
     
     @EJB
-    private SignSessionLocal signSessionLocal;
+    private CAAdminSessionLocal caAdminSessionLocal;
     
     public void init(ServletConfig config)
             throws ServletException {
@@ -57,7 +57,7 @@ public class OCSPServlet extends OCSPServletBase {
         return certificateStoreSessionLocal.findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
     protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
-        return (OCSPCAServiceResponse)signSessionLocal.extendedService(adm, caid, request);
+        return (OCSPCAServiceResponse)caAdminSessionLocal.extendedService(adm, caid, request);
     }
 
     protected CertificateStatus getStatus(String name, BigInteger serialNumber) {

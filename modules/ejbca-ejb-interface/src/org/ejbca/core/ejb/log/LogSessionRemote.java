@@ -12,9 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.log;
 
+import javax.ejb.Remote;
+
 /**
  * Remote interface for LogSession.
  */
+@Remote
 public interface LogSessionRemote extends LogSession {
     /**
      * Replace existing devices with a new one in this beans LogSession

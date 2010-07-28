@@ -77,7 +77,7 @@ public class ProtectedLogCMSExportHandler implements IProtectedLogExportHandler,
 			// Since we write everything at once, it will take up a lot of memory..
 			log.debug("Sending "+baos.size()+" bytes to CMS service..");
 			CmsCAServiceRequest request = new CmsCAServiceRequest(baos.toByteArray(), CmsCAServiceRequest.MODE_SIGN);
-			CmsCAServiceResponse resp = (CmsCAServiceResponse) ejb.getSignSession().extendedService(internalAdmin, exportingCAId, request);
+			CmsCAServiceResponse resp = (CmsCAServiceResponse) ejb.getCAAdminSession().extendedService(internalAdmin, exportingCAId, request);
 			byte[] export = resp.getCmsDocument();
 			log.debug("Writing "+export.length+" bytes to file..");
 			FileOutputStream fos = new FileOutputStream(filename);

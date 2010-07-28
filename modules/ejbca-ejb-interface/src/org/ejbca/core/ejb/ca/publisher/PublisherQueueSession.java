@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -99,5 +100,5 @@ public interface PublisherQueueSession {
      */
     public void updateData(java.lang.String pk, int status, int tryCounter);
 
-    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(Admin admin, int publisherId);
+    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(Admin admin, int publisherId, BasePublisher publisher);
 }
