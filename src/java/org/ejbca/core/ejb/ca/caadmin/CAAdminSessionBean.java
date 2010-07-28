@@ -1308,6 +1308,32 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CA ca = cadata.getCA();
             String caname = ca.getName();
 
+            // AR+ patch to make SPOC independent of external CVCA certs for automatic renewals
+            if (cachain.isEmpty() && regenerateKeys &&
+            	ca.getCAType() == CAInfo.CATYPE_CVC &&
+                ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA &&
+                ca.getStatus() == SecConst.CA_ACTIVE){
+            	CardVerifiableCertificate dvcert = (CardVerifiableCertificate)ca.getCACertificate();
+    			String ca_ref = dvcert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated();
+            	log.debug("DV renewal missing CVCA cert, try finding CA for:"+ ca_ref);
+	        	Iterator cas = getAvailableCAs (admin).iterator();
+	        	while (cas.hasNext()){
+	        		CA cvca = getCAInternal(admin, (Integer)cas.next(), null);
+	        		if (cvca.getCAType() == CAInfo.CATYPE_CVC && cvca.getSignedBy() == CAInfo.SELFSIGNED){
+	        			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cvca.getCACertificate();
+	        			if (ca_ref.equals (cvccert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated())){
+	                    	log.info("Added missing CVCA to rewnewal request: "+ cvca.getName());
+	        				cachain.add(cvccert);
+	        				break;
+	        			}
+	        		}
+       			}
+	        	if (cachain.isEmpty ()){
+                	log.info("Failed founding suitable CVCA, forgot to import it?");
+	        	}
+            }
+            // AR-
+            
             // Generate new certificate request.
             Collection<Certificate> chain = null;
             if (cachain.size() > 0) {
