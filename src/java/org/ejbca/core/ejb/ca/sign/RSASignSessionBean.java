@@ -301,7 +301,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 		if ( c.size()<1 ) {// storing initial certificate if no test certificate created.
 			try {
 			    certificateStoreSession.storeCertificate(admin, cert1, userName, "abcdef0123456789", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
-			} catch (CreateException e) {
+			} catch (Exception e) {
 				throw new Exception("It should always be possible to store initial dummy certificate.", e);
 			}
 		}
