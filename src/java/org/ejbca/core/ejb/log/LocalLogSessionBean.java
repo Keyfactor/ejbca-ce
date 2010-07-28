@@ -156,8 +156,9 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
-    @EJB
-    private LogSessionLocal logSession;
+	//This might lead to a circular dependency when using EJB injection..
+    /*@EJB
+    private LogSessionLocal logSession;*/
 
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList<ILogDevice> logdevices;
@@ -278,7 +279,8 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.transaction type="Supports"
      */
     public void setTestDeviceOnLogSession(Class implClass, String name) {
-    	logSession.setTestDevice(implClass, name);
+    	//This might lead to a circular dependency when using EJB injection..
+    	/*logSession.*/setTestDevice(implClass, name);
     }
 
     /**
@@ -291,7 +293,8 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.transaction type="Supports"
      */
     public void restoreTestDeviceOnLogSession() {
-    	logSession.restoreTestDevice();
+    	//This might lead to a circular dependency when using EJB injection..
+    	/*logSession.*/restoreTestDevice();
     }
 
     
@@ -354,7 +357,8 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     	while (i.hasNext()) {
     		ILogDevice dev = i.next();
     		try {
-   				logSession.doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
+    	    	//This might lead to a circular dependency when using EJB injection..
+   				/*logSession.*/doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
     		} catch (Throwable e) {
             	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
             			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
@@ -509,7 +513,8 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void testRollbackInternal(long rollbackTestTime) {
 		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
+    	//This might lead to a circular dependency when using EJB injection..
+		/*logSession.*/log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, "Test of rollback resistance of log-system.", null);
 		throw new EJBException("Test of rollback resistance of log-system.");
 	}

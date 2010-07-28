@@ -98,6 +98,11 @@ import org.ejbca.core.model.ca.caadmin.X509CA;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
@@ -3668,6 +3673,30 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         return returnval;
+    }
+
+    /**
+     * Method used to perform a extended CA Service, like OCSP CA Service.
+     *
+     * @param admin   Information about the administrator or admin preforming the event.
+     * @param caid    the ca that should perform the service
+     * @param request a service request.
+     * @return A corresponding response.
+     * @throws IllegalExtendedCAServiceRequestException
+     *                                 if the request was invalid.
+     * @throws ExtendedCAServiceNotActiveException
+     *                                 thrown when the service for the given CA isn't activated
+     * @throws CADoesntExistsException The given caid doesn't exists.
+     * @ejb.interface-method view-type="both"
+     */
+    public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request)
+            throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException {
+        // Get CA that will process request
+        CA ca = getCA(admin, caid);
+        if (log.isDebugEnabled()) {
+        	log.debug("Exteneded service with request class '"+request.getClass().getName()+"' called for CA '"+ca.getName()+"'");            	
+        }
+        return ca.extendedService(request);
     }
 
     //

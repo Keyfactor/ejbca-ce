@@ -31,6 +31,7 @@ import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -1085,6 +1086,43 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
         }
         return counter;
     }
+
+	/**
+	 * Cleans the certificate serial number from the user data. Should be called after the data has been used.
+	 * @param data
+	 * @throws ObjectNotFoundException if the user does not exist.
+	 * @ejb.interface-method
+	 */
+	public void cleanUserCertDataSN(UserDataVO data) throws ObjectNotFoundException {
+		if (log.isTraceEnabled()) {
+			log.trace(">cleanUserCertDataSN: " + data.getUsername());
+		}
+		// This admin can be the public web user, which may not be allowed to change status,
+		// this is a bit ugly, but what can a man do...
+		Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
+		try {
+			cleanUserCertDataSN(statusadmin, data.getUsername());
+		} catch (FinderException e) {
+			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
+			logSession.log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+			throw new ObjectNotFoundException(e.getMessage());
+		} catch (AuthorizationDeniedException e) {
+			// Should never happen
+		    log.error("AuthorizationDeniedException: ", e);
+			throw new EJBException(e);
+		} catch (ApprovalException e) {
+			// Should never happen
+		    log.error("ApprovalException: ", e);
+			throw new EJBException(e);
+		} catch (WaitingForApprovalException e) {
+			// Should never happen
+		    log.error("ApprovalException: ", e);
+			throw new EJBException(e);
+		}
+		if (log.isTraceEnabled()) {
+			log.trace("<cleanUserCertDataSN: "+data.getUsername());
+		}
+	} 
 
 	/**
 	 * Removes the certificate serial number from the user data.

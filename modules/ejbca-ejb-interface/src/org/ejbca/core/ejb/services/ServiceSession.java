@@ -134,4 +134,15 @@ public interface ServiceSession {
      */
     public void activateServiceTimer(org.ejbca.core.model.log.Admin admin, java.lang.String name);
 
+    /**
+     * cancels a timer with the given Id
+     */
+    public void cancelTimer(Integer id);
+
+    /**
+     * Adds a timer to the bean, and cancels all existing timeouts for this id.
+     *
+     * @param id the id of the timer
+     */
+	public void addTimer(long interval, Integer id);
 }

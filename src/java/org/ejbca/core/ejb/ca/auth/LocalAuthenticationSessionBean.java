@@ -108,7 +108,7 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
     private EntityManager entityManager;
 
     @EJB
-    private UserAdminSessionLocal userSession;
+    private UserAdminSessionLocal userAdminSession;
     @EJB
     private LogSessionLocal logSession;
     
@@ -140,7 +140,7 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
             	throw new ObjectNotFoundException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
-           	userSession.decRemainingLoginAttempts(admin, data.getUsername());
+           	userAdminSession.decRemainingLoginAttempts(admin, data.getUsername());
 			
            	int status = data.getStatus();
             if ( (status == UserDataConstants.STATUS_NEW) || (status == UserDataConstants.STATUS_FAILED) || (status == UserDataConstants.STATUS_INPROCESS) || (status == UserDataConstants.STATUS_KEYRECOVERY)) {
@@ -160,7 +160,7 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
                 }
                 
                 // Resets the remaining login attempts as this was a successful login
-                userSession.resetRemainingLoginAttempts(admin, data.getUsername());
+                userAdminSession.resetRemainingLoginAttempts(admin, data.getUsername());
             	
                 String msg = intres.getLocalizedMessage("authentication.authok", username);            	
                 logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
@@ -206,7 +206,7 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 		}
         try {
             // Change status of the user with username username
-        	UserDataVO data = userSession.findUser(admin, username);
+        	UserDataVO data = userAdminSession.findUser(admin, username);
         	if (data == null) {
         		throw new FinderException("User '"+username+"' can not be found.");
         	}
@@ -225,42 +225,6 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 		}
     }
 
-	/**
-	 * Cleans the certificate serial number from the user data. Should be called after the data has been used.
-	 * @param data
-	 * @throws ObjectNotFoundException if the user does not exist.
-	 * @ejb.interface-method
-	 */
-	public void cleanUserCertDataSN(UserDataVO data) throws ObjectNotFoundException {
-		if (log.isTraceEnabled()) {
-			log.trace(">cleanUserCertDataSN: " + data.getUsername());
-		}
-		// This admin can be the public web user, which may not be allowed to change status,
-		// this is a bit ugly, but what can a man do...
-		Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
-		try {
-			userSession.cleanUserCertDataSN(statusadmin, data.getUsername());
-		} catch (FinderException e) {
-			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
-			logSession.log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
-			throw new ObjectNotFoundException(e.getMessage());
-		} catch (AuthorizationDeniedException e) {
-			// Should never happen
-		    log.error("AuthorizationDeniedException: ", e);
-			throw new EJBException(e);
-		} catch (ApprovalException e) {
-			// Should never happen
-		    log.error("ApprovalException: ", e);
-			throw new EJBException(e);
-		} catch (WaitingForApprovalException e) {
-			// Should never happen
-		    log.error("ApprovalException: ", e);
-			throw new EJBException(e);
-		}
-		if (log.isTraceEnabled()) {
-			log.trace("<cleanUserCertDataSN: "+data.getUsername());
-		}
-	} 
 	/**
 	 * Set the status of a user to finished, called when a user has been successfully processed. If
 	 * possible sets users status to UserData.STATUS_GENERATED, which means that the user cannot
@@ -282,7 +246,7 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 		try {
 			
 			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter
-			int counter = userSession.decRequestCounter(statusadmin, data.getUsername());
+			int counter = userAdminSession.decRequestCounter(statusadmin, data.getUsername());
 			if (counter <= 0) {
 				String msg = intres.getLocalizedMessage("authentication.statuschanged", data.getUsername());
 				logSession.log(statusadmin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);

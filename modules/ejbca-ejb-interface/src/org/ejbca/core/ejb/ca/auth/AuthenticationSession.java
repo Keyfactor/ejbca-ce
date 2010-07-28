@@ -56,16 +56,6 @@ public interface AuthenticationSession {
     public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException;
 
     /**
-     * Cleans the certificate serial number from the user data. Should be called
-     * after the data has been used.
-     * 
-     * @param data
-     * @throws ObjectNotFoundException
-     *             if the user does not exist.
-     */
-    public void cleanUserCertDataSN(UserDataVO data) throws ObjectNotFoundException;
-
-    /**
      * Set the status of a user to finished, called when a user has been
      * successfully processed. If possible sets users status to
      * UserData.STATUS_GENERATED, which means that the user cannot be

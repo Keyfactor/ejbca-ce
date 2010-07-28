@@ -231,8 +231,9 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
     private LogSessionLocal logSession;
     @EJB
     private ServiceSessionLocal serviceSession;
-    @EJB
-    private ServiceTimerSessionLocal serviceTimerSession;
+	//This might lead to a circular dependency when using EJB injection..
+    /*@EJB
+    private ServiceTimerSessionLocal serviceTimerSession;*/
 
     /**
      * The administrator that the services should be ran as.
@@ -271,7 +272,8 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 				if(serviceData != null){
 					serviceName = serviceSession.getServiceName(intAdmin, timerInfo.intValue());
 					worker = getWorker(serviceData,serviceName);
-					run = serviceTimerSession.checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceData, serviceName);
+					//This might lead to a circular dependency when using EJB injection..
+					run = /*serviceTimerSession.*/checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceData, serviceName);
 					log.debug("Service will run: "+run);
 				} else {
 					log.debug("Service was null and will not run, neither will it be rescheduled, so it will never run. Id: "+timerInfo.intValue());
@@ -483,9 +485,10 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
      * @ejb.interface-method view-type="both"
      */
 	public void addTimer(long interval, Integer id){
-		// Cancel old timers before adding new one
+		serviceSession.addTimer(interval, id);
+/*		// Cancel old timers before adding new one
 		cancelTimer(id);
-		sessionContext.getTimerService().createTimer(interval, id);
+		sessionContext.getTimerService().createTimer(interval, id);*/
 	}
 	
     /**
@@ -494,7 +497,8 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
      * @ejb.interface-method view-type="both"
      */
 	public void cancelTimer(Integer id){
-		  Collection<Timer> timers = sessionContext.getTimerService().getTimers();
+		serviceSession.cancelTimer(id);
+/*		  Collection<Timer> timers = sessionContext.getTimerService().getTimers();
 		  Iterator<Timer> iter = timers.iterator();
 		  while(iter.hasNext()){
 			  try {
@@ -508,7 +512,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 				  // Only weblogic though...
 				  log.info("Caught exception canceling timer: "+e.getMessage());
 			  }
-		  }
+		  }*/
 	}
 
    /**

@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import javax.ejb.ObjectNotFoundException;
+
+import org.ejbca.core.model.ra.UserDataVO;
+
 public interface UserAdminSession {
     /**
      * Implements IUserAdminSession::addUser. Implements a mechanism that uses
@@ -320,6 +324,16 @@ public interface UserAdminSession {
     public int decRequestCounter(org.ejbca.core.model.log.Admin admin, java.lang.String username)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException, org.ejbca.core.model.approval.ApprovalException,
             org.ejbca.core.model.approval.WaitingForApprovalException;
+
+    /**
+     * Cleans the certificate serial number from the user data. Should be called
+     * after the data has been used.
+     * 
+     * @param data
+     * @throws ObjectNotFoundException
+     *             if the user does not exist.
+     */
+    public void cleanUserCertDataSN(UserDataVO data) throws ObjectNotFoundException;
 
     /**
      * Removes the certificate serial number from the user data.

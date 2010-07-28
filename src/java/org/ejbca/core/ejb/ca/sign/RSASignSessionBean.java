@@ -63,6 +63,7 @@ import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -73,11 +74,6 @@ import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -197,6 +193,8 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private AuthenticationSessionLocal authenticationSession;
+    @EJB
+    private UserAdminSessionLocal userAdminSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
@@ -1148,7 +1146,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 			return;
 		}
 		try {
-			authenticationSession.cleanUserCertDataSN(data);
+			userAdminSession.cleanUserCertDataSN(data);
 		} catch (ObjectNotFoundException e) {
 			String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
 			log.info(msg);
@@ -1487,30 +1485,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         return (signer.verify(signature));    	
     }
     
-    /**
-     * Method used to perform a extended CA Service, like OCSP CA Service.
-     *
-     * @param admin   Information about the administrator or admin preforming the event.
-     * @param caid    the ca that should perform the service
-     * @param request a service request.
-     * @return A corresponding response.
-     * @throws IllegalExtendedCAServiceRequestException
-     *                                 if the request was invalid.
-     * @throws ExtendedCAServiceNotActiveException
-     *                                 thrown when the service for the given CA isn't activated
-     * @throws CADoesntExistsException The given caid doesn't exists.
-     * @ejb.interface-method view-type="both"
-     */
-    public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request)
-            throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException {
-        // Get CA that will process request
-        CA ca = caAdminSession.getCA(admin, caid);
-        if (log.isDebugEnabled()) {
-        	log.debug("Exteneded service with request class '"+request.getClass().getName()+"' called for CA '"+ca.getName()+"'");            	
-        }
-        return ca.extendedService(request);
-    }
-
     /**
      * Returns the issuance revocation code configured on the end entity extended information.
      *

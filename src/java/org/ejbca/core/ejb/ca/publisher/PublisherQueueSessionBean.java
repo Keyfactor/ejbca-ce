@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,14 +37,13 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.store.CRLData;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateData;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
-import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -103,12 +101,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
+	//This might lead to a circular dependency when using EJB injection..
+    /*@EJB
+    private CertificateStoreSessionLocal certificateStoreSession;*/
     @EJB
     private LogSessionLocal logSession;
-    @EJB
-    private PublisherSessionLocal publisherSession;
+	//This might lead to a circular dependency when using EJB injection..
+    /*@EJB
+    private PublisherSessionLocal publisherSession;*/
 
     /**
      * Adds an entry to the publisher queue.
@@ -373,7 +373,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     }
     
 	/**
-	 * Intended for use from PublisherQueueProcessWorker.
+	 * Intended for use from PublishQueueProcessWorker.
 	 * 
 	 * Publishing algorithm that is a plain fifo queue, but limited to selecting entries to republish at 100 records at a time. It will select from the database for this particular publisher id, and process 
 	 * the record that is returned one by one. The records are ordered by date, descending so the oldest record is returned first. 
@@ -385,7 +385,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	 * @param publisherId
 	 * @throws PublisherException 
 	 */
-	public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(Admin admin, int publisherId) {
+	public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(Admin admin, int publisherId, BasePublisher publisher) {
 		int successcount = 0;
 		// Repeat this process as long as we actually manage to publish something
 		// this is because when publishing starts to work we want to publish everything in one go, if possible.
@@ -393,7 +393,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 		int totalcount = 0;
 		do {
 			Collection c = getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
-			successcount = doPublish(admin, publisherId, c);
+			successcount = doPublish(admin, publisherId, publisher, c);
 			totalcount += successcount;
 			log.debug("Totalcount="+totalcount);
 		} while ( (successcount > 0) && (totalcount < 20000) );
@@ -405,14 +405,14 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	 * @return how many publishes that succeeded
 	 * @throws PublisherException 
 	 */
-	private int doPublish(Admin admin, int publisherId, Collection c) {
+	private int doPublish(Admin admin, int publisherId, BasePublisher publisher, Collection c) {
 		if (log.isDebugEnabled()) {
 			log.debug("Found "+c.size()+" certificates to republish for publisher "+publisherId);
 		}
 		int successcount = 0;
 		int failcount = 0;
 		// Get the publisher. Beware this can be null!
-		BasePublisher publisher = publisherSession.getPublisher(admin, publisherId);
+		//BasePublisher publisher = publisherSession.getPublisher(admin, publisherId);
 		Iterator iter = c.iterator();
 		while (iter.hasNext()) {
 			PublisherQueueData pqd = (PublisherQueueData)iter.next();
@@ -441,13 +441,19 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 					}
 					if (publisher != null) {
 						// Read the actual certificate and try to publish it again
-						CertificateInfo info = certificateStoreSession.getCertificateInfo(admin, fingerprint);
+						// TODO: we might need change fetch-type for all but the actual cert or a native query w SqlResultSetMapping..
+						CertificateData cd = CertificateData.findByFingerprint(entityManager, fingerprint);
+						if (cd == null) {
+							throw new FinderException();
+						}
+						published = publisher.storeCertificate(admin, cd.getCertificate(), username, password, userDataDN, cd.getCaFingerprint(), cd.getStatus(), cd.getType(), cd.getRevocationDate(), cd.getRevocationReason(), cd.getTag(), cd.getCertificateProfileId(), cd.getUpdateTime(), ei);
+						//This might lead to a circular dependency when using EJB injection..
+						/*CertificateInfo info = certificateStoreSession.getCertificateInfo(admin, fingerprint);
 						Certificate cert = certificateStoreSession.findCertificateByFingerprint(admin, fingerprint);
 						if (info == null || cert == null) {
 							throw new FinderException();
 						}
-						//CertificateDataLocal certlocal = getCertificateDataHome().findByPrimaryKey(new CertificateDataPK(fingerprint));
-						published = publisher.storeCertificate(admin, cert, username, password, userDataDN, info.getCAFingerprint(), info.getStatus(), info.getType(), info.getRevocationDate().getTime(), info.getRevocationReason(), info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), ei);
+						published = publisher.storeCertificate(admin, cert, username, password, userDataDN, info.getCAFingerprint(), info.getStatus(), info.getType(), info.getRevocationDate().getTime(), info.getRevocationReason(), info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), ei);*/
 					} else {
 						String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);            	
 						log.info(msg);
@@ -460,7 +466,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 					if (crlData == null) {
 						throw new FinderException();
 					}
-					//CRLDataLocal crllocal = getCRLDataHome().findByPrimaryKey(new CRLDataPK(fingerprint));
 					published = publisher.storeCRL(admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), userDataDN);
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);            	
