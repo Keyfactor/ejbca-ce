@@ -307,7 +307,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 		}
 		try { // storing a second certificate with same issuer 
 		    certificateStoreSession.storeCertificate(admin, cert2, userName, "fedcba9876543210", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
-		} catch (CreateException e) {
+		} catch (Exception e) {
 			log.info("Unique index in CertificateData table for certificate serial number");
 			return true;// Exception is thrown when unique index is working and a certificate with same serial number is in the database.
 		}
@@ -1358,7 +1358,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
 
             // Below we have a small loop if it would happen that we generate the same serial number twice
-			CreateException storeEx = null; // this will not be null if stored == false after the below passage
+			Exception storeEx = null; // this will not be null if stored == false after the below passage
             Certificate cert = null;
             String cafingerprint = null;
             String serialNo = "unknown";
@@ -1394,7 +1394,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
                     certificateStoreSession.storeCertificate(admin, cert, data.getUsername(), cafingerprint, SecConst.CERT_ACTIVE, certProfile.getType(), certProfileId, tag, updateTime);                        
 					storeEx = null;
 					break;
-                } catch (CreateException e) {
+                } catch (Exception e) {
                     // If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can 
                     // get a CreateException here if we would happen to generate a certificate with the same serialNumber
                     // as one already existing certificate.
