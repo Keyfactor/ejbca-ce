@@ -239,12 +239,14 @@ public interface IEjbcaWS {
 	 * </pre>
 	 * @param caname The name in EJBCA for the CA that will create the CSR
 	 * @param cachain the certificate chain for the CA this request is targeted for, the signing CA is in pos 0, it's CA (if it exists) in pos 1 etc. Certificate format is the binary certificate bytes.
+	 * For DV renewals the cachain may be an empty list if there is a matching imported CVCA.
+	 * Matching means having the same mnemonic,country and sequence as well as being external.   
      * @param regenerateKeys if renewing a CA this is used to also generate a new KeyPair, if this is true and activatekey is false, the new key will not be activated immediately, but added as "next" signingkey.
      * @param usenextkey if regenerateKey is true this should be false. Otherwise it makes a request using an already existing "next" signing key, perhaps from a previous call with regenerateKeys true.
      * @param activatekey if regenerateKey is true or usenextkey is true, setting this flag to true makes the new or "next" key be activated when the request is created.
      * @param keystorepwd password used when regenerating keys or activating keys, can be null if regenerateKeys and activatekey is false.
 	 * 
-     * @return byte array with binary encoded certificate request to be sent to signing CA or null if CA does not exist or admin is not authorized to CA.
+     * @return byte array with binary encoded certificate request to be sent to signing CA.
      * 
 	 * @throws CADoesntExistsException if caname does not exist
 	 * @throws AuthorizationDeniedException if administrator is not authorized to create request, renew keys etc.
