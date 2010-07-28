@@ -188,7 +188,7 @@ div#footer {
 
 /* Page: ALL */
 h1 {
-	width: 30em;		/* (50em+10em)/2 */
+	width: 25em;		/* (50em)/2 */
 	text-align: center;
 	font-size: 2em;
 	color: #686868;
@@ -199,7 +199,7 @@ h1 {
 	-webkit-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
 }
 h2 {
-	width: 40em;		/* (50em+10em)/1.5 */
+	width: 33.33em;		/* (50em)/1.5 */
 	text-align: center;
 	font-size: 1.5em;
 	color: #686868;
@@ -385,6 +385,10 @@ form#groupList p a.commandLink {
 form#groupList table {
 	border-collapse: collapse;
 }
+form#groupList table th,
+form#groupList table td {
+	white-space: nowrap;
+}
 form#groupList table th {
 	padding-bottom: .35em;
 }
@@ -397,6 +401,7 @@ form#groupList table td {
 	font-weight: bold;
 }
 form#groupList table td a {
+	margin: .75em;
 	font-size: inherit !important;
 }
 
