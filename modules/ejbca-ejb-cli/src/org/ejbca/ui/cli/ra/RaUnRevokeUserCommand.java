@@ -16,8 +16,6 @@ package org.ejbca.ui.cli.ra;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -35,11 +33,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "unrevokeuser"; }

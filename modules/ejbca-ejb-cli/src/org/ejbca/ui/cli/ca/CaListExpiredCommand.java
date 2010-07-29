@@ -19,8 +19,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -34,8 +32,7 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "listexpired"; }

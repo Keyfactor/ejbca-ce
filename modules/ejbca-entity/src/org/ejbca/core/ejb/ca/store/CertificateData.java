@@ -515,7 +515,7 @@ public class CertificateData implements Serializable {
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=issuerDN");
+		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
 		query.setParameter("subjectDN", subjectDN);
 		query.setParameter("issuerDN", issuerDN);
 		return query.getResultList();

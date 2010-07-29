@@ -18,8 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -35,11 +33,8 @@ import org.ejbca.util.CertTools;
  */
 public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "changecertprofile"; }

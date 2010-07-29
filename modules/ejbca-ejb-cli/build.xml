@@ -97,6 +97,7 @@
     		<fileset dir="${ejbca.home}/bin" includes="batchtool.properties"/>
     	</copy>
         <copy file="${log4j.cli.file}" tofile="${mod.ejbca-ejb-cli.dist}/log4j.xml" failonerror="true"/>
+		<copy file="${ejbca.home}/conf/jndi.properties.${appserver.type}" tofile="${mod.ejbca-ejb-cli.dist}/jndi.properties" failonerror="true"/>
     </target>
 
 </project>

@@ -19,12 +19,4 @@ import javax.ejb.Local;
  */
 @Local
 public interface LogSessionLocal extends LogSession {
-
-    /**
-     * Internal implementation for logging. DO NOT USE! ONLY PUBLIC FOR INTERNAL
-     * LOG-IMPLEMENTATION TO START A NEW TRANSACTION..
-     */
-    public void doSyncronizedLog(org.ejbca.core.model.log.ILogDevice dev, org.ejbca.core.model.log.Admin admin, int caid, int module, java.util.Date time,
-            java.lang.String username, java.security.cert.Certificate certificate, int event, java.lang.String comment, java.lang.Exception ex);
-
 }

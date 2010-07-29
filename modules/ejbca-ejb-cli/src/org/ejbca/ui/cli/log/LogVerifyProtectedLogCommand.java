@@ -13,10 +13,6 @@
 
 package org.ejbca.ui.cli.log;
 
-import java.rmi.RemoteException;
-
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.core.model.log.ProtectedLogConstants;
 import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
@@ -29,8 +25,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class LogVerifyProtectedLogCommand extends BaseLogAdminCommand  {
 
-    @EJB
-    private ProtectedLogSessionRemote protectedLogSession;
+    private ProtectedLogSessionRemote protectedLogSession = ejb.getProtectedLogSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "verifyprotected"; }

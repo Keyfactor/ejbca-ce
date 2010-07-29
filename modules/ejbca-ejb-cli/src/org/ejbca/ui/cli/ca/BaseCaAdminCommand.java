@@ -25,8 +25,6 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.ejb.EJB;
-
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -55,14 +53,9 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     protected String privKeyAlias = "privateKey";
     protected char[] privateKeyPass = null;
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
-
-    @EJB
-    private CreateCRLSessionRemote createCrlSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private CreateCRLSessionRemote createCrlSession = ejb.getCrlSession();
     
     /**
      * Retrieves the complete certificate chain from the CA

@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
@@ -44,8 +42,7 @@ import org.ejbca.util.keystore.KeyStoreContainerFactory;
 // TODO: Is this really used???? The arguments does not to be in synch with the description..
 public class HwCaInitCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "inithw"; }

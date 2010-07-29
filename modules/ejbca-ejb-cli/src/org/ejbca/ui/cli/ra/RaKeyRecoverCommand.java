@@ -16,8 +16,6 @@ package org.ejbca.ui.cli.ra;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -32,17 +30,10 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaKeyRecoverCommand extends BaseRaAdminCommand {
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private KeyRecoverySessionRemote keyRecoverySession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private KeyRecoverySessionRemote keyRecoverySession = ejb.getKeyRecoverySession();
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "keyrecover"; }

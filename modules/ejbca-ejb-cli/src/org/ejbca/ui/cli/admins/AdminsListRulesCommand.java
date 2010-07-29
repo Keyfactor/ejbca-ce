@@ -16,8 +16,6 @@ package org.ejbca.ui.cli.admins;
 import java.util.Collections;
 import java.util.List;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -28,8 +26,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsListRulesCommand extends BaseAdminsCommand {
 
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
+    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "listrules"; }

@@ -13,7 +13,6 @@
 package org.ejbca.core.model.util;
 
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
@@ -26,11 +25,14 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.log.LogSessionRemote;
+import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemoteejb3;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
 
 /**
  * Helper methods to get EJB session interfaces.
@@ -39,13 +41,13 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
  */
 public class EjbRemoteHelper {
 
-	/**
+	/*
 	 * Return the environment entries locator. ServiceLocator caches the home interfaces.
 	 * @return return the environment entries locator
-	 */
+	 * /
 	private ServiceLocator getLocator() {
 		return ServiceLocator.getInstance();
-	}
+	}*/
 
 	private CAAdminSessionRemote caadminsession = null;
 	public CAAdminSessionRemote getCAAdminSession() { 		
@@ -181,5 +183,29 @@ public class EjbRemoteHelper {
 			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemoteejb3.class);
 		}
 		return tableProtectSession;
+	}
+
+	private UpgradeSessionRemote upgradeSession = null;
+	public UpgradeSessionRemote getUpgradeSession() {
+		if (upgradeSession == null) {
+			upgradeSession = JndiHelper.getRemoteSession(UpgradeSessionRemote.class);
+		}
+		return upgradeSession;
+	}
+
+	private ConfigurationSessionRemote configurationSession = null;
+	public ConfigurationSessionRemote getConfigurationSession() {
+		if (configurationSession == null) {
+			configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
+		}
+		return configurationSession;
+	}
+
+	private ProtectedLogSessionRemote protectedLogSession;
+	public ProtectedLogSessionRemote getProtectedLogSession() {
+		if (protectedLogSession == null) {
+			protectedLogSession = JndiHelper.getRemoteSession(ProtectedLogSessionRemote.class);
+		}
+		return protectedLogSession;
 	}
 }

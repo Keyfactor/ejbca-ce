@@ -13,7 +13,16 @@
 package org.ejbca.core.ejb.log;
 
 public interface LogSession {
-    public java.util.Collection getAvailableLogDevices();
+
+    /**
+     * Internal implementation for logging. DO NOT USE! ONLY PUBLIC FOR INTERNAL
+     * LOG-IMPLEMENTATION TO START A NEW TRANSACTION..
+     */
+	// TODO: This was moved from the local interface here during the JEE5 migration phase where local interface lookup didn't work.
+    public void doSyncronizedLog(org.ejbca.core.model.log.ILogDevice dev, org.ejbca.core.model.log.Admin admin, int caid, int module, java.util.Date time,
+            java.lang.String username, java.security.cert.Certificate certificate, int event, java.lang.String comment, java.lang.Exception ex);
+	
+	public java.util.Collection getAvailableLogDevices();
 
     /**
      * Replace existing devices with a new one. Used for testing, since the

@@ -25,8 +25,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.EJB;
-
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -50,8 +48,7 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importcvcca"; }

@@ -19,8 +19,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.EJB;
-
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -54,11 +52,8 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "init"; }

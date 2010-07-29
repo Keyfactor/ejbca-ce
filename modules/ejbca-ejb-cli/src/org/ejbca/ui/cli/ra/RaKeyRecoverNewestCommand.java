@@ -13,8 +13,6 @@
  
 package org.ejbca.ui.cli.ra;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -28,14 +26,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
 
-    @EJB
-    private KeyRecoverySessionRemote keyRecoverySession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private KeyRecoverySessionRemote keyRecoverySession = ejb.getKeyRecoverySession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "keyrecovernewest"; }

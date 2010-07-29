@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJB;
 
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
@@ -21,8 +20,7 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaImportCACertCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importcacert"; }

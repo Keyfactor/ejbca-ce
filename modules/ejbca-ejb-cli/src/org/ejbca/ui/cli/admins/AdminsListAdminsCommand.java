@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.admins;
 
 import java.util.Collection;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
@@ -28,11 +26,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsListAdminsCommand extends BaseAdminsCommand {
 
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
-
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
+    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
 
     public String getMainCommand() {
         return MAINCOMMAND;

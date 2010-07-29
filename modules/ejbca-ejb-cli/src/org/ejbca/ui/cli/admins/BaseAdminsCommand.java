@@ -16,8 +16,6 @@ package org.ejbca.ui.cli.admins;
 import java.rmi.RemoteException;
 import java.util.Map;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
@@ -32,14 +30,9 @@ public abstract class BaseAdminsCommand extends BaseCommand {
 
     protected static final String MAINCOMMAND = "admins";
 
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-
-    @EJB
-    private UserDataSourceSessionRemote userDataSourceSession;
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private UserDataSourceSessionRemote userDataSourceSession = ejb.getUserDataSourceSession();
     
     protected String getParsedAccessRule(String resource) throws NumberFormatException, RemoteException {
         // Check if it is a profile rule, then replace profile id with profile

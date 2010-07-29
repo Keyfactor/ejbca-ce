@@ -22,8 +22,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -45,17 +43,10 @@ import org.ejbca.util.FileTools;
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB 
-    private PublisherSessionRemote publisherSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private PublisherSessionRemote publisherSession = ejb.getPublisherSession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importprofiles"; }

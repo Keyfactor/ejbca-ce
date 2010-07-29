@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
 
 /**
@@ -24,8 +22,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
  */
 public class Upgrade extends BaseCommand {
 
-    @EJB
-    private UpgradeSessionRemote upgradeSession;
+    private UpgradeSessionRemote upgradeSession = ejb.getUpgradeSession();
 
     public String getMainCommand() {
         return null;

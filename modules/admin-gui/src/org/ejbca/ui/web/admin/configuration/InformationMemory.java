@@ -27,13 +27,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -57,13 +57,13 @@ public class InformationMemory implements Serializable {
     
     // Private fields
     private Admin administrator;
-    // Session Bean interfaces
-    private CAAdminSessionLocal caadminsession;
-    private RaAdminSessionLocal raadminsession;
-    private AuthorizationSessionLocal authorizationsession;
-    private PublisherSessionLocal publishersession;
-    private CertificateStoreSessionLocal certificatestoresession;
-    private UserDataSourceSessionLocal userdatasourcesession = null;
+    // Session Bean interfaces (was *Local originally)
+    private CAAdminSession caadminsession;
+    private RaAdminSession raadminsession;
+    private AuthorizationSession authorizationsession;
+    private PublisherSession publishersession;
+    private CertificateStoreSession certificatestoresession;
+    private UserDataSourceSession userdatasourcesession = null;
     
     // Memory variables.
     LogAuthorization logauthorization = null;
@@ -89,13 +89,13 @@ public class InformationMemory implements Serializable {
 
     /** Creates a new instance of ProfileNameProxy */
     public InformationMemory(Admin administrator,
-                             CAAdminSessionLocal  caadminsession,
-                             RaAdminSessionLocal raadminsession, 
-                             AuthorizationSessionLocal authorizationsession,
-                             CertificateStoreSessionLocal certificatestoresession,
-                             HardTokenSessionLocal hardtokensession,
-							 PublisherSessionLocal publishersession,
-							 UserDataSourceSessionLocal userdatasourcesession,
+                             CAAdminSession caadminsession,
+                             RaAdminSession raadminsession, 
+                             AuthorizationSession authorizationsession,
+                             CertificateStoreSession certificatestoresession,
+                             HardTokenSession hardtokensession,
+							 PublisherSession publishersession,
+							 UserDataSourceSession userdatasourcesession,
                              GlobalConfiguration globalconfiguration){
       this.caadminsession = caadminsession;                           
       this.administrator = administrator;

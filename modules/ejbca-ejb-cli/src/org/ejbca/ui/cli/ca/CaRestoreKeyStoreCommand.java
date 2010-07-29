@@ -17,8 +17,6 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Enumeration;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.FileTools;
@@ -31,8 +29,7 @@ import org.ejbca.util.FileTools;
  */
 public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "restorekeystore"; }

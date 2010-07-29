@@ -13,8 +13,6 @@
  
 package org.ejbca.ui.cli.ca;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -28,8 +26,7 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaDeactivateCACommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "deactivateca"; }
