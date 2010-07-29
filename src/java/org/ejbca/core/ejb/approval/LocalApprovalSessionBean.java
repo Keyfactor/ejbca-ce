@@ -831,12 +831,12 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
     }
 
     private Integer findFreeApprovalId() {
-        Random ran = (new Random((new Date()).getTime()));
+        Random ran = new Random((new Date()).getTime());
         int id = ran.nextInt();
         boolean foundfree = false;
         while (!foundfree) {
                 if (id > 1) {
-                	if (ApprovalData.findByApprovalId(entityManager, id) == null) {
+                	if (ApprovalData.findByApprovalId(entityManager, id).size() == 0) {
                         foundfree = true;
                 	}
                 }
