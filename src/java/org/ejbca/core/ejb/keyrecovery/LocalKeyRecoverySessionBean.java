@@ -33,7 +33,6 @@ import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -574,9 +573,6 @@ public class LocalKeyRecoverySessionBean implements KeyRecoverySessionLocal, Key
     	}
     	org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = null;
     	Collection<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> result = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByUserMark(entityManager, username);
-    	if (result.size() == 0) {
-    		throw new EJBException("Could not find user " + username);
-    	}
     	Iterator<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> i = result.iterator();
     	while (i.hasNext()) {
     		krd = i.next();
@@ -606,9 +602,6 @@ public class LocalKeyRecoverySessionBean implements KeyRecoverySessionLocal, Key
         boolean returnval = false;
         org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = null;
         Collection<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> result = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByUserMark(entityManager, username);
-        if (result.size() == 0) {
-        	throw new EJBException("Could not find user " + username);
-        }
         Iterator<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> i = result.iterator();
         while (i.hasNext()) {
         	krd = i.next();
