@@ -14,6 +14,8 @@ import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
 import javax.mail.Session;
 
+import org.apache.log4j.Logger;
+
 /**
  * A simple implementation of the ServiceLocator/HomeFactory J2EE Pattern.
  * {@link http://developer.java.sun.com/developer/restricted/patterns/ServiceLocator.html}
@@ -23,6 +25,8 @@ import javax.mail.Session;
  */
 public class ServiceLocator {
 
+    private static final Logger log = Logger.getLogger(ServiceLocator.class);
+    		
     /** ejb home cache */
     private transient Map ejbHomes = Collections.synchronizedMap(new HashMap());
 
@@ -155,6 +159,9 @@ public class ServiceLocator {
      */
     public Object getObject(String envName) throws ServiceLocatorException {
         try {
+        	if (log.isDebugEnabled()) {
+            	log.debug("Doing lookup of '" + envName + "'");
+        	}
             return ctx.lookup(envName);
         } catch (NamingException e) {
             throw new ServiceLocatorException(e);
