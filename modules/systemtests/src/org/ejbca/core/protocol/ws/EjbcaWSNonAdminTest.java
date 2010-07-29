@@ -24,7 +24,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.EJB;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
@@ -59,6 +58,7 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * 
@@ -74,30 +74,17 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private static int caid;
     private static GlobalConfiguration gc = null;
 
-    private List adminEntities;
+    private List<AdminEntity> adminEntities;
     private Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
     private Admin reqadmin;
 
-    @EJB
-    private CAAdminSessionRemote caAdminSessionRemote;
-
-    @EJB
-    private ApprovalSessionRemote approvalSessionRemote;
-
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-
-    @EJB
-    private HardTokenSessionRemote hardTokenSessionRemote;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
-
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
+    private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     
     public void test00SetupAccessRights() throws Exception {
         super.setupAccessRights();
@@ -300,11 +287,9 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
      * @throws ApprovalException
      */
     private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, Admin admin) throws RemoteException, ApprovalException {
-        Collection collection = approvalSessionRemote.findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
+        Collection<ApprovalDataVO> collection = approvalSessionRemote.findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
         if (!collection.isEmpty()) {
-            ApprovalDataVO approvalDataVO = null;
-            for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
-                approvalDataVO = (ApprovalDataVO) iterator.next();
+            for (ApprovalDataVO approvalDataVO : collection) {
                 approvalSessionRemote.removeApprovalRequest(admin, approvalDataVO.getId());
             }
         }
@@ -314,10 +299,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setupApprovals();
         ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
 
-        Collection result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
-        Iterator iter = result.iterator();
+        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        Iterator<ApprovalDataVO> iter = result.iterator();
         while (iter.hasNext()) {
-            ApprovalDataVO next = (ApprovalDataVO) iter.next();
+            ApprovalDataVO next = iter.next();
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         }
 
@@ -373,10 +358,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setupApprovals();
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, reqadmin, null, 1, 0, 0);
 
-        Collection result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
-        Iterator iter = result.iterator();
+        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        Iterator<ApprovalDataVO> iter = result.iterator();
         while (iter.hasNext()) {
-            ApprovalDataVO next = (ApprovalDataVO) iter.next();
+            ApprovalDataVO next = iter.next();
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         }
 
@@ -385,7 +370,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         iter = result.iterator();
         while (iter.hasNext()) {
-            ApprovalDataVO next = (ApprovalDataVO) iter.next();
+            ApprovalDataVO next = iter.next();
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         }
 
@@ -421,7 +406,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
 
-        adminEntities = new ArrayList();
+        adminEntities = new ArrayList<AdminEntity>();
         adminEntities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername1, caid));
         authorizationSession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
 
@@ -431,10 +416,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("p12/wsnonadmintest.jks"), "foo123".toCharArray());
-        Enumeration enumer = ks.aliases();
+        Enumeration<String> enumer = ks.aliases();
         X509Certificate reqadmincert = null;
         while (enumer.hasMoreElements()) {
-            String nextAlias = (String) enumer.nextElement();
+            String nextAlias = enumer.nextElement();
             if (nextAlias.equals("wsnonadmintest")) {
                 reqadmincert = (X509Certificate) ks.getCertificate(nextAlias);
             }

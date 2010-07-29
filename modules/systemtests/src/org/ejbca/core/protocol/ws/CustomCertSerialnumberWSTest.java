@@ -32,13 +32,14 @@ import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
+import org.ejbca.util.InterfaceCache;
 import org.jboss.logging.Logger;
 
 public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 	
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberWSTest.class);
 
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     
     public void test00SetupAccessRights() {
 	try {
@@ -89,8 +90,8 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 	KeyStore ksenv = ejbcaraws.softTokenRequest(user,null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
 	java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(),"PKCS12","foo123");
 	assertNotNull(keyStore);
-	Enumeration en = keyStore.aliases();
-	String alias = (String) en.nextElement();
+	Enumeration<String> en = keyStore.aliases();
+	String alias = en.nextElement();
 	X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
 	log.debug("wsfoo serno: " + cert.getSerialNumber());
 	assertTrue(cert.getSerialNumber().compareTo(serno) == 0);

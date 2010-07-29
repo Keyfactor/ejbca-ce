@@ -18,8 +18,6 @@ import java.security.cert.Certificate;
 import java.util.Enumeration;
 import java.util.Random;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -28,6 +26,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.NonEjbTestTools;
 
 /**
@@ -46,11 +45,8 @@ public class CertificateRequestSessionTest extends CaTestCase {
     private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     private final Random random = new Random();
 
-    @EJB
-    private CertificateRequestSessionRemote certificateRequestSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     public void test000Setup() {
         createTestCA();

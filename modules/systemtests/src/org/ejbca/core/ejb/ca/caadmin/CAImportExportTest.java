@@ -16,8 +16,6 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -28,6 +26,7 @@ import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests CA import and export.
@@ -36,8 +35,7 @@ public class CAImportExportTest extends TestCase  {
     private static Logger log = Logger.getLogger(CAImportExportTest.class);
     private static X509CAInfo cainfo = null;
     
-    @EJB
-    private CAAdminSessionRemote caadminsession;
+    private CAAdminSessionRemote caadminsession = InterfaceCache.getCAAdminSession();
 
     /**
      * Creates a new TestCAImportExport object.

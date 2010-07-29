@@ -13,13 +13,12 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests and removes the ca data entity bean.
@@ -30,8 +29,7 @@ public class RemoveCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     
     /**
      * Creates a new TestCAs object.

@@ -17,8 +17,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -31,6 +29,8 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the hard token related entity beans.
@@ -57,14 +57,10 @@ public class HardTokenTest extends CaTestCase {
             + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
             + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB 
-    private HardTokenSessionRemote hardTokenSessionRemote;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
+
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     
     /**
      * Creates a new TestHardToken object.
@@ -73,7 +69,7 @@ public class HardTokenTest extends CaTestCase {
      */
     public HardTokenTest(String name) {
         super(name);
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         assertTrue("Could not create TestCA.", createTestCA());
     }
 
@@ -100,7 +96,7 @@ public class HardTokenTest extends CaTestCase {
 
         SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
 
-        ArrayList certs = new ArrayList();
+        ArrayList<Certificate> certs = new ArrayList<Certificate>();
 
         certs.add(CertTools.getCertfromByteArray(testcert));
 

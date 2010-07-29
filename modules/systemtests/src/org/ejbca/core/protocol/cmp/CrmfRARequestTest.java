@@ -22,8 +22,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -40,6 +38,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -60,15 +59,9 @@ public class CrmfRARequestTest extends CmpTestCase {
     final private Admin admin;
     final private X509Certificate cacert;
 
-    @EJB
-    private CAAdminSessionRemote caAdminSessionRemote;
-
-    @EJB
-    private ConfigurationSessionRemote configurationSessionRemote;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
-
+    private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     public CrmfRARequestTest(String arg0) throws CertificateEncodingException, CertificateException, RemoteException {
         super(arg0);

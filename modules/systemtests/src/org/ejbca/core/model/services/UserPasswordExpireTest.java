@@ -15,8 +15,6 @@ package org.ejbca.core.model.services;
 
 import java.util.Properties;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -29,6 +27,7 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
+import org.ejbca.util.InterfaceCache;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -43,11 +42,8 @@ public class UserPasswordExpireTest extends CaTestCase {
     private static String username;
     private static String pwd;
 
-    @EJB
-    private ServiceSessionRemote serviceSession;
-
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /**
      * Creates a new TestUserPasswordExpire object.

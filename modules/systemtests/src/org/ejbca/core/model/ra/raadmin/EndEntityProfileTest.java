@@ -13,13 +13,12 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -32,8 +31,7 @@ public class EndEntityProfileTest extends TestCase {
     private static final Logger log = Logger.getLogger(EndEntityProfileTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    @EJB
-    private RaAdminSessionRemote raAdminSession;    
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();    
     
     /**
      * Creates a new TestEndEntityProfile object.

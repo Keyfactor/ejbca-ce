@@ -13,15 +13,12 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
-import javax.ejb.EJB;
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the global configuration entity bean.
@@ -33,9 +30,7 @@ public class GlobalConfigurationTest extends TestCase {
 
     private static GlobalConfiguration original = null;
     
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
 
     /**
      * Creates a new TestGlobalConfiguration object.
@@ -47,19 +42,10 @@ public class GlobalConfigurationTest extends TestCase {
     }
 
     public void setUp() throws Exception {
-
     }
 
     public void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
-    }
-
 
     /**
      * tests adding a global configuration

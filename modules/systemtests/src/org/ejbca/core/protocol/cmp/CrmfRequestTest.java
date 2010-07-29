@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Random;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJB;
 import javax.ejb.FinderException;
 import javax.naming.NamingException;
 
@@ -48,6 +47,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -72,14 +72,9 @@ public class CrmfRequestTest extends CmpTestCase {
     private static Admin admin;
     private static X509Certificate cacert = null;
     
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private ConfigurationSessionRemote configurationSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
 	public CrmfRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
 		super(arg0);
@@ -88,10 +83,10 @@ public class CrmfRequestTest extends CmpTestCase {
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caAdminSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
-            Collection caids = caAdminSession.getAvailableCAs(admin);
-            Iterator iter = caids.iterator();
+            Collection<Integer> caids = caAdminSession.getAvailableCAs(admin);
+            Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
-            	caid = ((Integer) iter.next()).intValue();
+            	caid = iter.next().intValue();
             }        	
         } else {
         	caid = adminca1.getCAId();
@@ -100,10 +95,10 @@ public class CrmfRequestTest extends CmpTestCase {
         	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }        	
         CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
-        Collection certs = cainfo.getCertificateChain();
+        Collection<X509Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            X509Certificate cert = (X509Certificate) certiter.next();
+            Iterator<X509Certificate> certiter = certs.iterator();
+            X509Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate

@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -27,7 +25,8 @@ import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests User Data Sources.
@@ -37,10 +36,9 @@ import org.ejbca.util.CertTools;
 public class UserDataSourceTest extends TestCase {
         
     private static final Logger log = Logger.getLogger(UserDataSourceTest.class);
-    @EJB
-    private UserDataSourceSessionRemote userDataSourceSession;
-    
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    
+    private UserDataSourceSessionRemote userDataSourceSession = InterfaceCache.getUserDataSourceSession();
     
     /**
      * Creates a new TestUserDataSource object.
@@ -49,7 +47,7 @@ public class UserDataSourceTest extends TestCase {
      */
     public UserDataSourceTest(String name) {
         super(name);
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
     }
     
     public void setUp() throws Exception {
@@ -139,14 +137,14 @@ public class UserDataSourceTest extends TestCase {
      */
     public void test05FetchFromDummy() throws Exception {
         log.trace(">test05FetchFromDummy()");
-        ArrayList userdatasources = new ArrayList();
+        ArrayList<Integer> userdatasources = new ArrayList<Integer>();
         userdatasources.add(new Integer(userDataSourceSession.getUserDataSourceId(admin, "TESTNEWDUMMYCUSTOM")));
 
-        Collection ret = userDataSourceSession.fetch(admin, userdatasources, "per");
+        Collection<UserDataSourceVO> ret = userDataSourceSession.fetch(admin, userdatasources, "per");
         assertTrue("Fetching data from dummy userdatasource failed", ret.size() == 1);
 
-        Iterator iter = ret.iterator();
-        UserDataSourceVO next = (UserDataSourceVO) iter.next();
+        Iterator<UserDataSourceVO> iter = ret.iterator();
+        UserDataSourceVO next = iter.next();
         assertTrue("Didn't get epected user data", next.getUserDataVO().getUsername().equals("PER"));
         log.trace("<test05FetchFromDummy()");
     }

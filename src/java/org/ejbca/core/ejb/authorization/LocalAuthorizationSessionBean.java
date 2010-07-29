@@ -953,11 +953,11 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
     /** Cache this local bean, because it will cause many many database lookups otherwise */
     private AuthorizationTreeUpdateData atu = null;
     /**
-     * Returns a reference to the AuthorizationTreeUpdateDataBean
+     * Returns a reference to the AuthorizationTreeUpdateData
      */
     private AuthorizationTreeUpdateData getAuthorizationTreeUpdateData() {
     	if (atu == null) {
-    		atu = AuthorizationTreeUpdateData.findByPrimeKey(entityManager, AuthorizationTreeUpdateDataBean.AUTHORIZATIONTREEUPDATEDATA);
+    		atu = AuthorizationTreeUpdateData.findByPrimeKey(entityManager, AuthorizationTreeUpdateData.AUTHORIZATIONTREEUPDATEDATA);
     		if (atu == null) {
                 try {
                 	AuthorizationTreeUpdateData temp = new AuthorizationTreeUpdateData();

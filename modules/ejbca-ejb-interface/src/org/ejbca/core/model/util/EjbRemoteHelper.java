@@ -31,6 +31,7 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
+import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
 
@@ -41,6 +42,27 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
  */
 public class EjbRemoteHelper {
 
+	private ApprovalSessionRemote approvalSession = null;
+	private AuthenticationSessionRemote authenticationSession = null;
+	private AuthorizationSessionRemote authorizationSession = null;
+	private CAAdminSessionRemote caAdminSession = null;
+	private CertificateRequestSessionRemote certificateRequestSession = null;
+	private CertificateStoreSessionRemote certificateStoreSession = null;
+	private ConfigurationSessionRemote configurationSession = null;
+	private CreateCRLSessionRemote crlSession = null;
+	private HardTokenSessionRemote hardTokenSession = null;
+	private KeyRecoverySessionRemote keyRecoverySession = null;
+	private LogSessionRemote logSession = null;
+	private ProtectedLogSessionRemote protectedLogSession = null;
+    private PublisherQueueSessionRemote publisherQueueSession = null;
+    private PublisherSessionRemote publisherSession = null;
+	private RaAdminSessionRemote raAdminSession = null;
+	private ServiceSessionRemote serviceSession = null;
+	private SignSessionRemote signSession = null;
+	private TableProtectSessionRemoteejb3 tableProtectSession = null;
+	private UpgradeSessionRemote upgradeSession = null;
+	private UserAdminSessionRemote userAdminSession = null;
+	private UserDataSourceSessionRemote userDataSourceSession = null;
 	/*
 	 * Return the environment entries locator. ServiceLocator caches the home interfaces.
 	 * @return return the environment entries locator
@@ -49,135 +71,118 @@ public class EjbRemoteHelper {
 		return ServiceLocator.getInstance();
 	}*/
 
-	private CAAdminSessionRemote caadminsession = null;
 	public CAAdminSessionRemote getCAAdminSession() { 		
-		if(caadminsession == null){	  
-			caadminsession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
+		if(caAdminSession == null){	  
+			caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
 		}
-		return caadminsession;
+		return caAdminSession;
 	}
 
-	private RaAdminSessionRemote raadminsession = null;
 	public RaAdminSessionRemote getRAAdminSession() {
-		if(raadminsession == null){
-			raadminsession = JndiHelper.getRemoteSession(RaAdminSessionRemote.class);
+		if(raAdminSession == null){
+			raAdminSession = JndiHelper.getRemoteSession(RaAdminSessionRemote.class);
 		}
-		return raadminsession;
+		return raAdminSession;
 	}
 
-	private CertificateStoreSessionRemote certstoresession = null;
 	public CertificateStoreSessionRemote getCertStoreSession() {
-		if(certstoresession == null){
-			certstoresession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
+		if(certificateStoreSession == null){
+			certificateStoreSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
 		}
-		return certstoresession;
+		return certificateStoreSession;
 	}
 
-	private SignSessionRemote signsession = null;
 	public SignSessionRemote getSignSession() {
-		if(signsession == null){	  
-			signsession = JndiHelper.getRemoteSession(SignSessionRemote.class);
+		if(signSession == null){	  
+			signSession = JndiHelper.getRemoteSession(SignSessionRemote.class);
 		}
-		return signsession;
+		return signSession;
 	}
 
-	private UserAdminSessionRemote useradmsession = null;
 	public UserAdminSessionRemote getUserAdminSession() {
-		if(useradmsession == null){	  
-			useradmsession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
+		if(userAdminSession == null){	  
+			userAdminSession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
 		}
-		return useradmsession;
+		return userAdminSession;
 	}
 
-	private KeyRecoverySessionRemote recoverysession = null;
 	public KeyRecoverySessionRemote getKeyRecoverySession() {
-		if(recoverysession == null){	  
-			recoverysession = JndiHelper.getRemoteSession(KeyRecoverySessionRemote.class);
+		if(keyRecoverySession == null){	  
+			keyRecoverySession = JndiHelper.getRemoteSession(KeyRecoverySessionRemote.class);
 		}
-		return recoverysession;
+		return keyRecoverySession;
 	}
 
-	private HardTokenSessionRemote tokensession = null;
 	public HardTokenSessionRemote getHardTokenSession() {
-		if(tokensession == null){	  
-			tokensession = JndiHelper.getRemoteSession(HardTokenSessionRemote.class);
+		if(hardTokenSession == null){	  
+			hardTokenSession = JndiHelper.getRemoteSession(HardTokenSessionRemote.class);
 		}
-		return tokensession;
+		return hardTokenSession;
 	}
 
-	private AuthorizationSessionRemote authsession = null;
 	public AuthorizationSessionRemote getAuthorizationSession() {
-		if(authsession == null){	  
-			authsession = JndiHelper.getRemoteSession(AuthorizationSessionRemote.class);
+		if(authorizationSession == null){	  
+			authorizationSession = JndiHelper.getRemoteSession(AuthorizationSessionRemote.class);
 		}
-		return authsession;
+		return authorizationSession;
 	}
 
-	private AuthenticationSessionRemote authentsession = null;
 	public AuthenticationSessionRemote getAuthenticationSession() {
-		if(authentsession == null){	  
-			authentsession = JndiHelper.getRemoteSession(AuthenticationSessionRemote.class);
+		if(authenticationSession == null){	  
+			authenticationSession = JndiHelper.getRemoteSession(AuthenticationSessionRemote.class);
 		}
-		return authentsession;
+		return authenticationSession;
 	}
 
-	private ApprovalSessionRemote approvalsession = null;
 	public ApprovalSessionRemote getApprovalSession() {
-		if(approvalsession == null){	  
-			approvalsession = JndiHelper.getRemoteSession(ApprovalSessionRemote.class);
+		if(approvalSession == null){	  
+			approvalSession = JndiHelper.getRemoteSession(ApprovalSessionRemote.class);
 		}
-		return approvalsession;
+		return approvalSession;
 	}
 
-	private UserDataSourceSessionRemote dssession = null;
 	public UserDataSourceSessionRemote getUserDataSourceSession() {
-		if(dssession == null){	  
-			dssession = JndiHelper.getRemoteSession(UserDataSourceSessionRemote.class);
+		if(userDataSourceSession == null){	  
+			userDataSourceSession = JndiHelper.getRemoteSession(UserDataSourceSessionRemote.class);
 		}
-		return dssession;
+		return userDataSourceSession;
 	}
 
-	private LogSessionRemote logsession = null;
 	public LogSessionRemote getLogSession() {
-		if(logsession == null){	  
-			logsession = JndiHelper.getRemoteSession(LogSessionRemote.class);
+		if(logSession == null){	  
+			logSession = JndiHelper.getRemoteSession(LogSessionRemote.class);
 		}
-		return logsession;
+		return logSession;
 	}
 
-    private PublisherQueueSessionRemote publisherQueueSession = null;
     public PublisherQueueSessionRemote getPublisherQueueSession() {
         if(publisherQueueSession == null){
             publisherQueueSession = JndiHelper.getRemoteSession(PublisherQueueSessionRemote.class);
         }
-        return this.publisherQueueSession;
+        return publisherQueueSession;
     }
     
-    private PublisherSessionRemote publishersession = null;
     public PublisherSessionRemote getPublisherSession() {
-        if(publishersession == null){     
-            publishersession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
+        if(publisherSession == null){     
+            publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
         }
-        return publishersession;
+        return publisherSession;
     }
     
-	private CreateCRLSessionRemote crlsession = null;
 	public CreateCRLSessionRemote getCrlSession() {
-		if(crlsession == null){	  
-			crlsession = JndiHelper.getRemoteSession(CreateCRLSessionRemote.class);
+		if(crlSession == null){	  
+			crlSession = JndiHelper.getRemoteSession(CreateCRLSessionRemote.class);
 		}
-		return crlsession;
+		return crlSession;
 	}
 
-	private CertificateRequestSessionRemote certreqsession = null;
 	public CertificateRequestSessionRemote getCertficateRequestSession() {
-		if(certreqsession == null){	  
-			certreqsession = JndiHelper.getRemoteSession(CertificateRequestSessionRemote.class);
+		if(certificateRequestSession == null){	  
+			certificateRequestSession = JndiHelper.getRemoteSession(CertificateRequestSessionRemote.class);
 		}
-		return certreqsession;
+		return certificateRequestSession;
 	}
 
-	private TableProtectSessionRemoteejb3 tableProtectSession = null;
 	public TableProtectSessionRemoteejb3 getTableProtectSession() {
 		if(tableProtectSession == null){	  
 			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemoteejb3.class);
@@ -185,7 +190,6 @@ public class EjbRemoteHelper {
 		return tableProtectSession;
 	}
 
-	private UpgradeSessionRemote upgradeSession = null;
 	public UpgradeSessionRemote getUpgradeSession() {
 		if (upgradeSession == null) {
 			upgradeSession = JndiHelper.getRemoteSession(UpgradeSessionRemote.class);
@@ -193,7 +197,6 @@ public class EjbRemoteHelper {
 		return upgradeSession;
 	}
 
-	private ConfigurationSessionRemote configurationSession = null;
 	public ConfigurationSessionRemote getConfigurationSession() {
 		if (configurationSession == null) {
 			configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
@@ -201,11 +204,17 @@ public class EjbRemoteHelper {
 		return configurationSession;
 	}
 
-	private ProtectedLogSessionRemote protectedLogSession;
 	public ProtectedLogSessionRemote getProtectedLogSession() {
 		if (protectedLogSession == null) {
 			protectedLogSession = JndiHelper.getRemoteSession(ProtectedLogSessionRemote.class);
 		}
 		return protectedLogSession;
+	}
+
+	public ServiceSessionRemote getServiceSession() {
+		if (serviceSession == null) {
+			serviceSession = JndiHelper.getRemoteSession(ServiceSessionRemote.class);
+		}
+		return serviceSession;
 	}
 }

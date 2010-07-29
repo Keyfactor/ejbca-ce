@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.ejb.EJB;
 import javax.xml.namespace.QName;
 
 import org.bouncycastle.asn1.DERSet;
@@ -63,6 +62,7 @@ import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 import org.jboss.logging.Logger;
 
@@ -75,23 +75,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSTest.class);
 
-    @EJB
-    private ApprovalSessionRemote approvalSessionRemote;
-
-    @EJB
-    private CAAdminSessionRemote caAdminSessionRemote;
-
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-
-    @EJB
-    private HardTokenSessionRemote hardTokenSessionRemote;
-
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
+    private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     private void setUpAdmin() throws Exception {
         super.setUp();
@@ -566,8 +555,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo123");
         assertNotNull(keyStore);
-        Enumeration en = keyStore.aliases();
-        String alias = (String) en.nextElement();
+        Enumeration<String> en = keyStore.aliases();
+        String alias = en.nextElement();
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
 
         String resultingSubjectDN = cert.getSubjectDN().toString();
@@ -652,9 +641,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        Collection userCerts = certificateStoreSession.findCertificatesByUsername(intAdmin, username);
+        Collection<X509Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(intAdmin, username);
         assertTrue(userCerts.size() == 1);
-        return (X509Certificate) userCerts.iterator().next();
+        return userCerts.iterator().next();
     }
 
 }

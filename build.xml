@@ -861,6 +861,10 @@
     	<ant antfile="modules/build.xml" target="ejbca-entity" />
     </target>
 
+	<target name="ejbca-ejb-interface">
+       	<ant antfile="modules/build.xml" target="ejbca-ejb-interface" />
+    </target>
+
     <target name="ejbca-ejb-cli" description="Builds EJBCA command line interface">
     	<ant antfile="build.xml" dir="modules" target="ejbca-ejb-cli" />
     </target>
@@ -971,5 +975,4 @@
 	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client">
     	<ant antfile="build.xml" dir="modules" target="batchenrollment-gui"/>
 	</target>
-
 </project>

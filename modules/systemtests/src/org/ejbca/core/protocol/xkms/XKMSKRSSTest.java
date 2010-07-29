@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.EJB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
@@ -63,6 +62,7 @@ import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -136,23 +136,12 @@ public class XKMSKRSSTest extends TestCase {
     private final static DocumentBuilderFactory dbf;
     private final static Random ran;
 
-    @EJB
-    private ApprovalSessionRemote approvalSession;
-    
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private KeyRecoverySessionRemote keyRecoverySession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     static {
         org.apache.xml.security.Init.init();
@@ -1166,11 +1155,11 @@ public class XKMSKRSSTest extends TestCase {
      */
     public int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
                     CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, int approvalCAID) throws Exception {
-        Collection userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
-        Iterator i = userCerts.iterator();
+        Collection<X509Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
+        Iterator<X509Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
         while ( i.hasNext() ) {
-            X509Certificate cert = (X509Certificate) i.next();
+            X509Certificate cert = i.next();
             String issuerDN = cert.getIssuerDN().toString();
             BigInteger serialNumber = cert.getSerialNumber();
             boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);

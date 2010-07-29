@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.ejb.approval;
 
 import java.io.File;
@@ -6,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
@@ -30,10 +41,15 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 
+/**
+ * @version $Id$
+ */
 public class ApprovalSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ApprovalSessionTest.class);
@@ -51,29 +67,20 @@ public class ApprovalSessionTest extends CaTestCase {
     private static Admin admin1 = null;
     private static Admin admin2 = null;
  
-    private static ArrayList adminentities;
+    private static ArrayList<AdminEntity> adminentities;
     private static GlobalConfiguration gc = null;
 
     private int caid = getTestCAId();
 
-    @EJB
-    private ApprovalSessionRemote approvalSessionRemote;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
-    
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
+    private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     
     public ApprovalSessionTest(String name) {
         super(name);
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         createTestCA();
     }
 
@@ -106,7 +113,7 @@ public class ApprovalSessionTest extends CaTestCase {
             makep12.createAllNew();
             tmpfile.delete();
 
-            adminentities = new ArrayList();
+            adminentities = new ArrayList<AdminEntity>();
             adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername1, caid));
             adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername2, caid));
             adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, reqadminusername, caid));
@@ -134,7 +141,7 @@ public class ApprovalSessionTest extends CaTestCase {
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
 
         // Test that the approvalrequest doesn't exists.
-        Collection result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
         assertTrue(result.size() == 0);
         approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest, gc);
 
@@ -142,7 +149,7 @@ public class ApprovalSessionTest extends CaTestCase {
         result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
         assertTrue(result.size() == 1);
 
-        ApprovalDataVO next = (ApprovalDataVO) result.iterator().next();
+        ApprovalDataVO next = result.iterator().next();
         assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
         assertTrue(next.getCAId() == caid);
         assertTrue(next.getEndEntityProfileiId() == SecConst.EMPTY_ENDENTITYPROFILE);
@@ -194,10 +201,10 @@ public class ApprovalSessionTest extends CaTestCase {
         Approval approval1 = new Approval("ap1test");
         approvalSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, gc);
 
-        Collection result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
         assertTrue(result.size() == 1);
 
-        ApprovalDataVO next = (ApprovalDataVO) result.iterator().next();
+        ApprovalDataVO next = result.iterator().next();
         assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
         assertTrue(next.getRemainingApprovals() == 1);
 
@@ -275,8 +282,8 @@ public class ApprovalSessionTest extends CaTestCase {
         Approval approval1 = new Approval("ap1test");
         approvalSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1, gc);
 
-        Collection result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        ApprovalDataVO next = (ApprovalDataVO) result.iterator().next();
+        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+        ApprovalDataVO next = result.iterator().next();
         assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
         assertTrue(next.getRemainingApprovals() == 1);
 
@@ -359,8 +366,8 @@ public class ApprovalSessionTest extends CaTestCase {
         status = approvalSessionRemote.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
         assertTrue(status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED);
 
-        Collection result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        ApprovalDataVO next = (ApprovalDataVO) result.iterator().next();
+        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+        ApprovalDataVO next = result.iterator().next();
 
         approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
 
@@ -416,8 +423,8 @@ public class ApprovalSessionTest extends CaTestCase {
         status = approvalSessionRemote.isApproved(reqadmin, approvalId, 2);
         assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);
 
-        Collection result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        ApprovalDataVO next = (ApprovalDataVO) result.iterator().next();
+        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+        ApprovalDataVO next = result.iterator().next();
 
         approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
 
@@ -437,10 +444,10 @@ public class ApprovalSessionTest extends CaTestCase {
         assertNotNull(result);
         assertTrue(result.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
 
-        Collection all = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        Iterator iter = all.iterator();
+        Collection<ApprovalDataVO> all = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+        Iterator<ApprovalDataVO> iter = all.iterator();
         while (iter.hasNext()) {
-            ApprovalDataVO next = (ApprovalDataVO) iter.next();
+            ApprovalDataVO next = iter.next();
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         }
 

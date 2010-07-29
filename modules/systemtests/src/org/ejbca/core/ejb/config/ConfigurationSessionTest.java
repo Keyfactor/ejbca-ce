@@ -15,11 +15,10 @@ package org.ejbca.core.ejb.config;
 
 import java.util.Properties;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests ConfigurationSessionBean
@@ -28,8 +27,7 @@ import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
  */
 public class ConfigurationSessionTest extends TestCase {
 
-    @EJB
-    private ConfigurationSessionRemote configurationSession;
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     
 	public ConfigurationSessionTest(String name) {
         super(name);

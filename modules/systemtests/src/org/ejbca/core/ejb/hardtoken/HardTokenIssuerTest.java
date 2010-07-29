@@ -13,16 +13,13 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
-import javax.ejb.EJB;
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.InterfaceCache;
 
 
 /**
@@ -33,10 +30,7 @@ import org.ejbca.core.model.log.Admin;
 public class HardTokenIssuerTest extends TestCase {
     private static Logger log = Logger.getLogger(HardTokenIssuerTest.class);
     
-    @EJB
-    private HardTokenSessionRemote cacheAdmin;
-
-
+    private HardTokenSessionRemote hardTokenSession = InterfaceCache.getHardTokenSession();
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -50,19 +44,10 @@ public class HardTokenIssuerTest extends TestCase {
     }
 
     public void setUp() throws Exception {
-
     }
 
     public void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
-    }
-
 
     /**
      * adds a issuer to the database
@@ -74,7 +59,7 @@ public class HardTokenIssuerTest extends TestCase {
         boolean ret = false;
         HardTokenIssuer issuer = new HardTokenIssuer();
         issuer.setDescription("TEST");
-        ret = cacheAdmin.addHardTokenIssuer(admin, "TEST", 3, issuer);
+        ret = hardTokenSession.addHardTokenIssuer(admin, "TEST", 3, issuer);
         assertTrue("Creating Hard Token Issuer failed", ret);
         log.trace("<test01AddHardTokenIssuer()");
     }
@@ -88,7 +73,7 @@ public class HardTokenIssuerTest extends TestCase {
         log.trace(">test02RenameHardTokenIssuer()");
 
         boolean ret = false;
-        ret = cacheAdmin.renameHardTokenIssuer(admin, "TEST", "TEST2", 4);
+        ret = hardTokenSession.renameHardTokenIssuer(admin, "TEST", "TEST2", 4);
         assertTrue("Renaming Hard Token Issuer failed", ret);
 
         log.trace("<test02RenameHardTokenIssuer()");
@@ -103,7 +88,7 @@ public class HardTokenIssuerTest extends TestCase {
         log.trace(">test03CloneHardTokenIssuer()");
 
         boolean ret = false;
-        ret = cacheAdmin.cloneHardTokenIssuer(admin, "TEST2", "TEST", 4);
+        ret = hardTokenSession.cloneHardTokenIssuer(admin, "TEST2", "TEST", 4);
 
         assertTrue("Cloning Certificate Profile failed", ret);
 
@@ -119,10 +104,10 @@ public class HardTokenIssuerTest extends TestCase {
     public void test04EditHardTokenIssuer() throws Exception {
         log.trace(">test04EditHardTokenIssuer()");
         boolean ret = false;
-        HardTokenIssuerData issuerdata = cacheAdmin.getHardTokenIssuerData(admin, "TEST");
+        HardTokenIssuerData issuerdata = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
         assertTrue("Retrieving HardTokenIssuer failed", issuerdata.getHardTokenIssuer().getDescription().equals("TEST"));
         issuerdata.getHardTokenIssuer().setDescription("TEST2");
-        ret = cacheAdmin.changeHardTokenIssuer(admin, "TEST", issuerdata.getHardTokenIssuer());
+        ret = hardTokenSession.changeHardTokenIssuer(admin, "TEST", issuerdata.getHardTokenIssuer());
         assertTrue("Editing HardTokenIssuer failed", ret);
         log.trace("<test04EditHardTokenIssuer()");
     }
@@ -136,8 +121,8 @@ public class HardTokenIssuerTest extends TestCase {
         log.trace(">test05removeHardTokenIssuers()");
         boolean ret = false;
         try {
-            cacheAdmin.removeHardTokenIssuer(admin, "TEST");
-            cacheAdmin.removeHardTokenIssuer(admin, "TEST2");
+            hardTokenSession.removeHardTokenIssuer(admin, "TEST");
+            hardTokenSession.removeHardTokenIssuer(admin, "TEST2");
             ret = true;
         } catch (Exception pee) {
         }

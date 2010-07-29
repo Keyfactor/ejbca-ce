@@ -17,15 +17,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.log.Admin;
-
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests authentication session used by signer.
@@ -41,8 +39,7 @@ public class AuthorizationSessionTest extends TestCase {
     private static int caid="CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
     private final static Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
+    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     
     /**
      * Creates a new TestAuthenticationSession object.
@@ -73,11 +70,11 @@ public class AuthorizationSessionTest extends TestCase {
         // Retrieve access rules and check that they were added
         AdminGroup ag = authorizationSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
-        Collection rules = ag.getAccessRules();
+        Collection<AccessRule> rules = ag.getAccessRules();
         assertEquals("Number of available access rules for AdminGroup.PUBLICWEBGROUPNAME was not the expected.", 8, rules.size());
 
         // Add some new strange access rules
-		ArrayList accessrules = new ArrayList();
+		ArrayList<AccessRule> accessrules = new ArrayList<AccessRule>();
 		accessrules.add(new AccessRule("/public_foo_user", AccessRule.RULE_ACCEPT, false));
 		accessrules.add(new AccessRule("/foo_functionality/basic_functions", AccessRule.RULE_ACCEPT, false));
 		accessrules.add(new AccessRule("/foo_functionality/view_certificate", AccessRule.RULE_ACCEPT, false));
@@ -88,10 +85,10 @@ public class AuthorizationSessionTest extends TestCase {
         assertNotNull(ag);
         rules = ag.getAccessRules();
         assertEquals(11, rules.size()); // We have added three rules
-        Iterator iter = rules.iterator();
+        Iterator<AccessRule> iter = rules.iterator();
         boolean found = false;
         while (iter.hasNext()) {
-        	AccessRule rule = (AccessRule)iter.next();
+        	AccessRule rule = iter.next();
         	if (rule.getAccessRule().equals("/foo_functionality/view_certificate")) {
         		found = true;
         	}

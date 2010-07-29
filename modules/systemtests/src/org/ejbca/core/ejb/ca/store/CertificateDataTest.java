@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.Random;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJB;
 
 import junit.framework.TestCase;
 
@@ -44,6 +43,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 
@@ -64,8 +64,7 @@ public class CertificateDataTest extends TestCase {
     private static String username = "";
     private static KeyPair keyPair;
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 
     /**
      * Creates a new TestCertificateData object.

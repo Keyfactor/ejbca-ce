@@ -19,8 +19,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -36,6 +34,8 @@ import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the log modules entity and session beans.
@@ -45,19 +45,14 @@ import org.ejbca.util.CertTools;
 public class ProtectTest extends TestCase {
     private static Logger log = Logger.getLogger(ProtectTest.class);
 
-    @EJB
-    private TableProtectSessionRemoteejb3 tableProtectSession;
-
-    private static ArrayList entrys = null;
+    private static ArrayList<LogEntry> entrys = null;
 
     private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    @EJB
-    private ConfigurationSessionRemote configurationSessionRemote;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
+    private TableProtectSessionRemoteejb3 tableProtectSession = InterfaceCache.getTableProtectSession();
+    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+
     /**
      * Creates a new TestLog object.
      *
@@ -65,7 +60,7 @@ public class ProtectTest extends TestCase {
      */
     public ProtectTest(String name) {
         super(name);
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
     }
 
     public void setUp() throws Exception {
@@ -82,7 +77,7 @@ public class ProtectTest extends TestCase {
     }
 
     private void createLogEntrys() {
-    	entrys = new ArrayList();
+    	entrys = new ArrayList<LogEntry>();
         Random rand = new Random();
         LogEntry le1 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogConstants.MODULE_CA, new Date(2), "foo", "123456", LogConstants.EVENT_ERROR_ADDEDENDENTITY, "foo comment 1");
         LogEntry le2 = new LogEntry(rand.nextInt(),Admin.TYPE_INTERNALUSER, "12345", -1, LogConstants.MODULE_CA, new Date(3), "foo", "123456", LogConstants.EVENT_ERROR_ADDEDENDENTITY, "foo comment 2");
@@ -103,9 +98,9 @@ public class ProtectTest extends TestCase {
      */
     public void test01ProtectLogEntry() throws Exception {
         log.trace(">test01ProtectLogEntry()");
-        Iterator iter = entrys.iterator();
+        Iterator<LogEntry> iter = entrys.iterator();
         while (iter.hasNext()) {
-        	LogEntry le = (LogEntry)iter.next();
+        	LogEntry le = iter.next();
             tableProtectSession.protect(le);        	
         }
         log.trace("<test01ProtectLogEntry()");
@@ -118,9 +113,9 @@ public class ProtectTest extends TestCase {
      */
     public void test02VerifyLogEntry() throws Exception {
         log.trace(">test02VerifyLogEntry()");
-        Iterator iter = entrys.iterator();
+        Iterator<LogEntry> iter = entrys.iterator();
         while (iter.hasNext()) {
-        	LogEntry le = (LogEntry)iter.next();
+        	LogEntry le = iter.next();
             TableVerifyResult res = tableProtectSession.verify(le);
             assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
         }

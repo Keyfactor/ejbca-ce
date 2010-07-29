@@ -19,8 +19,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
@@ -37,6 +35,7 @@ import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.InterfaceCache;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -60,17 +59,10 @@ public class PublisherQueueProcessTest extends TestCase {
             + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
             + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private PublisherQueueSessionRemote publisherQueueSession;
-    
-    @EJB 
-    private PublisherSessionRemote publisherSession;
-    
-    @EJB
-    private ServiceSessionRemote serviceSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
+    private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
+    private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
     
     /**
      * Creates a new TestUserPasswordExpire object.

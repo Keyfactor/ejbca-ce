@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
@@ -44,6 +42,7 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -66,8 +65,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     private static final int myCaId = issuerDN.hashCode();
     private static final String myOcspIp = "127.0.0.1";
 
-    @EJB
-    private CertificateStoreOnlyDataSessionRemote certificateStoreOnlyDataSession;
+    private CertificateStoreOnlyDataSessionRemote certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreOnlyDataSessionRemote.class);	// Stand alone OCSP version..
 
     public ProtocolOcspHttpStandaloneTest(String name) throws Exception {
         super(name, "http://" + myOcspIp + ":8080/ejbca", "publicweb/status/ocsp");
@@ -346,10 +344,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
 
     private X509Certificate getTestCert(boolean isRevoked) throws Exception {
         try {
-            Collection certs = certificateStoreOnlyDataSession.findCertificatesByUsername(admin, "ocspTest");
-            Iterator i = certs.iterator();
+            Collection<X509Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername(admin, "ocspTest");
+            Iterator<X509Certificate> i = certs.iterator();
             while (i.hasNext()) {
-                X509Certificate cert = (X509Certificate) i.next();
+                X509Certificate cert = i.next();
                 CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(issuerDN, CertTools.getSerialNumber(cert));
                 if (isRevoked == cs.equals(CertificateStatus.REVOKED)) {
                     return cert;
@@ -363,7 +361,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     }
 
     private X509Certificate getCaCert(X509Certificate cert) throws Exception {
-        Collection certs = certificateStoreOnlyDataSession.findCertificatesByType(admin, SecConst.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
+        Collection<X509Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(admin, SecConst.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
         assertTrue("Could not determine or find the CA cert.", certs != null && !certs.isEmpty());
         return (X509Certificate) certs.iterator().next();
     }

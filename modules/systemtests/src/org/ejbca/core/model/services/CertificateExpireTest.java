@@ -18,8 +18,6 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -34,6 +32,8 @@ import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 /** Tests the certificate expiration notifications.
@@ -52,17 +52,10 @@ public class CertificateExpireTest extends CaTestCase {
 
     private static final String CERTIFICATE_EXPIRATION_SERVICE = "CertificateExpirationService";
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private ServiceSessionRemote serviceSession;
-    
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     public CertificateExpireTest() {
         super();
@@ -70,7 +63,7 @@ public class CertificateExpireTest extends CaTestCase {
 
     public CertificateExpireTest(String name) {
         super(name);
-        CertTools.installBCProvider(); // Install BouncyCastle provider
+        CryptoProviderTools.installBCProvider(); // Install BouncyCastle provider
         assertTrue("Could not create TestCA.", createTestCA(CA_NAME));
     }
 

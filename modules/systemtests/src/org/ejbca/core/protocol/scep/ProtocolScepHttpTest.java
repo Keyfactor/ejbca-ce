@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.EJB;
 import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestSuite;
@@ -81,6 +80,7 @@ import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.gargoylesoftware.htmlunit.SubmitMethod;
@@ -136,13 +136,9 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private final String httpPort;
     private final String httpReqPath;
 
-    @EJB
-    private ConfigurationSessionRemote configurationSessionRemote;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    
     static {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();

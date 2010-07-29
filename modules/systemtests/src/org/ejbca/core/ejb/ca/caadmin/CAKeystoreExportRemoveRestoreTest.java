@@ -16,8 +16,6 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -32,6 +30,7 @@ import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests for the Soft catoken removal functionality.
@@ -47,11 +46,9 @@ import org.ejbca.util.CryptoProviderTools;
 public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
     private static final Logger log = Logger.getLogger(CAKeystoreExportRemoveRestoreTest.class);
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
 
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     
     public CAKeystoreExportRemoveRestoreTest(String name) {
         super(name);

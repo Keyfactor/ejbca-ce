@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -31,6 +29,8 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * @version $Id$
@@ -79,23 +79,22 @@ public class CertificateRetrivalTest extends TestCase {
 
     private static final Logger log = Logger.getLogger(CertificateRetrivalTest.class);
 
-    private HashSet m_certs;
-    private HashSet m_certfps;
+    private HashSet<Certificate> m_certs;
+    private HashSet<String> m_certfps;
     private String rootCaFp = null;
     private String subCaFp = null;
     private String endEntityFp = null;
     private Admin admin;
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 
-    private static void dumpCertificates(Collection certs) {
+    private static void dumpCertificates(Collection<Certificate> certs) {
         log.trace(">dumpCertificates()");
         if (null != certs && !certs.isEmpty()) {
-            Iterator iter = certs.iterator();
+            Iterator<Certificate> iter = certs.iterator();
 
             while (iter.hasNext()) {
-                Certificate obj = (Certificate) iter.next();
+                Certificate obj = iter.next();
                 log.debug("***** Certificate");
                 log.debug("   SubjectDN : " + CertTools.getSubjectDN(obj));
                 log.debug("   IssuerDN  : " + CertTools.getIssuerDN(obj));
@@ -112,11 +111,11 @@ public class CertificateRetrivalTest extends TestCase {
 
     public void setUp() throws Exception {
         log.trace(">setUp()");
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         Certificate cert;
         Admin adm = new Admin(Admin.TYPE_INTERNALUSER);
-        m_certs = new HashSet();
-        m_certfps = new HashSet();
+        m_certs = new HashSet<Certificate>();
+        m_certfps = new HashSet<String>();
         cert = CertTools.getCertfromByteArray(testrootcert);
         m_certs.add(cert);
         m_certfps.add(CertTools.getFingerprintAsString(cert));
@@ -263,14 +262,14 @@ public class CertificateRetrivalTest extends TestCase {
         Certificate rootcacert;
         Certificate subcacert;
         Certificate cert;
-        Vector sernos;
-        Collection certfps;
+        Vector<BigInteger> sernos;
+        Collection<Certificate> certfps;
 
         rootcacert = CertTools.getCertfromByteArray(testrootcert);
         subcacert = CertTools.getCertfromByteArray(testcacert);
         cert = CertTools.getCertfromByteArray(testcert);
 
-        sernos = new Vector();
+        sernos = new Vector<BigInteger>();
         sernos.add(CertTools.getSerialNumber(subcacert));
         sernos.add(CertTools.getSerialNumber(rootcacert));
         certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(admin, CertTools.getSubjectDN(rootcacert), sernos);
@@ -281,7 +280,7 @@ public class CertificateRetrivalTest extends TestCase {
         dumpCertificates(certfps);
         assertTrue("failed to list certs", certfps.size() == 2);
 
-        sernos = new Vector();
+        sernos = new Vector<BigInteger>();
         sernos.add(CertTools.getSerialNumber(cert));
         certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(admin, CertTools.getSubjectDN(subcacert), sernos);
         assertNotNull("failed to list certs", certfps);
@@ -327,13 +326,13 @@ public class CertificateRetrivalTest extends TestCase {
         Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
 
         // List all certificates to see
-        Collection certfps = certificateStoreSession.findCertificatesByType(admin, SecConst.CERTTYPE_SUBCA, CertTools.getSubjectDN(rootcacert));
+        Collection<Certificate> certfps = certificateStoreSession.findCertificatesByType(admin, SecConst.CERTTYPE_SUBCA, CertTools.getSubjectDN(rootcacert));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 1);
-        Iterator iter = certfps.iterator();
+        Iterator<Certificate> iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
-            Certificate cert = (Certificate) iter.next();
+            Certificate cert = iter.next();
             if (subCaFp.equals(CertTools.getFingerprintAsString(cert))) {
                 found = true;
             }
@@ -350,19 +349,19 @@ public class CertificateRetrivalTest extends TestCase {
     public void test08LoadRevocationInfo() throws Exception {
         log.trace(">test08LoadRevocationInfo()");
 
-        ArrayList revstats = new ArrayList();
+        ArrayList<CertificateStatus> revstats = new ArrayList<CertificateStatus>();
         Certificate rootcacert;
         Certificate subcacert;
 
-        ArrayList sernos = new ArrayList();
+        ArrayList<BigInteger> sernos = new ArrayList<BigInteger>();
         rootcacert = CertTools.getCertfromByteArray(testrootcert);
         subcacert = CertTools.getCertfromByteArray(testcacert);
         sernos.add(CertTools.getSerialNumber(rootcacert));
         sernos.add(CertTools.getSerialNumber(subcacert));
 
-        Iterator iter = sernos.iterator();
+        Iterator<BigInteger> iter = sernos.iterator();
         while (iter.hasNext()) {
-            BigInteger bi = (BigInteger) iter.next();
+            BigInteger bi = iter.next();
             CertificateStatus rev = certificateStoreSession.getStatus(CertTools.getSubjectDN(rootcacert), bi);
             revstats.add(rev);
         }
@@ -370,9 +369,9 @@ public class CertificateRetrivalTest extends TestCase {
         assertNotNull("Unable to retrive certificate revocation status.", revstats);
         assertTrue("Method 'isRevoked' does not return status for ALL certificates.", revstats.size() >= 2);
 
-        iter = revstats.iterator();
-        while (iter.hasNext()) {
-            CertificateStatus rci = (CertificateStatus) iter.next();
+        Iterator<CertificateStatus> iter2 = revstats.iterator();
+        while (iter2.hasNext()) {
+            CertificateStatus rci = iter2.next();
             log.debug("Certificate revocation information:\n" + "   Revocation date   : " + rci.revocationDate.toString() + "\n" + "   Revocation reason : "
                     + rci.revocationReason + "\n");
         }

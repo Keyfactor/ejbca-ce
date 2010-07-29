@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.crypto.SecretKey;
-import javax.ejb.EJB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -49,6 +48,8 @@ import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -92,12 +93,11 @@ public class XKMSSigTest extends TestCase {
 
     private static int caid;
 
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     static {
         try {
-            CertTools.installBCProvider();
+        	CryptoProviderTools.installBCProvider();
             org.apache.xml.security.Init.init();
 
             jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
@@ -223,7 +223,7 @@ public class XKMSSigTest extends TestCase {
         java.security.cert.X509Certificate pkCert = (java.security.cert.X509Certificate) clientKeyStore.getCertificate(alias);
         Key key = clientKeyStore.getKey(alias, "foo123".toCharArray());
         Certificate[] trustedcerts = clientKeyStore.getCertificateChain(alias);
-        ArrayList trustcol = new ArrayList();
+        ArrayList<Certificate> trustcol = new ArrayList<Certificate>();
         for (int i = 0; i < trustedcerts.length; i++) {
             if (((X509Certificate) trustedcerts[i]).getBasicConstraints() != -1) {
                 trustcol.add(trustedcerts[i]);
@@ -270,7 +270,7 @@ public class XKMSSigTest extends TestCase {
         java.security.cert.X509Certificate pkCert = (java.security.cert.X509Certificate) clientKeyStore.getCertificate(alias);
         Key key = clientKeyStore.getKey(alias, "foo123".toCharArray());
         Certificate[] trustedcerts = trustKeyStore.getCertificateChain("superadmin");
-        ArrayList trustcol = new ArrayList();
+        ArrayList<Certificate> trustcol = new ArrayList<Certificate>();
         for (int i = 0; i < trustedcerts.length; i++) {
             if (((X509Certificate) trustedcerts[i]).getBasicConstraints() != -1) {
                 trustcol.add(trustedcerts[i]);
@@ -321,7 +321,7 @@ public class XKMSSigTest extends TestCase {
         java.security.cert.X509Certificate pkCert = (java.security.cert.X509Certificate) clientKeyStore.getCertificate(alias);
         Key key = clientKeyStore.getKey(alias, "foo123".toCharArray());
         Certificate[] trustedcerts = clientKeyStore.getCertificateChain(alias);
-        ArrayList trustcol = new ArrayList();
+        ArrayList<Certificate> trustcol = new ArrayList<Certificate>();
         for (int i = 0; i < trustedcerts.length; i++) {
             if (((X509Certificate) trustedcerts[i]).getBasicConstraints() != -1) {
                 trustcol.add(trustedcerts[i]);

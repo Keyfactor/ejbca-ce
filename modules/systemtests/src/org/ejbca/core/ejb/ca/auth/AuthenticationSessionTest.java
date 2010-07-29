@@ -18,7 +18,6 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -40,8 +39,8 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
-
 
 /**
  * Tests authentication session used by signer.
@@ -60,20 +59,11 @@ public class AuthenticationSessionTest extends CaTestCase {
     private static String username2;
     private static String pwd2;
 
-    @EJB
-    private AuthenticationSessionRemote authenticationSessionRemote;
-
-    @EJB
-    private KeyRecoverySessionRemote keyRecoverySession;
-
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private AuthenticationSessionRemote authenticationSessionRemote = InterfaceCache.getAuthenticationSession();
+    private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /**
      * Creates a new TestAuthenticationSession object.

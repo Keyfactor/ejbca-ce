@@ -17,11 +17,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.log.LogSessionRemote;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.LogMatch;
 import org.ejbca.util.query.Query;
@@ -36,8 +35,7 @@ public class LogTest extends CaTestCase {
 
     private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    @EJB
-    private LogSessionRemote logSession;
+    private LogSessionRemote logSession = InterfaceCache.getLogSession();
     
     /**
      * Creates a new TestLog object.
@@ -85,21 +83,21 @@ public class LogTest extends CaTestCase {
     public void test02AddAndCheckLogEvents() throws Exception {
         log.trace(">test02AddAndCheckLogEvents()");
         logSession.log(admin, getTestCAId(), LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_UNKNOWN, "Test");
-        Collection logDeviceNames = logSession.getAvailableLogDevices();
-        Iterator iterator = logDeviceNames.iterator();
-        Collection result = null;
+        Collection<String> logDeviceNames = logSession.getAvailableLogDevices();
+        Iterator<String> iterator = logDeviceNames.iterator();
+        Collection<LogEntry> result = null;
         while (iterator.hasNext()) {
-        	String logDeviceName = (String) iterator.next();
+        	String logDeviceName = iterator.next();
         	if (logDeviceName.equalsIgnoreCase(Log4jLogDevice.DEFAULT_DEVICE_NAME)) {
         		continue;
         	}
         	Query query = new Query(Query.TYPE_LOGQUERY);
         	query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
         	result = logSession.query(logDeviceName, query, "", "caid=" + Integer.toString(getTestCAId()), 500);
-        	Iterator iter = result.iterator();
+        	Iterator<LogEntry> iter = result.iterator();
         	boolean found = false;
         	while (iter.hasNext()) {
-        		LogEntry entry = (LogEntry) iter.next();
+        		LogEntry entry = iter.next();
         		if ( (entry.getComment() != null) && (entry.getComment().equals("Test")) ) {
         			found = true;
         		}
