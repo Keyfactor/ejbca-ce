@@ -13,8 +13,6 @@
  
 package org.ejbca.ui.cli.ra;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -30,8 +28,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "revokeuser"; }

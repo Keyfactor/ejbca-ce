@@ -29,6 +29,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
@@ -40,14 +41,15 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public abstract class BaseCommand implements CliCommandPlugin {
 
-    private static Logger baseLog = Logger.getLogger(BaseCommand.class);
+	protected EjbRemoteHelper ejb = new EjbRemoteHelper();
+
+    //private static Logger baseLog = Logger.getLogger(BaseCommand.class);
     private static Logger log = null;
 
     /**
      * Not static since different object should go to different session beans
      * concurrently
      */
-
     private Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "cli");
 
     protected Logger getLogger() {

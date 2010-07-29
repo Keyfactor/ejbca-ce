@@ -16,8 +16,6 @@ package org.ejbca.ui.cli.config;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -29,8 +27,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class ConfigDumpCommand extends BaseCommand {
 
-    @EJB
-    private ConfigurationSessionRemote configurationSession;
+    private ConfigurationSessionRemote configurationSession = ejb.getConfigurationSession();
 
     public String getMainCommand() {
         return "config";

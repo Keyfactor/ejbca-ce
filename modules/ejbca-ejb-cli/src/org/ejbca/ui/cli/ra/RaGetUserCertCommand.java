@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.ra;
 
 import java.util.Collection;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
@@ -28,8 +26,7 @@ import org.ejbca.util.CertTools;
  */
 public class RaGetUserCertCommand extends BaseRaAdminCommand {
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "getusercert"; }

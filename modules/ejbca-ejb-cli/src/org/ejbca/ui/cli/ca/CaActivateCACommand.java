@@ -13,9 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import java.rmi.UnmarshalException;
-
-import javax.ejb.EJB;
 import javax.security.auth.login.FailedLoginException;
 
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -37,11 +34,8 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
 
     public String getMainCommand() {
         return MAINCOMMAND;

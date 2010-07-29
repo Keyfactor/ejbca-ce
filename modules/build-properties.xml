@@ -207,8 +207,10 @@
 	<path id="lib.jee.classpath">
 		<fileset dir="${appserver.home}">
 			<!-- JBoss 4.2.x -->
-			<include name="client/jbossall-client.jar" /> 	                         
-			<include name="client/jboss-j2ee.jar" /> 	 
+			<include name="client/jbossall-client.jar" />
+			<!--
+			<include name="client/jboss-j2ee.jar" />
+			--> 	 
 			<include name="client/jnp-client.jar" />			
 			<!-- JBoss 5.0.0 -->
 			<include name="client/jboss-javaee.jar" />
@@ -222,6 +224,12 @@
 			<include name="client/jbosssx-client.jar" />
 			<include name="client/jboss-integration.jar" />
 			<include name="client/xmlsec.jar" />
+			
+			<!-- JBoss 5.1.0 for Remote EJB-->
+	    	<include name="client/jboss-ejb3-*.jar"/>
+	    	<include name="client/jboss-aop-client.jar"/>
+	    	<include name="client/jboss-aspect-jdk50-client.jar"/>
+			
 			<!-- glassfish v2 -->
 			<include name="lib/javaee.jar"/>
 			<include name="lib/appserv-rt.jar"/>

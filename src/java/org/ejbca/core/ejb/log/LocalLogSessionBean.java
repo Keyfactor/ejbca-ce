@@ -25,7 +25,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -157,8 +156,10 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     private EntityManager entityManager;
 
 	//This might lead to a circular dependency when using EJB injection..
+    // We should wither create a new SessionBean or use @TransactionManagement(TransactionManagementType.BEAN) and @Resource private UserTransaction userTransaction; to manage the transactions ourselves.
     /*@EJB
     private LogSessionLocal logSession;*/
+    private LogSession logSession;
 
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList<ILogDevice> logdevices;
@@ -166,6 +167,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     @PostConstruct
     public void ejbCreate() {
         try {
+        	logSession = JndiHelper.getRemoteSession(LogSessionRemote.class);
             // Setup Connection to signing devices.
             logdevices = new ArrayList<ILogDevice>();
             // Load logging properties dynamically as interal resource
@@ -279,8 +281,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.transaction type="Supports"
      */
     public void setTestDeviceOnLogSession(Class implClass, String name) {
-    	//This might lead to a circular dependency when using EJB injection..
-    	/*logSession.*/setTestDevice(implClass, name);
+    	logSession.setTestDevice(implClass, name);
     }
 
     /**
@@ -293,8 +294,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.transaction type="Supports"
      */
     public void restoreTestDeviceOnLogSession() {
-    	//This might lead to a circular dependency when using EJB injection..
-    	/*logSession.*/restoreTestDevice();
+    	logSession.restoreTestDevice();
     }
 
     
@@ -322,7 +322,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.transaction type="Supports"
      */
     public void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment) {
-        log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment);
+        doLog(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, null);
     }
 
     /**
@@ -346,7 +346,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.transaction type="Supports"
      */
     public void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
-        log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
+        doLog(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
     }
 
     /**
@@ -357,8 +357,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     	while (i.hasNext()) {
     		ILogDevice dev = i.next();
     		try {
-    	    	//This might lead to a circular dependency when using EJB injection..
-   				/*logSession.*/doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
+   				logSession.doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
     		} catch (Throwable e) {
             	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
             			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
@@ -513,8 +512,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void testRollbackInternal(long rollbackTestTime) {
 		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-    	//This might lead to a circular dependency when using EJB injection..
-		/*logSession.*/log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
+		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, "Test of rollback resistance of log-system.", null);
 		throw new EJBException("Test of rollback resistance of log-system.");
 	}

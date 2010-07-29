@@ -17,8 +17,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -68,20 +66,11 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     private static final String SUPERADMINTOKENNAME = "SuperAdminToken";
     private static final String ADMINTOKENENDENTITYPROFILE = "Administration Token End Entity Profile";
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
-
-    @EJB 
-    private HardTokenSessionRemote hardTokenSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private HardTokenSessionRemote hardTokenSession = ejb.getHardTokenSession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
     public String getMainCommand() {
         return "setup";

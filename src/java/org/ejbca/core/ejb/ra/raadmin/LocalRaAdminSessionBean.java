@@ -263,7 +263,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)	// We access an entity manager.. we must have be in a transaction!
     public AdminPreference getDefaultAdminPreference(Admin admin){
     	if (log.isTraceEnabled()) {
     		log.trace(">getDefaultAdminPreference()");

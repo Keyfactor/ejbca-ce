@@ -56,7 +56,7 @@ public abstract class JndiHelper {
 		try {
 			return (T) getContext().lookup(jndiName);
 		} catch (ClassCastException e) {
-			log.error("JNDI object " + jndiName + " is not if type " + remoteInterface.getName());
+			log.error("JNDI object " + jndiName + " is not of type " + remoteInterface.getName());
 		} catch (NamingException e) {
 			log.error("", e);
 		}

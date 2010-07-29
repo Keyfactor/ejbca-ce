@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.ra;
 
 import java.util.List;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -30,8 +28,7 @@ import org.ejbca.util.CliTools;
  */
 public class RaDelUserCommand extends BaseRaAdminCommand {
 
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "deluser"; }

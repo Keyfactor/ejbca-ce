@@ -16,10 +16,7 @@ package org.ejbca.ui.cli.log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.rmi.RemoteException;
 import java.security.SecureRandom;
-
-import javax.ejb.EJB;
 
 import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -31,8 +28,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class LogResetExportProtectedLogCommand extends BaseLogAdminCommand {
 
-    @EJB
-    private ProtectedLogSessionRemote protectedLogSession;
+    private ProtectedLogSessionRemote protectedLogSession = ejb.getProtectedLogSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "resetexports"; }

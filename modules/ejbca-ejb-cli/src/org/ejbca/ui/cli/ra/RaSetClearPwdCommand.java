@@ -13,8 +13,6 @@
  
 package org.ejbca.ui.cli.ra;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -28,8 +26,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaSetClearPwdCommand extends BaseRaAdminCommand {
 
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "setclearpwd"; }

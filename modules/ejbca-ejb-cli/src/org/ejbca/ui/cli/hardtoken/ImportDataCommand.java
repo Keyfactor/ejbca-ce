@@ -17,8 +17,6 @@ import java.io.FileInputStream;
 import java.util.List;
 import java.util.Properties;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.hardtoken.HardTokenData;
@@ -43,11 +41,8 @@ import org.ejbca.util.CliTools;
  */
 public class ImportDataCommand extends BaseCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB 
-    private HardTokenSessionRemote hardTokenSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private HardTokenSessionRemote hardTokenSession = ejb.getHardTokenSession();
     
 	public String getMainCommand() { return "hardtoken"; }
 	public String getSubCommand() { return "importdata"; }

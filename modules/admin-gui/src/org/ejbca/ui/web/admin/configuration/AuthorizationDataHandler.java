@@ -16,8 +16,8 @@ package org.ejbca.ui.web.admin.configuration;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -34,14 +34,14 @@ import org.ejbca.core.model.log.Admin;
  */
 public class AuthorizationDataHandler implements java.io.Serializable {
 	
-	private CAAdminSessionLocal caAdminSession;
-    private AuthorizationSessionLocal authorizationsession;
+	private CAAdminSession caAdminSession;	// was *Local
+    private AuthorizationSession authorizationsession;	// was *Local
     private Admin administrator;    
     private Collection authorizedadmingroups;
     private InformationMemory informationmemory;
 
     /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, AuthorizationSessionLocal authorizationsession, CAAdminSessionLocal caAdminSession) {       
+    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, AuthorizationSession authorizationsession, CAAdminSession caAdminSession) {       
        this.authorizationsession = authorizationsession;
        this.caAdminSession = caAdminSession;
        this.administrator = administrator;

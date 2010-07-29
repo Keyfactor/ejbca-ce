@@ -17,8 +17,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -48,18 +46,12 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     private final String[] softtokennames = { USERGENERATED, P12, JKS, PEM };
     private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM };
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB 
-    private HardTokenSessionRemote hardTokenSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
-    
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private HardTokenSessionRemote hardTokenSession = ejb.getHardTokenSession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+
     public String getMainCommand() {
         return MAINCOMMAND;
     }
@@ -71,9 +63,6 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     public String getDescription() {
         return "Adds a user";
     }
-
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {

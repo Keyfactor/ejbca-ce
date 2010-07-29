@@ -19,8 +19,6 @@ import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -36,14 +34,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "exportprofiles"; }

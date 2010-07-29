@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -74,23 +72,12 @@ public class BatchMakeP12 extends BaseCommand {
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private Boolean usekeyrecovery = null;
 
-    @EJB
-    private AuthenticationSessionRemote authenticationSession;
-    
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private KeyRecoverySessionRemote keyRecoverySession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private AuthenticationSessionRemote authenticationSession = ejb.getAuthenticationSession();
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private KeyRecoverySessionRemote keyRecoverySession = ejb.getKeyRecoverySession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private SignSessionRemote signSession = ejb.getSignSession();
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
 
     public String getMainCommand() {
         return null;

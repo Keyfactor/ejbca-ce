@@ -16,8 +16,6 @@ package org.ejbca.ui.cli.ca;
 import java.io.FileOutputStream;
 import java.util.List;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
@@ -31,8 +29,7 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CreateCRLSessionRemote createCrlSession;
+    private CreateCRLSessionRemote createCrlSession = ejb.getCrlSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "getcrl"; }

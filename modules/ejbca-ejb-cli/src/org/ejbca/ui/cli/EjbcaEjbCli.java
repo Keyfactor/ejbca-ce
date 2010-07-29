@@ -56,6 +56,7 @@ public class EjbcaEjbCli {
 				}
 			} catch (Exception e) {
 				log.warn("Will not register plugin class " + command.getName() + ": " + e.getMessage());
+				log.debug("Will not register plugin class " + command.getName() + ": ", e);
 				continue;
 			}
 		}

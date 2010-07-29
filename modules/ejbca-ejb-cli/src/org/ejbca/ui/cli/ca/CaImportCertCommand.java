@@ -19,8 +19,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -42,17 +40,10 @@ import org.ejbca.util.FileTools;
  */
 public class CaImportCertCommand extends BaseCaAdminCommand {
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importcert"; }
