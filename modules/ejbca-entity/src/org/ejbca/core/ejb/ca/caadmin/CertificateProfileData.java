@@ -14,8 +14,8 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -152,7 +152,7 @@ public class CertificateProfileData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static CertificateProfileData findById(EntityManager entityManager, Integer id) {
-		return entityManager.find(CertificateProfileData.class,  id);
+		return entityManager.find(CertificateProfileData.class, id);
 	}
 	
 	/**
@@ -162,7 +162,7 @@ public class CertificateProfileData implements Serializable {
 	public static CertificateProfileData findByProfileName(EntityManager entityManager, String certificateProfileName) {
 		CertificateProfileData ret = null;
 		try {
-			Query query = entityManager.createQuery("from CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
+			Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
 			query.setParameter("certificateProfileName", certificateProfileName);
 			ret = (CertificateProfileData) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -171,8 +171,8 @@ public class CertificateProfileData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
-	public static Collection<CertificateProfileData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("from CertificateProfileData a");
+	public static List<CertificateProfileData> findAll(EntityManager entityManager) {
+		Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a");
 		return query.getResultList();
 	}
 }

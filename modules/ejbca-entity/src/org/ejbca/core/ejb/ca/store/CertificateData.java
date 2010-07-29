@@ -503,19 +503,19 @@ public class CertificateData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static CertificateData findByFingerprint(EntityManager entityManager, String fingerprint) {
-		return entityManager.find(CertificateData.class,  fingerprint);
+		return entityManager.find(CertificateData.class, fingerprint);
 	}
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findByExpireDate(EntityManager entityManager, long expireDate) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.expireDate<:expireDate");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate");
 		query.setParameter("expireDate", expireDate);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
 		query.setParameter("subjectDN", subjectDN);
 		query.setParameter("issuerDN", issuerDN);
 		return query.getResultList();
@@ -523,21 +523,21 @@ public class CertificateData implements Serializable {
 	
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.subjectDN=:subjectDN");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN");
 		query.setParameter("subjectDN", subjectDN);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.serialNumber=:serialNumber");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.serialNumber=:serialNumber");
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
@@ -545,14 +545,14 @@ public class CertificateData implements Serializable {
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findByUsername(EntityManager entityManager, String username) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.username=:username");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.username=:username");
 		query.setParameter("username", username);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findByUsernameAndStatus(EntityManager entityManager, String username, int status) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.username=:username AND a.status=:status ORDER BY a.expireDate DESC, a.serialNumber DESC");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status=:status ORDER BY a.expireDate DESC, a.serialNumber DESC");
 		query.setParameter("username", username);
 		query.setParameter("status", status);
 		return query.getResultList();
@@ -561,7 +561,7 @@ public class CertificateData implements Serializable {
 	/** @return return the query results as a List. */
 	// TODO: When only JPA is used, check if we can refactor this method to SELECT DISTINCT a.username FROM ...
 	public static List<CertificateData> findByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
-		Query query = entityManager.createQuery("SELECT a from CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("subjectKeyId", subjectKeyId);
 		return query.getResultList();
@@ -576,7 +576,7 @@ public class CertificateData implements Serializable {
 	 * @return
 	 */
 	public static List<CertificateData> getNextBatch(EntityManager entityManager, int certificateProfileId, String currentFingerprint, int batchSize) {
-		Query query = entityManager.createQuery("select a from CertificateData a WHERE a.fingerprint>:currentFingerprint AND a.certificateProfileId=:certificateProfileId order by a.fingerprint asc");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint AND a.certificateProfileId=:certificateProfileId order by a.fingerprint asc");
 		query.setParameter("certificateProfileId", certificateProfileId);
 		query.setParameter("currentFingerprint", currentFingerprint);
 		query.setMaxResults(batchSize);
@@ -592,7 +592,7 @@ public class CertificateData implements Serializable {
 	 * @return
 	 */
 	public static List<CertificateData> getNextBatch(EntityManager entityManager, String currentFingerprint, int batchSize) {
-		Query query = entityManager.createQuery("select a from CertificateData a WHERE a.fingerprint>:currentFingerprint order by a.fingerprint asc");
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint order by a.fingerprint asc");
 		query.setParameter("currentFingerprint", currentFingerprint);
 		query.setMaxResults(batchSize);
 		return query.getResultList();

@@ -14,7 +14,7 @@
 package org.ejbca.core.ejb.hardtoken;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -64,12 +64,14 @@ public class HardTokenCertificateMap implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static HardTokenCertificateMap findByCertificateFingerprint(EntityManager entityManager, String certificateFingerprint) {
-		return entityManager.find(HardTokenCertificateMap.class,  certificateFingerprint);
+		return entityManager.find(HardTokenCertificateMap.class, certificateFingerprint);
 	}
 
-	public static Collection<HardTokenCertificateMap> findByTokenSN(EntityManager entityManager, String tokenSN) {
-		Query query = entityManager.createQuery("from HardTokenCertificateMap a WHERE a.tokenSN=:tokenSN");
+	/** @return return the query results as a List. */
+	public static List<HardTokenCertificateMap> findByTokenSN(EntityManager entityManager, String tokenSN) {
+		Query query = entityManager.createQuery("SELECT a FROM HardTokenCertificateMap a WHERE a.tokenSN=:tokenSN");
 		query.setParameter("tokenSN", tokenSN);
 		return query.getResultList();
 	}

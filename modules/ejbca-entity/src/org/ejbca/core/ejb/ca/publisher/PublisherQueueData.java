@@ -202,14 +202,14 @@ public class PublisherQueueData implements Serializable {
 	
 	/** @return return the query results as a List. */
 	public static List<PublisherQueueData> findDataByFingerprint(EntityManager entityManager, String fingerprint) {
-		Query query = entityManager.createQuery("from PublisherQueueData a WHERE a.fingerprint=:fingerprint");
+		Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.fingerprint=:fingerprint");
 		query.setParameter("fingerprint", fingerprint);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
 	public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus) {
-		Query query = entityManager.createQuery("from PublisherQueueData a WHERE a.publisherId=:publisherId and a.publishStatus=:publishStatus");
+		Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus");
 		query.setParameter("publisherId", publisherId);
 		query.setParameter("publishStatus", publishStatus);
 		return query.getResultList();

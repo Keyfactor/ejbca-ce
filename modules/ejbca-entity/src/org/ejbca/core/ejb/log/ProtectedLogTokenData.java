@@ -17,7 +17,7 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -131,7 +131,7 @@ public class ProtectedLogTokenData implements Serializable {
 
     /** @return the found entity instance or null if the entity does not exist */
     public static ProtectedLogTokenData findByPk(EntityManager entityManager, String pk) {
-    	return entityManager.find(ProtectedLogTokenData.class,  pk);
+    	return entityManager.find(ProtectedLogTokenData.class, pk);
     }
 
 	/**
@@ -141,7 +141,7 @@ public class ProtectedLogTokenData implements Serializable {
     public static ProtectedLogTokenData findByTokenIdentifier(EntityManager entityManager, int tokenIdentifier) {
     	ProtectedLogTokenData ret = null;
     	try {
-    		Query query = entityManager.createQuery("from ProtectedLogTokenData a WHERE a.tokenIdentifier=:tokenIdentifier");
+    		Query query = entityManager.createQuery("SELECT a FROM ProtectedLogTokenData a WHERE a.tokenIdentifier=:tokenIdentifier");
     		query.setParameter("tokenIdentifier", tokenIdentifier);
     		ret = (ProtectedLogTokenData) query.getSingleResult();
     	} catch (NoResultException e) {
@@ -150,8 +150,8 @@ public class ProtectedLogTokenData implements Serializable {
     }    
 
 	/** @return return the query results as a List. */
-	public static Collection<ProtectedLogTokenData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("from ProtectedLogTokenData a");
+	public static List<ProtectedLogTokenData> findAll(EntityManager entityManager) {
+		Query query = entityManager.createQuery("SELECT a FROM ProtectedLogTokenData a");
 		return query.getResultList();
 	}
 }

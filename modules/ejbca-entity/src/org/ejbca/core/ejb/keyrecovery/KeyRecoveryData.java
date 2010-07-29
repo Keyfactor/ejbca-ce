@@ -115,19 +115,19 @@ public class KeyRecoveryData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
     public static KeyRecoveryData findByPK(EntityManager entityManager, KeyRecoveryDataPK pk) {
-    	return entityManager.find(KeyRecoveryData.class,  pk);
+    	return entityManager.find(KeyRecoveryData.class, pk);
     }
 
 	/** @return return the query results as a List. */
     public static List<KeyRecoveryData> findByUsername(EntityManager entityManager, String username) {
-    	Query query = entityManager.createQuery("from KeyRecoveryData a WHERE a.username=:username");
+    	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:username");
     	query.setParameter("username", username);
     	return query.getResultList();
     }    
 	 
 	/** @return return the query results as a List. */
     public static List<KeyRecoveryData> findByUserMark(EntityManager entityManager, String usermark) {
-    	Query query = entityManager.createQuery("from KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverable=TRUE");
+    	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverable=TRUE");
     	query.setParameter("usermark", usermark);
     	return query.getResultList();
     }    

@@ -14,7 +14,7 @@
 package org.ejbca.core.ejb.log;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -204,7 +204,7 @@ public class ProtectedLogExportData implements Serializable {
 
     /** @return the found entity instance or null if the entity does not exist */
 	public static ProtectedLogExportData findByPk(EntityManager entityManager, String pk) {
-		return entityManager.find(ProtectedLogExportData.class,  pk);
+		return entityManager.find(ProtectedLogExportData.class, pk);
 	}
 
 	/**
@@ -214,7 +214,7 @@ public class ProtectedLogExportData implements Serializable {
 	public static ProtectedLogExportData findByExportStartTime(EntityManager entityManager, long exportStartTime) {
 		ProtectedLogExportData ret = null;
 		try {
-			Query query = entityManager.createQuery("from ProtectedLogExportData a WHERE a.exportStartTime=:exportStartTime");
+			Query query = entityManager.createQuery("SELECT a FROM ProtectedLogExportData a WHERE a.exportStartTime=:exportStartTime");
 			query.setParameter("exportStartTime", exportStartTime);
 			ret = (ProtectedLogExportData) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -223,8 +223,8 @@ public class ProtectedLogExportData implements Serializable {
 	}    
 
 	/** @return return the query results as a List. */
-	public static Collection<ProtectedLogExportData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("from ProtectedLogExportData a");
+	public static List<ProtectedLogExportData> findAll(EntityManager entityManager) {
+		Query query = entityManager.createQuery("SELECT a FROM ProtectedLogExportData a");
 		return query.getResultList();
 	}    
 }

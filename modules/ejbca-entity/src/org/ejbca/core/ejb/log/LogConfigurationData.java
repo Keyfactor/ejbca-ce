@@ -119,12 +119,6 @@ public class LogConfigurationData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static LogConfigurationData findByPK(EntityManager entityManager, Integer id) {
-		return entityManager.find(LogConfigurationData.class,  id);
+		return entityManager.find(LogConfigurationData.class, id);
 	}
-
-	/*
-	public static LogConfigurationData findFirst(EntityManager entityManager) {
-    	return entityManager.find(LogConfigurationData.class,  new Integer(0));
-    }
-    */
 }

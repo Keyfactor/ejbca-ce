@@ -126,7 +126,7 @@ public class TableProtectData implements Serializable {
 
 	/** @return return the query results as a List. */
 	public static TableProtectData findById(EntityManager entityManager, String id) {
-		return entityManager.find(TableProtectData.class,  id);
+		return entityManager.find(TableProtectData.class, id);
 	}
 
 	/**
@@ -136,7 +136,7 @@ public class TableProtectData implements Serializable {
 	public static TableProtectData findByDbTypeAndKey(EntityManager entityManager, String dbType, String dbKey) {
 		TableProtectData ret = null;
 		try {
-			Query query = entityManager.createQuery("from TableProtectDataBean a WHERE a.dbType=:dbType AND a.dbKey=:dbKey");
+			Query query = entityManager.createQuery("SELECT a FROM TableProtectDataBean a WHERE a.dbType=:dbType AND a.dbKey=:dbKey");
 			query.setParameter("dbType", dbType);
 			query.setParameter("dbKey", dbKey);
 			ret = (TableProtectData) query.getSingleResult();

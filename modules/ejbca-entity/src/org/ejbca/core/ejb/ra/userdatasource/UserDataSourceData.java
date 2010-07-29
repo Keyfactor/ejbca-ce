@@ -127,7 +127,7 @@ public class UserDataSourceData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
     public static UserDataSourceData findById(EntityManager entityManager, int id) {
-    	return entityManager.find(UserDataSourceData.class,  id);
+    	return entityManager.find(UserDataSourceData.class, id);
     }
 
 	/**
@@ -137,7 +137,7 @@ public class UserDataSourceData implements Serializable {
     public static UserDataSourceData findByName(EntityManager entityManager, String name) {
     	UserDataSourceData ret = null;
     	try {
-    		Query query = entityManager.createQuery("from UserDataSourceData a WHERE a.name=:name");
+    		Query query = entityManager.createQuery("SELECT a FROM UserDataSourceData a WHERE a.name=:name");
     		query.setParameter("name", name);
     		ret = (UserDataSourceData) query.getSingleResult();
     	} catch (NoResultException e) {
@@ -147,7 +147,7 @@ public class UserDataSourceData implements Serializable {
     
 	/** @return return the query results as a List. */
     public static List<UserDataSourceData> findAll(EntityManager entityManager) {
-    	Query query = entityManager.createQuery("from UserDataSourceData a");
+    	Query query = entityManager.createQuery("SELECT a FROM UserDataSourceData a");
     	return query.getResultList();
     }
 }

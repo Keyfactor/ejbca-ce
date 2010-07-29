@@ -14,7 +14,7 @@
 package org.ejbca.core.ejb.log;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -291,7 +291,7 @@ public class ProtectedLogData implements Serializable {
 	public static ProtectedLogData findByNodeGUIDandCounter(EntityManager entityManager, int nodeGUID, long counter) {
 		ProtectedLogData ret = null;
 		try {
-			Query query = entityManager.createQuery("from ProtectedLogData a WHERE a.nodeGUID=:nodeGUID AND a.counter=:counter");
+			Query query = entityManager.createQuery("SELECT a FROM ProtectedLogData a WHERE a.nodeGUID=:nodeGUID AND a.counter=:counter");
 			query.setParameter("nodeGUID", nodeGUID);
 			query.setParameter("counter", counter);
 			ret = (ProtectedLogData) query.getSingleResult();
@@ -301,16 +301,16 @@ public class ProtectedLogData implements Serializable {
 	}    
 
 	/** @return return the query results as a List. */
-	public static Collection<ProtectedLogData> findNewProtectedLogEvents(EntityManager entityManager, int nodeToExclude, long newerThan) {
-		Query query = entityManager.createQuery("from ProtectedLogData a WHERE a.nodeGUID<>:nodeToExclude AND a.eventTime>=:newerThan AND a.b64Protection IS NOT NULL");
+	public static List<ProtectedLogData> findNewProtectedLogEvents(EntityManager entityManager, int nodeToExclude, long newerThan) {
+		Query query = entityManager.createQuery("SELECT a FROM ProtectedLogData a WHERE a.nodeGUID<>:nodeToExclude AND a.eventTime>=:newerThan AND a.b64Protection IS NOT NULL");
 		query.setParameter("nodeToExclude", nodeToExclude);
 		query.setParameter("newerThan", newerThan);
 		return query.getResultList();
 	}    
 
 	/** @return return the query results as a List. */
-	public static Collection<ProtectedLogData> findProtectedLogEventsByTime(EntityManager entityManager, long eventTime) {
-		Query query = entityManager.createQuery("from ProtectedLogData a WHERE a.eventTime=:eventTime");
+	public static List<ProtectedLogData> findProtectedLogEventsByTime(EntityManager entityManager, long eventTime) {
+		Query query = entityManager.createQuery("SELECT a FROM ProtectedLogData a WHERE a.eventTime=:eventTime");
 		query.setParameter("eventTime", eventTime);
 		return query.getResultList();
 	}    
@@ -319,8 +319,8 @@ public class ProtectedLogData implements Serializable {
 	 * Using this method would probably send a database to a long and painful near death experience.. =/
 	 * @return return the query results as a List.
 	 */
-	public static Collection<ProtectedLogData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("from ProtectedLogData a");
+	public static List<ProtectedLogData> findAll(EntityManager entityManager) {
+		Query query = entityManager.createQuery("SELECT a FROM ProtectedLogData a");
 		return query.getResultList();
 	}    
 }

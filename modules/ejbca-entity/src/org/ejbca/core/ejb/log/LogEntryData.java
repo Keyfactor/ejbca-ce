@@ -134,13 +134,8 @@ public class LogEntryData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static LogEntryData findById(EntityManager entityManager, Integer id) {
-		return entityManager.find(LogEntryData.class,  id);
+		return entityManager.find(LogEntryData.class, id);
 	}
-
-	// First step in refactoring for LocalLogSessionBean.query
-	public static LogEntryData findByName(EntityManager entityManager, String queryString) {
-		Query query = entityManager.createQuery("from LogEntryData a WHERE " + queryString);
-		return (LogEntryData) query.getSingleResult();
-	}    
 }

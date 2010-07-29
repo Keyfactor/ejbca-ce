@@ -129,7 +129,7 @@ public class HardTokenData implements Serializable {
 
 	/** @return return the query results as a List. */
     public static List<HardTokenData> findByUsername(EntityManager entityManager, String username) {
-    	Query query = entityManager.createQuery("from HardTokenData a WHERE a.username=:username");
+    	Query query = entityManager.createQuery("SELECT a FROM HardTokenData a WHERE a.username=:username");
     	query.setParameter("username", username);
     	return query.getResultList();
     }
