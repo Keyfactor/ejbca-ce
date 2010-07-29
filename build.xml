@@ -186,6 +186,13 @@
     		</fileset>
     	</unjar>
     	<copy file="${dist.dir}/ejbca-util.jar" tofile="${dist.dir}/ejbca-ejb.jar" overwrite="true"/>
+    	<copy todir="${build}" failonerror="true">
+    		<fileset dir="${ejbca.home}/modules/ejbca-ejb/resources/" includes="META-INF/ejb-jar.xml"/>
+			<filterchain>
+				<expandproperties/>
+			</filterchain>
+		</copy>
+        <fileset dir="" includes="META-INF/*.*"/>
         <jar jarfile="${dist.dir}/ejbca-ejb.jar" update="true">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
@@ -207,7 +214,7 @@
             <fileset dir="${ejbca.home}/src">
 				<include name="internal.properties"/>
 			</fileset>	
-            <fileset dir="src/upgrade"/>
+            <fileset dir="${ejbca.home}/src/upgrade"/>
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
         	</fileset>	
