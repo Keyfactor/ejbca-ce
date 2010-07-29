@@ -19,8 +19,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
@@ -38,6 +36,8 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -48,16 +48,11 @@ import org.ejbca.util.keystore.KeyTools;
 public class AddLotsofCertsPerUserTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AddLotsofCertsPerUserTest.class);
 
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
-    @EJB
-    private SignSessionRemote signSession;
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    @EJB
-    private CreateCRLSessionRemote createCrlSession;
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CreateCRLSessionRemote createCrlSession = InterfaceCache.getCrlSession();
 
     private int userNo = 0;
     private KeyPair keys;
@@ -67,7 +62,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
      */
     public AddLotsofCertsPerUserTest(String name) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         super(name);
-        CertTools.installBCProviderIfNotAvailable();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         keys = KeyTools.genKeys("2048", "RSA");
     }
 

@@ -15,13 +15,12 @@ package org.ejbca.ui.cli.batch;
 
 import java.io.File;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.InterfaceCache;
 
 /** Tests the batch making of soft cards.
  *
@@ -33,8 +32,7 @@ public class BatchMakeP12Test extends CaTestCase {
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private int caid = getTestCAId();
 
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
     /**
      * Creates a new TestBatchMakeP12 object.

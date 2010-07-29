@@ -10,6 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.core.model.approval.approvalrequests;
 
 import java.io.File;
@@ -17,8 +18,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
-
-import javax.ejb.EJB;
 
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
@@ -44,10 +43,9 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 public class RevocationApprovalTest extends CaTestCase {
-
-    
 
     private static String requestingAdminUsername = null;
     private static String adminUsername = null;
@@ -55,22 +53,13 @@ public class RevocationApprovalTest extends CaTestCase {
     private static final Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
     private static Admin reuestingAdmin = null;
     private static Admin approvingAdmin = null;
-    private static ArrayList adminentities;
+    private static ArrayList<AdminEntity> adminentities;
     
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
-
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private ApprovalSessionRemote approvalSessionRemote;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     
     private int caid = getTestCAId();
     private int approvalCAID;
@@ -97,7 +86,7 @@ public class RevocationApprovalTest extends CaTestCase {
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        adminentities = new ArrayList();
+        adminentities = new ArrayList<AdminEntity>();
         adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminUsername, caid));
         adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, requestingAdminUsername, caid));
         authorizationSession.addAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
@@ -151,7 +140,7 @@ public class RevocationApprovalTest extends CaTestCase {
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         ((SoftCATokenInfo) catokeninfo).setEncKeySpec("1024");
-        ArrayList approvalSettings = new ArrayList();
+        ArrayList<Integer> approvalSettings = new ArrayList<Integer>();
         approvalSettings.add(approvalRequirementType);
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, new Date(
                 System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo, "Used for testing approvals",

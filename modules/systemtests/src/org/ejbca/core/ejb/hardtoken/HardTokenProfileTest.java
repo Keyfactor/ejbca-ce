@@ -15,9 +15,6 @@ package org.ejbca.core.ejb.hardtoken;
 
 import java.util.Arrays;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -27,8 +24,8 @@ import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
-
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the hard token profile entity bean.
@@ -37,12 +34,10 @@ import org.ejbca.util.CertTools;
  */
 public class HardTokenProfileTest extends TestCase {
     private static Logger log = Logger.getLogger(HardTokenProfileTest.class);
-    private IHardTokenSessionRemote cacheAdmin;
+
+    private HardTokenSessionRemote hardTokenSession = InterfaceCache.getHardTokenSession();
 
     private static int SVGFILESIZE = 512 * 1024; // 1/2 Mega char
-
-
-    private static IHardTokenSessionHome cacheHome;
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -57,29 +52,12 @@ public class HardTokenProfileTest extends TestCase {
 
     public void setUp() throws Exception {
         log.trace(">setUp()");
-        CertTools.installBCProvider();
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup("HardTokenSession");
-                cacheHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
-
-            }
-            cacheAdmin = cacheHome.create();
-        }
+        CryptoProviderTools.installBCProvider();
         log.trace("<setUp()");
     }
 
     public void tearDown() throws Exception {
     }
-
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
-    }
-
 
     /**
      * adds a profile to the database
@@ -100,13 +78,13 @@ public class HardTokenProfileTest extends TestCase {
             profile2.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, true);
 
 
-            cacheAdmin.addHardTokenProfile(admin, "SWETEST", profile);
-            cacheAdmin.addHardTokenProfile(admin, "ENHTEST", profile2);
-            cacheAdmin.addHardTokenProfile(admin, "TURTEST", turprofile);
+            hardTokenSession.addHardTokenProfile(admin, "SWETEST", profile);
+            hardTokenSession.addHardTokenProfile(admin, "ENHTEST", profile2);
+            hardTokenSession.addHardTokenProfile(admin, "TURTEST", turprofile);
 
-            SwedishEIDProfile profile3 = (SwedishEIDProfile) cacheAdmin.getHardTokenProfile(admin, "SWETEST");
-            EnhancedEIDProfile profile4 = (EnhancedEIDProfile) cacheAdmin.getHardTokenProfile(admin, "ENHTEST");
-            TurkishEIDProfile turprofile2 = (TurkishEIDProfile) cacheAdmin.getHardTokenProfile(admin, "TURTEST");
+            SwedishEIDProfile profile3 = (SwedishEIDProfile) hardTokenSession.getHardTokenProfile(admin, "SWETEST");
+            EnhancedEIDProfile profile4 = (EnhancedEIDProfile) hardTokenSession.getHardTokenProfile(admin, "ENHTEST");
+            TurkishEIDProfile turprofile2 = (TurkishEIDProfile) hardTokenSession.getHardTokenProfile(admin, "TURTEST");
 
             String svgdata2 = profile3.getPINEnvelopeData();
 
@@ -132,7 +110,7 @@ public class HardTokenProfileTest extends TestCase {
 
         boolean ret = false;
         try {
-            cacheAdmin.renameHardTokenProfile(admin, "SWETEST", "SWETEST2");
+            hardTokenSession.renameHardTokenProfile(admin, "SWETEST", "SWETEST2");
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
         }
@@ -151,7 +129,7 @@ public class HardTokenProfileTest extends TestCase {
 
         boolean ret = false;
         try {
-            cacheAdmin.cloneHardTokenProfile(admin, "SWETEST2", "SWETEST");
+            hardTokenSession.cloneHardTokenProfile(admin, "SWETEST2", "SWETEST");
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
         }
@@ -169,9 +147,9 @@ public class HardTokenProfileTest extends TestCase {
     public void test04EditHardTokenProfile() throws Exception {
         log.trace(">test04EditHardTokenProfile()");
         boolean ret = false;
-        HardTokenProfile profile = cacheAdmin.getHardTokenProfile(admin, "ENHTEST");
+        HardTokenProfile profile = hardTokenSession.getHardTokenProfile(admin, "ENHTEST");
         profile.setHardTokenSNPrefix("11111");
-        cacheAdmin.changeHardTokenProfile(admin, "ENHTEST", profile);
+        hardTokenSession.changeHardTokenProfile(admin, "ENHTEST", profile);
         ret = true;
         assertTrue("Editing HardTokenProfile failed", ret);
         log.trace("<test04EditHardTokenProfile()");
@@ -187,10 +165,10 @@ public class HardTokenProfileTest extends TestCase {
         boolean ret = false;
         try {
             // Remove all except ENHTEST
-            cacheAdmin.removeHardTokenProfile(admin, "SWETEST");
-            cacheAdmin.removeHardTokenProfile(admin, "SWETEST2");
-            cacheAdmin.removeHardTokenProfile(admin, "ENHTEST");
-            cacheAdmin.removeHardTokenProfile(admin, "TURTEST");
+            hardTokenSession.removeHardTokenProfile(admin, "SWETEST");
+            hardTokenSession.removeHardTokenProfile(admin, "SWETEST2");
+            hardTokenSession.removeHardTokenProfile(admin, "ENHTEST");
+            hardTokenSession.removeHardTokenProfile(admin, "TURTEST");
             ret = true;
         } catch (Exception pee) {
         }

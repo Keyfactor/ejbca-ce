@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
@@ -31,14 +30,14 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the CertTools class.
@@ -52,11 +51,7 @@ public class CmsCAServiceTest extends CaTestCase {
 
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);;
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-
-    @EJB
-    private SignSessionRemote signSession;
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     
     /**
      * Creates a new TestCertTools object.
@@ -67,13 +62,13 @@ public class CmsCAServiceTest extends CaTestCase {
     public CmsCAServiceTest(String name) throws Exception {
         super(name);
         // Install BouncyCastle provider
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         assertTrue("Could not create TestCA.", createTestCA());
     }
 
     public void setUp() throws Exception {
         log.trace(">setUp()");
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         log.trace("<setUp()");
     }
 
@@ -85,7 +80,7 @@ public class CmsCAServiceTest extends CaTestCase {
         // First try a request when the service is not active
         boolean active = true;
         try {
-            signSession.extendedService(admin, getTestCAId(), request);
+            caAdminSession.extendedService(admin, getTestCAId(), request);
         } catch (ExtendedCAServiceNotActiveException e) {
             active = false;
         }
@@ -98,7 +93,7 @@ public class CmsCAServiceTest extends CaTestCase {
     public void test02ActivateCmsCAService() throws Exception {
         // Activate the CMS service in the CA
         CAInfo cainfo = caAdminSession.getCAInfo(admin, "TEST");
-        ArrayList newlist = new ArrayList();
+        ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
         newlist.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, false));
         cainfo.setExtendedCAServiceInfos(newlist);
         caAdminSession.editCA(admin, cainfo);
@@ -112,7 +107,7 @@ public class CmsCAServiceTest extends CaTestCase {
         // Try the request again
         boolean active = true;
         try {
-            resp = (CmsCAServiceResponse) signSession.extendedService(admin, getTestCAId(), request);
+            resp = (CmsCAServiceResponse) caAdminSession.extendedService(admin, getTestCAId(), request);
         } catch (ExtendedCAServiceNotActiveException e) {
             active = false;
         }
@@ -124,10 +119,10 @@ public class CmsCAServiceTest extends CaTestCase {
         assertNotNull(resp);
         CMSSignedData csd = new CMSSignedData(respdoc);
         SignerInformationStore infoStore = csd.getSignerInfos();
-        Collection signers = infoStore.getSigners();
-        Iterator iter = signers.iterator();
+        Collection<SignerInformation> signers = infoStore.getSigners();
+        Iterator<SignerInformation> iter = signers.iterator();
         if (iter.hasNext()) {
-            SignerInformation si = (SignerInformation) iter.next();
+            SignerInformation si = iter.next();
             assertNotNull(si);
             // log.info("Digest alg is: "+si.getDigestAlgOID());
             assertEquals(CMSSignedGenerator.DIGEST_SHA1, si.getDigestAlgOID());
@@ -155,7 +150,7 @@ public class CmsCAServiceTest extends CaTestCase {
         // Try the request again
         boolean active = true;
         try {
-            resp = (CmsCAServiceResponse) signSession.extendedService(admin, getTestCAId(), request);
+            resp = (CmsCAServiceResponse) caAdminSession.extendedService(admin, getTestCAId(), request);
         } catch (ExtendedCAServiceNotActiveException e) {
             active = false;
         }
@@ -173,7 +168,7 @@ public class CmsCAServiceTest extends CaTestCase {
         // Try the request again
         active = true;
         try {
-            resp = (CmsCAServiceResponse) signSession.extendedService(admin, getTestCAId(), request);
+            resp = (CmsCAServiceResponse) caAdminSession.extendedService(admin, getTestCAId(), request);
         } catch (ExtendedCAServiceNotActiveException e) {
             active = false;
         }
@@ -192,7 +187,7 @@ public class CmsCAServiceTest extends CaTestCase {
     public void test04DeActivateCmsCAService() throws Exception {
         // Deactivate the CMS service in the CA
         CAInfo cainfo = caAdminSession.getCAInfo(admin, "TEST");
-        ArrayList newlist = new ArrayList();
+        ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
         newlist.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, false));
         cainfo.setExtendedCAServiceInfos(newlist);
         caAdminSession.editCA(admin, cainfo);

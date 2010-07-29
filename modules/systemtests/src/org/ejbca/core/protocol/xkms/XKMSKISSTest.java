@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import javax.ejb.EJB;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -50,6 +49,8 @@ import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.KeyValueType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -106,21 +107,14 @@ public class XKMSKISSTest extends TestCase {
     private static String dn2;
     private static String dn3;
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     public void setUp() throws Exception {
         log.trace(">setUp()");
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         Random ran = new Random();
         if (baseUsername == null) {
             baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";

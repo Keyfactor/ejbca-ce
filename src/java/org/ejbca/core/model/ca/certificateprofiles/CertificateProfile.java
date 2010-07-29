@@ -535,24 +535,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void  setUseCertificatePolicies(boolean usecertificatepolicies) { data.put(USECERTIFICATEPOLICIES, Boolean.valueOf(usecertificatepolicies));}
     public boolean getCertificatePoliciesCritical() { return ((Boolean) data.get(CERTIFICATEPOLICIESCRITICAL)).booleanValue(); }
     public void  setCertificatePoliciesCritical(boolean certificatepoliciescritical) { data.put(CERTIFICATEPOLICIESCRITICAL, Boolean.valueOf(certificatepoliciescritical));}
-    public List getCertificatePolicies() {
-    	List l = (List)data.get(CERTIFICATE_POLICIES);
+    public List<CertificatePolicy> getCertificatePolicies() {
+    	List<CertificatePolicy> l = (List<CertificatePolicy>)data.get(CERTIFICATE_POLICIES);
     	if (l == null) {
-    		l = new ArrayList();
+    		l = new ArrayList<CertificatePolicy>();
     	}
     	return l;
     }
 
     public void addCertificatePolicy(CertificatePolicy policy) {
     	if (data.get(CERTIFICATE_POLICIES) == null) {
-    		setCertificatePolicies(new ArrayList());
+    		setCertificatePolicies(new ArrayList<CertificatePolicy>());
     	}
-    	((List) data.get(CERTIFICATE_POLICIES)).add(policy);
+    	((List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES)).add(policy);
     }
 
-    public void setCertificatePolicies(List policies) {
+    public void setCertificatePolicies(List<CertificatePolicy> policies) {
     	if (policies == null) {
-    		data.put(CERTIFICATE_POLICIES, new ArrayList(0));
+    		data.put(CERTIFICATE_POLICIES, new ArrayList<CertificatePolicy>(0));
     	} else {
     		data.put(CERTIFICATE_POLICIES, policies);
     	}
@@ -560,7 +560,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void removeCertificatePolicy(CertificatePolicy policy) {
     	if (data.get(CERTIFICATE_POLICIES) != null) {
-    		((List) data.get(CERTIFICATE_POLICIES)).remove(policy);
+    		((List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES)).remove(policy);
     	}
     }
 

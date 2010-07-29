@@ -20,10 +20,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.cert.CertStore;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
-
-import javax.naming.Context;
 
 import junit.framework.TestCase;
 
@@ -31,16 +30,14 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * @version $Id$
@@ -49,10 +46,9 @@ public class AutoEnrollServletTest extends TestCase {
 
 	private static Logger log = Logger.getLogger(AutoEnrollServletTest.class);
 
-	private static Context context = null;
-	private static IUserAdminSessionRemote userAdminSession = null;    
-	private static ICertificateStoreSessionRemote certificateStoreSession = null;
-	private static IRaAdminSessionRemote raAdminSession = null;
+	private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();    
+	private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+	private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
 
 	private static final String CERTREQ_MACHINE_TEMPLATE =
 		"-----BEGIN NEW CERTIFICATE REQUEST-----" +
@@ -128,24 +124,8 @@ public class AutoEnrollServletTest extends TestCase {
 	public void setUp() throws Exception {
 		log.trace(">setUp");
 		if (!installedBCProvider) {
-			CertTools.installBCProvider();
+			CryptoProviderTools.installBCProvider();
 			installedBCProvider = true;
-		}
-
-		if (context == null) {
-			context = new javax.naming.InitialContext();
-		}
-		if (userAdminSession == null) {
-			userAdminSession = ((IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(
-					context.lookup(IUserAdminSessionHome.JNDI_NAME), IUserAdminSessionHome.class)).create();
-		}
-		if (certificateStoreSession == null) {
-			certificateStoreSession = ((ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(
-					context.lookup(ICertificateStoreSessionHome.JNDI_NAME), ICertificateStoreSessionHome.class)).create();        
-		}
-		if (raAdminSession == null) {
-			raAdminSession = ((IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(
-					context.lookup(IRaAdminSessionHome.JNDI_NAME), IRaAdminSessionHome.class)).create();        
 		}
 		log.trace("<setUp");
 	}
@@ -165,7 +145,7 @@ public class AutoEnrollServletTest extends TestCase {
 		assertTrue("Returned certificate with wrong CN", ("CN=AETester".equals(cert.getSubjectDN().getName())));
 		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
 		boolean isExtendedKeyUsageCritical = false;
-		Iterator i = cert.getCriticalExtensionOIDs().iterator();
+		Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
 		while (i.hasNext()) {
 			if ("2.5.29.37".equals(i.next())) {
 				isExtendedKeyUsageCritical = true;
@@ -189,7 +169,7 @@ public class AutoEnrollServletTest extends TestCase {
 		assertTrue("Returned certificate with wrong CN.", ("CN=TESTSRV-1".equals(cert.getSubjectDN().getName())));
 		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
 		boolean isExtendedKeyUsageCritical = false;
-		Iterator i = cert.getCriticalExtensionOIDs().iterator();
+		Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
 		while (i.hasNext()) {
 			if ("2.5.29.37".equals(i.next())) {
 				isExtendedKeyUsageCritical = true;
@@ -211,7 +191,7 @@ public class AutoEnrollServletTest extends TestCase {
 		assertTrue("Returned certificate with wrong CN.", ("CN=TESTSRV-1".equals(cert.getSubjectDN().getName())));
 		assertFalse("Returned certificate without critical EKU.", cert.getCriticalExtensionOIDs().isEmpty());
 		boolean isExtendedKeyUsageCritical = false;
-		Iterator i = cert.getCriticalExtensionOIDs().iterator();
+		Iterator<String> i = cert.getCriticalExtensionOIDs().iterator();
 		while (i.hasNext()) {
 			if ("2.5.29.37".equals(i.next())) {
 				isExtendedKeyUsageCritical = true;
@@ -260,12 +240,12 @@ public class AutoEnrollServletTest extends TestCase {
 		CMSSignedData p7b = new CMSSignedData(responseData);
 		CertStore certStore = p7b.getCertificatesAndCRLs("Collection", "BC");
 		SignerInformationStore  signers = p7b.getSignerInfos();
-		Iterator iter = signers.getSigners().iterator();
+		Iterator<SignerInformation> iter = signers.getSigners().iterator();
 		while (iter.hasNext())
 		{
-			SignerInformation signer = (SignerInformation)iter.next();
+			SignerInformation signer = iter.next();
 			X509Certificate caCert = (X509Certificate) certStore.getCertificates(signer.getSID()).iterator().next();
-			Iterator iter2 = certStore.getCertificates(null).iterator();
+			Iterator<? extends Certificate> iter2 = certStore.getCertificates(null).iterator();
 			if (iter2.hasNext()) {
 				X509Certificate cert = (X509Certificate)iter2.next();
 				if (!caCert.getSubjectDN().getName().equals(cert.getSubjectDN().getName())) {

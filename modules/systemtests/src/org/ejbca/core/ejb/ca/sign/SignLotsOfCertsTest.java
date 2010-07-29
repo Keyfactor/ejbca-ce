@@ -23,7 +23,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
@@ -33,7 +32,8 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 /** This is a performance test:
@@ -55,14 +55,9 @@ public class SignLotsOfCertsTest extends CaTestCase {
 
     public static KeyPair keys;
     
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
-    
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /**
      * Creates a new TestSignSession object.
@@ -71,7 +66,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
      */
     public SignLotsOfCertsTest(String name) {
         super(name);
-        CertTools.installBCProvider();	// Install BouncyCastle provider
+        CryptoProviderTools.installBCProvider();	// Install BouncyCastle provider
     }
 
     public void setUp() throws Exception {

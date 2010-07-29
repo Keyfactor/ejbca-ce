@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Vector;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJB;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;
@@ -44,13 +43,14 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -104,15 +104,14 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     private static String issuerDN2 = null;
     private KeyPair keys = null;  
 
-    private static IUserAdminSessionRemote userAdminSession;
     private static int caid1 = 0;
     private static int caid2 = 0;
     private static Admin admin;
     private static X509Certificate cacert1 = null;
     private static X509Certificate cacert2 = null;
     
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
 
     public CrmfRAPbeMultipleKeyIdRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException,
             CertificateException {
@@ -128,10 +127,10 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             assertTrue("No active CA! Must have CmpCA1 and CmpCA2 to run tests!", false);
         }
         CAInfo cainfo = caAdminSession.getCAInfo(admin, caid1);
-        Collection certs = cainfo.getCertificateChain();
+        Collection<X509Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            X509Certificate cert = (X509Certificate) certiter.next();
+            Iterator<X509Certificate> certiter = certs.iterator();
+            X509Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
@@ -143,8 +142,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         cainfo = caAdminSession.getCAInfo(admin, caid2);
         certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            X509Certificate cert = (X509Certificate) certiter.next();
+            Iterator<X509Certificate> certiter = certs.iterator();
+            X509Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
@@ -153,8 +152,6 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         } else {
             log.error("NO CACERT for CmpCA2: " + caid2);
         }
-        userAdminSession = userAdminSession;
-
         issuerDN1 = cacert1.getSubjectDN().getName();
         issuerDN2 = cacert2.getSubjectDN().getName();
     }
@@ -554,7 +551,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         X509KeyUsage ku = new X509KeyUsage(bcku);
         extgen.addExtension(X509Extensions.KeyUsage, false, ku);
         // Extended Key Usage
-        Vector usage = new Vector();
+        Vector<KeyPurposeId> usage = new Vector<KeyPurposeId>();
         usage.add(KeyPurposeId.id_kp_codeSigning);
         ExtendedKeyUsage eku = new ExtendedKeyUsage(usage);
         extgen.addExtension(X509Extensions.ExtendedKeyUsage, false, eku);
@@ -640,9 +637,9 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertNotNull(cert.getExtensionValue("1.1.1.1.1"));
         assertNotNull(cert.getExtensionValue("2.16.840.1.113730.1.1"));
         assertNotNull(cert.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId()));
-        List l = cert.getExtendedKeyUsage();
+        List<String> l = cert.getExtendedKeyUsage();
         assertEquals(1, l.size());
-        String s = (String) l.get(0);
+        String s = l.get(0);
         assertEquals(KeyPurposeId.id_kp_codeSigning.getId(), s);
 
         // Skip confirmation message, we have tested that several times already

@@ -2,8 +2,6 @@ package org.ejbca.ui.cli.ca;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -13,14 +11,14 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * System test class for CaInitCommandTest
  * 
  * @author mikek
- * 
+ * @version $Id$
  */
-
 public class CaInitCommandTest extends TestCase {
 
     private static final String CA_NAME = "1327ca2";
@@ -35,11 +33,8 @@ public class CaInitCommandTest extends TestCase {
     private CaInitCommand caInitCommand;
     private Admin admin;
     
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 
     /**
      * Test trivial happy path for execute, i.e, create an ordinary CA.
@@ -54,7 +49,6 @@ public class CaInitCommandTest extends TestCase {
         } finally {
             caAdminSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
         }
-
     }
 
     public void testExecuteWithRootCACertificateProfile() throws AuthorizationDeniedException, Exception {
@@ -64,11 +58,9 @@ public class CaInitCommandTest extends TestCase {
         } finally {
             caAdminSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
         }
-
     }
 
     public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException, RemoteException, ErrorAdminCommandException {
-
         if (certificateStoreSession.getCertificateProfile(admin, CERTIFICATE_PROFILE_NAME) == null) {
             CertificateProfile certificateProfile = new CertificateProfile();
             certificateStoreSession.addCertificateProfile(admin, CERTIFICATE_PROFILE_NAME, certificateProfile);
@@ -85,17 +77,12 @@ public class CaInitCommandTest extends TestCase {
 
     public void setUp() throws Exception {
         admin = new Admin(Admin.TYPE_INTERNALUSER);
-
         caInitCommand = new CaInitCommand();
-
         if (caAdminSession.getCAInfo(admin, CA_NAME) != null) {
             caAdminSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
         }
-
     }
 
     public void tearDown() throws Exception {
-
     }
-
 }

@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -38,6 +37,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.cert.CrlExtensions;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -56,17 +56,10 @@ public class DeltaCRLTest extends CaTestCase {
     
     private static final String USERNAME = "foo";
     
-    @EJB
-    private CreateCRLSessionRemote createCrlSession;
-
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CreateCRLSessionRemote createCrlSession = InterfaceCache.getCrlSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
     /**
      * Creates a new TestCreateCRLSession object.
@@ -178,11 +171,11 @@ public class DeltaCRLTest extends CaTestCase {
         byte[] crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-        Set revset = x509crl.getRevokedCertificates();
+        Set<? extends X509CRLEntry> revset = x509crl.getRevokedCertificates();
         if (revset != null) {
-            Iterator iter = revset.iterator();
+            Iterator<? extends X509CRLEntry> iter = revset.iterator();
             while (iter.hasNext()) {
-                X509CRLEntry ce = (X509CRLEntry)iter.next(); 
+                X509CRLEntry ce = iter.next(); 
                 assertTrue(ce.getSerialNumber().compareTo(cert.getSerialNumber()) != 0);
             }            
         } // If no revoked certificates exist at all, this test passed...
@@ -198,10 +191,10 @@ public class DeltaCRLTest extends CaTestCase {
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
         assertNotNull("revset can not be null", revset);
-        Iterator iter = revset.iterator();
+        Iterator<? extends X509CRLEntry> iter = revset.iterator();
         boolean found = false;
         while (iter.hasNext()) {
-            X509CRLEntry ce = (X509CRLEntry)iter.next(); 
+            X509CRLEntry ce = iter.next(); 
         	if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
         		found = true;
         		// TODO: verify the reason code

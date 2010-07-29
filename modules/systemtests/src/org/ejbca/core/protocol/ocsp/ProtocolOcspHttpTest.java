@@ -38,7 +38,6 @@ import java.util.Date;
 import java.util.Hashtable;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
 
 import junit.framework.TestSuite;
@@ -91,6 +90,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -132,20 +132,12 @@ public class ProtocolOcspHttpTest extends CaTestCase {
 
     private final String httpPort;
 
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
-    
-    @EJB
-    private ConfigurationSessionRemote configurationSessionRemote;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private EjbRemoteHelper ejb = new EjbRemoteHelper();
+    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private ConfigurationSessionRemote configurationSessionRemote = ejb.getConfigurationSession();
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private SignSessionRemote signSession = ejb.getSignSession();
+    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
 
     public static TestSuite suite() {
         return new TestSuite(ProtocolOcspHttpTest.class);

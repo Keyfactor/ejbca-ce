@@ -22,13 +22,12 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
+import org.ejbca.util.InterfaceCache;
 
 import com.gargoylesoftware.htmlunit.SubmitMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -49,8 +48,7 @@ public class HttpMethodsTest extends TestCase {
     private final String httpBaseUrl;
     private String httpPort;
 
-    @EJB
-    private ConfigurationSessionRemote configurationSession;
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
 
     public HttpMethodsTest() {
         httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");

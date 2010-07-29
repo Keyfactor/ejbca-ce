@@ -15,14 +15,12 @@ package org.ejbca.ui.web.pub;
 
 import java.net.URL;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
+import org.ejbca.util.InterfaceCache;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
@@ -34,12 +32,11 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  **/
 public class WebdistHttpTest extends TestCase {
 
-    final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
+    //final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
 
     private final String httpPort;
 
-    @EJB
-    private ConfigurationSessionRemote configurationSessionRemote;
+    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
     
     public static TestSuite suite() {
         return new TestSuite(WebdistHttpTest.class);

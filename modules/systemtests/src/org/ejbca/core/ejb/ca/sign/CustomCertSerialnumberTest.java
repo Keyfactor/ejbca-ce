@@ -14,7 +14,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -44,6 +43,7 @@ import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 public class CustomCertSerialnumberTest extends CaTestCase {
@@ -56,20 +56,11 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     int fooCertProfile;
     int fooEEProfile;
     
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private CertificateRequestSessionRemote certificateRequestSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     public CustomCertSerialnumberTest(String name) throws Exception {
 	    super(name);

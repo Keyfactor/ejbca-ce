@@ -8,8 +8,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
 import org.ejbca.config.ProtectedLogConfiguration;
@@ -23,6 +21,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.ejbca.util.InterfaceCache;
 
 public class ProtectedLogTest extends CaTestCase {
 
@@ -39,14 +38,9 @@ public class ProtectedLogTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(ProtectedLogTest.class);
     private final Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    @EJB
-    private ConfigurationSessionRemote configurationSessionRemote;
-    
-    @EJB
-    private LogSessionRemote logSession;
-    
-    @EJB
-    private ProtectedLogSessionRemote protectedLogSession;
+    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private LogSessionRemote logSession = InterfaceCache.getLogSession();
+    private ProtectedLogSessionRemote protectedLogSession = InterfaceCache.getProtectedLogSession();
 
     /**
      * Creates a new TestProtectedLog object.
@@ -206,13 +200,13 @@ public class ProtectedLogTest extends CaTestCase {
         X509CAInfo x509cainfo = (X509CAInfo) caAdminSessionRemote.getCAInfo(internalAdmin, DEFAULT_CA_NAME);
         assertTrue("The test expects the CA \"" + DEFAULT_CA_NAME + "\" to exist.", x509cainfo != null);
         CmsCAServiceInfo cmscainfo = null;
-        Collection extendedCAServiceInfos = x509cainfo.getExtendedCAServiceInfos();
+        Collection<ExtendedCAServiceInfo> extendedCAServiceInfos = x509cainfo.getExtendedCAServiceInfos();
         if (extendedCAServiceInfos == null) {
             wasCMSDisabled = true;
         } else {
-            Iterator iter = extendedCAServiceInfos.iterator();
+            Iterator<ExtendedCAServiceInfo> iter = extendedCAServiceInfos.iterator();
             while (iter.hasNext()) {
-                ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
+                ExtendedCAServiceInfo serviceinfo = iter.next();
                 if (serviceinfo instanceof CmsCAServiceInfo) {
                     cmscainfo = (CmsCAServiceInfo) serviceinfo;
                     if (cmscainfo.getStatus() == CmsCAServiceInfo.STATUS_INACTIVE) {
@@ -222,7 +216,7 @@ public class ProtectedLogTest extends CaTestCase {
             }
         }
         if (wasCMSDisabled) {
-            ArrayList extendedcaserviceinfos = new ArrayList();
+            ArrayList<ExtendedCAServiceInfo> extendedcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaserviceinfos.add(new OCSPCAServiceInfo(OCSPCAServiceInfo.STATUS_ACTIVE));
             extendedcaserviceinfos.add(new XKMSCAServiceInfo(XKMSCAServiceInfo.STATUS_ACTIVE, false));
             extendedcaserviceinfos.add(new CmsCAServiceInfo(CmsCAServiceInfo.STATUS_ACTIVE, "CN=CMSCertificate, " + x509cainfo.getSubjectDN(), "",

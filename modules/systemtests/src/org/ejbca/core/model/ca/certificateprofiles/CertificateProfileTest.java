@@ -16,8 +16,6 @@ package org.ejbca.core.model.ca.certificateprofiles;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -28,6 +26,7 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
@@ -38,14 +37,10 @@ import org.ejbca.util.dn.DNFieldExtractor;
 public class CertificateProfileTest extends TestCase {
     private static final Logger log = Logger.getLogger(CertificateProfileTest.class);
 
-
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    @EJB
-    private CAAdminSessionRemote caAdminSessionRemote;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     
     /**
      * Creates a new TestCertificateProfile object.
@@ -167,7 +162,7 @@ public class CertificateProfileTest extends TestCase {
         log.trace(">test06createSubjectDNSubSet()");    	
     	CertificateProfile profile = new CertificateProfile();
     	
-    	ArrayList dnsubset = new ArrayList();
+    	ArrayList<Integer> dnsubset = new ArrayList<Integer>();
     	dnsubset.add(new Integer(DNFieldExtractor.CN));
     	dnsubset.add(new Integer(DNFieldExtractor.UID));
     	dnsubset.add(new Integer(DNFieldExtractor.GIVENNAME));
@@ -192,7 +187,7 @@ public class CertificateProfileTest extends TestCase {
 
     	CertificateProfile profile = new CertificateProfile();
     	
-    	ArrayList altnamesubset = new ArrayList();
+    	ArrayList<Integer> altnamesubset = new ArrayList<Integer>();
     	altnamesubset.add(new Integer(DNFieldExtractor.RFC822NAME));
     	altnamesubset.add(new Integer(DNFieldExtractor.UPN));    	
     	profile.setSubjectAltNameSubSet(altnamesubset);
@@ -212,7 +207,7 @@ public class CertificateProfileTest extends TestCase {
     
     public void test08CertificateProfileValues() throws Exception {
         CertificateProfile ep = new EndUserCertificateProfile();
-        List l = ep.getCertificatePolicies();
+        List<CertificatePolicy> l = ep.getCertificatePolicies();
         assertEquals(0, l.size());
         ep.addCertificatePolicy(new CertificatePolicy(CertificatePolicy.ANY_POLICY_OID, null, null));
         l = ep.getCertificatePolicies();

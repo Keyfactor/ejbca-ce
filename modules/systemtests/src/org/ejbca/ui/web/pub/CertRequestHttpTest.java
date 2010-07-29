@@ -26,7 +26,6 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 
 import junit.framework.TestSuite;
 
@@ -39,6 +38,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests http servlet for certificate request
@@ -55,11 +55,8 @@ public class CertRequestHttpTest extends CaTestCase {
     protected static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     protected static X509Certificate cacert = null;
 
-    @EJB
-    private ConfigurationSessionRemote configurationSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     public CertRequestHttpTest(String name) {
         super(name);

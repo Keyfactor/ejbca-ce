@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
 
 /**
  * Helper class for extracting objects Serialized on JBoss under J2EE.
@@ -25,7 +24,7 @@ import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
  */
 public class JBossUnmarshaller {
 	
-	private static final Logger log = Logger.getLogger(CertificateProfileData .class);
+	private static final Logger log = Logger.getLogger(JBossUnmarshaller.class);
 
 	private JBossUnmarshaller() {}
 

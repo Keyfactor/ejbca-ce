@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.Vector;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
@@ -74,6 +74,7 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.ejbca.util.dn.DnComponents;
@@ -182,17 +183,10 @@ public class SignSessionTest extends CaTestCase {
     X509Certificate dsacacert = null;
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private SignSessionRemote signSession;
-
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /**
      * Creates a new TestSignSession object.
@@ -764,7 +758,7 @@ public class SignSessionTest extends CaTestCase {
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
         assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
-        Collection ids = QCStatementExtension.getQcStatementIds(cert);
+        Collection<String> ids = QCStatementExtension.getQcStatementIds(cert);
         assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
         assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
         assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
@@ -806,27 +800,23 @@ public class SignSessionTest extends CaTestCase {
         profile.setUse(EndEntityProfile.CARDNUMBER, 0, true);
         raAdminSession.addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
         int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTVALOVERRIDE");
-        try {
-            // Change a user that we know...
-            UserDataVO user = new UserDataVO("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
-                    SecConst.TOKEN_SOFT_PEM, 0, null);
-            user.setPassword("foo123");
-            user.setStatus(UserDataConstants.STATUS_NEW);
-            user.setCardNumber("123456789");
-            userAdminSession.changeUser(admin, user, false);
-            // userAdminSession.changeUser(admin, "foo", "foo123",
-            // "C=SE,CN=validityoverride",
-            // null,
-            // "foo@anatom.nu", false,
-            // eeprofile,
-            // cprofile,
-            // SecConst.USER_ENDUSER,
-            // SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW,
-            // rsacaid);
-            log.debug("created user: foo, foo123, C=SE, CN=validityoverride");
-        } catch (RemoteException re) {
-            assertTrue("User foo does not exist, or error changing user", false);
-        }
+        // Change a user that we know...
+        UserDataVO user = new UserDataVO("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
+        		SecConst.TOKEN_SOFT_PEM, 0, null);
+        user.setPassword("foo123");
+        user.setStatus(UserDataConstants.STATUS_NEW);
+        user.setCardNumber("123456789");
+        userAdminSession.changeUser(admin, user, false);
+        // userAdminSession.changeUser(admin, "foo", "foo123",
+        // "C=SE,CN=validityoverride",
+        // null,
+        // "foo@anatom.nu", false,
+        // eeprofile,
+        // cprofile,
+        // SecConst.USER_ENDUSER,
+        // SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW,
+        // rsacaid);
+        log.debug("created user: foo, foo123, C=SE, CN=validityoverride");
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 10);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null,
@@ -1502,13 +1492,9 @@ public class SignSessionTest extends CaTestCase {
         UserDataVO user = new UserDataVO("foo", "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setStatus(UserDataConstants.STATUS_NEW);
-        try {
-            // Change a user that we know...
-            userAdminSession.changeUser(admin, user, false);
-            log.debug("created user: foo, foo123, C=SE,O=PrimeKey,CN=dnorder");
-        } catch (RemoteException re) {
-            assertTrue("User foo does not exist, or error changing user", false);
-        }
+        // Change a user that we know...
+        userAdminSession.changeUser(admin, user, false);
+        log.debug("created user: foo, foo123, C=SE,O=PrimeKey,CN=dnorder");
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
@@ -1847,7 +1833,7 @@ public class SignSessionTest extends CaTestCase {
         ASN1EncodableVector extensionattr = new ASN1EncodableVector();
         extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         // AltNames
-        String[] namearray = altnames.split(",");
+        //String[] namearray = altnames.split(",");
         GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
         ByteArrayOutputStream extOut = new ByteArrayOutputStream();
         DEROutputStream derOut = new DEROutputStream(extOut);
@@ -1861,9 +1847,9 @@ public class SignSessionTest extends CaTestCase {
         // An X509Extensions is a sequence of Extension which is a sequence of
         // {oid, X509Extension}
         // ASN1EncodableVector extvalue = new ASN1EncodableVector();
-        Vector oidvec = new Vector();
+        Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
         oidvec.add(X509Extensions.SubjectAlternativeName);
-        Vector valuevec = new Vector();
+        Vector<X509Extension> valuevec = new Vector<X509Extension>();
         valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));
         X509Extensions exts = new X509Extensions(oidvec, valuevec);
         extensionattr.add(new DERSet(exts));
@@ -1913,8 +1899,8 @@ public class SignSessionTest extends CaTestCase {
         assertNotNull(c);
         assertEquals(21, c.size());
         String retAltNames = CertTools.getSubjectAlternativeName(cert);
-        List originalNames = Arrays.asList(altnames.split(","));
-        List returnNames = Arrays.asList(retAltNames.split(", "));
+        List<String> originalNames = Arrays.asList(altnames.split(","));
+        List<String> returnNames = Arrays.asList(retAltNames.split(", "));
         assertTrue(originalNames.containsAll(returnNames));
     } // test29TestExtensionOverride
 

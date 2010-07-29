@@ -17,8 +17,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -30,6 +28,8 @@ import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 
 
 
@@ -89,11 +89,8 @@ public class PublisherTest extends TestCase {
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB 
-    private PublisherSessionRemote publisherSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
 
     /**
      * Creates a new TestPublisher object.
@@ -105,7 +102,7 @@ public class PublisherTest extends TestCase {
     }
     
     public void setUp() throws Exception {        
-        CertTools.installBCProvider();
+    	CryptoProviderTools.installBCProvider();
     }
     
     public void tearDown() throws Exception {
@@ -242,7 +239,7 @@ public class PublisherTest extends TestCase {
     public void test07StoreCertToDummy() throws Exception {
         log.trace(">test07StoreCertToDummy()");
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        ArrayList publishers = new ArrayList();
+        ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
 
         boolean ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
@@ -258,7 +255,7 @@ public class PublisherTest extends TestCase {
     public void test08storeCRLToDummy() throws Exception {
         log.trace(">test08storeCRLToDummy()");
         
-        ArrayList publishers = new ArrayList();
+        ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
         boolean ret = publisherSession.storeCRL(admin, publishers, testcrl, null, null);
         assertTrue("Storing CRL to dummy publisher failed", ret);
@@ -287,7 +284,7 @@ public class PublisherTest extends TestCase {
         publisherSession.testConnection(admin, id);
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        ArrayList publishers = new ArrayList();
+        ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSP")));
 
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
@@ -317,7 +314,7 @@ public class PublisherTest extends TestCase {
         publisherSession.testConnection(admin, id);
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        ArrayList publishers = new ArrayList();
+        ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSP2")));
         
         long date = new Date().getTime();

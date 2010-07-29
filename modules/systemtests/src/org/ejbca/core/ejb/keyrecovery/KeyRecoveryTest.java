@@ -18,8 +18,6 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Random;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -29,6 +27,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -43,14 +42,9 @@ public class KeyRecoveryTest extends CaTestCase {
     private static KeyPair keypair = null;
     private static X509Certificate cert = null;
 
-    @EJB
-    private KeyRecoverySessionRemote keyRecoverySession;
-    
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
     /**
      * Creates a new TestLog object.

@@ -21,7 +21,7 @@
     	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
     	<path refid="lib.jaxws.classpath"/>
     	<path refid="lib.xmlsec.classpath"/>	<!-- To parse XML Exceptions -->
-    	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
+    	<pathelement location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
     	<pathelement location="${mod.ejbca-entity.lib}"/>
     	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
     	<pathelement location="${mod.ejbca-xkms-cli.lib}"/>

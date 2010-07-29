@@ -145,7 +145,7 @@ public class TableProtectSessionBean implements TableProtectSessionLocalejb3, Ta
     		if (id != null) {
                 String msg = intres.getLocalizedMessage("protect.rowexistsupdate", dbType, dbKey);            	
 				log.info(msg);
-				ProtectPreparer uprep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyType);
+				ProtectPreparer uprep = new ProtectPreparer(id, TableProtectData.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyType);
     			try {
     				JDBCUtil.execute( "UPDATE TableProtectData SET version=?,hashVersion=?,protectionAlg=?,hash=?,signature=?,time=?,dbKey=?,dbType=?,keyType=? WHERE id=?",
     						uprep, dataSource );
@@ -155,7 +155,7 @@ public class TableProtectSessionBean implements TableProtectSessionLocalejb3, Ta
 			} else {
 	    		id = GUIDGenerator.generateGUID(this);
 	        	try {
-	        		ProtectPreparer prep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyType);
+	        		ProtectPreparer prep = new ProtectPreparer(id, TableProtectData.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyType);
 	        		JDBCUtil.execute( "INSERT INTO TableProtectData (version,hashVersion,protectionAlg,hash,signature,time,dbKey,dbType,keyType,id) VALUES (?,?,?,?,?,?,?,?,?,?)",
 	        				prep, dataSource );
 	        	} catch (Exception e) {

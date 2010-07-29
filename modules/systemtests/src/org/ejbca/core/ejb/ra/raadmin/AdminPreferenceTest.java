@@ -13,14 +13,11 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
-import javax.ejb.EJB;
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the admin preference entity bean.
@@ -32,10 +29,9 @@ public class AdminPreferenceTest extends CaTestCase {
     /**
      * UserAdminSession handle, not static since different object should go to different session
      * beans concurrently
-*/
+     */
 
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     
     private static final String user = genRandomUserName();
 
@@ -53,13 +49,6 @@ public class AdminPreferenceTest extends CaTestCase {
     }
 
     public void tearDown() throws Exception {
-    }
-
-    private Context getInitialContext() throws NamingException {
-        log.trace(">getInitialContext");
-        Context ctx = new javax.naming.InitialContext();
-        log.trace("<getInitialContext");
-        return ctx;
     }
 
     /**

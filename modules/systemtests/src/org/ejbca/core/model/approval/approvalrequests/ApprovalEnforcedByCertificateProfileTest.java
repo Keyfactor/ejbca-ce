@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -54,6 +53,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -93,25 +93,14 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
     private static String adminUsername;
 
-    private static Collection createdUsers = new LinkedList();
+    private static Collection<String> createdUsers = new LinkedList<String>();
 
-    @EJB
-    private CAAdminSessionRemote caAdminSession;
-
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private KeyRecoverySessionRemote keyRecoverySession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-
-    @EJB
-    private SignSessionRemote signSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @Override
     public void setUp() throws Exception {
@@ -404,7 +393,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeySpec("1024");
-        List approvalSettings = Arrays.asList(approvalRequirementTypes);
+        List<Integer> approvalSettings = Arrays.asList(approvalRequirementTypes);
         log.info("approvalSettings: " + approvalSettings);
 
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(System

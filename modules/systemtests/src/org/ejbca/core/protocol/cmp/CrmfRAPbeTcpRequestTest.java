@@ -21,8 +21,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -44,6 +42,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -78,20 +77,11 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
     
-    @EJB
-    private CAAdminSessionRemote caAdminSessionRemote;
-    
-    @EJB
-    private ConfigurationSessionRemote configurationSessionRemote;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-    
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /** This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
      */
@@ -101,10 +91,10 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caAdminSessionRemote.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
-            Collection caids = caAdminSessionRemote.getAvailableCAs(admin);
-            Iterator iter = caids.iterator();
+            Collection<Integer> caids = caAdminSessionRemote.getAvailableCAs(admin);
+            Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
-            	caid = ((Integer) iter.next()).intValue();
+            	caid = iter.next().intValue();
             }        	
         } else {
         	caid = adminca1.getCAId();
@@ -113,10 +103,10 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }        	
         CAInfo cainfo = caAdminSessionRemote.getCAInfo(admin, caid);
-        Collection certs = cainfo.getCertificateChain();
+        Collection<X509Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            X509Certificate cert = (X509Certificate) certiter.next();
+            Iterator<X509Certificate> certiter = certs.iterator();
+            X509Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate

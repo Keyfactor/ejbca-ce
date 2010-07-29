@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -48,6 +46,7 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -57,7 +56,7 @@ import org.ejbca.util.query.Query;
  * CAs.
  * 
  * @author mikek
- * 
+ * @version $Id$
  */
 public abstract class CaTestCase extends TestCase {
     private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
@@ -66,17 +65,10 @@ public abstract class CaTestCase extends TestCase {
 
     protected Admin admin;
 
-    @EJB
-    private AuthorizationSessionRemote authorizationSession;
-    
-    @EJB
-    protected CAAdminSessionRemote caAdminSessionRemote;
-    
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
+    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+    protected CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
 
     public CaTestCase() {
         super();
@@ -156,7 +148,7 @@ public abstract class CaTestCase extends TestCase {
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.
-        ArrayList extendedcaservices = new ArrayList();
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, "CN=XKMSCertificate, " + "CN=" + caName, "", "" + keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));

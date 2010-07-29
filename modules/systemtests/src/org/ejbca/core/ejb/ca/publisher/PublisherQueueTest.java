@@ -19,8 +19,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.ejb.EJB;
-
 import junit.framework.TestCase;
 
 import org.ejbca.core.model.SecConst;
@@ -34,6 +32,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests Publisher Queue Data.
@@ -58,11 +57,8 @@ public class PublisherQueueTest extends TestCase {
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    @EJB 
-    private PublisherSessionRemote publisherSession;
-    
-    @EJB
-    private PublisherQueueSessionRemote publisherQueueSession;
+    private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
+    private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
     
     public PublisherQueueTest(String name) {
         super(name);
@@ -163,7 +159,7 @@ public class PublisherQueueTest extends TestCase {
         int id = publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE");
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        ArrayList publishers = new ArrayList();
+        ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
@@ -202,7 +198,7 @@ public class PublisherQueueTest extends TestCase {
         int id = publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE");
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        ArrayList publishers = new ArrayList();
+        ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
@@ -241,7 +237,7 @@ public class PublisherQueueTest extends TestCase {
         int id = publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE");
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        ArrayList publishers = new ArrayList();
+        ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
         // storeCertificate should return false as we have not published to all publishers but instead only pushed to the queue

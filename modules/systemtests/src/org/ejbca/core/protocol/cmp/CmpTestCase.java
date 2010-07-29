@@ -45,7 +45,6 @@ import java.util.Vector;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ejb.EJB;
 
 import junit.framework.TestCase;
 
@@ -78,6 +77,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.InterfaceCache;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
@@ -121,8 +121,7 @@ public class CmpTestCase extends TestCase {
     private static final int PORT_NUMBER = 5587;
     private static final String CMP_HOST = "127.0.0.1";
     
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     
 	public CmpTestCase(String arg0) {
 		super(arg0);
@@ -161,8 +160,8 @@ public class CmpTestCase extends TestCase {
     		// Some altNames
             ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
             DEROutputStream         dOut = new DEROutputStream(bOut);
-            Vector values = new Vector();
-            Vector oids = new Vector();
+            Vector<X509Extension> values = new Vector<X509Extension>();
+            Vector<DERObjectIdentifier> oids = new Vector<DERObjectIdentifier>();
         	if (altNames != null) {
                 GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
                 dOut.writeObject(san);
@@ -273,7 +272,7 @@ public class CmpTestCase extends TestCase {
         if (crlEntryExtension) {
             CRLReason crlReason = new CRLReason(CRLReason.cessationOfOperation);
             X509Extension ext = new X509Extension(false, new DEROctetString(crlReason.getEncoded()));
-            Hashtable ht = new Hashtable();
+            Hashtable<DERObjectIdentifier, X509Extension> ht = new Hashtable<DERObjectIdentifier, X509Extension>();
             ht.put(X509Extensions.ReasonCode, ext);
             myRevDetails.setCrlEntryDetails(new X509Extensions(ht));
         }

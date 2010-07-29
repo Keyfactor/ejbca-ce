@@ -32,7 +32,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
@@ -44,6 +43,7 @@ import javax.net.ssl.TrustManagerFactory;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -58,12 +58,13 @@ import org.bouncycastle.ocsp.SingleResp;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
 /** Tests http pages of ocsp lookup server.
@@ -94,19 +95,15 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private String httpReqPath;
     private final String resourceOcsp;
 
-
-    private static IUserAdminSessionRemote userAdminSession;
     private int caid = getTestCAId();
     private static Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     private static KeyPair keys = null;
     
-    @EJB
-    private CertificateStoreSessionRemote certificateStoreSession;
-    
-    @EJB
-    private SignSessionRemote signSession;
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
     
     public ProtocolLookupServerHttpTest(String name)  throws Exception {
         this(name,"https://127.0.0.1:8443/ejbca", "publicweb/status/ocsp");
@@ -117,7 +114,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         httpReqPath = reqP;
         resourceOcsp = res;
         // Install BouncyCastle provider
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         createTestCA();
         cacert = (X509Certificate) getTestCACert();
         keys = KeyTools.genKeys("512", "RSA");
@@ -160,7 +157,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -188,7 +185,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -226,7 +223,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -259,7 +256,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -293,7 +290,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -330,7 +327,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -427,8 +424,8 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         KeyStore trustks = KeyStore.getInstance("jks");
         trustks.load(null, "foo123".toCharArray());
         // add trusted CA cert
-        Enumeration en = ks.aliases();
-        String alias = (String)en.nextElement();
+        Enumeration<String> en = ks.aliases();
+        String alias = en.nextElement();
         Certificate[] certs = KeyTools.getCertChain(ks, alias);
         trustks.setCertificateEntry("trusted", certs[certs.length-1]);
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");

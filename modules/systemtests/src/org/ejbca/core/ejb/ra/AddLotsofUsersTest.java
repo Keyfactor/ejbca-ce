@@ -13,13 +13,12 @@
 
 package org.ejbca.core.ejb.ra;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
@@ -32,8 +31,7 @@ public class AddLotsofUsersTest extends CaTestCase {
 
     private int userNo = 0;
     
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /**
      * Creates a new TestAddLotsofUsers object.

@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJB;
 import javax.transaction.TransactionRolledbackException;
 
 import org.apache.log4j.Logger;
@@ -39,6 +38,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
@@ -53,14 +53,11 @@ public class UserAdminSessionTest extends CaTestCase {
 
     private static String username;
     private static String pwd;
-    private static ArrayList usernames = new ArrayList();
+    private static ArrayList<String> usernames = new ArrayList<String>();
     private static String serialnumber;
 
-    @EJB
-    private RaAdminSessionRemote raAdminSession;
-
-    @EJB
-    private UserAdminSessionRemote userAdminSession;
+    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /**
      * Creates a new TestUserData object.
