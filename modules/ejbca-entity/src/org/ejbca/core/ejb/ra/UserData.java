@@ -362,7 +362,7 @@ public class UserData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
     public static UserData findByUsername(EntityManager entityManager, String username) {
-    	return entityManager.find(UserData.class,  username);
+    	return entityManager.find(UserData.class, username);
     }
 
 	/**
@@ -372,7 +372,7 @@ public class UserData implements Serializable {
     public static UserData findBySubjectDNAndCAId(EntityManager entityManager, String subjectDN, int caId) {
     	UserData ret = null;
     	try {
-    		Query query = entityManager.createQuery("from UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
+    		Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
     		query.setParameter("subjectDN", subjectDN);
     		query.setParameter("caId", caId);
     		ret = (UserData) query.getSingleResult();
@@ -388,7 +388,7 @@ public class UserData implements Serializable {
     public static UserData findBySubjectDN(EntityManager entityManager, String subjectDN) {
     	UserData ret = null;
     	try {
-    		Query query = entityManager.createQuery("from UserData a WHERE a.subjectDN=:subjectDN");
+    		Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN");
     		query.setParameter("subjectDN", subjectDN);
     		ret = (UserData) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -398,21 +398,21 @@ public class UserData implements Serializable {
 
 	/** @return return the query results as a List. */
     public static List<UserData> findBySubjectEmail(EntityManager entityManager, String subjectEmail) {
-    	Query query = entityManager.createQuery("from UserData a WHERE a.subjectEmail=:subjectEmail");
+    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectEmail=:subjectEmail");
     	query.setParameter("subjectEmail", subjectEmail);
     	return query.getResultList();
     }
 
 	/** @return return the query results as a List. */
     public static List<UserData> findByStatus(EntityManager entityManager, int status) {
-    	Query query = entityManager.createQuery("from UserData a WHERE a.status=:status");
+    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status");
     	query.setParameter("status", status);
     	return query.getResultList();
     }
 
 	/** @return return the query results as a List. */
     public static List<UserData> findAll(EntityManager entityManager) {
-    	Query query = entityManager.createQuery("from UserData a");
+    	Query query = entityManager.createQuery("SELECT a FROM UserData a");
     	return query.getResultList();
     }
 }

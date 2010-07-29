@@ -87,10 +87,12 @@ public class AdminEntityData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static AdminEntityData findByPrimeKey(EntityManager entityManager, AdminEntityDataPK adminEntityDataPK) {
 		return entityManager.find(AdminEntityData.class, adminEntityDataPK);
 	}
 	
+	/** @return the found entity instance or null if the entity does not exist */
 	public static AdminEntityData findByPrimeKey(EntityManager entityManager, String adminGroupName, int cAId, int matchWith, int matchType, String matchValue) {
 		return entityManager.find(AdminEntityData.class, new AdminEntityDataPK(adminGroupName, cAId, matchWith, matchType, matchValue));
 	}

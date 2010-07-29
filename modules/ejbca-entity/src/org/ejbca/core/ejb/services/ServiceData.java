@@ -15,8 +15,8 @@ package org.ejbca.core.ejb.services;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -141,7 +141,7 @@ public class ServiceData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
     public static ServiceData findById(EntityManager entityManager, Integer id) {
-    	return entityManager.find(ServiceData.class,  id);
+    	return entityManager.find(ServiceData.class, id);
     }
 
 	/**
@@ -150,9 +150,9 @@ public class ServiceData implements Serializable {
 	 */
     public static ServiceData findByName(EntityManager entityManager, java.lang.String name) {
     	ServiceData ret = null;
-    	Query query = entityManager.createQuery("from ServiceData a WHERE a.name=:name");
-    	query.setParameter("name", name);
     	try {
+    		Query query = entityManager.createQuery("SELECT a FROM ServiceData a WHERE a.name=:name");
+    		query.setParameter("name", name);
     		ret = (ServiceData)query.getSingleResult();
 		} catch (NoResultException e) {
 		}
@@ -160,8 +160,8 @@ public class ServiceData implements Serializable {
     }    
 
 	/** @return return the query results as a List. */
-    public static Collection<ServiceData> findAll(EntityManager entityManager) {
-    	Query query = entityManager.createQuery("from ServiceData a");
+    public static List<ServiceData> findAll(EntityManager entityManager) {
+    	Query query = entityManager.createQuery("SELECT a FROM ServiceData a");
     	return query.getResultList();
     }    
 }

@@ -77,7 +77,7 @@ public class HardTokenPropertyData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
     public static HardTokenPropertyData findByPK(EntityManager entityManager, HardTokenPropertyDataPK pk) {
-    	return entityManager.find(HardTokenPropertyData.class,  pk);
+    	return entityManager.find(HardTokenPropertyData.class, pk);
     }
 
 	/**
@@ -87,7 +87,7 @@ public class HardTokenPropertyData implements Serializable {
     public static HardTokenPropertyData findByProperty(EntityManager entityManager, String id, String property) {
 		HardTokenPropertyData ret = null;
     	try {
-    		Query query = entityManager.createQuery("from HardTokenPropertyData a WHERE a.id=:id AND a.property=:property");
+    		Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.id=:id AND a.property=:property");
     		query.setParameter("id", id);
     		query.setParameter("property", property);
     		ret = (HardTokenPropertyData) query.getSingleResult();
@@ -98,7 +98,7 @@ public class HardTokenPropertyData implements Serializable {
 
 	/** @return return the query results as a List. */
     public static List<HardTokenPropertyData> findIdsByPropertyAndValue(EntityManager entityManager, String property, String value) {
-    	Query query = entityManager.createQuery("from HardTokenPropertyData a WHERE a.property=:property AND a.value=:value");
+    	Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.property=:property AND a.value=:value");
     	query.setParameter("property", property);
     	query.setParameter("value", value);
     	return query.getResultList();

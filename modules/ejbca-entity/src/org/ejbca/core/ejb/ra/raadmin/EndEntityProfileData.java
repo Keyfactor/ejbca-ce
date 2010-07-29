@@ -140,7 +140,7 @@ public class EndEntityProfileData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static EndEntityProfileData findById(EntityManager entityManager, Integer id) {
-		return entityManager.find(EndEntityProfileData.class,  id);
+		return entityManager.find(EndEntityProfileData.class, id);
 	}
 	
 	/**
@@ -150,7 +150,7 @@ public class EndEntityProfileData implements Serializable {
 	public static EndEntityProfileData findByProfileName(EntityManager entityManager, String profileName) {
 		EndEntityProfileData ret = null;
 		try {
-			Query query = entityManager.createQuery("from EndEntityProfileData a WHERE a.profileName=:profileName");
+			Query query = entityManager.createQuery("SELECT a FROM EndEntityProfileData a WHERE a.profileName=:profileName");
 			query.setParameter("profileName", profileName);
 			ret = (EndEntityProfileData) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -160,7 +160,7 @@ public class EndEntityProfileData implements Serializable {
 
 	/** @return return the query results as a List. */
 	public static List<EndEntityProfileData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("from EndEntityProfileData a");
+		Query query = entityManager.createQuery("SELECT a FROM EndEntityProfileData a");
 		return query.getResultList();
 	}
 }

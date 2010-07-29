@@ -87,14 +87,14 @@ public class AccessRulesData implements Serializable {
 	// Search functions. 
 	//
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static AccessRulesData findByPrimeKey(EntityManager entityManager, AccessRulesDataPK accessRulesDataPK) {
 		return entityManager.find(AccessRulesData.class, accessRulesDataPK);
 	}
 
+	/** @return the found entity instance or null if the entity does not exist */
 	public static AccessRulesData findByPrimeKey(EntityManager entityManager, String admingroupname, int caid, AccessRule accessrule) {
 		AccessRulesDataPK accessRulesDataPK = new AccessRulesDataPK(admingroupname, caid, accessrule); 
 		return findByPrimeKey(entityManager, accessRulesDataPK);
 	}
-
-	
 }

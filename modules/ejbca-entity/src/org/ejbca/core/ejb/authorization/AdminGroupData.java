@@ -335,7 +335,7 @@ public class AdminGroupData implements Serializable {
 	public static AdminGroupData findByGroupName(EntityManager entityManager, String adminGroupName) {
 		AdminGroupData ret = null;
 		try {
-			Query query = entityManager.createQuery("from AdminGroupData a WHERE adminGroupName=:adminGroupName");
+			Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE adminGroupName=:adminGroupName");
 			query.setParameter("adminGroupName", adminGroupName);
 			ret = (AdminGroupData) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -345,7 +345,7 @@ public class AdminGroupData implements Serializable {
 
 	/** @return return the query results as a List. */
 	public static List<AdminGroupData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("from AdminGroupData a");
+		Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a");
 		return query.getResultList();
 	}
 }

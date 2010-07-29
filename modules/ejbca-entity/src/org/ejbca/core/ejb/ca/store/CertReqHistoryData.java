@@ -16,8 +16,8 @@ package org.ejbca.core.ejb.ca.store;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -216,16 +216,16 @@ public class CertReqHistoryData implements Serializable {
 	}
 	
 	/** @return return the query results as a List. */
-	public static Collection<CertReqHistoryData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-		Query query = entityManager.createQuery("from CertReqHistoryData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+	public static List<CertReqHistoryData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
+		Query query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
-	public static Collection<CertReqHistoryData> findByUsername(EntityManager entityManager, String username) {
-		Query query = entityManager.createQuery("from CertReqHistoryData a WHERE a.username=:username");
+	public static List<CertReqHistoryData> findByUsername(EntityManager entityManager, String username) {
+		Query query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.username=:username");
 		query.setParameter("username", username);
 		return query.getResultList();
 	}

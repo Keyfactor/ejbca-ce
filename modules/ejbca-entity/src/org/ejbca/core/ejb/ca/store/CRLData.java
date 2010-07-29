@@ -182,7 +182,7 @@ public class CRLData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static CRLData findByFingerprint(EntityManager entityManager, String fingerprint) {
-		return entityManager.find(CRLData.class,  fingerprint);
+		return entityManager.find(CRLData.class, fingerprint);
 	}
 	
 	/**
@@ -190,13 +190,14 @@ public class CRLData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static CRLData findByIssuerDNAndCRLNumber(EntityManager entityManager, String issuerDN, int crlNumber) {
+		CRLData ret = null;
 		try {
-			Query query = entityManager.createQuery("from CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber");
+			Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber");
 			query.setParameter("issuerDN", issuerDN);
 			query.setParameter("crlNumber", crlNumber);
-			return (CRLData) query.getSingleResult();
+			ret = (CRLData) query.getSingleResult();
     	} catch (NoResultException e) {
 		}
-    	return null;
+    	return ret;
 	}
 }

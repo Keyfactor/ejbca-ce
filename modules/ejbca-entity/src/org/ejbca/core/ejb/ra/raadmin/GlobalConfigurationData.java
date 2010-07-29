@@ -102,6 +102,6 @@ public class GlobalConfigurationData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static GlobalConfigurationData findByConfigurationId(EntityManager entityManager, String configurationId) {
-		return entityManager.find(GlobalConfigurationData.class,  configurationId);
+		return entityManager.find(GlobalConfigurationData.class, configurationId);
 	}
 }

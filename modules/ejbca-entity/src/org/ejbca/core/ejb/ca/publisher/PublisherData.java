@@ -123,7 +123,7 @@ public class PublisherData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static PublisherData findById(EntityManager entityManager, Integer id) {	    
-	    return entityManager.find(PublisherData.class,  id);
+	    return entityManager.find(PublisherData.class, id);
 	}
 
 	/**
@@ -133,7 +133,7 @@ public class PublisherData implements Serializable {
 	public static PublisherData findByName(EntityManager entityManager, java.lang.String name) {
 		PublisherData ret = null;
 		try {
-			Query query = entityManager.createQuery("from PublisherData a WHERE a.name=:name");
+			Query query = entityManager.createQuery("SELECT a FROM PublisherData a WHERE a.name=:name");
 			query.setParameter("name", name);
 			ret = (PublisherData) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -143,7 +143,7 @@ public class PublisherData implements Serializable {
 
 	/** @return return the query results as a List. */
 	public static List<PublisherData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("from PublisherData a");
+		Query query = entityManager.createQuery("SELECT a FROM PublisherData a");
 		return query.getResultList();
 	}
 }

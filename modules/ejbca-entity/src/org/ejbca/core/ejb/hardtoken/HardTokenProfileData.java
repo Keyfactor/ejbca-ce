@@ -15,14 +15,16 @@ package org.ejbca.core.ejb.hardtoken;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -113,18 +115,29 @@ public class HardTokenProfileData implements Serializable {
     // Search functions. 
     //
 
+	/** @return the found entity instance or null if the entity does not exist */
     public static HardTokenProfileData findByPK(EntityManager entityManager, Integer pk) {
-    	return entityManager.find(HardTokenProfileData.class,  pk);
+    	return entityManager.find(HardTokenProfileData.class, pk);
     }
 
+	/**
+	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @return the found entity instance or null if the entity does not exist
+	 */
     public static HardTokenProfileData findByName(EntityManager entityManager, String name) {
-    	Query query = entityManager.createQuery("from HardTokenProfileData a WHERE a.name=:name");
-    	query.setParameter("name", name);
-    	return (HardTokenProfileData) query.getSingleResult();
+    	HardTokenProfileData ret = null;
+    	try {
+    		Query query = entityManager.createQuery("SELECT a FROM HardTokenProfileData a WHERE a.name=:name");
+    		query.setParameter("name", name);
+    		ret = (HardTokenProfileData) query.getSingleResult();
+    	} catch (NoResultException e) {
+    	}
+    	return ret;
     }
     
-    public static Collection<HardTokenProfileData> findAll(EntityManager entityManager) {
-    	Query query = entityManager.createQuery("from HardTokenProfileData a");
+	/** @return return the query results as a List. */
+    public static List<HardTokenProfileData> findAll(EntityManager entityManager) {
+    	Query query = entityManager.createQuery("SELECT a FROM HardTokenProfileData a");
     	return query.getResultList();
     }
 }

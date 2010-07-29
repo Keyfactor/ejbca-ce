@@ -16,9 +16,9 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -248,7 +248,7 @@ public class CAData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static CAData findById(EntityManager entityManager, Integer cAId) {
-		return entityManager.find(CAData.class,  cAId);
+		return entityManager.find(CAData.class, cAId);
 	}
 	
 	/**
@@ -270,7 +270,7 @@ public class CAData implements Serializable {
 	public static CAData findByName(EntityManager entityManager, String name) {
 		CAData ret = null;
 		try {
-			Query query = entityManager.createQuery("from CAData a WHERE a.name=:name");
+			Query query = entityManager.createQuery("SELECT a FROM CAData a WHERE a.name=:name");
 			query.setParameter("name", name);
 			ret = (CAData) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -292,8 +292,8 @@ public class CAData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
-	public static Collection<CAData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("from CAData a");
+	public static List<CAData> findAll(EntityManager entityManager) {
+		Query query = entityManager.createQuery("SELECT a FROM CAData a");
 		return query.getResultList();
 	}
 }
