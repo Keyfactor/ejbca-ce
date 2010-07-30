@@ -22,5 +22,5 @@ import javax.ejb.Timer;
 public interface ServiceTimerSessionRemote extends ServiceTimerSession {
 
 	// TODO: Is this required for timer service?
-	public void ejbTimeout(Timer timer);
+	public void timeoutHandler(Timer timer);
 }

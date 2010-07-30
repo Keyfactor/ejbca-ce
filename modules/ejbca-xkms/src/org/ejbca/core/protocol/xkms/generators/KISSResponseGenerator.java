@@ -24,16 +24,18 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.EJB;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
@@ -61,19 +63,20 @@ public class KISSResponseGenerator extends
 	
 	 private static final InternalResources intres = InternalResources.getInstance();
 	
-	 @EJB
-	 private CertificateStoreSessionLocal certificateStoreSession;
-	 
-	 @EJB
-	 private UserAdminSessionLocal userAdminSession;
+	 private CertificateStoreSession certificateStoreSession;
+	 private UserAdminSession userAdminSession;
 	 
 	public KISSResponseGenerator(String remoteIP,RequestAbstractType req) {
 		super(remoteIP,req);
+		EjbLocalHelper ejb = new EjbLocalHelper();
+		try {
+			certificateStoreSession = ejb.getCertStoreSession();
+			userAdminSession = ejb.getUserAdminSession();
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
 	}
-	
 
-	
-	
 	/** 
 	 * Method that should check the request and find 
 	 * the appropriate certificates

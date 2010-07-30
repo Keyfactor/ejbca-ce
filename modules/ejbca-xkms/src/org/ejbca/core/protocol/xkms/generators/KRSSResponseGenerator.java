@@ -44,7 +44,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.crypto.SecretKey;
-import javax.ejb.EJB;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
@@ -52,13 +53,13 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -67,6 +68,7 @@ import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.CertTools;
@@ -100,30 +102,29 @@ public class KRSSResponseGenerator extends
 	 
 	 protected Document requestDoc = null;
 
-	      @EJB
-	      private CAAdminSessionLocal caadminsession;
-	      
-	      @EJB 
-	      private AuthenticationSessionLocal authenticationSession;
-	      
-	      @EJB
-	      private CertificateStoreSessionLocal certificateStoreSession;
-	      
-	      @EJB
-	      private KeyRecoverySessionLocal keyRecoverySession;
-	      
-	      @EJB
-	      private RaAdminSessionLocal raAdminSessionLocal;
-	      
-	      @EJB
-	      private SignSessionLocal signSession;
-	      
-	      @EJB
-	      private UserAdminSessionLocal userAdminSession;
+	 private CAAdminSession caadminsession;
+	 private AuthenticationSession authenticationSession;
+	 private CertificateStoreSession certificateStoreSession;
+	 private KeyRecoverySession keyRecoverySession;
+	 private RaAdminSession raAdminSessionLocal;
+	 private SignSession signSession;
+	 private UserAdminSession userAdminSession;
 	 
 	public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc) {
 		super(remoteIP, req);
 		this.requestDoc = requestDoc;
+		EjbLocalHelper ejb = new EjbLocalHelper();
+		try {
+			caadminsession = ejb.getCAAdminSession();
+			authenticationSession = ejb.getAuthenticationSession();
+			certificateStoreSession = ejb.getCertStoreSession();
+			keyRecoverySession = ejb.getKeyRecoverySession();
+			raAdminSessionLocal = ejb.getRAAdminSession();
+			signSession = ejb.getSignSession();
+			userAdminSession = ejb.getUserAdminSession();
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
 	}
 	
 	/**
