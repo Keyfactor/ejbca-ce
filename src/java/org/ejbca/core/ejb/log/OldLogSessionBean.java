@@ -134,7 +134,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 	}
 
     private Integer getAndIncrementRowCount() {
-    	LogConfigurationData logConfigurationData = LogConfigurationData.findByPK(entityManager, 0);
+    	LogConfigurationData logConfigurationData = LogConfigurationData.findByPK(entityManager, Integer.valueOf(0));
     	if (logConfigurationData == null) {
     		logConfigurationData = new LogConfigurationData(0, new LogConfiguration());
     		entityManager.persist(logConfigurationData);

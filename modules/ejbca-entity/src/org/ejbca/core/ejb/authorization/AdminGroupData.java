@@ -325,7 +325,7 @@ public class AdminGroupData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static AdminGroupData findByPrimeKey(EntityManager entityManager, Integer primeKey) {
-		return entityManager.find(AdminGroupData.class,  primeKey);
+		return entityManager.find(AdminGroupData.class, primeKey);
 	}
 	
 	/**

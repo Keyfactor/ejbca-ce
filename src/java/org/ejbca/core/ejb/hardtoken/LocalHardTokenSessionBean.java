@@ -277,7 +277,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 		}
 	    boolean success=false;
 	    if (HardTokenProfileData.findByName(entityManager, name) == null) {
-		    if (HardTokenProfileData.findByPK(entityManager, profileid) == null) {
+		    if (HardTokenProfileData.findByPK(entityManager, Integer.valueOf(profileid)) == null) {
 	            try {
 	            	entityManager.persist(new HardTokenProfileData(new Integer(profileid), name, profile));
 	                success = true;
@@ -469,7 +469,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 	 */
 	public HardTokenProfile getHardTokenProfile(Admin admin, int id){
 		HardTokenProfile returnval = null;
-		HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, id);
+		HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(id));
 		if (htpd != null) {
 			returnval = getHardTokenProfile(htpd);
 		}
@@ -483,7 +483,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 	 */
 	public int getHardTokenProfileUpdateCount(Admin admin, int hardtokenprofileid){
 		int returnval = 0;
-		HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, hardtokenprofileid);
+		HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(hardtokenprofileid));
 		if (htpd != null) {
 			returnval = htpd.getUpdateCounter();
 		}
@@ -516,7 +516,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 			log.trace(">getHardTokenProfileName(id: " + id + ")");
 		}
 		String returnval = null;
-		HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, id);
+		HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(id));
 		if (htpd != null) {
 			returnval = htpd.getName();
 		}
@@ -800,7 +800,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 			log.trace(">getHardTokenIssuerData(id: " + id +")" );
 		}
 		HardTokenIssuerData returnval = null;
-		org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, id);
+		org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, Integer.valueOf(id));
 		if (htih != null) {
 			returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
 		}
@@ -851,7 +851,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 			log.trace(">getHardTokenIssuerAlias(id: " + id + ")");
 		}
 		String returnval = null;
-		org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, id);
+		org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, Integer.valueOf(id));
 		if(htih != null){
 			returnval = htih.getAlias();
 		}
@@ -1414,7 +1414,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     	boolean foundfree = false;
     	while (!foundfree) {
     		if (id > SecConst.TOKEN_SOFT) {
-    			if (HardTokenProfileData.findByPK(entityManager, id) == null) {
+    			if (HardTokenProfileData.findByPK(entityManager, Integer.valueOf(id)) == null) {
     				foundfree = true;
     			}
     		}
@@ -1429,7 +1429,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 		boolean foundfree = false;
 		while(!foundfree){
 			if(id > 1) {
-				if (org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, id) == null) {
+				if (org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, Integer.valueOf(id)) == null) {
 					foundfree = true;
 				}
 			}

@@ -671,7 +671,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
     	if(id == SecConst.EMPTY_ENDENTITYPROFILE) {
     		return EMPTY_ENDENTITYPROFILENAME;
     	}
-    	EndEntityProfileData eepd = EndEntityProfileData.findById(entityManager, id);
+    	EndEntityProfileData eepd = EndEntityProfileData.findById(entityManager, Integer.valueOf(id));
     	if (eepd != null) {
     		returnval = eepd.getProfileName();
     	} else {

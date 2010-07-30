@@ -218,7 +218,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         boolean success = false;
         if (isAuthorizedToEditService(admin,serviceConfiguration)) {
         	if (ServiceData.findByName(entityManager, name) == null) {
-        		if (ServiceData.findById(entityManager, id) == null) {
+        		if (ServiceData.findById(entityManager, Integer.valueOf(id)) == null) {
         			try {
         				entityManager.persist(new ServiceData(new Integer(id), name, serviceConfiguration));
         				success = true;
@@ -502,7 +502,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
     	}
     	ServiceConfiguration returnval = null;
         try {            
-        	ServiceData serviceData = ServiceData.findById(entityManager, id);
+        	ServiceData serviceData = ServiceData.findById(entityManager, Integer.valueOf(id));
         	if (serviceData != null) {
         		returnval = serviceData.getServiceConfiguration();
         	} else {
@@ -553,7 +553,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
             log.trace(">getServiceName(id: " + id + ")");
     	}
         String returnval = null;
-        ServiceData serviceData = ServiceData.findById(entityManager, id);
+        ServiceData serviceData = ServiceData.findById(entityManager, Integer.valueOf(id));
         if (serviceData != null) {
         	returnval = serviceData.getName();
         }
@@ -625,7 +625,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
     	boolean foundfree = false;
     	while (!foundfree) {
     		if (id > 1) {
-    			if (ServiceData.findById(entityManager, id) == null) {
+    			if (ServiceData.findById(entityManager, Integer.valueOf(id)) == null) {
     				foundfree = true;
     			}
     		}

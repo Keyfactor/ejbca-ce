@@ -203,7 +203,7 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
     public void removeApprovalRequest(Admin admin, int id) throws ApprovalException {
         log.trace(">removeApprovalRequest");
         try {
-        	ApprovalData ad = ApprovalData.findById(entityManager, id);
+        	ApprovalData ad = ApprovalData.findById(entityManager, Integer.valueOf(id));
         	if (ad != null) {
         		entityManager.remove(ad);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_INFO_APPROVALREQUESTED,
