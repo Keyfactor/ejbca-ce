@@ -256,7 +256,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
      * @param timer timer whose expiration caused this notification.
      */
     @Timeout
-	public void ejbTimeout(Timer timer) {
+	public void timeoutHandler(Timer timer) {
 		log.trace(">ejbTimeout");    		
 		Integer timerInfo = (Integer) timer.getInfo();
 		if(timerInfo.equals(SERVICELOADER_ID)){
