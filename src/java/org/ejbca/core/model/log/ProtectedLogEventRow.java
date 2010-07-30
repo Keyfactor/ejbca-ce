@@ -15,6 +15,7 @@ package org.ejbca.core.model.log;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -32,7 +33,9 @@ import org.ejbca.util.Base64;
  * @version $Id$
  * @deprecated
  */
-public class ProtectedLogEventRow {
+public class ProtectedLogEventRow implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final Logger log = Logger.getLogger(ProtectedLogEventRow.class);
 

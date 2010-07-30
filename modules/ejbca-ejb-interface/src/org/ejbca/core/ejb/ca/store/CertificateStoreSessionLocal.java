@@ -18,12 +18,5 @@ import javax.ejb.Local;
  * Local interface for CertificateStoreSession.
  */
 @Local
-public interface CertificateStoreSessionLocal extends CertificateStoreSession{
-    /**
-     * Used by healthcheck. Validate database connection.
-     * 
-     * @return an error message or an empty String if all are ok.
-     */
-    public java.lang.String getDatabaseStatus();
-
+public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 }

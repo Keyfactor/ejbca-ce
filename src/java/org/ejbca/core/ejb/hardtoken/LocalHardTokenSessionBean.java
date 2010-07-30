@@ -575,6 +575,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 			htih.setHardTokenIssuer(issuerdata);
 			String msg = intres.getLocalizedMessage("hardtoken.editedissuer", alias);            	
 			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_INFO_HARDTOKENISSUERDATA,msg);
+			returnvalue = true;
 		} else {
 			String msg = intres.getLocalizedMessage("hardtoken.erroreditissuer", alias);            	
 			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA,msg);

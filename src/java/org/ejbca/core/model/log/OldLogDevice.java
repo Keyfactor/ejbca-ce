@@ -87,7 +87,28 @@ public class OldLogDevice implements ILogDevice, Serializable {
      * Log everything in the database using the log entity bean
      */
 	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
-		oldLogSession.log(admin, caid, module, time, username, certificate, event, comment, exception);
+		if (exception != null) {
+			comment += ", Exception: " + exception.getMessage();
+		}
+		boolean successfulLog = false;
+    	int tries = 0;
+    	do {
+    		try {
+    			oldLogSession.log(admin, caid, module, time, username, certificate, event, comment, exception);
+    			successfulLog = true;
+    		} catch (Throwable e) {
+    			tries++;
+    			if(tries == 3){
+        			// We are losing a db audit entry in this case.
+    				String msg = intres.getLocalizedMessage("log.errormissingentry");            	
+    				log.error(msg,e);
+    			}else{
+    				String msg = intres.getLocalizedMessage("log.warningduplicatekey");            	
+    				log.warn(msg);
+    			}
+    			
+    		}
+    	} while (!successfulLog && tries < 3);
     }
 
 	/**

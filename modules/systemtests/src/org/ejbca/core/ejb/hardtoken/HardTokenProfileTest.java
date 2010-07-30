@@ -94,6 +94,7 @@ public class HardTokenProfileTest extends TestCase {
 
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
+        	log.debug("", pee);
         }
 
         assertTrue("Creating Hard Token Profile failed", ret);
@@ -113,6 +114,7 @@ public class HardTokenProfileTest extends TestCase {
             hardTokenSession.renameHardTokenProfile(admin, "SWETEST", "SWETEST2");
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
+        	log.debug("", pee);
         }
         assertTrue("Renaming Hard Token Profile failed", ret);
 
@@ -132,6 +134,7 @@ public class HardTokenProfileTest extends TestCase {
             hardTokenSession.cloneHardTokenProfile(admin, "SWETEST2", "SWETEST");
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
+        	log.debug("", pee);
         }
         assertTrue("Cloning Hard Token Profile failed", ret);
 
@@ -171,6 +174,7 @@ public class HardTokenProfileTest extends TestCase {
             hardTokenSession.removeHardTokenProfile(admin, "TURTEST");
             ret = true;
         } catch (Exception pee) {
+        	log.debug("", pee);
         }
         assertTrue("Removing Hard Token Profile failed", ret);
         log.trace("<test05removeHardTokenProfiles()");

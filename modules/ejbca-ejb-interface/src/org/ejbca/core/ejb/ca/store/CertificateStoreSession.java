@@ -581,4 +581,13 @@ public interface CertificateStoreSession {
     public boolean existsPublisherInCertificateProfiles(org.ejbca.core.model.log.Admin admin, int publisherid);
 
     public int findFreeCertificateProfileId();
+
+    /**
+     * Used by healthcheck. Validate database connection.
+     * 
+     * @return an error message or an empty String if all are ok.
+     * 
+     * TODO: This should only be in the local interface.
+     */
+    public java.lang.String getDatabaseStatus();
 }

@@ -35,7 +35,6 @@ import org.ejbca.config.OldLogConfiguration;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.protect.TableProtectSession;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalejb3;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
@@ -73,38 +72,18 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
     /** If signing of logs is enabled of not, default not */
     private boolean logsigning = OldLogConfiguration.getLogSigning() || ProtectConfiguration.getLogProtectionEnabled();
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
-		if (exception != null) {
-			comment += ", Exception: " + exception.getMessage();
+		String uid = null;
+		if (certificate != null) {
+			uid = CertTools.getSerialNumberAsString(certificate) + "," + CertTools.getIssuerDN(certificate);        		
 		}
-		boolean successfulLog = false;
-    	int tries = 0;
-    	do{
-    		try {
-    			String uid = null;
-    			if (certificate != null) {
-    				uid = CertTools.getSerialNumberAsString(certificate) + "," + CertTools.getIssuerDN(certificate);        		
-    			}
-    			Integer id = getAndIncrementRowCount();
-    			entityManager.persist(new LogEntryData(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment));
-    			if (logsigning) {
-    				LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
-    				tableProtectSession.protect(le);
-    			}
-    			successfulLog = true;
-    		} catch (Throwable e) {
-    			tries++;
-    			if(tries == 3){
-        			// We are losing a db audit entry in this case.
-    				String msg = intres.getLocalizedMessage("log.errormissingentry");            	
-    				log.error(msg,e);
-    			}else{
-    				String msg = intres.getLocalizedMessage("log.warningduplicatekey");            	
-    				log.warn(msg);
-    			}
-    			
-    		}
-    	}while(!successfulLog && tries < 3);
+		Integer id = getAndIncrementRowCount();
+		entityManager.persist(new LogEntryData(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment));
+		if (logsigning) {
+			LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
+			tableProtectSession.protect(le);
+		}
 	}
 
 	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
