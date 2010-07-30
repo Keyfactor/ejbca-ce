@@ -320,7 +320,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     		}
     	} // finished with ECC key special handling
     	
-    	CertificateData data1 = new CertificateData(incert);
+    	CertificateData data1 = new CertificateData(incert, pubk);
     	String data1Fingerprint = data1.getFingerprint();
         data1.setUsername(username);
         data1.setCaFingerprint(cafp);

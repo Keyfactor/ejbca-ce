@@ -493,14 +493,14 @@ s	 * @throws ApprovalRequestExpiredException
 	
 	/** @return return the query results as a List. */
 	public static List<ApprovalData> findByApprovalIdNonExpired(EntityManager entityManager, int approvalid) {
-		Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid and (a.status=-1 or a.status=0 or a.status=-3)");
+		Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid AND (a.status>-3)");
 		query.setParameter("approvalid", approvalid);
 		return query.getResultList();
 	}
 
-	/** @return return the query results as a List. */
+	/* * @return return the query results as a List. * /
 	public static List<ApprovalData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("SELECT a FROM ApprovalData a");
 		return query.getResultList();
-	}	 
+	}*/
 }

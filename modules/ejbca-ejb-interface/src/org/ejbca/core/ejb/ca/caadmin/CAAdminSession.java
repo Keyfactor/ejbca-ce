@@ -707,4 +707,13 @@ public interface CAAdminSession {
             org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException,
             org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 
+    /**
+     * Used by healthcheck. Validate that CAs are online and optionally performs
+     * a signature test.
+     * 
+     * @return an error message or an empty String if all are ok.
+     * 
+     * TODO: This should only be in the local interface.
+     */
+    public String healthCheck();
 }

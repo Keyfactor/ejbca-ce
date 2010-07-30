@@ -19,6 +19,4 @@ import javax.ejb.Local;
  */
 @Local
 public interface PublisherSessionLocal extends PublisherSession {
-
-    public java.lang.String testAllConnections();
 }

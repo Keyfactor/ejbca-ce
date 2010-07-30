@@ -130,7 +130,7 @@ public class PublisherData implements Serializable {
 	 * @throws NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
-	public static PublisherData findByName(EntityManager entityManager, java.lang.String name) {
+	public static PublisherData findByName(EntityManager entityManager, String name) {
 		PublisherData ret = null;
 		try {
 			Query query = entityManager.createQuery("SELECT a FROM PublisherData a WHERE a.name=:name");

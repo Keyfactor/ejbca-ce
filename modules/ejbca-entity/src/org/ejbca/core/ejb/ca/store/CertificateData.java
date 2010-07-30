@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.store;
 
 import java.io.Serializable;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -90,8 +91,9 @@ public class CertificateData implements Serializable {
 	 * REVOKATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
 	 *
 	 * @param incert the (X509)Certificate to be stored in the database.
+     * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have parameters. Can be null if RSA or certificate public key contains all parameters.
 	 */
-	public CertificateData(Certificate incert) {
+	public CertificateData(Certificate incert, PublicKey enrichedpubkey) {
 		// Extract all fields to store with the certificate.
 		try {
             String b64Cert = new String(Base64.encode(incert.getEncoded()));
@@ -103,7 +105,9 @@ public class CertificateData implements Serializable {
             // Make sure names are always looking the same
             setSubjectDN(CertTools.getSubjectDN(incert));
             setIssuerDN(CertTools.getIssuerDN(incert));
-            log.debug("Creating certdata, subject=" + getSubjectDN() + ", issuer=" + getIssuerDN());
+            if (log.isDebugEnabled()) {
+                log.debug("Creating certdata, subject=" + getSubjectDN() + ", issuer=" + getIssuerDN()+", fingerprint="+fp);            	
+            }
             setSerialNumber(CertTools.getSerialNumber(incert).toString());
 
             // Default values for status and type
@@ -113,9 +117,21 @@ public class CertificateData implements Serializable {
             setExpireDate(CertTools.getNotAfter(incert));
             setRevocationDate(-1L);
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
-            setUpdateTime(new Date().getTime());
+            setUpdateTime(0L);	//(new Date().getTime());
             setCertificateProfileId(0);
-            setSubjectKeyId(new String(Base64.encode(KeyTools.createSubjectKeyId(incert.getPublicKey()).getKeyIdentifier(),false)));
+            // Create a key identifier
+            PublicKey pubk = incert.getPublicKey();
+            if (enrichedpubkey != null) {
+            	pubk = enrichedpubkey;
+            }
+            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
+            String keyId = null;
+            try {
+            	keyId = new String(Base64.encode(KeyTools.createSubjectKeyId(pubk).getKeyIdentifier(),false));
+            } catch (Exception e) {
+            	log.warn("Error creating subjectKeyId for certificate with fingerprint '"+fp+": ", e);
+            }
+            setSubjectKeyId(keyId);
 		} catch (CertificateEncodingException cee) {
 			log.error("Can't extract DER encoded certificate information.", cee);
 			// TODO should throw an exception
@@ -123,8 +139,6 @@ public class CertificateData implements Serializable {
 	}
 
 	public CertificateData() { }
-
-
 
 	/**
 	 * DN of issuer of certificate

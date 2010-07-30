@@ -37,6 +37,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.util.CertTools;
 
@@ -53,12 +54,11 @@ public class CertificateFinderBean {
 	
 	private static final Logger log = Logger.getLogger(CertificateFinderBean.class);
 
-	@EJB
-	private SignSessionRemote mSignSession;
-	@EJB
-	private CAAdminSessionRemote mCaAdminSession;
-	@EJB
-	private CertificateStoreSessionRemote mStoreSession;
+	private EjbRemoteHelper ejb = new EjbRemoteHelper();
+	private SignSessionRemote mSignSession = ejb.getSignSession();
+	private CAAdminSessionRemote mCaAdminSession = ejb.getCAAdminSession();
+	private CertificateStoreSessionRemote mStoreSession = ejb.getCertStoreSession();
+
 	private boolean mInitialized = false;
 	private Admin mAdmin;
 	

@@ -191,5 +191,8 @@ public interface PublisherSession {
      * authorization checks are performed.
      * 
      * @return an error message or an empty String if all are ok.
+     * 
+     * TODO: Move this to local interface!
      */
+    public java.lang.String testAllConnections();
 }

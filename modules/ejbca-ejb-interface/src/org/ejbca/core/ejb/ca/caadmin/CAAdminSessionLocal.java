@@ -71,12 +71,4 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      */
     public void restoreCAKeyStore(Admin admin, String caname, byte[] p12file, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
             String privateEncryptionKeyAlias) throws javax.ejb.EJBException;
-
-    /**
-     * Used by healthcheck. Validate that CAs are online and optionally performs
-     * a signature test.
-     * 
-     * @return an error message or an empty String if all are ok.
-     */
-    public String healthCheck();
 }

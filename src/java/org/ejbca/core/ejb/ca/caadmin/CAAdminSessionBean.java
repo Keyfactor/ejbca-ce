@@ -1024,48 +1024,37 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     private CAData getCADataBean(int caid, String name) throws UnsupportedEncodingException, IllegalKeyStoreException, CADoesntExistsException {
         CAData cadata = null;
-        //try {
-            if (caid != -1) {
-            	cadata = CAData.findById(entityManager, caid);
-                //cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
-            } else {
-            	cadata = CAData.findByName(entityManager, name);
-                //cadata = cadatahome.findByName(name);
-            }
+        if (caid != -1) {
+        	cadata = CAData.findById(entityManager, caid);
+        } else {
+        	cadata = CAData.findByName(entityManager, name);
+        }
         if (cadata == null) {
-        //} catch (FinderException fe) {
             // We should never get to here if we are searching for name, in any
             // case if the name does not exist, the CA really does not exist
             // We don't have to try to find another mapping for the CAId
             if (caid != -1) {
-                // subject DN of the CA certificate might not have all objects
-                // that is the DN of the certificate data.
-                //try {
-                    final Integer oRealCAId = (Integer) this.caCertToCaId.get(new Integer(caid));
-                    // has the "real" CAID been mapped to the certificate subject hash by a previous call?
-                    if (oRealCAId != null) { 
-                    	// yes, using cached value of real caid.
-                    	cadata = CAData.findById(entityManager, oRealCAId);
-                        //cadata = this.cadatahome.findByPrimaryKey(oRealCAId);
-                    } else {
-                    	// no, we have to search for it among all CA certs
-                    	Iterator<CAData> i = CAData.findAll(entityManager).iterator();
-                        //final Iterator i = cadatahome.findAll().iterator();
-                        while (cadata == null && i.hasNext()) {
-                            final CAData tmp = i.next();
-                            final Certificate caCert = tmp != null ? tmp.getCA().getCACertificate() : null;
-                            if (caCert != null && caid == CertTools.getSubjectDN(caCert).hashCode()) {
-                                cadata = tmp; // found. Do also cache it if
-                                // someone else is needing it
-                                // later
-                                this.caCertToCaId.put(new Integer(caid), new Integer(cadata.getSubjectDN().hashCode()));
-                            }
-                        }
-                    }
-                /*} catch (FinderException e) {
-                    // do nothing. can not find CA. CADoesntExistsException will
-                    // be thrown
-                }*/
+            	// subject DN of the CA certificate might not have all objects
+            	// that is the DN of the certificate data.
+            	final Integer oRealCAId = (Integer) this.caCertToCaId.get(new Integer(caid));
+            	// has the "real" CAID been mapped to the certificate subject hash by a previous call?
+            	if (oRealCAId != null) { 
+            		// yes, using cached value of real caid.
+            		cadata = CAData.findById(entityManager, oRealCAId);
+            	} else {
+            		// no, we have to search for it among all CA certs
+            		Iterator<CAData> i = CAData.findAll(entityManager).iterator();
+            		while (cadata == null && i.hasNext()) {
+            			final CAData tmp = i.next();
+            			final Certificate caCert = tmp != null ? tmp.getCA().getCACertificate() : null;
+            			if (caCert != null && caid == CertTools.getSubjectDN(caCert).hashCode()) {
+            				cadata = tmp; // found. Do also cache it if
+            				// someone else is needing it
+            				// later
+            				this.caCertToCaId.put(new Integer(caid), new Integer(cadata.getSubjectDN().hashCode()));
+            			}
+            		}
+            	}
             }
             if (cadata == null) {
                 String msg;
@@ -1074,13 +1063,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 } else {
                     msg = intres.getLocalizedMessage("caadmin.canotexistsname", name);
                 }
-                //msg += ": " + fe.getMessage();
                 log.info(msg);
                 throw new CADoesntExistsException(msg);
             }
         }
         return cadata;
-    } // getCADataBean
+    }
 
     /**
      * Checks if the CA certificate has expired (or is not yet valid) and sets
@@ -1180,17 +1168,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap<Integer, String> getCAIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        //try {
-            Collection<CAData> result = CAData.findAll(entityManager);
-            //Collection result = cadatahome.findAll();
-            Iterator<CAData> iter = result.iterator();
-            while (iter.hasNext()) {
-                CAData cadata = iter.next();
-                returnval.put(cadata.getCaId(), cadata.getName());
-            }
-        /*} catch (javax.ejb.FinderException fe) {
-        }*/
-
+        Collection<CAData> result = CAData.findAll(entityManager);
+        Iterator<CAData> iter = result.iterator();
+        while (iter.hasNext()) {
+        	CAData cadata = iter.next();
+        	returnval.put(cadata.getCaId(), cadata.getName());
+        }
         return returnval;
     }
 
@@ -3306,19 +3289,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         boolean returnval = false;
         try {
         	Collection<CAData> result = CAData.findAll(entityManager);
-            //Collection result = cadatahome.findAll();
             Iterator<CAData> iter = result.iterator();
             while (iter.hasNext()) {
                 CAData cadata = iter.next();
                 returnval = returnval || (cadata.getCA().getCertificateProfileId() == certificateprofileid);
             }
-        //} catch (javax.ejb.FinderException fe) {
         } catch (java.io.UnsupportedEncodingException e) {
         } catch (IllegalKeyStoreException e) {
         }
-
         return returnval;
-    } // exitsCertificateProfileInCAs
+    }
 
     /**
      * Encrypts data with a CA key.
@@ -3366,7 +3346,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         boolean returnval = false;
         try {
         	Collection<CAData> result = CAData.findAll(entityManager);
-            //Collection result = cadatahome.findAll();
             Iterator<CAData> iter = result.iterator();
             while (iter.hasNext()) {
                 CAData cadata = iter.next();
@@ -3376,13 +3355,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     returnval = returnval || (pubInt.intValue() == publisherid);
                 }
             }
-        //} catch (javax.ejb.FinderException fe) {
         } catch (java.io.UnsupportedEncodingException e) {
         } catch (IllegalKeyStoreException e) {
         }
 
         return returnval;
-    } // exitsPublisherInCAs
+    }
 
     /**
      * Help method that checks the CA data config and the certificate profile if
