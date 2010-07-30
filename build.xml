@@ -395,6 +395,10 @@
 			<istrue value="${web.renewalenabled}"/>
 		</condition>
 		<replace file="${eardd.src}/META-INF/application.xml" token="!--@renew.war@-->" value="${renew.enabled.replace-string}"/>
+		<!-- Specify that we will use a specific WS implementatio -->
+		<mkdir dir="${eardd.src}/META-INF/services"/>
+		<copy todir="${eardd.src}/META-INF/services" file="src/deploy/ear/META-INF/services/javax.xml.soap.MetaFactory" flatten="true" failonerror="true"/>
+		<!-- Build the EAR -->
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
