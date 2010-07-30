@@ -78,7 +78,7 @@
 		<delete file="${mod.ejbca-xkms.lib}" />
     </target>
 	
-    <target name="compile" depends="ejbca-util, ejbca-ejb">
+    <target name="compile" depends="ejbca-util, ejbca-ejb, ejbca-ejb-interface">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
