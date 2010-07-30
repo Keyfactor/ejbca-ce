@@ -59,7 +59,6 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -130,11 +129,7 @@ public class XKMSProvider implements Provider<Source> {
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
-    private SignSessionLocal signSession;
-    
-    
-    
+
     static{    	
     	try {
     		org.apache.xml.security.Init.init();
@@ -402,7 +397,7 @@ public class XKMSProvider implements Provider<Source> {
 
 				XKMSCAServiceRequest cAReq = new XKMSCAServiceRequest(result, id,true,false);
 
-				XKMSCAServiceResponse resp = (XKMSCAServiceResponse) signSession.extendedService(admin, XKMSConfig.cAIdUsedForSigning(admin, caAdminSession), cAReq);
+				XKMSCAServiceResponse resp = (XKMSCAServiceResponse) caAdminSession.extendedService(admin, XKMSConfig.cAIdUsedForSigning(admin, caAdminSession), cAReq);
 
 				retval = resp.getSignedDocument();
 			} catch (Exception e) {

@@ -36,7 +36,7 @@
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.InformixDialect"/>
-            <property name="hibernate.connection.url" value="jdbc:informix-sqli://informix:9088/ejbca:informixserver=informixserver_tcp;"/>
+            <property name="hibernate.connection.url" value="jdbc:informix-sqli://informix:9088/ejbca4:informixserver=informixserver_tcp;"/>
             <property name="hibernate.connection.driver_class" value="com.informix.jdbc.IfxDriver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
