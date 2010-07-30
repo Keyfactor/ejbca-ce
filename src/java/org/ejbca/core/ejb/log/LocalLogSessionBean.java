@@ -451,7 +451,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
         LogConfiguration ret = null; 
     	Object o = logConfCache.get(Integer.valueOf(caid));
     	if (o == null) {
-    		LogConfigurationData logconfigdata = LogConfigurationData.findByPK(entityManager, caid);
+    		LogConfigurationData logconfigdata = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
     		if (logconfigdata != null) {
     			ret = logconfigdata.loadLogConfiguration();
     		} else {
@@ -487,7 +487,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     public void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration) {
         try {
         	log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
-        	LogConfigurationData lcd = LogConfigurationData.findByPK(entityManager, caid);
+        	LogConfigurationData lcd = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
         	if (lcd != null) {
         		lcd.saveLogConfiguration(logconfiguration);
         		// Update cache

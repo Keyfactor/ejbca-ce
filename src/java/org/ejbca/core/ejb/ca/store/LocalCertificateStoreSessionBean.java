@@ -1780,7 +1780,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
                     returnval = new EndUserCertificateProfile();
             }
         } else {
-            CertificateProfileData cpd = CertificateProfileData.findById(entityManager, id);
+            CertificateProfileData cpd = CertificateProfileData.findById(entityManager, Integer.valueOf(id));
             if (cpd != null) {
                 returnval = cpd.getCertificateProfile();
             }
@@ -1886,7 +1886,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
                     returnval = EndUserCertificateProfile.CERTIFICATEPROFILENAME;
             }
         } else {
-            CertificateProfileData cpd = CertificateProfileData.findById(entityManager, id);
+            CertificateProfileData cpd = CertificateProfileData.findById(entityManager, Integer.valueOf(id));
             if (cpd != null) {
                 returnval = cpd.getCertificateProfileName();
             } else {
@@ -1960,7 +1960,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
         boolean foundfree = false;
         while (!foundfree) {
         	if (id > SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
-        		if (CertificateProfileData.findById(entityManager, id) == null) {
+        		if (CertificateProfileData.findById(entityManager, Integer.valueOf(id)) == null) {
         			foundfree = true;
         		}
         	} else {
@@ -1995,7 +1995,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     private boolean isFreeCertificateProfileId(int id) {
         boolean foundfree = false;
         if (id > SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
-        	if (CertificateProfileData.findById(entityManager, id) == null) {
+        	if (CertificateProfileData.findById(entityManager, Integer.valueOf(id)) == null) {
         		foundfree = true;
         	}
         }

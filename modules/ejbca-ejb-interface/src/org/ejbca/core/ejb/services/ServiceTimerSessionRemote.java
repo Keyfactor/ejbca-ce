@@ -13,14 +13,10 @@
 package org.ejbca.core.ejb.services;
 
 import javax.ejb.Remote;
-import javax.ejb.Timer;
 
 /**
  * Remote interface for ServiceTimerSession.
  */
 @Remote
 public interface ServiceTimerSessionRemote extends ServiceTimerSession {
-
-	// TODO: Is this required for timer service?
-	public void timeoutHandler(Timer timer);
 }

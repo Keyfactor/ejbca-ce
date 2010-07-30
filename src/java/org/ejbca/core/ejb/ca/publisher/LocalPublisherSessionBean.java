@@ -199,7 +199,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         while (iter.hasNext()) {
             int publishStatus = PublisherQueueData.STATUS_PENDING;
             Integer id = iter.next();
-            PublisherData pdl = PublisherData.findById(entityManager, id);
+            PublisherData pdl = PublisherData.findById(entityManager, Integer.valueOf(id));
             if (pdl != null) {
                 String fingerprint = CertTools.getFingerprintAsString(cert);
                 // If it should be published directly
@@ -268,7 +268,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         while (iter.hasNext()) {
             int publishStatus = PublisherQueueData.STATUS_PENDING;
             Integer id = iter.next();
-            PublisherData pdl = PublisherData.findById(entityManager, id);
+            PublisherData pdl = PublisherData.findById(entityManager, Integer.valueOf(id));
             if (pdl != null) {
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
@@ -330,7 +330,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + publisherid + ")");
         }
-        PublisherData pdl = PublisherData.findById(entityManager, publisherid);
+        PublisherData pdl = PublisherData.findById(entityManager, Integer.valueOf(publisherid));
         if (pdl != null) {
             String name = pdl.getName();
             try {
@@ -383,7 +383,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
         }
         boolean success = false;
         if (PublisherData.findByName(entityManager, name) == null) {
-            if (PublisherData.findById(entityManager, id) == null) {
+            if (PublisherData.findById(entityManager, Integer.valueOf(id)) == null) {
                 try {
                 	entityManager.persist(new PublisherData(new Integer(id), name, publisher));
                     success = true;
@@ -587,7 +587,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public BasePublisher getPublisher(Admin admin, int id) {
         BasePublisher returnval = null;
-        PublisherData pd = PublisherData.findById(entityManager, id);
+        PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(id));
         if (pd != null) {
         	returnval = getPublisher(pd);
         }
@@ -604,7 +604,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getPublisherUpdateCount(Admin admin, int publisherid) {
         int returnval = 0;
-        PublisherData pd = PublisherData.findById(entityManager, publisherid);
+        PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(publisherid));
         if (pd != null) {
         	returnval = pd.getUpdateCounter();
         }
@@ -641,7 +641,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
             log.trace(">getPublisherName(id: " + id + ")");
         }
         String returnval = null;
-        PublisherData pd = PublisherData.findById(entityManager, id);
+        PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(id));
         if (pd != null) {
         	returnval = pd.getName();
         }
@@ -685,7 +685,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
     	boolean foundfree = false;
     	while (!foundfree) {
     		if (id > 1) {
-    			PublisherData pd = PublisherData.findById(entityManager, id);
+    			PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(id));
     			if (pd == null) {
     				foundfree = true;
     			}

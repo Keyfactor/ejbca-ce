@@ -385,7 +385,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
-    	AdminGroupData agdl = AdminGroupData.findByPrimeKey(entityManager, admingrouppk);
+    	AdminGroupData agdl = AdminGroupData.findByPrimeKey(entityManager, Integer.valueOf(admingrouppk));
     	if (agdl != null) {
             Iterator<AdminEntity> adminentitites = agdl.getAdminGroup().getAdminEntities().iterator();
             while (adminentitites.hasNext()) {
@@ -1019,7 +1019,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
         int id = random.nextInt();
         boolean foundfree = false;
         while (!foundfree) {
-        	if (AdminGroupData.findByPrimeKey(entityManager, id) == null) {
+        	if (AdminGroupData.findByPrimeKey(entityManager, Integer.valueOf(id)) == null) {
                 foundfree = true;
         	}
             id = random.nextInt();

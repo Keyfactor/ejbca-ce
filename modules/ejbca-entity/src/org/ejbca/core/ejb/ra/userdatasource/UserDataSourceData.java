@@ -127,7 +127,7 @@ public class UserDataSourceData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
     public static UserDataSourceData findById(EntityManager entityManager, int id) {
-    	return entityManager.find(UserDataSourceData.class, id);
+    	return entityManager.find(UserDataSourceData.class, Integer.valueOf(id));
     }
 
 	/**

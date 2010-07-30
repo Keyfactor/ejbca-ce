@@ -24,10 +24,9 @@ import java.util.Random;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
@@ -225,8 +224,10 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
+    /*@Resource
+    private SessionContext sessionContext;*/
     @Resource
-    private SessionContext sessionContext;
+    private TimerService timerService;
     @EJB
     private LogSessionLocal logSession;
     @EJB
@@ -255,7 +256,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
      * 
      * @param timer timer whose expiration caused this notification.
      */
-    @Timeout
+    @javax.ejb.Timeout
 	public void timeoutHandler(Timer timer) {
 		log.trace(">ejbTimeout");    		
 		Integer timerInfo = (Integer) timer.getInfo();
@@ -289,7 +290,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 				// Check if we have scheduled this time to run again, or if this exception would stop the service from running for ever.
 				// If we can't find any current timer we will try to create a new one.
 				boolean isScheduledToRun = false;
-				Collection<Timer> timers = sessionContext.getTimerService().getTimers();
+				Collection<Timer> timers = timerService.getTimers();	//sessionContext.getTimerService().getTimers();
 				for (Iterator<Timer> iterator = timers.iterator(); iterator.hasNext();) {
 					Timer t = iterator.next();
 					Integer tInfo = (Integer) t.getInfo();
@@ -311,7 +312,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 						nextInterval = worker.getNextInterval();
 					}
 					long intervalMillis = getNextIntervalMillis(nextInterval);
-					sessionContext.getTimerService().createTimer(intervalMillis, timerInfo);
+					timerService.createTimer(intervalMillis, timerInfo);	//sessionContext.getTimerService().createTimer(intervalMillis, timerInfo);
 					String msg = intres.getLocalizedMessage("services.servicefailedrescheduled", intervalMillis);
 					log.info(msg);
 				}
@@ -357,7 +358,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 		// not scheduled to run on the exact same second. If the next scheduled run is less than 40 seconds away, 
 		// in which case we only randomize on 5 seconds.
 		long intervalMillis = getNextIntervalMillis(nextInterval);
-		sessionContext.getTimerService().createTimer(intervalMillis, timerInfo);
+		timerService.createTimer(intervalMillis, timerInfo);	//sessionContext.getTimerService().createTimer(intervalMillis, timerInfo);
 		// Calculate the nextRunTimeStamp, since we set a new timer
 		Date runDateCheck = serviceData.getNextRunTimestamp(); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
 		Date currentDate = new Date();
@@ -421,7 +422,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
      */
 	public void load(){
 		// Get all services
-		Collection<Timer> currentTimers = sessionContext.getTimerService().getTimers();
+		Collection<Timer> currentTimers = timerService.getTimers();	//sessionContext.getTimerService().getTimers();
 		Iterator<Timer> iter = currentTimers.iterator();
 		HashSet<Serializable> existingTimers = new HashSet<Serializable>();
 		while(iter.hasNext()){
@@ -444,14 +445,14 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
 			if(!existingTimers.contains(id)){
 				IWorker worker = getWorker(serviceConfiguration, idToNameMap.get(id));
 				if(worker != null && serviceConfiguration.isActive()  && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-					sessionContext.getTimerService().createTimer((worker.getNextInterval()) *1000, id);
+					timerService.createTimer((worker.getNextInterval()) *1000, id);	//sessionContext.getTimerService().createTimer((worker.getNextInterval()) *1000, id);
 				}
 			}
 		}
 
 		if(!existingTimers.contains(SERVICELOADER_ID)){
 			// load the service timer
-			sessionContext.getTimerService().createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);
+			timerService.createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);	//sessionContext.getTimerService().createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);
 		}
 	}
 	
@@ -463,7 +464,7 @@ public class ServiceTimerSessionBean implements ServiceTimerSessionLocal, Servic
      */
 	public void unload(){
 		// Get all services
-		Collection<Timer> currentTimers = sessionContext.getTimerService().getTimers();
+		Collection<Timer> currentTimers = timerService.getTimers();	//sessionContext.getTimerService().getTimers();
 		Iterator<Timer> iter = currentTimers.iterator();
 		while(iter.hasNext()){
 			try {
