@@ -15,16 +15,18 @@ package org.ejbca.core.protocol.xkms.generators;
 
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJB;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
 import org.w3._2002._03.xkms_.KeyBindingAbstractType;
@@ -46,11 +48,15 @@ public class RevokeResponseGenerator extends
 		KRSSResponseGenerator {
 	//private static Logger log = Logger.getLogger(RevokeResponseGenerator.class);
 
-    @EJB
-    private UserAdminSessionLocal userAdminSession;
+    private UserAdminSession userAdminSession;
     
 	public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc) {
 		super(remoteIP, req,requestDoc);
+		try {
+			userAdminSession = new EjbLocalHelper().getUserAdminSession();
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
 	}
 	
 	/**

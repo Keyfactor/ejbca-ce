@@ -23,21 +23,23 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.EJB;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
@@ -82,25 +84,22 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 	protected String resultMajor = null;
 	protected String resultMinor = null;
 
+	private CAAdminSession caadminsession;
+	private CertificateStoreSession certificateStoreSession;
+	private CreateCRLSession createCrlSession;
 
-        @EJB
-        private CAAdminSessionLocal caadminsession;
-        
-        @EJB
-        private CertificateStoreSessionLocal certificateStoreSession;
-        
-        @EJB
-        private CreateCRLSessionLocal createCrlSession;
-	
-	
 	public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req){
-	  super(remoteIP);		
-	  this.req = req;	  	 
-	        
+		super(remoteIP);		
+		this.req = req;	  	 
+		EjbLocalHelper ejb = new EjbLocalHelper();
+		try {
+			caadminsession = ejb.getCAAdminSession();
+			certificateStoreSession = ejb.getCertStoreSession();
+			createCrlSession = ejb.getCreateCrlSession();
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
 	}
-	
-
-
 
 	/**
 	 * Returns the generated response common data that should be sent back to the client

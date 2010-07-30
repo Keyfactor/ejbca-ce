@@ -582,7 +582,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         	returnval = new EndEntityProfile(true);
         }
         if(id!=0 && id != SecConst.EMPTY_ENDENTITYPROFILE) {
-        	EndEntityProfileData eepd = EndEntityProfileData.findById(entityManager, id);
+        	EndEntityProfileData eepd = EndEntityProfileData.findById(entityManager, Integer.valueOf(id));
         	if (eepd != null) {
         		returnval = eepd.getProfile();
         	} else {
@@ -821,7 +821,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
     	boolean foundfree = false;
     	while(!foundfree){
     		if(id > 1) {
-    			if (EndEntityProfileData.findById(entityManager, id) == null) {
+    			if (EndEntityProfileData.findById(entityManager, Integer.valueOf(id)) == null) {
     				foundfree = true;
     			}
     		}
@@ -845,7 +845,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
     private boolean isFreeEndEntityProfileId(int id) {
     	boolean foundfree = false;
     	if (id > 1) {
-    		if (EndEntityProfileData.findById(entityManager, id) == null) {
+    		if (EndEntityProfileData.findById(entityManager, Integer.valueOf(id)) == null) {
     			foundfree = true;
     		}
     	}
