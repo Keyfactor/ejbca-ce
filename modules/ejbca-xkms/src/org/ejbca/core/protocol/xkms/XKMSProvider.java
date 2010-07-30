@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -58,13 +57,14 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.generators.LocateResponseGenerator;
@@ -125,10 +125,10 @@ public class XKMSProvider implements Provider<Source> {
     private static Unmarshaller unmarshaller = null;
     private static DocumentBuilderFactory dbf = null;
     
-    @EJB
-    private CAAdminSessionLocal caAdminSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
+	// TODO: Is more than one instance created of this class? If so, we should probably cache the helper..
+	private EjbRemoteHelper ejb = new EjbRemoteHelper();
+    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
 
     static{    	
     	try {
