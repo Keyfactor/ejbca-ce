@@ -217,6 +217,11 @@ a:focus,
 a:active {
 	color: #A00;
 }
+select option:hover,
+select option:focus,
+select option:active {
+	background-color: #FFC;
+}
 p.help {
 	margin-top: .25em;
 	margin-bottom: .25em;
@@ -296,6 +301,14 @@ div#publishqueuestatus {
 }
 
 /* Page: CA > CA Activation */
+#activation table tbody tr:nth-child(2n) {
+	background-color: #F7F9FD;
+}
+#activation table tbody tr:hover,
+#activation table tbody tr:focus,
+#activation table tbody tr:active {
+	background-color: #FFB;
+}
 #activation table th,
 #activation table td {
 	padding: 4px 3px;
@@ -304,9 +317,6 @@ div#publishqueuestatus {
 }
 #activation table td {
 	padding-right: 9px;
-}
-#activation table tr:nth-child(2n) td {
-	background-color: #F7F9FD;
 }
 #activation table td img {
 	width: 16px;
@@ -332,6 +342,17 @@ div#code input {
 }
 div#code input[type="submit"] {
 	margin-left: 1em;
+}
+
+/* Page: RA > Add End-Entity */
+table#addendentity td {
+	padding: .15em .3em;
+	vertical-align: middle;
+	white-space: nowrap;
+	font-size: 1.1em;
+}
+table#addendentity td:last-child {
+	text-align: center;
 }
 
 /* Page: SUP > Log configuration */
@@ -378,6 +399,14 @@ form#groupList p a.commandLink {
 form#groupList table {
 	border-collapse: collapse;
 }
+form#groupList table tr.listRow2 {
+	background-color: #F7F9FD;
+}
+form#groupList table tbody tr:hover,
+form#groupList table tbody tr:focus,
+form#groupList table tbody tr:active {
+	background-color: #FFB;
+}
 form#groupList table th,
 form#groupList table td {
 	white-space: nowrap;
@@ -387,15 +416,26 @@ form#groupList table th {
 }
 form#groupList table td {
 	padding: .35em;
-	border: 1px solid #2E5A94;
-}
-form#groupList table td {
+	border: 1px solid #D0DEF1;
 	font-size: 1.1em;
 	font-weight: bold;
 }
 form#groupList table td a {
-	margin: .75em;
+	margin: .5em;
+	padding: .15em .3em;
+	border: 1px solid transparent;
 	font-size: inherit !important;
+}
+form#groupList table td a:hover,
+form#groupList table td a:focus,
+form#groupList table td a:active {
+	background-color: #FFF;
+	border: 1px solid #A00;
+	border-radius: .25em;
+	-o-border-radius: .25em;
+	-moz-border-radius: .25em;
+	-khtml-border-radius: .25em;
+	-webkit-border-radius: .25em;
 }
 
 
