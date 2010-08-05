@@ -61,7 +61,7 @@
 <li>API for an external RA, restricting in-bound traffic to CA.</li>
 <li>Optional approval mechanism so several admins are required to perform an action, a.k.a. dual-authentication.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
-<li>Possible to integrate into large java applications for optimal integration into bussiness process.</li>
+<li>Possible to integrate into large java applications for optimal integration into business process.</li>
 <li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
 <li>Supports multiple application servers: JBoss, Weblogic, Glassfish, OC4J, Websphere</li>
