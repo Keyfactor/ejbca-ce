@@ -2112,6 +2112,8 @@ public class CertTools {
 	/**
 	 * Checks that the given date is within the certificate's validity period. 
 	 * In other words, this determines whether the certificate would be valid at the given date/time.
+	 * 
+	 * This utility class is only a helper to get the same behavior as the standard java.security.cert API regardless if using X.509 or CV Certificate.
 	 *
 	 * @param cert certificate to verify, if null the method returns immediately, null does not have a validity to check.
 	 * @param date the Date to check against to see if this certificate is valid at that date/time.
@@ -2132,12 +2134,16 @@ public class CertTools {
 					Date end = cvccert.getCVCertificate().getCertificateBody().getValidTo();
 					if (start.after(date)) {
 						String msg = "Certificate startDate '"+start+"' is after check date '"+date+"'";
-						log.error(msg);
+						if (log.isTraceEnabled()) {
+							log.trace(msg);
+						}
 						throw new CertificateNotYetValidException(msg);
 					}
 					if (end.before(date)) {
 						String msg = "Certificate endDate '"+end+"' is before check date '"+date+"'";
-						log.error(msg);
+						if (log.isTraceEnabled()) {
+							log.trace(msg);
+						}
 						throw new CertificateExpiredException(msg);
 					}
 				} catch (NoSuchFieldException e) {
