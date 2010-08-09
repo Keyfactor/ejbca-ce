@@ -99,20 +99,22 @@ public class CaCertRequestCommand extends EJBCAWSRABaseCommand implements IAdmin
 			CertTools.installBCProvider();
 			
 			ArrayList cachain = new ArrayList();
-			try {
-				FileInputStream in = new FileInputStream(cachainfile);
-				Collection certs = CertTools.getCertsFromPEM(in);
-				Iterator iter = certs.iterator();
-				while (iter.hasNext()) {
-					Certificate cert = (Certificate)iter.next();
+			if (!cachainfile.equalsIgnoreCase("NULL")){
+				try {
+					FileInputStream in = new FileInputStream(cachainfile);
+					Collection certs = CertTools.getCertsFromPEM(in);
+					Iterator iter = certs.iterator();
+					while (iter.hasNext()) {
+						Certificate cert = (Certificate)iter.next();
+						cachain.add(cert.getEncoded());
+					}
+				} catch (IOException e) {
+					// It was perhaps not a PEM chain...see if it was a single binary CVC certificate
+					byte[] certbytes = FileTools.readFiletoBuffer(cachainfile);
+					Certificate cert = CertTools.getCertfromByteArray(certbytes); // check if it is a good cert, decode PEM if it is PEM, etc
 					cachain.add(cert.getEncoded());
 				}
-			} catch (IOException e) {
-				// It was perhaps not a PEM chain...see if it was a single binary CVC certificate
-				byte[] certbytes = FileTools.readFiletoBuffer(cachainfile);
-				Certificate cert = CertTools.getCertfromByteArray(certbytes); // check if it is a good cert, decode PEM if it is PEM, etc
-				cachain.add(cert.getEncoded());
-			}			
+			}
 	        byte[] request = getEjbcaRAWS().caRenewCertRequest(caname, cachain, regenkeys, usenext, activatekeys, keystorepwd);
 	        if (request != null) {
 				FileOutputStream fos = new FileOutputStream(outfile);
@@ -133,9 +135,10 @@ public class CaCertRequestCommand extends EJBCAWSRABaseCommand implements IAdmin
 
 	protected void usage() {
 		getPrintStream().println("Command used to make a certificate request from a CA to an external CA. Can be X.509 or CVC. Can be used for cross certification and for renewing a Sub CA.");
-		getPrintStream().println("Usage : cacertrequest <caname> <cachainfile> <regenkeys true/false> <activatekeys true/false> <usenextkey true/false> <outfile> [<CA token password>]\n\n");
+		getPrintStream().println("Usage : cacertrequest <caname> <cachainfile | NULL> <regenkeys true/false> <activatekeys true/false> <usenextkey true/false> <outfile> [<CA token password>]\n\n");
 		getPrintStream().println("Caname is the name of the CA that will generate the request.");
 		getPrintStream().println("Cachainfile is a file with the certificate chain of the external CA. This can be a file with several PEM certificates in it, or a file with a single PEM or binary Root CA certificate.");
+		getPrintStream().println("  Specifying NULL means that no cachain is supplied.");
 		getPrintStream().println("Regenkeys will generate new CA signing keys that will be used to sign the request.");
 		getPrintStream().println("Activatekeys is valid if regenkeys=true. Activatekeys determins if the new keys will be activated by the CA immediately or not. If activated immediately the CA will be set in status \"waiting for certificate response\". In this state the CA will not be able to issue certificates until the response from the external CA has been imported. If activatekeys=false the new keys will be used to generate the request, but the old keys will still be active until the response from the external CA is imported.");
 		getPrintStream().println("Usenextkey is valid if regenkeys=false but there has already been a call with regenkeys=true and activatekeys=false. This will then generate a new request using the new, not yet activated keys. Useful if the original request got lost, or if the same key should be used to generate a request for several external CAs.");
