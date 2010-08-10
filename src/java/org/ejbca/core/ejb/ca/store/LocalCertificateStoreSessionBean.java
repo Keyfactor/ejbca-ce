@@ -53,7 +53,7 @@ import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocalejb3;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
@@ -218,7 +218,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private TableProtectSessionLocalejb3 tableProtectSession;
+    private TableProtectSessionLocal tableProtectSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     

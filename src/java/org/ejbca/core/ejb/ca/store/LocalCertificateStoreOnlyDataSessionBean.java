@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocalejb3;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.JDBCUtil;
@@ -98,7 +98,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
     private EntityManager entityManager;
 
     @EJB
-    private TableProtectSessionLocalejb3 tableProtectSession;
+    private TableProtectSessionLocal tableProtectSession;
     
     public LocalCertificateStoreOnlyDataSessionBean() {
         super();

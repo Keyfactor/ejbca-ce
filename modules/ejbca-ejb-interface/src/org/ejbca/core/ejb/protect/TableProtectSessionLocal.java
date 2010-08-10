@@ -14,13 +14,12 @@ package org.ejbca.core.ejb.protect;
 
 import javax.ejb.Local;
 
+
 /**
  * Local interface for TableProtectSession.
  * 
- * FIXME: The name of this class is temporarily in conflict with its ejb2
- * predecessor. Remove ejb3 postfix after the xdoclet-class has ceased to exist.
  */
 @Local
-public interface TableProtectSessionLocalejb3 extends TableProtectSession {
+public interface TableProtectSessionLocal extends TableProtectSession {
    
 }

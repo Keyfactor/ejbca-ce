@@ -49,7 +49,7 @@ public class ProtectTest extends TestCase {
 
     private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    private TableProtectSessionRemoteejb3 tableProtectSession = InterfaceCache.getTableProtectSession();
+    private TableProtectSessionRemote tableProtectSession = InterfaceCache.getTableProtectSession();
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 
