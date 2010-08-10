@@ -12,9 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.approval;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
@@ -22,6 +26,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * @author mikek
@@ -169,7 +174,7 @@ public interface ApprovalSession {
      * Method returning an approval requests with status 'waiting', 'Approved'
      * or 'Reject' returns null if no non expired exists
      */
-    public org.ejbca.core.model.approval.ApprovalDataVO findNonExpiredApprovalRequest(org.ejbca.core.model.log.Admin admin, int approvalId);
+    public ApprovalDataVO findNonExpiredApprovalRequest(org.ejbca.core.model.log.Admin admin, int approvalId);
 
     /**
      * Method that takes an approvalId and returns all aprovalrequests for this.
@@ -178,7 +183,7 @@ public interface ApprovalSession {
      * @param approvalId
      * @return and collection of ApprovalDataVO, empty if no approvals exists.
      */
-    public java.util.Collection findApprovalDataVO(org.ejbca.core.model.log.Admin admin, int approvalId);
+    public Collection<ApprovalDataVO> findApprovalDataVO(Admin admin, int approvalId);
 
     /**
      * Method returning a list of approvals from the give query
@@ -199,7 +204,7 @@ public interface ApprovalSession {
      * @throws AuthorizationDeniedException
      * @throws IllegalQueryException
      */
-    public java.util.List query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, int index, int numberofrows,
+    public List<ApprovalDataVO> query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, int index, int numberofrows,
             java.lang.String caAuthorizationString, java.lang.String endEntityProfileAuthorizationString)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.query.IllegalQueryException;
 
@@ -209,6 +214,6 @@ public interface ApprovalSession {
      * 
      * @return a List<Integer> with all pending approval ids, never null
      */
-    public java.util.List getAllPendingApprovalIds();
+    public List<Integer> getAllPendingApprovalIds();
 
 }
