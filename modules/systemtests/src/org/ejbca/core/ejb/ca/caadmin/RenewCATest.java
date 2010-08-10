@@ -22,8 +22,6 @@ import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.log.Admin;
 
 /**
- * Tests and removes the ca data entity bean.
- *
  * @version $Id$
  */
 public class RenewCATest extends CaTestCase {

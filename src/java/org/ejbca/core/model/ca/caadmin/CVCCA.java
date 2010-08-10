@@ -187,13 +187,16 @@ public class CVCCA extends CA implements Serializable {
 					try {
 						HolderReferenceField href = cvcacert.getCVCertificate().getCertificateBody().getHolderReference();
 						caRef = new CAReferenceField(href.getCountry(), href.getMnemonic(), href.getSequence());
+						log.debug("Using caRef from the CA certificate: "+caRef.getConcatenated());					
 					} catch (NoSuchFieldException e) {
 						log.debug("CA certificate does not contain a Holder reference to use as CARef in request.");
-					}
-					
+					}					
+				} else {
+					log.debug("CA certificate is not a CardVerifiableCertificate.");					
 				}
 			} else {
 				caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());				
+				log.debug("No CA cert, using caRef from the holder itself: "+caRef.getConcatenated());					
 			}
 			log.debug("Creating request with signature alg: "+signAlg+", using provider "+catoken.getProvider());
 			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef, catoken.getProvider());

@@ -59,6 +59,7 @@ import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -433,7 +434,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final String keyspec = "secp256r1";
         final String keyalg = AlgorithmConstants.KEYALGORITHM_ECDSA;
         final String signalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-        caRenewCertRequest(cvcaMnemonic, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
+		CardVerifiableCertificate cvcacert = super.caRenewCertRequest(cvcaMnemonic, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
+		super.caMakeRequestAndFindCA(dvcaName, cvcacert);
     }
 
     public void test35CleanUpCACertRequest() throws Exception {
