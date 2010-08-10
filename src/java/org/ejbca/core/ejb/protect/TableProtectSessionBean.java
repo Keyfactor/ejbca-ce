@@ -80,9 +80,9 @@ import org.ejbca.util.StringTools;
  *
  * @version $Id$
  */
-@Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "TableProtectSessionRemoteejb3")
+@Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "TableProtectSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class TableProtectSessionBean implements TableProtectSessionLocalejb3, TableProtectSessionRemoteejb3 {
+public class TableProtectSessionBean implements TableProtectSessionLocal, TableProtectSessionRemote {
 
 	private static final Logger log = Logger.getLogger(TableProtectSessionBean.class);
     /** Internal localization of logs and errors */

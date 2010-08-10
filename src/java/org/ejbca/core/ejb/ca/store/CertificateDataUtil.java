@@ -29,7 +29,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocalejb3;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -203,7 +203,7 @@ public class CertificateDataUtil {
 
 
     static public CertificateStatus getStatus(String issuerDN, BigInteger serno,
-                                              EntityManager entityManager, TableProtectSessionLocalejb3 protect, Adapter adapter) {
+                                              EntityManager entityManager, TableProtectSessionLocal protect, Adapter adapter) {
         if (adapter.getLogger().isTraceEnabled()) {
             adapter.getLogger().trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
@@ -272,7 +272,7 @@ public class CertificateDataUtil {
     }
 
     static public void verifyProtection(Admin admin, String issuerDN, BigInteger serno,
-    		EntityManager entityManager, TableProtectSessionLocalejb3 tableProtectSession, Adapter adapter) {
+    		EntityManager entityManager, TableProtectSessionLocal tableProtectSession, Adapter adapter) {
     	if (adapter.getLogger().isTraceEnabled()) {
     		adapter.getLogger().trace(">verifyProtection, dn:" + issuerDN + ", serno=" + serno.toString(16));
     	}
@@ -291,7 +291,7 @@ public class CertificateDataUtil {
     	}
     }
 
-    static void verifyProtection(CertificateData data, TableProtectSessionLocalejb3 tableProtectSession, Adapter adapter) {
+    static void verifyProtection(CertificateData data, TableProtectSessionLocal tableProtectSession, Adapter adapter) {
 		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
 		// The verify method will log failed verifies itself
 		TableVerifyResult res = tableProtectSession.verify(entry);

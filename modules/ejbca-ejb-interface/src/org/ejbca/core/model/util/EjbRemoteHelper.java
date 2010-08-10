@@ -26,7 +26,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
-import org.ejbca.core.ejb.protect.TableProtectSessionRemoteejb3;
+import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -59,7 +59,7 @@ public class EjbRemoteHelper {
 	private RaAdminSessionRemote raAdminSession = null;
 	private ServiceSessionRemote serviceSession = null;
 	private SignSessionRemote signSession = null;
-	private TableProtectSessionRemoteejb3 tableProtectSession = null;
+	private TableProtectSessionRemote tableProtectSession = null;
 	private UpgradeSessionRemote upgradeSession = null;
 	private UserAdminSessionRemote userAdminSession = null;
 	private UserDataSourceSessionRemote userDataSourceSession = null;
@@ -183,9 +183,9 @@ public class EjbRemoteHelper {
 		return certificateRequestSession;
 	}
 
-	public TableProtectSessionRemoteejb3 getTableProtectSession() {
+	public TableProtectSessionRemote getTableProtectSession() {
 		if(tableProtectSession == null){	  
-			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemoteejb3.class);
+			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemote.class);
 		}
 		return tableProtectSession;
 	}

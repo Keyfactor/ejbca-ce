@@ -48,7 +48,7 @@ import org.ejbca.core.ejb.log.OldLogSessionRemote;
 import org.ejbca.core.ejb.log.ProtectedLogSession;
 import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.core.ejb.protect.TableProtectSession;
-import org.ejbca.core.ejb.protect.TableProtectSessionRemoteejb3;
+import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -184,7 +184,7 @@ public class EjbLocalHelper {
 	private TableProtectSession tableProtectSession = null;
 	public TableProtectSession getTableProtectSession() throws CreateException {
 		if(tableProtectSession == null){
-			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemoteejb3.class);
+			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemote.class);
 		}
 		return tableProtectSession;
 	}

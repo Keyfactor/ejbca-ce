@@ -14,13 +14,12 @@ package org.ejbca.core.ejb.protect;
 
 import javax.ejb.Remote;
 
+
 /**
  * Remote interface for TableProtectSession.
  * 
- * FIXME: The name of this class is temporarily in conflict with its ejb2 predecessor.
- * Remove ejb3 postfix after the xdoclet-class has ceased to exist.
  */
 @Remote
-public interface TableProtectSessionRemoteejb3 extends TableProtectSession {
+public interface TableProtectSessionRemote extends TableProtectSession {
  
 }
