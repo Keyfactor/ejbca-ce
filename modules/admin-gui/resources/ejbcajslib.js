@@ -209,6 +209,20 @@ function checkfieldfordecimalnumbers(thetextfield , alerttext){
   }
 }
 
+function checkfieldforgender(thetextfield, alerttext) {
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /[^MmFf]/g;
+  if(re.exec(text)){
+    alert(alerttext);
+    return false;  
+  }
+  else{
+  	return true;
+  }	
+  
+}
+
 /** Verify that the field is of format '*d *h *m' */
 function checkFieldForSimpleTimeMinutes(thetextfield , alerttext) {
   field = eval(thetextfield);
@@ -231,6 +245,20 @@ function checkFieldForYearsMonthsDays(thetextfield , alerttext) {
   }
   alert(alerttext);
   return false;
+}
+
+/** Verify that the field is of format 'YYYYMMDD' */
+function checkFieldForDate(thetextfield, alerttext) {
+	field = eval(thetextfield);
+	var text = new String(field.value);
+	re = /(19|20)[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])/;
+	if(!re.exec(text) || (text.length != 8)) {
+		alert(alerttext);
+		return false;
+	}
+	else {
+		return true;
+	}
 }
 
 function checkfieldforhexadecimalnumbers(thetextfield , alerttext){
