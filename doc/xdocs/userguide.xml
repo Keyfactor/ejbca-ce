@@ -477,16 +477,21 @@ normally an RA through CMP or webservice.
 </subsubsection>
 <subsubsection name="Allow certificate serial number override">
 <p>
-If serial number override is allowed then the serial number of a certificate could be specified.
+The generated certificate serial number could be overridden if "Allow certificate serial number override" is enabled in the used certificate profile.
+</p>
+<p>
+If the admin web GUI should be used for creating entities you must also add "Custom certificate serial number" to the used end entity profile.
 </p><p>
-Please note that the row 'serialNumber' number in the table 'CertificateData' of the database must have an unique index if it should work.
-</p><p>
-Certificate serial number could be overridden if "Allow certificate serial number override" is enabled for the used certificate profile.
-</p><p>
-If the admin web GUI should be used for creating entities you must also add "Certificate serial number" to the used end entity profile.
-</p><p>
-With web services just use the 'setCertificateSerialNumber' for your 'UserDataVOWS' user.
-</p><p>
+With web services you use the 'setCertificateSerialNumber' for your 'UserDataVOWS' user.
+</p>
+<p>
+Please note that the row 'serialNumber' number in the table 'CertificateData' of the database must have an unique index for this feature to work should work, normally you use an index for unique issuerDN, serialNumber.
+Without index the feature is automatically disabled.
+</p>
+<source>
+create unique index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
+</source>
+<p>
 If you run the WS stress test of clientToolBox you may specify that the test should use 'setCertificateSerialNumber'. A new random serial number will then be used for each created user.
 The java system property 'maxCertSN' specifies how many bits that should be in the serial number. Example:
 </p>
