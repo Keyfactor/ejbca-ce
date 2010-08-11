@@ -252,7 +252,7 @@ function checkFieldForDate(thetextfield, alerttext) {
 	field = eval(thetextfield);
 	var text = new String(field.value);
 	re = /(19|20)[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])/;
-	if(!re.exec(text) || (text.length != 8)) {
+	if ( (text.length > 0) && ((!re.exec(text) || (text.length != 8))) ) {
 		alert(alerttext);
 		return false;
 	}
