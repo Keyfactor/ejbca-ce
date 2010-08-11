@@ -1470,9 +1470,11 @@ function checkallfields(){
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
      <%  } %>
-	<%	} if( profile.getUse(EndEntityProfile.STARTTIME, 0) || profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+	<%	} 
+        if( profile.getUse(EndEntityProfile.STARTTIME, 0) || profile.getUse(EndEntityProfile.ENDTIME, 0) || profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
 		<tr id="Row<%=(row++)%2%>"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-	<%	} if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
+	<%	}
+        if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td></td><td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFSTART") %> <br />
@@ -1496,7 +1498,8 @@ function checkallfields(){
 				/>
 			</td>
 		</tr>
-	<%	} if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+	<%	} 
+        if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td></td><td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
@@ -1520,7 +1523,7 @@ function checkallfields(){
 			</td>
 		</tr>
 	<% }
-	if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
+	   if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td></td><td align="right"> 
 				<%= ejbcawebbean.getText("CERTSERIALNUMER") %> <br />

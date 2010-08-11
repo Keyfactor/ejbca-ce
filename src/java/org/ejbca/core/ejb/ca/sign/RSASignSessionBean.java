@@ -1137,7 +1137,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
 	/**
-	 * Clean the certificate serial number of user from database
+	 * Clean the custom certificate serial number of user from database
 	 * @param data of user
 	 */
 	private void cleanUserCertDataSN(UserDataVO data) {
@@ -1244,6 +1244,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         return s;
     }
 
+    /** Private exception used in order to catch this specific error to be able to clear the custom certificate serial number from the user object.
+     * This is only used internally in this class. 
+     */
     private class NoUniqueCertSerialNumberIndexException extends Exception {
     	final EjbcaException ejbcaException;
     	public NoUniqueCertSerialNumberIndexException( EjbcaException e ) {
@@ -1265,9 +1268,10 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param extensions an optional set of extensions to set in the created certificate, if the profile allows extension override, null if the profile default extensions should be used.
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by CVC CAs for sequence field. Can be set to null.
      * @return Certificate that has been generated and signed by the CA
+	 * @throws NoUniqueCertSerialNumberIndexException if custom serial number is registered for user, but it is not allowed to be used (either missing unique index in database, or certifciate profile does not allow it
      * @throws EjbcaException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws EjbcaException, NoUniqueCertSerialNumberIndexException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws NoUniqueCertSerialNumberIndexException, EjbcaException {
     	if (log.isTraceEnabled()) {
     		log.trace(">createCertificate(pk, ku, notAfter)");
     	}
