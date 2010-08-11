@@ -965,6 +965,53 @@ function checkallfields(){
      <%    }
          } 
        }
+
+
+       
+       for(int i=0; i<profile.getSubjectDirAttrFieldOrderLength(); i++){
+            fielddata = profile.getSubjectDirAttrFieldsInOrder(i);
+            int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+            if(EndEntityProfile.isFieldImplemented(fieldtype)) {
+                if(EndEntityProfile.isFieldOfType(fieldtype, DnComponents.COUNTRYOFCITIZENSHIP) || EndEntityProfile.isFieldOfType(fieldtype, DnComponents.COUNTRYOFRESIDENCE) || EndEntityProfile.isFieldOfType(fieldtype, DnComponents.PLACEOFBIRTH)) { %>
+                    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_SUBJECTDIRATTR+i%>", "<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype))%>"))
+                        illegalfields++;
+                  <%if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
+                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i%>.value=="") {
+                            alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
+                            illegalfields++;
+                        }
+                 <%}
+                } else if(EndEntityProfile.isFieldOfType(fieldtype, DnComponents.DATEOFBIRTH)){ %>
+                    if(!checkFieldForDate("document.adduser.<%=TEXTFIELD_SUBJECTDIRATTR+i %>", "<%= ejbcawebbean.getText("ONLYDECNUMBERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype)) %>"))
+                        illegalfields++;
+                 <% if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
+                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i%>.value=="") {
+                            alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
+                            illegalfields++;
+                        }
+              <%    }
+                } else if(EndEntityProfile.isFieldOfType(fieldtype, DnComponents.GENDER)) { %>
+                    if(!checkfieldforgender("document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>", "<%= ejbcawebbean.getText("ONLYMORFINGENDERFIELD") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype)) %>"))
+                        illegalfields++;
+                <%  if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
+                        if(document.adduser.<%= TEXTFIELD_SUBJECTDIRATTR+i %>.value="") {
+                            alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
+                            illegalfield++;
+                        }
+            <%      }
+                } else { %>
+                    if(!checkfieldforhexadecimalnumbers("document.adduser.<%= TEXTFIELD_CERTSERIALNUMER %>", "<%= ejbcawebbean.getText("ONLYHEXINCERTSN") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype)) %>"))
+                        illegalfields++;
+                <%  if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
+                        if(document.adduser.<%= TEXTFIELD_CERTSERIALNUMER %>.value=="") {
+                            alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
+                            illegalfields++;
+                        }
+                <%  }
+                }
+            }
+       }
+
        
        if(profile.getUse(EndEntityProfile.MAXFAILEDLOGINS,0)) { %>
        		if(document.adduser.<%=RADIO_MAXFAILEDLOGINS %>[0].checked == true) {
