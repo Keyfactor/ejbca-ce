@@ -1,9 +1,27 @@
-EJBCA 3.11
------------
+EJBCA 4.0
+---------
 Interface ICustomPublisher has been modified, via removal of the number parameter from the storeCRL
 method. Any custom classes implementing this interface need to be modified in turn.
 
 Ant 1.7.1 or higher is required from this version on.
+
+EJBCA 3.10.4
+-----------
+This is a maintenance release with 23 issues resolved, both features and bug fixes.   
+  
+Noteworthy changes:
+- Possibility to specify custom certificate serial number for end entities.
+- Possibility to configure CA to not use CertReqHistory to increase performance.
+- Harmonized admin GUI and improved looks. Contributed by David Carella of Linagora.
+- Other performance optimizations.
+- WS API did not work with external administrator certificates.
+- Mitigate potential XSS vulnerabilities in admin GUI.
+- Fixed bug when creating CRLs for CAs with single quote in the DN.
+- Other admin GUI improvements with better error messages in some cases.
+
+Read the full changelog for details.
+
+One known issue from 3.10.4 is https://jira.primekey.se/browse/ECA-1779
 
 EJBCA 3.10.3
 -----------
