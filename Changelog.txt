@@ -1,3 +1,37 @@
+3.10.4, 2010-08-12
+---
+New Feature
+    * [ECA-1727] - User defined serial number using UserDataVO
+    * [ECA-1733] - Possible to configure CA to not use Certificate Request History
+    * [ECA-1735] - Add configuration to fully cache CA objects, to minimize database roundtrips
+
+Improvement
+    * [ECA-1729] - EJBCA on Glassfish with MySQL
+    * [ECA-1734] - Add throws clause for CADoesntExistException to add/change user in user admin session bean, and optimize away one read of CA info in cert req session
+    * [ECA-1743] - Improve file log for parsing, prefix dn and quote it in log
+    * [ECA-1752] - Harmonized themes for home page
+    * [ECA-1757] - Harmonized themes for CA Activation page
+    * [ECA-1762] - Harmonized GUI for all pages
+    * [ECA-1763] - Make country DV renewals optionally take CVCA certificate from the EJBCA store
+    * [ECA-1783] - CertTools.checkValidity should not log with error when a CVC certificate has expired
+
+Task
+    * [ECA-1725] - Make test34CaRenewCertRequest JUnit test also for ECC keys
+
+Bug
+    * [ECA-1321] - Single-qoute bug when creating CRL from Admin GUI
+    * [ECA-1710] - Certrequest session (and now CMP) requires ee profile to use 'Batch', i.e. clear pwd
+    * [ECA-1724] - Mitigate Cross Site Scripting (XSS) in the Admin GUI
+    * [ECA-1731] - EJBCA WS KeyRevocerNewest always returns 0 as approval Id in WaitingForApprovalException
+    * [ECA-1736] - extractUsernameComponent in CMP client mode broken
+    * [ECA-1737] - Error while setup admin permissions for superadmin when superadmin.cn contains a space
+    * [ECA-1738] - Nullpointer exception editing end entity profiles when printer is null
+    * [ECA-1746] - EjbcaWS does not work with external admin certificates
+    * [ECA-1761] - Error parsing certificate serialnumber
+    * [ECA-1778] - webconfiguraiton.jspf displays HTML
+    * [ECA-1785] - Error when filling the Subject Directory Attribute Fields
+    * [ECA-1789] - ocsphealthcheck does not deploy on JBoss 5
+
 3.10.3, 2010-06-24
 ---
 Improvement
