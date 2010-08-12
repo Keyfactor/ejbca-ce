@@ -13,7 +13,7 @@ Noteworthy changes:
 - Possibility to specify custom certificate serial number for end entities.
 - Possibility to configure CA to not use CertReqHistory to increase performance.
 - Harmonized admin GUI and improved looks. Contributed by David Carella of Linagora.
-- Other performance optimizations.
+- Other performance optimizations. More than 100 certificates per second can now be issued under certain conditions.
 - WS API did not work with external administrator certificates.
 - Mitigate potential XSS vulnerabilities in admin GUI.
 - Fixed bug when creating CRLs for CAs with single quote in the DN.
@@ -22,6 +22,8 @@ Noteworthy changes:
 Read the full changelog for details.
 
 One known issue from 3.10.4 is https://jira.primekey.se/browse/ECA-1779
+
+There were many changes in the admin GUI for this release. Please let us know if you encounter any regressions using the admin GUI.
 
 EJBCA 3.10.3
 -----------
