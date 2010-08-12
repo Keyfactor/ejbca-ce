@@ -27,9 +27,9 @@
 # The SQL dialect and JDBC driver class is derived from the JDBC URL.
 # The DataSources (and JPA persistence units) configured below will be named 'RAMessage1DS', 'RAMessage2DS' etc.
 
-externalra.source-1.jdbc-url=jdbc:mysql://127.0.0.1/messages
-externalra.source-1.username=ejbca
-externalra.source-1.password=ejbca
+#externalra.source-1.jdbc-url=jdbc:mysql://127.0.0.1/messages
+#externalra.source-1.username=ejbca
+#externalra.source-1.password=ejbca
 
 #externalra.source-2.jdbc-url=jdbc:postgresql://127.0.0.1/messages
 #externalra.source-2.username=ejbca
