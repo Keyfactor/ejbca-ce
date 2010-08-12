@@ -5,9 +5,9 @@
   </properties>
 
   <body>
-<section name="Complimentary free software">
+<section name="Free software">
 <p>
-To build a succesfull PKI you can benefit from a lot of tools available. Here are listed some tools and packages that 
+To build a successful PKI you can benefit from a lot of tools available. Here are listed some tools and packages that 
 can be used together with PKI to even further improve your PKI experience.
 </p>
 
@@ -111,9 +111,41 @@ can be used together with PKI to even further improve your PKI experience.
 	</p>
 </subsection>
 
+<subsection name="OpenSC">"
+	<p>
+    <a href="http://www.opensc-project.org/">OpenSC project</a>
+	</p>
+	<p>
+	OpenSC provides a set of libraries and utilities to work with smart cards. You can use OpenSC to support login and authentication using PKI smart cards.
+	</p>
+</subsection>
+
 </section>
 
-<section name="Complimentary proprietary software">
+<section name="Hardware tokens">
+
+<subsection name="Gooze">"
+	<p>
+    <a href="http://www.gooze.eu/">Gooze</a>
+	</p>
+	<p>
+	GOOZE is a community shop selling high quality cryptographic tools for GNU/Linux, Mac OS X and Windows, among them the Feitian PKI card.
+	</p>
+</subsection>
+
+<subsection name="Smartcard 2.0">"
+	<p>
+    <a href="http://www.smartcard20.com/">Smartcard 2.0</a>
+	</p>
+	<p>
+	Smartcard 2.0 is a package with the Hard Token Management Framework, smartcards and readers.
+	</p>
+</subsection>
+
+
+</section>
+
+<section name="Proprietary software">
     <p>
     EJBCA can also be used with numerous products from the non-free world. To be listed here, the software
     should work flawlessly with EJBCA and the vendor should:
@@ -178,6 +210,14 @@ certificates in various systems. Ditinguishing features of the NetID client is e
 and Citrix Presentation Server, as well as support for a variety of different smart cards.
 <br/>
 Contact <a href="http://www.secmaker.com/">SecMaker</a> for more information.
+</p>
+</subsection>
+
+<subsection name="Aventra Card Management System">
+<p>
+Aventra Ltd is a company specialized in plastic cards, smart cards, and data security. Among it's products are the Aventra Card Management System and the MyEID multifunctional PKI card. 
+<br/>
+Contact <a href="http://aventra.fi/English/index_E.php">Aventra</a> for more information.
 </p>
 </subsection>
 
