@@ -29,7 +29,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -494,20 +493,21 @@ public class BatchMakeP12 extends BaseCommand {
         }
         CertTools.installBCProviderIfNotAvailable(); // If this is invoked
                                                      // directly
-        ArrayList result;
+        ArrayList<UserDataVO> result;
 
         boolean stopnow = false;
         do {
-            Collection queryResult = userAdminSession.findAllUsersByStatusWithLimit(getAdmin(), status, true);
-            result = new ArrayList();
-            Iterator iter = queryResult.iterator();
-            while (iter.hasNext()) {
-                UserDataVO data = (UserDataVO) iter.next();
+            result = new ArrayList<UserDataVO>();
+            
+           
+            for(UserDataVO data : (Collection<UserDataVO>) userAdminSession.findAllUsersByStatusWithLimit(getAdmin(), status, true)) {
                 if (data.getTokenType() == SecConst.TOKEN_SOFT_JKS || data.getTokenType() == SecConst.TOKEN_SOFT_PEM
                         || data.getTokenType() == SecConst.TOKEN_SOFT_P12) {
                     result.add(data);
                 }
             }
+            
+          
             String iMsg = intres.getLocalizedMessage("batch.generatingnoofusers", new Integer(result.size()));
             getLogger().info(iMsg);
 
@@ -518,11 +518,9 @@ public class BatchMakeP12 extends BaseCommand {
                 if (result.size() < UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT) {
                     stopnow = true;
                 }
-                Iterator it = result.iterator();
                 String failedusers = "";
                 String successusers = "";
-                while (it.hasNext()) {
-                    UserDataVO data = (UserDataVO) it.next();
+                for(UserDataVO data : result) {
                     if ((data.getPassword() != null) && (data.getPassword().length() > 0)) {
                         try {
                             if (doCreate(data, status)) {
