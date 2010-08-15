@@ -200,8 +200,8 @@ function confirmrevokation(){
       <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"ONLYAUTHORIZEDENDENTITIESCHANG\") %>"/></div></H4>
   <% } %>
   <% if(largeresult){ %>
-     <H4 id="alert"><div align="center" ><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + " " + RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
-                                             + " " + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>"/></div> </H4>  
+     <H4 id="alert"><div align="center" ><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + \" \" + RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
+                                             + \" \" + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>"/></div> </H4>  
   <% } 
   if(!blank){ %>
   <p>
@@ -374,7 +374,7 @@ function confirmrevokation(){
          try{ 
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_CA_VIEW_CERT)){ %>
         <A  style="cursor:pointer;" onclick='viewcert(<%= i %>)'>
-        <u><c:out value="<%= ejbcawebbean.getText("VIEWCERTIFICATES") %>"/></u> </A>
+        <u><c:out value="<%= ejbcawebbean.getText(\"VIEWCERTIFICATES\") %>"/></u> </A>
         <% }
          }catch(AuthorizationDeniedException ade){}
          try{ 
