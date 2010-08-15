@@ -162,8 +162,8 @@ function viewcert(row){
   <% } %>
 
   <% if(largeresult){ %>
-     <H4 id="alert"><div align="center" ><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + " " + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
-                                             + " " + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>" /> </div> </H4>  
+     <H4 id="alert"><div align="center" ><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + \" \" + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
+                                             + \" \" + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>" /> </div> </H4>  
   <% } %>
   <% if(cmsnotactive){ %>
      <H4 id="alert"><div align="center" ><c:out value="<%= ejbcawebbean.getText(\"EXPORTCMSSERVICENOTACTIVE\") %>" /> </div> </H4>  
@@ -358,7 +358,7 @@ function viewcert(row){
                          <c:out value="<%= ejbcawebbean.getText(\"NOCERTIFICATEINVOLVED\") %>" />
                        <%}else{
                          if(logentries[i].getValue(LogEntryView.CERTIFICATE).equals("")){ %>
-                           <c:out value="<%= ejbcawebbean.getText("CERTIFICATENOTKNOWN") %>" />
+                           <c:out value="<%= ejbcawebbean.getText(\"CERTIFICATENOTKNOWN\") %>" />
                        <%}else{%> 
         <A  style="cursor:pointer;"  onclick='viewcert(<%= i %>)'>
         <u><c:out value="<%= logentries[i].getValue(LogEntryView.CERTIFICATE) %>" /></u> </A>

@@ -312,7 +312,7 @@ function checkfields(){
                  || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_SPECIALADMIN || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_CA){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
                          out.write(" selected ");
-                    } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>"/>'><c:out value="<%= ejbcawebbean.getText("EQUALS") %>" />
+                    } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"EQUALS\") %>" />
           </option>
              <%  }
                  else{ %>
