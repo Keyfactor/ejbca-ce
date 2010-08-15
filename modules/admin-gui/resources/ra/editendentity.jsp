@@ -1007,7 +1007,7 @@ function checkUseInBatch(){
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("USERNAME") %></td> 
 	<td>
-          <%= userdata.getUsername() %>
+          <c:out value="<%= userdata.getUsername() %>"/>
         </td>
 	<td></td>
       </tr>

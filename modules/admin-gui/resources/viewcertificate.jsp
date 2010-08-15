@@ -344,7 +344,7 @@ function confirmrepublish(){
       <% if(username != null){%>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("USERNAME") %></td>
-	<td><%= certificatedata.getUsername() %>
+	<td><c:out value="<%= certificatedata.getUsername() %>"/>
         </td>
       </tr>
       <% if(tokensn != null){ %>
