@@ -4,13 +4,13 @@
       </td>
       <td width="50%" valign="top"> 
      <!--   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("configuration_help.html") + "#defaultuserpreference"%>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
+        <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>"/></u> </A></div> -->
       </td>
     </tr>
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("PREFEREDLANGUAGE") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("DEFAULTLANGUAGETOUSE") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"PREFEREDLANGUAGE\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"DEFAULTLANGUAGETOUSE\") %>"/></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_PREFEREDLANGUAGE %>">
@@ -18,15 +18,15 @@
              int preferedlanguage = dup.getPreferedLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == preferedlanguage){ %> selected <% } %>
-                     value='<%= availablelanguages[i] %>'><%= availablelanguages[i] %></option>
+                     value='<c:out value="<%= availablelanguages[i] %>"/>'><c:out value="<%= availablelanguages[i] %>"/></option>
           <% } %>
         </select>
       </td>
     </tr>
     <tr id="Row1"> 
       <td width="50%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("SECONDARYLANGUAGE") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("LANGUAGETOUSEWHEN") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"SECONDARYLANGUAGE\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"LANGUAGETOUSEWHEN\") %>"/></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_SECONDARYLANGUAGE %>">
@@ -34,15 +34,15 @@
              int secondarylanguage = dup.getSecondaryLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == secondarylanguage){ %> selected <% } %>
-                     value='<%= availablelanguages[i] %>'><%= availablelanguages[i] %></option>
+                     value='<c:out value="<%= availablelanguages[i] %>"/>'><c:out value="<%= availablelanguages[i] %>"/></option>
           <% } %>
         </select>
       </td>
     </tr>
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("THEME") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("THEADMINSTHEMEOFFONTS") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"THEME\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THEADMINSTHEMEOFFONTS\") %>"/></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
@@ -51,7 +51,7 @@
              if(availablethemes != null){
                for(int i = 0; i < availablethemes.length; i++){
           %>     <option <% if(availablethemes[i].equals(theme)){ %> selected <% } %>
-                     value='<%= availablethemes[i] %>'><%= availablethemes[i] %></option>
+                     value='<c:out value="<%= availablethemes[i] %>"/>'><c:out value="<%= availablethemes[i] %>"/></option>
           <%   }
              }%>
         </select>
@@ -59,8 +59,8 @@
     </tr>
     <tr  id="Row1"> 
       <td width="49%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("NUMBEROFRECORDSPERPAGE") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("THENUMBEROFRECORDSTO") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"NUMBEROFRECORDSPERPAGE\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THENUMBEROFRECORDSTO\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
         <select name="<%= LIST_ENTIESPERPAGE %>">
@@ -68,7 +68,7 @@
              int entriesperpage = dup.getEntriesPerPage();
              for(int i = 0; i < possibleentriesperpage.length; i++){
           %>   <option <% if(Integer.parseInt(possibleentriesperpage[i]) == entriesperpage){ %> selected <% } %>
-                  value='<%= Integer.parseInt(possibleentriesperpage[i]) %>'><%= possibleentriesperpage[i] %></option>
+                  value='<c:out value="<%= Integer.parseInt(possibleentriesperpage[i]) %>"/>'><c:out value="<%= possibleentriesperpage[i] %>"/></option>
           <% } %>
         </select>
       </td>
@@ -80,8 +80,8 @@
     <tr  id="Row1"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
-        <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" "> <!-- onclick="parent.location.reload() -->
-        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+        <input type="submit" name="<%= BUTTON_SAVE %>" value='<c:out value="<%= ejbcawebbean.getText(\"SAVE\") %>"/>' > <!-- onclick="parent.location.reload() -->
+        <input type="submit" name="<%= BUTTON_CANCEL %>" value='<c:out value="<%= ejbcawebbean.getText(\"CANCEL\") %>"/>'>
       </td>
     </tr>
   </table>

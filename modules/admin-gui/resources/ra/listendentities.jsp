@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.authorization.AuthorizationDeniedException,
@@ -182,6 +183,10 @@
 
   int filtermode = ejbcawebbean.getLastFilterMode();
 
+  String[] validOldActions = {OLD_ACTION, OLD_ACTION_LISTUSERS, OLD_ACTION_FINDUSER, OLD_ACTION_FINDTOKEN, OLD_ACTION_ISREVOKED, 
+		  OLD_ACTION_LISTEXPIRED, OLD_ACTION_NOACTION, OLD_ACTION_ADVANCEDLIST, OLD_ACTION_VALUE};
+  String[] validSortBys = {SORTBY_USERNAME_ACC, SORTBY_USERNAME_DEC, SORTBY_CA_ACC, SORTBY_CA_DEC, SORTBY_COMMONNAME_ACC, SORTBY_COMMONNAME_DEC,
+		  SORTBY_ORGANIZATIONUNIT_ACC, SORTBY_ORGANIZATIONUNIT_DEC, SORTBY_ORGANIZATION_ACC, SORTBY_ORGANIZATION_DEC, SORTBY_STATUS_ACC, SORTBY_STATUS_DEC};
 
   // Determine action 
   int record   = 0;
@@ -192,11 +197,13 @@
   } 
 
   if (request.getParameter(HIDDEN_SORTBY) != null ){
-    sortby =  request.getParameter(HIDDEN_SORTBY); 
+    //sortby =  request.getParameter(HIDDEN_SORTBY);
+    sortby = ejbcawebbean.getCleanOption(request.getParameter(HIDDEN_SORTBY), validSortBys);
   } 
 
   if( request.getParameter(OLD_ACTION) != null){
-    oldaction = request.getParameter(OLD_ACTION);
+    //oldaction = request.getParameter(OLD_ACTION);
+      oldaction = ejbcawebbean.getCleanOption(request.getParameter(OLD_ACTION), validOldActions);
     if(request.getParameter(OLD_ACTION_VALUE) != null){
       oldactionvalue= request.getParameter(OLD_ACTION_VALUE);
     }

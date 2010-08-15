@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page  errorPage="errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
@@ -83,15 +84,15 @@
    AdminPreference dup = ejbcawebbean.getAdminPreference(); %>
 <html>
 <head>
-<title><%= globalconfiguration.getEjbcaTitle() %></title>
+<title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 
 <body>
-<h1><%= ejbcawebbean.getText("EJBCAADMINPREFERENCES") %></h1>
-<h2><%= ejbcawebbean.getText("FORADMIN")+" " + ejbcawebbean.getUsersCommonName() %></h2>
+<h1><c:out value="<%= ejbcawebbean.getText(\"EJBCAADMINPREFERENCES\") %>" /></h1>
+<h2><c:out value="<%= ejbcawebbean.getText(\"FORADMIN\")+\" \" + ejbcawebbean.getUsersCommonName() %>" /></h2>
 <form name="defaultmypreferences" method="post" action="<%=THIS_FILENAME %>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row0"> 
@@ -100,13 +101,13 @@
       </td>
       <td width="50%" valign="top"> 
       <!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("mypreferences_help.html") %>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
+        <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></u> </A></div> -->
       </td>
     </tr>
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("PREFEREDLANGUAGE") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("DEFAULTLANGUAGETOUSE") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"PREFEREDLANGUAGE\") %>" /></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"DEFAULTLANGUAGETOUSE\") %>" /></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_PREFEREDLANGUAGE %>">
@@ -114,15 +115,15 @@
              int preferedlanguage = dup.getPreferedLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == preferedlanguage){ %> selected <% } %>
-                     value='<%= availablelanguages[i] %>'><%= availablelanguages[i] %></option>
+                     value='<c:out value="<%= availablelanguages[i] %>"/>'><c:out value="<%= availablelanguages[i] %>" /></option>
           <% } %>
         </select>
       </td>
     </tr>
     <tr id="Row1"> 
       <td width="50%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("SECONDARYLANGUAGE") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("LANGUAGETOUSEWHEN") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"SECONDARYLANGUAGE\") %>" /></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"LANGUAGETOUSEWHEN\") %>" /></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_SECONDARYLANGUAGE %>">
@@ -130,24 +131,24 @@
              int secondarylanguage = dup.getSecondaryLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == secondarylanguage){ %> selected <% } %>
-                     value='<%= availablelanguages[i] %>'><%= availablelanguages[i] %></option>
+                     value='<c:out value="<%= availablelanguages[i] %>"/>'><c:out value="<%= availablelanguages[i] %>" /></option>
           <% } %>
         </select>
       </td>
     </tr>
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("THEME") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("THEADMINSTHEMEOFFONTS") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"THEME\") %>" /></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THEADMINSTHEMEOFFONTS\") %>" /></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
           <% String[] availablethemes = globalconfiguration.getAvailableThemes();                                    
-             String theme = dup.getTheme();
+             String theme = ejbcawebbean.getCleanOption(dup.getTheme(), availablethemes);
              if(availablethemes != null){
                for(int i = 0; i < availablethemes.length; i++){
           %>     <option <% if(availablethemes[i].equals(theme)){ %> selected <% } %>
-                     value='<%= availablethemes[i] %>'><%= availablethemes[i] %></option>
+                     value='<c:out value="<%= availablethemes[i] %>"/>'><c:out value="<%= availablethemes[i] %>" /></option>
           <%   }
              }%>
         </select>
@@ -155,24 +156,24 @@
     </tr>
     <tr  id="Row1"> 
       <td width="49%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("NUMBEROFRECORDSPERPAGE") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("THENUMBEROFRECORDSTO") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"NUMBEROFRECORDSPERPAGE\") %>" /></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THENUMBEROFRECORDSTO\") %>" /></p>
       </td>
       <td width="51%" valign="top"> 
         <select name="<%= LIST_ENTIESPERPAGE %>">
           <% String[] possibleentriesperpage = globalconfiguration.getPossibleEntiresPerPage();                                    
-             int entriesperpage = dup.getEntriesPerPage();
+             int entriesperpage = Integer.parseInt(ejbcawebbean.getCleanOption(String.valueOf(dup.getEntriesPerPage()), possibleentriesperpage));
              for(int i = 0; i < possibleentriesperpage.length; i++){
           %>   <option <% if(Integer.parseInt(possibleentriesperpage[i]) == entriesperpage){ %> selected <% } %>
-                  value='<%= Integer.parseInt(possibleentriesperpage[i]) %>'><%= possibleentriesperpage[i] %></option>
+                  value='<c:out value="<%= Integer.parseInt(possibleentriesperpage[i]) %>"/>'><c:out value="<%= possibleentriesperpage[i] %>" /></option>
           <% } %>
         </select>
       </td>
     </tr>
     <tr  id="Row0"> 
       <td width="49%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("CASTATUSONFRONTPAGE") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("IFCASTATUSSHOULDBEDISP") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CASTATUSONFRONTPAGE\") %>" /></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"IFCASTATUSSHOULDBEDISP\") %>" /></p>
       </td>
       <td width="51%" valign="top"> 
         <input name="<%= CHECKBOX_CASTATUSFIRSTPAGE %>" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=dup.getFrontpageCaStatus() ? "checked=\"checked\"" : ""%>/>
@@ -180,8 +181,8 @@
     </tr>
     <tr  id="Row1"> 
       <td width="49%" valign="top"> 
-        <h3><%= ejbcawebbean.getText("PUBLISHERQUEUESTATUSON") %></h3>
-        <p class="help"><%= ejbcawebbean.getText("IFPUBLISHERQUEUESSHOULD") %></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"PUBLISHERQUEUESTATUSON\") %>" /></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"IFPUBLISHERQUEUESSHOULD\") %>" /></p>
       </td>
       <td width="51%" valign="top"> 
         <input name="<%= CHECKBOX_PUBQSTATUSFIRSTPAGE %>" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=dup.getFrontpagePublisherQueueStatus() ? "checked=\"checked\"" : ""%>/>
@@ -194,8 +195,8 @@
     <tr  id="Row1"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
-        <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>">
-        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+        <input type="submit" name="<%= BUTTON_SAVE %>" value='<c:out value="<%= ejbcawebbean.getText(\"SAVE\") %>"/>'>
+        <input type="submit" name="<%= BUTTON_CANCEL %>" value='<c:out value="<%= ejbcawebbean.getText(\"CANCEL\") %>"/>'>
       </td>
     </tr>
   </table>
