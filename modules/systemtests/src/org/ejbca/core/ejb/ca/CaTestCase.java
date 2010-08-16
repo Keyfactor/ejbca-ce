@@ -63,7 +63,7 @@ public abstract class CaTestCase extends TestCase {
     
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    protected Admin admin;
+    private Admin admin;
 
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     protected CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();

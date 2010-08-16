@@ -84,6 +84,10 @@ public class ApprovalSessionTest extends CaTestCase {
         createTestCA();
     }
 
+    public void init() throws Exception {
+        
+    }
+    
     public void setUp() throws Exception {
         super.setUp();
 
@@ -211,7 +215,7 @@ public class ApprovalSessionTest extends CaTestCase {
         Approval approvalAgain = new Approval("apAgaintest");
         try {
             approvalSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approvalAgain, gc);
-            fail("The same admin shouln'tt be able to approve a request twice");
+            fail("The same admin shouldn't be able to approve a request twice");
         } catch (AdminAlreadyApprovedRequestException e) {
         }
 
