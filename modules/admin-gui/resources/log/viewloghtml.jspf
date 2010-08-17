@@ -337,7 +337,9 @@ function viewcert(row){
        <%  if(Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE)) == Admin.TYPE_CLIENTCERT_USER) 
              if(logentries[i].getValue(LogEntryView.ADMINDATA).equals("")){ %>
                 <c:out value="<%= ejbcawebbean.getText(\"CERTIFICATENOTKNOWN\") %>" />
-             <%}else{%>
+             <%}else if(logentries[i].getValue(LogEntryView.ADMINDATA).contains("=")){%>
+            <c:out value="<%= logentries[i].getValue(LogEntryView.ADMINDATA) %>" />
+            <%} else { %>
         <A style="cursor:pointer;"  onclick='viewadmincert(<%= i %>)'>
         <u><c:out value="<%= logentries[i].getValue(LogEntryView.ADMINDATA) %>" /></u> </A>
        <% } else { %>        

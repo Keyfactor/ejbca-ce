@@ -65,8 +65,8 @@ public class SubjectDNProxy implements java.io.Serializable {
           returnval = CertTools.getSubjectDN(result);
           subjectdnstore.put(admindata,returnval);
         } else {
-          if(data.length >= 5){
-                returnval = data[4].substring(data[4].indexOf('"')+1, data[4].lastIndexOf('"')) + ", IssuerDN:" + issuerdn;
+          if((data.length > 3) && ("CertDN".equals(data[3].trim()))){
+                returnval = data[4].substring(data[4].indexOf('"')+1, data[4].lastIndexOf('"'));
                 subjectdnstore.put(admindata,returnval);
           }
         }
