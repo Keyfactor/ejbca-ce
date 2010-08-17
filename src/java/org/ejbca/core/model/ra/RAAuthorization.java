@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ra;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -124,7 +125,8 @@ public class RAAuthorization implements Serializable {
      */
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
-      	Collection<Integer> result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, raadminsession.getEndEntityProfileIdToNameMap(admin).keySet());     	
+    	Collection<Integer> profileIds = new ArrayList<Integer>(raadminsession.getEndEntityProfileIdToNameMap(admin).keySet());
+      	Collection<Integer> result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, profileIds);     	
       	result.retainAll(this.raadminsession.getAuthorizedEndEntityProfileIds(admin));
       	Iterator<Integer> iter = result.iterator();
       	                    
