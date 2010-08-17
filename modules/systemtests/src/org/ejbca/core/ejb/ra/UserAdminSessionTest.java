@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.ra;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
 
@@ -40,6 +41,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
+import org.ejbca.util.query.BasicMatch;
+import org.ejbca.util.query.Query;
+import org.ejbca.util.query.UserMatch;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -258,6 +262,24 @@ public class UserAdminSessionTest extends CaTestCase {
         data = userAdminSession.findUser(admin, notexistusername);
         assertNull(data);
         log.trace("<test03FindUser()");
+    }
+
+    /**
+     * tests query function
+     * 
+     * @throws Exception
+     *             error
+     */
+    public void test03_1QueryUser() throws Exception {
+        log.trace(">test03_1QueryUser()");
+        Query query = new Query(Query.TYPE_USERQUERY);
+        query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
+        String caauthstring = null;
+        String eeprofilestr = null;
+        Collection col = userAdminSession.query(admin, query, caauthstring, eeprofilestr,0);
+        assertNotNull(col);
+        assertEquals(1, col.size());
+        log.trace("<test03_1QueryUser()");
     }
 
     /**
