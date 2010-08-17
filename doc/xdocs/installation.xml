@@ -305,7 +305,7 @@ In the directory doc/howto in the distribution there are additional howtos for s
 
 <subsection name="Glassfish">
 <p>
-Currently EJBCA works both with Glassfish v1 and v2 with the Derby/JavaDB database.
+Currently EJBCA works with Glassfish v2 with the Derby/JavaDB database. It can also work with PostgreSQL and MySQL, but your mileage may vary.
 </p>
 <p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
 <subsubsection name="Configure EJBCA">
@@ -324,7 +324,10 @@ Currently EJBCA works both with Glassfish v1 and v2 with the Derby/JavaDB databa
      <li>Edit conf/jaxws.properties and set 'ejbcaws.enabled=false'.</li>
      <li>Edit conf/xkms.properties and set 'xkms.enabled=false'. (Default from EJBCA 3.10.)</li>
      </ul>
-     </li>
+</li>
+<li>One limitation on Glassfish compared with JBoss is that the CMP TCP listener does not work on Glassfish. CMP over TCP is luckily deprecated in the next revision of CMP, so we do not plan to fix this.
+CMP over HTTP works on all platforms.
+</li>
 </ol>
     
 Build ejbca with 'ant'.<br/>
