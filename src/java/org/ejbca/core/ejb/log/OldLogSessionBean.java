@@ -39,6 +39,7 @@ import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConfiguration;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
@@ -78,10 +79,15 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		if (certificate != null) {
 			uid = CertTools.getSerialNumberAsString(certificate) + "," + CertTools.getIssuerDN(certificate);        		
 		}
+		
+		String admindata = admin.getAdminData();
+		if(event == LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN){
+			admindata += ": CertDN : \"" + CertTools.getSubjectDN(certificate) + "\"";
+		}
 		Integer id = getAndIncrementRowCount();
-		entityManager.persist(new LogEntryData(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment));
+		entityManager.persist(new LogEntryData(id, admin.getAdminType(), admindata, caid, module, time, username, uid, event, comment));
 		if (logsigning) {
-			LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
+			LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admindata, caid, module, time, username, uid, event, comment);
 			tableProtectSession.protect(le);
 		}
 	}
