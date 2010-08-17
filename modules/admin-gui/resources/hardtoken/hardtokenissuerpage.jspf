@@ -23,7 +23,8 @@ function checkallfields(){
 -->
 </SCRIPT>
 <div align="center"> 
-  <h2><%= ejbcawebbean.getText("EDITHARDTOKENISSUER") %><br></h2>
+  <h2><%= ejbcawebbean.getText("EDITHARDTOKENISSUER") %></h2>
+  <h3><%= ejbcawebbean.getText("HARDTOKENISSUER")+ " : " + issuerdata.getAlias() %></h3>
 </div>
 <form name="editissuer" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ISSUER %>'>

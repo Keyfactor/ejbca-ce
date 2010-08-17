@@ -374,16 +374,16 @@ function checkallfields(){
 <body <% if(!editca) out.write(" onload='fillCertProfileField()' "); %>> 
 <div align="center"> 
   <% if(processrequest){ %>
-  <h2><%= ejbcawebbean.getText("PROCESSREQUEST") %><br></h2>
+  <h2><%= ejbcawebbean.getText("PROCESSREQUEST") %></h2>
   <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %><br>
       <%= ejbcawebbean.getText("ONLYTHEPUBLICKEY") %></h3>
   <% }else{
        if(editca){ %>
-  <h2><%= ejbcawebbean.getText("EDITCA") %><br></h2>
-  <h3><%= ejbcawebbean.getText("CANAME")+ " : " + cainfo.getName() %> </h3>
+  <h2><%= ejbcawebbean.getText("EDITCA") %></h2>
+  <h3><%= ejbcawebbean.getText("CANAME")+ " : " + cainfo.getName() %></h3>
   <%   }else{ %>
-   <h2><%= ejbcawebbean.getText("CREATECA") %><br></h2>
-   <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %> </h3>
+   <h2><%= ejbcawebbean.getText("CREATECA") %></h2>
+   <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %></h3>
   <%   }
      }%>
 </div>

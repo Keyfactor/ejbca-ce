@@ -138,16 +138,15 @@ function checkallfields(){
 
 </SCRIPT>
 <div align="center"> 
-  <h2><%= ejbcawebbean.getText("EDITPUBLISHER") %><br>
-  </h2>
-  <h3><%= ejbcawebbean.getText("PUBLISHER")+ " : " + publisherhelper.publishername %> </h3>
+  <h2><%= ejbcawebbean.getText("EDITPUBLISHER") %></h2>
+  <h3><%= ejbcawebbean.getText("PUBLISHER")+ " : " + publisherhelper.publishername %></h3>
 <% if(publisherhelper.connectionmessage){
      publisherhelper.connectionmessage = false;
      if(publisherhelper.connectionsuccessful){
         publisherhelper.connectionsuccessful = false;
-        out.write("<H3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</H3>");
+        out.write("<h3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</h3>");
      }else{
-       out.write("<H3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : " + publisherhelper.connectionerrormessage +"</H3>");
+       out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : " + publisherhelper.connectionerrormessage +"</h3>");
      }
    } %>
 </div>

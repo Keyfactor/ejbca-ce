@@ -31,16 +31,15 @@ function checkallfields(){
 
 </SCRIPT>
 <div align="center"> 
-  <h2><%= ejbcawebbean.getText("EDITUSERDATASOURCE") %><br>
-  </h2>
-  <h3><%= ejbcawebbean.getText("USERDATASOURCE")+ " : " + userdatasourcehelper.userdatasourcename %> </h3>
+  <h2><%= ejbcawebbean.getText("EDITUSERDATASOURCE") %></h2>
+  <h3><%= ejbcawebbean.getText("USERDATASOURCE")+ " : " + userdatasourcehelper.userdatasourcename %></h3>
 <% if(userdatasourcehelper.connectionmessage){
      userdatasourcehelper.connectionmessage = false;
      if(userdatasourcehelper.connectionsuccessful){
         userdatasourcehelper.connectionsuccessful = false;
-        out.write("<H3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</H3>");
+        out.write("<h3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</h3>");
      }else{
-       out.write("<H3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : " + userdatasourcehelper.connectionerrormessage +"</H3>");
+       out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : " + userdatasourcehelper.connectionerrormessage +"</h3>");
      }
    } %>
 </div>
