@@ -27,11 +27,12 @@ import org.ejbca.util.InterfaceCache;
  */
 public class GlobalConfigurationTest extends TestCase {
     private static Logger log = Logger.getLogger(GlobalConfigurationTest.class);
-
-    private static GlobalConfiguration original = null;
     
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
 
+    private Admin administrator;
+    private GlobalConfiguration original;
+    
     /**
      * Creates a new TestGlobalConfiguration object.
      *
@@ -42,9 +43,15 @@ public class GlobalConfigurationTest extends TestCase {
     }
 
     public void setUp() throws Exception {
+        administrator = new Admin(Admin.TYPE_INTERNALUSER);
+        
+        // First save the original
+        original = this.raAdminSession.loadGlobalConfiguration(administrator);
     }
 
     public void tearDown() throws Exception {
+        raAdminSession.saveGlobalConfiguration(administrator, original);
+        administrator = null;
     }
 
     /**
@@ -52,19 +59,13 @@ public class GlobalConfigurationTest extends TestCase {
      *
      * @throws Exception error
      */
-    public void test01AddGlobalConfiguration() throws Exception {
-        log.trace(">test01AddGlobalConfiguration()");
-
-        Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
-
-        // First save the original
-        original = this.raAdminSession.loadGlobalConfiguration(administrator);
-
+    public void testAddGlobalConfiguration() throws Exception {
         GlobalConfiguration conf = new GlobalConfiguration();
         conf.setEjbcaTitle("TESTTITLE");
-        this.raAdminSession.saveGlobalConfiguration(administrator, conf);
-
-        log.trace("<test01AddGlobalConfiguration()");
+        raAdminSession.saveGlobalConfiguration(administrator, conf);
+        
+        assertTrue("Global configuration was not correctly set.", raAdminSession.loadGlobalConfiguration(administrator).getEjbcaTitle().equals("TESTTITLE"));
+        
     }
 
     /**
@@ -72,21 +73,19 @@ public class GlobalConfigurationTest extends TestCase {
      *
      * @throws Exception error
      */
-    public void test02ModifyGlobalConfiguration() throws Exception {
-        log.trace(">test01ModifyGlobalConfiguration()");
-
-        Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
-
-        GlobalConfiguration conf = this.raAdminSession.loadGlobalConfiguration(administrator);
-        assertTrue("Error Retreiving Global Configuration.", conf.getEjbcaTitle().equals("TESTTITLE"));
-
+    public void testModifyGlobalConfiguration() throws Exception {
+        GlobalConfiguration conf = new GlobalConfiguration();
+        
+        conf.setEjbcaTitle("TESTTITLE");
+        raAdminSession.saveGlobalConfiguration(administrator, conf);
+        assertTrue("Global configuration was not correctly set.", raAdminSession.loadGlobalConfiguration(administrator).getEjbcaTitle().equals("TESTTITLE"));
+        
         conf.setEjbcaTitle("TESTTITLE2");
-        this.raAdminSession.saveGlobalConfiguration(administrator, conf);
+        raAdminSession.saveGlobalConfiguration(administrator, conf);
+        assertTrue("Global Configuration was not correctly modified.", raAdminSession.loadGlobalConfiguration(administrator).getEjbcaTitle().equals("TESTTITLE2"));
 
         // Replace with original
-        this.raAdminSession.saveGlobalConfiguration(administrator, original);
-
-        log.trace("<test01ModifyGlobalConfiguration()");
+        raAdminSession.saveGlobalConfiguration(administrator, original);
     }
 
 
