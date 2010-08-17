@@ -99,9 +99,14 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
         if (username != null) {
             user = username;
         }
+        
+        String admindata = admininfo.getAdminData();
 
         if (certificate != null) {
-        	cert = CertTools.getSerialNumberAsString(certificate) + " : issuer: \"" + CertTools.getIssuerDN(certificate)+"\"";        		
+        	cert = CertTools.getSerialNumberAsString(certificate) + " : issuer: \"" + CertTools.getIssuerDN(certificate)+"\"";
+        	if(event == LogConstants.EVENT_ERROR_ADMINISTRATORLOGGEDIN){
+        		admindata += " : CertDN : \"" + CertTools.getSubjectDN(certificate) + "\"";
+        	}
         }
 
         if (admininfo.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
