@@ -56,15 +56,14 @@ function checkallfields(){
 
 </SCRIPT>
 <div align="center"> 
-  <h2><%= ejbcawebbean.getText("EDITHARDTOKENPROF") %><br>
-  </h2>
-  <h3><%= ejbcawebbean.getText("HARDTOKENPROFILE")+ " : " + edithardtokenprofile.profilename %> </h3>
+  <h2><%= ejbcawebbean.getText("EDITHARDTOKENPROF") %></h2>
+  <h3><%= ejbcawebbean.getText("HARDTOKENPROFILE")+ " : " + edithardtokenprofile.profilename %></h3>
   <% if(edithardtokenprofile.fileuploadsuccess){
      edithardtokenprofile.fileuploadsuccess = false;%>
-  <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADSUCCESSFUL")%> </h3>
+  <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADSUCCESSFUL")%></h3>
   <% }if(edithardtokenprofile.fileuploadfailed){ 
         edithardtokenprofile.fileuploadfailed = false;%> 
-  <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADFAILED") %> </h3>
+  <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADFAILED") %></h3>
   <% } %>
 </div>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">

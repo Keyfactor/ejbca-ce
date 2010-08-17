@@ -417,9 +417,8 @@ function checkallfields(){
 
 </SCRIPT>
 <div align="center"> 
-  <h2><%= ejbcawebbean.getText("EDITCERTIFICATEPROFILE") %><br>
-  </h2>
-  <h3><%= ejbcawebbean.getText("CERTIFICATEPROFILE")+ " : " + certprofile %> </h3>
+  <h2><%= ejbcawebbean.getText("EDITCERTIFICATEPROFILE") %></h2>
+  <h3><%= ejbcawebbean.getText("CERTIFICATEPROFILE")+ " : " + certprofile %></h3>
 </div>
 <form name="editcertificateprofile" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CERTIFICATEPROFILE %>'>

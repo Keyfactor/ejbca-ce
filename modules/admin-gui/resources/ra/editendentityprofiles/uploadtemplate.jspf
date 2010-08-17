@@ -20,8 +20,8 @@ function check()
 -->
 </SCRIPT>
 <div align="center">   
-   <h2><%= ejbcawebbean.getText("UPLOADUSERDATATEMP") %><br></h2>
-   <h3><%= ejbcawebbean.getText("PROFILE")+ " : " + profile %> </h3>
+   <h2><%= ejbcawebbean.getText("UPLOADUSERDATATEMP") %></h2>
+   <h3><%= ejbcawebbean.getText("ENDENTITYPROFILE")+ " : " + profile %></h3>
 </div>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 

@@ -30,11 +30,12 @@
 <f:view>
 <body>
 
+<div align="center"> 
+  <h2><%= ejbcawebbean.getText("EDITSERVICE") %></h2>
+  <h3><%= ejbcawebbean.getText("SERVICE")+ " : " %><h:outputText value="#{editService.serviceName}" /></h3>
+</div>
+
 <h:form id="edit"> 
-
-<div align="center"><h:outputText value="#{web.text.EDITSERVICE}" styleClass="header" style="text-align: center"/></div>
-<div align="center"><h:outputText value="#{web.text.NAME}" styleClass="subheader" style="text-align: center"/><f:verbatim> : </f:verbatim><h:outputText value="#{editService.serviceName}" styleClass="subheader" style="text-align: center"/></div>
-
 
   <div align="right">  <h:commandLink id="backToServices" action="listservices" immediate="true" style="text-align: right">
 		<h:outputText value="#{web.text.BACKTOSERVICES}" style="text-align: right"/>

@@ -20,9 +20,9 @@ function check(file)
 -->
 </SCRIPT>
 <div align="center">   
-   <h2><%= ejbcawebbean.getText("RENEWCA") %><br></h2>
-   <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %> </h3>
-   <h3><br><%= ejbcawebbean.getText("MAKEREQUEST") %></h3>
+   <h2><%= ejbcawebbean.getText("RENEWCA") %></h2>
+   <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %></h3>
+   <h3><%= ejbcawebbean.getText("MAKEREQUEST") %></h3>
 </div>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 

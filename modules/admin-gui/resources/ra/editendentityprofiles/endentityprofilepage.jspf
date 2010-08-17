@@ -346,14 +346,12 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
 </SCRIPT>
 <div align="center"> 
-  <h2><%= ejbcawebbean.getText("EDITPROFILE") %><br>
-  </h2>
-  <h3><%= ejbcawebbean.getText("PROFILE") + " : " + profile %> </h3>
-
+  <h2><%= ejbcawebbean.getText("EDITPROFILE") %></h2>
+  <h3><%= ejbcawebbean.getText("ENDENTITYPROFILE") + " : " + profile %></h3>
   <% if(fileuploadsuccess){%>
-  <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADSUCCESSFUL")%> </h3>
+  <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADSUCCESSFUL")%></h3>
   <% }if(fileuploadfailed){ %> 
-  <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADFAILED") %> </h3>
+  <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADFAILED") %></h3>
   <% } %>
 </div>
 <form name="editprofile" method="post" action="<%=THIS_FILENAME %>" >
