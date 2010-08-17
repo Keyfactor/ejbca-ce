@@ -96,15 +96,13 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        logentrydata[ADMINTYPE] = Integer.toString(logentry.getAdminType());
        if (logentry.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
           String dnstring = dnproxy.getSubjectDN(logentry.getAdminData());
-          if (dnstring !=null) {
-            logentrydata[ADMINCERTSERNO] = logentry.getAdminData();
-            if(dnstring.contains("IssuerDN")){
-                logentrydata[ADMINDATA] = dnstring;
-            } else {
-                DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN);           
-                logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.CN,0) + ", " + dn.getField(DNFieldExtractor.O,0);
-            }
-          }  
+          if ((dnstring !=null) && (!logentry.getAdminData().contains("CertDN")) ) {
+        	  DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN);
+        	  logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.CN,0) + ", " + dn.getField(DNFieldExtractor.O,0);
+              logentrydata[ADMINCERTSERNO] = logentry.getAdminData();
+          } else {
+        	  logentrydata[ADMINDATA] = logentry.getAdminData();
+          }
        } else {
           if (logentry.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER) {
             if (logentry.getAdminData() != null) {           
