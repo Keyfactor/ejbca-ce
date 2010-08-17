@@ -56,12 +56,19 @@ public class SubjectDNProxy implements java.io.Serializable {
 
       if(returnval==null && admindata.indexOf(':') != -1){
         // Try to find the certificate in database
-        String certificatesnr = admindata.substring(0,admindata.indexOf(':'));
-        String issuerdn = admindata.substring(admindata.indexOf('"')+1, admindata.length()-1);
-        result = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr.trim(), 16));
+
+        String data[] = admindata.split(":");  
+        String certificatesnr = data[0].trim();
+        String issuerdn = data[2].substring(data[2].indexOf('"')+1, data[2].lastIndexOf('"'));
+        result = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr, 16));
         if(result != null){
           returnval = CertTools.getSubjectDN(result);
           subjectdnstore.put(admindata,returnval);
+        } else {
+          if(data.length >= 5){
+                returnval = data[4].substring(data[4].indexOf('"')+1, data[4].lastIndexOf('"')) + ", IssuerDN:" + issuerdn;
+                subjectdnstore.put(admindata,returnval);
+          }
         }
       }
 
