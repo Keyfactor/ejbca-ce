@@ -175,7 +175,7 @@ public class EjbcaWebBean implements Serializable {
     		userdn = CertTools.getSubjectDN(certificates[0]);
     		log.debug("Verifying authorization of '"+userdn);    		
     		userAdminSession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));        
-    		logSession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB,  new java.util.Date(),null, certificates[0], LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
+    		logSession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB,  new java.util.Date(),null, null, LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN,"");
     	}
 
     	try {
