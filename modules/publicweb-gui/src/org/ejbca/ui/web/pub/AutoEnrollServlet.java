@@ -82,7 +82,7 @@ public class AutoEnrollServlet extends HttpServlet {
 		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 		GlobalConfiguration globalConfiguration;
 		try {
-			globalConfiguration = ejb.getRAAdminSession().loadGlobalConfiguration(internalAdmin);
+			globalConfiguration = ejb.getRAAdminSession().getCachedGlobalConfiguration(internalAdmin);
 		} catch (CreateException e) {
 			throw new ServletException(e);
 		}

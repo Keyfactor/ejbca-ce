@@ -12,38 +12,54 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
+import java.util.Collection;
+import java.util.HashMap;
+
+import javax.ejb.EJBException;
+
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+
 public interface RaAdminSession {
+    
+    /**
+     * Constant indicating minimum time between updates of the global
+     * configuration cache. In milliseconds, 30 seconds.
+     */
+    public static final long MIN_TIME_BETWEEN_GLOBCONF_UPDATES = 30000;
+    
     /**
      * Finds the admin preference belonging to a certificate serialnumber.
      * Returns null if admin doesn't exists.
      */
-    public org.ejbca.core.model.ra.raadmin.AdminPreference getAdminPreference(org.ejbca.core.model.log.Admin admin, java.lang.String certificatefingerprint);
+    org.ejbca.core.model.ra.raadmin.AdminPreference getAdminPreference(Admin admin, java.lang.String certificatefingerprint);
 
     /**
      * Adds a admin preference to the database. Returns false if admin already
      * exists.
      */
-    public boolean addAdminPreference(org.ejbca.core.model.log.Admin admin, java.lang.String certificatefingerprint,
+    boolean addAdminPreference(Admin admin, java.lang.String certificatefingerprint,
             org.ejbca.core.model.ra.raadmin.AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
      * doesn't exists.
      */
-    public boolean changeAdminPreference(org.ejbca.core.model.log.Admin admin, java.lang.String certificatefingerprint,
+    boolean changeAdminPreference(Admin admin, java.lang.String certificatefingerprint,
             org.ejbca.core.model.ra.raadmin.AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
      * doesn't exists.
      */
-    public boolean changeAdminPreferenceNoLog(org.ejbca.core.model.log.Admin admin, java.lang.String certificatefingerprint,
+    boolean changeAdminPreferenceNoLog(Admin admin, java.lang.String certificatefingerprint,
             org.ejbca.core.model.ra.raadmin.AdminPreference adminpreference);
 
     /**
      * Checks if a admin preference exists in the database.
      */
-    public boolean existsAdminPreference(org.ejbca.core.model.log.Admin admin, java.lang.String certificatefingerprint);
+    boolean existsAdminPreference(Admin admin, java.lang.String certificatefingerprint);
 
     /**
      * Function that returns the default admin preference.
@@ -51,7 +67,7 @@ public interface RaAdminSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public org.ejbca.core.model.ra.raadmin.AdminPreference getDefaultAdminPreference(org.ejbca.core.model.log.Admin admin);
+    org.ejbca.core.model.ra.raadmin.AdminPreference getDefaultAdminPreference(Admin admin);
 
     /**
      * Function that saves the default admin preference.
@@ -59,7 +75,7 @@ public interface RaAdminSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public void saveDefaultAdminPreference(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.raadmin.AdminPreference defaultadminpreference);
+    void saveDefaultAdminPreference(Admin admin, org.ejbca.core.model.ra.raadmin.AdminPreference defaultadminpreference);
 
     /**
      * A method designed to be called at startuptime to (possibly) upgrade end
@@ -71,7 +87,7 @@ public interface RaAdminSession {
      * @param admin
      *            administrator calling the method
      */
-    public void initializeAndUpgradeProfiles(org.ejbca.core.model.log.Admin admin);
+    void initializeAndUpgradeProfiles(Admin admin);
 
     /**
      * Adds a profile to the database.
@@ -83,7 +99,7 @@ public interface RaAdminSession {
      * @param profile
      *            profile to be added
      */
-    public void addEndEntityProfile(org.ejbca.core.model.log.Admin admin, java.lang.String profilename, org.ejbca.core.model.ra.raadmin.EndEntityProfile profile)
+    void addEndEntityProfile(Admin admin, java.lang.String profilename, org.ejbca.core.model.ra.raadmin.EndEntityProfile profile)
             throws org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
     /**
@@ -98,14 +114,14 @@ public interface RaAdminSession {
      * @param profile
      *            profile to be added
      */
-    public void addEndEntityProfile(org.ejbca.core.model.log.Admin admin, int profileid, java.lang.String profilename,
+    void addEndEntityProfile(Admin admin, int profileid, java.lang.String profilename,
             org.ejbca.core.model.ra.raadmin.EndEntityProfile profile) throws org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
     /**
      * Adds a end entity profile to a group with the same content as the
      * original profile.
      */
-    public void cloneEndEntityProfile(org.ejbca.core.model.log.Admin admin, java.lang.String originalprofilename, java.lang.String newprofilename)
+    void cloneEndEntityProfile(Admin admin, java.lang.String originalprofilename, java.lang.String newprofilename)
             throws org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
     /**
@@ -114,56 +130,56 @@ public interface RaAdminSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public void removeEndEntityProfile(org.ejbca.core.model.log.Admin admin, java.lang.String profilename);
+    void removeEndEntityProfile(Admin admin, java.lang.String profilename);
 
     /**
      * Renames a end entity profile
      */
-    public void renameEndEntityProfile(org.ejbca.core.model.log.Admin admin, java.lang.String oldprofilename, java.lang.String newprofilename)
+    void renameEndEntityProfile(Admin admin, java.lang.String oldprofilename, java.lang.String newprofilename)
             throws org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
     /**
      * Updates profile data
      */
-    public void changeEndEntityProfile(org.ejbca.core.model.log.Admin admin, java.lang.String profilename,
+    void changeEndEntityProfile(Admin admin, java.lang.String profilename,
             org.ejbca.core.model.ra.raadmin.EndEntityProfile profile);
 
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
      */
-    public java.util.Collection getAuthorizedEndEntityProfileIds(org.ejbca.core.model.log.Admin admin);
+    Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin);
 
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name
      * (String).
      */
-    public java.util.HashMap getEndEntityProfileIdToNameMap(org.ejbca.core.model.log.Admin admin);
+    HashMap<Integer, String> getEndEntityProfileIdToNameMap(Admin admin);
 
     /**
      * Finds a end entity profile by id.
      */
-    public org.ejbca.core.model.ra.raadmin.EndEntityProfile getEndEntityProfile(org.ejbca.core.model.log.Admin admin, int id);
+    EndEntityProfile getEndEntityProfile(Admin admin, int id);
 
     /**
      * Finds a end entity profile by id.
      * 
      * @return null if profile isn't found
      */
-    public org.ejbca.core.model.ra.raadmin.EndEntityProfile getEndEntityProfile(org.ejbca.core.model.log.Admin admin, java.lang.String profilename);
+    EndEntityProfile getEndEntityProfile(Admin admin, java.lang.String profilename);
 
     /**
      * Returns a end entity profiles id, given it's profilename
      * 
      * @return the id or 0 if profile cannot be found.
      */
-    public int getEndEntityProfileId(org.ejbca.core.model.log.Admin admin, java.lang.String profilename);
+    int getEndEntityProfileId(Admin admin, java.lang.String profilename);
 
     /**
      * Returns a end entity profiles name given it's id.
      * 
      * @return profilename or null if profile id doesn't exists.
      */
-    public java.lang.String getEndEntityProfileName(org.ejbca.core.model.log.Admin admin, int id);
+    String getEndEntityProfileName(Admin admin, int id);
 
     /**
      * Method to check if a certificateprofile exists in any of the end entity
@@ -174,7 +190,7 @@ public interface RaAdminSession {
      * @return true if certificateprofile exists in any of the end entity
      *         profiles.
      */
-    public boolean existsCertificateProfileInEndEntityProfiles(org.ejbca.core.model.log.Admin admin, int certificateprofileid);
+    boolean existsCertificateProfileInEndEntityProfiles(Admin admin, int certificateprofileid);
 
     /**
      * Method to check if a CA exists in any of the end entity profiles. Used to
@@ -184,15 +200,24 @@ public interface RaAdminSession {
      *            the caid to search for.
      * @return true if ca exists in any of the end entity profiles.
      */
-    public boolean existsCAInEndEntityProfiles(org.ejbca.core.model.log.Admin admin, int caid);
-
+    boolean existsCAInEndEntityProfiles(Admin admin, int caid);
+  
+    /**
+     * Flushes the cached GlobalConfiguration value and reads the current one
+     * from persitence.
+     * 
+     * @return a fresh GlobalConfiguration from persistence, or null of no such
+     *         configuration exists.
+     */
+    GlobalConfiguration flushCache();
+    
     /**
      * Loads the global configuration from the database.
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public org.ejbca.core.model.ra.raadmin.GlobalConfiguration loadGlobalConfiguration(org.ejbca.core.model.log.Admin admin);
+    org.ejbca.core.model.ra.raadmin.GlobalConfiguration getCachedGlobalConfiguration(Admin admin);
 
     /**
      * Saves the globalconfiguration
@@ -200,7 +225,7 @@ public interface RaAdminSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public void saveGlobalConfiguration(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.raadmin.GlobalConfiguration globalconfiguration);
+    void saveGlobalConfiguration(Admin admin, org.ejbca.core.model.ra.raadmin.GlobalConfiguration globalconfiguration);
 
-    public int findFreeEndEntityProfileId();
+    int findFreeEndEntityProfileId();
 }

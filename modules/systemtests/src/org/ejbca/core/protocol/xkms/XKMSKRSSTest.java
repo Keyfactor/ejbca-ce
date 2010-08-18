@@ -185,7 +185,7 @@ public class XKMSKRSSTest extends TestCase {
     }
 
     public XKMSKRSSTest() {
-        orgGlobalConfig = raAdminSession.loadGlobalConfiguration(administrator);
+        orgGlobalConfig = raAdminSession.getCachedGlobalConfiguration(administrator);
     }
     
     public void test00SetupDatabase() throws Exception {
@@ -197,7 +197,7 @@ public class XKMSKRSSTest extends TestCase {
         caInfo.setDoEnforceUniqueDistinguishedName(true);
         caAdminSession.editCA(administrator, caInfo);
 
-        final GlobalConfiguration newGlobalConfig = raAdminSession.loadGlobalConfiguration(administrator);
+        final GlobalConfiguration newGlobalConfig = raAdminSession.getCachedGlobalConfiguration(administrator);
         newGlobalConfig.setEnableKeyRecovery(true);
         raAdminSession.saveGlobalConfiguration(administrator, newGlobalConfig);
 
@@ -1175,7 +1175,7 @@ public class XKMSKRSSTest extends TestCase {
                             q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                             ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
                             Approval approval = new Approval("Approved during testing.");
-                            approvalSession.approve(approvingAdmin, approvalID, approval, raAdminSession.loadGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                            approvalSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
                             approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                             assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

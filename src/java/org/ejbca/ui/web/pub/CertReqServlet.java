@@ -192,7 +192,7 @@ public class CertReqServlet extends HttpServlet {
                 // Check user
                 int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
 
-                usekeyrecovery = (raAdminSession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
+                usekeyrecovery = (raAdminSession.getCachedGlobalConfiguration(administrator)).getEnableKeyRecovery();
 
                 UserDataVO data = userAdminSession.findUser(administrator, username);
 

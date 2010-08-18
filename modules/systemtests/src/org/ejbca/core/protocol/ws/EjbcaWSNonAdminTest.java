@@ -88,7 +88,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     
     public void test00SetupAccessRights() throws Exception {
         super.setupAccessRights();
-        gc = raAdminSession.loadGlobalConfiguration(new Admin(Admin.INTERNALCAID));
+        gc = raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID));
     }
 
     private void setUpNonAdmin() throws Exception {

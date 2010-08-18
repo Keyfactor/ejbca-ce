@@ -126,7 +126,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void configureGlobalConfiguration() throws Exception {
-        GlobalConfiguration config = raAdminSession.loadGlobalConfiguration(getAdmin());
+        GlobalConfiguration config = raAdminSession.getCachedGlobalConfiguration(getAdmin());
         config.setIssueHardwareTokens(true);
         this.raAdminSession.saveGlobalConfiguration(getAdmin(), config);
     }

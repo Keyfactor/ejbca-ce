@@ -55,7 +55,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 				}
 				getLogger().info("Available Admin groups: " + availableGroups);
 				getLogger().info("Available access rules:");
-				GlobalConfiguration globalConfiguration = raAdminSession.loadGlobalConfiguration(getAdmin());
+				GlobalConfiguration globalConfiguration = raAdminSession.getCachedGlobalConfiguration(getAdmin());
 				for (String current : (Collection<String>) authorizationSession.getAuthorizedAvailableAccessRules(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()),
 						globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
 						raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin()), userDataSourceSession.getAuthorizedUserDataSourceIds(getAdmin(), true))) {
@@ -75,7 +75,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
                 return;
             }
 			String accessRule = getOriginalAccessRule(args[2]);
-			GlobalConfiguration globalConfiguration = raAdminSession.loadGlobalConfiguration(getAdmin());
+			GlobalConfiguration globalConfiguration = raAdminSession.getCachedGlobalConfiguration(getAdmin());
 			if (!((Collection<String>) authorizationSession.getAuthorizedAvailableAccessRules(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()),
 					globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
 					raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin()), userDataSourceSession.getAuthorizedUserDataSourceIds(getAdmin(), true))).contains(accessRule)) {
