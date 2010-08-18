@@ -368,15 +368,16 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @param userdata 	            a UserDataVO object, the fields status, timecreated and timemodified will not be used.
      * @param clearpwd              true if the password will be stored in clear form in the db, otherwise it is
      *                              hashed.
+ 
      * @throws AuthorizationDeniedException if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
      * @throws DuplicateKeyException if user already exists
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  	
-     * @throws CADoesntExistsException if the caid of the user does not exist  	
-	 * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
+     * @throws EjbcaException with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the SubjectDN Serialnumber already exists when it is specified in the CA that it should be unique.
+     * @throws WaitingForApprovalException 
      * @ejb.interface-method
      */
-    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
+    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException {
         try {
 			FieldValidator.validate(userdata, userdata.getEndEntityProfileId(), raAdminSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()));
 		} catch (CustomFieldException e1) {
