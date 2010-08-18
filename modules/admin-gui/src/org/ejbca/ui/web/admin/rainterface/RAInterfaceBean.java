@@ -47,6 +47,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -210,7 +211,9 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @return false if administrator wasn't authorized to revoke the given certificate.
      */
     public boolean revokeCert(BigInteger serno, String issuerdn, String username, int reason) throws ApprovalException, WaitingForApprovalException {
-    	log.trace(">revokeCert()");
+    	if (log.isTraceEnabled()) {
+        	log.trace(">revokeCert(): "+username+", "+reason);    		
+    	}
     	boolean success = true;
     	try {
     		adminsession.revokeCert(administrator, serno, issuerdn, username, reason);
@@ -221,7 +224,9 @@ public class RAInterfaceBean implements java.io.Serializable {
     	} catch (AlreadyRevokedException e) {
     		success = false;
 		}
-    	log.trace("<revokeCert(): " + success);
+    	if (log.isTraceEnabled()) {
+    		log.trace("<revokeCert(): " + success);
+    	}
     	return success;
     }
 
@@ -234,19 +239,8 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @return false if administrator wasn't authorized to unrevoke the given certificate.
      */
     public boolean unrevokeCert(BigInteger serno, String issuerdn, String username) throws ApprovalException, WaitingForApprovalException {
-    	log.trace(">unrevokeCert()");
-	  	boolean success = true;
-		try {
-			adminsession.unRevokeCert(administrator, serno, issuerdn, username);
-		} catch( AuthorizationDeniedException e) {
-			success = false;
-		} catch (FinderException e) {
-			success = false;
-		} catch (AlreadyRevokedException e) {
-			success = false;
-		}
-		log.trace("<unrevokeCert(): " + success);
-		return success;
+    	// Method needed because it is used as an ApprovalOveradableClassName
+    	return revokeCert(serno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
     }
     
     /* Changes the userdata  */

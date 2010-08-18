@@ -485,6 +485,17 @@ public class CertificateDataTest extends TestCase {
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.OK, status);
 
+        // Revoke certificate and set to ON HOLD again, this will change status to REVOKED (again)
+        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, null);
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+        assertEquals(CertificateStatus.REVOKED, status);
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+
+        // Now unrevoke the certificate, NOT_REVOKED
+        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.NOT_REVOKED, null);
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+        assertEquals(CertificateStatus.OK, status);
+
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return OK.
         certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(xcert));
@@ -499,6 +510,13 @@ public class CertificateDataTest extends TestCase {
         assertEquals(CertificateStatus.REVOKED, status);
         assertEquals(RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
         revDate = status.revocationDate;
+
+        // Try to unrevoke the certificate, should not work, because it is permanently revoked
+        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.NOT_REVOKED, null);
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
+        assertEquals(CertificateStatus.REVOKED, status);
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
+
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return REVOKED.
         certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(xcert));

@@ -142,7 +142,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      * 
      * @param publisherids
      *            a Collection (Integer) of publisherids.
-     * @return true if sucessfull result on all given publishers
+     * @return true if successful result on all given publishers, or if publisherids is null or empty
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
@@ -188,12 +188,14 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      * @param certificateProfileId
      * @param lastUpdate
      * @param extendedinformation
-     * @return true if publishing was successful for all publishers, false if
-     *         not or if was enqued for any of the publishers
+     * @return true if publishing was successful for all publishers (or no publishers were given as publisherids), false if not or if was queued for any of the publishers
      */
     private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection publisherids, Certificate cert, String username,
             String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
             long lastUpdate, ExtendedInformation extendedinformation) {
+    	if (publisherids == null) {
+    		return true;
+    	}
         Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {

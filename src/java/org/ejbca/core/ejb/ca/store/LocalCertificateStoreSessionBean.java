@@ -974,8 +974,14 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     }
     
     /**
-     * Set the status of certificate with  given serno to revoked.
+     * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
      *
+     * Re-activating (unrevoking) a certificate have two limitations.
+     * 1. A password (for for example AD) will not be restored if deleted, only the certificate and certificate status and associated info will be restored
+     * 2. ExtendedInformation, if used by a publisher will not be used when re-activating a certificate 
+     *
+     * The method leaves up to the caller to find the correct publishers and userDataDN.
+     * 
      * @param admin      Administrator performing the operation
      * @param issuerdn   Issuer of certificate to be removed.
      * @param serno      the serno of certificate to revoke.
@@ -1004,8 +1010,12 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     }
 
     /**
-     * Helper method to set the status of certificate to revoked or active.
+     * Helper method to set the status of certificate to revoked or active. Re-activating (unrevoking) a certificate have two limitations.
+     * 1. A password (for for example AD) will not be restored if deleted, only the certificate and certificate status and associated info will be restored
+     * 2. ExtendedInformation, if used by a publisher will not be used when re-activating a certificate 
      *
+     * The method leaves up to the caller to find the correct publishers and userDataDN.
+     * 
      * @param admin      Administrator performing the operation
      * @param certificate the certificate to revoke or activate.
      * @param publishers and array of publiserids (Integer) of publishers to revoke/re-publish the certificate in.
@@ -1029,6 +1039,8 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	int type = rev.getType();
     	Date now = new Date();
     	String serialNo = CertTools.getSerialNumberAsString(certificate); // for logging
+    	
+    	// A normal revocation
     	if ( (rev.getStatus() != SecConst.CERT_REVOKED) 
     			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
     		rev.setStatus(SecConst.CERT_REVOKED);
@@ -1038,9 +1050,8 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     		String msg = intres.getLocalizedMessage("store.revokedcert", new Integer(reason));            	
     		logSession.log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
-    		if (publishers != null) {
-    			publisherSession.revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
-    		}            	  
+    		publisherSession.revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
+            // Unrevoke, can only be done when the certificate was previously revoked with reason CertificateHold
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
     		// Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
@@ -1054,23 +1065,10 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     		// Republish the certificate if possible
     		// If it is not possible, only log error but continue the operation of not revoking the certificate
     		try {
-    			CertReqHistory certreqhist = getCertReqHistory(admin, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate));
-    			if(certreqhist == null){
-    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Must not be republished.");
-    			}
-    			UserDataVO userdata = certreqhist.getUserDataVO();
-    			if ( userdata == null ){
-    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no UserData in History.");
-    			}
-    			CertificateProfile certprofile = getCertificateProfile(admin, userdata.getCertificateProfileId());
-    			if(certprofile == null){
-    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, can't find certificate profile.");  
-    			}
-    			if(certprofile.getPublisherList().size() <= 0){
-    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no publishers defined.");
-    			}
-    			boolean published = publisherSession.storeCertificate(admin, certprofile.getPublisherList(), certificate, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(), certreqhist.getUserDataVO().getDN(),
-    					cafp, status, type, revocationDate, revocationReason, rev.getTag(), rev.getCertificateProfileId(), now.getTime(), certreqhist.getUserDataVO().getExtendedinformation());
+    			// Republishing will not restore a password, for example in AD, it will only re-activate the certificate.
+    			String password = null;
+    			boolean published = publisherSession.storeCertificate(admin, publishers, certificate, username, password, userDataDN,
+    					cafp, status, type, revocationDate, revocationReason, rev.getTag(), rev.getCertificateProfileId(), now.getTime(), null);
     			if ( !published ) {
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
     			}                	  
@@ -1095,10 +1093,19 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     }
 
     /**
-     * Revokes a certificate (already revoked by the CA), in the database
+     * Revokes a certificate (already revoked by the CA), in the database. Also handles re-activation of suspended certificates.
      *
+     * Re-activating (unrevoking) a certificate have two limitations.
+     * 1. A password (for for example AD) will not be restored if deleted, only the certificate and certificate status and associated info will be restored
+     * 2. ExtendedInformation, if used by a publisher will not be used when re-activating a certificate 
+     * 
+     * The method leaves up to the caller to find the correct publishers and userDataDN.
+     *
+     * @param admin      Administrator performing the operation
      * @param cert       The DER coded Certificate that has been revoked.
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
+     * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
