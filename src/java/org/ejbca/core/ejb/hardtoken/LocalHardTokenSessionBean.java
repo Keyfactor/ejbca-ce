@@ -242,6 +242,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ")");
@@ -264,18 +265,9 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ", id: " + profileid + ")");
         }
-        boolean success = false;
-        if (HardTokenProfileData.findByName(entityManager, name) == null) {
-            if (HardTokenProfileData.findByPK(entityManager, Integer.valueOf(profileid)) == null) {
-                try {
-                    entityManager.persist(new HardTokenProfileData(new Integer(profileid), name, profile));
-                    success = true;
-                } catch (Exception e) {
-                    log.error("Unexpected error creating new hard token profile: ", e);
-                }
-            }
-        }
-        if (success) {
+
+        if (HardTokenProfileData.findByName(entityManager, name) == null && HardTokenProfileData.findByPK(entityManager, profileid) == null) {
+            entityManager.persist(new HardTokenProfileData(profileid, name, profile));
             String msg = intres.getLocalizedMessage("hardtoken.addedprofile", name);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
                     LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);

@@ -29,7 +29,7 @@ import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the hard token profile entity bean.
- *
+ * 
  * @version $Id$
  */
 public class HardTokenProfileTest extends TestCase {
@@ -41,19 +41,12 @@ public class HardTokenProfileTest extends TestCase {
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    /**
-     * Creates a new TestHardTokenProfile object.
-     *
-     * @param name name
-     */
     public HardTokenProfileTest(String name) {
         super(name);
     }
 
     public void setUp() throws Exception {
-        log.trace(">setUp()");
         CryptoProviderTools.installBCProvider();
-        log.trace("<setUp()");
     }
 
     public void tearDown() throws Exception {
@@ -61,50 +54,41 @@ public class HardTokenProfileTest extends TestCase {
 
     /**
      * adds a profile to the database
-     *
-     * @throws Exception error
+     * @throws HardTokenProfileExistsException 
+     * 
+     * @throws Exception
+     *             error
      */
-    public void test01AddHardTokenProfile() throws Exception {
-        log.trace(">test01AddHardTokenProfile()");
-        boolean ret = false;
-        try {
-            SwedishEIDProfile profile = new SwedishEIDProfile();
-            EnhancedEIDProfile profile2 = new EnhancedEIDProfile();
-            TurkishEIDProfile turprofile = new TurkishEIDProfile();
+    public void test01AddHardTokenProfile() throws HardTokenProfileExistsException {
 
+        SwedishEIDProfile profile = new SwedishEIDProfile();
+        EnhancedEIDProfile profile2 = new EnhancedEIDProfile();
+        TurkishEIDProfile turprofile = new TurkishEIDProfile();
 
-            String svgdata = createSVGData();
-            profile.setPINEnvelopeData(svgdata);
-            profile2.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, true);
+        String svgdata = createSVGData();
+        profile.setPINEnvelopeData(svgdata);
+        profile2.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, true);
 
+        hardTokenSession.addHardTokenProfile(admin, "SWETEST", profile);
+        hardTokenSession.addHardTokenProfile(admin, "ENHTEST", profile2);
+        hardTokenSession.addHardTokenProfile(admin, "TURTEST", turprofile);
 
-            hardTokenSession.addHardTokenProfile(admin, "SWETEST", profile);
-            hardTokenSession.addHardTokenProfile(admin, "ENHTEST", profile2);
-            hardTokenSession.addHardTokenProfile(admin, "TURTEST", turprofile);
+        SwedishEIDProfile profile3 = (SwedishEIDProfile) hardTokenSession.getHardTokenProfile(admin, "SWETEST");
+        EnhancedEIDProfile profile4 = (EnhancedEIDProfile) hardTokenSession.getHardTokenProfile(admin, "ENHTEST");
+        TurkishEIDProfile turprofile2 = (TurkishEIDProfile) hardTokenSession.getHardTokenProfile(admin, "TURTEST");
 
-            SwedishEIDProfile profile3 = (SwedishEIDProfile) hardTokenSession.getHardTokenProfile(admin, "SWETEST");
-            EnhancedEIDProfile profile4 = (EnhancedEIDProfile) hardTokenSession.getHardTokenProfile(admin, "ENHTEST");
-            TurkishEIDProfile turprofile2 = (TurkishEIDProfile) hardTokenSession.getHardTokenProfile(admin, "TURTEST");
+        String svgdata2 = profile3.getPINEnvelopeData();
 
-            String svgdata2 = profile3.getPINEnvelopeData();
-
-            assertTrue("Saving SVG Data failed", svgdata.equals(svgdata2));
-            assertTrue("Saving Hard Token Profile failed", profile4.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC));
-            assertTrue("Saving Turkish Hard Token Profile failed", (turprofile2 != null));
-
-            ret = true;
-        } catch (HardTokenProfileExistsException pee) {
-        	log.debug("", pee);
-        }
-
-        assertTrue("Creating Hard Token Profile failed", ret);
-        log.trace("<test01AddHardTokenProfile()");
+        assertTrue("Saving SVG Data failed", svgdata.equals(svgdata2));
+        assertTrue("Saving Hard Token Profile failed", profile4.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC));
+        assertTrue("Saving Turkish Hard Token Profile failed", (turprofile2 != null));
     }
 
     /**
      * renames profile
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test02RenameHardTokenProfile() throws Exception {
         log.trace(">test02RenameHardTokenProfile()");
@@ -114,7 +98,7 @@ public class HardTokenProfileTest extends TestCase {
             hardTokenSession.renameHardTokenProfile(admin, "SWETEST", "SWETEST2");
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
-        	log.debug("", pee);
+            log.debug("", pee);
         }
         assertTrue("Renaming Hard Token Profile failed", ret);
 
@@ -123,8 +107,9 @@ public class HardTokenProfileTest extends TestCase {
 
     /**
      * clones profile
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test03CloneHardTokenProfile() throws Exception {
         log.trace(">test03CloneHardTokenProfile()");
@@ -134,18 +119,18 @@ public class HardTokenProfileTest extends TestCase {
             hardTokenSession.cloneHardTokenProfile(admin, "SWETEST2", "SWETEST");
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
-        	log.debug("", pee);
+            log.debug("", pee);
         }
         assertTrue("Cloning Hard Token Profile failed", ret);
 
         log.trace("<test03CloneHardTokenProfile()");
     }
 
-
     /**
      * edits profile
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test04EditHardTokenProfile() throws Exception {
         log.trace(">test04EditHardTokenProfile()");
@@ -160,8 +145,9 @@ public class HardTokenProfileTest extends TestCase {
 
     /**
      * removes all profiles
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
     public void test05removeHardTokenProfiles() throws Exception {
         log.trace(">test05removeHardTokenProfiles()");
@@ -174,7 +160,7 @@ public class HardTokenProfileTest extends TestCase {
             hardTokenSession.removeHardTokenProfile(admin, "TURTEST");
             ret = true;
         } catch (Exception pee) {
-        	log.debug("", pee);
+            log.debug("", pee);
         }
         assertTrue("Removing Hard Token Profile failed", ret);
         log.trace("<test05removeHardTokenProfiles()");
@@ -186,6 +172,5 @@ public class HardTokenProfileTest extends TestCase {
 
         return new String(chararray);
     }
-
 
 }
