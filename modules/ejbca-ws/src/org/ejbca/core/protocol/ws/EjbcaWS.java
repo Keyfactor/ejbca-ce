@@ -1088,7 +1088,7 @@ public class EjbcaWS implements IEjbcaWS {
                   throw EjbcaWSHelper.getEjbcaException("Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests", logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
 			  }
 
-			  boolean usekeyrecovery = raAdminSession.loadGlobalConfiguration(admin).getEnableKeyRecovery();
+			  boolean usekeyrecovery = raAdminSession.getCachedGlobalConfiguration(admin).getEnableKeyRecovery();
 			  log.debug("usekeyrecovery: "+usekeyrecovery);
 			  boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery &&  (userdata.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
 			  log.debug("userdata.getKeyRecoverable(): "+userdata.getKeyRecoverable());
@@ -1249,7 +1249,7 @@ public class EjbcaWS implements IEjbcaWS {
 			Admin admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
 
-            boolean usekeyrecovery = raAdminSession.loadGlobalConfiguration(admin).getEnableKeyRecovery();  
+            boolean usekeyrecovery = raAdminSession.getCachedGlobalConfiguration(admin).getEnableKeyRecovery();  
             if(!usekeyrecovery){
 				throw EjbcaWSHelper.getEjbcaException("Keyrecovery have to be enabled in the system configuration in order to use this command.",
                                         logger, ErrorCode.KEY_RECOVERY_NOT_AVAILABLE, null);
@@ -1579,7 +1579,7 @@ public class EjbcaWS implements IEjbcaWS {
 						  throw new ApprovalException("");
 					  }
 					}catch(ApprovalException e){
-						approvalSession.addApprovalRequest(admin, ar, raAdminSession.loadGlobalConfiguration(admin));
+						approvalSession.addApprovalRequest(admin, ar, raAdminSession.getCachedGlobalConfiguration(admin));
 						throw new WaitingForApprovalException("Approval request with id " + ar.generateApprovalId() + " have been added for approval.",ar.generateApprovalId());
 					}
 				}else{
@@ -1931,7 +1931,7 @@ public class EjbcaWS implements IEjbcaWS {
 						if(genNewRequest){
                             //	Add approval Request
 							try{
-								approvalSession.addApprovalRequest(admin, ar, raAdminSession.loadGlobalConfiguration(admin));
+								approvalSession.addApprovalRequest(admin, ar, raAdminSession.getCachedGlobalConfiguration(admin));
 							  throw new WaitingForApprovalException("Adding approval to view hard token data with id " + ar.generateApprovalId(), ar.generateApprovalId());
 							}catch(ApprovalException e4){
 								throw EjbcaWSHelper.getEjbcaException(e4, logger, ErrorCode.APPROVAL_ALREADY_EXISTS, null);

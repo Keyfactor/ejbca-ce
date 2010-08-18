@@ -47,7 +47,7 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
     public GlobalConfiguration loadGlobalConfiguration() throws NamingException{
         GlobalConfiguration ret = null;
         
-        ret = raadminsession.loadGlobalConfiguration(administrator);
+        ret = raadminsession.getCachedGlobalConfiguration(administrator);
         InitialContext ictx = new InitialContext();
         Context myenv = (Context) ictx.lookup("java:comp/env");      
         ret.initialize( (String) myenv.lookup("ADMINDIRECTORY"),

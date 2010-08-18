@@ -1043,7 +1043,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void genTokenCertificates(boolean onlyOnce) throws Exception {
 
-        GlobalConfiguration gc = raAdminSession.loadGlobalConfiguration(intAdmin);
+        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(intAdmin);
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
         raAdminSession.saveGlobalConfiguration(intAdmin, gc);
@@ -1297,7 +1297,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void keyRecover() throws Exception {
 
-        GlobalConfiguration gc = raAdminSession.loadGlobalConfiguration(intAdmin);
+        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(intAdmin);
         boolean krenabled = gc.getEnableKeyRecovery();
         if (krenabled == true) {
             gc.setEnableKeyRecovery(false);

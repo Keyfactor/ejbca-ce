@@ -88,7 +88,7 @@ public class HardTokenTest extends CaTestCase {
     public void test01AddHardToken() throws Exception {
         log.trace(">test01AddHardToken()");
       
-        GlobalConfiguration gc = raAdminSession.loadGlobalConfiguration(admin);
+        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
         orgEncryptCAId = gc.getHardTokenEncryptCA();
         gc.setHardTokenEncryptCA(0);
         raAdminSession.saveGlobalConfiguration(admin, gc);
@@ -166,7 +166,7 @@ public class HardTokenTest extends CaTestCase {
     public void test04EncryptHardToken() throws Exception {
         log.trace(">test04EncryptHardToken()");
 
-        GlobalConfiguration gc = raAdminSession.loadGlobalConfiguration(admin);
+        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(getTestCAId());
         raAdminSession.saveGlobalConfiguration(admin, gc);
         boolean ret = false;
@@ -204,7 +204,7 @@ public class HardTokenTest extends CaTestCase {
    
     public void test05removeHardTokens() throws Exception {
         log.trace(">test05removeHardTokens()");
-        GlobalConfiguration gc = raAdminSession.loadGlobalConfiguration(admin);
+        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(orgEncryptCAId);
         raAdminSession.saveGlobalConfiguration(admin, gc);
         boolean ret = false;

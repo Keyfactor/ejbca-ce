@@ -441,7 +441,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 		byte[] ret = null;
 		try {
 			// Get key recovery info
-			boolean usekeyrecovery = raAdminSession.loadGlobalConfiguration(admin).getEnableKeyRecovery();
+			boolean usekeyrecovery = raAdminSession.getCachedGlobalConfiguration(admin).getEnableKeyRecovery();
 			if (log.isDebugEnabled()) {
 				log.debug("usekeyrecovery: "+usekeyrecovery);
 			}

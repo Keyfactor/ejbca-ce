@@ -66,7 +66,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-            GlobalConfiguration globalconfiguration = raAdminSession.loadGlobalConfiguration(getAdmin());
+            GlobalConfiguration globalconfiguration = raAdminSession.getCachedGlobalConfiguration(getAdmin());
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;

@@ -570,7 +570,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Creates a "hardtoken" with certficates.
      */
     private void createHardToken(String username, String caName, String serialNumber) throws Exception {
-        GlobalConfiguration gc = raAdminSession.loadGlobalConfiguration(intAdmin);
+        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(intAdmin);
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
         raAdminSession.saveGlobalConfiguration(intAdmin, gc);

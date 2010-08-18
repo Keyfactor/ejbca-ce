@@ -42,7 +42,7 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     			return;
     		}
     		String username = args[1];
-    		boolean usekeyrecovery = raAdminSession.loadGlobalConfiguration(getAdmin()).getEnableKeyRecovery();  
+    		boolean usekeyrecovery = raAdminSession.getCachedGlobalConfiguration(getAdmin()).getEnableKeyRecovery();  
     		if(!usekeyrecovery){
     			getLogger().error("Keyrecovery have to be enabled in the system configuration in order to use this command.");
     			return;                   

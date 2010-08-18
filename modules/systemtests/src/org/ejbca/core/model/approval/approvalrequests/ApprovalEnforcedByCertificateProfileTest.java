@@ -217,14 +217,14 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
         try {
             caAdminSession.deactivateCAToken(admin1, anotherCAID1);
-            caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", raAdminSession.loadGlobalConfiguration(admin1));
+            caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", raAdminSession.getCachedGlobalConfiguration(admin1));
         } catch (WaitingForApprovalException ex) {
             fail("This profile should not require approvals");
         }
 
         try {
             caAdminSession.deactivateCAToken(admin1, anotherCAID2);
-            caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", raAdminSession.loadGlobalConfiguration(admin1));
+            caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", raAdminSession.getCachedGlobalConfiguration(admin1));
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) {
             // OK
