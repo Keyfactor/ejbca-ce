@@ -428,6 +428,7 @@ public interface UserAdminSession {
 
     /**
      * Method that revokes a certificate for a user.
+     * It can also be used to un-revoke a certificate that has been revoked with reason ON_HOLD. This is done by giving reason RevokedCertInfo.NOT_REVOKED (or RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL).
      * 
      * @param admin
      *            the administrator performing the action
@@ -437,7 +438,7 @@ public interface UserAdminSession {
      *            the username to revoke.
      * @param reason
      *            the reason of revokation, one of the RevokedCertInfo.XX
-     *            constants.
+     *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a certificate on hold.
      * @throws AlreadyRevokedException
      *             if the certificate was already revoked
      */
@@ -445,25 +446,6 @@ public interface UserAdminSession {
             int reason) throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException,
             org.ejbca.core.model.approval.ApprovalException, org.ejbca.core.model.approval.WaitingForApprovalException,
             org.ejbca.core.model.ra.AlreadyRevokedException;
-
-    /**
-     * Reactivates the certificate with certificate serno.
-     * 
-     * @param admin
-     *            the adminsitrator performing the action
-     * @param certserno
-     *            serial number of certificate to reactivate.
-     * @param issuerdn
-     *            the issuerdn of certificate to reactivate.
-     * @param username
-     *            the username joined to the certificate.
-     * @throws WaitingForApprovalException
-     * @throws ApprovalException
-     * @throws AlreadyRevokedException
-     */
-    public void unRevokeCert(org.ejbca.core.model.log.Admin admin, java.math.BigInteger certserno, java.lang.String issuerdn, java.lang.String username)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException, org.ejbca.core.model.approval.ApprovalException,
-            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ra.AlreadyRevokedException;
 
     /**
      * Method that looks up the username and email address for a administrator

@@ -1529,7 +1529,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Waiting
      * @param admin the administrator performing the action
      * @param certserno the serno of certificate to revoke.
      * @param username  the username to revoke.
-     * @param reason    the reason of revokation, one of the RevokedCertInfo.XX constants.
+     * @param reason    the reason of revokation, one of the RevokedCertInfo.XX constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a certificate on hold.
 	 * @throws AlreadyRevokedException if the certificate was already revoked
      * @ejb.interface-method
      */
