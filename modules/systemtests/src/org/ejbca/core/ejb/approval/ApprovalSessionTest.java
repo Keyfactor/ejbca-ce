@@ -48,13 +48,14 @@ import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 
 /**
- * @version $Id$
+ * @version $Id: ApprovalSessionTest.java 9666 2010-08-18 11:22:12Z mikekushner
+ *          $
  */
 public class ApprovalSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ApprovalSessionTest.class);
     private static final Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
-    
+
     private static String reqadminusername = null;
     private static String adminusername1 = null;
     private static String adminusername2 = null;
@@ -66,7 +67,7 @@ public class ApprovalSessionTest extends CaTestCase {
     private static Admin reqadmin = null;
     private static Admin admin1 = null;
     private static Admin admin2 = null;
- 
+
     private static ArrayList<AdminEntity> adminentities;
     private static GlobalConfiguration gc = null;
 
@@ -77,7 +78,7 @@ public class ApprovalSessionTest extends CaTestCase {
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
-    
+
     public ApprovalSessionTest(String name) {
         super(name);
         CryptoProviderTools.installBCProvider();
@@ -85,9 +86,9 @@ public class ApprovalSessionTest extends CaTestCase {
     }
 
     public void init() throws Exception {
-        
+
     }
-    
+
     public void setUp() throws Exception {
         super.setUp();
 
@@ -165,7 +166,7 @@ public class ApprovalSessionTest extends CaTestCase {
         assertTrue(!next.getApprovalRequest().isExecutable());
         assertTrue(next.getRemainingApprovals() == 2);
 
-        // Test that the request exipres as it should
+        // Test that the request expires as it should
         Thread.sleep(5000);
         result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
         assertTrue(result.size() == 1);
@@ -199,6 +200,7 @@ public class ApprovalSessionTest extends CaTestCase {
     }
 
     public void testApprove() throws Exception {
+        
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
         approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest, gc);
 
