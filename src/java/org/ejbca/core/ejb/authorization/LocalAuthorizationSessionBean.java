@@ -152,7 +152,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
     @EJB
     private LogSessionLocal logSession;
 
-    private Authorizer authorizer = null;
+    private static volatile Authorizer authorizer = null;
 
     private String[] customaccessrules = null;
 
