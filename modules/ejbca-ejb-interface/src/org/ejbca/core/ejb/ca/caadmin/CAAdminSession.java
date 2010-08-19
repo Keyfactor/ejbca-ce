@@ -178,6 +178,11 @@ public interface CAAdminSession {
     public org.ejbca.core.model.ca.caadmin.CA getCA(Admin admin, int caid) throws CADoesntExistsException;
 
     /**
+     * Makes sure that no CAs are cached to ensure that we read from database next time we try to access it. 
+     */
+    public void flushCACache();
+
+    /**
      * Verify that a CA exists. (This method does not check admin privileges and
      * will leak the existence of a CA.)
      * 
