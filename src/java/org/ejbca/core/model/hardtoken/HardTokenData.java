@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.hardtoken;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 
@@ -28,10 +29,10 @@ import org.ejbca.util.StringTools;
  * @version $Id$
  */
 
-public class HardTokenData implements java.io.Serializable {
+public class HardTokenData implements Serializable {
 
-    
-	// Public Constructors
+    private static final long serialVersionUID = 1L;
+    // Public Constructors
 	/** 
 	 * Construtor of a hard token data.
 	 * 
