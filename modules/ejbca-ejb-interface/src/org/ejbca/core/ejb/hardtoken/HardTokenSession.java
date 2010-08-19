@@ -383,7 +383,7 @@ public interface HardTokenSession {
      *            of begining of hard token sn
      * @return a Collection of username(String) matching the search string
      */
-    public java.util.Collection findHardTokenByTokenSerialNumber(org.ejbca.core.model.log.Admin admin, java.lang.String searchpattern);
+    public java.util.Collection matchdHardTokenByTokenSerialNumber(org.ejbca.core.model.log.Admin admin, java.lang.String searchpattern);
 
     /**
      * Adds a mapping between a hard token and a certificate

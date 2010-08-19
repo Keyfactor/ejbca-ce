@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.hardtoken;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -22,85 +21,115 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
-import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
 /**
- * Complimentary class used to assign extended properties like copyof to a hard token.
- *
+ * Complimentary class used to assign extended properties like copyof to a hard
+ * token.
+ * 
  * Id is represented by primary key of hard token table.
  */
 @Entity
-@Table(name="HardTokenPropertyData")
+@Table(name = "HardTokenPropertyData")
 @IdClass(HardTokenPropertyDataPK.class)
 public class HardTokenPropertyData implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	public static final String PROPERTY_COPYOF = "copyof=";
+    private static final long serialVersionUID = 1L;
+    public static final String PROPERTY_COPYOF = "copyof=";
 
-	private String id;
-	private String property;
-	private String value;
+    private String id;
+    private String property;
+    private String value;
 
-	/**
-	 * Entity holding data of a hard token properties.
-	 */
-	public HardTokenPropertyData(String id, String property, String value) {
-		setId(id);
-		setProperty(property);
-		setValue(value);
-	}
-	
-	public HardTokenPropertyData() { }
-
-	// DB2: VARCHAR(80), Derby: , Informix: VARCHAR(194), Ingres: , MSSQL: , MySQL: VARCHAR(80) BINARY, Oracle: , Sybase: 
-	@Id
-	@Column(name="id")
-	public String getId() { return id; }
-	public void setId(String id) { this.id = id; }
-
-	// DB2: , Derby: , Informix: VARCHAR(194), Ingres: , MSSQL: , MySQL: , Oracle: , Sybase: 
-	@Id
-	@Column(name="property")
-	public String getProperty() { return property; }
-	public void setProperty(String property) { this.property = property; }
-
-	@Column(name="value")
-	public String getValue() { return value; }
-	public void setValue(String value) { this.value = value; }
-
-	//
-    // Search functions. 
-    //
-
-	/** @return the found entity instance or null if the entity does not exist */
-    public static HardTokenPropertyData findByPK(EntityManager entityManager, HardTokenPropertyDataPK pk) {
-    	return entityManager.find(HardTokenPropertyData.class, pk);
+    /**
+     * Entity holding data of a hard token properties.
+     */
+    public HardTokenPropertyData(String id, String property, String value) {
+        setId(id);
+        setProperty(property);
+        setValue(value);
     }
 
-	/**
-	 * @throws NonUniqueResultException if more than one entity with the name exists
-	 * @return the found entity instance or null if the entity does not exist
-	 */
-    public static HardTokenPropertyData findByProperty(EntityManager entityManager, String id, String property) {
-		HardTokenPropertyData ret = null;
-    	try {
-    		Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.id=:id AND a.property=:property");
-    		query.setParameter("id", id);
-    		query.setParameter("property", property);
-    		ret = (HardTokenPropertyData) query.getSingleResult();
-    	} catch (NoResultException e) {
-    	}
-    	return ret;
-    }    
+    public HardTokenPropertyData() {
+    }
 
-	/** @return return the query results as a List. */
+    // DB2: VARCHAR(80), Derby: , Informix: VARCHAR(194), Ingres: , MSSQL: ,
+    // MySQL: VARCHAR(80) BINARY, Oracle: , Sybase:
+    @Id
+    @Column(name = "id")
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    // DB2: , Derby: , Informix: VARCHAR(194), Ingres: , MSSQL: , MySQL: ,
+    // Oracle: , Sybase:
+    @Id
+    @Column(name = "property")
+    public String getProperty() {
+        return property;
+    }
+
+    public void setProperty(String property) {
+        this.property = property;
+    }
+
+    @Column(name = "value")
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    //
+    // Search functions.
+    //
+
+    /** @return the found entity instance or null if the entity does not exist */
+    public static HardTokenPropertyData findByPK(EntityManager entityManager, HardTokenPropertyDataPK pk) {
+        return entityManager.find(HardTokenPropertyData.class, pk);
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     *             if more than one entity with the name exists
+     * @return the found entity instance or null if the entity does not exist
+     */ 
+    public static HardTokenPropertyData findByProperty(EntityManager entityManager, String id, String property) {
+        HardTokenPropertyData ret = null;
+
+        Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.id=:id AND a.property=:property");
+        query.setParameter("id", id);
+        query.setParameter("property", property);
+        @SuppressWarnings("unchecked")
+        List<HardTokenPropertyData> resultList = (List<HardTokenPropertyData>) query.getResultList();
+
+        switch (resultList.size()) {
+        case 0:
+            ret = null;
+            break;
+        case 1:
+            ret = resultList.get(0);
+            break;
+        default:
+            throw new NonUniqueResultException("Several entries with the same primary key where found in the table HardTokenPropertyData.");
+        }
+
+        return ret;
+    }
+
+    /** @return return the query results as a List. */
     public static List<HardTokenPropertyData> findIdsByPropertyAndValue(EntityManager entityManager, String property, String value) {
-    	Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.property=:property AND a.value=:value");
-    	query.setParameter("property", property);
-    	query.setParameter("value", value);
-    	return query.getResultList();
-    }    
+        Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.property=:property AND a.value=:value");
+        query.setParameter("property", property);
+        query.setParameter("value", value);
+        return query.getResultList();
+    }
 }

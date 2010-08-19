@@ -23,6 +23,7 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
@@ -34,38 +35,32 @@ import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests the hard token related entity beans.
- *
+ * 
  * @version $Id$
  */
 public class HardTokenTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(HardTokenTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-    
+
     private static int orgEncryptCAId;
 
     static byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
-            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
-            + "ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
-            + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB"
-            + "hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy"
-            + "Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe"
-            + "ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G"
-            + "A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM"
-            + "MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw"
-            + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS"
-            + "5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
-            + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
-            + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
-
+            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw" + "ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
+            + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy"
+            + "Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe" + "ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G"
+            + "A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM" + "MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw"
+            + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS" + "5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
+            + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+" + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
-    
+
     /**
      * Creates a new TestHardToken object.
-     *
-     * @param name name
+     * 
+     * @param name
+     *            name
      */
     public HardTokenTest(String name) {
         super(name);
@@ -81,18 +76,18 @@ public class HardTokenTest extends CaTestCase {
 
     /**
      * adds a token to the database
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
 
     public void test01AddHardToken() throws Exception {
         log.trace(">test01AddHardToken()");
-      
+
         GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
         orgEncryptCAId = gc.getHardTokenEncryptCA();
         gc.setHardTokenEncryptCA(0);
         raAdminSession.saveGlobalConfiguration(admin, gc);
-        
 
         SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
 
@@ -102,20 +97,20 @@ public class HardTokenTest extends CaTestCase {
 
         hardTokenSessionRemote.addHardToken(admin, "1234", "TESTUSER", "CN=TEST", SecConst.TOKEN_SWEDISHEID, token, certs, null);
 
-        TurkishEIDHardToken token2 = new TurkishEIDHardToken("1234",  "123456", 1);
+        TurkishEIDHardToken token2 = new TurkishEIDHardToken("1234", "123456", 1);
 
         hardTokenSessionRemote.addHardToken(admin, "2345", "TESTUSER", "CN=TEST", SecConst.TOKEN_TURKISHEID, token2, certs, null);
 
         log.trace("<test01AddHardToken()");
     }
 
-
     /**
      * edits token
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
-    
+
     public void test02EditHardToken() throws Exception {
         log.trace(">test02EditHardToken()");
 
@@ -134,35 +129,38 @@ public class HardTokenTest extends CaTestCase {
 
         assertTrue("Editing HardToken failed", ret);
         log.trace("<test02EditHardToken()");
-    }  
+    }
 
     /**
      * Test that tries to find a hardtokensn from is certificate
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
-    
+
     public void test03FindHardTokenByCertificate() throws Exception {
         log.trace(">test03FindHardTokenByCertificate()");
 
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        // Store the dummy cert for test.  
-        if(certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null){
-        	certificateStoreSession.storeCertificate(admin,cert,"DUMMYUSER", CertTools.getFingerprintAsString(cert),SecConst.CERT_ACTIVE,SecConst.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+        // Store the dummy cert for test.
+        if (certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null) {
+            certificateStoreSession.storeCertificate(admin, cert, "DUMMYUSER", CertTools.getFingerprintAsString(cert), SecConst.CERT_ACTIVE,
+                    SecConst.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
         }
-        String tokensn = hardTokenSessionRemote.findHardTokenByCertificateSNIssuerDN(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));        
+        String tokensn = hardTokenSessionRemote.findHardTokenByCertificateSNIssuerDN(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 
         assertTrue("Couldn't find right hardtokensn", tokensn.equals("1234"));
 
         log.trace("<test03FindHardTokenByCertificate()");
     }
-    
+
     /**
      * edits token
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
-    
+
     public void test04EncryptHardToken() throws Exception {
         log.trace(">test04EncryptHardToken()");
 
@@ -182,12 +180,12 @@ public class HardTokenTest extends CaTestCase {
 
         // Store the new data as encrypted
         hardTokenSessionRemote.changeHardToken(admin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
-        ret = true;                
+        ret = true;
 
         assertTrue("Saving encrypted HardToken failed", ret);
 
         // Make sure the encrypted data can be read
-        token = hardTokenSessionRemote.getHardToken(admin, "1234",true);
+        token = hardTokenSessionRemote.getHardToken(admin, "1234", true);
 
         swe = (SwedishEIDHardToken) token.getHardToken();
 
@@ -195,32 +193,31 @@ public class HardTokenTest extends CaTestCase {
 
         log.trace("<test04EncryptHardToken()");
     }
-    
+
     /**
      * removes all profiles
-     *
-     * @throws Exception error
+     * 
+     * @throws Exception
+     *             error
      */
-   
-    public void test05removeHardTokens() throws Exception {
-        log.trace(">test05removeHardTokens()");
+
+    public void test05removeHardTokens()  {
         GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(orgEncryptCAId);
         raAdminSession.saveGlobalConfiguration(admin, gc);
-        boolean ret = false;
+    
         try {
             hardTokenSessionRemote.removeHardToken(admin, "1234");
             hardTokenSessionRemote.removeHardToken(admin, "2345");
-
-            ret = true;
-        } catch (Exception pee) {
+        } catch (HardTokenDoesntExistsException e) {
+            e.printStackTrace();        
         }
-        assertTrue("Removing Hard Token failed", ret);
-
-        log.trace("<test05removeHardTokens()");
+        
+        assertFalse("Removing hard token with tokensn 1234 failed.", hardTokenSessionRemote.existsHardToken(admin, "1234"));
+        assertFalse("Removing hard token with tokensn 2345 failed.", hardTokenSessionRemote.existsHardToken(admin, "2345"));
     }
-   
-	public void test99RemoveTestCA() throws Exception {
-		removeTestCA();
-	}
+
+    public void test99RemoveTestCA() throws Exception {
+        removeTestCA();
+    }
 }

@@ -1043,31 +1043,30 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
             log.trace(">removeHardToken(tokensn : " + tokensn + ")");
         }
         int caid = LogConstants.INTERNALCAID;
-        try {
-            org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
-            if (htd == null) {
-                throw new FinderException();
-            }
-            caid = htd.getSignificantIssuerDN().hashCode();
-            entityManager.remove(htd);
-            // Remove all certificate mappings.
-            removeHardTokenCertificateMappings(admin, tokensn);
-            // Remove all copyof references id property database.
-            HardTokenPropertyData htpd = HardTokenPropertyData.findByProperty(entityManager, tokensn, HardTokenPropertyData.PROPERTY_COPYOF);
-            entityManager.remove(htpd);
-            Collection<HardTokenPropertyData> copieslocal = HardTokenPropertyData.findIdsByPropertyAndValue(entityManager,
-                    HardTokenPropertyData.PROPERTY_COPYOF, tokensn);
-            Iterator<HardTokenPropertyData> iter = copieslocal.iterator();
-            while (iter.hasNext()) {
-                entityManager.remove(iter.next());
-            }
-            String msg = intres.getLocalizedMessage("hardtoken.removedtoken", tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_INFO_HARDTOKENDATA, msg);
-        } catch (Exception e) {
+
+        org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
+        if (htd == null) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremovetoken", tokensn);
             logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_HARDTOKENDATA, msg);
             throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
         }
+        caid = htd.getSignificantIssuerDN().hashCode();
+        entityManager.remove(htd);
+        // Remove all certificate mappings.
+        removeHardTokenCertificateMappings(admin, tokensn);
+        // Remove all copyof references id property database if they exist.
+        HardTokenPropertyData htpd = HardTokenPropertyData.findByProperty(entityManager, tokensn, HardTokenPropertyData.PROPERTY_COPYOF);
+        if (htpd != null) {
+            entityManager.remove(htpd);
+        }
+
+        for (HardTokenPropertyData hardTokenPropertyData : HardTokenPropertyData.findIdsByPropertyAndValue(entityManager,
+                HardTokenPropertyData.PROPERTY_COPYOF, tokensn)) {
+            entityManager.remove(hardTokenPropertyData);
+        }
+        String msg = intres.getLocalizedMessage("hardtoken.removedtoken", tokensn);
+        logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_INFO_HARDTOKENDATA, msg);
+
         log.trace("<removeHardToken()");
     }
 
@@ -1208,7 +1207,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 
     /**
      * Method that searches the database for a tokensn. It returns all
-     * hardtokens with a serialnumber that begins with the given searchpattern.
+     * hardtokens with a serialnumber that begin with the given searchpattern.
      * 
      * @param admin
      *            the administrator calling the function
@@ -1217,7 +1216,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return a Collection of username(String) matching the search string
      * @ejb.interface-method view-type="both"
      */
-    public Collection findHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
+    public Collection matchdHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
         ArrayList<String> returnval = new ArrayList<String>();
         Connection con = null;
@@ -1226,7 +1225,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         try {
             // Construct SQL query.
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select distinct username from HardTokenData where  tokenSN LIKE '%" + searchpattern + "%'");
+            ps = con.prepareStatement("select distinct username from HardTokenData where tokenSN LIKE '%" + searchpattern + "%'");
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.
@@ -1242,6 +1241,8 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
             JDBCUtil.close(con, ps, rs);
         }
     }
+    
+    
 
     /**
      * Adds a mapping between a hard token and a certificate
