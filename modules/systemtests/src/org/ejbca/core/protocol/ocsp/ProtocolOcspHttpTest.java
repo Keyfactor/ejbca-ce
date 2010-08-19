@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.ObjectNotFoundException;
 
 import junit.framework.TestSuite;
@@ -66,7 +65,6 @@ import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.LocalUserAdminSessionBean;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -1371,20 +1369,20 @@ public class ProtocolOcspHttpTest extends CaTestCase {
             WaitingForApprovalException, RemoteException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
             CADoesntExistsException {
 
-       // if (!userAdminSession.existsUser(admin, "ocsptest")) {
+        if (!userAdminSession.existsUser(admin, "ocsptest")) {
 
             userAdminSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
-        /*} else {
+        } else {
             log.debug("User ocsptest already exists.");
             userAdminSession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
                     UserDataConstants.STATUS_NEW, caid);
             // usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
-        }*/
+        }
         // Generate certificate for the new user
         KeyPair keys = KeyTools.genKeys("512", "RSA");
 
