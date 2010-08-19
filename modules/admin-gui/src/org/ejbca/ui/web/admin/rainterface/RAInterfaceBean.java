@@ -332,7 +332,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       UserDataVO user = null;
       ArrayList userlist = new ArrayList();
       
-      Collection usernames = hardtokensession.matchdHardTokenByTokenSerialNumber(administrator, tokensn);
+      Collection usernames = hardtokensession.matchHardTokenByTokenSerialNumber(administrator, tokensn);
      
       Iterator iter = usernames.iterator();
       while(iter.hasNext()){
