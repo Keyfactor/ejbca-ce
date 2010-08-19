@@ -268,14 +268,19 @@
 # ecdsa.implicitlyca.n=883423532389192164791648750360308884807550341691627752275345424702807307
 
 #------------------- Performance settings -------------
-# If set to true calls to getCAInfo and getCA are completely cached in CAAdminSession. This means that for CAInfo to be updated
-# An "Edit CA" or server restart is needed. This works fine in a single server environment. In a multi server (clustered) environment, 
-# this disables the check if CA has been edited on another node, so the CA must be edited on all nodes, or nodes restarted after editing
-# on one node.
-# Setting this to true will improve performance for very large volume installations (>100 cert/s). 
-# For normal installations, where extreme speeds and response times are not required, leave as false.
-# Default: false
-#caadmin.cachecainfo=false
+# Set to a value for caching calls to getCAInfo and getCA in CAAdminSession. This means that for CAInfo to be updated
+# the cache time expires, an "Edit CA" or server restart is done, or flushCACache is called on CAAdminSession. 
+# This cache works fine in a single server environment. In a multi server (clustered) environment, 
+# this can be used to disable the check if CA has been edited on another node, so the CA must be edited on all nodes, 
+# or nodes caches flushed after editing on one node.
+# Setting this value will improve performance for very large volume installations (>100 cert/s). 
+# For normal installations, where extreme speeds and response times are not required, leave as -1.
+# Value is milliseconds.
+# Default: -1 (don't use cache)
+# Possible values -1 to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
+#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+#caadmin.cachecainfo=157680000000
+#caadmin.cachecainfo=-1
  
 #------------------- Debug and special settings -------------
 # 
