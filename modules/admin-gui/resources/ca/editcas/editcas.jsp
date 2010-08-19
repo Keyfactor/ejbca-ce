@@ -6,7 +6,7 @@
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.protocol.CVCRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
                org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
-               org.ejbca.util.SimpleTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.ejbca.util.StringTools, org.ejbca.core.model.AlgorithmConstants" %>
+               org.ejbca.util.SimpleTime, org.ejbca.util.CombineTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.ejbca.util.StringTools, org.ejbca.core.model.AlgorithmConstants" %>
 
 
 
@@ -559,10 +559,10 @@
               }
 
          	 // CRL periods and publishers is specific for X509 CAs
-              long crlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLPERIOD), "1"+SimpleTime.TYPE_DAYS).getLong();
-              long crlIssueInterval = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
-              long crlOverlapTime = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLOVERLAPTIME), "10"+SimpleTime.TYPE_MINUTES).getLong();
-              long deltacrlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();              
+              long crlperiod = CombineTime.getInstance(request.getParameter(TEXTFIELD_CRLPERIOD), "1"+CombineTime.TYPE_DAYS).getLong();
+              long crlIssueInterval = CombineTime.getInstance(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL), "0"+CombineTime.TYPE_MINUTES).getLong();
+              long crlOverlapTime = CombineTime.getInstance(request.getParameter(TEXTFIELD_CRLOVERLAPTIME), "10"+CombineTime.TYPE_MINUTES).getLong();
+              long deltacrlperiod = CombineTime.getInstance(request.getParameter(TEXTFIELD_DELTACRLPERIOD), "0"+CombineTime.TYPE_MINUTES).getLong();              
               values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
               ArrayList crlpublishers = new ArrayList(); 
               if(values != null){
@@ -910,10 +910,10 @@
         	 
         	 // First common info for both X509 CAs and CVC CAs
         	CAInfo cainfo = null;
-            final long crlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
-            final long crlIssueInterval = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
-            final long crlOverlapTime = SimpleTime.getInstance(request.getParameter(TEXTFIELD_CRLOVERLAPTIME), "0"+SimpleTime.TYPE_MINUTES).getLong();
-            final long deltacrlperiod = SimpleTime.getInstance(request.getParameter(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
+            final long crlperiod = CombineTime.getInstance(request.getParameter(TEXTFIELD_CRLPERIOD), "0"+CombineTime.TYPE_MINUTES).getLong();
+            final long crlIssueInterval = CombineTime.getInstance(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL), "0"+CombineTime.TYPE_MINUTES).getLong();
+            final long crlOverlapTime = CombineTime.getInstance(request.getParameter(TEXTFIELD_CRLOVERLAPTIME), "0"+CombineTime.TYPE_MINUTES).getLong();
+            final long deltacrlperiod = CombineTime.getInstance(request.getParameter(TEXTFIELD_DELTACRLPERIOD), "0"+CombineTime.TYPE_MINUTES).getLong();
             final boolean finishuser;
             {
                 final String value = request.getParameter(CHECKBOX_FINISHUSER);

@@ -349,17 +349,17 @@ function checkallfields(){
       <% } 
       } %>
       <% if(!processrequest){ %>
-    if(!checkFieldForSimpleTimeMinutes("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+    if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_CRLPERIOD %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRLPERIOD")%>");
       illegalfields++;
     }
-    if(!checkFieldForSimpleTimeMinutes("document.ca.<%=TEXTFIELD_CRLISSUEINTERVAL%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+    if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLISSUEINTERVAL%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
         illegalfields++;
-    if(!checkFieldForSimpleTimeMinutes("document.ca.<%=TEXTFIELD_CRLOVERLAPTIME%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+    if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLOVERLAPTIME%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
         illegalfields++;
-    if(!checkFieldForSimpleTimeMinutes("document.ca.<%=TEXTFIELD_DELTACRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
+    if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_DELTACRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_DELTACRLPERIOD %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("DELTACRLPERIOD")%>");
@@ -982,63 +982,67 @@ function checkallfields(){
    </tr>
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLPERIOD") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
-               out.write(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+               out.write(CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
-          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='1"+SimpleTime.TYPE_DAYS+"'"); } %>>
+          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %>>
           <% } %>
+          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
    </tr>
    
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLISSUEINTERVAL") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRLISSUEINTERVAL") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
-               out.write(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
+               out.write(CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
-          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'"); } %>>
+          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'"); } %>>
           <% } %> 
+          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
    </tr>
 
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLOVERLAPTIME") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRLOVERLAPTIME") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
-               out.write(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
+               out.write(CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
         <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
-          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
-               else {out.write(" value='10"+SimpleTime.TYPE_MINUTES+"'"); } %>>
+          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES) + "'"); }
+               else {out.write(" value='10"+CombineTime.TYPE_MINUTES+"'"); } %>>
           <% } %> 
+          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
    </tr>
 
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("DELTACRLPERIOD") + " " + ejbcawebbean.getText("SIMPLETIMEFORMATMINUTES") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("DELTACRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
        <br/>
        <%= ejbcawebbean.getText("NODELTACRLTIP") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
-               out.write("" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+               out.write("" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
         <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
-          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'");} %>>
+          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %>>
           <% } %> 
+          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
    </tr>
    <%
