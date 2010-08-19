@@ -257,7 +257,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-    
+
+    /** help variable used to control that CA info update (read from database) isn't performed to often. */
+    private static volatile long lastCACacheUpdateTime = -1;
+
     /**
      * Caching of CA IDs with CA cert hash as ID
      */
@@ -954,6 +957,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     /**
+     * Makes sure that no CAs are cached to ensure that we read from database next time we try to access it. 
+     * @ejb.interface-method
+     */
+    public void flushCACache() {
+    	lastCACacheUpdateTime = -1;
+    	CACacheManager.instance().removeAll();
+    }
+    
+    /**
      * Internal method for getting CA, to avoid code duplication. Tries to find
      * the CA even if the CAId is wrong due to CA certificate DN not being the
      * same as CA DN. Uses CACacheManager directly if configured to do so in
@@ -975,11 +987,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.trace(">getCAInternal: " + caid + ", " + name);
         }
         // First check if we already have a cached instance of the CA
-        // This should only be done if we have enabled aggressive caching,
-        // meaning that
-        // we will not update the CA values
+    	// This should only be done if we have enabled caching, meaning that 
+    	// we will not update the CA values until cache time expires
         CA ca = null;
-        if (EjbcaConfiguration.getCacheCaInfoInCaAdminSession()) {
+    	if (lastCACacheUpdateTime+EjbcaConfiguration.getCacheCaTimeInCaAdminSession() > new Date().getTime()) {
             if (caid != -1) {
                 ca = CACacheManager.instance().getCA(caid);
             } else {
@@ -989,16 +1000,19 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CAData cadata = null;
         if (ca == null) {
             if (log.isDebugEnabled()) {
-                log.debug("CA not found in cache (or we are configured not to use cache here), we have to get it: " + caid + ", " + name);
+        		log.debug("CA not found in cache (or cache time expired), we have to get it: "+caid+", "+name);
             }
             try {
                 cadata = getCADataBean(caid, name);
+            	// this method checks CA data row timestamp to see if CA was updated by any other cluster nodes
+            	// also fills the CACacheManager cache if the CA is not in there
                 ca = cadata.getCA();
             } catch (UnsupportedEncodingException uee) {
                 throw new EJBException(uee);
             } catch (IllegalKeyStoreException e) {
                 throw new EJBException(e);
             }
+    		lastCACacheUpdateTime = new Date().getTime();
         }
         // Check if CA has expired, cadata (CA in database) will only be updated
         // if aggressive caching is not enabled

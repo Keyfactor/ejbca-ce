@@ -238,8 +238,14 @@ public class EjbcaConfiguration {
 	 * Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be fully cached, so an "Edit CA" or restart
 	 * is needed in order to refresh the cache.
 	 */
-	public static boolean getCacheCaInfoInCaAdminSession() {
-		return "true".equalsIgnoreCase(ConfigurationHolder.getString("caadmin.cachecainfo", "false"));
+	public static long getCacheCaTimeInCaAdminSession() {
+		long time = -1; // don't cache at all is the default
+		try {
+			time = Long.valueOf(ConfigurationHolder.getString("caadmin.cachecainfo", "-1"));
+		} catch (NumberFormatException e) {
+			log.error("Invalid value in caadmin.cachecainfo, must be decimal number (milliseconds to cache CA info): "+e.getMessage());
+		}
+		return time;
 	}
 
 }
