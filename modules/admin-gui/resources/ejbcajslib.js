@@ -247,6 +247,18 @@ function checkFieldForYearsMonthsDays(thetextfield , alerttext) {
   return false;
 }
 
+/** Verify that the field is of format '*y *mo *d *h *m' */
+function checkFieldForCombineTime(thetextfield, alerttext) {
+  field = eval(thetextfield);
+  var text = new String(field.value);
+  re = /^\s*(\d+\s*[yY])?\s*(\d+\s*[mM][oO])?\s*(\d+\s*[dD])?\s*(\d+\s*[hH])?\s*(\d+\s*[mM])?\s*$/;
+  if (re.exec(text)) {
+	  return true;
+  }
+  alert(alerttext);
+  return false;
+}
+
 /** Verify that the field is of format 'YYYYMMDD' */
 function checkFieldForDate(thetextfield, alerttext) {
 	field = eval(thetextfield);
