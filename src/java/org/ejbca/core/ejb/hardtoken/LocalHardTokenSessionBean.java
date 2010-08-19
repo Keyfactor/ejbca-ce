@@ -1216,7 +1216,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return a Collection of username(String) matching the search string
      * @ejb.interface-method view-type="both"
      */
-    public Collection matchdHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
+    public Collection matchHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
         ArrayList<String> returnval = new ArrayList<String>();
         Connection con = null;
