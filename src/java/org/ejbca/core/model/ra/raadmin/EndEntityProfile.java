@@ -115,7 +115,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     // Default values
     // These must be in a strict order that can never change 
-    // Custom values configurable in a properties file will start at number 100
+    // Custom values configurable in a properties file (profilemappings.properties)
     static {
     	dataConstants.put(USERNAME, new Integer(0));
     	dataConstants.put(PASSWORD, new Integer(1));
