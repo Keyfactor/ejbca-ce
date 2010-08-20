@@ -16,9 +16,15 @@ package org.ejbca.core.ejb.ca.sign;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
@@ -32,6 +38,8 @@ import java.util.List;
 import java.util.Vector;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -49,6 +57,7 @@ import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -56,8 +65,11 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
@@ -68,6 +80,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -80,113 +93,95 @@ import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
 
-
 /**
  * Tests signing session.
  * 
- * Since all the CAs from "TestCAs" is required, you should run it manually before running this test and "RemoveCAs" after.
- *
+ * Since all the CAs from "TestCAs" is required, you should run it manually
+ * before running this test and "RemoveCAs" after.
+ * 
  * @version $Id$
  */
 public class SignSessionTest extends CaTestCase {
-    static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
-            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDY+ATE4ZB0oKfmXStu8J+do0GhTag6rOGtoydI" +
-            "eNX9DdytlsmXDyONKl8746478/3HXdx9rA0RevUizKSataMpDsb3TjprRjzBTvYPZSIfzko6s8g6" +
-            "AZLO07xCFOoDmyRzb9k/KEZsMls0ujx79CQ9p5K4rg2ksjmDeW7DaPMphQIDAQABoAAwDQYJKoZI" +
-            "hvcNAQEFBQADgYEAyJVobqn6wGRoEsdHxjoqPXw8fLrQyBGEwXccnVpI4kv9iIZ45Xres0LrOwtS" +
-            "kFLbpn0guEzhxPBbL6mhhmDDE4hbbHJp1Kh6gZ4Bmbb5FrwpvUyrSjTIwwRC7GAT00A1kOjl9jCC" +
-            "XCfJkJH2QleCy7eKANq+DDTXzpEOvL/UqN0=").getBytes());
-    static byte[] oldbcp10 = Base64.decode(("MIIBbDCB1gIBADAtMQswCQYDVQQGEwJTRTEPMA0GA1UEChMGQW5hVG9tMQ0wCwYDVQQDEwRUZXN0" +
-            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzN9nDdwmq23/RLGisvR3CRO9JSem2QZ7JC7nr" +
-            "NlbxQBLVqlkypT/lxMMur+lTX1S+jBaqXjtirhZTVaV5C/+HObWZ5vrj30lmsCdgzFybSzVxBz0l" +
-            "XC0UEDbgBml/hO70cSDdmyw3YE9g5eH3wdYs2FCTzexRF3kNAVHNUa8svwIDAQABoAAwDQYJKoZI" +
-            "hvcNAQEFBQADgYEAm6uRSyEmyCcs652Ttg2npm6JZPFT2qwSl4dviyIKJbn6j+meCzvn2TMP10d8" +
-            "7Ak5sv5NJew1XGkM4mGpF9cfcVshxLVlW+cgq0749fWbyS8KlgQP/ANh3DkLl8k5E+3Wnbi0JjCV" +
-            "Xe1s44+K2solX8jOtryoR4TMJ6p9HpsuO68=").getBytes());
-    static byte[] iep10 = Base64.decode(("MIICnTCCAgYCAQAwGzEZMBcGA1UEAxMQNkFFSzM0N2Z3OHZXRTQyNDCBnzANBgkq" +
-            "hkiG9w0BAQEFAAOBjQAwgYkCgYEAukW70HN9bt5x2AiSZm7y8GXQuyp1jN2OIvqU" +
-            "sr0dzLIOFt1H8GPJkL80wx3tLDj3xJfWJdww3TqExsxMSP+qScoYKIOeNBb/2OMW" +
-            "p/k3DThCOewPebmt+M08AClq5WofXTG+YxyJgXWbMTNfXKIUyR0Ju4Spmg6Y4eJm" +
-            "GXTG7ZUCAwEAAaCCAUAwGgYKKwYBBAGCNw0CAzEMFgo1LjAuMjE5NS4yMCAGCisG" +
-            "AQQBgjcCAQ4xEjAQMA4GA1UdDwEB/wQEAwIE8DCB/wYKKwYBBAGCNw0CAjGB8DCB" +
-            "7QIBAR5cAE0AaQBjAHIAbwBzAG8AZgB0ACAARQBuAGgAYQBuAGMAZQBkACAAQwBy" +
-            "AHkAcAB0AG8AZwByAGEAcABoAGkAYwAgAFAAcgBvAHYAaQBkAGUAcgAgAHYAMQAu" +
-            "ADADgYkAjuYPzZPpbLgCWYnXoNeX2gS6nuI4osrWHlQQKcS67VJclhELlnT3hBb9" +
-            "Blr7I0BsJ/lguZvZFTZnC1bMeNULRg17bhExTg+nUovzPcJhMvG7G3DR17PrJ7V+" +
-            "egHAsQV4dQC2hOGGhOnv88JhP9Pwpso3t2tqJROa5ZNRRSJSkw8AAAAAAAAAADAN" +
-            "BgkqhkiG9w0BAQQFAAOBgQCL5k4bJt265j63qB/9GoQb1XFOPSar1BDFi+veCPA2" +
-            "GJ/vRXt77Vcr4inx9M51iy87FNcGGsmyesBoDg73p06UxpIDhkL/WpPwZAfQhWGe" +
-            "o/gWydmP/hl3uEfE0E4WG02UXtNwn3ziIiJM2pBCGQQIN2rFggyD+aTxwAwOU7Z2" + "fw==").getBytes());
-    static byte[] openscep = Base64.decode(("MIIFSwYJKoZIhvcNAQcCoIIFPDCCBTgCAQExDjAMBggqhkiG9w0CBQUAMIICMwYJ" +
-            "KoZIhvcNAQcBoIICJASCAiAwggIcBgkqhkiG9w0BBwOgggINMIICCQIBADGB1TCB" +
-            "0gIBADA7MC8xDzANBgNVBAMTBlRlc3RDQTEPMA0GA1UEChMGQW5hVG9tMQswCQYD" +
-            "VQQGEwJTRQIIbzEhUVZYO3gwDQYJKoZIhvcNAQEBBQAEgYDJP3tsx1KMC+Ws3gcV" +
-            "gpvatMgxocUrKS2Z5BRj7z8HE/BySwa40fwzpBXq3xhakclrdK9D6Bb7I2oTqaNo" +
-            "y25tk2ykow8px1HEerGg5eCIDeAwX4IGurKn+ajls4vWntybgtosAFPLuBO2sdfy" +
-            "VhTv+iFxkl+lZgcRfpJhmqfOJjCCASoGCSqGSIb3DQEHATARBgUrDgMCBwQIapUt" +
-            "FKgA/KmAggEIpzjb5ONkiT7gPs5VeQ6a2e3IdXMgZTRknqZZRRzRovKwp17LJPkA" +
-            "AF9vQKCk6IQwM1dY4NAhu/mCvkfQwwVgML+rbsx7cYH5VuMxw6xw79CnGZbcgOoE" +
-            "lhfYR9ytfZFAVjs8TF/cx1GfuxxN/3RdXzwIFmvPRX1SPh83ueMbGTHjmk0/kweE" +
-            "9XcLkI85jTyG/Dsq3mUlWDS4qQg4sSbFAvkHgmCl0DQd2qW3eV9rCDbfPNjc+2dq" +
-            "nG5EwjX1UVYS2TSWy7vu6MQvKtEWFP4B10+vGBcVE8fZ4IxL9TDQ4UMz3gfFIQSc" +
-            "Moq4lw7YKmywbbyieGGYJuXDX/0gUBKj/MrP9s3L12bLoIIBajCCAWYwggEQoAMC" +
-            "AQMCIDNGREQzNUM5NzZDODlENjcwRjNCM0IxOTgxQjhDMzA2MA0GCSqGSIb3DQEB" +
-            "BAUAMCwxCzAJBgNVBAYTAlNFMQ8wDQYDVQQKEwZBbmFUb20xDDAKBgNVBAMTA2Zv" +
-            "bzAeFw0wMzA2MTkwODQ3NDlaFw0wMzA3MTkwODQ3NDlaMCwxCzAJBgNVBAYTAlNF" +
-            "MQ8wDQYDVQQKEwZBbmFUb20xDDAKBgNVBAMTA2ZvbzBcMA0GCSqGSIb3DQEBAQUA" +
-            "A0sAMEgCQQDLfHDEOse6Mbi02egr2buI9mgWC0ur9dvGmLiIxmNg1TNhn1WHj5Zy" +
-            "VsjKyLoVuVqgGRPYVA73ItANF8RNBAt9AgMBAAEwDQYJKoZIhvcNAQEEBQADQQCw" +
-            "9kQsl3M0Ag1892Bu3izeZOYKpze64kJ7iGuYmN8atkdO8Rpp4Jn0W6vvUYQcat2a" +
-            "Jzf6h3xfEQ7m8CzvaQ2/MYIBfDCCAXgCAQEwUDAsMQswCQYDVQQGEwJTRTEPMA0G" +
-            "A1UEChMGQW5hVG9tMQwwCgYDVQQDEwNmb28CIDNGREQzNUM5NzZDODlENjcwRjNC" +
-            "M0IxOTgxQjhDMzA2MAwGCCqGSIb3DQIFBQCggcEwEgYKYIZIAYb4RQEJAjEEEwIx" +
-            "OTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0wMzA2" +
-            "MTkwODQ3NDlaMB8GCSqGSIb3DQEJBDESBBCevtHE4n3my5B7Q+MiKj04MCAGCmCG" +
-            "SAGG+EUBCQUxEgQQwH1TAMlSzz1d3SNXoOARkTAwBgpghkgBhvhFAQkHMSITIDNG" +
-            "REQzNUM5NzZDODlENjcwRjNCM0IxOTgxQjhDMzA2MA0GCSqGSIb3DQEBAQUABEAW" +
-            "r+9YB3t1750Aj4bm5JAHv80VhzkrPmVLZqsJdC2DGn3UQFp1FhXo4od2xGpeg+pZ" +
-            "b0B6kUt+uxvuq3PbagLi").getBytes());
-    static byte[] keytooldsa = Base64.decode(("MIICNjCCAfQCAQAwMTERMA8GA1UEAxMIRFNBIFRlc3QxDzANBgNVBAoTBkFuYXRvbTELMAkGA1UE" +
-            "BhMCU0UwggG4MIIBLAYHKoZIzjgEATCCAR8CgYEA/X9TgR11EilS30qcLuzk5/YRt1I870QAwx4/" +
-            "gLZRJmlFXUAiUftZPY1Y+r/F9bow9subVWzXgTuAHTRv8mZgt2uZUKWkn5/oBHsQIsJPu6nX/rfG" +
-            "G/g7V+fGqKYVDwT7g/bTxR7DAjVUE1oWkTL2dfOuK2HXKu/yIgMZndFIAccCFQCXYFCPFSMLzLKS" +
-            "uYKi64QL8Fgc9QKBgQD34aCF1ps93su8q1w2uFe5eZSvu/o66oL5V0wLPQeCZ1FZV4661FlP5nEH" +
-            "EIGAtEkWcSPoTCgWE7fPCTKMyKbhPBZ6i1R8jSjgo64eK7OmdZFuo38L+iE1YvH7YnoBJDvMpPG+" +
-            "qFGQiaiD3+Fa5Z8GkotmXoB7VSVkAUw7/s9JKgOBhQACgYEAiVCUaC95mHaU3C9odWcuJ8j3fT6z" +
-            "bSR02CVFC0F6QO5s2Tx3JYWrm5aAjWkXWJfeYOR6qBSwX0R1US3rDI0Kepsrdco2q7wGSo+235KL" +
-            "Yfl7tQ9RLOKUGX/1c5+XuvN1ZbGy0yUw3Le16UViahWmmx6FM1sW6M48U7C/CZOyoxagADALBgcq" +
-            "hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ").getBytes());
     private static final Logger log = Logger.getLogger(SignSessionTest.class);
-    private static KeyPair rsakeys=null;
-    private static KeyPair rsakeys2=null;
-    private static KeyPair ecdsakeys=null;
-    private static KeyPair ecdsasecpkeys=null;
-    private static KeyPair ecdsaimplicitlyca=null;
-    private static KeyPair dsakeys=null;
-    private static int rsacaid = 0;
-    private static int rsareversecaid = 0;
-    private static int ecdsacaid = 0;
-    private static int ecdsaimplicitlycacaid = 0;
-    private static int rsamgf1cacaid = 0;
-    private static int cvccaid = 0;
-    private static int cvccaecid = 0;
-    private static int dsacaid = 0;
 
-    X509Certificate rsacacert = null;
-    X509Certificate rsarevcacert = null;
-    X509Certificate ecdsacacert = null;
-    X509Certificate ecdsaimplicitlycacacert = null;
-    X509Certificate rsamgf1cacacert = null;
-    Certificate cvccacert = null;
-    Certificate cvcdveccert = null;
-    Certificate cvcaeccert = null;
-    X509Certificate dsacacert = null;
+    private static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF"
+            + "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDY+ATE4ZB0oKfmXStu8J+do0GhTag6rOGtoydI"
+            + "eNX9DdytlsmXDyONKl8746478/3HXdx9rA0RevUizKSataMpDsb3TjprRjzBTvYPZSIfzko6s8g6"
+            + "AZLO07xCFOoDmyRzb9k/KEZsMls0ujx79CQ9p5K4rg2ksjmDeW7DaPMphQIDAQABoAAwDQYJKoZI"
+            + "hvcNAQEFBQADgYEAyJVobqn6wGRoEsdHxjoqPXw8fLrQyBGEwXccnVpI4kv9iIZ45Xres0LrOwtS"
+            + "kFLbpn0guEzhxPBbL6mhhmDDE4hbbHJp1Kh6gZ4Bmbb5FrwpvUyrSjTIwwRC7GAT00A1kOjl9jCC" + "XCfJkJH2QleCy7eKANq+DDTXzpEOvL/UqN0=").getBytes());
+    private static byte[] oldbcp10 = Base64.decode(("MIIBbDCB1gIBADAtMQswCQYDVQQGEwJTRTEPMA0GA1UEChMGQW5hVG9tMQ0wCwYDVQQDEwRUZXN0"
+            + "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzN9nDdwmq23/RLGisvR3CRO9JSem2QZ7JC7nr"
+            + "NlbxQBLVqlkypT/lxMMur+lTX1S+jBaqXjtirhZTVaV5C/+HObWZ5vrj30lmsCdgzFybSzVxBz0l"
+            + "XC0UEDbgBml/hO70cSDdmyw3YE9g5eH3wdYs2FCTzexRF3kNAVHNUa8svwIDAQABoAAwDQYJKoZI"
+            + "hvcNAQEFBQADgYEAm6uRSyEmyCcs652Ttg2npm6JZPFT2qwSl4dviyIKJbn6j+meCzvn2TMP10d8"
+            + "7Ak5sv5NJew1XGkM4mGpF9cfcVshxLVlW+cgq0749fWbyS8KlgQP/ANh3DkLl8k5E+3Wnbi0JjCV" + "Xe1s44+K2solX8jOtryoR4TMJ6p9HpsuO68=").getBytes());
+    private static byte[] iep10 = Base64.decode(("MIICnTCCAgYCAQAwGzEZMBcGA1UEAxMQNkFFSzM0N2Z3OHZXRTQyNDCBnzANBgkq"
+            + "hkiG9w0BAQEFAAOBjQAwgYkCgYEAukW70HN9bt5x2AiSZm7y8GXQuyp1jN2OIvqU" + "sr0dzLIOFt1H8GPJkL80wx3tLDj3xJfWJdww3TqExsxMSP+qScoYKIOeNBb/2OMW"
+            + "p/k3DThCOewPebmt+M08AClq5WofXTG+YxyJgXWbMTNfXKIUyR0Ju4Spmg6Y4eJm" + "GXTG7ZUCAwEAAaCCAUAwGgYKKwYBBAGCNw0CAzEMFgo1LjAuMjE5NS4yMCAGCisG"
+            + "AQQBgjcCAQ4xEjAQMA4GA1UdDwEB/wQEAwIE8DCB/wYKKwYBBAGCNw0CAjGB8DCB" + "7QIBAR5cAE0AaQBjAHIAbwBzAG8AZgB0ACAARQBuAGgAYQBuAGMAZQBkACAAQwBy"
+            + "AHkAcAB0AG8AZwByAGEAcABoAGkAYwAgAFAAcgBvAHYAaQBkAGUAcgAgAHYAMQAu" + "ADADgYkAjuYPzZPpbLgCWYnXoNeX2gS6nuI4osrWHlQQKcS67VJclhELlnT3hBb9"
+            + "Blr7I0BsJ/lguZvZFTZnC1bMeNULRg17bhExTg+nUovzPcJhMvG7G3DR17PrJ7V+" + "egHAsQV4dQC2hOGGhOnv88JhP9Pwpso3t2tqJROa5ZNRRSJSkw8AAAAAAAAAADAN"
+            + "BgkqhkiG9w0BAQQFAAOBgQCL5k4bJt265j63qB/9GoQb1XFOPSar1BDFi+veCPA2" + "GJ/vRXt77Vcr4inx9M51iy87FNcGGsmyesBoDg73p06UxpIDhkL/WpPwZAfQhWGe"
+            + "o/gWydmP/hl3uEfE0E4WG02UXtNwn3ziIiJM2pBCGQQIN2rFggyD+aTxwAwOU7Z2" + "fw==").getBytes());
+    private static byte[] openscep = Base64.decode(("MIIFSwYJKoZIhvcNAQcCoIIFPDCCBTgCAQExDjAMBggqhkiG9w0CBQUAMIICMwYJ"
+            + "KoZIhvcNAQcBoIICJASCAiAwggIcBgkqhkiG9w0BBwOgggINMIICCQIBADGB1TCB" + "0gIBADA7MC8xDzANBgNVBAMTBlRlc3RDQTEPMA0GA1UEChMGQW5hVG9tMQswCQYD"
+            + "VQQGEwJTRQIIbzEhUVZYO3gwDQYJKoZIhvcNAQEBBQAEgYDJP3tsx1KMC+Ws3gcV" + "gpvatMgxocUrKS2Z5BRj7z8HE/BySwa40fwzpBXq3xhakclrdK9D6Bb7I2oTqaNo"
+            + "y25tk2ykow8px1HEerGg5eCIDeAwX4IGurKn+ajls4vWntybgtosAFPLuBO2sdfy" + "VhTv+iFxkl+lZgcRfpJhmqfOJjCCASoGCSqGSIb3DQEHATARBgUrDgMCBwQIapUt"
+            + "FKgA/KmAggEIpzjb5ONkiT7gPs5VeQ6a2e3IdXMgZTRknqZZRRzRovKwp17LJPkA" + "AF9vQKCk6IQwM1dY4NAhu/mCvkfQwwVgML+rbsx7cYH5VuMxw6xw79CnGZbcgOoE"
+            + "lhfYR9ytfZFAVjs8TF/cx1GfuxxN/3RdXzwIFmvPRX1SPh83ueMbGTHjmk0/kweE" + "9XcLkI85jTyG/Dsq3mUlWDS4qQg4sSbFAvkHgmCl0DQd2qW3eV9rCDbfPNjc+2dq"
+            + "nG5EwjX1UVYS2TSWy7vu6MQvKtEWFP4B10+vGBcVE8fZ4IxL9TDQ4UMz3gfFIQSc" + "Moq4lw7YKmywbbyieGGYJuXDX/0gUBKj/MrP9s3L12bLoIIBajCCAWYwggEQoAMC"
+            + "AQMCIDNGREQzNUM5NzZDODlENjcwRjNCM0IxOTgxQjhDMzA2MA0GCSqGSIb3DQEB" + "BAUAMCwxCzAJBgNVBAYTAlNFMQ8wDQYDVQQKEwZBbmFUb20xDDAKBgNVBAMTA2Zv"
+            + "bzAeFw0wMzA2MTkwODQ3NDlaFw0wMzA3MTkwODQ3NDlaMCwxCzAJBgNVBAYTAlNF" + "MQ8wDQYDVQQKEwZBbmFUb20xDDAKBgNVBAMTA2ZvbzBcMA0GCSqGSIb3DQEBAQUA"
+            + "A0sAMEgCQQDLfHDEOse6Mbi02egr2buI9mgWC0ur9dvGmLiIxmNg1TNhn1WHj5Zy" + "VsjKyLoVuVqgGRPYVA73ItANF8RNBAt9AgMBAAEwDQYJKoZIhvcNAQEEBQADQQCw"
+            + "9kQsl3M0Ag1892Bu3izeZOYKpze64kJ7iGuYmN8atkdO8Rpp4Jn0W6vvUYQcat2a" + "Jzf6h3xfEQ7m8CzvaQ2/MYIBfDCCAXgCAQEwUDAsMQswCQYDVQQGEwJTRTEPMA0G"
+            + "A1UEChMGQW5hVG9tMQwwCgYDVQQDEwNmb28CIDNGREQzNUM5NzZDODlENjcwRjNC" + "M0IxOTgxQjhDMzA2MAwGCCqGSIb3DQIFBQCggcEwEgYKYIZIAYb4RQEJAjEEEwIx"
+            + "OTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0wMzA2" + "MTkwODQ3NDlaMB8GCSqGSIb3DQEJBDESBBCevtHE4n3my5B7Q+MiKj04MCAGCmCG"
+            + "SAGG+EUBCQUxEgQQwH1TAMlSzz1d3SNXoOARkTAwBgpghkgBhvhFAQkHMSITIDNG" + "REQzNUM5NzZDODlENjcwRjNCM0IxOTgxQjhDMzA2MA0GCSqGSIb3DQEBAQUABEAW"
+            + "r+9YB3t1750Aj4bm5JAHv80VhzkrPmVLZqsJdC2DGn3UQFp1FhXo4od2xGpeg+pZ" + "b0B6kUt+uxvuq3PbagLi").getBytes());
+    private static byte[] keytooldsa = Base64.decode(("MIICNjCCAfQCAQAwMTERMA8GA1UEAxMIRFNBIFRlc3QxDzANBgNVBAoTBkFuYXRvbTELMAkGA1UE"
+            + "BhMCU0UwggG4MIIBLAYHKoZIzjgEATCCAR8CgYEA/X9TgR11EilS30qcLuzk5/YRt1I870QAwx4/"
+            + "gLZRJmlFXUAiUftZPY1Y+r/F9bow9subVWzXgTuAHTRv8mZgt2uZUKWkn5/oBHsQIsJPu6nX/rfG"
+            + "G/g7V+fGqKYVDwT7g/bTxR7DAjVUE1oWkTL2dfOuK2HXKu/yIgMZndFIAccCFQCXYFCPFSMLzLKS"
+            + "uYKi64QL8Fgc9QKBgQD34aCF1ps93su8q1w2uFe5eZSvu/o66oL5V0wLPQeCZ1FZV4661FlP5nEH"
+            + "EIGAtEkWcSPoTCgWE7fPCTKMyKbhPBZ6i1R8jSjgo64eK7OmdZFuo38L+iE1YvH7YnoBJDvMpPG+"
+            + "qFGQiaiD3+Fa5Z8GkotmXoB7VSVkAUw7/s9JKgOBhQACgYEAiVCUaC95mHaU3C9odWcuJ8j3fT6z"
+            + "bSR02CVFC0F6QO5s2Tx3JYWrm5aAjWkXWJfeYOR6qBSwX0R1US3rDI0Kepsrdco2q7wGSo+235KL"
+            + "Yfl7tQ9RLOKUGX/1c5+XuvN1ZbGy0yUw3Le16UViahWmmx6FM1sW6M48U7C/CZOyoxagADALBgcq"
+            + "hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ").getBytes());
+
+    private KeyPair rsakeys = null;
+    private KeyPair rsakeys2 = null;
+    private KeyPair ecdsakeys = null;
+    private KeyPair ecdsasecpkeys = null;
+    private KeyPair ecdsaimplicitlyca = null;
+    private KeyPair dsakeys = null;
+    private int rsacaid = 0;
+    private int rsareversecaid = 0;
+    private int ecdsacaid = 0;
+    private int ecdsaimplicitlycacaid = 0;
+    private int rsamgf1cacaid = 0;
+    private int cvccaid = 0;
+    private int cvccaecid = 0;
+    private int dsacaid = 0;
+
+    private X509Certificate rsacacert = null;
+    private X509Certificate rsarevcacert = null;
+    private X509Certificate ecdsacacert = null;
+    private X509Certificate ecdsaimplicitlycacacert = null;
+    private X509Certificate rsamgf1cacacert = null;
+    private Certificate cvccacert = null;
+    private Certificate cvcdveccert = null;
+    private Certificate cvcaeccert = null;
+    private X509Certificate dsacacert = null;
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+
+    private CAInfo inforsa;
 
     /**
      * Creates a new TestSignSession object.
@@ -196,6 +191,11 @@ public class SignSessionTest extends CaTestCase {
      */
     public SignSessionTest(String name) throws Exception {
         super(name);
+
+    }
+
+    public void setUp() throws Exception {
+        super.setUp();
 
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
@@ -220,7 +220,7 @@ public class SignSessionTest extends CaTestCase {
         // Add this again since it will be removed by the other tests in the
         // batch..
         assertTrue("Could not create TestCA.", createTestCA());
-        CAInfo inforsa = caAdminSessionRemote.getCAInfo(admin, "TEST");
+        inforsa = caAdminSessionRemote.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
         CAInfo inforsareverse = caAdminSessionRemote.getCAInfo(admin, "TESTRSAREVERSE");
@@ -244,7 +244,7 @@ public class SignSessionTest extends CaTestCase {
         CAInfo infodsa = caAdminSessionRemote.getCAInfo(admin, "TESTDSA");
         assertTrue("No active DSA CA! Must have at least one active CA to run tests!", infodsa != null);
         dsacaid = infodsa.getCAId();
-        Collection coll = inforsa.getCertificateChain();
+        Collection<X509Certificate> coll = inforsa.getCertificateChain();
         Object[] objs = coll.toArray();
         rsacacert = (X509Certificate) objs[0];
         coll = inforsareverse.getCertificateChain();
@@ -271,19 +271,16 @@ public class SignSessionTest extends CaTestCase {
         dsacacert = (X509Certificate) objs[0];
     }
 
-    public void setUp() throws Exception {
-    }
-
     public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
      * creates new user
      * 
-     * @throws Exception
-     *             if en error occurs...
      */
-    public void test01CreateNewUser() throws Exception {
+    public void test01CreateNewUser() throws DuplicateKeyException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, RemoteException, FinderException {
         log.trace(">test01CreateNewUser()");
 
         certificateStoreSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
@@ -300,109 +297,93 @@ public class SignSessionTest extends CaTestCase {
 
         // Make user that we know...
         boolean userExists = false;
-        try {
+        if (!userAdminSession.existsUser(admin, "foo")) {
             userAdminSession.addUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
                     SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
-            log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-        if (userExists) {
+            if (log.isDebugEnabled()) {
+                log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+            }
+        } else {
             log.info("User foo already exists, resetting status.");
             userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
                     SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
-            log.debug("Reset status to NEW");
+            if (log.isDebugEnabled()) {
+                log.debug("Reset status to NEW");
+            }
         }
-        userExists = false;
-        try {
+
+        if (!userAdminSession.existsUser(admin, "foorev")) {
             userAdminSession.addUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
             log.debug("created user: foorev, foo123, C=SE, O=AnaTom, CN=foorev");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-        if (userExists) {
+        } else {
             log.info("User foorev already exists, resetting status.");
             userAdminSession.changeUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsareversecaid);
             log.debug("Reset status to NEW");
         }
-        userExists = false;
-        try {
+
+        if (!userAdminSession.existsUser(admin, "fooecdsa")) {
             userAdminSession.addUser(admin, "fooecdsa", "foo123", "C=SE,O=AnaTom,CN=fooecdsa", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ecdsacaid);
             log.debug("created user: fooecdsa, foo123, C=SE, O=AnaTom, CN=fooecdsa");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-        if (userExists) {
+        } else {
             log.info("User fooecdsa already exists, resetting status.");
             userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
-        userExists = false;
-        try {
+
+        if (!userAdminSession.existsUser(admin, "fooecdsaimpca")) {
             userAdminSession.addUser(admin, "fooecdsaimpca", "foo123", "C=SE,O=AnaTom,CN=fooecdsaimpca", null, "foo@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
                     ecdsaimplicitlycacaid);
             log.debug("created user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=fooecdsaimpca");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-        if (userExists) {
+        } else {
             log.info("User fooecdsaimpca already exists, resetting status.");
             userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
-        userExists = false;
-        try {
+
+        if (!userAdminSession.existsUser(admin, "foorsamgf1ca")) {
             userAdminSession.addUser(admin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
             log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-        if (userExists) {
+        } else {
             log.info("User foorsamgf1ca already exists, resetting status.");
             userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
-        userExists = false;
-        try {
+
+        if (!userAdminSession.existsUser(admin, "foodsa")) {
             userAdminSession.addUser(admin, "foodsa", "foo123", "C=SE,O=AnaTom,CN=foodsa", null, "foodsa@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, dsacaid);
             log.debug("created user: foodsa, foo123, C=SE, O=AnaTom, CN=foodsa");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-        if (userExists) {
+        } else {
             log.info("User foodsa already exists, resetting status.");
             userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
-
-        log.trace("<test01CreateNewUser()");
+        if (log.isTraceEnabled()) {
+            log.trace("<test01CreateNewUser()");
+        }
     }
 
     /**
      * creates cert
      * 
+     * @throws EjbcaException
+     * @throws ObjectNotFoundException
+     * @throws SignatureException
+     * @throws NoSuchProviderException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws InvalidKeyException
+     * 
      * @throws Exception
      *             if en error occurs...
      */
-    public void test02SignSession() throws Exception {
+    public void test02SignSession() throws ObjectNotFoundException, EjbcaException, InvalidKeyException, CertificateException, NoSuchAlgorithmException,
+            NoSuchProviderException, SignatureException {
         log.trace(">test02SignSession()");
 
         // user that we know exists...
@@ -411,11 +392,10 @@ public class SignSessionTest extends CaTestCase {
         log.debug("Cert=" + cert.toString());
         // Normal DN order
         assertEquals(cert.getSubjectX500Principal().getName(), "C=SE,O=AnaTom,CN=foo");
-        try {
-            cert.verify(rsacacert.getPublicKey());
-        } catch (Exception e) {
-            assertTrue("Verify failed: " + e.getMessage(), false);
-        }
+
+        cert.verify(rsacacert.getPublicKey());
+
+        // assertTrue("Verify failed: " + e.getMessage(), false);
         // FileOutputStream fos = new FileOutputStream("testcert.crt");
         // fos.write(cert.getEncoded());
         // fos.close();
@@ -462,8 +442,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10,
-                Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        IResponseMessage resp = signSession.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -600,33 +579,30 @@ public class SignSessionTest extends CaTestCase {
     public void test08SwedeChars() throws Exception {
         log.trace(">test08SwedeChars()");
         // Make user that we know...
-        boolean userExists = false;
-        try {
+
+        if (!userAdminSession.existsUser(admin, "swede")) {
             // We use unicode encoding for the three swedish character åäö
             userAdminSession.addUser(admin, "swede", "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, "swede@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
             log.debug("created user: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-        if (userExists) {
+        } else {
             log.debug("user swede already exists: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
-
             userAdminSession.setUserStatus(admin, "swede", UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
-        // user that we know exists...; use new key so that the check that two
-        // don't prevent the creation of the certificate.
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "swede", "foo123", rsakeys2.getPublic());
-        assertNotNull("Failed to create certificate", cert);
-        log.debug("Cert=" + cert.toString());
-        assertEquals("Wrong DN med swedechars", CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"), CertTools.getSubjectDN(cert));
-        // FileOutputStream fos = new FileOutputStream("/tmp/swedecert.crt");
-        // fos.write(cert.getEncoded());
-        // fos.close();
+        try {
+            // user that we know exists...; use new key so that the check that
+            // two
+            // don't prevent the creation of the certificate.
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "swede", "foo123", rsakeys2.getPublic());
+            assertNotNull("Failed to create certificate", cert);
+            log.debug("Cert=" + cert.toString());
+            assertEquals("Wrong DN med swedechars", CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"), CertTools
+                    .getSubjectDN(cert));
+        } finally {
+            userAdminSession.deleteUser(admin, "swede");
+        }
         log.trace("<test08SwedeChars()");
     }
 
@@ -802,7 +778,7 @@ public class SignSessionTest extends CaTestCase {
         int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTVALOVERRIDE");
         // Change a user that we know...
         UserDataVO user = new UserDataVO("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
-        		SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
         user.setCardNumber("123456789");
@@ -819,8 +795,7 @@ public class SignSessionTest extends CaTestCase {
         log.debug("created user: foo, foo123, C=SE, CN=validityoverride");
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 10);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null,
-                cal.getTime());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null, cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
@@ -850,8 +825,7 @@ public class SignSessionTest extends CaTestCase {
         notBefore.add(Calendar.DAY_OF_MONTH, 2);
         cal.add(Calendar.DAY_OF_MONTH, 10);
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(),
-                cal.getTime());
+        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         notAfter = cert.getNotAfter();
@@ -885,8 +859,7 @@ public class SignSessionTest extends CaTestCase {
         cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 200);
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(),
-                cal.getTime());
+        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         Date certNotBefore = cert.getNotBefore();
@@ -1297,19 +1270,16 @@ public class SignSessionTest extends CaTestCase {
         // Test that it works correctly with end entity profiles using the
         // counter
         int pid = 0;
-        try {
-            EndEntityProfile profile = new EndEntityProfile();
-            profile.addField(DnComponents.ORGANIZATION);
-            profile.addField(DnComponents.COUNTRY);
-            profile.addField(DnComponents.COMMONNAME);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
-            profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
-            profile.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
-            raAdminSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
-            pid = raAdminSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
-        } catch (EndEntityProfileExistsException pee) {
-            assertTrue("Can not create end entity profile", false);
-        }
+
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
+        profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
+        profile.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
+        raAdminSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
+        pid = raAdminSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
 
         // Change already existing user
         UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
@@ -1694,19 +1664,16 @@ public class SignSessionTest extends CaTestCase {
         // Test that it works correctly with end entity profiles using the
         // counter
         int pid = 0;
-        try {
-            EndEntityProfile profile = new EndEntityProfile();
-            profile.addField(DnComponents.ORGANIZATION);
-            profile.addField(DnComponents.COUNTRY);
-            profile.addField(DnComponents.COMMONNAME);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
-            profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
-            profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
-            raAdminSession.addEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
-            pid = raAdminSession.getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
-        } catch (EndEntityProfileExistsException pee) {
-            assertTrue("Can not create end entity profile", false);
-        }
+
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
+        profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
+        profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        raAdminSession.addEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
+        pid = raAdminSession.getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
 
         // Change already existing user
         UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
@@ -1782,8 +1749,7 @@ public class SignSessionTest extends CaTestCase {
         // PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10,
-                Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        IResponseMessage resp = signSession.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
@@ -1833,7 +1799,7 @@ public class SignSessionTest extends CaTestCase {
         ASN1EncodableVector extensionattr = new ASN1EncodableVector();
         extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         // AltNames
-        //String[] namearray = altnames.split(",");
+        // String[] namearray = altnames.split(",");
         GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
         ByteArrayOutputStream extOut = new ByteArrayOutputStream();
         DEROutputStream derOut = new DEROutputStream(extOut);
@@ -1875,8 +1841,7 @@ public class SignSessionTest extends CaTestCase {
         // See if the request message works...
         X509Extensions p10exts = p10.getRequestExtensions();
         assertNotNull(p10exts);
-        IResponseMessage resp = signSession.createCertificate(admin, p10,
-                Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        IResponseMessage resp = signSession.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
@@ -1964,8 +1929,7 @@ public class SignSessionTest extends CaTestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
         // See if the request message works...
-        IResponseMessage resp = signSession.createCertificate(admin, p10,
-                Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+        IResponseMessage resp = signSession.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());

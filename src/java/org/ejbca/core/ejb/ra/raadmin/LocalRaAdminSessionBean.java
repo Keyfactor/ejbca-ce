@@ -148,6 +148,8 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
      */
     private static volatile GlobalConfiguration globalconfigurationCache = null;
 
+    private static Random random = new Random(new Date().getTime());
+    
     /** help variable used to control that update isn't performed to often. */
     private long lastupdatetime = -1;
 
@@ -388,17 +390,21 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
             String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            throw new EndEntityProfileExistsException();
-        }
-        if (isFreeEndEntityProfileId(profileid) == false) {
+            String error = "Attempted to add an end entity profile matching " + EMPTY_ENDENTITYPROFILENAME;
+            log.error(error);
+            throw new EndEntityProfileExistsException(error);
+        } else if (isFreeEndEntityProfileId(profileid) == false) {
             String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            throw new EndEntityProfileExistsException();
-        }
-        if (EndEntityProfileData.findByProfileName(entityManager, profilename) != null) {
+            String error = "Attempted to add an end entity profile with id: " + profileid + ", which is already in the database.";
+            log.error(error);
+            throw new EndEntityProfileExistsException(error);
+        } else if (EndEntityProfileData.findByProfileName(entityManager, profilename) != null) {
             String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            throw new EndEntityProfileExistsException();
+            String errorMessage = "Attempted to add an end entity profile with name " + profilename + ", which already exists in the database.";
+            log.error(errorMessage);
+            throw new EndEntityProfileExistsException(errorMessage);
         } else {
             try {
                 entityManager.persist(new EndEntityProfileData(new Integer(profileid), profilename, profile));
@@ -465,6 +471,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("ra.errorremoveprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
+            log.error("Error was caught when trying to remove end entity profile" + profilename, e);
         }
     }
 
@@ -888,31 +895,17 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
     /**
      * @ejb.interface-method
      */
-    public int findFreeEndEntityProfileId() {
-        int id = getRandomInt();
-        boolean foundfree = false;
-        while (!foundfree) {
-            if (id > 1) {
-                if (EndEntityProfileData.findById(entityManager, Integer.valueOf(id)) == null) {
-                    foundfree = true;
-                }
-            }
-            id++;
+    public synchronized int findFreeEndEntityProfileId() {
+        int id = Math.abs(random.nextInt());
+        while (!(EndEntityProfileData.findById(entityManager, id) == null)) {
+            Math.abs(random.nextInt());
         }
         return id;
     }
 
-    // Private methods
 
-    private static Random random = null;
+    
 
-    /** Helper to re-use a Random object */
-    private int getRandomInt() {
-        if (random == null) {
-            random = new Random(new Date().getTime());
-        }
-        return random.nextInt();
-    }
 
     private boolean isFreeEndEntityProfileId(int id) {
         boolean foundfree = false;
