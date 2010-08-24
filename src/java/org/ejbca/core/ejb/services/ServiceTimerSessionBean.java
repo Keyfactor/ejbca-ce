@@ -43,7 +43,8 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
- * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
+ * Timer session bean that is called to run services. This bean handles the timers for automatic running of services.
+ * Services are managed (by admins) using the ServiceSessionBean, but run by the application server using this bean.  
  *
  * @ejb.bean description="Timed Object Session bean running the services"
  *   display-name="ServiceTimerSessionSB"
