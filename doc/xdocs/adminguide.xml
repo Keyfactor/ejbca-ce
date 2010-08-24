@@ -588,15 +588,14 @@ The following CMP messages are supported:
 <ul>
 <li>Initialization request (ir)</li>
 <li>Certification request (cr)</li>
-<li>Certification Confirm (certConf)</li>
+<li>Certification confirm (certConf)</li>
+<li>Revocation request (rr)</li>
 </ul>
 Certificate requests use the CRMF (RFC4211).
 </p>
 <p>
 From EJBCA 3.5, CMP support in RA mode (see below) can support several CAs and profiles based on the keyId of the
 password used to protect the CMP messages (PBE protection).
-<br/>
-In EJBCA 3.4 CMP support in RA mode is currently limited to one keyId, making RA requests for one CA.
 </p>
 <subsection name="Configuration">
 <p>
@@ -677,7 +676,7 @@ If the same username is constructed (for example UID) as an already existing use
 the existing user will be modified with new values for profile etc, and a new certificate will be issued for that user.
 </p>
 <p>
-To allow requests with different KeyId to be mapped to different CAs and profiles in EJBCA, so the documentation for the options in conf/cmp.properties.sample.
+To allow requests with different KeyId to be mapped to different CAs and profiles in EJBCA, see the documentation for the options in conf/cmp.properties.sample.
 </p>
 </subsubsection>
 <subsubsection name="Sample config">
@@ -731,6 +730,9 @@ with:
 <p>CMP has been tested with BlueX from AET Europe (http://www.aeteurope.nl/). From EJBCA's point of view BlueX functions as an RA with the same configuration 
 options as for jCert.
 </p>
+<p>CMP has been tested with Aventra card management system. Same configuration as above.</p>
+<p>CMP has been tested with CryptLib.</p>
+<p>For internal testing a modified version of the Novosec extension to BouncyCastle is used.</p>
 </subsection>
 
 <subsection name="CMP Proxy">
