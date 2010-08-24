@@ -60,7 +60,7 @@ import com.novosec.pkix.asn1.cmp.RevReqContent;
 import com.novosec.pkix.asn1.crmf.CertTemplate;
 
 /**
- * Message handler for certificate request messages in the CRMF format
+ * Message handler for the CMP revocation request messages
  * @author tomas
  * @version $Id$
  */
