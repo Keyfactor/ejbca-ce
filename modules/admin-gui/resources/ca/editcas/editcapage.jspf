@@ -1091,7 +1091,7 @@ function checkallfields(){
     </tr>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("FINISHUSER") %>
+        <%= ejbcawebbean.getText("FINISHUSER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Finish%20User") %>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_FINISHUSER %>" value="<%=CHECKBOX_VALUE %>" 
