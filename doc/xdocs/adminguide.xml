@@ -2093,9 +2093,11 @@ If an attacker gets hold of the encrypted value it is easy to decrypt using the 
 
 <subsection name="HSMs and DSA or ECDSA">
 <p>
-Support for DSA or ECDSA in HSMs are dependant on the support for the algorithms in the HSM manufacturers JCE provider.
-You have to check if that support is available.
+Support for DSA or ECDSA in HSMs are dependant on the support for the algorithms in the HSM. You have to check if that support is available.
 </p>
+  <p>
+  See <a href="adminguide.html#Using%20ECDSA%20with%20an%20HSM">Using ECDSA with an HSM</a> in for some details and issues with HSMs and ECDSA. 
+  </p>  
 </subsection>
 
 <subsection name="Generic PKCS#11 provider">
@@ -3156,6 +3158,225 @@ the token will not be usable in EJBCA (as the flag suggests).
 
 </section>
 
+<section name="ECDSA keys and signatures">
+<p>
+EJBCA support ECDSA signature keys in addition to RSA. You can create a CA using ECDSA keys both using the admin-GUI 
+and using the cli (bin/ejbca.sh ca init).
+</p>
+<subsection name="Generated keys and certificate">
+<p>
+When generating a CA in EJBCA up to three keys and certificates are generated:
+<ul>
+<li>A CA signing keypair and certificate</li>
+<li>An encryption keypair, used for encrypting keyrecovery information</li>
+<li>An OCSP signer keypair and certificate</li>
+</ul>
+When using ECDSA keys, the CA signing keypair and the OCSP signer keypair will be the ECDSA keytype you select when creating the CA.
+The CA signing and OCSP signing certificate will be signed using your selected signature algorithm.
+<br/>
+The encryption keypair will always be RSA, using 1024 or 2048 bit key length. It uses the key length set in the admin-GUI or 2048 bit by default using the cli. A dummy encryption certificate will be created using SHA1WithRSA.
+</p>
+</subsection>
+<subsection name="Using ECDSA with an HSM">
+<p>
+See the section about HSM property parameters to see which keys can be of different sorts. 
+Note that the keyEncryptKey can not be ECDSA, but should be an RSA key. Your HSM must support both ECDSA and RSA keys. 
+You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certificate requests from an HSM.
+</p>
+  <subsubsection name="Sun Java PKCS#11 ECC key issue">
+  <p>If you are using the ejbcaClientToolBox.sh tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
+  to stumble on a bug in the JDK which prevents reading of the public key from the HSM. the ejbcaClientToolBox.sh tool needs to read the public key,
+  generate a "dummy" certificate and assign that to the key label, so we have a public key certificate in the keystore retrieved from 
+  the Sun PKCS#11 provider.
+  </p><p>This bug is present at least up to and including JDK 1.6u18. A fix has been merged though and should hopefully be available in u19.</p>
+  <p>You can look at this issue in the EJBCA Jira for a solution to the problem: <a href="https://jira.primekey.se/browse/ECA-940">ECA-940</a>
+  </p>
+  </subsubsection>
+
+  <subsubsection name="Using Brainpool ECC curves">
+  <p>Using the <a href="http://www.ecc-brainpool.org/download/Domain-parameters.pdf">Brainpool</a> family of elliptic curves requires a bit of special handling in Java, at least with the Sun PKCS#11 provider.
+  <br/>Here we provide a guide for using Brainpool curves with the SafeNet ProtectServer Gold HSM. These steps were contributed by DGBK, Netherlands.
+  <br/>Using the brainpool curves have one disadvantage, at least when using the Sun PKCS#11 provider, and that is that you can not use the EJBCA tools to generate keys, but have to use the HSM vendors tools.
+  </p>
+  <p>
+  First you have to patch the Java file ECParameters.java. Again, it is the same file as patched above for the bug.
+  </p>
+  <ul>
+  <li>Download the JDK source code and locate the file sun/security/ec/ECParameters.java.</li>
+  <li>Starting at line 210 there is code for handling of non named curve EC parameters. Remove the Exception thrown in line 208 and enable the code that is commented out.</li>
+  <li>Compile the class by running 'javac *.java' in the directory where the file is located.</li>
+  <li>Replace the existing sun/security/ec/ECParameters.class file in jre/lib/rt.jar with your patched and compiled version.</li>
+  </ul>
+  <p>
+  Now you are ready to start generating domain parameter and keys. 
+  These are the commands for <i>ProtectServer Gold software version 3.33, firmware version 2.07</i>.
+  </p>
+<p>
+<b>1.</b> Create domain parameters file brainpoolP160r1.txt from
+ptk_c_administration_manual_rev-c.pdf, Appendix G, Sample EC Domain Parameter Files. 
+<br/>Note that you must add "cofactor=01" last in the parameters file, the cofactor is always one (in the spec document) for brainpool curves (cofactor=1 does  not work, it has to be 01).
+</p><p>
+<b>2.</b> We have to configure the HSM to accept custom domain parameters (E flag):
+</p>
+<source>
+./ctconf -fcE
+</source>
+<p> 
+<b>3.</b> Import the domain parameters to the HSM:
+</p>
+<source>
+./ctkmu idp -s 1 -t ec -n brainpoolP160r1 brainpoolP160r1.txt
+</source>
+<p> 
+<b>4.</b> Generate keys and a (dummy) certificate. The dummy certificate is needed for the java PKCS#11 provider.
+</p>
+<source>
+./ctcert c -k -l bpkey -tec -s1 -CbrainpoolP160r1 -d30y
+</source>
+<p> 
+<b>5.</b> Start EJBCA and create a new CVCA with CAToken Properties:
+</p>
+<source>
+sharedLibrary=/opt/PTK/lib/libcryptoki.so
+defaultKey=bpkey
+slot=1
+</source>
+  </subsubsection>
+</subsection>
+<subsection name="ECC named curves vs explicit parameters">
+<p>
+Normally you want to generate requests and certificates using named curves encoded in certificates and requests, this is what IETF recommends. 
+In some cases you need to generate the request and certificate with explicit parameters instead, this is for instance mandated by ICAO for usage in CSCA's and DS's for ePassports.
+</p>
+<ul>
+<li>When generating requests with <i>clientToolBox PKCS11HSMKeyTool certreq</i> you can specify a flag to use explicit parameters instead of named curves. Named curves is the default.</li>
+<li>When EJBCA issues certificate with public keys from certificate requests (csr's) the key in the certificate will be the same as in the csr. If the csr uses explicit parameters, so will the issued certificate.</li>
+</ul>
+</subsection>
+<subsection name="Named curves">
+<p>
+EJBCA supports the curves that BouncyCastle supports, they include named curves from Nist, SEC and X9.62.
+New curves may be supported without this list being updated, give it a try!
+See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about ECDSA curves.
+</p>
+<p>
+X9.62 curves:
+<ul>
+<li>prime192v1</li>
+<li>prime192v2</li>
+<li>prime192v3</li>
+<li>prime239v1</li>
+<li>prime239v2</li>
+<li>prime239v3</li>
+<li>prime256v1</li>
+</ul>
+SEC curves:
+<ul>
+<li>sect571r1</li>
+<li>sect409r1</li>
+<li>sect283r1</li>
+<li>sect233r1</li>
+<li>sect163r2</li>
+<li>secp521r1</li>
+<li>secp256r1</li>
+<li>secp224r1</li>
+<li>secp384r1</li>
+</ul>
+Nist curves:
+<ul>
+<li>P-224</li>
+<li>P-256</li>
+<li>P-384</li>
+<li>P-521</li>
+<li>B-163</li>
+<li>B-233</li>
+<li>B-283</li>
+<li>B-409</li>
+<li>B-571</li>
+</ul>
+Teletrust curves:
+<ul>
+<li>brainpoolp160r1</li>
+<li>brainpoolp160t1</li>
+<li>brainpoolp192r1</li>
+<li>brainpoolp192t1</li>
+<li>brainpoolp224r1</li>
+<li>brainpoolp224t1</li>
+<li>brainpoolp256r1</li>
+<li>brainpoolp256t1</li>
+<li>brainpoolp320r1</li>
+<li>brainpoolp320t1</li>
+<li>brainpoolp384r1</li>
+<li>brainpoolp384t1</li>
+<li>brainpoolp512r1</li>
+<li>brainpoolp512t1</li>
+</ul>
+</p>
+</subsection>
+<subsection name="ImplicitlyCA curves">
+<p>
+X9.62 provides 3 alternatives for the parameters that can be found in an EC public key.
+One of these is named implicitlyCA and indicates that the parameters are defined else where, implicit in the name of the 
+certification authority (CA) that issued the key. 
+In this situation the actual parameters appear in the ASN.1 encoding of the key as a DER encoded NULL.
+<br/>
+As the definition says, when the key is used, the parameters will have to come from elsewhere. 
+In EJBCA the parameters are configured in <i>conf/ejbca.properties</i>.
+</p>
+<p>
+When creating a new CA using the implicitlyCA facility, you first configure your curve parameters in conf/ejbca.properties and issue commands:
+<ul>
+<li>ant clean</li>
+<li>ant deploy</li>
+</ul>
+After restarting the application server you can now create a new CA using the name 'implicitlyCA' instead of a curve name as keyspec in the admin-GUI or CLI.
+<br/>
+The CA certificate will now be created with the NULL encoding of the public key.
+</p>
+<p>
+When issuing client certificates where the client public key uses implicitlyCA, you must allow key length 0 in the certificate profile, because EJBCA can not read the 
+key length, since the parameters are defined elsewhere.
+</p>
+<p>
+See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about the implicitlyCA facility.
+</p>
+<p>
+The curve parameters in <i>conf/ejbca.parameters</i> are configured in Bouncycastle using the following code:'
+</p>
+<source>
+ECCurve curve = new ECCurve.Fp(
+    new BigInteger(ecdsa.implicitlyca.q), // q
+    new BigInteger(ecdsa.implicitlyca.a, 16), // a
+    new BigInteger(ecdsa.implicitlyca.b, 16)); // b
+org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
+    curve,
+    curve.decodePoint(Hex.decode(ecdsa.implicitlyca.g)), // G
+    new BigInteger(ecdsa.implicitlyca.n)); // n
+ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
+config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);
+</source>
+</subsection>
+<subsection name="Creating client certificates">
+<p>
+You can also issue normal requests for client certificates using ECDSA keys. 
+<br/>
+All certificates signed by an ECDSA CA will naturally use ECDSA signatures, regardless if the client keys are RSA or ECDSA.
+</p>
+<p>
+When batch generating client keys using the cli command 'bin/ejbca.sh batch' you configure the type of client keys that will 
+be generated in the file <i>bin/batchtool.properties</i>. The possible parameters are explained there. 
+If using the implicitlyCA facility the same parameters as configured for the ca in <i>conf/ejbca.properties</i> are used.
+</p>
+</subsection>
+<subsection name="Limitations">
+<p>
+When using the 'implicitlyCA' mode only one set of curve parameters can be set for the whole EJBCA instance.
+This means that if you have several CAs using ECDSA with 'implicitlyCA', they will all use the same curve parameters.
+You can mix 'implicitlyCA' with named curves any way you like though.
+</p>
+</subsection>
+</section>
+
 <section name="LDAP and Publishers">
 <p>
 EJBCA has a modular support for something we call Publishers. A publisher
@@ -3899,166 +4120,6 @@ publishing has been done, status will merely be changed from PENDING to SUCCESS.
 </ul>
 </subsection>
 
-</section>
-
-<section name="ECDSA keys and signatures">
-<p>
-EJBCA support ECDSA signature keys in addition to RSA. You can create a CA using ECDSA keys both using the admin-GUI 
-and using the cli (bin/ejbca.sh ca init).
-</p>
-<subsection name="Generated keys and certificate">
-<p>
-When generating a CA in EJBCA up to three keys and certificates are generated:
-<ul>
-<li>A CA signing keypair and certificate</li>
-<li>An encryption keypair, used for encrypting keyrecovery information</li>
-<li>An OCSP signer keypair and certificate</li>
-</ul>
-When using ECDSA keys, the CA signing keypair and the OCSP signer keypair will be the ECDSA keytype you select when creating the CA.
-The CA signing and OCSP signing certificate will be signed using your selected signature algorithm.
-<br/>
-The encryption keypair will always be RSA, using 1024 or 2048 bit key length. It uses the key length set in the admin-GUI or 2048 bit by default using the cli. A dummy encryption certificate will be created using SHA1WithRSA.
-</p>
-</subsection>
-<subsection name="Using ECDSA with an HSM">
-<p>
-See the section about HSM property parameters to see which keys can be of different sorts. 
-Note that the keyEncryptKey can not be ECDSA, but should be an RSA key. Your HSM must support both ECDSA and RSA keys. 
-You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certificate requests from an HSM.
-</p>
-</subsection>
-<subsection name="ECC named curves vs explicit parameters">
-<p>
-Normally you want to generate requests and certificates using named curves encoded in certificates and requests, this is what IETF recommends. 
-In some cases you need to generate the request and certificate with explicit parameters instead, this is for instance mandated by ICAO for usage in CSCA's and DS's for ePassports.
-</p>
-<ul>
-<li>When generating requests with <i>clientToolBox PKCS11HSMKeyTool certreq</i> you can specify a flag to use explicit parameters instead of named curves. Named curves is the default.</li>
-<li>When EJBCA issues certificate with public keys from certificate requests (csr's) the key in the certificate will be the same as in the csr. If the csr uses explicit parameters, so will the issued certificate.</li>
-</ul>
-</subsection>
-<subsection name="Named curves">
-<p>
-EJBCA supports the curves that BouncyCastle supports, they include named curves from Nist, SEC and X9.62.
-New curves may be supported without this list being updated, give it a try!
-See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about ECDSA curves.
-</p>
-<p>
-X9.62 curves:
-<ul>
-<li>prime192v1</li>
-<li>prime192v2</li>
-<li>prime192v3</li>
-<li>prime239v1</li>
-<li>prime239v2</li>
-<li>prime239v3</li>
-<li>prime256v1</li>
-</ul>
-SEC curves:
-<ul>
-<li>sect571r1</li>
-<li>sect409r1</li>
-<li>sect283r1</li>
-<li>sect233r1</li>
-<li>sect163r2</li>
-<li>secp521r1</li>
-<li>secp256r1</li>
-<li>secp224r1</li>
-<li>secp384r1</li>
-</ul>
-Nist curves:
-<ul>
-<li>P-224</li>
-<li>P-256</li>
-<li>P-384</li>
-<li>P-521</li>
-<li>B-163</li>
-<li>B-233</li>
-<li>B-283</li>
-<li>B-409</li>
-<li>B-571</li>
-</ul>
-Teletrust curves:
-<ul>
-<li>brainpoolp160r1</li>
-<li>brainpoolp160t1</li>
-<li>brainpoolp192r1</li>
-<li>brainpoolp192t1</li>
-<li>brainpoolp224r1</li>
-<li>brainpoolp224t1</li>
-<li>brainpoolp256r1</li>
-<li>brainpoolp256t1</li>
-<li>brainpoolp320r1</li>
-<li>brainpoolp320t1</li>
-<li>brainpoolp384r1</li>
-<li>brainpoolp384t1</li>
-<li>brainpoolp512r1</li>
-<li>brainpoolp512t1</li>
-</ul>
-</p>
-</subsection>
-<subsection name="ImplicitlyCA curves">
-<p>
-X9.62 provides 3 alternatives for the parameters that can be found in an EC public key.
-One of these is named implicitlyCA and indicates that the parameters are defined else where, implicit in the name of the 
-certification authority (CA) that issued the key. 
-In this situation the actual parameters appear in the ASN.1 encoding of the key as a DER encoded NULL.
-<br/>
-As the definition says, when the key is used, the parameters will have to come from elsewhere. 
-In EJBCA the parameters are configured in <i>conf/ejbca.properties</i>.
-</p>
-<p>
-When creating a new CA using the implicitlyCA facility, you first configure your curve parameters in conf/ejbca.properties and issue commands:
-<ul>
-<li>ant clean</li>
-<li>ant deploy</li>
-</ul>
-After restarting the application server you can now create a new CA using the name 'implicitlyCA' instead of a curve name as keyspec in the admin-GUI or CLI.
-<br/>
-The CA certificate will now be created with the NULL encoding of the public key.
-</p>
-<p>
-When issuing client certificates where the client public key uses implicitlyCA, you must allow key length 0 in the certificate profile, because EJBCA can not read the 
-key length, since the parameters are defined elsewhere.
-</p>
-<p>
-See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about the implicitlyCA facility.
-</p>
-<p>
-The curve parameters in <i>conf/ejbca.parameters</i> are configured in Bouncycastle using the following code:'
-</p>
-<source>
-ECCurve curve = new ECCurve.Fp(
-    new BigInteger(ecdsa.implicitlyca.q), // q
-    new BigInteger(ecdsa.implicitlyca.a, 16), // a
-    new BigInteger(ecdsa.implicitlyca.b, 16)); // b
-org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
-    curve,
-    curve.decodePoint(Hex.decode(ecdsa.implicitlyca.g)), // G
-    new BigInteger(ecdsa.implicitlyca.n)); // n
-ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
-config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);
-</source>
-</subsection>
-<subsection name="Creating client certificates">
-<p>
-You can also issue normal requests for client certificates using ECDSA keys. 
-<br/>
-All certificates signed by an ECDSA CA will naturally use ECDSA signatures, regardless if the client keys are RSA or ECDSA.
-</p>
-<p>
-When batch generating client keys using the cli command 'bin/ejbca.sh batch' you configure the type of client keys that will 
-be generated in the file <i>bin/batchtool.properties</i>. The possible parameters are explained there. 
-If using the implicitlyCA facility the same parameters as configured for the ca in <i>conf/ejbca.properties</i> are used.
-</p>
-</subsection>
-<subsection name="Limitations">
-<p>
-When using the 'implicitlyCA' mode only one set of curve parameters can be set for the whole EJBCA instance.
-This means that if you have several CAs using ECDSA with 'implicitlyCA', they will all use the same curve parameters.
-You can mix 'implicitlyCA' with named curves any way you like though.
-</p>
-</subsection>
 </section>
 
 <section name="Internationalization">
