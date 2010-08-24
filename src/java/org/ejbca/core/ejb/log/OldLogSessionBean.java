@@ -81,7 +81,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		}
 		
 		String admindata = admin.getAdminData();
-		if((event == LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN) && comment.contains("external CA")){
+		if((event == LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN) && StringUtils.contains(comment, "external CA")){
 			admindata += ": CertDN : \"" + CertTools.getSubjectDN(admin.getAdminInformation().getX509Certificate()) + "\"";
 		}
 		Integer id = getAndIncrementRowCount();
