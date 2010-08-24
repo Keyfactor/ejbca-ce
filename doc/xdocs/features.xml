@@ -16,7 +16,7 @@
 <li>Supports RSA key algorithm up to 4096 bits.</li>
 <li>Supports DSA key algorithm with 1024 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
-<li>Support multiple hash algorithms for signatures, MD5, SHA-1, SHA-256.</li>
+<li>Support multiple hash algorithms for signatures, MD5, SHA-1, SHA-2.</li>
 <li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110 used by EU EAC ePassports).</li> 
 <li>Standalone or integrated in any J2EE application.</li>
 <li>Simple installation and configuration.</li>
@@ -65,7 +65,7 @@
 <li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
 <li>Supports multiple application servers: JBoss, Weblogic, Glassfish, OC4J, Websphere</li>
-<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, MS-SQL, Derby, Sybase, Informix.</li>
+<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, Ingres, MS-SQL, Derby, Sybase, Informix.</li>
 </ul>    
 
   </section>
