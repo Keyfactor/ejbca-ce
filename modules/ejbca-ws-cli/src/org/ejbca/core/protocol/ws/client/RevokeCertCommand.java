@@ -68,28 +68,18 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
             String certsn = getCertSN(args[ARG_CERTSN]);
             int reason = getRevokeReason(args[ARG_REASON]);
             
-            if(reason == RevokedCertInfo.NOT_REVOKED){
-        		getPrintStream().println("Error : Unsupported reason " + reason);
-        		usage();
-        		System.exit(-1);
-            }
-                        
             try{
             	RevokeStatus status =  getEjbcaRAWS().checkRevokationStatus(issuerdn,certsn);
             	if (status != null) {
-                	if(status.getReason() != RevokedCertInfo.NOT_REVOKED){
-                		getPrintStream().println("Error : Certificate is already revoked");
-                		System.exit(-1);
-                	}
                 	getEjbcaRAWS().revokeCert(issuerdn,certsn,reason);            	         
-                    getPrintStream().println("Certificate revoked successfully");            		
+                    getPrintStream().println("Certificate revoked (or unrevoked) successfully.");            		
             	} else {
-            		getPrintStream().println("Certificate does not exist");
+            		getPrintStream().println("Certificate does not exist.");
             	}
             } catch (AuthorizationDeniedException_Exception e) {
             	getPrintStream().println("Error : " + e.getMessage());            
             } catch (AlreadyRevokedException_Exception e) {
-            	getPrintStream().println("The certificate was already revoked.");            
+            	getPrintStream().println("The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate.");            
 			} catch (WaitingForApprovalException_Exception e) {
             	getPrintStream().println("The revocation request has been sent for approval.");            
 			} catch (ApprovalException_Exception e) {
@@ -113,7 +103,8 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	}
 
 	protected void usage() {
-		getPrintStream().println("Command used to revoke a certificate");
+		getPrintStream().println("Command used to revoke or unrevoke a certificate.");
+		getPrintStream().println("Unrevocation is done using the reason REMOVEFROMCRL, and can only be done if the certificate is revoked with reason CERTIFICATEHOLD.");
 		getPrintStream().println("Usage : revokecert <issuerdn> <certificatesn (HEX)>  <reason>  \n\n");
 		getPrintStream().println("Reason should be one of : ");
 		for(int i=1; i< REASON_TEXTS.length-1;i++){
