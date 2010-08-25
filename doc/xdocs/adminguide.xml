@@ -3208,7 +3208,7 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
   <li>Replace the existing sun/security/ec/ECParameters.class file in jre/lib/rt.jar with your patched and compiled version.</li>
   </ul>
   <p>
-  Now you are ready to start generating domain parameter and keys. 
+  Now you are ready to start generating domain parameters and keys. 
   These are the commands for <i>ProtectServer Gold software version 3.33, firmware version 2.07</i>.
   </p>
 <p>
@@ -3228,13 +3228,19 @@ ptk_c_administration_manual_rev-c.pdf, Appendix G, Sample EC Domain Parameter Fi
 ./ctkmu idp -s 1 -t ec -n brainpoolP160r1 brainpoolP160r1.txt
 </source>
 <p> 
-<b>4.</b> Generate keys and a (dummy) certificate. The dummy certificate is needed for the java PKCS#11 provider.
+<b>4.</b> Generate keys and a (dummy) certificate. The dummy certificate is needed for the java PKCS#11 provider, the DN does not matter.
 </p>
 <source>
 ./ctcert c -k -l bpkey -tec -s1 -CbrainpoolP160r1 -d30y
 </source>
 <p> 
-<b>5.</b> Start EJBCA and create a new CVCA with CAToken Properties:
+<b>5.</b> Test the keys with: 
+</p>
+<source>
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 1
+</source>
+<p> 
+<b>6.</b> Start EJBCA and create a new CA with CAToken Properties:
 </p>
 <source>
 sharedLibrary=/opt/PTK/lib/libcryptoki.so
