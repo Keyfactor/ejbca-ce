@@ -64,6 +64,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
@@ -887,8 +888,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
             assertTrue(false);
-        } catch (EjbcaException_Exception e) {
-        }
+        }catch(AlreadyRevokedException_Exception e){}
 
     }
 

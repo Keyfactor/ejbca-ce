@@ -15,6 +15,8 @@ package org.ejbca.core.ejb.ra;
 
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
+import java.security.KeyPair;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -27,20 +29,27 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
+import org.ejbca.util.keystore.KeyTools;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
@@ -62,6 +71,8 @@ public class UserAdminSessionTest extends CaTestCase {
 
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
 
     /**
      * Creates a new TestUserData object.
@@ -313,6 +324,51 @@ public class UserAdminSessionTest extends CaTestCase {
         assertEquals("CN=" + username + ",O=AnaTom1,C=SE", data1.getDN());
         assertEquals("dnsName=a.b.se, rfc822name=" + email, data1.getSubjectAltName());
         log.trace("<test04ChangeUser()");
+    }
+
+    public void test05RevokeCert() throws Exception {
+    	KeyPair keypair = KeyTools.genKeys("512", "RSA");
+
+        UserDataVO data1 = userAdminSession.findUser(admin, username);
+        assertNotNull(data1);
+        data1.setPassword("foo123");
+        userAdminSession.changeUser(admin, data1, true);
+
+    	Certificate cert = signSession.createCertificate(admin, username, "foo123", keypair.getPublic());
+        CertificateStatus status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
+        // Revoke the certificate, put on hold        
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+
+        // Unrevoke the certificate        
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.NOT_REVOKED);
+        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
+
+        // Revoke again certificate        
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+
+        // Unrevoke the certificate, but with different code        
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL);
+        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
+
+        // Revoke again certificate permanently        
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, status.revocationReason);
+
+        // Unrevoke the certificate, should not work
+        try {
+        	userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL);
+            assertTrue(false); // should not reach this
+        } catch (AlreadyRevokedException e) {}
+        status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, status.revocationReason);
     }
 
     /**

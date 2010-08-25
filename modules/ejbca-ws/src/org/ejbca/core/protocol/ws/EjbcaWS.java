@@ -1175,8 +1175,6 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (ClassCastException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (AlreadyRevokedException e) {
-            throw EjbcaWSHelper.getEjbcaException(e.getMessage(), logger, ErrorCode.CERT_WRONG_STATUS, null);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (FinderException e) {

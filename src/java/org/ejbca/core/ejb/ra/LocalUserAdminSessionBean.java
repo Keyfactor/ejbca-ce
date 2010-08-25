@@ -1779,9 +1779,8 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
             logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
             throw new FinderException(msg);
         }
-        // Check that unrevocation is not done on anything that can not be
-        // unrevoked
-        if (reason == RevokedCertInfo.NOT_REVOKED) {
+        // Check that unrevocation is not done on anything that can not be unrevoked
+        if ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) {
             if (revinfo.revocationReason != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) {
                 String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);

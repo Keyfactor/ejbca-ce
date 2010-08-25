@@ -372,7 +372,7 @@ public interface IEjbcaWS {
 	 * @throws NotFoundException if certificate doesn't exist
 	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
 	 * @throws ApprovalException There already exists an approval request for this task
-	 * @throws AlreadyRevokedException The certificate was already revoked
+	 * @throws AlreadyRevokedException The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate
 	 * @throws EjbcaException
 	 */
 
