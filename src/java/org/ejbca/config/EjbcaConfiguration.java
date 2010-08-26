@@ -235,8 +235,7 @@ public class EjbcaConfiguration {
 	}
 	
 	/**
-	 * Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be fully cached, so an "Edit CA" or restart
-	 * is needed in order to refresh the cache.
+	 * Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be cached, and in that case for how long.
 	 */
 	public static long getCacheCaTimeInCaAdminSession() {
 		long time = -1; // don't cache at all is the default
@@ -244,6 +243,19 @@ public class EjbcaConfiguration {
 			time = Long.valueOf(ConfigurationHolder.getString("caadmin.cachecainfo", "-1"));
 		} catch (NumberFormatException e) {
 			log.error("Invalid value in caadmin.cachecainfo, must be decimal number (milliseconds to cache CA info): "+e.getMessage());
+		}
+		return time;
+	}
+
+	/**
+	 * Parameter to specify if retrieving endEntity profiles in RAAdminSession should be cached, and in that case for how long.
+	 */
+	public static long getCacheEndEntityProfileTime() {
+		long time = 1000; // cache 1 second is the default
+		try {
+			time = Long.valueOf(ConfigurationHolder.getString("raadmin.cacheprofiles", "1000"));
+		} catch (NumberFormatException e) {
+			log.error("Invalid value in raadmin.cacheprofiles, must be decimal number (milliseconds to cache EndEntity profiles): "+e.getMessage());
 		}
 		return time;
 	}

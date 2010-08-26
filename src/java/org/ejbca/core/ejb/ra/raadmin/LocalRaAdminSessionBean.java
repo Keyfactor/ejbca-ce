@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 
 import javax.ejb.EJB;
@@ -30,6 +31,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
@@ -147,11 +149,19 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
      * threads in the same VM. Set volatile to make it thread friendly.
      */
     private static volatile GlobalConfiguration globalconfigurationCache = null;
-
-    private static Random random = new Random(new Date().getTime());
-    
-    /** help variable used to control that update isn't performed to often. */
+    /** help variable used to control that GlobalConfiguration update isn't performed to often. */
     private long lastupdatetime = -1;
+
+    private static Random random = new Random(new Date().getTime());    
+
+    /** help variable used to control that profiles update (read from database) isn't performed to often. */
+    private static volatile long lastProfileCacheUpdateTime = -1;
+    /** Cache of mappings between profileId and profileName */
+    private static volatile HashMap<Integer, String> profileIdNameMapCache = null;
+    /** Cache of mappings between profileName and profileId */
+    private static volatile Map<String, Integer> profileNameIdMapCache = null;
+    /** Cache of end entity profiles, with Id as keys */
+    private static volatile Map<Integer, EndEntityProfile> profileCache = null;
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -354,6 +364,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
                 log.debug("Loaded end entity profile: " + name);
             }
         }
+		flushProfileCache();
     }
 
     /**
@@ -408,13 +419,13 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         } else {
             try {
                 entityManager.persist(new EndEntityProfileData(new Integer(profileid), profilename, profile));
+        		flushProfileCache();
                 String msg = intres.getLocalizedMessage("ra.addedprofile", profilename);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);
                 log.error(msg, e);
-                logSession
-                        .log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
             }
         }
     }
@@ -438,9 +449,9 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
                 try {
                     entityManager.persist(new EndEntityProfileData(new Integer(findFreeEndEntityProfileId()), newprofilename, (EndEntityProfile) pdl
                             .getProfile().clone()));
+            		flushProfileCache();
                     String msg = intres.getLocalizedMessage("ra.clonedprofile", newprofilename, originalprofilename);
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE,
-                            msg);
+                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
                     success = true;
                 } catch (Exception e) {
                 }
@@ -466,6 +477,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         try {
             EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
             entityManager.remove(pdl);
+    		flushProfileCache();
             String msg = intres.getLocalizedMessage("ra.removedprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
         } catch (Exception e) {
@@ -494,6 +506,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
             EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, oldprofilename);
             if (pdl != null) {
                 pdl.setProfileName(newprofilename);
+        		flushProfileCache();
                 String msg = intres.getLocalizedMessage("ra.renamedprofile", oldprofilename, newprofilename);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
             } else {
@@ -513,6 +526,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
         if (pdl != null) {
             pdl.setProfile(profile);
+    		flushProfileCache();
             String msg = intres.getLocalizedMessage("ra.changedprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
         } else {
@@ -584,28 +598,69 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap<Integer, String> getEndEntityProfileIdToNameMap(Admin admin) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getEndEntityProfileIdToNameMap");
-        }
-        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        returnval.put(new Integer(SecConst.EMPTY_ENDENTITYPROFILE), EMPTY_ENDENTITYPROFILENAME);
-        try {
-            Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-            // debug("Found "+result.size()+ " end entity profiles.");
+    	if (log.isTraceEnabled()) {
+    		log.trace("><getEndEntityProfileIdToNameMap");
+    	}
+    	return getEndEntityProfileIdNameMapInternal();
+    }
+
+    /**
+     * Clear and reload end entity profile caches.
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
+     */
+    public void flushProfileCache() {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">flushProfileCache");
+    	}
+        HashMap<Integer, String> idNameCache = new HashMap<Integer, String>();
+        HashMap<String, Integer> nameIdCache = new HashMap<String, Integer>();
+        HashMap<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
+        idNameCache.put(new Integer(SecConst.EMPTY_ENDENTITYPROFILE),EMPTY_ENDENTITYPROFILENAME);
+        nameIdCache.put(EMPTY_ENDENTITYPROFILENAME, new Integer(SecConst.EMPTY_ENDENTITYPROFILE));
+        try{
+        	Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
+            //debug("Found "+result.size()+ " end entity profiles.");
             Iterator<EndEntityProfileData> i = result.iterator();
-            while (i.hasNext()) {
+            while(i.hasNext()){
                 EndEntityProfileData next = i.next();
-                // debug("Added "+next.getId()+ ", "+next.getProfileName());
-                returnval.put(next.getId(), next.getProfileName());
+                //debug("Added "+next.getId()+ ", "+next.getProfileName());
+                idNameCache.put(next.getId(),next.getProfileName());
+                nameIdCache.put(next.getProfileName(), next.getId());
+                profCache.put(next.getId(), next.getProfile());
             }
-        } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("ra.errorreadprofiles");
+        }catch(Exception e) {
+        	String msg = intres.getLocalizedMessage("ra.errorreadprofiles");    	  
             log.error(msg, e);
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<getEndEntityProfileIdToNameMap");
-        }
-        return returnval;
+        profileIdNameMapCache = idNameCache;
+        profileNameIdMapCache = nameIdCache;
+        profileCache = profCache;
+        lastProfileCacheUpdateTime = System.currentTimeMillis();
+    	if (log.isTraceEnabled()) {
+    		log.trace("<flushProfileCache");
+    	}
+    } // flushProfileCache
+
+    private HashMap<Integer, String> getEndEntityProfileIdNameMapInternal() {
+    	if ((profileIdNameMapCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() > System.currentTimeMillis())) {
+    		flushProfileCache();
+    	}
+    	return profileIdNameMapCache;
+      } // getEndEntityProfileIdNameMapInternal
+
+    private Map<String, Integer> getEndEntityProfileNameIdMapInternal(){
+    	if ((profileNameIdMapCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() > System.currentTimeMillis())) {
+    		flushProfileCache();
+    	}
+    	return profileNameIdMapCache;
+      } // getEndEntityProfileIdNameMapInternal
+
+    private Map<Integer, EndEntityProfile> getProfileCacheInternal() {
+    	if ((profileCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() > System.currentTimeMillis())) {
+    		flushProfileCache();
+    	}
+    	return profileCache;
     }
 
     /**
@@ -622,17 +677,10 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
             log.trace(">getEndEntityProfile(" + id + ")");
         }
         EndEntityProfile returnval = null;
-        if (id == SecConst.EMPTY_ENDENTITYPROFILE) {
-            returnval = new EndEntityProfile(true);
-        }
-        if (id != 0 && id != SecConst.EMPTY_ENDENTITYPROFILE) {
-            EndEntityProfileData eepd = EndEntityProfileData.findById(entityManager, Integer.valueOf(id));
-            if (eepd != null) {
-                returnval = eepd.getProfile();
-            } else {
-                // Ignore, but log, so we'll return null
-                log.debug("Did not find end entity profile with id: " + id);
-            }
+        if(id==SecConst.EMPTY_ENDENTITYPROFILE) {
+        	returnval = new EndEntityProfile(true);
+        } else {
+        	returnval = (EndEntityProfile)getProfileCacheInternal().get(Integer.valueOf(id));
         }
         if (log.isTraceEnabled()) {
             log.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));
@@ -653,20 +701,15 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         if (log.isTraceEnabled()) {
             log.trace(">getEndEntityProfile(" + profilename + ")");
         }
-        EndEntityProfile returnval = null;
-        if (profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
-            returnval = new EndEntityProfile(true);
-        } else {
-            EndEntityProfileData eepd = EndEntityProfileData.findByProfileName(entityManager, profilename);
-            if (eepd != null) {
-                returnval = eepd.getProfile();
-            } else {
-                // Ignore, but log, so we'll return null
-                log.debug("Did not find end entity profile with name: " + profilename);
-            }
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<getEndEntityProfile(" + profilename + ")");
+    	EndEntityProfile returnval=null;
+    	if(profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
+    		returnval = new EndEntityProfile(true);
+    	} else {
+    		Integer id = (Integer)getEndEntityProfileNameIdMapInternal().get(profilename);
+    		returnval = (EndEntityProfile)getProfileCacheInternal().get(Integer.valueOf(id));
+    	}
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getEndEntityProfile("+profilename+"): "+(returnval == null ? "null":"not null"));        	
         }
         return returnval;
     }
@@ -687,17 +730,12 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
             return SecConst.EMPTY_ENDENTITYPROFILE;
         }
-        EndEntityProfileData eepd = EndEntityProfileData.findByProfileName(entityManager, profilename);
-        if (eepd != null) {
-            returnval = eepd.getId();
-        } else {
-            // Ignore so we'll return 0
-            if (log.isDebugEnabled()) {
-                log.debug("Did not find end entity profile with name: " + profilename);
-            }
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<getEndEntityProfileId(" + profilename + ")");
+    	Integer id = (Integer)getEndEntityProfileNameIdMapInternal().get(profilename);
+    	if (id != null) {
+    		returnval = id.intValue();
+    	}
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getEndEntityProfileId("+profilename+"): "+returnval);    		
         }
         return returnval;
     }
@@ -711,19 +749,18 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getEndEntityProfileName(Admin admin, int id) {
-        String returnval = null;
-        if (id == SecConst.EMPTY_ENDENTITYPROFILE) {
-            return EMPTY_ENDENTITYPROFILENAME;
-        }
-        EndEntityProfileData eepd = EndEntityProfileData.findById(entityManager, Integer.valueOf(id));
-        if (eepd != null) {
-            returnval = eepd.getProfileName();
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Did not find end entity profile with id: " + id);
-            }
-        }
-        return returnval;
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getEndEntityProfilename("+id+")");    		
+    	}
+    	String returnval = null;
+    	if(id == SecConst.EMPTY_ENDENTITYPROFILE) {
+    		return EMPTY_ENDENTITYPROFILENAME;
+    	}
+    	returnval = (String)getEndEntityProfileIdNameMapInternal().get(id);
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getEndEntityProfilename("+id+"): "+returnval);    		
+    	}
+    	return returnval;
     }
 
     /**
