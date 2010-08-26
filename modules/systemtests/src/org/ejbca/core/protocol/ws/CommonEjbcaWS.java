@@ -46,6 +46,7 @@ import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
@@ -2494,24 +2495,40 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             String dn = CertTools.stringToBCDNString("CN=WSDVEXT,C=SE");
             caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+        	if(!(e.getCause() instanceof CADoesntExistsException)){
+        		e.printStackTrace();
+        		assertTrue(false);
+        	}
         }
 
         try {
-            String dn = CertTools.stringToBCDNString("CN=WSDVEXEC,C=SE");
+            String dn = CertTools.stringToBCDNString("CN=WSDVEXECR,C=SE");
             caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+        	if(!(e.getCause() instanceof CADoesntExistsException)){
+        		e.printStackTrace();
+        		assertTrue(false);
+        	}
         }
-        
+
+        try {
+            String dn = CertTools.stringToBCDNString("CN=WSDVEXECE,C=SE");
+            caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
+        } catch (Exception e) {
+        	if(!(e.getCause() instanceof CADoesntExistsException)){
+        		e.printStackTrace();
+        		assertTrue(false);
+        	}
+        }
+
     	try {
     		String dn = CertTools.stringToBCDNString("CN=CVCAEXEC,C=SE");
     		caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
     	} catch (Exception e) {
-    		e.printStackTrace();
-            assertTrue(false);
+        	if(!(e.getCause() instanceof CADoesntExistsException)){
+        		e.printStackTrace();
+        		assertTrue(false);
+        	}
     	}
     }
 }

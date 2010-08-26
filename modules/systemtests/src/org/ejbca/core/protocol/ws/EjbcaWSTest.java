@@ -416,31 +416,37 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     public void test34_1CaRenewCertRequestRSA() throws Exception {
+    	log.trace(">test34_1CaRenewCertRequestRSA()");
         setUpAdmin();
         final String cvcaMnemonic = "CVCAEXEC";
-        final String dvcaName = "WSTESTDVCAECCSIGNEDBYEXTERNAL";
-        final String dvcaMnemonic = "WSDVEXEC";
-        final String keyspec = "secp256r1";
-        final String keyalg = AlgorithmConstants.KEYALGORITHM_ECDSA;
-        final String signalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+        final String dvcaName = "WSTESTDVCARSASIGNEDBYEXTERNAL";
+        final String dvcaMnemonic = "WSDVEXECR";
+        final String keyspec = "1024";
+        final String keyalg = AlgorithmConstants.KEYALGORITHM_RSA;
+        final String signalg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         super.caRenewCertRequest(cvcaMnemonic, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
+        log.trace("<test34_1CaRenewCertRequestRSA()");
     }
 
     public void test34_2CaRenewCertRequestECC() throws Exception {
+    	log.trace(">test34_2CaRenewCertRequestECC()");
         setUpAdmin();
         final String cvcaMnemonic = "CVCAEXEC";
         final String dvcaName = "WSTESTDVCAECCSIGNEDBYEXTERNAL";
-        final String dvcaMnemonic = "WSDVEXEC";
+        final String dvcaMnemonic = "WSDVEXECE";
         final String keyspec = "secp256r1";
         final String keyalg = AlgorithmConstants.KEYALGORITHM_ECDSA;
         final String signalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
 		CardVerifiableCertificate cvcacert = super.caRenewCertRequest(cvcaMnemonic, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
 		super.caMakeRequestAndFindCA(dvcaName, cvcacert);
+		log.trace("<test34_2CaRenewCertRequestECC()");
     }
 
     public void test35CleanUpCACertRequest() throws Exception {
+    	log.trace(">test35CleanUpCACertRequest()");
         setUpAdmin();
         super.cleanUpCACertRequest();
+        log.trace("<test35CleanUpCACertRequest()");
     }
 
     /**
