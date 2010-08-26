@@ -436,6 +436,73 @@ public class UserDataTest extends CaTestCase {
         log.trace("<test06RequestCounter()");
     }
 
+    public void test07EndEntityProfileMappings() throws Exception {
+    	// Add a couple of profiles and verify that the mappings and get functions work
+        EndEntityProfile profile1 = new EndEntityProfile();
+        profile1.setPrinterName("foo");
+        raAdminSession.addEndEntityProfile(admin, "TESTEEPROFCACHE1", profile1);
+        EndEntityProfile profile2 = new EndEntityProfile();
+        profile2.setPrinterName("bar");
+        raAdminSession.addEndEntityProfile(admin, "TESTEEPROFCACHE2", profile2);
+        int pid = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
+        String name = raAdminSession.getEndEntityProfileName(admin, pid);
+        int pid1 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
+        String name1 = raAdminSession.getEndEntityProfileName(admin, pid1);
+        assertEquals(pid, pid1);
+        assertEquals(name, name1);
+        EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin, pid);
+        assertEquals("foo", profile.getPrinterName());
+        profile = raAdminSession.getEndEntityProfile(admin, name);
+        assertEquals("foo", profile.getPrinterName());
+
+        int pid2 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
+        String name2 = raAdminSession.getEndEntityProfileName(admin, pid2);
+        profile = raAdminSession.getEndEntityProfile(admin, pid2);
+        assertEquals("bar", profile.getPrinterName());
+        profile = raAdminSession.getEndEntityProfile(admin, name2);
+        assertEquals("bar", profile.getPrinterName());
+
+        // flush caches and make sure it is read correctly again
+        raAdminSession.flushProfileCache();
+
+        int pid3 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
+        String name3 = raAdminSession.getEndEntityProfileName(admin, pid3);
+        assertEquals(pid1, pid3);
+        assertEquals(name1, name3);
+        profile = raAdminSession.getEndEntityProfile(admin, pid3);
+        assertEquals("foo", profile.getPrinterName());
+        profile = raAdminSession.getEndEntityProfile(admin, name3);
+        assertEquals("foo", profile.getPrinterName());
+
+        int pid4 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
+        String name4 = raAdminSession.getEndEntityProfileName(admin, pid4);
+        assertEquals(pid2, pid4);
+        assertEquals(name2, name4);
+        profile = raAdminSession.getEndEntityProfile(admin, pid4);
+        assertEquals("bar", profile.getPrinterName());
+        profile = raAdminSession.getEndEntityProfile(admin, name4);
+        assertEquals("bar", profile.getPrinterName());
+
+        // Remove a profile and make sure it is not cached still
+        raAdminSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE1");
+        profile = raAdminSession.getEndEntityProfile(admin, pid1);
+        assertNull(profile);
+        int pid5 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1");
+        assertEquals(0, pid5);
+        String name5 = raAdminSession.getEndEntityProfileName(admin, pid5);
+        assertNull(name5);
+
+        // But the other, non-removed profile should still be there
+        int pid6 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
+        String name6 = raAdminSession.getEndEntityProfileName(admin, pid6);
+        assertEquals(pid2, pid6);
+        assertEquals(name2, name6);
+        profile = raAdminSession.getEndEntityProfile(admin, pid6);
+        assertEquals("bar", profile.getPrinterName());
+        profile = raAdminSession.getEndEntityProfile(admin, name6);
+        assertEquals("bar", profile.getPrinterName());        
+    } // test07EndEntityProfileMappings
+
     /**
      * Cleans up after test JUnit tests, i.e. deletes users and CAs that we created and resets any configuration changes.
      *
@@ -458,6 +525,12 @@ public class UserDataTest extends CaTestCase {
         } catch (Exception e) { /* ignore */ }
         try {        	
             raAdminSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+        	raAdminSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE1");
+        } catch (Exception e) { /* ignore */ }
+        try {        	
+        	raAdminSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE2");
         } catch (Exception e) { /* ignore */ }
 
         // Delete any Test CA we created
