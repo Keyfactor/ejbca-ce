@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.transaction.TransactionRolledbackException;
 
 import org.apache.log4j.Logger;
@@ -137,6 +138,8 @@ public class UserAdminSessionTest extends CaTestCase {
         } catch (ServerException e) {
             // glassfish throws serverexception, can you believe this?
             userexists = true;
+        } catch (EJBTransactionRolledbackException e){
+        	userexists = true;
         }
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 
