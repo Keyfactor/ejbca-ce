@@ -156,6 +156,11 @@ public interface RaAdminSession {
     HashMap<Integer, String> getEndEntityProfileIdToNameMap(Admin admin);
 
     /**
+     * Clear and reload end entity profile caches.
+     */
+    void flushProfileCache();
+
+    /**
      * Finds a end entity profile by id.
      */
     EndEntityProfile getEndEntityProfile(Admin admin, int id);
