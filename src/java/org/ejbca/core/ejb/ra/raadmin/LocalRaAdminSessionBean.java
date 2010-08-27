@@ -629,7 +629,9 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         nameIdCache.put(EMPTY_ENDENTITYPROFILENAME, new Integer(SecConst.EMPTY_ENDENTITYPROFILE));
         try{
         	Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-            //debug("Found "+result.size()+ " end entity profiles.");
+        	if (log.isDebugEnabled()) {
+                log.debug("Found "+result.size()+ " end entity profiles.");        		
+        	}
             Iterator<EndEntityProfileData> i = result.iterator();
             while(i.hasNext()){
                 EndEntityProfileData next = i.next();
