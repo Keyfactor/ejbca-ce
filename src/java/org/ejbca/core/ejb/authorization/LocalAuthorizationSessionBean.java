@@ -35,6 +35,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -127,24 +128,8 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
     private static final Logger log = Logger.getLogger(LocalAuthorizationSessionBean.class);
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Constant indicating minimum time between updates. In milliseconds, 30
-     * seconds.
-     */
-    private static final long MIN_TIME_BETWEEN_UPDATES = 30000;
-
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-
-    /**
-     * help variable used to check that authorization trees is updated.
-     */
-    private int authorizationtreeupdate = -1;
-
-    /**
-     * help variable used to control that update isn't performed to often.
-     */
-    private long lastupdatetime = -1;
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -152,7 +137,17 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
     @EJB
     private LogSessionLocal logSession;
 
+    /** Cache for authorization data */
     private static volatile Authorizer authorizer = null;
+
+    /**
+     * help variable used to check that authorization trees are updated.
+     */
+    private static volatile int authorizationtreeupdate = -1;
+    /**
+     * help variable used to control that update isn't performed to often.
+     */
+    private static volatile long lastupdatetime = -1;
 
     private String[] customaccessrules = null;
 
@@ -1025,17 +1020,14 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      */
     private boolean updateNeccessary() {
         boolean ret = false;
-        // Only do the actual SQL query if we might update the configuration due
-        // to cache time anyhow
-        if (this.lastupdatetime < (System.currentTimeMillis() - MIN_TIME_BETWEEN_UPDATES)) {
+        // Only do the actual SQL query if we might update the configuration due to cache time anyhow
+        if (lastupdatetime < (System.currentTimeMillis() - EjbcaConfiguration.getCacheAuthorizationTime())) {
             if (log.isDebugEnabled()) {
                 log.debug("Checking if update neccessary");
             }
-            ret = getAuthorizationTreeUpdateData().updateNeccessary(this.authorizationtreeupdate);
-            this.lastupdatetime = System.currentTimeMillis(); // we don't want
-                                                              // to run the
-                                                              // above query
-                                                              // often
+            ret = getAuthorizationTreeUpdateData().updateNeccessary(authorizationtreeupdate);
+            lastupdatetime = System.currentTimeMillis(); 
+            // we don't want to run the above query often
         }
         return ret;
     }
@@ -1048,8 +1040,8 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
             log.debug("updateAuthorizationTree");
         }
         getAuthorizer().buildAccessTree(getAdminGroups());
-        this.authorizationtreeupdate = getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
-        this.lastupdatetime = System.currentTimeMillis();
+        authorizationtreeupdate = getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
+        lastupdatetime = System.currentTimeMillis();
     }
 
     /**
@@ -1057,9 +1049,13 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * signaling to other beans that they should reconstruct their accesstrees.
      */
     private void signalForAuthorizationTreeUpdate() {
-        log.trace(">signalForAuthorizationTreeUpdate");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">signalForAuthorizationTreeUpdate");
+    	}
         getAuthorizationTreeUpdateData().incrementAuthorizationTreeUpdateNumber();
-        log.trace("<signalForAuthorizationTreeUpdate");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<signalForAuthorizationTreeUpdate");
+    	}
     }
 
     private int findFreeAdminGroupId() {

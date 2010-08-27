@@ -24,12 +24,6 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 public interface RaAdminSession {
     
     /**
-     * Constant indicating minimum time between updates of the global
-     * configuration cache. In milliseconds, 30 seconds.
-     */
-    public static final long MIN_TIME_BETWEEN_GLOBCONF_UPDATES = 30000;
-    
-    /**
      * Finds the admin preference belonging to a certificate serialnumber.
      * Returns null if admin doesn't exists.
      */
