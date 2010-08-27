@@ -506,7 +506,7 @@ public class UserDataTest extends CaTestCase {
 
     /**
      * Test of the cache of end entity profiles. This test depends on the default cache time of 1 second being used.
-     * If you changed this config, raadmin.cacheprofiles, this test may fail. 
+     * If you changed this config, eeprofiles.cachetime, this test may fail. 
      */
     public void test08EndEntityProfileCache() throws Exception {
     	// First a check that we have the correct configuration, i.e. default

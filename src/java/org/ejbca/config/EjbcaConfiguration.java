@@ -253,9 +253,9 @@ public class EjbcaConfiguration {
 	public static long getCacheEndEntityProfileTime() {
 		long time = 1000; // cache 1 second is the default
 		try {
-			time = Long.valueOf(ConfigurationHolder.getString("raadmin.cacheprofiles", "1000"));
+			time = Long.valueOf(ConfigurationHolder.getString("eeprofiles.cachetime", "1000"));
 		} catch (NumberFormatException e) {
-			log.error("Invalid value in raadmin.cacheprofiles, must be decimal number (milliseconds to cache EndEntity profiles): "+e.getMessage());
+			log.error("Invalid value in eeprofiles.cachetime, must be decimal number (milliseconds to cache EndEntity profiles): "+e.getMessage());
 		}
 		return time;
 	}

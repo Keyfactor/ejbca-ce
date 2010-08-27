@@ -35,8 +35,8 @@
 # Default: 1000 (1 second)
 # Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
 #  anything more than 157680000000 (5 years) should mean infinitely in practice.
-#raadmin.cacheprofiles=157680000000
-#raadmin.cacheprofiles=-1
+#eeprofiles.cachetime=157680000000
+#eeprofiles.cachetime=-1
 
 # Set to a value for caching calls to loadGlobalConfiguration. This means that for globalConfiguration to be updated
 # the cache time expires, an "Edit configuration" or server restart is done, or flushGlobalConfigurationCache is called on RAAdminSession.
