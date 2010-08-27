@@ -260,4 +260,30 @@ public class EjbcaConfiguration {
 		return time;
 	}
 
+	/**
+	 * Parameter to specify if retrieving GlobalConfiguration (in RAAdminSession) should be cached, and in that case for how long.
+	 */
+	public static long getCacheGlobalConfigurationTime() {
+		long time = 30000; // cache 30 seconds is the default
+		try {
+			time = Long.valueOf(ConfigurationHolder.getString("globalconfiguration.cachetime", "30000"));
+		} catch (NumberFormatException e) {
+			log.error("Invalid value in globalconfiguration.cachetime, must be decimal number (milliseconds to cache global configuration): "+e.getMessage());
+		}
+		return time;
+	}
+
+	/**
+	 * Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long.
+	 */
+	public static long getCacheAuthorizationTime() {
+		long time = 30000; // cache 30 seconds is the default
+		try {
+			time = Long.valueOf(ConfigurationHolder.getString("authorization.cachetime", "30000"));
+		} catch (NumberFormatException e) {
+			log.error("Invalid value in authorization.cachetime, must be decimal number (milliseconds to cache authorization): "+e.getMessage());
+		}
+		return time;
+	}
+
 }

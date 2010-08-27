@@ -151,7 +151,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
      */
     private static volatile GlobalConfiguration globalconfigurationCache = null;
     /** help variable used to control that GlobalConfiguration update isn't performed to often. */
-    private long lastupdatetime = -1;
+    private static volatile long lastupdatetime = -1;
 
     private static Random random = new Random(new Date().getTime());    
 
@@ -873,7 +873,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
             }
             // Only do the actual SQL query if we might update the configuration
             // due to cache time anyhow
-            if (globalconfigurationCache != null && lastupdatetime + MIN_TIME_BETWEEN_GLOBCONF_UPDATES > new Date().getTime()) {
+            if (globalconfigurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > new Date().getTime()) {
                 result = globalconfigurationCache;
             } else {
                 if (log.isDebugEnabled()) {
