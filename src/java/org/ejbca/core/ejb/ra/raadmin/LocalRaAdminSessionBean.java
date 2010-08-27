@@ -715,7 +715,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
     		returnval = new EndEntityProfile(true);
     	} else {
     		Integer id = (Integer)getEndEntityProfileNameIdMapInternal().get(profilename);
-    		returnval = (EndEntityProfile)getProfileCacheInternal().get(Integer.valueOf(id));
+    		returnval = (EndEntityProfile)getProfileCacheInternal().get(id);
     	}
     	if (log.isTraceEnabled()) {
     		log.trace("<getEndEntityProfile("+profilename+"): "+(returnval == null ? "null":"not null"));        	
@@ -765,7 +765,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
     	if(id == SecConst.EMPTY_ENDENTITYPROFILE) {
     		return EMPTY_ENDENTITYPROFILENAME;
     	}
-    	returnval = (String)getEndEntityProfileIdNameMapInternal().get(id);
+    	returnval = (String)getEndEntityProfileIdNameMapInternal().get(Integer.valueOf(id));
     	if (log.isTraceEnabled()) {
     		log.trace("<getEndEntityProfilename("+id+"): "+returnval);    		
     	}
