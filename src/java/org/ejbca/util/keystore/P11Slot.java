@@ -28,6 +28,7 @@ import java.util.Set;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 
 /**
@@ -64,7 +65,10 @@ public class P11Slot {
          */
         boolean isActive();
     }
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
     private final static Map<String,P11Slot> slotMap = new HashMap<String, P11Slot>();
+    private final static Set<String> slotsBeingCreated = new HashSet<String>();
     private final static Map<String,Set<P11Slot>> libMap = new HashMap<String, Set<P11Slot>>();
     private final static Map<Integer, P11SlotUser> tokenMap = new HashMap<Integer, P11SlotUser>();
     final private String slotNr;
@@ -155,14 +159,46 @@ public class P11Slot {
         tokenMap.put(new Integer(caid), token);
         P11Slot slot = slotMap.get(data.getSlotLabel());
         if (slot==null) {
-            slot = data.getNewP11Slot();
-            slotMap.put(data.getSlotLabel(), slot);
-            Set<P11Slot> libSet = libMap.get(data.getLibName());
-            if (libSet==null) {
-                libSet=new HashSet<P11Slot>();
-                libMap.put(data.getLibName(), libSet);
+            synchronized( slotsBeingCreated ) {
+                // test if another thread is currently creating the slot
+                if ( slotsBeingCreated.contains(data.getSlotLabel()) ) {
+                    while ( true ) {
+                        slot = slotMap.get(data.getSlotLabel());
+                        if ( slot!=null ) {
+                            break; // don't wait if we got a slot now
+                        } else if ( !slotsBeingCreated.contains(data.getSlotLabel()) ) {
+                            throw new CATokenOfflineException(intres.getLocalizedMessage("caadmin.errorcreatetoken")); // thread creating slot failed
+                        }
+                        // wait until another thread has created the slot
+                        try {
+                            slotsBeingCreated.wait();
+                        } catch (InterruptedException e) {
+                            throw new Error( "This should never happen.", e);
+                        }
+                        // the slot should now have been created by another thread
+                    }
+                } else {
+                    try {
+                        slotsBeingCreated.add(data.getSlotLabel());// show that this thread is creating the slot
+                        slot = data.getNewP11Slot();
+                        slotMap.put(data.getSlotLabel(), slot);
+                    } finally {
+                        if ( slot==null ) {
+                            slotsBeingCreated.remove(data.getSlotLabel());// show that creating the slot failed
+                        }
+                        slotsBeingCreated.notifyAll();// notify that the slot is now created
+                        if ( slot==null ) {
+                            throw new CATokenOfflineException(intres.getLocalizedMessage("caadmin.errorcreatetoken"));
+                        }
+                    }
+                    Set<P11Slot> libSet = libMap.get(data.getLibName());
+                    if (libSet==null) {
+                        libSet=new HashSet<P11Slot>();
+                        libMap.put(data.getLibName(), libSet);
+                    }
+                    libSet.add(slot);
+                }
             }
-            libSet.add(slot);
         }
         final Iterator<P11Slot> i = slotMap.values().iterator();
         while ( i.hasNext() ) {
