@@ -274,10 +274,10 @@
 # this can be used to disable the check if CA has been edited on another node, so the CA must be edited on all nodes, 
 # or nodes caches flushed after editing on one node.
 # Setting this value will improve performance for very large volume installations (>100 cert/s). 
-# For normal installations, where extreme speeds and response times are not required, leave as -1.
+# For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: -1 (don't use cache)
-# Possible values -1 to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
 #  anything more than 157680000000 (5 years) should mean infinitely in practice.
 #caadmin.cachecainfo=157680000000
 #caadmin.cachecainfo=-1
@@ -288,10 +288,10 @@
 # this can be used to disable the check if a profile has been edited on another node, so the profile must be edited on all nodes, 
 # or nodes caches flushed after editing on one node.
 # Setting this value will improve performance for very large volume installations (>100 cert/s). 
-# For normal installations, where extreme speeds and response times are not required, leave as -1.
+# For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: 1000 (1 second)
-# Possible values -1 (never) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
 #  anything more than 157680000000 (5 years) should mean infinitely in practice.
 #raadmin.cacheprofiles=157680000000
 #raadmin.cacheprofiles=-1

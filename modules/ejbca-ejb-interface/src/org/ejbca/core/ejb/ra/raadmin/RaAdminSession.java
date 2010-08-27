@@ -144,6 +144,11 @@ public interface RaAdminSession {
     void changeEndEntityProfile(Admin admin, java.lang.String profilename,
             org.ejbca.core.model.ra.raadmin.EndEntityProfile profile);
 
+    /** Do not use, use changeEndEntityProfile instead.
+     * Used internally for testing only. Updates a profile without flushing caches.
+     */
+    void internalChangeEndEntityProfileNoFlushCache(Admin admin, String profilename, EndEntityProfile profile);
+
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
      */

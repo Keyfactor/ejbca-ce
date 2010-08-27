@@ -24,6 +24,7 @@ import java.util.Random;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -523,17 +524,25 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
      * @ejb.interface-method
      */
     public void changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) {
+    	internalChangeEndEntityProfileNoFlushCache(admin, profilename, profile);
+        flushProfileCache();
+    }
+
+    /** Do not use, use changeEndEntityProfile instead.
+     * Used internally for testing only. Updates a profile without flushing caches.
+     * @ejb.interface-method
+     */
+    public void internalChangeEndEntityProfileNoFlushCache(Admin admin, String profilename, EndEntityProfile profile){
         EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
         if (pdl != null) {
             pdl.setProfile(profile);
-    		flushProfileCache();
             String msg = intres.getLocalizedMessage("ra.changedprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
         } else {
             String msg = intres.getLocalizedMessage("ra.errorchangeprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
         }
-    }
+    }// internalChangeEndEntityProfileNoFlushCache
 
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
@@ -643,21 +652,21 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
     } // flushProfileCache
 
     private HashMap<Integer, String> getEndEntityProfileIdNameMapInternal() {
-    	if ((profileIdNameMapCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() > System.currentTimeMillis())) {
+    	if ((profileIdNameMapCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
     		flushProfileCache();
     	}
     	return profileIdNameMapCache;
       } // getEndEntityProfileIdNameMapInternal
 
     private Map<String, Integer> getEndEntityProfileNameIdMapInternal(){
-    	if ((profileNameIdMapCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() > System.currentTimeMillis())) {
+    	if ((profileNameIdMapCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
     		flushProfileCache();
     	}
     	return profileNameIdMapCache;
       } // getEndEntityProfileIdNameMapInternal
 
     private Map<Integer, EndEntityProfile> getProfileCacheInternal() {
-    	if ((profileCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() > System.currentTimeMillis())) {
+    	if ((profileCache == null) || (lastProfileCacheUpdateTime+EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
     		flushProfileCache();
     	}
     	return profileCache;

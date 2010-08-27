@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -502,6 +503,47 @@ public class UserDataTest extends CaTestCase {
         profile = raAdminSession.getEndEntityProfile(admin, name6);
         assertEquals("bar", profile.getPrinterName());        
     } // test07EndEntityProfileMappings
+
+    /**
+     * Test of the cache of end entity profiles. This test depends on the default cache time of 1 second being used.
+     * If you changed this config, raadmin.cacheprofiles, this test may fail. 
+     */
+    public void test08EndEntityProfileCache() throws Exception {
+    	// First a check that we have the correct configuration, i.e. default
+    	long cachetime = EjbcaConfiguration.getCacheEndEntityProfileTime();
+    	assertEquals(1000, cachetime);
+    	// Make sure profile has the right value from the beginning
+        EndEntityProfile eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        eep.setAllowMergeDnWebServices(false);
+        raAdminSession.changeEndEntityProfile(admin, "TESTEEPROFCACHE2", eep);
+    	// Read profile
+        eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        boolean value = eep.getAllowMergeDnWebServices();
+        assertFalse(value);
+
+        // Flush caches to reset cache timeout
+        raAdminSession.flushProfileCache();
+    	// Change profile, not flushing cache
+    	eep.setAllowMergeDnWebServices(true);
+    	raAdminSession.internalChangeEndEntityProfileNoFlushCache(admin, "TESTEEPROFCACHE2", eep);
+    	// read profile again, value should not be changed because it is cached
+    	raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        value = eep.getAllowMergeDnWebServices();
+        assertFalse(value);
+    	
+    	// Wait 2 seconds and try again, now the cache should have been updated
+    	Thread.sleep(2000);
+        eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        value = eep.getAllowMergeDnWebServices();
+        assertTrue(value);
+
+        // Changing using the regular method however should immediately flush the cache
+    	eep.setAllowMergeDnWebServices(false);
+    	raAdminSession.changeEndEntityProfile(admin, "TESTEEPROFCACHE2", eep);
+        eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        value = eep.getAllowMergeDnWebServices();
+        assertFalse(value);
+    }
 
     /**
      * Cleans up after test JUnit tests, i.e. deletes users and CAs that we created and resets any configuration changes.
