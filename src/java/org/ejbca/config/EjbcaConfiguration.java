@@ -240,9 +240,9 @@ public class EjbcaConfiguration {
 	public static long getCacheCaTimeInCaAdminSession() {
 		long time = -1; // don't cache at all is the default
 		try {
-			time = Long.valueOf(ConfigurationHolder.getString("caadmin.cachecainfo", "-1"));
+			time = Long.valueOf(ConfigurationHolder.getString("cainfo.cachetime", "-1"));
 		} catch (NumberFormatException e) {
-			log.error("Invalid value in caadmin.cachecainfo, must be decimal number (milliseconds to cache CA info): "+e.getMessage());
+			log.error("Invalid value in cainfo.cachetime, must be decimal number (milliseconds to cache CA info): "+e.getMessage());
 		}
 		return time;
 	}
