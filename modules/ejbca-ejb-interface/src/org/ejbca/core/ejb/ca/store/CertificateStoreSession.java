@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.store;
 
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+
+import org.ejbca.core.model.authorization.AuthenticationFailedException;
+
 public interface CertificateStoreSession {
 
     /**
@@ -499,6 +504,13 @@ public interface CertificateStoreSession {
             org.ejbca.core.model.ca.certificateprofiles.CertificateProfile certificateprofile);
 
     /**
+    /** Do not use, use changeCertificateProfile instead.
+     * Used internally for testing only. Updates a profile without flushing caches.
+     */
+    void internalChangeCertificateProfileNoFlushCache(org.ejbca.core.model.log.Admin admin, java.lang.String certificateprofilename, 
+    		org.ejbca.core.model.ca.certificateprofiles.CertificateProfile certificateprofile);
+
+    /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
      * 
      * @param certprofiletype
@@ -523,7 +535,12 @@ public interface CertificateStoreSession {
      * @param admin
      *            Administrator performing the operation
      */
-    public java.util.HashMap getCertificateProfileIdToNameMap(org.ejbca.core.model.log.Admin admin);
+    public java.util.HashMap<Integer, String> getCertificateProfileIdToNameMap(org.ejbca.core.model.log.Admin admin);
+
+    /**
+     * Clear and reload certificate profile caches.
+     */
+    void flushProfileCache();
 
     /**
      * Retrives a named certificate profile or null if none was found.

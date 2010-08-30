@@ -261,6 +261,19 @@ public class EjbcaConfiguration {
 	}
 
 	/**
+	 * Parameter to specify if retrieving Certificate profiles in StoreSession should be cached, and in that case for how long.
+	 */
+	public static long getCacheCertificateProfileTime() {
+		long time = 1000; // cache 1 second is the default
+		try {
+			time = Long.valueOf(ConfigurationHolder.getString("certprofiles.cachetime", "1000"));
+		} catch (NumberFormatException e) {
+			log.error("Invalid value in certprofiles.cachetime, must be decimal number (milliseconds to cache Certificate profiles): "+e.getMessage());
+		}
+		return time;
+	}
+
+	/**
 	 * Parameter to specify if retrieving GlobalConfiguration (in RAAdminSession) should be cached, and in that case for how long.
 	 */
 	public static long getCacheGlobalConfigurationTime() {
