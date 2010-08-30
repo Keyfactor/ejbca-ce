@@ -38,6 +38,20 @@
 #eeprofiles.cachetime=157680000000
 #eeprofiles.cachetime=-1
 
+# Set to a value for caching calls to getCertificateProfile and getCertificateProfileId/Name in StoreSession. This means that for Certificate profiles to be updated
+# the cache time expires, an "Edit profile" or server restart is done, or flushProfileCache is called on StoreSession. 
+# This cache works fine in a single server environment. In a multi server (clustered) environment, 
+# this can be used to disable the check if a profile has been edited on another node, so the profile must be edited on all nodes, 
+# or nodes caches flushed after editing on one node.
+# Setting this value will improve performance for very large volume installations (>100 cert/s). 
+# For normal installations, where extreme speeds and response times are not required, leave as default.
+# Value is milliseconds.
+# Default: 1000 (1 second)
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
+#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+#certprofiles.cachetime=157680000000
+#certprofiles.cachetime=-1
+
 # Set to a value for caching calls to loadGlobalConfiguration. This means that for globalConfiguration to be updated
 # the cache time expires, an "Edit configuration" or server restart is done, or flushGlobalConfigurationCache is called on RAAdminSession.
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 

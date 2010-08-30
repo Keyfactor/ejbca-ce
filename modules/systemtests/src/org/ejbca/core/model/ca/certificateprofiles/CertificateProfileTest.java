@@ -21,9 +21,11 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.InterfaceCache;
@@ -326,5 +328,143 @@ public class CertificateProfileTest extends TestCase {
         assertEquals("1.3.6.1.5.5.7.3.3", ar.get(2));
         
     } // test10UpgradeExtendedKeyUsage
+
+    public void test11CertificateProfileMappings() throws Exception {
+    	certificateStoreSession.removeCertificateProfile(admin, "TESTCPMAPPINGS1");
+    	certificateStoreSession.removeCertificateProfile(admin, "TESTCPMAPPINGS2");
+    	// Add a couple of profiles and verify that the mappings and get functions work
+    	EndUserCertificateProfile ecp1 = new EndUserCertificateProfile();
+    	ecp1.setCNPostfix("foo");
+    	certificateStoreSession.addCertificateProfile(admin, "TESTCPMAPPINGS1", ecp1);
+    	EndUserCertificateProfile ecp2 = new EndUserCertificateProfile();
+    	ecp2.setCNPostfix("bar");
+    	certificateStoreSession.addCertificateProfile(admin, "TESTCPMAPPINGS2", ecp2);
+    	// Test
+        int pid1 = certificateStoreSession.getCertificateProfileId(admin, "TESTCPMAPPINGS1"); 
+        String name1 = certificateStoreSession.getCertificateProfileName(admin, pid1);
+        assertEquals("TESTCPMAPPINGS1", name1);
+        int pid2 = certificateStoreSession.getCertificateProfileId(admin, "TESTCPMAPPINGS1"); 
+        String name2 = certificateStoreSession.getCertificateProfileName(admin, pid2);
+        assertEquals("TESTCPMAPPINGS1", name2);
+        assertEquals(pid1, pid2);
+        assertEquals(name2, name2);
+        System.out.println(pid1);
+
+        CertificateProfile profile = certificateStoreSession.getCertificateProfile(admin, pid1);
+        assertEquals("foo", profile.getCNPostfix());
+        profile = certificateStoreSession.getCertificateProfile(admin, name1);
+        assertEquals("foo", profile.getCNPostfix());
+
+        int pid3 = certificateStoreSession.getCertificateProfileId(admin, "TESTCPMAPPINGS2"); 
+        System.out.println(pid3);
+        String name3 = certificateStoreSession.getCertificateProfileName(admin, pid3);
+        assertEquals("TESTCPMAPPINGS2", name3);
+        profile = certificateStoreSession.getCertificateProfile(admin, pid3);
+        assertEquals("bar", profile.getCNPostfix());
+        profile = certificateStoreSession.getCertificateProfile(admin, name3);
+        assertEquals("bar", profile.getCNPostfix());
+
+        // flush caches and make sure it is read correctly again
+        certificateStoreSession.flushProfileCache();
+    	
+        int pid4 = certificateStoreSession.getCertificateProfileId(admin, "TESTCPMAPPINGS1"); 
+        String name4 = certificateStoreSession.getCertificateProfileName(admin, pid4);
+        assertEquals(pid1, pid4);
+        assertEquals(name1, name4);
+        profile = certificateStoreSession.getCertificateProfile(admin, pid4);
+        assertEquals("foo", profile.getCNPostfix());
+        profile = certificateStoreSession.getCertificateProfile(admin, name4);
+        assertEquals("foo", profile.getCNPostfix());
+
+        int pid5 = certificateStoreSession.getCertificateProfileId(admin, "TESTCPMAPPINGS2"); 
+        String name5 = certificateStoreSession.getCertificateProfileName(admin, pid5);
+        assertEquals(pid3, pid5);
+        assertEquals(name3, name5);
+        profile = certificateStoreSession.getCertificateProfile(admin, pid5);
+        assertEquals("bar", profile.getCNPostfix());
+        profile = certificateStoreSession.getCertificateProfile(admin, name5);
+        assertEquals("bar", profile.getCNPostfix());
+
+        // Remove a profile and make sure it is not cached still
+        certificateStoreSession.removeCertificateProfile(admin, "TESTCPMAPPINGS1");
+        profile = certificateStoreSession.getCertificateProfile(admin, pid1);
+        assertNull(profile);
+        profile = certificateStoreSession.getCertificateProfile(admin, "TESTCPMAPPINGS1");
+        assertNull(profile);
+        int pid6 = certificateStoreSession.getCertificateProfileId(admin, "TESTCPMAPPINGS1");
+        assertEquals(0, pid6);
+        String name6 = certificateStoreSession.getCertificateProfileName(admin, pid6);
+        assertNull(name6);
+
+        // But the other, non-removed profile should still be there
+        int pid7 = certificateStoreSession.getCertificateProfileId(admin, "TESTCPMAPPINGS2"); 
+        String name7 = certificateStoreSession.getCertificateProfileName(admin, pid7);
+        assertEquals(pid3, pid7);
+        assertEquals(name3, name7);
+        profile = certificateStoreSession.getCertificateProfile(admin, pid7);
+        assertEquals("bar", profile.getCNPostfix());
+        profile = certificateStoreSession.getCertificateProfile(admin, name7);
+        assertEquals("bar", profile.getCNPostfix());
+
+        // Also check a few standard mappings
+        assertEquals(SecConst.CERTPROFILE_FIXED_ENDUSER, certificateStoreSession.getCertificateProfileId(admin, EndUserCertificateProfile.CERTIFICATEPROFILENAME));
+        assertEquals(SecConst.CERTPROFILE_FIXED_SERVER, certificateStoreSession.getCertificateProfileId(admin, ServerCertificateProfile.CERTIFICATEPROFILENAME));
+        assertEquals(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN, certificateStoreSession.getCertificateProfileId(admin, HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME));
+
+        assertEquals(EndUserCertificateProfile.CERTIFICATEPROFILENAME, certificateStoreSession.getCertificateProfileName(admin, SecConst.CERTPROFILE_FIXED_ENDUSER));
+        assertEquals(ServerCertificateProfile.CERTIFICATEPROFILENAME, certificateStoreSession.getCertificateProfileName(admin, SecConst.CERTPROFILE_FIXED_SERVER));
+        assertEquals(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME, certificateStoreSession.getCertificateProfileName(admin, SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
+        assertEquals(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME, certificateStoreSession.getCertificateProfileName(admin, SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
+
+        certificateStoreSession.removeCertificateProfile(admin, "TESTCPMAPPINGS1");
+    	certificateStoreSession.removeCertificateProfile(admin, "TESTCPMAPPINGS2");
+    } // test11CertificateProfileMappings
+
+    /**
+     * Test of the cache of certificate profiles. This test depends on the default cache time of 1 second being used.
+     * If you changed this config, eeprofiles.cachetime, this test may fail. 
+     */
+    public void test12CertificateProfileCache() throws Exception {
+    	// First a check that we have the correct configuration, i.e. default
+    	long cachetime = EjbcaConfiguration.getCacheCertificateProfileTime();
+    	assertEquals(1000, cachetime);
+
+    	// Add a profile
+    	certificateStoreSession.removeCertificateProfile(admin, "TESTCPCACHE1");
+    	EndUserCertificateProfile ecp1 = new EndUserCertificateProfile();
+        ecp1.setCNPostfix("foo");
+    	certificateStoreSession.addCertificateProfile(admin, "TESTCPCACHE1", ecp1);
+    	
+    	// Make sure profile has the right value from the beginning
+        CertificateProfile ecp = certificateStoreSession.getCertificateProfile(admin, "TESTCPCACHE1");
+        ecp.setCNPostfix("bar");
+        certificateStoreSession.changeCertificateProfile(admin, "TESTCPCACHE1", ecp);
+    	// Read profile
+        ecp = certificateStoreSession.getCertificateProfile(admin, "TESTCPCACHE1");
+        assertEquals("bar", ecp.getCNPostfix());
+
+        // Flush caches to reset cache timeout
+        certificateStoreSession.flushProfileCache();
+    	// Change profile, not flushing cache
+        ecp.setCNPostfix("bar2000");
+    	certificateStoreSession.internalChangeCertificateProfileNoFlushCache(admin, "TESTCPCACHE1", ecp);
+    	// read profile again, value should not be changed because it is cached
+        ecp = certificateStoreSession.getCertificateProfile(admin, "TESTCPCACHE1");
+        assertEquals("bar", ecp.getCNPostfix());
+    	
+    	// Wait 2 seconds and try again, now the cache should have been updated
+    	Thread.sleep(2000);
+        ecp = certificateStoreSession.getCertificateProfile(admin, "TESTCPCACHE1");
+        assertEquals("bar2000", ecp.getCNPostfix());
+
+        // Changing using the regular method however should immediately flush the cache
+        ecp.setCNPostfix("barfoo");
+    	certificateStoreSession.changeCertificateProfile(admin, "TESTCPCACHE1", ecp);
+        ecp = certificateStoreSession.getCertificateProfile(admin, "TESTCPCACHE1");
+        assertEquals("barfoo", ecp.getCNPostfix());
+        
+    	certificateStoreSession.removeCertificateProfile(admin, "TESTCPCACHE1");
+
+    } // test12CertificateProfileCache
 
 }
