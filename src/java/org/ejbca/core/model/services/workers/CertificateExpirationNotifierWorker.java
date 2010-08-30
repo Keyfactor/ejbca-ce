@@ -40,8 +40,7 @@ import org.ejbca.util.JDBCUtil;
  * 
  * @author Philip Vendil, Tomas Gustavsson
  * 
- * @version: $Id: CertificateExpirationNotifierWorker.java 9553 2010-07-27
- *           15:08:36Z jeklund $
+ * @version: $Id$
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
