@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.log;
 
+import org.ejbca.util.query.IllegalQueryException;
+
 public interface LogSession {
 
     /**
@@ -138,6 +140,16 @@ public interface LogSession {
      *            the logconfiguration to save.
      */
     public void saveLogConfiguration(org.ejbca.core.model.log.Admin admin, int caid, org.ejbca.core.model.log.LogConfiguration logconfiguration);
+
+    /** Do not use, use saveLogConfiguration instead.
+     * Used internally for testing only. Updates configuration without flushing caches.
+     */
+    public void internalSaveLogConfigurationNoFlushCache(org.ejbca.core.model.log.Admin admin, int caid, org.ejbca.core.model.log.LogConfiguration logconfiguration);
+
+    /**
+     * Clear and reload log profile caches.
+     */
+    public void flushConfigurationCache();
 
     /**
      * Methods for testing that a log-row is never rolled back if the rest of
