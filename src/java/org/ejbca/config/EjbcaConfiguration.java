@@ -299,4 +299,17 @@ public class EjbcaConfiguration {
 		return time;
 	}
 
+	/**
+	 * Parameter to specify if retrieving LogConfiguration (in LogSession) should be cached, and in that case for how long.
+	 */
+	public static long getCacheLogConfigurationTime() {
+		long time = 5000; // cache 5 seconds is the default
+		try {
+			time = Long.valueOf(ConfigurationHolder.getString("logconfiguration.cachetime", "5000"));
+		} catch (NumberFormatException e) {
+			log.error("Invalid value in logconfiguration.cachetime, must be decimal number (milliseconds to cache configuration): "+e.getMessage());
+		}
+		return time;
+	}
+
 }

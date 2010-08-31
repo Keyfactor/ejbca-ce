@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.util.InterfaceCache;
@@ -114,7 +115,42 @@ public class LogTest extends CaTestCase {
 	   assertTrue(ind > 0);
 	   log.trace("<test02AddAndCheckLogEvents()");
     }
-    
+
+    /**
+     * Test of the cache of certificate profiles. This test depends on the default cache time of 1 second being used.
+     * If you changed this config, eeprofiles.cachetime, this test may fail. 
+     */
+    public void test03LogConfigurationCache() throws Exception {
+    	// First a check that we have the correct configuration, i.e. default
+    	long cachetime = EjbcaConfiguration.getCacheLogConfigurationTime();
+    	assertEquals(5000, cachetime);
+
+    	// Add a profile
+    	LogConfiguration config = logSession.loadLogConfiguration(getTestCAId());
+    	assertNotNull(config);
+    	assertTrue(config.useExternalLogDevices()); // default value
+    	
+        // Flush caches to reset cache timeout
+    	logSession.flushConfigurationCache();
+    	// Change config, not flushing cache
+    	config.setUseExternalLogDevices(false);
+    	logSession.internalSaveLogConfigurationNoFlushCache(admin, getTestCAId(), config);
+    	// read config again, value should not be changed because it is cached
+    	config = logSession.loadLogConfiguration(getTestCAId());
+    	assertTrue(config.useExternalLogDevices()); 
+    	
+    	// Wait 6 seconds and try again, now the cache should have been updated
+    	Thread.sleep(6000);
+    	config = logSession.loadLogConfiguration(getTestCAId());
+    	assertFalse(config.useExternalLogDevices()); 
+
+        // Changing using the regular method however should immediately flush the cache
+    	config.setUseExternalLogDevices(true);
+    	logSession.saveLogConfiguration(admin, getTestCAId(), config);
+    	config = logSession.loadLogConfiguration(getTestCAId());
+    	assertTrue(config.useExternalLogDevices()); 
+    } // test03LogConfigurationCache
+
 	public void test99RemoveTestCA() throws Exception {
 		removeTestCA();
 	}

@@ -33,6 +33,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
@@ -150,7 +151,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * 5 seconds is enough to not limit performance in high performance environments, but low enough so that 
      * changes to configuration is visible almost immediately.
      */
-    private static final ObjectCache logConfCache = new ObjectCache();
+    private static volatile ObjectCache logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
@@ -485,13 +486,21 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration) {
+    	internalSaveLogConfigurationNoFlushCache(admin, caid, logconfiguration);
+        // Update cache
+		logConfCache.put(Integer.valueOf(caid), logconfiguration);    	
+    }
+    
+    /** Do not use, use saveLogConfiguration instead.
+     * Used internally for testing only. Updates configuration without flushing caches.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void internalSaveLogConfigurationNoFlushCache(Admin admin, int caid, LogConfiguration logconfiguration) {
         try {
         	log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
         	LogConfigurationData lcd = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
         	if (lcd != null) {
         		lcd.saveLogConfiguration(logconfiguration);
-        		// Update cache
-        		logConfCache.put(Integer.valueOf(caid), logconfiguration);
         	} else { 
         		String msg = intres.getLocalizedMessage("log.createconf", new Integer(caid));            	
         		log.info(msg);
@@ -501,6 +510,14 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
             log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_EDITLOGCONFIGURATION, "");
             throw new EJBException(e);
         }
+    }
+
+    /**
+     * Clear and reload log profile caches.
+     */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void flushConfigurationCache() {
+    	logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
     }
 
 	/**
