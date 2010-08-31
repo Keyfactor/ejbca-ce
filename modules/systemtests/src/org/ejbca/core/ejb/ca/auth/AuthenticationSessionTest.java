@@ -221,7 +221,8 @@ public class AuthenticationSessionTest extends CaTestCase {
         assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(admin, username1));
 
         // Now finish the user (The actual test)
-        authenticationSessionRemote.finishUser(admin, username1, pwd1);
+        UserDataVO userdata = userAdminSession.findUser(admin, username1);
+        authenticationSessionRemote.finishUser(userdata);
         // And se if the user is still marked
 
         assertTrue("Failure the users keyrecovery session should have been unmarked", !keyRecoverySession.isUserMarked(admin, username1));

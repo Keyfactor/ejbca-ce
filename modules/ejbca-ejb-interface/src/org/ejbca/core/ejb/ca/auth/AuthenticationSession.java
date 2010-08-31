@@ -47,23 +47,6 @@ public interface AuthenticationSession {
      * should be set to generated. In this case this counter will be decreased,
      * and if it reaches 0 status will be generated.
      * 
-     * @param username
-     *            unique username within the instance
-     * @param password
-     * @throws ObjectNotFoundException
-     *             if the user does not exist.
-     */
-    public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException;
-
-    /**
-     * Set the status of a user to finished, called when a user has been
-     * successfully processed. If possible sets users status to
-     * UserData.STATUS_GENERATED, which means that the user cannot be
-     * authenticated anymore. NOTE: May not have any effect of user database is
-     * remote. User data may contain a counter with nr of requests before used
-     * should be set to generated. In this case this counter will be decreased,
-     * and if it reaches 0 status will be generated.
-     * 
      * @param data
      * @throws ObjectNotFoundException
      *             if the user does not exist.

@@ -247,7 +247,7 @@ public class KRSSResponseGenerator extends
 					cert = (X509Certificate) keyData.getCertificate();	             
 					boolean finishUser = caadminsession.getCAInfo(pubAdmin,CertTools.getIssuerDN(cert).hashCode()).getFinishUser();
 					if(finishUser){	           	  
-					    authenticationSession.finishUser(pubAdmin, userDataVO.getUsername(), password);
+					    authenticationSession.finishUser(userDataVO);
 					}
 
 				}else{        	 

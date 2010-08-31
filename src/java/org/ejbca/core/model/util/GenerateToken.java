@@ -11,8 +11,10 @@ import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -26,12 +28,14 @@ public class GenerateToken {
     private static final Logger log = Logger.getLogger(GenerateToken.class);
 
 	private AuthenticationSession authenticationSession;
+	private UserAdminSession userAdminSession;
 	private CAAdminSession caAdminSession;
 	private KeyRecoverySession keyRecoverySession;
 	private SignSession signSession;
 	
-    public GenerateToken(AuthenticationSession authenticationSession, CAAdminSession caAdminSession, KeyRecoverySession keyRecoverySession, SignSession signSession) {
+    public GenerateToken(AuthenticationSession authenticationSession, UserAdminSession useradminsession, CAAdminSession caAdminSession, KeyRecoverySession keyRecoverySession, SignSession signSession) {
     	this.authenticationSession = authenticationSession;
+    	this.userAdminSession = useradminsession;
     	this.caAdminSession = caAdminSession;
     	this.keyRecoverySession = keyRecoverySession;
     	this.signSession = signSession;
@@ -84,7 +88,8 @@ public class GenerateToken {
     		boolean finishUser = true;
 			finishUser = caAdminSession.getCAInfo(administrator,caid).getFinishUser();
     		if (finishUser) {
-				authenticationSession.finishUser(administrator, username, password);    				
+    			UserDataVO userdata = userAdminSession.findUser(administrator, username);
+				authenticationSession.finishUser(userdata);    				
     		}
     	} else {
     		log.debug("Generating new certificate for user: "+ username);
