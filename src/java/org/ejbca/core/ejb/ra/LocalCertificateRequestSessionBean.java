@@ -465,7 +465,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 			String password = userdata.getPassword();
 			String username = userdata.getUsername();
 			int caid = userdata.getCAId();
-		    GenerateToken tgen = new GenerateToken(authenticationSession, caAdminSession, keyRecoverySession, signSession);
+		    GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caAdminSession, keyRecoverySession, signSession);
 		    KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 			String alias = keyStore.aliases().nextElement();
 		    X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);

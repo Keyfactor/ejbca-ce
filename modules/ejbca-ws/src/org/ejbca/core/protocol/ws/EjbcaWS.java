@@ -1102,7 +1102,7 @@ public class EjbcaWS implements IEjbcaWS {
 			  log.debug("reusecertificate: "+reusecertificate);
 
 			  try {
-				  GenerateToken tgen = new GenerateToken(authenticationSession, caAdminSession, keyRecoverySession, signSession);
+				  GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caAdminSession, keyRecoverySession, signSession);
 				  java.security.KeyStore pkcs12 = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
                   final KeyStore retval = new KeyStore(pkcs12, password);
 				  final Enumeration<String> en = pkcs12.aliases();

@@ -187,44 +187,6 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
         }
     }
 
-    /**
-     * Set the status of a user to finished, called when a user has been successfully processed. If
-     * possible sets users status to UserData.STATUS_GENERATED, which means that the user cannot
-     * be authenticated anymore. NOTE: May not have any effect of user database is remote.
-     * User data may contain a counter with nr of requests before used should be set to generated. In this case
-     * this counter will be decreased, and if it reaches 0 status will be generated. 
-     *
-     * @param username unique username within the instance
-     * @param password password for the user
-     *
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @ejb.interface-method
-     */
-    public void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
-		if (log.isTraceEnabled()) {
-			log.trace(">finishUser(" + username + ", hiddenpwd)");
-		}
-        try {
-            // Change status of the user with username username
-        	UserDataVO data = userAdminSession.findUser(admin, username);
-        	if (data == null) {
-        		throw new FinderException("User '"+username+"' can not be found.");
-        	}
-        	finishUser(data);
-        } catch (FinderException e) {
-            String msg = intres.getLocalizedMessage("authentication.usernotfound", username);               
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
-            throw new ObjectNotFoundException(e.getMessage());
-        } catch (AuthorizationDeniedException e) {
-            // Should never happen
-            log.error("AuthorizationDeniedException: ", e);
-            throw new EJBException(e);
-        }
-		if (log.isTraceEnabled()) {
-			log.trace("<finishUser("+username+", hiddenpwd)");
-		}
-    }
-
 	/**
 	 * Set the status of a user to finished, called when a user has been successfully processed. If
 	 * possible sets users status to UserData.STATUS_GENERATED, which means that the user cannot

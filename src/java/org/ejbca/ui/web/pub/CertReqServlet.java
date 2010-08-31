@@ -236,7 +236,7 @@ public class CertReqServlet extends HttpServlet {
 
                 // get users Token Type.
                 tokentype = data.getTokenType();
-                GenerateToken tgen = new GenerateToken(authenticationSession, caAdminSession, keyRecoverySession, signSession);
+                GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caAdminSession, keyRecoverySession, signSession);
                 if(tokentype == SecConst.TOKEN_SOFT_P12){
                   KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
                   if (StringUtils.equals(openvpn, "on")) {            	  
