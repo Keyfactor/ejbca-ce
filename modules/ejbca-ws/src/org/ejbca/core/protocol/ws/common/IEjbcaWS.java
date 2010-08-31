@@ -126,7 +126,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param username a unique username 
 	 * @param onlyValid only return valid certs not revoked or expired ones.
-	 * @return a collection of X509Certificates or an empty list if no certificates, or no user, could be found
+	 * @return a collection of Certificates or an empty list if no certificates, or no user, could be found
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws EjbcaException 
 	 */
