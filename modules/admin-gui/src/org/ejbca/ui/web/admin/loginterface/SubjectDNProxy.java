@@ -70,6 +70,14 @@ public class SubjectDNProxy implements java.io.Serializable {
     				subjectdnstore.put(admindata,returnval);
     			}
     		}
+    	} else if(returnval == null){
+    		String certificatesnr = admindata.substring(0, admindata.indexOf(',')).trim();
+    		String issuerdn = admindata.substring(admindata.indexOf(',')+1, admindata.length()).trim();
+    		result = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr, 16));
+    		if(result != null){
+    			returnval = CertTools.getSubjectDN(result);
+    			subjectdnstore.put(admindata,returnval);
+    		}
     	}
 
     	return returnval;
