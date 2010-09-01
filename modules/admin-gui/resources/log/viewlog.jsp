@@ -411,10 +411,10 @@
                     matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
               }else{
                   if(matchwithrow2 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
-                    matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
+                    matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2).toLowerCase();
                   else
                     if(matchwithrow2 == LogMatch.MATCH_WITH_CERTIFICATE)
-                      matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
+                      matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2).toLowerCase();
                     else{
                       matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);              
                     }
@@ -424,10 +424,10 @@
                   matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
                }else{
                     if(matchwithrow3 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
-                      matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
+                      matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3).toLowerCase();
                     else
                       if(matchwithrow3 == LogMatch.MATCH_WITH_CERTIFICATE)
-                        matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toLowerCase();
+                        matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3).toLowerCase();
                       else{
                        matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
                       }   
