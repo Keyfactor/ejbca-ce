@@ -19,7 +19,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -43,8 +45,11 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.DSAParameterSpec;
@@ -58,7 +63,11 @@ import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Properties;
+
+import javax.crypto.interfaces.DHPrivateKey;
+import javax.crypto.interfaces.DHPublicKey;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -75,6 +84,7 @@ import org.bouncycastle.jce.provider.asymmetric.ec.EC5Util;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.cvc.PublicKeyEC;
@@ -110,6 +120,7 @@ public class KeyTools {
      * Prevent from creating new KeyTools object
      */
     private KeyTools() {
+        // should never be called
     }
 
     /**
@@ -812,11 +823,29 @@ public class KeyTools {
             throw new IOException("Slot nr "+slot+" not an integer.");
         }
     	if ( slotNr>=0 ) {
-        	pw.println("slot"+(isIndex ? "ListIndex":"")+" = "+slot);    		
+    	    pw.println("slot"+(isIndex ? "ListIndex":"")+" = "+slot);    		
     	}
     	if (attributesFile != null) {
-    		byte[] attrs = FileTools.readFiletoBuffer(attributesFile);
-    		pw.println(new String(attrs));
+    	    byte[] attrs = FileTools.readFiletoBuffer(attributesFile);
+    	    pw.println(new String(attrs));
+    	} else {
+    	    // setting the attributes like this should work for most HSMs. 
+            pw.println("attributes(*, *, *) = {");
+            pw.println("  CKA_TOKEN = true"); // all created objects should be permanent. They should not only exiswt during the session.
+            pw.println("}");
+            pw.println("attributes(*, CKO_PUBLIC_KEY, *) = {");
+            pw.println("  CKA_ENCRYPT = true");
+            pw.println("  CKA_VERIFY = true");
+            pw.println("  CKA_WRAP = true");// no harm allowing wrapping of keys. created private keys can not be wrapped anyway since CKA_EXTRACTABLE is false.
+            pw.println("}");
+    	    pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
+    	    pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
+            pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
+            pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
+            pw.println("  CKA_DECRYPT = true");
+            pw.println("  CKA_SIGN = true");
+            pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
+    	    pw.println("}");
     	}
     	pw.flush();
     	pw.close();
@@ -948,27 +977,103 @@ public class KeyTools {
     public static void testKey(PrivateKey priv, PublicKey pub, String provider) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
         final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
-        String testSigAlg = (String)AlgorithmTools.getSignatureAlgorithms(pub).iterator().next();
-        if ( testSigAlg == null ) {
-        	testSigAlg = "SHA1WithRSA";
+        final String testSigAlg;
+        {
+            final Iterator i = AlgorithmTools.getSignatureAlgorithms(pub).iterator();
+            final String tmp = i.hasNext() ? (String)i.next() : null;
+            testSigAlg = tmp!=null ? tmp : "SHA1WithRSA";
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Testing keys with algorithm: "+pub.getAlgorithm());         
+            log.debug("testSigAlg: "+testSigAlg);           
+            log.debug("provider: "+provider);          
+            log.trace("privateKey: "+priv);            
+            log.trace("privateKey class: "+priv.getClass().getName()); 
+            log.trace("publicKey: "+pub);          
+            log.trace("publicKey class: "+pub.getClass().getName());           
         }
         {
-        	String prov = "BC";
-        	if (provider != null) {
-        		prov = provider;
-        	}
-            Signature signature = Signature.getInstance(testSigAlg, prov);
+       	    final Provider prov= Security.getProvider(provider!=null ? provider : "BC");
+            final Signature signature = Signature.getInstance(testSigAlg, prov);
             signature.initSign( priv );
             signature.update( input );
             signBV = signature.sign();
+            if ( signBV==null ) {
+                throw new InvalidKeyException("Result from signing is null.");
+            }
+            if (log.isDebugEnabled()) {
+                log.trace("Created signature of size: "+signBV.length);         
+                log.trace("Created signature: "+new String(Hex.encode(signBV)));                                
+            }
         }
         {
-            Signature signature = Signature.getInstance(testSigAlg, "BC");
+            final Signature signature = Signature.getInstance(testSigAlg, "BC");
             signature.initVerify(pub);
             signature.update(input);
             if ( !signature.verify(signBV) ) {
                 throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
             }
         }
+    }
+    /**
+     * Print parameters of public part of a key.
+     * @param publK the key
+     * @param ps stream to print to.
+     */
+    public static void printPublicKeyInfo(final PublicKey publK, final PrintStream ps) {
+        if ( publK instanceof RSAPublicKey ) {
+            ps.println("RSA key:");
+            final RSAPublicKey rsa = (RSAPublicKey)publK;
+            ps.println("  modulus: "+rsa.getModulus().toString(16));
+            ps.println("  public exponent: "+rsa.getPublicExponent().toString(16));
+            return;
+        }
+        if ( publK instanceof ECPublicKey ) {
+            ps.println("Elliptic curve key:");
+            final ECPublicKey ec = (ECPublicKey)publK;
+            ps.println("  the affine x-coordinate: "+ec.getW().getAffineX().toString(16));
+            ps.println("  the affine y-coordinate: "+ec.getW().getAffineY().toString(16));
+            return;
+        }
+        if ( publK instanceof DHPublicKey ) {
+            ps.println("DH key:");
+            final DHPublicKey dh = (DHPublicKey)publK;
+            ps.println("  the public value y: "+dh.getY().toString(16));
+            return;
+        }
+        if ( publK instanceof DSAPublicKey ) {
+            ps.println("DSA key:");
+            final DSAPublicKey dsa = (DSAPublicKey)publK;
+            ps.println("  the public value y: "+dsa.getY().toString(16));
+            return;
+        }
+    }
+    /**
+     * Test if a private key is extractable (could be stored).
+     * @param privK key to test.
+     * @return true if the key is extractable.
+     */
+    public static boolean isPrivateKeyExtractable(final PrivateKey privK) {
+        if ( privK instanceof RSAPrivateKey ) {
+            final RSAPrivateKey rsa = (RSAPrivateKey)privK;
+            final BigInteger result = rsa.getPrivateExponent();
+            return result!=null && result.bitLength()>0;
+        }
+        if ( privK instanceof ECPrivateKey ) {
+            final ECPrivateKey ec = (ECPrivateKey)privK;
+            final BigInteger result = ec.getS();
+            return result!=null && result.bitLength()>0;
+        }
+        if ( privK instanceof DHPrivateKey ) {
+            final DHPrivateKey dh = (DHPrivateKey)privK;
+            final BigInteger result = dh.getX();
+            return result!=null && result.bitLength()>0;
+        }
+        if ( privK instanceof DSAPrivateKey) {
+            final DSAPrivateKey dsa = (DSAPrivateKey)privK;
+            final BigInteger result = dsa.getX();
+            return result!=null && result.bitLength()>0;
+        }
+        return false;
     }
 }

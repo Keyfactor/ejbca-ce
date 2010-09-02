@@ -2122,17 +2122,31 @@ But only one of 'slot' or 'slotListIndex' should exist.
 If keyspec is not given EJBCA tries to generate a key with the same specification as the current cert signing key.</li>
 </ul>
 </p><p>
-Attributes file is in the format specified in the "JavaTM PKCS#11 Reference Guide". See http://java.sun.com/javase/6/docs/technotes/guides/security/p11guide.html 
-and the examples further down in this file. An attributes file for nCipher typically looks like this:
+Attributes file is in the format specified in the "JavaTM PKCS#11 Reference Guide".
+See http://java.sun.com/javase/6/docs/technotes/guides/security/p11guide.html and the examples further down in this file.
+</p><p>
+Before there was no default used when no 'attributesFile' existed and HSM specific defaults was used instead. For most HSM these defaults was not usable and the file was needed. Often only the values needed to be changed from the HSM default was specified. But now there is a built in defaults used when the file is missing. These defaults works for most HSM and looks like this:
 </p>
 <source>
-attributes(generate,CKO_PRIVATE_KEY,*) = {
-  CKA_PRIVATE = true
-  CKA_SIGN = true
-  CKA_DECRYPT = true
+attributes(*, *, *) = {
   CKA_TOKEN = true
 }
+attributes(*, CKO_PUBLIC_KEY, *) = {
+  CKA_ENCRYPT = true
+  CKA_VERIFY = true
+  CKA_WRAP = true
+}
+attributes(*, CKO_PRIVATE_KEY, *) = {
+  CKA_PRIVATE = true
+  CKA_SENSITIVE = true
+  CKA_EXTRACTABLE = false
+  CKA_DECRYPT = true
+  CKA_SIGN = true
+  CKA_UNWRAP = true
+}");
 </source>
+<p> Only occasion we know that the default is not working is when the module protected slot of an nCpher HSM is used; then the file must exist and have 'CKA_PRIVATE = false' (see below).
+</p>
 <note>
 If you are using an attributesFile and have more than one CA using the same slot it is very important that BOTH CA token properties configurations contains the attributesFile. 
 This is because the attributes are applied when the provider is installed during startup. If one configuration does not have the attributesFile it can not be applied later on by the other configuration. 
@@ -2142,19 +2156,20 @@ The tool "$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool" is u
 Keys may be generated in two ways. Examples:
 </p>
 <source>
-./dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 1
+$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 1
 </source>
 <source>
-./dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.conf 2048 defaultKey
+$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.conf 2048 defaultKey
 </source>
 <p>
-The first example uses the default attributes of the HSM and are then using specified slot and PKCS#11 library.
-The second uses a configuration file.
+The first example is using built in default and are then using specified slot and PKCS#11 library.
+The second is using a configuration file.
 The contents of the file is specified in the PKCS#11 wrapper documentation from Sun.
 Often it is enough to use the default but with some HSM it necessary to define some PKCS#11
 attributes for the generated key.
 </p>
-<p>hsmp11.conf looks for example like this for a SafeNet ProtectServer Gold:</p>
+<p>Below is an example how the hsmp11.conf could look like. Before this was a recommendation for SafeNet ProtectServer but now since the code has
+good built in defaults no configuration file is needed.</p>
 <source>
 name=SafeNet
 library=/opt/PTK/lib/libcryptoki.so
@@ -2501,19 +2516,7 @@ The following environment variables should be set for this user:
 <strong>Step 3. Create PKCS#11 keys that should be used on the nShield card</strong>
 <p>
 Start a new window and login as the same user (jboss user).
-Create a file (ocs-sunpkcs11.cfg) with the following contents:
 </p>
-<source>
-name=NFastJava
-library=/opt/nfast/toolkits/pkcs11/libcknfast.so
-slotListIndex=1
-attributes(generate,CKO_PRIVATE_KEY,*) = {
-  CKA_PRIVATE = true
-  CKA_SIGN = true
-  CKA_DECRYPT = true
-  CKA_TOKEN = true
-}
-</source>
 <note>
 An ECC key could not be used with preload (at least not the curve secp160r1). Such a key is generated OK and could be used as long as the current preload is running. But if all preload processes are stopped and then if then preload is restarted the key could not be used. This means that ECC could only be used with a 1/n OCS.
 </note>
@@ -2521,18 +2524,18 @@ An ECC key could not be used with preload (at least not the curve secp160r1). Su
 Now 3 keys protected by the key set 'ejbca' are created like this:
 </p>
 <source>
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 4096 defaultRoot
-Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 4096 defaultRoot
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
+Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry default.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 2048 cryptRoot
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-d165e440baa8dc9963780c682836ba17513e8cbf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 2048 cryptRoot
+Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry crypt.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 1024 test
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-27cfdae84bf4298f2dde83cd00980a81bcf095bf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./ocs-sunpkcs11.cfg 1024 test
+Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry test.
 jboss@donny:~/work/test/keygen$ 
@@ -2572,13 +2575,14 @@ sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
 <p>
 Module protected keys do not need an operator card set. Hence no PIN code is needed to active such a key. A CA could be configured to use a keystore with module protected keys.
 </p><p>
-When using PKCS#11 slot 0 is used to indicate module protection. The only other thing except using slot 0 you have to do is to use a slightly different configuration file when creating the key. The file could look like this:
+When using PKCS#11 slot 0 is used to indicate module protection. The only other thing except using slot 0 you have to do is to use a configuration file when creating the key. The file could look like this:
 </p>
 <source>
 name=NFastJava
 library=/opt/nfast/toolkits/pkcs11/libcknfast.so
 slotListIndex=0
 attributes(generate,CKO_PRIVATE_KEY,*) = {
+  CKA_PRIVATE = false
   CKA_SIGN = true
   CKA_DECRYPT = true
   CKA_TOKEN = true
@@ -2761,18 +2765,7 @@ Example of starting jboss:
 ejbca@subcallb:/usr/local/ejbca> CKNFAST_LOADSHARING=1 ../jboss/bin/run.sh
 </source><p>
 When activating a CA you need a smart card from the OCS of the corresponding slot inserted in both HSMs. The OCS got to be 1/n since preload can not be used.
-</p><p>Sample PKCS#11 configuration file for generating the CA keys.</p>
-<source>
-name=NFastJava
-library=/opt/nfast/toolkits/pkcs11/libcknfast.so
-slotListIndex=1
-attributes(generate,CKO_PRIVATE_KEY,*) = {
-  CKA_PRIVATE = true
-  CKA_SIGN = true
-  CKA_DECRYPT = true
-  CKA_TOKEN = true
-}
-</source> 
+</p>
 <p>Sample catoken.properties for generating the initial AdminCA on the netHSM, or entering in the admin-GUI when creating a new CA.</p>
 <source>
 defaultKey defaultKey
@@ -2789,19 +2782,6 @@ slotListIndex 1
 The documement xxxxxxKeyperP11.pdf (xxxxxx is six digits) describes how the HSM is installed.
 As default there is only one slot - 0.
 </p>
-<p>
-The HSM needs a configuration file when generating the keys. It could look like this:
-</p>
-<source>
-name=Keyper
-library=/Users/flourish/Keyper/PKCS11Provider/pkcs11.GCC4.0.1_i386.so.4.04
-slot=0
-attributes(generate,CKO_PRIVATE_KEY,*) = {
-  CKA_SIGN = true
-  CKA_DECRYPT = true
-  CKA_TOKEN = true
-}
-</source>
 </subsection>
 
 <subsection name="ARX CoSign">
@@ -2817,17 +2797,6 @@ The shared library is called C:\windows\system32\sadaptor.dll
 <p>
 Do the installation of the card according to Install_and_Use_cc2000.pdf. When the card is "installed" it is ready to use with EJBCA. Only one slot (slot index 0) is available. The slot is not protected by any PIN so an undefined 'pin' (empty) property may be used in the configuration.
 </p><p>
-The configuration file used when generating a key with 'pkcs11HSM.sh' must look like this:
-</p>
-<source>
-name=TrustWay
-library=../../bullInstall/linux/libgpkcs11cc2000.so
-slotListIndex=0
-attributes(generate,CKO_PRIVATE_KEY,*) = {
-  CKA_TOKEN = true
-}
-</source>
-<p>
 When using PKCS11HSMKeyTool and starting EJBCA, libcc2000_tok.so and libgpkcs11cc2000.so must be in the library path. Examples:
 </p>
 <source>
@@ -2850,7 +2819,7 @@ dr-xr-xr-x 2 lars lars   4096 28 nov 14.28 include
 lars@maud:~/work/test/ca$ LD_LIBRARY_PATH=../../bullInstall/linux ../../java/jboss/bin/run.sh
 </source>
 <source>
-lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate trustWay.cfg 2048 defaultkey
+lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ../../bullInstall/linux/libgpkcs11cc2000.so 2048 defaultkey i0
 </source>
 </subsection>
 
@@ -2911,39 +2880,17 @@ The password is from the configuration step 4. See above.
 </subsubsection>
 <subsubsection name="Generate keys on a slot">
 <source>
-lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./sunpkcs11.cfg 2048 rsa2048_1
+lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so 2048 rsa2048_1 1
 0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
 PKCS11 Token [SunPKCS11-Luna] Password: 
 Created certificate with entry rsa2048_1.
-lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./sunpkcs11.cfg secp160r1 secp160r1_1
+lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so secp160r1 secp160r1_1 1
 0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
 PKCS11 Token [SunPKCS11-Luna] Password: 
 Created certificate with entry secp160r1_1.
 </source><p>
 The password btqx-EFGH-3456-7/K9 (see above) is used.
-</p><p>
-The contents of ./sunpkcs11.cfg :
-</p><source>
-name=Luna
-library=/usr/lunasa/lib/libCryptoki2_64.so
-#library=/usr/lib/pkcs11-spy.so
-slot = 1
-
-attributes(generate,*,*) = {  
-  CKA_TOKEN = true
-}
-attributes(generate,CKO_PUBLIC_KEY,*) = {
-  CKA_ENCRYPT = true
-  CKA_VERIFY = true
-  CKA_WRAP = true
-}
-attributes(generate, CKO_PRIVATE_KEY,*) = {
-  CKA_EXTRACTABLE = false
-  CKA_DECRYPT = true
-  CKA_SIGN = true
-  CKA_UNWRAP = true
-}
-</source>
+</p>
 </subsubsection>
 <subsubsection name="List and test all keys that could be used by EJBCA">
 <source>
@@ -2972,24 +2919,6 @@ slot=1
 certSignKey=myECCKey
 crlSignKey=myECCKey
 defaultKey=default
-attributesFile=/home/ejbca/lunasatoken.cfg
-</source>
-<p>Where lunasatoken.cfg is:</p>
-<source>
-attributes(generate,*,*) = {
-  CKA_TOKEN = true
-}
-attributes(generate,CKO_PUBLIC_KEY,*) = {
-  CKA_ENCRYPT = true
-  CKA_VERIFY = true
-  CKA_WRAP = true
-}
-attributes(generate, CKO_PRIVATE_KEY,*) = {
-  CKA_EXTRACTABLE = false
-  CKA_DECRYPT = true
-  CKA_SIGN = true
-  CKA_UNWRAP = true
-}
 </source>
 </subsubsection>
 </subsection>
@@ -3031,29 +2960,11 @@ LD_LIBRARY_PATH=/opt/PTK/lib /opt/PTK/bin/ctkmu t -s5 -lroot
 </subsubsection>
 <subsubsection name="Generate keys on slot 5">
 <source>
-$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./slot5.cfg 2048 defaultSign
-$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./slot5.cfg 2048 default
-$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./slot5.cfg 512 test
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 defaultSign 5
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 default 5
+$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 512 test 5
 </source>
 <p>If JBoss was started you have to restart JBoss before the keys becomes available in EJBCA.</p>
-</subsubsection>
-<subsubsection name="Contents of ./slot5.cfg">
-<source>
-name=SafeNet
-library=/opt/PTK/lib/libcryptoki.so
-#library=/usr/lib/pkcs11-spy.so
-slot=5
-attributes(*,*,*) = {
-  CKA_TOKEN = true
-}
-attributes(*,CKO_PRIVATE_KEY,*) = {
-  CKA_PRIVATE = true
-  CKA_SIGN = true
-  CKA_DECRYPT = true
-  CKA_EXTRACTABLE = true
-  CKA_SENSITIVE = true
-}
-</source>
 </subsubsection>
 <subsubsection name="Contents of CA Token Properties">
 <p>When you create the CA in EJBCA you can now use the simple CA token properties below.</p>
@@ -3064,20 +2975,6 @@ defaultKey default
 testKey test
 sharedLibrary=/opt/PTK/lib/libcryptoki.so
 slot=5
-attributesFile=/opt/slot5p11.cfg
-</source>
-<p>where /opt/slot5p11.cfg is:</p>
-<source>
-attributes(*,*,*) = {
-  CKA_TOKEN = true
-}
-attributes(*,CKO_PRIVATE_KEY,*) = {
-  CKA_PRIVATE = true
-  CKA_SIGN = true
-  CKA_DECRYPT = true
-  CKA_EXTRACTABLE = true
-  CKA_SENSITIVE = true
-}
 </source>
 <note>The slot5p11.cfg is needed because the ProtectServer has some strange default attributes. If you do not specify an attributes file the private key will
 not be 'sensitive' and will be possible to export in clear text by any user of the HSM. You can see the attributes of the keys by running the test command:

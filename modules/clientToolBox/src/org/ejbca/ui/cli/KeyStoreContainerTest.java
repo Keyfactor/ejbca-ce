@@ -35,6 +35,7 @@ import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.keystore.KeyStoreContainer;
 import org.ejbca.util.keystore.KeyStoreContainerFactory;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * 
@@ -44,7 +45,9 @@ import org.ejbca.util.keystore.KeyStoreContainerFactory;
 class KeyStoreContainerTest {
     final String alias;
     final KeyPair keyPair;
-    final String providerName;
+    final private String providerName;
+    final private static PrintStream termOut = System.out;
+    final private static PrintStream termErr = System.err;
     KeyStoreContainerTest(String a, KeyPair kp, String pn) {
         this.alias = a;
         this.keyPair = kp;
@@ -87,10 +90,10 @@ class KeyStoreContainerTest {
                                 new KeyPair(cert.getPublicKey(), privateKey),
                                 keyStore.getProviderName()));                	
                     } else {
-                    	System.out.println("Not testing keys with alias "+alias+". No certificate exists.");
+                    	termOut.println("Not testing keys with alias "+alias+". No certificate exists.");
                     }            		
             	} catch (ClassCastException ce) {
-                	System.out.println("Not testing keys with alias "+alias+". Not a private key.");            		
+                	termOut.println("Not testing keys with alias "+alias+". Not a private key.");            		
             	}
             }
         }
@@ -101,7 +104,7 @@ class KeyStoreContainerTest {
                                     final String keyStoreType,
                                     final String storeID,
                                     final int nrOfTests) throws Exception {
-        System.out.println("Test of keystore with ID "+storeID+'.');
+        termOut.println("Test of keystore with ID "+storeID+'.');
         NormalTest tests[] = null;
         final KeyStoreContainer keyStore = getKeyStore(providerClassName, encryptProviderClassName,
                                                            keyStoreType, storeID);
@@ -111,12 +114,12 @@ class KeyStoreContainerTest {
                     tests = getTests(keyStore);
                 }
                 for( int j = 0; j<tests.length; j++ ) {
-                    System.out.println();
+                    termOut.println();
                     tests[j].doIt();
                 }
             } catch( Throwable t ) {
                 tests = null;
-                t.printStackTrace(System.err);
+                t.printStackTrace(termErr);
             }
         }
     }
@@ -138,7 +141,7 @@ class KeyStoreContainerTest {
                            -1,
                            isSign);
         } else {
-            System.out.println("Key alias does not exist.");
+            termOut.println("Key alias does not exist.");
         }
     }
     static private KeyStoreContainer getKeyStore(final String providerName,
@@ -151,8 +154,8 @@ class KeyStoreContainerTest {
                 keyStore = KeyStoreContainerFactory.getInstance(keyStoreType, providerName,
                                                    encryptProviderClassName, storeID, null, null);
             } catch( Throwable t ) {
-                t.printStackTrace(System.err);
-                System.err.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed.");
+                t.printStackTrace(termErr);
+                termErr.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed.");
                 new BufferedReader(new InputStreamReader(System.in)).readLine();
             }
         }
@@ -210,7 +213,7 @@ class KeyStoreContainerTest {
             ps.print("; decryption provider: "+this.cipherDeCryption!=null ? this.cipherDeCryption.getProvider() : "not initialized");
             ps.print("; modulus length: "+this.modulusLength+"; byte length "+this.byteLength);
             if ( this.result ) {
-                ps.println(". The docoded byte string is equal to the original!");
+                ps.println(". The decoded byte string is equal to the original!");
             } else {
                 ps.println("The original and the decoded byte array differs!");
                 ps.println("Original: \""+new String(this.original)+'\"');
@@ -259,7 +262,6 @@ class KeyStoreContainerTest {
             return this.result;
         }
         public void printInfo(PrintStream ps) {
-            ps.println("Private key: "+KeyStoreContainerTest.this.keyPair.getPrivate());
             ps.println("Signature test of key "+KeyStoreContainerTest.this.alias+
                        ": signature length " + this.signBA.length +
                        "; first byte " + Integer.toHexString(0xff&this.signBA[0]) +
@@ -279,7 +281,7 @@ class KeyStoreContainerTest {
                     final boolean isSignTest) throws Exception {
             super(alias, keyPair, providerName);
             this.performanceTest = new PerformanceTest();
-            this.performanceTest.execute(new MyCommandFactory(isSignTest), numberOfThreads, waitTime, System.out);
+            this.performanceTest.execute(new MyCommandFactory(isSignTest), numberOfThreads, waitTime, termOut);
         }
         private class Prepare implements Command {
             final private Test test;
@@ -352,12 +354,18 @@ class KeyStoreContainerTest {
             test.doOperation();
             final long totalTime = System.nanoTime()-startTime;
             test.verify();
-            test.printInfo(System.out);
+            test.printInfo(termOut);
             return totalTime;
         }
         void doIt() {
             final String CSI = "\u001B";
-            System.out.println(CSI+"[1;4;5mTesting of key: "+this.alias+CSI+"[0m");
+            termOut.println(CSI+"[1;4mTesting of key: "+this.alias+CSI+"[0m");
+            if ( KeyTools.isPrivateKeyExtractable(this.keyPair.getPrivate()) ) {
+                termErr.println(CSI+"[1;5;31mPrivate key extractable. Do not ever use this key. Delete it."+CSI+"[0m");
+            } else {
+                termOut.println("Private part:"); termOut.println(this.keyPair.getPrivate());
+            }
+            KeyTools.printPublicKeyInfo(this.keyPair.getPublic(), termOut);
             boolean isCryptoAvailable = true;
             try {
                 this.totalDecryptTime += test(new Crypto());
@@ -365,29 +373,29 @@ class KeyStoreContainerTest {
                 isCryptoAvailable = false;
             } catch( Exception e) {
                 this.totalDecryptTime = -1;
-                e.printStackTrace(System.out);
+                e.printStackTrace(termOut);
             }
             try {
                 this.totalSignTime += test(new Sign());
             } catch (Exception e) {
                 this.totalSignTime = -1;
-                e.printStackTrace(System.out);
+                e.printStackTrace(termOut);
             }
             this.nrOfTests++;
             final long nanoNumber = this.nrOfTests*(long)1000000000;
             if ( this.totalSignTime < 0) {
-                System.out.println("Signing not possible with this key. See exception.");
+                termOut.println("Signing not possible with this key. See exception.");
             } else {
-                System.out.println("Signings per second: "+(nanoNumber+this.totalSignTime/2)/this.totalSignTime);
+                termOut.println("Signings per second: "+(nanoNumber+this.totalSignTime/2)/this.totalSignTime);
             }
             if ( isCryptoAvailable ) {
                 if ( this.totalDecryptTime < 0) {
-                    System.out.println("Crypto not possible with this key. See exception");
+                    termOut.println("Crypto not possible with this key. See exception");
                 } else {
-                    System.out.println("Decryptions per second: "+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
+                    termOut.println("Decryptions per second: "+(nanoNumber+this.totalDecryptTime/2)/this.totalDecryptTime);
                 }
             } else {
-                System.out.println("No crypto available for this key.");
+                termOut.println("No crypto available for this key.");
             }
         }
 

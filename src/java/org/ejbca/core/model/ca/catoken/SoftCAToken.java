@@ -144,5 +144,11 @@ public class SoftCAToken extends BaseCAToken {
 		keystore.load(new java.io.ByteArrayInputStream(ksdata),keystorepass.toCharArray());
 		return keystore;
     }
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.BaseCAToken#doPermittExtractablePrivateKey()
+     */
+    protected boolean doPermitExtractablePrivateKey() {
+        return true;
+    }
 }
 

@@ -73,6 +73,14 @@ public class EjbcaConfiguration {
 	}
 
 	/**
+     * @return true if it is permitted to use an extactable private key in a HSM.
+     */
+    public static boolean doPermitExtractablePrivateKeys() {
+        final String value = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys", null);
+        return value!=null && value.trim().equalsIgnoreCase("true");
+    }
+
+	/**
 	 * The language that should be used internally for logging, exceptions and approval notifications.
 	 */
 	public static String getInternalResourcesPreferredLanguage() {
@@ -311,5 +319,4 @@ public class EjbcaConfiguration {
 		}
 		return time;
 	}
-
 }
