@@ -36,8 +36,9 @@ import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
-/** Tests the certificate expiration notifications.
- *
+/**
+ * Tests the certificate expiration notifications.
+ * 
  * @version $Id$
  */
 public class CertificateExpireTest extends CaTestCase {
@@ -63,16 +64,25 @@ public class CertificateExpireTest extends CaTestCase {
 
     public CertificateExpireTest(String name) {
         super(name);
-        CryptoProviderTools.installBCProvider(); // Install BouncyCastle provider
-        assertTrue("Could not create TestCA.", createTestCA(CA_NAME));
+        
+       
     }
 
     public void setUp() throws Exception {
+         
     }
 
     public void tearDown() throws Exception {
     }
 
+    /**
+     * FIXME: Make this into a @BeforeClass method in JUNIT4
+     */
+    public void test00BeforeClass() {
+        CryptoProviderTools.installBCProvider();
+        assertTrue("Could not create TestCA.", createTestCA(CA_NAME));
+    }
+    
     /**
      * Add a new user and an expire service. Test that the service expires the
      * users password
@@ -128,22 +138,25 @@ public class CertificateExpireTest extends CaTestCase {
         workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
         config.setWorkerProperties(workerprop);
 
-        serviceSession.addService(admin, CERTIFICATE_EXPIRATION_SERVICE, config);
+        if (serviceSession.getService(admin, CERTIFICATE_EXPIRATION_SERVICE) == null) {
+            serviceSession.addService(admin, 4711, CERTIFICATE_EXPIRATION_SERVICE, config);
+        }
         serviceSession.activateServiceTimer(admin, CERTIFICATE_EXPIRATION_SERVICE);
 
         // The service will run...
         Thread.sleep(5000);
         info = certificateStoreSession.getCertificateInfo(admin, fp);
         assertEquals("status does not match.", SecConst.CERT_ACTIVE, info.getStatus());
-
-        // The service will run...since there is a random delay of 30 seconds we
+  
+        // The service will run...since there is a random delay of 10 seconds we
         // have to wait a long time
         Thread.sleep(35000);
         info = certificateStoreSession.getCertificateInfo(admin, fp);
-        assertEquals("status does not match.", SecConst.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
+        assertEquals("Status does not match.", SecConst.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
 
         log.trace("<test01CreateNewUser()");
     }
+  
 
     /**
      * Remove all data stored by JUnit tests
@@ -155,7 +168,7 @@ public class CertificateExpireTest extends CaTestCase {
         log.debug("Removed user: " + username);
         serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
         log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
-        removeTestCA(CA_NAME);
+       
         log.debug("Removed test CA");
         log.trace("<test99CleanUp()");
     }

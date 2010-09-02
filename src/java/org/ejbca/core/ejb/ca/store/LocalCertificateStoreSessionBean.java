@@ -827,7 +827,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     }
 
     /** Gets certificate info, which is basically all fields except the certificate itself. 
-     * Note: this methid should not be used within a transaction where the reading of this info might depend on something stored earlier in the transaction. 
+     * Note: this method should not be used within a transaction where the reading of this info might depend on something stored earlier in the transaction. 
      * This is because this method uses direct SQL.
      * 
      * @return CertificateInfo or null if certificate does not exist.

@@ -1,3 +1,6 @@
+Improvement
+    * [ECA-1806] - As part of this ticket, ServiceTimerSessionBean was merged into LocalServiceSessionBean
+
 3.10.4, 2010-08-12
 ---
 New Feature

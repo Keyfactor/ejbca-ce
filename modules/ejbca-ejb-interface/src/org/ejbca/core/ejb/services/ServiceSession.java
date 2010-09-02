@@ -12,6 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
+import javax.ejb.EJBException;
+
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.ServiceExistsException;
+
 public interface ServiceSession {
     /**
      * Adds a Service to the database.
@@ -36,16 +42,7 @@ public interface ServiceSession {
     public void addService(org.ejbca.core.model.log.Admin admin, int id, java.lang.String name,
             org.ejbca.core.model.services.ServiceConfiguration serviceConfiguration) throws org.ejbca.core.model.services.ServiceExistsException;
 
-    /**
-     * Updates service configuration, but does not re-set the timer
-     * 
-     * @param noLogging
-     *            if true no logging (to the database will be done
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void changeService(org.ejbca.core.model.log.Admin admin, java.lang.String name,
-            org.ejbca.core.model.services.ServiceConfiguration serviceConfiguration, boolean noLogging);
+
 
     /**
      * Adds a service with the same content as the original.
@@ -78,18 +75,12 @@ public interface ServiceSession {
             throws org.ejbca.core.model.services.ServiceExistsException;
 
     /**
-     * Retrives a Collection of id:s (Integer) to visible authorized services.
+     * Retrieves a Collection of id:s (Integer) to visible authorized services.
      * Currently is the only check if the superadmin can see them all
      * 
      * @return Collection of id:s (Integer)
      */
     public java.util.Collection getAuthorizedVisibleServiceIds(org.ejbca.core.model.log.Admin admin);
-
-    /**
-     * Method creating a hashmap mapping service id (Integer) to service name
-     * (String).
-     */
-    public java.util.HashMap getServiceIdToNameMap(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Retrives a named service.
@@ -99,27 +90,13 @@ public interface ServiceSession {
     public org.ejbca.core.model.services.ServiceConfiguration getService(org.ejbca.core.model.log.Admin admin, java.lang.String name);
 
     /**
-     * Finds a service configuration by id.
-     * 
-     * @returns the service configuration or null if it doesn't exist.
-     */
-    public org.ejbca.core.model.services.ServiceConfiguration getServiceConfiguration(org.ejbca.core.model.log.Admin admin, int id);
-
-    /**
      * Returns a service id, given it's service name
      * 
      * @return the id or 0 if the service cannot be found.
      */
     public int getServiceId(org.ejbca.core.model.log.Admin admin, java.lang.String name);
 
-    /**
-     * Returns a Service name given its id.
-     * 
-     * @return the name or null if id doesnt exists
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public java.lang.String getServiceName(org.ejbca.core.model.log.Admin admin, int id);
+
 
     /**
      * Activates the timer for a named service. The service must already be
@@ -133,16 +110,67 @@ public interface ServiceSession {
      *             if a communication or other error occurs.
      */
     public void activateServiceTimer(org.ejbca.core.model.log.Admin admin, java.lang.String name);
+    
 
     /**
-     * cancels a timer with the given Id
+     * Returns a Service name given its id.
+     * 
+     * @return the name or null if id doesnt exists
+     * @throws EJBException
+     *             if a communication or other error occurs.
      */
-    public void cancelTimer(Integer id);
+    public String getServiceName(Admin admin, int id);
+
+ 
+    /**
+     * Loads and activates all the services from database that are active
+     * 
+     * @throws EJBException
+     *             if a communication or other error occurs.
+     */
+    public void load();
+
+    /**
+     * Cancels all existing timers a unload
+     * 
+     * @throws EJBException
+     *             if a communication or other error occurs.
+     */
+    public void unload();
 
     /**
      * Adds a timer to the bean, and cancels all existing timeouts for this id.
-     *
-     * @param id the id of the timer
+     * 
+     * @param id
+     *            the id of the timer
+     * @throws EJBException
+     *             if a communication or other error occurs.
      */
-	public void addTimer(long interval, Integer id);
+    public void addTimer(long interval, java.lang.Integer id);
+
+    /**
+     * cancels a timer with the given Id
+     * 
+     * @throws EJBException
+     *             if a communication or other error occurs.
+     */
+    public void cancelTimer(java.lang.Integer id);
+    
+    /**
+     * Updates service configuration, but does not re-set the timer
+     * 
+     * @param noLogging
+     *            if true no logging (to the database will be done
+     * @throws EJBException
+     *             if a communication or other error occurs.
+     */
+    public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging);
+    
+    /**
+     * Finds a service configuration by id.
+     * 
+     * @returns the service configuration or null if it doesn't exist.
+     */
+    public ServiceConfiguration getServiceConfiguration(Admin admin, int id);
+
 }

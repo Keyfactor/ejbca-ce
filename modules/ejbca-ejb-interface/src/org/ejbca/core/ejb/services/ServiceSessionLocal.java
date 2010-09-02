@@ -12,12 +12,42 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
+import java.util.HashMap;
+
 import javax.ejb.Local;
+
+import org.ejbca.core.model.log.Admin;
 
 /**
  * Local interface for ServiceSession.
  */
 @Local
 public interface ServiceSessionLocal extends ServiceSession {
+    /**
+     * Internal method should not be called from external classes, method is
+     * public to get automatic transaction handling. This method need
+     * "RequiresNew" transaction handling, because we want to make sure that the
+     * timer runs the next time even if the execution fails.
+     * 
+     * @return true if the service should run, false if the service should not
+     *         run
+     */
+    public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, org.ejbca.core.model.services.ServiceConfiguration serviceData,
+            java.lang.String serviceName);
 
+    /**
+     * Method creating a hashmap mapping service id (Integer) to service name
+     * (String).
+     */
+    public HashMap getServiceIdToNameMap(Admin admin);
+    
+    /**
+     * 
+     * Removes this ServiceData object from persistence. 
+     * 
+     * FIXME: This method should be moved to a ServiceData DAO.
+     * 
+     * @param htp Servicedata to be deleted.
+     */
+    public void removeServiceData(ServiceData htp);
 }
