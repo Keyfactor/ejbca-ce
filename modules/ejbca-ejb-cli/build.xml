@@ -83,13 +83,8 @@
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${lib.compile.classpath.property}"/>
     	</copy>
-    	<!-- Add the client libraries from the app server -->
-    	<pathconvert property="lib.jee.classpath.property" pathsep=" ">
-    		<path refid="lib.jee.classpath"/>
-    		<map from="${appserver.home.parent}/" to=""/>
-    	</pathconvert>
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="true">
-    		<fileset dir="${appserver.home.parent}" includes="${lib.jee.classpath.property}"/>
+			<path refid="lib.jee.classpath"/>
     	</copy>
     	<copy todir="${mod.ejbca-ejb-cli.dist}">
     		<fileset dir="${ejbca.home}/src/java" includes="jndi.properties"/>
