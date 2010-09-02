@@ -45,7 +45,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  */
 public class UsernameGenerator {
 
-	private static Logger log = Logger.getLogger(UsernameGenerator.class);
+	private static final Logger log = Logger.getLogger(UsernameGenerator.class);
 
 	// Generator configuration parameters, with good default values
 	private UsernameGeneratorParams params = null;
@@ -101,7 +101,9 @@ public class UsernameGenerator {
 			break;
 		}
 		String ret = addPrePostFix(str);
-		log.debug("Generated username: "+ret);
+		if (log.isDebugEnabled()) {
+			log.debug("Generated username: "+ret);
+		}
 		return ret;
 	}
 	
