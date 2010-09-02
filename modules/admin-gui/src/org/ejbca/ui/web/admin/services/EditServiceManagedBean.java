@@ -58,7 +58,10 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * @version $Id$
  */
 public class EditServiceManagedBean extends BaseManagedBean {
-	private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
+
+    private static final long serialVersionUID = 1L;
+
+    private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
 	
 	private ServiceConfigurationView serviceConfigurationView;
 	

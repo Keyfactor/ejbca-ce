@@ -18,6 +18,6 @@ import javax.ejb.Remote;
  * Remote interface for ServiceSession.
  */
 @Remote
-public interface ServiceSessionRemote extends ServiceSession {
+public interface ServiceSessionRemote extends ServiceSession {  
    
 }

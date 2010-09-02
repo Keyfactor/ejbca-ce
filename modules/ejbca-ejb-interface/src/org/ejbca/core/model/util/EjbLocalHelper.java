@@ -57,8 +57,6 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSession;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
-import org.ejbca.core.ejb.services.ServiceTimerSession;
-import org.ejbca.core.ejb.services.ServiceTimerSessionRemote;
 
 /**
  * Helper methods to get EJB session interfaces.
@@ -227,14 +225,6 @@ public class EjbLocalHelper {
 			serviceSession = JndiHelper.getRemoteSession(ServiceSessionRemote.class);
 		}
 		return serviceSession;
-	}
-
-	private ServiceTimerSession serviceTimerSession;
-	public ServiceTimerSession getServiceTimerSession() {
-		if (serviceTimerSession == null) {
-			serviceTimerSession = JndiHelper.getRemoteSession(ServiceTimerSessionRemote.class);
-		}
-		return serviceTimerSession;
 	}
 
 	private HardTokenBatchJobSession hardTokenBatchJobSession;

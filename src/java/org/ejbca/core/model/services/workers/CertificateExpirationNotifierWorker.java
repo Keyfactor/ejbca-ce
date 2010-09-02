@@ -129,79 +129,81 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
             Connection con = null;
             PreparedStatement ps = null;
             ResultSet result = null;
-
-            try {
-                con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-                // We can not select the base64 certificate data here, because
-                // it may be a LONG data type which we can't simply select
-                String sqlstr = "SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE (" + cASelectString + ") AND " + "(expireDate > " + now
-                        + ") AND" + "(expireDate < " + (nextRunTimestamp + thresHold) + ") AND " + "(status = " + SecConst.CERT_ACTIVE + " OR status = "
-                        + SecConst.CERT_NOTIFIEDABOUTEXPIRATION + ") AND " + "(expireDate >= " + (currRunTimestamp + thresHold) + " OR " + "status = "
-                        + SecConst.CERT_ACTIVE + ")";
-                log.debug("Executing search sql: " + sqlstr);
-                ps = con.prepareStatement(sqlstr);
-
-                result = ps.executeQuery();
-
-                // Certificate store session bean for retrieving the
-                // certificate.
-                int count = 0;
-                while (result.next()) {
-                    count++;
-                    // For each certificate update status.
-                    String fingerprint = result.getString(1);
-                    String username = result.getString(2);
-                    // String certBase64 = result.getString(2);
-                    // Get the certificate through a session bean
-                    log.debug("Found a certificate we should notify. Username=" + username + ", fp=" + fingerprint);
-                    Certificate cert = getCertificateSession().findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
-                    UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
-                    if (userData != null) {
-                        if (isSendToEndUsers()) {
-                            if (userData.getEmail() == null || userData.getEmail().trim().equals("")) {
-                                String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
-                                log.info(msg);
-                            } else {
-                                // Populate end user message
-                                log.debug("Adding to email queue for user: " + userData.getEmail());
-                                String message = new UserNotificationParamGen(userData, cert).interpolate(getEndUserMessage());
-                                MailActionInfo mailActionInfo = new MailActionInfo(userData.getEmail(), getEndUserSubject(), message);
-                                userEmailQueue.add(new EmailCertData(fingerprint, mailActionInfo));
+            
+            if(!cASelectString.equals("")) {
+                try {
+                    con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+                    // We can not select the base64 certificate data here, because
+                    // it may be a LONG data type which we can't simply select
+                    String sqlstr = "SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE (" + cASelectString + ") AND " + "(expireDate > " + now
+                            + ") AND" + "(expireDate < " + (nextRunTimestamp + thresHold) + ") AND " + "(status = " + SecConst.CERT_ACTIVE + " OR status = "
+                            + SecConst.CERT_NOTIFIEDABOUTEXPIRATION + ") AND " + "(expireDate >= " + (currRunTimestamp + thresHold) + " OR " + "status = "
+                            + SecConst.CERT_ACTIVE + ")";
+                    log.debug("Executing search sql: " + sqlstr);
+                    ps = con.prepareStatement(sqlstr);
+    
+                    result = ps.executeQuery();
+    
+                    // Certificate store session bean for retrieving the
+                    // certificate.
+                    int count = 0;
+                    while (result.next()) {
+                        count++;
+                        // For each certificate update status.
+                        String fingerprint = result.getString(1);
+                        String username = result.getString(2);
+                        // String certBase64 = result.getString(2);
+                        // Get the certificate through a session bean
+                        log.debug("Found a certificate we should notify. Username=" + username + ", fp=" + fingerprint);
+                        Certificate cert = getCertificateSession().findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
+                        UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
+                        if (userData != null) {
+                            if (isSendToEndUsers()) {
+                                if (userData.getEmail() == null || userData.getEmail().trim().equals("")) {
+                                    String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
+                                    log.info(msg);
+                                } else {
+                                    // Populate end user message
+                                    log.debug("Adding to email queue for user: " + userData.getEmail());
+                                    String message = new UserNotificationParamGen(userData, cert).interpolate(getEndUserMessage());
+                                    MailActionInfo mailActionInfo = new MailActionInfo(userData.getEmail(), getEndUserSubject(), message);
+                                    userEmailQueue.add(new EmailCertData(fingerprint, mailActionInfo));
+                                }
                             }
+                        } else {
+                            log.debug("Trying to send notification to user, but no UserData can be found for user '" + username
+                                    + "', will only send to admin if admin notifications are defined.");
                         }
-                    } else {
-                        log.debug("Trying to send notification to user, but no UserData can be found for user '" + username
-                                + "', will only send to admin if admin notifications are defined.");
-                    }
-                    if (isSendToAdmins()) {
-                        // If we did not have any user for this, we will simply
-                        // use empty values for substitution
-                        if (userData == null) {
-                            userData = new UserDataVO();
-                            userData.setUsername(username);
+                        if (isSendToAdmins()) {
+                            // If we did not have any user for this, we will simply
+                            // use empty values for substitution
+                            if (userData == null) {
+                                userData = new UserDataVO();
+                                userData.setUsername(username);
+                            }
+                            // Populate admin message
+                            log.debug("Adding to email queue for admin");
+                            String message = new UserNotificationParamGen(userData, cert).interpolate(getAdminMessage());
+                            MailActionInfo mailActionInfo = new MailActionInfo(null, getAdminSubject(), message);
+                            adminEmailQueue.add(new EmailCertData(fingerprint, mailActionInfo));
                         }
-                        // Populate admin message
-                        log.debug("Adding to email queue for admin");
-                        String message = new UserNotificationParamGen(userData, cert).interpolate(getAdminMessage());
-                        MailActionInfo mailActionInfo = new MailActionInfo(null, getAdminSubject(), message);
-                        adminEmailQueue.add(new EmailCertData(fingerprint, mailActionInfo));
+                        if (!isSendToEndUsers() && !isSendToAdmins()) {
+                            // a little bit of a kludge to make JUnit testing
+                            // feasible...
+                            log.debug("nobody to notify for cert with fp:" + fingerprint);
+                            updateStatus(fingerprint, SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+                        }
                     }
-                    if (!isSendToEndUsers() && !isSendToAdmins()) {
-                        // a little bit of a kludge to make JUnit testing
-                        // feasible...
-                        log.debug("nobody to notify for cert with fp:" + fingerprint);
-                        updateStatus(fingerprint, SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+                    if (count == 0) {
+                        log.debug("No certificates found for notification.");
                     }
+    
+                } catch (Exception fe) {
+                   log.error("Error running service work: ", fe);
+                    throw new ServiceExecutionFailedException(fe);
+                } finally {
+                    JDBCUtil.close(con, ps, result);
                 }
-                if (count == 0) {
-                    log.debug("No certificates found for notification.");
-                }
-
-            } catch (Exception fe) {
-                log.error("Error running service work: ", fe);
-                throw new ServiceExecutionFailedException(fe);
-            } finally {
-                JDBCUtil.close(con, ps, result);
             }
 
             if (isSendToEndUsers()) {

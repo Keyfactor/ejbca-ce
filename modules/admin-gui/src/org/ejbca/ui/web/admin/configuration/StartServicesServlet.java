@@ -80,7 +80,7 @@ public class StartServicesServlet extends HttpServlet {
         
         log.trace(">destroy calling ServiceSession.unload");
         try {
-			ejb.getServiceTimerSession().unload();
+			ejb.getServiceSession().unload();
 		} catch (Exception e) {
 			log.error(e);
 		}
@@ -299,7 +299,7 @@ public class StartServicesServlet extends HttpServlet {
 
         log.trace(">init calling ServiceSession.load");
         try {
-        	ejb.getServiceTimerSession().load();
+        	ejb.getServiceSession().load();
 		} catch (Exception e) {
 			log.error("Error init ServiceSession: ", e);
 		}
