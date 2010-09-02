@@ -158,6 +158,13 @@
 # English (United Kingdom)
 #ca.toolateexpiredate=19/1/2038 3:14:08 AM
 
+# The idea of a HSM to use a HSM is to have the private keys protected. It should not be possible to extract them.
+# To prevent using a key with the private part extractable a test is made before activating a CA.
+# If this test shows that you can read the private part from the key the CA will not be activated unless the key is a SW key.
+# You may (but should not) permit using extractable private keys by setting this property to 'true'.
+# Default: false
+#ca.doPermitExtractablePrivateKeys=true
+
 # ------------- Core language configuration -------------
 # The language that should be used internally for logging, exceptions and approval notifications.
 # The languagefile is stored in 'src/intresources/intresources.xx.properties'. 

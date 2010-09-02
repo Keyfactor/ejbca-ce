@@ -13,6 +13,8 @@
 
  package org.ejbca.core.model.ca.catoken;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -21,7 +23,6 @@ import java.security.Provider;
 import java.security.ProviderException;
 import java.security.PublicKey;
 import java.security.Security;
-import java.security.Signature;
 import java.security.cert.Certificate;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -30,11 +31,11 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.keystore.KeyTools;
 
 
 /**
@@ -78,44 +79,27 @@ public abstract class BaseCAToken implements ICAToken {
             }
         }
     }
-
+    /**
+     * do we permit extractable? Only SW keys should be permited to be extractable,
+     * @return false if the key must not be extractable
+     */
+    protected boolean doPermitExtractablePrivateKey() {
+        return false;
+    }
     private void testKey( KeyPair pair ) throws Exception {
-        final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
-        final byte signBV[];
-        String testSigAlg = (String)AlgorithmTools.getSignatureAlgorithms(pair.getPublic()).iterator().next();
-        if ( testSigAlg == null ) {
-        	testSigAlg = "SHA1WithRSA";
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Testing keys with algorithm: "+pair.getPublic().getAlgorithm());        	
-            log.debug("testSigAlg: "+testSigAlg);        	
-            log.debug("provider: "+getProvider());        	
-            log.trace("privateKey: "+pair.getPrivate());        	
-            log.trace("privateKey class: "+pair.getPrivate().getClass().getName()); 
-            log.trace("publicKey: "+pair.getPublic());        	
-            log.trace("publicKey class: "+pair.getPublic().getClass().getName());        	
-        }
-        {
-            Signature signature = Signature.getInstance(testSigAlg, getProvider());
-            signature.initSign( pair.getPrivate() );
-            signature.update( input );
-            signBV = signature.sign();
-            if (log.isDebugEnabled()) {
-            	if (signBV != null) {
-                    log.trace("Created signature of size: "+signBV.length);        	
-                    log.trace("Created signature: "+new String(Hex.encode(signBV)));        	            		
-            	} else {
-            		log.warn("Test signature is null?");
-            	}
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream ps = new PrintStream(baos);
+        KeyTools.printPublicKeyInfo(pair.getPublic(), ps);
+        ps.flush();
+        log.info("Using of "+baos.toString());
+        if ( !doPermitExtractablePrivateKey() && KeyTools.isPrivateKeyExtractable(pair.getPrivate()) ) {
+            String msg = intres.getLocalizedMessage("catoken.extractablekey");
+            if ( !EjbcaConfiguration.doPermitExtractablePrivateKeys() ) {
+                throw new InvalidKeyException(msg);
             }
-        }{
-            Signature signature = Signature.getInstance(testSigAlg, "BC");
-            signature.initVerify(pair.getPublic());
-            signature.update(input);
-            if ( !signature.verify(signBV) ) {
-                throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
-            }
+            log.error(msg);
         }
+        KeyTools.testKey(pair.getPrivate(), pair.getPublic(), getProvider());
     }
     /**
      * @param keyStore
@@ -131,7 +115,7 @@ public abstract class BaseCAToken implements ICAToken {
                 (PrivateKey)keyStore.getKey(keyAliases[i],
                                             (authCode!=null && authCode.length()>0)? authCode.toCharArray():null);
             if (privateK == null) {
-                log.error("Can not read private key with alias '"+keyAliases[i]+"' from keystore, got null. If the key was generated after the latest application server start then restart the application server.");
+                log.error(intres.getLocalizedMessage("catoken.noprivate", keyAliases[i]));
         		if (log.isDebugEnabled()) {
         			for (int j=0; j<keyAliases.length;j++) {
         				log.debug("Existing alias: "+keyAliases[j]);
@@ -175,7 +159,7 @@ public abstract class BaseCAToken implements ICAToken {
     	if (cert != null) {
     		pubk = cert.getPublicKey();
     	} else {
-            log.error("Can not read public key certificate with alias '"+alias+"' from keystore, got null. If the key of the certificate was generated after the latest application server start then restart the application server.");
+            log.error(intres.getLocalizedMessage("catoken.nopublic", alias));
     		if (log.isDebugEnabled()) {
     			Enumeration en = keyStore.aliases();
     			while (en.hasMoreElements()) {
@@ -269,7 +253,7 @@ public abstract class BaseCAToken implements ICAToken {
     			try {
 					authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin);
 				} catch (Exception e) {
-					log.error("Failed to encrypt auto activation pin, using non-ecnrypted instead: ", e);
+					log.error(intres.getLocalizedMessage("catoken.nopinencrypt"), e);
 					authcode = pin;
 				}
     		}
@@ -300,7 +284,7 @@ public abstract class BaseCAToken implements ICAToken {
         		setProvider(jceProvider);        	
         		this.mJceProviderName = jceProvider.getName(); 
         	} catch (Exception e) {
-        		log.error("Failed to initialize JCE provider. Encryption operations may not work bu we are continuing...", e);
+        		log.error(intres.getLocalizedMessage("catoken.jceinitfail"), e);
         	}
         } else {
         	this.mJceProviderName = null;
@@ -458,7 +442,7 @@ public abstract class BaseCAToken implements ICAToken {
             			// If we can test the testkey, we are finally active!
             	    	ret = ICAToken.STATUS_ACTIVE;
             		} catch( Throwable th ){
-            			log.error("Error testing activation", th);
+            			log.error(intres.getLocalizedMessage("catoken.activationtestfail"), th);
             		}
             	}
         	}
