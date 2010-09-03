@@ -32,12 +32,15 @@ public class UsernameGeneratorParams {
 	protected static final int MODE_USERNAME = 1;
 	/** Use a part of the DN as pase username */
 	protected static final int MODE_DN = 2;
+	/** use a fixed (set as dNGeneratorComponent) username */
+	protected static final int MODE_FIXED = 3;
 
 	public static final String RANDOM = "RANDOM";
 	public static final String USERNAME = "USERNAME";
 	public static final String DN = "DN";
+	public static final String FIXED = "FIXED";
 	
-	private String[] modes = {"RANDOM", "USERNAME", "DN"};
+	private String[] modes = {"RANDOM", "USERNAME", "DN", "FIXED"};
 	private List modeList = null;
 
 	// Generator configuration parameters, with good default values
@@ -50,7 +53,7 @@ public class UsernameGeneratorParams {
 	private int randomPrefixLength = 12;
 	
 	public UsernameGeneratorParams() {
-		// all defautl values
+		// all default values
 	}
 	
 	public String getDNGeneratorComponent() {

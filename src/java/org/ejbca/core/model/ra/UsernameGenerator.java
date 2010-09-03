@@ -97,6 +97,12 @@ public class UsernameGenerator {
 				throw new IllegalArgumentException("Input name can not be null in MODE_USERNAME!");
 			}
 	        break;
+		case UsernameGeneratorParams.MODE_FIXED:
+			if (params.getDNGeneratorComponent() == null) {
+				throw new IllegalArgumentException("DNGeneratorComponent can not be null in MODE_FIXED!");
+			}
+			str = params.getDNGeneratorComponent();
+	        break;
 		default:
 			break;
 		}

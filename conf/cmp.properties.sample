@@ -54,9 +54,10 @@
 # Default: empty
 #cmp.ra.authenticationsecret=
 
-# Which generation scheme should be used, RANDOM or DN for base username.
+# Which generation scheme should be used, RANDOM, DN or USERNAME for base username. FIXED to have a fixed username.
 # Random will generate a 12 character long random username.
 # DN will take a part of the request DN, which part is defined by cmp.ra.namegenerationparameters, and use as the username.
+# USERNAME will use the request DN as username.
 # If the same username is constructed (for exmaple UID) as an already existing user, the existing user will be modified with
 # new values for profile etc, and a new certificate will be issued for that user.
 #
@@ -66,6 +67,7 @@
 # Parameters for name generation, for DN it can be for example CN, UID or SN. 
 # Either the CN or the UID from the request can be used. 
 # You can add several in order to have fall-back in case the first does not exist in the DN, for example UID;SN;CN. First try UID, if it does not exist try SN (SerialNumber) etc. 
+# For FIXED namegenerationscheme the username will be the value specified here.
 #
 # Default: CN
 #cmp.ra.namegenerationparameters=CN
