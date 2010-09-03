@@ -3997,6 +3997,14 @@ Depending on application, the GeneralPurposeCustomPublisher can calculate whethe
 Set the parameter crl.calclulateDeltaCrlLocally to true in order to do this, or false if you wish to check this in an external script (or not at all). 
 The result of this check, if run, will be last in the argument list to the script.
 </p>
+<p>An example linux script for certificate publishing could look like:</p>
+<source>
+#!/usr/bin/env bash
+
+echo $* >> /home/user/publisherlog.txt
+
+cp $1 /home/user/cert.crt
+</source>
 </subsubsection>
 </subsection>
 
