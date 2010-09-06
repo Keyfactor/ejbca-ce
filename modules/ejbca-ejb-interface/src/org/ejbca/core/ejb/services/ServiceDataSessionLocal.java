@@ -12,33 +12,45 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
-import java.util.HashMap;
+import java.util.List;
 
 import javax.ejb.Local;
+import javax.persistence.NonUniqueResultException;
 
-import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.services.ServiceConfiguration;
 
 /**
- * Local interface for ServiceSession.
+ * @author mikek
+ * 
  */
 @Local
-public interface ServiceSessionLocal extends ServiceSession {
-    /**
-     * Internal method should not be called from external classes, method is
-     * public to get automatic transaction handling. This method need
-     * "RequiresNew" transaction handling, because we want to make sure that the
-     * timer runs the next time even if the execution fails.
-     * 
-     * @return true if the service should run, false if the service should not
-     *         run
-     */
-    public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, org.ejbca.core.model.services.ServiceConfiguration serviceData,
-            java.lang.String serviceName);
+public interface ServiceDataSessionLocal extends ServiceDataSession {
 
     /**
-     * Method creating a hashmap mapping service id (Integer) to service name
-     * (String).
+     * @throws NonUniqueResultException
+     *             if more than one entity with the name exists
+     * @return the found entity instance or null if the entity does not exist
      */
-    public HashMap getServiceIdToNameMap(Admin admin);
-   
+    ServiceData findByName(String name);
+
+
+
+    /** @return return the query results as a List. */
+    List<ServiceData> findAll();
+
+    /**
+     * Adds a new ServiceData object with the given parameters to persistence.
+     * 
+     * @param id
+     * @param name
+     * @param serviceConfiguration
+     */
+    void addServiceData(Integer id, String name, ServiceConfiguration serviceConfiguration);
+    
+    /**
+     * Removes given parameter from persistence.
+     * 
+     * @param serviceData
+     */
+     void removeServiceData(ServiceData serviceData);
 }
