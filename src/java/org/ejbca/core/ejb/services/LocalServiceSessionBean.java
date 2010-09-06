@@ -321,7 +321,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
      * 
      * @param htp Servicedata to be deleted.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeServiceData(ServiceData htp) {
         entityManager.remove(htp);
     }
@@ -563,7 +563,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
                     log.debug("Exception: ", e);
                 }
 
-                // Check if we have scheduled this time to run again, or if this
+                // Check if we have scheduled this timer to run again, or if this
                 // exception would stop the service from running for ever.
                 // If we can't find any current timer we will try to create a
                 // new one.
@@ -592,7 +592,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
                         nextInterval = worker.getNextInterval();
                     }
                     long intervalMillis = getNextIntervalMillis(nextInterval);
-                    timerService.createTimer(intervalMillis, timerInfo); 
+                    addTimer(intervalMillis, timerInfo); 
                     String msg = intres.getLocalizedMessage("services.servicefailedrescheduled", intervalMillis);
                     log.info(msg);
                 }
@@ -648,7 +648,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
          * only randomize on 5 seconds.
          */
         long intervalMillis = getNextIntervalMillis(nextInterval);
-        timerService.createTimer(intervalMillis, timerInfo); 
+        addTimer(intervalMillis, timerInfo); 
         // Calculate the nextRunTimeStamp, since we set a new timer
         Date runDateCheck = serviceData.getNextRunTimestamp();  
         /*
@@ -799,14 +799,14 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
             if (!existingTimers.contains(id)) {
                 IWorker worker = getWorker(serviceConfiguration, idToNameMap.get(id));
                 if (worker != null && serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
-                    timerService.createTimer(0, (worker.getNextInterval()) * 1000, id);
+                   addTimer((worker.getNextInterval()) * 1000, id);
                 }
             }
         }
 
         if (!existingTimers.contains(SERVICELOADER_ID)) {
             // load the service timer
-            timerService.createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID); 
+            addTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID); 
         }
     }
 
@@ -852,7 +852,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
      * 
      * @ejb.interface-method view-type="both"
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void cancelTimer(Integer id) {
 
         for (Timer next : (Collection<Timer>) timerService.getTimers()) {

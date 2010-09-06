@@ -40,7 +40,8 @@ import org.ejbca.util.JDBCUtil;
  * 
  * @author Philip Vendil, Tomas Gustavsson
  * 
- * @version: $Id$
+ * @version: $Id: CertificateExpirationNotifierWorker.java 9780 2010-09-02
+ *           15:31:17Z mikekushner $
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
@@ -129,21 +130,22 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
             Connection con = null;
             PreparedStatement ps = null;
             ResultSet result = null;
-            
-            if(!cASelectString.equals("")) {
+
+            if (!cASelectString.equals("")) {
                 try {
                     con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-                    // We can not select the base64 certificate data here, because
+                    // We can not select the base64 certificate data here,
+                    // because
                     // it may be a LONG data type which we can't simply select
-                    String sqlstr = "SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE (" + cASelectString + ") AND " + "(expireDate > " + now
-                            + ") AND" + "(expireDate < " + (nextRunTimestamp + thresHold) + ") AND " + "(status = " + SecConst.CERT_ACTIVE + " OR status = "
-                            + SecConst.CERT_NOTIFIEDABOUTEXPIRATION + ") AND " + "(expireDate >= " + (currRunTimestamp + thresHold) + " OR " + "status = "
-                            + SecConst.CERT_ACTIVE + ")";
+                    String sqlstr = "SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE (" + cASelectString + ") AND "
+                            + "(expireDate > " + now + ") AND" + "(expireDate < " + (nextRunTimestamp + thresHold) + ") AND " + "(status = "
+                            + SecConst.CERT_ACTIVE + " OR status = " + SecConst.CERT_NOTIFIEDABOUTEXPIRATION + ") AND " + "(expireDate >= "
+                            + (currRunTimestamp + thresHold) + " OR " + "status = " + SecConst.CERT_ACTIVE + ")";
                     log.debug("Executing search sql: " + sqlstr);
                     ps = con.prepareStatement(sqlstr);
-    
+
                     result = ps.executeQuery();
-    
+
                     // Certificate store session bean for retrieving the
                     // certificate.
                     int count = 0;
@@ -175,7 +177,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                                     + "', will only send to admin if admin notifications are defined.");
                         }
                         if (isSendToAdmins()) {
-                            // If we did not have any user for this, we will simply
+                            // If we did not have any user for this, we will
+                            // simply
                             // use empty values for substitution
                             if (userData == null) {
                                 userData = new UserDataVO();
@@ -197,20 +200,19 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                     if (count == 0) {
                         log.debug("No certificates found for notification.");
                     }
-    
+
                 } catch (Exception fe) {
-                   log.error("Error running service work: ", fe);
+                    log.error("Error running service work: ", fe);
                     throw new ServiceExecutionFailedException(fe);
                 } finally {
                     JDBCUtil.close(con, ps, result);
                 }
-            }
-
-            if (isSendToEndUsers()) {
-                sendEmails(userEmailQueue);
-            }
-            if (isSendToAdmins()) {
-                sendEmails(adminEmailQueue);
+                if (isSendToEndUsers()) {
+                    sendEmails(userEmailQueue);
+                }
+                if (isSendToAdmins()) {
+                    sendEmails(adminEmailQueue);
+                }
             }
 
         } else {
