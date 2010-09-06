@@ -4807,5 +4807,19 @@ Verified OK
 </source>
 </section>
 
+<section name="Maximizing performance">
+<p>Normally in a PKI extreme performance is not really an issue. A default installation of EJBCA can easily issue tenths of certificates per second, 
+which is more than enough even for very large installations. 
+For OCSP it is more important, but OCSP is also more light weight so the default performance there is hundreds of requests per second. </p>
+<p>In more specialized PKI installations there can however be the need to issue hundreds of certificates per second. Therefore we provide a small list of
+configuration items that can maximize performance of EJBCA to issue more than 100 certificates per second (depending on hardware etc).</p>
+<ul>
+<li>Disable logging to database in log.properties, only use Log4jLogDevice.</li>
+<li>Disable use of CertReqHistory in CA configuration.</li>
+<li>Enable all caches in cache.properties. If you cache indefinately you can use the cli command 'bin/ejbca.sh clearcaches' if configuration whanges are made.</li>
+<li>Do not enforce any uniqueness (keys, DN, Subject DN SerialNumber) in CA configuration.</li>
+</ul>
+</section>
+
 </body>
 </document>
