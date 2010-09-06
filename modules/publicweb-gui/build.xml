@@ -20,6 +20,7 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-fileupload.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 	</path>

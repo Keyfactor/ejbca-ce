@@ -108,7 +108,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // Some appserver (Weblogic) responds with
         // "application/x-pkcs12; charset=UTF-8"
         String contentType = con.getContentType();
-        assertTrue("contentType was " + contentType, contentType.startsWith("application/x-pkcs12"));
+        boolean contentTypeIsPkcs12 = contentType.startsWith("application/x-pkcs12");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and PKCS12 requests are small
         InputStream in = con.getInputStream();
@@ -121,6 +121,11 @@ public class CertRequestHttpTest extends CaTestCase {
         in.close();
         byte[] respBytes = baos.toByteArray();
         assertTrue(respBytes.length > 0);
+        if (!contentTypeIsPkcs12 && log.isDebugEnabled()) {
+        	// If the content-type isn't application/x-pkcs12 we like to know what we got back..
+        	log.debug(new String(respBytes));
+        }
+        assertTrue("contentType was " + contentType, contentTypeIsPkcs12);
 
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         ByteArrayInputStream is = new ByteArrayInputStream(respBytes);
