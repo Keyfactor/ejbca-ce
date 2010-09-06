@@ -37,37 +37,34 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.InterfaceCache;
 
-/** Tests the UserData entity bean and some parts of UserAdminSession.
- *
- * @version $Id$
+/**
+ * Tests the UserData entity bean and some parts of UserAdminSession.
+ * 
+ * @version $Id: PublisherQueueProcessTest.java 9566 2010-07-29 23:12:16Z
+ *          jeklund $
  */
 public class PublisherQueueProcessTest extends TestCase {
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     private static byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
-            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
-            + "ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
-            + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB"
-            + "hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy"
-            + "Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe"
-            + "ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G"
-            + "A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM"
-            + "MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw"
-            + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS"
-            + "5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
-            + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
-            + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
+            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw" + "ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
+            + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy"
+            + "Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe" + "ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G"
+            + "A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM" + "MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw"
+            + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS" + "5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
+            + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+" + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
-    
+
     /**
      * Creates a new TestUserPasswordExpire object.
-     *
-     * @param name DOCUMENT ME!
+     * 
+     * @param name
+     *            DOCUMENT ME!
      */
     public PublisherQueueProcessTest(String name) throws Exception {
         super(name);
@@ -148,8 +145,8 @@ public class PublisherQueueProcessTest extends TestCase {
         // publisherId before
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         try {
-            certificateStoreSession.storeCertificate(admin, cert, "TestPublishQueueProcessService", null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY,
-                    12345, "tag", new Date().getTime());
+            certificateStoreSession.storeCertificate(admin, cert, "TestPublishQueueProcessService", null, SecConst.CERT_ACTIVE,
+                    SecConst.CERTTYPE_ENDENTITY, 12345, "tag", new Date().getTime());
         } catch (Exception e) {
             // Perhaps the cert already exists
         }
@@ -214,24 +211,14 @@ public class PublisherQueueProcessTest extends TestCase {
         i = c.iterator();
         while (i.hasNext()) {
             PublisherQueueData d = i.next();
-            try {
-                publisherQueueSession.removeQueueData(d.getPk());
-            } catch (Exception pee) {
-            }
-        }
-        try {
-            serviceSession.removeService(admin, "TestPublishQueueProcessService12345");
-        } catch (Exception pee) {
-        }
-        try {
-            serviceSession.removeService(admin, "TestPublishQueueProcessService");
-        } catch (Exception pee) {
+            publisherQueueSession.removeQueueData(d.getPk());
+
         }
 
-        try {
-            publisherSession.removePublisher(admin, "TestPublishQueueProcessService");
-        } catch (Exception pee) {
-        }
+        serviceSession.removeService(admin, "TestPublishQueueProcessService12345");
+        serviceSession.removeService(admin, "TestPublishQueueProcessService");
+
+        publisherSession.removePublisher(admin, "TestPublishQueueProcessService");
 
     }
 }

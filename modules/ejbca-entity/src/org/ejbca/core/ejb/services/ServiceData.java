@@ -134,34 +134,11 @@ public class ServiceData implements Serializable {
         }
         this.serviceConfiguration = serviceConfiguration;        
     }
-    
-    //
-    // Search functions. 
-    //
 
-	/** @return the found entity instance or null if the entity does not exist */
-    public static ServiceData findById(EntityManager entityManager, Integer id) {
-    	return entityManager.find(ServiceData.class, id);
-    }
 
-	/**
-	 * @throws NonUniqueResultException if more than one entity with the name exists
-	 * @return the found entity instance or null if the entity does not exist
-	 */
-    public static ServiceData findByName(EntityManager entityManager, java.lang.String name) {
-    	ServiceData ret = null;
-    	try {
-    		Query query = entityManager.createQuery("SELECT a FROM ServiceData a WHERE a.name=:name");
-    		query.setParameter("name", name);
-    		ret = (ServiceData)query.getSingleResult();
-		} catch (NoResultException e) {
-		}
-		return ret;
-    }    
 
-	/** @return return the query results as a List. */
-    public static List<ServiceData> findAll(EntityManager entityManager) {
-    	Query query = entityManager.createQuery("SELECT a FROM ServiceData a");
-    	return query.getResultList();
-    }    
+
+  
+
+ 
 }

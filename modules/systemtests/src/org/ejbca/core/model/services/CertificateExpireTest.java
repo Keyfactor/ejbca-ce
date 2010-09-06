@@ -19,10 +19,12 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.services.ServiceDataSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -57,6 +59,7 @@ public class CertificateExpireTest extends CaTestCase {
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private ServiceDataSessionRemote serviceDataSession = JndiHelper.getRemoteSession(ServiceDataSessionRemote.class);
 
     public CertificateExpireTest() {
         super();
@@ -146,7 +149,7 @@ public class CertificateExpireTest extends CaTestCase {
         // The service will run...
         Thread.sleep(5000);
         info = certificateStoreSession.getCertificateInfo(admin, fp);
-        assertEquals("status does not match.", SecConst.CERT_ACTIVE, info.getStatus());
+        assertEquals("status dotes not match.", SecConst.CERT_ACTIVE, info.getStatus());
   
         // The service will run...since there is a random delay of 10 seconds we
         // have to wait a long time
@@ -168,7 +171,8 @@ public class CertificateExpireTest extends CaTestCase {
         log.debug("Removed user: " + username);
         serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
         log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
-       
+        assertNull("ServiceData object with id 4711 was not removed properly.", serviceDataSession.findById(4711));
+        
         log.debug("Removed test CA");
         log.trace("<test99CleanUp()");
     }

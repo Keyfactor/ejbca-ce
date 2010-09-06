@@ -154,15 +154,14 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
     private static final Integer SERVICELOADER_ID = 0;
 
     private static final long SERVICELOADER_PERIOD = 5 * 60 * 1000;
-    
-    @PersistenceContext(unitName = "ejbca")
-    private EntityManager entityManager;
 
     @Resource
     private TimerService timerService;
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private ServiceDataSessionLocal serviceDataSession;
     @EJB
     private LogSessionLocal logSession;
     
@@ -204,10 +203,10 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         }
         boolean success = false;
         if (isAuthorizedToEditService(admin, serviceConfiguration)) {
-            if (ServiceData.findByName(entityManager, name) == null) {
-                if (ServiceData.findById(entityManager, Integer.valueOf(id)) == null) {
+            if (serviceDataSession.findByName(name) == null) {
+                if (serviceDataSession.findById(Integer.valueOf(id)) == null) {
                     try {
-                        entityManager.persist(new ServiceData(id, name, serviceConfiguration));
+                        serviceDataSession.addServiceData(id, name, serviceConfiguration);
                         success = true;
                     } catch (Exception e) {
                         log.error("Unexpected error creating new service: ", e);
@@ -245,7 +244,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
             log.trace(">cloneService(name: " + oldname + ")");
         }
         ServiceConfiguration servicedata = null;
-        ServiceData htp = ServiceData.findByName(entityManager, oldname);
+        ServiceData htp = serviceDataSession.findByName(oldname);
         if (htp == null) {
             String msg = "Error cloning service: No such service found.";
             log.error(msg);
@@ -286,7 +285,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         }
         boolean retval = false;
         try {
-            ServiceData htp = ServiceData.findByName(entityManager, name);
+            ServiceData htp = serviceDataSession.findByName(name);
             if (htp == null) {
                 throw new FinderException("Cannot find service " + name);
             }
@@ -297,7 +296,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
                 if (worker != null) {
                     cancelTimer(htp.getId());
                 }
-                removeServiceData(htp);
+                serviceDataSession.removeServiceData(htp);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
                         LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
                 retval = true;
@@ -312,24 +311,6 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         log.trace("<removeService)");
         return retval;
     }
-    
-    /**
-     * 
-     * Removes this ServiceData object from persistence. 
-     * 
-     * FIXME: This method should be moved to a ServiceData DAO.
-     * 
-     * @param htp Servicedata to be deleted.
-     */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void removeServiceData(ServiceData htp) {
-        entityManager.remove(htp);
-    }
-
-   
-    
-
-
 
     /**
      * Renames a service
@@ -343,8 +324,8 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
             log.trace(">renameService(from " + oldname + " to " + newname + ")");
         }
         boolean success = false;
-        if (ServiceData.findByName(entityManager, newname) == null) {
-            ServiceData htp = ServiceData.findByName(entityManager, oldname);
+        if (serviceDataSession.findByName(newname) == null) {
+            ServiceData htp = serviceDataSession.findByName(oldname);
             if (htp != null) {
                 if (isAuthorizedToEditService(admin, htp.getServiceConfiguration())) {
                     htp.setName(newname);
@@ -409,7 +390,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
             log.trace(">getService: " + name);
         }
         ServiceConfiguration returnval = null;
-        ServiceData serviceData = ServiceData.findByName(entityManager, name);
+        ServiceData serviceData = serviceDataSession.findByName(name);
         if (serviceData != null) {
             returnval = serviceData.getServiceConfiguration();
         }
@@ -431,7 +412,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getServiceId(Admin admin, String name) {
         int returnval = 0;
-        ServiceData serviceData = ServiceData.findByName(entityManager, name);
+        ServiceData serviceData = serviceDataSession.findByName(name);
         if (serviceData != null) {
             returnval = serviceData.getId();
         }
@@ -456,7 +437,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         if (log.isTraceEnabled()) {
             log.trace(">activateServiceTimer(name: " + name + ")");
         }
-        ServiceData htp = ServiceData.findByName(entityManager, name);
+        ServiceData htp = serviceDataSession.findByName(name);
         if (htp != null) {
             ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
             if (isAuthorizedToEditService(admin, serviceConfiguration)) {
@@ -483,7 +464,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         boolean foundfree = false;
         while (!foundfree) {
             if (id > 1) {
-                if (ServiceData.findById(entityManager, Integer.valueOf(id)) == null) {
+                if (serviceDataSession.findById(Integer.valueOf(id)) == null) {
                     foundfree = true;
                 }
             }
@@ -505,7 +486,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
             log.trace(">getServiceName(id: " + id + ")");
         }
         String returnval = null;
-        ServiceData serviceData = ServiceData.findById(entityManager, id);
+        ServiceData serviceData = serviceDataSession.findById(id);
         if (serviceData != null) {
             returnval = serviceData.getName();
         }
@@ -700,7 +681,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         }
         boolean success = false;
         if (isAuthorizedToEditService(admin, serviceConfiguration)) {
-            ServiceData htp = ServiceData.findByName(entityManager, name);
+            ServiceData htp = serviceDataSession.findByName(name);
             if (htp != null) {
                 htp.setServiceConfiguration(serviceConfiguration);
                 success = true;
@@ -918,7 +899,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
         }
         ServiceConfiguration returnval = null;
         try {
-            ServiceData serviceData = ServiceData.findById(entityManager, Integer.valueOf(id));
+            ServiceData serviceData = serviceDataSession.findById(Integer.valueOf(id));
             if (serviceData != null) {
                 returnval = serviceData.getServiceConfiguration();
             } else {
@@ -954,7 +935,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap getServiceIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        Collection<ServiceData> result = ServiceData.findAll(entityManager);
+        Collection<ServiceData> result = serviceDataSession.findAll();
         Iterator<ServiceData> i = result.iterator();
         while (i.hasNext()) {
             ServiceData next = i.next();
