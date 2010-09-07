@@ -36,7 +36,6 @@
         <attributes>
             <basic name="dataUnsafe">
                 <column name="data" column-definition="BYTEA"/>
-                <lob/>
             </basic>
         </attributes>
     </entity>
