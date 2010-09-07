@@ -12,7 +12,6 @@
         <attributes>
             <basic name="dataUnsafe">
                 <column name="data" column-definition="BYTEA"/>
-                <lob/>
             </basic>
         </attributes>
     </entity>
@@ -20,7 +19,6 @@
         <attributes>
             <basic name="dataUnsafe">
                 <column name="data" column-definition="BYTEA"/>
-                <lob/>
             </basic>
         </attributes>
     </entity>
@@ -28,7 +26,6 @@
         <attributes>
             <basic name="dataUnsafe">
                 <column name="data" column-definition="BYTEA"/>
-                <lob/>
             </basic>
         </attributes>
     </entity>
@@ -43,7 +40,6 @@
         <attributes>
             <basic name="dataUnsafe">
                 <column name="data" column-definition="BYTEA"/>
-                <lob/>
             </basic>
         </attributes>
     </entity>
@@ -51,7 +47,6 @@
         <attributes>
             <basic name="dataUnsafe">
                 <column name="data" column-definition="BYTEA"/>
-                <lob/>
             </basic>
         </attributes>
     </entity>
@@ -59,7 +54,6 @@
         <attributes>
             <basic name="logConfigurationUnsafe">
                 <column name="logConfiguration" column-definition="BYTEA"/>
-                <lob/>
             </basic>
         </attributes>
     </entity>
