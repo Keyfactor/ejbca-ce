@@ -18,9 +18,11 @@ import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.StringTools;
 
 /**
  * A class used to improve performance by proxying certificatesnr to subjectdn mappings by minimizing the number of needed lockups over rmi.
@@ -45,7 +47,7 @@ public class SubjectDNProxy implements java.io.Serializable {
      * Method that first tries to find subjectDN in local hashmap and if it doesn't exists looks it up over RMI.
      *
      * @param certificatesnr the certificate serial number number to look up.
-     * @return the subjectDN or null if no subjectDN is relatied to the given id
+     * @return the subjectDN or null if no subjectDN is related to the given id
      */
     public String getSubjectDN(String admindata) throws RemoteException {
     	String returnval = null;
@@ -53,30 +55,19 @@ public class SubjectDNProxy implements java.io.Serializable {
 
     	// Check if name is in hashmap
     	returnval = (String) subjectdnstore.get(admindata);
-
-    	if(returnval==null && admindata.indexOf(':') != -1){
-    		// Try to find the certificate in database
-
-    		String data[] = admindata.split(":");  
-    		String certificatesnr = data[0].trim();
-    		String issuerdn = data[2].substring(data[2].indexOf('"')+1, data[2].lastIndexOf('"'));
-    		result = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr, 16));
-    		if(result != null){
-    			returnval = CertTools.getSubjectDN(result);
-    			subjectdnstore.put(admindata,returnval);
-    		} else {
-    			if((data.length > 3) && ("SubjectDN".equals(data[3].trim()))){
-    				returnval = data[4].substring(data[4].indexOf('"')+1, data[4].lastIndexOf('"'));
-    				subjectdnstore.put(admindata,returnval);
-    			}
-    		}
-    	} else if(returnval == null){
-    		String certificatesnr = admindata.substring(0, admindata.indexOf(',')).trim();
-    		String issuerdn = admindata.substring(admindata.indexOf(',')+1, admindata.length()).trim();
-    		result = certificatesession.findCertificateByIssuerAndSerno(admin, issuerdn, new BigInteger(certificatesnr, 16));
-    		if(result != null){
-    			returnval = CertTools.getSubjectDN(result);
-    			subjectdnstore.put(admindata,returnval);
+    	
+    	if(returnval==null){
+    		String certdata[] = StringTools.parseCertData(admindata);
+    		if(certdata != null){
+    			result = certificatesession.findCertificateByIssuerAndSerno(admin, certdata[1], new BigInteger(certdata[0], 16));
+        		if(result != null){
+        			returnval = CertTools.getSubjectDN(result);
+        			subjectdnstore.put(admindata,returnval);
+        		} else if(StringUtils.contains(admindata, "SubjectDN")){
+        			String subjectdn = admindata.split(":")[4];
+        			returnval = subjectdn.substring(subjectdn.indexOf('"')+1, subjectdn.lastIndexOf('"'));
+        			subjectdnstore.put(admindata,returnval);
+        		}
     		}
     	}
 

@@ -62,6 +62,7 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
+import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -718,6 +719,10 @@ public class EjbcaWebBean implements Serializable {
     	}
     	return "[<a href=\"" + getHelpBaseURI() +lastPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW +
     		"\" title=\"" + getText("OPENHELPSECTION") + "\" >?</a>]";
+    }
+    
+    public String[] getCertSernoAndIssuerdn(String certdata){
+    	return StringTools.parseCertData(certdata);
     }
 
     public String getCleanOption(String parameter, String[] validOptions) throws Exception {

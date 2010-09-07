@@ -22,6 +22,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.crypto.BadPaddingException;
@@ -590,5 +591,33 @@ public class StringTools {
         }
         return result;
     }
-    
+	/**
+	 * Parses the given string according to a specific format based on the certificate-data stored in the LogEnteryData table in the database.
+	 * 
+	 * @param certdata the string containing the certificate details
+	 * @return a String array with two elements, the first is the certificate serialnumber and the other is the certificate issuerDN
+	 */
+	public static String[] parseCertData(String certdata){
+		if(certdata == null)	return null;
+		
+    	String dnStrings = "(unstructuredName|dnQualifier|postalAddress|name|emailAddress|UID|OU|NIF|CIF|ST|businessCategory|streetAddress|CN|postalCode|O|pseudonym|DC|surname|C|initials|serialNumber|L|givenName|telephoneNumber|title|DC)";
+    	String formats[] = {"(^[0-9A-Fa-f]+),((" + dnStrings + "=[^,]+,)*(" + dnStrings + "=[^,]+)*)",
+    						"(^[0-9A-Fa-f]+) : DN : \"([^\"]*)\"( ?: SubjectDN : \"[^\"]*\")?"
+    			
+    	};
+    	
+    	String ret[] = null;
+    	
+    	for(int i=0; i<formats.length; i++){
+    		Pattern p = Pattern.compile(formats[i]);
+    		Matcher m = p.matcher(certdata);
+    		if(m.find()){
+    			ret = new String[2];
+    			ret[0] = m.group(1);
+    			ret[1] = m.group(2);
+    			break;
+    		}
+    	}	   	
+    	return ret;
+	}
 } // StringTools
