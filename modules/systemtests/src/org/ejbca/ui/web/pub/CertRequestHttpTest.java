@@ -26,6 +26,8 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 
 import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
+import javax.persistence.PersistenceException;
 
 import junit.framework.TestSuite;
 
@@ -340,12 +342,11 @@ public class CertRequestHttpTest extends CaTestCase {
             userAdminSession.addUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
             log.debug("created user: reqtest, foo123, C=SE, O=PrimeKey, CN=ReqTest");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
+        } catch (EJBException e) {
+        	if (e.getCause() instanceof PersistenceException) {
+                userExists = true;
+        	}
         }
-
         if (userExists) {
             log.debug("User reqtest already exists.");
             userAdminSession.changeUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,

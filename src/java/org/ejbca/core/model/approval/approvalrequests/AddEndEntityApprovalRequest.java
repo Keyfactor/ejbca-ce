@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
@@ -82,8 +82,8 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			IUserAdminSessionLocal usersession = userdatahome.create();*/
 			UserAdminSession usersession = new EjbLocalHelper().getUserAdminSession();
 		    usersession.addUser(getRequestAdmin(), userdata, clearpwd);
-		} catch( DuplicateKeyException e){
-			throw new ApprovalRequestExecutionException("Error, user already exists", e);
+		} catch( PersistenceException e){
+			throw new ApprovalRequestExecutionException("Error, user already exists or a database error ocurred", e);
 		} catch (CreateException e) {
 			throw new ApprovalRequestExecutionException("Error creating userdata session", e);
 		} catch (AuthorizationDeniedException e) {

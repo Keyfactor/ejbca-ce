@@ -64,11 +64,11 @@ public interface CertificateRequestSession {
      * @throws EjbcaException
      * @throws UserDoesntFullfillEndEntityProfile
      * @throws AuthorizationDeniedException
-     * @throws DuplicateKeyException
+     * @throws PersistenceException
      * @throws EjbcaException
      */
     public org.ejbca.core.protocol.IResponseMessage processCertReq(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata,
-            org.ejbca.core.protocol.IRequestMessage req, java.lang.Class responseClass) throws javax.ejb.DuplicateKeyException,
+            org.ejbca.core.protocol.IRequestMessage req, java.lang.Class responseClass) throws javax.persistence.PersistenceException,
             org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
             org.ejbca.core.EjbcaException;
 
@@ -99,5 +99,5 @@ public interface CertificateRequestSession {
             java.security.spec.InvalidKeySpecException, java.security.NoSuchProviderException, java.security.SignatureException, java.io.IOException,
             javax.ejb.ObjectNotFoundException, javax.ejb.CreateException, java.security.cert.CertificateException,
             org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile, org.ejbca.core.model.approval.ApprovalException, org.ejbca.core.EjbcaException,
-            java.security.KeyStoreException, java.security.NoSuchAlgorithmException, java.security.InvalidAlgorithmParameterException;
+            java.security.KeyStoreException, java.security.NoSuchAlgorithmException, java.security.InvalidAlgorithmParameterException, javax.persistence.PersistenceException;
 }

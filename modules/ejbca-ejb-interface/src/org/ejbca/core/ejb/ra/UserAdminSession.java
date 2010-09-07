@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ra;
 
 import javax.ejb.ObjectNotFoundException;
+import javax.persistence.PersistenceException;
 
 import org.ejbca.core.model.ra.UserDataVO;
 
@@ -56,14 +57,14 @@ public interface UserAdminSession {
      * @throws WaitingForApprovalException
      * @throws UserDoesntFullfillEndEntityProfile
      * @throws AuthorizationDeniedException
-     * @throws DuplicateKeyException
+     * @throws PersistenceException
      * @throws CADoesntExistsException
      *             if the caid of the user does not exist
      * @throws EjbcaException
      */
     public void addUser(org.ejbca.core.model.log.Admin admin, java.lang.String username, java.lang.String password, java.lang.String subjectdn,
             java.lang.String subjectaltname, java.lang.String email, boolean clearpwd, int endentityprofileid, int certificateprofileid, int type,
-            int tokentype, int hardwaretokenissuerid, int caid) throws javax.ejb.DuplicateKeyException,
+            int tokentype, int hardwaretokenissuerid, int caid) throws javax.persistence.PersistenceException,
             org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
             org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException,
             java.rmi.RemoteException;
@@ -84,8 +85,8 @@ public interface UserAdminSession {
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
      *             if data doesn't fullfil requirements of end entity profile
-     * @throws DuplicateKeyException
-     *             if user already exists
+     * @throws PersistenceException
+     *             if user already exists or some other database error occur during commit
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
@@ -98,7 +99,7 @@ public interface UserAdminSession {
      */
     public void addUserFromWS(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            javax.ejb.DuplicateKeyException, org.ejbca.core.model.approval.WaitingForApprovalException,
+            javax.persistence.PersistenceException, org.ejbca.core.model.approval.WaitingForApprovalException,
             org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
 
     /**
@@ -117,8 +118,8 @@ public interface UserAdminSession {
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
      *             if data doesn't fullfil requirements of end entity profile
-     * @throws DuplicateKeyException
-     *             if user already exists
+     * @throws PersistenceException
+     *             if user already exists or some other database error occur during commit
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
@@ -131,7 +132,7 @@ public interface UserAdminSession {
      */
     public void addUser(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            javax.ejb.DuplicateKeyException, org.ejbca.core.model.approval.WaitingForApprovalException,
+            javax.persistence.PersistenceException, org.ejbca.core.model.approval.WaitingForApprovalException,
             org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
 
     /**

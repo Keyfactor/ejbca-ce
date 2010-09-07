@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
@@ -37,9 +36,9 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.naming.InvalidNameException;
-import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -312,14 +311,14 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @throws WaitingForApprovalException
      * @throws UserDoesntFullfillEndEntityProfile
      * @throws AuthorizationDeniedException
-     * @throws DuplicateKeyException
+     * @throws PersistenceException
      * @throws CADoesntExistsException
      *             if the caid of the user does not exist
      * @throws EjbcaException
      * @ejb.interface-method
      */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
-            int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int caid) throws DuplicateKeyException,
+            int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int caid) throws PersistenceException,
             AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
 
         UserDataVO userdata = new UserDataVO(username, subjectdn, caid, subjectaltname, email, UserDataConstants.STATUS_NEW, type, endentityprofileid,
@@ -347,8 +346,8 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
      *             if data doesn't fullfil requirements of end entity profile
-     * @throws DuplicateKeyException
-     *             if user already exists
+     * @throws PersistenceException
+     *             if user already exists or some other database error occur during commit
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
@@ -362,7 +361,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @ejb.interface-method
      */
     public void addUserFromWS(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            DuplicateKeyException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
+    	PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         int profileId = userdata.getEndEntityProfileId();
         EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin, profileId);
         if (profile.getAllowMergeDnWebServices()) {
@@ -376,7 +375,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * UserDataEntity Bean.
      * 
      * @param admin
-     *            the administrator pwrforming the action
+     *            the administrator performing the action
      * @param userdata
      *            a UserDataVO object, the fields status, timecreated and
      *            timemodified will not be used.
@@ -388,8 +387,8 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
      *             if data doesn't fullfil requirements of end entity profile
-     * @throws DuplicateKeyException
-     *             if user already exists
+     * @throws PersistenceException
+     *             if user already exists or some other database error occur during commit
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
@@ -401,7 +400,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @ejb.interface-method
      */
     public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException {
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, PersistenceException {
         try {
             FieldValidator
                     .validate(userdata, userdata.getEndEntityProfileId(), raAdminSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()));
@@ -510,7 +509,8 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
                     throw new EJBException(nsae);
                 }
             }
-            entityManager.persist(data1);
+            entityManager.persist(data1);	// This will not throw the EntityExistsException, since we wont commit just yet..
+            entityManager.flush();			// ..so we flush it to provoke a reaction that we can handle right away.
 
             // Although UserDataVO should always have a null password for
             // autogenerated end entities, the notification framework
@@ -527,11 +527,12 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
             logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
                     LogConstants.EVENT_INFO_ADDEDENDENTITY, msg);
 
-        } catch (EntityExistsException e) {
-            String msg = intres.getLocalizedMessage("ra.errorentityexist", userdata.getUsername());
-            logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
-                    LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
-            throw e;
+        } catch (PersistenceException e) {
+        	// PersistenceException could also be caused by various database problems.
+        	String msg = intres.getLocalizedMessage("ra.errorentityexist", userdata.getUsername());
+        	logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
+        			LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
+        	throw e;
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("ra.erroraddentity", userdata.getUsername());
             logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,

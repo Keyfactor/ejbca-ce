@@ -26,7 +26,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -191,10 +192,10 @@ public class CreateCRLSessionTest extends CaTestCase {
             userAdminSession.addUser(admin, "foo", "foo123", userDN, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
-        } catch (RemoteException re) {
-            userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
+        } catch (EJBException e) {
+        	if (e.getCause() instanceof PersistenceException) {
+        		userExists = true;
+        	}
         }
         if (userExists) {
             log.info("User foo already exists, resetting status.");
@@ -365,8 +366,10 @@ public class CreateCRLSessionTest extends CaTestCase {
                 }
                 userAdminSession.addUser(admin, userdata, false);
                 log.debug("created user");
-            } catch (DuplicateKeyException dke) {
-                userExists = true;
+            } catch (EJBException e) {
+            	if (e.getCause() instanceof PersistenceException) {
+            		userExists = true;
+            	}
             }
             if (userExists) {
                 log.info("User testCRLPeriod already exists, resetting status.");

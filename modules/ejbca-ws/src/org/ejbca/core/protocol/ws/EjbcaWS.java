@@ -45,11 +45,11 @@ import java.util.TreeMap;
 
 import javax.annotation.Resource;
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.jws.WebService;
+import javax.persistence.PersistenceException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.ws.WebServiceContext;
 
@@ -262,7 +262,8 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		/*} catch (RemoteException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);*/
-		} catch (DuplicateKeyException e) {
+		} catch (PersistenceException e) {
+			// The most likely reason is that the user already existed.
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());

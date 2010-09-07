@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Random;
 
 import javax.ejb.DuplicateKeyException;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -416,7 +417,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         return caID;
     }
 
-    private void createUser(Admin admin, String username, int caID, int endEntityProfileId, int certProfileId) throws DuplicateKeyException, RemoteException,
+    private void createUser(Admin admin, String username, int caID, int endEntityProfileId, int certProfileId) throws PersistenceException, RemoteException,
             AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
@@ -426,7 +427,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         createUser(admin, userdata);
     }
 
-    private void createUser(Admin admin, UserDataVO userdata) throws DuplicateKeyException, RemoteException, AuthorizationDeniedException,
+    private void createUser(Admin admin, UserDataVO userdata) throws PersistenceException, RemoteException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         userAdminSession.addUser(admin, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();

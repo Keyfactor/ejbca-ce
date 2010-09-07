@@ -22,7 +22,8 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
-import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
@@ -88,12 +89,10 @@ public class SignLotsOfCertsTest extends CaTestCase {
                     "performancefoo@foo.se", false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: performancefoo" + post + ", foo123, C=SE, O=AnaTom, OU=Performance Test,CN=performancefoo");
-        } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
+        } catch (EJBException e) {
+            if (e.getCause() instanceof PersistenceException) {
                 userExists = true;
             }
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
         }
         if (userExists) {
             log.info("User performancefoo already exists, resetting status.");

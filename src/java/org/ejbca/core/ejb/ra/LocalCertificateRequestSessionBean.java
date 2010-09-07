@@ -34,13 +34,13 @@ import java.security.spec.X509EncodedKeySpec;
 
 import javax.annotation.Resource;
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -316,11 +316,11 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 	 * @throws EjbcaException 
 	 * @throws UserDoesntFullfillEndEntityProfile 
 	 * @throws AuthorizationDeniedException 
-	 * @throws DuplicateKeyException 
+	 * @throws PersistenceException 
 	 * @throws EjbcaException 
 	 * @ejb.interface-method
 	 */
-	public IResponseMessage processCertReq(Admin admin, UserDataVO userdata, IRequestMessage req, Class responseClass) throws DuplicateKeyException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException {
+	public IResponseMessage processCertReq(Admin admin, UserDataVO userdata, IRequestMessage req, Class responseClass) throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException {
 		
 		// Check tokentype
 		if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
@@ -350,13 +350,13 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 	 * @throws WrongTokenTypeException
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws ApprovalException
-	 * @throws DuplicateKeyException
+	 * @throws PersistenceException
 	 * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
 	 * @throws EjbcaException 
 	 */
 	private void addOrEditUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromwebservice) throws AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, ApprovalException,
-			DuplicateKeyException, CADoesntExistsException, EjbcaException {
+			PersistenceException, CADoesntExistsException, EjbcaException {
 		
 		int caid = userdata.getCAId();
 		authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
@@ -433,7 +433,7 @@ public class LocalCertificateRequestSessionBean implements CertificateRequestSes
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException,
 	SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException,UserDoesntFullfillEndEntityProfile,
 	ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
-	InvalidAlgorithmParameterException {
+	InvalidAlgorithmParameterException, PersistenceException {
 		
 		// This is the secret sauce, do the end entity handling automagically here before we get the cert
 		addOrEditUser(admin, userdata, true, true);
