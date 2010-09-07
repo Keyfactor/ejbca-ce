@@ -229,7 +229,12 @@ public interface RaAdminSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    void saveGlobalConfiguration(Admin admin, org.ejbca.core.model.ra.raadmin.GlobalConfiguration globalconfiguration);
+    void saveGlobalConfiguration(Admin admin, org.ejbca.core.model.ra.raadmin.GlobalConfiguration globconf);
+
+    /**
+     * Clear and load global configuration cache.
+     */
+    void flushGlobalConfigurationCache();
 
     int findFreeEndEntityProfileId();
 }

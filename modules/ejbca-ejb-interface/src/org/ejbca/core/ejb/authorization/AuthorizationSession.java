@@ -227,4 +227,10 @@ public interface AuthorizationSession {
      * Method to force an update of the autorization rules without any wait.
      */
     public void forceRuleUpdate(Admin admin);
+    
+    /**
+     * Clear and load authorization rules cache.
+     */
+    public void flushAuthorizationRuleCache();
+
 }
