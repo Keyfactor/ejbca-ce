@@ -87,10 +87,8 @@
   }
 
   if( request.getParameter(CERTSERNO_PARAMETER ) != null){     
-     String[] certdata = java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER ),"UTF-8").split(",",2);
-     certificateserno = certdata[0];
-     issuerdn = CertTools.stringToBCDNString(certdata[1]);
-     rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn); 
+	 String[] certdata = ejbcawebbean.getCertSernoAndIssuerdn(java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER ),"UTF-8"));
+     rabean.loadCertificates(new BigInteger(certdata[0],16), certdata[1]); 
      notauthorized = false;
      noparameter = false;
   }

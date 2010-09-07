@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.text.DateFormat;
 import java.rmi.RemoteException;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -96,7 +97,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        logentrydata[ADMINTYPE] = Integer.toString(logentry.getAdminType());
        if (logentry.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
           String dnstring = dnproxy.getSubjectDN(logentry.getAdminData());
-          if ((dnstring !=null) && (!logentry.getAdminData().contains("SubjectDN")) ) {
+          if ((dnstring !=null) && (!StringUtils.contains(logentry.getAdminData(), "SubjectDN")) ) {
         	  DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN);
         	  logentrydata[ADMINDATA] = dn.getField(DNFieldExtractor.CN,0) + ", " + dn.getField(DNFieldExtractor.O,0);
               logentrydata[ADMINCERTSERNO] = logentry.getAdminData();

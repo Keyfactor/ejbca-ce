@@ -82,7 +82,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		
 		String admindata = admin.getAdminData();
 		if((event == LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN) && StringUtils.contains(comment, "external CA")){
-			admindata += ": SubjectDN : \"" + CertTools.getSubjectDN(admin.getAdminInformation().getX509Certificate()) + "\"";
+			admindata += " : SubjectDN : \"" + CertTools.getSubjectDN(admin.getAdminInformation().getX509Certificate()) + "\"";
 		}
 		Integer id = getAndIncrementRowCount();
 		entityManager.persist(new LogEntryData(id, admin.getAdminType(), admindata, caid, module, time, username, uid, event, comment));
