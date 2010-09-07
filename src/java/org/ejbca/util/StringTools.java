@@ -592,10 +592,10 @@ public class StringTools {
         return result;
     }
 	/**
-	 * Parses the given string according to a specific format based on the certificate-data stored in the LogEnteryData table in the database.
+	 * Parses the given string according to a specific format based on the certificate-data stored in the LogEntryData table in the database.
 	 * 
 	 * @param certdata the string containing the certificate details
-	 * @return a String array with two elements, the first is the certificate serialnumber and the other is the certificate issuerDN
+	 * @return a String array with two elements, the first is the certificate serialnumber and the second one is the certificate issuerDN
 	 */
 	public static String[] parseCertData(String certdata){
 		if(certdata == null)	return null;
