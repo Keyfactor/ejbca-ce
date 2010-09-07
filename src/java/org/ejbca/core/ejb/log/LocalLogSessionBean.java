@@ -518,6 +518,9 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void flushConfigurationCache() {
     	logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
+    	if (log.isDebugEnabled()) {
+    		log.debug("Flushed log configuration cache.");
+    	}
     }
 
 	/**

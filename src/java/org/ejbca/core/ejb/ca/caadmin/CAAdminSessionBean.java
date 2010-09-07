@@ -963,6 +963,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public void flushCACache() {
     	lastCACacheUpdateTime = -1;
     	CACacheManager.instance().removeAll();
+    	if (log.isDebugEnabled()) {
+    		log.debug("Flushed CA cache.");
+    	}
     }
     
     /**
