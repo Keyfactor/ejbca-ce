@@ -182,6 +182,10 @@ from this CA. When adding a new end entity, a check is done to ensure that there
 before, have the same Subject DN SerialNumber. Note that end entities issued from other CAs can have the same Subject DN SerialNumber
 as end entities issued from this CA.
 </p>
+<note>
+Note that this option is currently extremely inefficient and will only work with a low number of users, in the hundreds or a few thousand.
+This is due to the face that it select all users from the database registered for a specific CA. Future versions of EJBCA can optimize this query.
+</note>
 </subsubsection>
 
 <subsubsection name="Use Certificate Request History">
