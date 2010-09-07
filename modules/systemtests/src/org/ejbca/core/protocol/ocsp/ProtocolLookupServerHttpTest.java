@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -31,7 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
@@ -39,6 +38,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -135,14 +135,11 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         try {
             userAdminSession.addUser(admin,"unidtest","foo123","C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: unidtest, foo123, C=SE, O=AnaTom,surname=Jansson,serialNumber=123456789, CN=UNIDTest");
-        } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
+        } catch (EJBException e) {
+            if (e.getCause() instanceof PersistenceException) {
                 userExists = true;
             }
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
         }
-
         if (userExists) {
             log.debug("User unidtest already exists.");
             userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);

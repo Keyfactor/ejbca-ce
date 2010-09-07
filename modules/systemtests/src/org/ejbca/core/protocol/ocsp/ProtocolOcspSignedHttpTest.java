@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -22,7 +21,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Hashtable;
 
-import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
+import javax.persistence.PersistenceException;
 
 import junit.framework.TestSuite;
 
@@ -124,10 +124,10 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         try {
             userAdminSession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
-        } catch (RemoteException re) {
-        	userExists = true;
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
+        } catch (EJBException e) {
+        	if (e.getCause() instanceof PersistenceException) {
+        		userExists = true;
+        	}
         }
 
         if (userExists) {

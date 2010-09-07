@@ -12,7 +12,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.DuplicateKeyException;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
@@ -115,7 +115,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 
 	// Create certificate request for user: foo with cert serialnumber=1234567890
-	public void test01CreateCertWithCustomSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, DuplicateKeyException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException {
+	public void test01CreateCertWithCustomSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException {
 		log.trace(">test01CreateCustomCert()");
 
 		KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);    	    
@@ -150,7 +150,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 
 	// Create certificate request for user: foo2 with random cert serialnumber
-	public void test02CreateCertWithRandomSN() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, DuplicateKeyException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, InvalidAlgorithmParameterException {
+	public void test02CreateCertWithRandomSN() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, InvalidAlgorithmParameterException {
 
 		log.trace(">test02CreateCertWithRandomSN()");
 
@@ -184,7 +184,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 
 	// Create certificate request for user: foo3 with cert serialnumber=1234567890 (the same as cert serialnumber of user foo)
-	public void test03CreateCertWithDublicateSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, DuplicateKeyException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException {
+	public void test03CreateCertWithDublicateSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException {
 		log.trace(">test03CreateCertWithDublicateSN()");
 
 		KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -216,7 +216,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		assertNull(resp);
 	}
 
-	public void test04CreateCertWithCustomSNNotAllowed() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, DuplicateKeyException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException {
+	public void test04CreateCertWithCustomSNNotAllowed() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException {
 		log.trace(">test04CreateCertWithCustomSNNotAllowed()");
 
 		KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);    	    

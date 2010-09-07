@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
 
-import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJBTransactionRolledbackException;
+import javax.ejb.EJBException;
+import javax.persistence.PersistenceException;
 import javax.transaction.TransactionRolledbackException;
 
 import org.apache.log4j.Logger;
@@ -126,20 +126,20 @@ public class UserAdminSessionTest extends CaTestCase {
         try {
             userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
-        } catch (DuplicateKeyException e) {
-            // This is what we want
-            userexists = true;
+        } catch (EJBException e) {
+        	if (e.getCause() instanceof PersistenceException) {
+        		// This is what we want
+        		userexists = true;
+        	}
         } catch (TransactionRolledbackException e) {
             // weblogic throws transactionrolledbackexception instead wrapping
             // the duplicatekey ex
-            if (e.getCause() instanceof DuplicateKeyException) {
+            if (e.getCause() instanceof PersistenceException) {
                 userexists = true;
             }
         } catch (ServerException e) {
             // glassfish throws serverexception, can you believe this?
             userexists = true;
-        } catch (EJBTransactionRolledbackException e){
-        	userexists = true;
         }
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 

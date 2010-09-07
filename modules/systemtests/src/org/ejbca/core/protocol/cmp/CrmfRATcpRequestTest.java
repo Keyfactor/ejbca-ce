@@ -24,9 +24,10 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.naming.NamingException;
+import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -308,12 +309,10 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
             userAdminSession.addUser(admin, username, "foo123", userDN, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: " + username + ", foo123, " + userDN);
-        } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
+        } catch (EJBException e) {
+            if (e.getCause() instanceof PersistenceException) {
                 userExists = true;
             }
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
         }
 
         if (userExists) {

@@ -17,7 +17,7 @@ import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.DuplicateKeyException;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -86,7 +86,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     private void createUser(Admin admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
-            throws DuplicateKeyException, RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            throws PersistenceException, RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,

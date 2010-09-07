@@ -22,7 +22,7 @@ import java.security.NoSuchProviderException;
 import java.util.List;
 
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
+import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -407,8 +407,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							}
 							resp = reqsession.processCertReq(admin, userdata, crmfreq, Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));
 							addedUser = true;
-						} catch (CreateException e) {
-							// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
+						} catch (PersistenceException e) {
 							// This was very strange, we didn't find it before, but now it exists?
 							// This should never happen when using the "single transaction" request session??
 							final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
@@ -432,7 +431,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						LOG.error(errMsg, e);
 						failText = e.getMessage();
 						failInfo = FailInfo.NOT_AUTHORIZED;
-					} catch (DuplicateKeyException e) {
+					} catch (PersistenceException e) {
 						final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username);
 						LOG.error(errMsg, e);
 						failText = e.getMessage();

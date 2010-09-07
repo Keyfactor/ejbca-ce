@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.ca.sign;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -37,9 +36,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -279,7 +278,7 @@ public class SignSessionTest extends CaTestCase {
      * creates new user
      * 
      */
-    public void test01CreateNewUser() throws DuplicateKeyException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    public void test01CreateNewUser() throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, RemoteException, FinderException {
         log.trace(">test01CreateNewUser()");
 
