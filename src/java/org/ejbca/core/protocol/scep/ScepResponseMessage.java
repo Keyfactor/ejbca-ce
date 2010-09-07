@@ -244,8 +244,6 @@ public class ScepResponseMessage implements IResponseMessage {
             }
 
             CMSProcessable msg;
-            // The signed data to be enveloped
-            CMSSignedData s = null;
             // Create encrypted response if this is success and NOT a CRL response message
             if (status.equals(ResponseStatus.SUCCESS)) {
 
@@ -279,7 +277,7 @@ public class ScepResponseMessage implements IResponseMessage {
                 // this message does not contain any message, and no signerInfo
                 CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
                 gen.addCertificatesAndCRLs(certs);
-                s = gen.generate(null, false, "BC");
+                CMSSignedData s = gen.generate(null, false, "BC");
 
                 // Envelope the CMS message
                 if (recipientKeyInfo != null) {
