@@ -13,19 +13,30 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.x509.GeneralName;
 
 import com.novosec.pkix.asn1.cmp.PKIHeader;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
-public abstract class BaseCmpMessage {
+public abstract class BaseCmpMessage implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private transient PKIMessage msg = null;
 	private String b64SenderNonce = null;
 	private String b64RecipientNonce = null;
 	private String b64TransId = null;
-	private GeneralName recipient = null;
-	private GeneralName sender = null;
+	private transient GeneralName recipient = null;	// GeneralName is not Serializable
+	private byte[] recipientBytes = null;
+	private transient GeneralName sender = null;	// GeneralName is not Serializable
+	private byte[] senderBytes = null;
 	private String protectionType = null;
 	private String pbeDigestAlg = null;
 	private String pbeMacAlg = null;
@@ -54,16 +65,48 @@ public abstract class BaseCmpMessage {
 	}
 
 	public GeneralName getRecipient() {
+		if (recipient == null && recipientBytes != null) {
+			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(recipientBytes));
+			try {
+				recipient = GeneralName.getInstance(ais.readObject());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		return recipient;
 	}
 	public void setRecipient(GeneralName recipient) {
 		this.recipient = recipient;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ASN1OutputStream aos = new ASN1OutputStream(baos);
+		try {
+			aos.writeObject(recipient);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		recipientBytes = baos.toByteArray();
 	}
 	public GeneralName getSender() {
+		if (sender == null && senderBytes != null) {
+			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(senderBytes));
+			try {
+				sender = GeneralName.getInstance(ais.readObject());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		return sender;
 	}
 	public void setSender(GeneralName sender) {
 		this.sender = sender;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ASN1OutputStream aos = new ASN1OutputStream(baos);
+		try {
+			aos.writeObject(sender);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		senderBytes = baos.toByteArray();
 	}
 	public PKIHeader getHeader() {
 		return msg.getHeader();
@@ -102,5 +145,4 @@ public abstract class BaseCmpMessage {
 	public int getPbeIterationCount() {
 		return pbeIterationCount;
 	}
-	
 }

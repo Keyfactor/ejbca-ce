@@ -195,7 +195,7 @@ public class CmpResponseMessage implements IResponseMessage {
 					
 					int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
 			    	if (log.isDebugEnabled()) {
-			    		log.debug("Creating response body of type respType.");
+			    		log.debug("Creating response body of type " + respType);
 			    	}
 					PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType); 
 					PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
