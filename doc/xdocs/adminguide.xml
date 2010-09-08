@@ -4815,6 +4815,7 @@ For OCSP it is more important, but OCSP is also more light weight so the default
 configuration items that can maximize performance of EJBCA to issue more than 100 certificates per second (depending on hardware etc).</p>
 <ul>
 <li>Disable logging to database in log.properties, only use Log4jLogDevice.</li>
+<li>Configure Log4j to log only to file, not console, and use only INFO or ERROR logging, not DEBUG.</li>
 <li>Disable use of CertReqHistory in CA configuration.</li>
 <li>Enable all caches in cache.properties. If you cache indefinately you can use the cli command 'bin/ejbca.sh clearcaches' if configuration whanges are made.</li>
 <li>Do not enforce any uniqueness (keys, DN, Subject DN SerialNumber) in CA configuration.</li>
