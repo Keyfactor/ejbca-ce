@@ -17,14 +17,11 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
-import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -35,46 +32,51 @@ import org.ejbca.util.Base64PutHashMap;
 import org.ejbca.util.GUIDGenerator;
 
 /**
- * Entity Bean representing publisher failure data. Data is stored here when publishing to a publisher fails. Using this data publishing
- * can be tried again. This data bean should not duplicate data completely, but holds this:
+ * Entity Bean representing publisher failure data. Data is stored here when
+ * publishing to a publisher fails. Using this data publishing can be tried
+ * again. This data bean should not duplicate data completely, but holds this:
  * 
- * - Information needed for scheduling of republishing, such as publish dates, retry counter and last failure message.
- * - Information which is volatile on other places in the database, and we need to publish this data as it was at the time of publishing.
- *   In this case it is UserData, which can change because every user can have several certificates with different DN, the password is re-set
- *   when a certificate is issued etc.
- * - Foreign keys to information which is not volatile.
- *   In this case this is keys to CertificateData and CRLData. For CertificateData we always want to publish the latest information, even if it changed
- *   since we failed to publish. This is so there should be no chance that a revocation is overwritten with a good status if the 
- *   publish events would happen out of order.
- *   
+ * - Information needed for scheduling of republishing, such as publish dates,
+ * retry counter and last failure message. - Information which is volatile on
+ * other places in the database, and we need to publish this data as it was at
+ * the time of publishing. In this case it is UserData, which can change because
+ * every user can have several certificates with different DN, the password is
+ * re-set when a certificate is issued etc. - Foreign keys to information which
+ * is not volatile. In this case this is keys to CertificateData and CRLData.
+ * For CertificateData we always want to publish the latest information, even if
+ * it changed since we failed to publish. This is so there should be no chance
+ * that a revocation is overwritten with a good status if the publish events
+ * would happen out of order.
+ * 
  * @author Tomas Gustavsson
  * @version $Id$
  */
 @Entity
-@Table(name="PublisherQueueData")
+@Table(name = "PublisherQueueData")
 public class PublisherQueueData implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(PublisherQueueData.class);
+    private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(PublisherQueueData.class);
 
-	private String pk;
-	private long timeCreated;
-	private long lastUpdate;
-	private int publishStatus;
-	private int tryCounter;
-	private int publishType;
-	private String fingerprint;
-	private int publisherId;
-	private String volatileData;	// LOB
+    private String pk;
+    private long timeCreated;
+    private long lastUpdate;
+    private int publishStatus;
+    private int tryCounter;
+    private int publishType;
+    private String fingerprint;
+    private int publisherId;
+    private String volatileData; // LOB
 
     /**
-     * @param publishType is one of PublishQueueData.PUBLISH_TYPE_CERT or CRL
+     * @param publishType
+     *            is one of PublishQueueData.PUBLISH_TYPE_CERT or CRL
      * @return null
      */
     public PublisherQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) {
-    	String pk = GUIDGenerator.generateGUID(this); 
-		setPk(pk);
-		Date now = new Date();
+        String pk = GUIDGenerator.generateGUID(this);
+        setPk(pk);
+        Date now = new Date();
         setTimeCreated(now.getTime());
         setLastUpdate(0);
         setPublishStatus(publishStatus);
@@ -85,96 +87,153 @@ public class PublisherQueueData implements Serializable {
         setPublisherQueueVolatileData(queueData);
         log.debug("Created Publisher queue data " + pk);
     }
-    
-    public PublisherQueueData() {}
 
-	@Id
-	@Column(name="pk")
-    public String getPk() { return pk; }
-    public void setPk(String pk) { this.pk = pk; }
+    public PublisherQueueData() {
+    }
 
-	@Column(name="timeCreated")
-    public long getTimeCreated() { return timeCreated; }
-    public void setTimeCreated(long timeCreated) { this.timeCreated = timeCreated; }
+    @Id
+    @Column(name = "pk")
+    public String getPk() {
+        return pk;
+    }
 
-	@Column(name="lastUpdate")
-    public long getLastUpdate() { return lastUpdate; }
-    public void setLastUpdate(long lastUpdate) { this.lastUpdate = lastUpdate; }
+    public void setPk(String pk) {
+        this.pk = pk;
+    }
+
+    @Column(name = "timeCreated")
+    public long getTimeCreated() {
+        return timeCreated;
+    }
+
+    public void setTimeCreated(long timeCreated) {
+        this.timeCreated = timeCreated;
+    }
+
+    @Column(name = "lastUpdate")
+    public long getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(long lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
 
     /**
-     * PublishStatus is one of org.ejbca.core.model.ca.publisher.PublisherQueueData.STATUS_PENDING, FAILED or SUCCESS.
+     * PublishStatus is one of
+     * org.ejbca.core.model.ca.publisher.PublisherQueueData.STATUS_PENDING,
+     * FAILED or SUCCESS.
      */
-	@Column(name="publishStatus")
-    public int getPublishStatus() { return publishStatus; }
-    public void setPublishStatus(int publishStatus) { this.publishStatus = publishStatus; }
+    @Column(name = "publishStatus")
+    public int getPublishStatus() {
+        return publishStatus;
+    }
 
-	@Column(name="tryCounter")
-    public int getTryCounter() { return tryCounter; }
-    public void setTryCounter(int tryCounter) { this.tryCounter = tryCounter; }
+    public void setPublishStatus(int publishStatus) {
+        this.publishStatus = publishStatus;
+    }
+
+    @Column(name = "tryCounter")
+    public int getTryCounter() {
+        return tryCounter;
+    }
+
+    public void setTryCounter(int tryCounter) {
+        this.tryCounter = tryCounter;
+    }
 
     /**
-     * PublishType is one of org.ejbca.core.model.ca.publisher.PublishQueueData.PUBLISH_TYPE_CERT or CRL
+     * PublishType is one of
+     * org.ejbca.core.model.ca.publisher.PublishQueueData.PUBLISH_TYPE_CERT or
+     * CRL
      */
-	@Column(name="publishType")
-    public int getPublishType() { return publishType; }
-    public void setPublishType(int publishType) { this.publishType = publishType; }
+    @Column(name = "publishType")
+    public int getPublishType() {
+        return publishType;
+    }
+
+    public void setPublishType(int publishType) {
+        this.publishType = publishType;
+    }
 
     /**
      * Foreign key to certificate of CRL.
      */
-	@Column(name="fingerprint")
-    public String getFingerprint() { return fingerprint; }
-    public void setFingerprint(String fingerprint) { this.fingerprint = fingerprint; }
+    @Column(name = "fingerprint")
+    public String getFingerprint() {
+        return fingerprint;
+    }
 
-	@Column(name="publisherId")
-    public int getPublisherId() { return publisherId; }
-    public void setPublisherId(int publisherId) { this.publisherId = publisherId; }
+    public void setFingerprint(String fingerprint) {
+        this.fingerprint = fingerprint;
+    }
 
-	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
-    @Column(name="volatileData", length=32700)
-	@Lob
-    public String getVolatileData() { return volatileData; }
-    public void setVolatileData(String volatileData) { this.volatileData = volatileData; }
+    @Column(name = "publisherId")
+    public int getPublisherId() {
+        return publisherId;
+    }
+
+    public void setPublisherId(int publisherId) {
+        this.publisherId = publisherId;
+    }
+
+    // DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters],
+    // Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT
+    // [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G
+    // chars], Sybase: TEXT [2,147,483,647 chars]
+    @Column(name = "volatileData", length = 32700)
+    @Lob
+    public String getVolatileData() {
+        return volatileData;
+    }
+
+    public void setVolatileData(String volatileData) {
+        this.volatileData = volatileData;
+    }
 
     /**
-     * Method that returns the PublisherQueueVolatileData data and updates it if necessary.
+     * Method that returns the PublisherQueueVolatileData data and updates it if
+     * necessary.
+     * 
      * @return VolatileData is optional in publisher queue data
      */
     @Transient
     public PublisherQueueVolatileData getPublisherQueueVolatileData() {
-    	PublisherQueueVolatileData ret = null;
-    	try {
-    		String vd = getVolatileData();
-    		if ( (vd != null) && (vd.length() > 0) ) {
-    			byte[] databytes = vd.getBytes("UTF8");    			
-    			java.beans.XMLDecoder decoder;
-    			decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(databytes));
-    			HashMap h = (HashMap) decoder.readObject();
-    			decoder.close();
-    			// Handle Base64 encoded string values
-    			HashMap data = new Base64GetHashMap(h);
-    			ret = new PublisherQueueVolatileData();
-    			ret.loadData(data);
-    			if (ret.isUpgraded()) {
-    				setPublisherQueueVolatileData(ret);
-    			}    		
-    		}
-    	} catch (UnsupportedEncodingException e) {
-    		throw new RuntimeException(e);
-    	}
-    	return ret;
+        PublisherQueueVolatileData ret = null;
+        try {
+            String vd = getVolatileData();
+            if ((vd != null) && (vd.length() > 0)) {
+                byte[] databytes = vd.getBytes("UTF8");
+                java.beans.XMLDecoder decoder;
+                decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(databytes));
+                HashMap h = (HashMap) decoder.readObject();
+                decoder.close();
+                // Handle Base64 encoded string values
+                HashMap data = new Base64GetHashMap(h);
+                ret = new PublisherQueueVolatileData();
+                ret.loadData(data);
+                if (ret.isUpgraded()) {
+                    setPublisherQueueVolatileData(ret);
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        return ret;
     }
 
     /**
      * Method that saves the PublisherQueueData data to database.
-     * @param qd is optional in publisher queue data
+     * 
+     * @param qd
+     *            is optional in publisher queue data
      */
     public void setPublisherQueueVolatileData(PublisherQueueVolatileData qd) {
-    	if (qd != null) {
+        if (qd != null) {
             // We must base64 encode string for UTF safety
             HashMap a = new Base64PutHashMap();
-            a.putAll((HashMap)qd.saveData());
-            
+            a.putAll((HashMap) qd.saveData());
+
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
             encoder.writeObject(a);
@@ -187,31 +246,8 @@ public class PublisherQueueData implements Serializable {
                 setVolatileData(baos.toString("UTF8"));
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
-            }	
-    	}
+            }
+        }
     }
-    
-	//
-	// Search functions. 
-	//
 
-	/** @return the found entity instance or null if the entity does not exist */
-	public static PublisherQueueData findByPk(EntityManager entityManager, String pk) {
-		return entityManager.find(PublisherQueueData.class, pk);
-	}
-	
-	/** @return return the query results as a List. */
-	public static List<PublisherQueueData> findDataByFingerprint(EntityManager entityManager, String fingerprint) {
-		Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.fingerprint=:fingerprint");
-		query.setParameter("fingerprint", fingerprint);
-		return query.getResultList();
-	}
-
-	/** @return return the query results as a List. */
-	public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus) {
-		Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus");
-		query.setParameter("publisherId", publisherId);
-		query.setParameter("publishStatus", publishStatus);
-		return query.getResultList();
-	}
 }
