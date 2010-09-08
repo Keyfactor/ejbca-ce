@@ -206,7 +206,9 @@ public class XKMSKISSTest extends TestCase {
         userAdminSession.setClearTextPassword(administrator, username3, pwd);
         KeyPair keys3 = genKeys();
         signSession.createCertificate(administrator, username3, "foo123", keys3.getPublic());
-
+        log.debug("username1: \"" + username1 + "\" dn1: \"" + dn1 + "\"");
+        log.debug("username2: \"" + username2 + "\" dn2: \"" + dn2 + "\"");
+        log.debug("username3: \"" + username3 + "\" dn3: \"" + dn3 + "\"");
     }
 
     public void test01AbstractType() throws Exception {
@@ -334,7 +336,7 @@ public class XKMSKISSTest extends TestCase {
         locateRequestType.setQueryKeyBinding(queryKeyBindingType);
 
         locateResultType = xKMSInvoker.locate(locateRequestType, null, null);
-        assertTrue(locateResultType.getUnverifiedKeyBinding().size() == 1);
+        assertEquals("locateResultType.getUnverifiedKeyBinding: ", 1, locateResultType.getUnverifiedKeyBinding().size());
 
         // Locate by With a more complicated query
         locateRequestType = xKMSObjectFactory.createLocateRequestType();
@@ -906,7 +908,7 @@ public class XKMSKISSTest extends TestCase {
 
         locateResultType = xKMSInvoker.locate(locateRequestType, null, null);
         assertTrue(locateResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
-        assertTrue(locateResultType.getUnverifiedKeyBinding().size() == 1);
+        assertEquals("locateResultType.getUnverifiedKeyBinding: ", 1, locateResultType.getUnverifiedKeyBinding().size());
         numberOfUnverifiedKeyBindings = locateResultType.getUnverifiedKeyBinding();
         iter = numberOfUnverifiedKeyBindings.iterator();
         while (iter.hasNext()) {
