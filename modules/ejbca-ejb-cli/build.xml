@@ -85,6 +85,7 @@
     	</copy>
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="true">
 			<path refid="lib.jee.classpath"/>
+    		<path refid="lib.jpa.classpath"/>
     	</copy>
     	<copy todir="${mod.ejbca-ejb-cli.dist}">
     		<fileset dir="${ejbca.home}/src/java" includes="jndi.properties"/>
