@@ -17,11 +17,14 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -248,6 +251,30 @@ public class PublisherQueueData implements Serializable {
                 throw new RuntimeException(e);
             }
         }
+    }
+    
+    //
+    // Search functions. 
+    //
+
+    /** @return the found entity instance or null if the entity does not exist */
+    public static PublisherQueueData findByPk(EntityManager entityManager, String pk) {
+            return entityManager.find(PublisherQueueData.class, pk);
+    }
+    
+    /** @return return the query results as a List. */
+    public static List<PublisherQueueData> findDataByFingerprint(EntityManager entityManager, String fingerprint) {
+            Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.fingerprint=:fingerprint");
+            query.setParameter("fingerprint", fingerprint);
+            return query.getResultList();
+    }
+
+    /** @return return the query results as a List. */
+    public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus) {
+            Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus");
+            query.setParameter("publisherId", publisherId);
+            query.setParameter("publishStatus", publishStatus);
+            return query.getResultList();
     }
 
 }
