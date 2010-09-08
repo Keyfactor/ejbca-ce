@@ -23,6 +23,16 @@ import org.apache.log4j.Logger;
  * 
  * The format is in the form '*y *mo *d *h *m *s *ms' where * is a decimal number and
  * y=years, mo=months, d=days, h=hours, m=minutes, s=seconds, ms=milliseconds. Spaces are optional.
+ * 
+ * <p>Example to print time in milliseconds as a user friendly string (55m for 55 minutes).</p>
+ * <code>
+ * CombineTime.getInstance(longtime).toString(CombineTime.TYPE_MINUTES))
+ * </code>
+ * 
+ * <p>Example to parse user friendly time string and get milliseconds (55 minutes = 3300000ms), with default value 1 minute</p>
+ * <code>
+ * CombineTime.getInstance(stringtime, "1"+CombineTime.TYPE_MINUTES).getLong();
+ * </code>
  *  
  * @version $Id$
  */
