@@ -227,7 +227,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 				}			   
 		   }
 		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_PKIX)){
-			    if(cert.getSubjectDN().toString().equalsIgnoreCase(CertTools.stringToBCDNString(useKeyWithType.getIdentifier()))){
+			    if(CertTools.getSubjectDN(cert).equalsIgnoreCase(CertTools.stringToBCDNString(useKeyWithType.getIdentifier()))){
 				      retval.add(useKeyWithType);
 				}			   
 		   } 
