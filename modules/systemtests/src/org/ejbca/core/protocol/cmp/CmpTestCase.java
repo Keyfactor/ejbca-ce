@@ -437,7 +437,7 @@ public class CmpTestCase extends TestCase {
         if (pbe) {
             AlgorithmIdentifier algId = header.getProtectionAlg();
             assertNotNull(algId);
-            assertEquals(CMPObjectIdentifiers.passwordBasedMac.getId(), algId.getObjectId().getId());
+            assertEquals("Protection algorithm id: " + algId.getObjectId().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId.getObjectId().getId());	//1.2.840.113549.1.1.5 - SHA-1 with RSA Encryption
         }
 
         // Check that the signer is the expected CA
