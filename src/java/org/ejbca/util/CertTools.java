@@ -611,10 +611,12 @@ public class CertTools {
 
     /**
 	 * Gets a list of all custom OIDs defined in the string. A custom OID is defined as an OID, simply as that. Otherwise, if it is not a custom oid, the DNpart is defined by a name such as CN och rfc822Name.
+	 * This method only returns a oid once, so if the input string has multiple of the same oid, only one value is returned.
 	 *
 	 * @param dn String containing DN, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz", or "rfc822Name=foo@bar.com", etc.
+	 * @param dnpart String specifying which part of the DN to get, should be "CN" or "OU" etc.
 	 *
-	 * @return ArrayList containing oids or empty list if no custom OIDs are present
+	 * @return ArrayList containing unique oids or empty list if no custom OIDs are present
 	 */
 	public static ArrayList getCustomOids(String dn) {
 		if (log.isTraceEnabled()) {
@@ -632,8 +634,13 @@ public class CertTools {
 					// An oid is never shorter than 3 chars and must start with 1.
 					if ( (i > 2) && (o.charAt(1) == '.') ) {
 						String oid = o.substring(0, i);
-						new DERObjectIdentifier(oid);
-						parts.add(oid);
+						// If we have multiple of the same custom oid, don't claim that we have more
+						// This method will only return "unique" custom oids.
+						if (!parts.contains(oid)) {
+							// Check if it is a real oid, if it is not we will ignore it (IllegalArgumentException will be thrown)
+							new DERObjectIdentifier(oid);
+							parts.add(oid);							
+						}
 					}
 				} catch (IllegalArgumentException e) {
 					// Not a valid oid
