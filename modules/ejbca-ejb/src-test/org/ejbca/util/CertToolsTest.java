@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import junit.framework.TestCase;
@@ -877,6 +878,18 @@ public class CertToolsTest extends TestCase {
 		String val1 = CertTools.getPartFromDN(customAlt, oid1);
 		assertEquals("foobar", val1);
 		String val2 = CertTools.getPartFromDN(customAlt, oid2);
+		assertEquals("barfoo", val2);
+
+		customAlt = "rfc822Name=foo@bar.com, 1.1.1.1.2=foobar, 1.1.1.1.2=barfoo";
+		oids = CertTools.getCustomOids(customAlt);
+		assertEquals(1, oids.size());
+		oid1 = (String) oids.get(0);
+		assertEquals("1.1.1.1.2", oid1);
+		List list = CertTools.getPartsFromDN(customAlt, oid1);
+		assertEquals(2, list.size());
+		val1 = (String)list.get(0);
+		assertEquals("foobar", val1);
+		val2 = (String)list.get(1);
 		assertEquals("barfoo", val2);
 
 		log.trace("<test03AltNames()");
