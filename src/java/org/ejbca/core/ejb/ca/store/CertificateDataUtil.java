@@ -292,11 +292,15 @@ public class CertificateDataUtil {
     }
 
     static void verifyProtection(CertificateData data, TableProtectSessionLocal tableProtectSession, Adapter adapter) {
-		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
-		// The verify method will log failed verifies itself
-		TableVerifyResult res = tableProtectSession.verify(entry);
-		if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
-			//adapter.error("Verify failed, but we go on anyway.");
-		}
+    	if (data==null) {
+        	adapter.error("CertificateData to verify is null.");
+    	} else {
+    		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
+    		// The verify method will log failed verifies itself
+    		TableVerifyResult res = tableProtectSession.verify(entry);
+    		if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
+    			//adapter.error("Verify failed, but we go on anyway.");
+    		}
+    	}
     }
 }
