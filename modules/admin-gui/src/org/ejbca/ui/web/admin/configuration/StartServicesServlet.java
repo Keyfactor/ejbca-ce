@@ -22,7 +22,7 @@ import java.security.Security;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -38,6 +38,11 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.LogConfiguration;
 import org.ejbca.config.ProtectedLogConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.log.Admin;
@@ -52,7 +57,6 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.ProtectedLogExportWorker;
 import org.ejbca.core.model.services.workers.ProtectedLogVerificationWorker;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.CertTools;
 
 /**
@@ -62,13 +66,22 @@ import org.ejbca.util.CertTools;
  */
 public class StartServicesServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 1L;
 	private static final int MAX_SERVICE_WAIT = 30;
-	
 	private static final Logger log = Logger.getLogger(StartServicesServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    EjbLocalHelper ejb = new EjbLocalHelper();
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private LogSessionLocal logSession;
+    @EJB
+    private RaAdminSessionLocal raAdminSession;
+    @EJB
+    private ServiceSessionLocal serviceSession;
     
     /**
      * Method used to remove all active timers and stop system services.
@@ -80,7 +93,7 @@ public class StartServicesServlet extends HttpServlet {
         
         log.trace(">destroy calling ServiceSession.unload");
         try {
-			ejb.getServiceSession().unload();
+			serviceSession.unload();
 		} catch (Exception e) {
 			log.error(e);
 		}
@@ -120,10 +133,11 @@ public class StartServicesServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        
+    	if (caAdminSession==null || certificateStoreSession==null || logSession==null || raAdminSession==null || serviceSession==null) {
+    		log.error("Local EJB injection failed.");
+    	}
         ejbcaInit();
-
-    } // init
+    }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
@@ -218,19 +232,15 @@ public class StartServicesServlet extends HttpServlet {
         log.trace(">init loading CAs into cache");
         try {
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	ejb.getCAAdminSession().initializeAndUpgradeCAs(admin);
+        	caAdminSession.initializeAndUpgradeCAs(admin);
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
 
         // Make a log row that EJBCA is starting
         Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-        try {
-        ejb.getLogSession().log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
+        logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
         		LogConstants.EVENT_INFO_STARTING, iMsg);
-        } catch (CreateException e) {
-        	log.error("",e);
-        }
 
         log.trace(">init ProtectedLogVerificationService is configured");
         try {
@@ -248,15 +258,15 @@ public class StartServicesServlet extends HttpServlet {
         		serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
         		serviceConfiguration.setActive(true);
         		serviceConfiguration.setHidden(true);
-        		if (ejb.getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
-        			ejb.getServiceSession().changeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
+        		if (serviceSession.getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
+        			serviceSession.changeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
         		} else {
-        			ejb.getServiceSession().addService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        			serviceSession.addService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
         		}
         	} else {
         		// Remove if existing
-        		if (ejb.getServiceSession().getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
-        			ejb.getServiceSession().removeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
+        		if (serviceSession.getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
+        			serviceSession.removeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
         		}
         	}
 		} catch (ServiceExistsException e) {
@@ -280,15 +290,15 @@ public class StartServicesServlet extends HttpServlet {
         		serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
         		serviceConfiguration.setActive(true);
         		serviceConfiguration.setHidden(true);
-        		if (ejb.getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
-        			ejb.getServiceSession().changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
+        		if (serviceSession.getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
+        			serviceSession.changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
         		} else {
-        			ejb.getServiceSession().addService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
+        			serviceSession.addService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
         		}
         	} else {
         		// Remove if existing
-        		if (ejb.getServiceSession().getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
-        			ejb.getServiceSession().removeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
+        		if (serviceSession.getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
+        			serviceSession.removeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
         		}
         	}
 		} catch (ServiceExistsException e) {
@@ -299,7 +309,7 @@ public class StartServicesServlet extends HttpServlet {
 
         log.trace(">init calling ServiceSession.load");
         try {
-        	ejb.getServiceSession().load();
+        	serviceSession.load();
 		} catch (Exception e) {
 			log.error("Error init ServiceSession: ", e);
 		}
@@ -308,7 +318,7 @@ public class StartServicesServlet extends HttpServlet {
         log.trace(">init loading CertificateProfile to check for upgrades");
         try {
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	ejb.getCertStoreSession().initializeAndUpgradeProfiles(admin);
+        	certificateStoreSession.initializeAndUpgradeProfiles(admin);
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
@@ -317,7 +327,7 @@ public class StartServicesServlet extends HttpServlet {
         log.trace(">init loading EndEntityProfile to check for upgrades");
         try {
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	ejb.getRAAdminSession().initializeAndUpgradeProfiles(admin);
+        	raAdminSession.initializeAndUpgradeProfiles(admin);
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }

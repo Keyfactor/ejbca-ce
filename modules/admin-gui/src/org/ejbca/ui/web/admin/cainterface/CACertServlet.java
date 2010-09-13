@@ -18,7 +18,7 @@ import java.io.PrintStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 
-import javax.ejb.EJBException;
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -26,9 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -49,7 +48,8 @@ import org.ejbca.util.Base64;
  */
 public class CACertServlet extends HttpServlet {
 
-    private static final Logger log = Logger.getLogger(CACertServlet.class);
+	private static final long serialVersionUID = 1L;
+	private static final Logger log = Logger.getLogger(CACertServlet.class);
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_NSCACERT = "nscacert";
@@ -61,29 +61,21 @@ public class CACertServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String JKSPASSWORD_PROPERTY = "password";
 
-    private SignSession signsession = null;
-
-    private synchronized SignSession getSignSession(){
-    	if(signsession == null){	
-    		try {
-    			signsession = new EjbLocalHelper().getSignSession();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return signsession;
-    }
+    @EJB
+    private SignSessionLocal signSession;
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+    	if (signSession==null) {
+    		log.error("Local EJB injection failed.");
+    	}
     }
     
-    public void doPost(HttpServletRequest req, HttpServletResponse res)
-        throws IOException, ServletException {
+    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");
         doGet(req, res);
         log.trace("<doPost()");
-    } //doPost
+    }
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         log.trace(">doGet()");
@@ -128,7 +120,7 @@ public class CACertServlet extends HttpServlet {
             // Root CA is level 0, next below root level 1 etc etc
             try {
                 Admin admin = ejbcawebbean.getAdminObject();
-                Certificate[] chain = (Certificate[]) getSignSession().getCertificateChain(admin, issuerdn.hashCode()).toArray(new Certificate[0]);
+                Certificate[] chain = (Certificate[]) signSession.getCertificateChain(admin, issuerdn.hashCode()).toArray(new Certificate[0]);
                                                             
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
@@ -200,7 +192,5 @@ public class CACertServlet extends HttpServlet {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request format");
             return;
         }
-
     } // doGet
-
 }

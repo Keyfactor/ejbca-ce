@@ -48,7 +48,8 @@ import org.ejbca.util.Base64;
  */
 public class EndEntityCertServlet extends HttpServlet {
 
-    private static final Logger log = Logger.getLogger(EndEntityCertServlet.class);
+	private static final long serialVersionUID = 1L;
+	private static final Logger log = Logger.getLogger(EndEntityCertServlet.class);
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_NSCERT = "nscert";
@@ -62,14 +63,13 @@ public class EndEntityCertServlet extends HttpServlet {
         super.init(config);
     }
     
-    public void doPost(HttpServletRequest req, HttpServletResponse res)
-        throws IOException, ServletException {
+    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");
         doGet(req, res);
         log.trace("<doPost()");
-    } //doPost
+    }
 
-    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
+    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doGet()");
         // Check if authorized
         EjbcaWebBean ejbcawebbean= (org.ejbca.ui.web.admin.configuration.EjbcaWebBean)
@@ -170,7 +170,5 @@ public class EndEntityCertServlet extends HttpServlet {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request format");
             return;
         }
-
     } // doGet
-
 }

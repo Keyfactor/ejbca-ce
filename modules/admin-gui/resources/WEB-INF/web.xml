@@ -18,7 +18,7 @@
       <load-on-startup>99</load-on-startup>
    </servlet>
    <servlet>
-      <description><![CDATA[Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI]]></description>
+      <description><![CDATA[Used to retrieve CA certificate request and Processed CA Certificates from AdminWeb GUI]]></description>
       <display-name>AdminCertReqServlet</display-name>
       <servlet-name>AdminCertReq</servlet-name>
       <servlet-class>org.ejbca.ui.web.admin.cainterface.AdminCertReqServlet</servlet-class>
