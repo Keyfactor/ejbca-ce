@@ -60,22 +60,23 @@ public class ReissueResponseGenerator extends
 		ReissueResultType result = xkmsFactory.createReissueResultType();		
 		super.populateResponse(result, requestVerifies);		
 		ReissueRequestType req = (ReissueRequestType) this.req;
-		
-
+		// Variables defined here for debug reasons
+		boolean isCertValid=false;
+		UserDataVO userData = null;
+		String password = "";
+		X509Certificate newCert = null;
 		if(resultMajor == null){ 		
 			if(!checkValidRespondWithRequest(req.getRespondWith(),false)){
 				resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 				resultMinor = XKMSConstants.RESULTMINOR_MESSAGENOTSUPPORTED;
 			}
-
 			if(resultMajor == null){ 
 				if(resultMajor == null){ 
 					X509Certificate cert = (X509Certificate) getPublicKeyInfo(req, false);
-					boolean isCertValid = certIsValid(cert);
+					isCertValid = certIsValid(cert);
 					if(isCertValid && confirmPOP(cert.getPublicKey())){						
-						UserDataVO userData = findUserData(cert);
+						userData = findUserData(cert);
 						if(userData != null){
-							String password = "";
 							boolean encryptedPassword = isPasswordEncrypted(req);
 							if(isCertValid && XKMSConfig.isAutomaticReissueAllowed()){
 								password = setUserStatusToNew(userData);
@@ -86,10 +87,8 @@ public class ReissueResponseGenerator extends
 									password = getClearPassword(req, userData.getPassword());
 								}
 							}
-
-							
 							if(password != null ){
-								X509Certificate newCert = registerReissueOrRecover(false,true, result, userData,password, cert.getPublicKey(), null);
+								newCert = registerReissueOrRecover(false,true, result, userData,password, cert.getPublicKey(), null);
 								if(newCert != null){
 									KeyBindingAbstractType keyBinding = getResponseValues(req.getReissueKeyBinding(), newCert, false, true);
 									result.getKeyBinding().add((KeyBindingType) keyBinding);
@@ -100,16 +99,15 @@ public class ReissueResponseGenerator extends
 				}
 			}
 		}
-		
+		if (log.isDebugEnabled()) {
+			log.debug("getResponse resultMajor="+resultMajor+" resultMinor="+resultMinor+" isCertValid="+isCertValid+" userData=null?"+(userData==null)+" password==null?"+(password==null)+" newCert==null?"+(newCert==null));
+		}
 		if(resultMajor == null){ 
 			resultMajor = XKMSConstants.RESULTMAJOR_SUCCESS;
 		}
-		  		   
 		setResult(result);		
-		
 		return result;
 	}
-
 
     /**
      * Method that sets the users status to 'new' and a 
