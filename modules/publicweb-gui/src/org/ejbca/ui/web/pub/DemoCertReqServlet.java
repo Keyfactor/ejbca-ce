@@ -19,7 +19,6 @@ import java.util.Enumeration;
 
 import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
-import javax.naming.InitialContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -40,10 +39,8 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.StringTools;
-
-
-
 
 /**
  * This is a servlet that is used for creating a user into EJBCA and
@@ -87,36 +84,29 @@ import org.ejbca.util.StringTools;
  */
 public class DemoCertReqServlet extends HttpServlet {
 
-  private final static Logger log = Logger.getLogger(DemoCertReqServlet.class);
+	private static final long serialVersionUID = 1L;
+	private final static Logger log = Logger.getLogger(DemoCertReqServlet.class);
 
+	// Edit this constant to the id of your preferable CA used to sign certificate.
+	private final static int DEFAULT_DEMOCAID = 0;
 
-  // Edit this constant to the id of your preferable ca used to sign certificate.
-  private final static int DEFAULT_DEMOCAID = 0;
-  
-  @EJB
-  private SignSessionLocal signsession;
-  @EJB
-  private CertificateStoreSessionRemote storesession;
-  @EJB
-  private UserAdminSessionRemote useradminsession;
-  @EJB
-  private RaAdminSessionRemote raadminsession;
+	@EJB
+	private SignSessionLocal signSession;
+	@EJB
+	private CertificateStoreSessionRemote storeSession;
+	@EJB
+	private UserAdminSessionRemote userAdminSession;
+	@EJB
+	private RaAdminSessionRemote raAdminSession;
 
-
-  public void init(ServletConfig config) throws ServletException
-  {
-    super.init(config);
-    try {
-      // Install BouncyCastle provider
-      CertTools.installBCProvider();
-
-      // Get EJB context and home interfaces
-      InitialContext ctx = new InitialContext();
-    } catch (Exception e) {
-      throw new ServletException(e);
-    }
-  }
-
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		try {
+			CryptoProviderTools.installBCProvider();	// Install BouncyCastle provider
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+	}
 
   /**
    * Handles PKCS10 certificate request, these are constructed as:
@@ -141,8 +131,7 @@ public class DemoCertReqServlet extends HttpServlet {
    * PublicKey's encoded-format has to be RSA X.509.
    */
   public void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws IOException, ServletException
-  {
+    throws IOException, ServletException {
     ServletDebug debug = new ServletDebug(request, response);
 
 
@@ -181,7 +170,7 @@ public class DemoCertReqServlet extends HttpServlet {
     username = StringTools.strip(username);
     // need null check here?
     // Before doing anything else, check if the user name is unique and ok.
-    boolean check = checkUsername(admin,username, useradminsession);
+    boolean check = checkUsername(admin,username, userAdminSession);
     if (check == false) {
         String msg = "User '"+username+"' already exist.";
         log.error(msg);
@@ -221,7 +210,7 @@ public class DemoCertReqServlet extends HttpServlet {
     String tmp = null;
     int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
     if ((tmp=request.getParameter("entityprofile")) != null) {
-        eProfileId = raadminsession.getEndEntityProfileId(admin, request.getParameter("entityprofile"));
+        eProfileId = raAdminSession.getEndEntityProfileId(admin, request.getParameter("entityprofile"));
         if (eProfileId == 0) {
             throw new ServletException("No such end entity profile: " + tmp);
         }
@@ -230,7 +219,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
     int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
     if ((tmp=request.getParameter("certificateprofile")) != null) {
-        cProfileId = storesession.getCertificateProfileId(admin, request.getParameter("certificateprofile"));
+        cProfileId = storeSession.getCertificateProfileId(admin, request.getParameter("certificateprofile"));
         if (cProfileId == 0) {
             throw new ServletException("No such certificate profile: " + tmp);
         }
@@ -252,7 +241,7 @@ public class DemoCertReqServlet extends HttpServlet {
     newuser.setPassword(password);
 
     try {
-        useradminsession.addUser(admin, newuser.getUsername(), newuser.getPassword(), newuser.getDN(), newuser.getSubjectAltName()
+        userAdminSession.addUser(admin, newuser.getUsername(), newuser.getPassword(), newuser.getDN(), newuser.getSubjectAltName()
                                ,newuser.getEmail(), false, newuser.getEndEntityProfileId(),
                                 newuser.getCertificateProfileId(), newuser.getType(),
                                 newuser.getTokenType(), newuser.getHardTokenIssuerId(), newuser.getCAId());
@@ -263,11 +252,11 @@ public class DemoCertReqServlet extends HttpServlet {
     RequestHelper helper = new RequestHelper(admin, debug);
     try {
         if (type == 1) {
-              byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
+              byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
               RequestHelper.sendNewCertToNSClient(certs, response);
         }
         if (type == 2) {
-              byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
+              byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
               debug.ieCertFix(b64cert);
               RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"), classid);
         }

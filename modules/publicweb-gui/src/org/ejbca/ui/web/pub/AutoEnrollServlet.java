@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -32,12 +32,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.MSPKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
@@ -45,6 +48,7 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.ActiveDirectoryTools;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -58,20 +62,26 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  */
 public class AutoEnrollServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 1L;
 	private final static Logger log = Logger.getLogger(AutoEnrollServlet.class);
 
-	private EjbLocalHelper ejb;
-
-	public void init(ServletConfig config) throws ServletException
-	{
+	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
+	private RaAdminSessionLocal raAdminSession;
+	@EJB
+	private SignSessionLocal signSession;
+	@EJB
+	private UserAdminSessionLocal userAdminSession;
+	
+	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		try {
 			// Install BouncyCastle provider
-			CertTools.installBCProvider();
+			CryptoProviderTools.installBCProvider();
 		} catch (Exception e) {
 			throw new ServletException(e);
 		}
-		ejb = new EjbLocalHelper();
 	}
 
 	/**
@@ -80,12 +90,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		log.trace(">doPost");
 		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-		GlobalConfiguration globalConfiguration;
-		try {
-			globalConfiguration = ejb.getRAAdminSession().getCachedGlobalConfiguration(internalAdmin);
-		} catch (CreateException e) {
-			throw new ServletException(e);
-		}
+		GlobalConfiguration globalConfiguration = raAdminSession.getCachedGlobalConfiguration(internalAdmin);
 		// Make sure we allow use of this Servlet
 		if ( !globalConfiguration.getAutoEnrollUse() ) {
 			log.info("Unauthorized access attempt from " + request.getRemoteAddr());
@@ -162,14 +167,8 @@ public class AutoEnrollServlet extends HttpServlet {
 		if (MSCertTools.isRequired(templateIndex, MSCertTools.GET_SUBJECTDN_FROM_AD, 0)) {
 			fetchedSubjectDN = ActiveDirectoryTools.getUserDNFromActiveDirectory(globalConfiguration, usernameShort);
 		}
-		int certProfileId;
-		int endEntityProfileId;
-		try {
-			certProfileId = MSCertTools.getOrCreateCertificateProfile(admin, templateIndex, ejb.getCertStoreSession());
-			endEntityProfileId = MSCertTools.getOrCreateEndEndtityProfile(admin, templateIndex, certProfileId, caid, usernameShort, fetchedSubjectDN, ejb.getRAAdminSession());
-		} catch (CreateException e) {
-			throw new ServletException(e);
-		}
+		int certProfileId = MSCertTools.getOrCreateCertificateProfile(admin, templateIndex, certificateStoreSession);
+		int endEntityProfileId = MSCertTools.getOrCreateEndEndtityProfile(admin, templateIndex, certProfileId, caid, usernameShort, fetchedSubjectDN, raAdminSession);
 		if (endEntityProfileId == -1) {
 			String msg = "Could not retrieve required information from AD.";
 			log.error(msg);
@@ -205,10 +204,10 @@ public class AutoEnrollServlet extends HttpServlet {
 		String password = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);
 		userData.setPassword(password);
 		try {
-			if (ejb.getUserAdminSession().existsUser(admin, username)) {
-				ejb.getUserAdminSession().changeUser(admin, userData, true);
+			if (userAdminSession.existsUser(admin, username)) {
+				userAdminSession.changeUser(admin, userData, true);
 			} else {
-				ejb.getUserAdminSession().addUser(admin, userData, true);
+				userAdminSession.addUser(admin, userData, true);
 			}
 		} catch (Exception e) {
 			log.error("Could not add user "+username, e);
@@ -219,9 +218,9 @@ public class AutoEnrollServlet extends HttpServlet {
 		req.setPassword(password);
 		IResponseMessage resp;
 		try {
-			resp = ejb.getSignSession().createCertificate(admin, req,Class.forName(X509ResponseMessage.class.getName()));
+			resp = signSession.createCertificate(admin, req,Class.forName(X509ResponseMessage.class.getName()));
 			cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-			result = ejb.getSignSession().createPKCS7(admin, cert, true);
+			result = signSession.createPKCS7(admin, cert, true);
 			debugInfo += "Resulting cert: " + new String(Base64.encode(result, true)) + "\n"; 
 		} catch (Exception e) {
 			log.error("Noooo!!! ", e);
@@ -252,36 +251,32 @@ public class AutoEnrollServlet extends HttpServlet {
 	 * Return "OK" if renewal isn't needed.
 	 */
 	private String returnStatus(Admin admin, String username) {
-		try {
-			if (!ejb.getUserAdminSession().existsUser(admin, username)) {
-				return "NO_SUCH_USER";
-			}
-			Collection certificates = ejb.getCertStoreSession().findCertificatesByUsername(admin, username);
-			Iterator iter = certificates.iterator();
-			if (!iter.hasNext()) {
-				return "NO_CERTIFICATES";
-			}
-			while (iter.hasNext()) {
-				X509Certificate cert = (X509Certificate) iter.next();
+		if (!userAdminSession.existsUser(admin, username)) {
+			return "NO_SUCH_USER";
+		}
+		Collection<X509Certificate> certificates = certificateStoreSession.findCertificatesByUsername(admin, username);
+		Iterator<X509Certificate> iter = certificates.iterator();
+		if (!iter.hasNext()) {
+			return "NO_CERTIFICATES";
+		}
+		while (iter.hasNext()) {
+			X509Certificate cert = iter.next();
+			try {
+				cert.checkValidity(new Date(System.currentTimeMillis() + 14 * 24 * 3600 * 1000));
+				return "OK";
+			} catch (CertificateExpiredException e) {
 				try {
-					cert.checkValidity(new Date(System.currentTimeMillis() + 14 * 24 * 3600 * 1000));
-					return "OK";
-				} catch (CertificateExpiredException e) {
-					try {
-						cert.checkValidity(new Date(System.currentTimeMillis()));
-						return "EXPIRING";
-					} catch (CertificateExpiredException e1) {
-					} catch (CertificateNotYetValidException e1) {
-						return "ERROR";
-					}
-				} catch (CertificateNotYetValidException e) {
+					cert.checkValidity(new Date(System.currentTimeMillis()));
+					return "EXPIRING";
+				} catch (CertificateExpiredException e1) {
+				} catch (CertificateNotYetValidException e1) {
 					return "ERROR";
 				}
+			} catch (CertificateNotYetValidException e) {
+				return "ERROR";
 			}
-			return "EXPIRED";
-		} catch (CreateException e) {
-			throw new RuntimeException(e);
 		}
+		return "EXPIRED";
 	}
 
 }
