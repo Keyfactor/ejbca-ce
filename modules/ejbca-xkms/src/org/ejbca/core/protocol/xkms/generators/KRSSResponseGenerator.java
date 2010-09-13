@@ -489,7 +489,7 @@ public class KRSSResponseGenerator extends
 				}
 			}
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Exception during certificate validation: ", e);
 		}
 		
 		if(retval == false){
