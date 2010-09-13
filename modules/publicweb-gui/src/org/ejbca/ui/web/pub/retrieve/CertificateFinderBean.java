@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJB;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;

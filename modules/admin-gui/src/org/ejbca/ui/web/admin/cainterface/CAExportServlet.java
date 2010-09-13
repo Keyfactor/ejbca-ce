@@ -2,6 +2,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,29 +10,34 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 
 /**
- * This servlet exports a CA as an octet/stream.
+ * This Servlet exports a CA as an octet/stream.
  */
 public class CAExportServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(CAExportServlet.class);
 	private static final long serialVersionUID = 378499368926058906L;
 	public static final String HIDDEN_CANAME				= "hiddencaname";
 	public static final String TEXTFIELD_EXPORTCA_PASSWORD	= "textfieldexportcapassword";
+	
+	@EJB
+	private CAAdminSessionLocal caAdminSession;
 
 	/**
 	 * Initialize.
 	 */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-    } // init
+    	if (caAdminSession==null) {
+    		log.error("Local EJB injection failed.");
+    	}
+    }
 
     /**
      * Handle HTTP Post. Redirect the request to doGet(..). 
@@ -44,7 +50,7 @@ public class CAExportServlet extends HttpServlet {
 	    log.trace(">doPost()");
 	    doGet(req, res);
 	    log.trace("<doPost()");
-    } //doPost
+    }
 
     /**
      * Validates the request parameters and outputs the CA as an PKCS#12 output/octet-stream.
@@ -78,7 +84,6 @@ public class CAExportServlet extends HttpServlet {
 	    log.info("Got request from "+req.getRemoteAddr()+" to export "+caname);
   		try{
     		byte[] keystorebytes = null;
-    		CAAdminSession caAdminSession = new EjbLocalHelper().getCAAdminSession();
         	CAInfo cainfo = caAdminSession.getCAInfo(ejbcawebbean.getAdminObject(), caname);
         	String ext = "p12"; // Default for X.509 CAs
         	if (cainfo.getCAType() == CAInfo.CATYPE_CVC) {
@@ -94,5 +99,5 @@ public class CAExportServlet extends HttpServlet {
 	        res.setContentType("text/plain");
 	        res.sendError( HttpServletResponse.SC_BAD_REQUEST, e.getMessage() );
   		} 
-	} // doGet
-} // CAExportServlet
+	}
+}

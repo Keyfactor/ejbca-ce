@@ -20,7 +20,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJBException;
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -31,11 +31,10 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.ui.web.RequestHelper;
@@ -44,6 +43,7 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.StringTools;
 
@@ -107,7 +107,9 @@ import org.ejbca.util.StringTools;
  * @version $Id$
  */
 public class AdminCertReqServlet extends HttpServlet {
-    private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
+
+	private static final long serialVersionUID = 1L;
+	private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
     
     private final static byte[] BEGIN_CERT =
         "-----BEGIN CERTIFICATE-----".getBytes();
@@ -120,47 +122,23 @@ public class AdminCertReqServlet extends HttpServlet {
     private final static byte[] NL = "\n".getBytes();
     private final static int NL_LENGTH = NL.length;
     
-    private SignSession signsession = null;
-    private UserAdminSession userAdminSession = null;
+    @EJB
+    private SignSessionLocal signSession;
+    @EJB
+    private UserAdminSessionLocal userAdminSession;
 
-    private EjbLocalHelper ejb;
-    
-    private synchronized SignSession getSignSession(){
-    	if(signsession == null){	
-    		try {
-    			signsession = ejb.getSignSession();
-    		}catch(Exception e){
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return signsession;
-    }
-
-    private synchronized UserAdminSession getUserAdminSession() {
-    	if (userAdminSession == null) {	
-    		try {
-    			userAdminSession = ejb.getUserAdminSession();
-    		} catch(Exception e) {
-    			throw new EJBException(e);      	  	    	  	
-    		}
-    	}
-    	return userAdminSession;
-    }
-
-    public void init(ServletConfig config)
-    throws ServletException
-    {
+    public void init(ServletConfig config) throws ServletException {
         super.init(config);
         try {
-            // Install BouncyCastle provider
-            CertTools.installBCProvider();
+        	CryptoProviderTools.installBCProvider();	// Install BouncyCastle provider
         } catch (Exception e) {
             throw new ServletException(e);
         }
-        ejb = new EjbLocalHelper();
+    	if (signSession==null || userAdminSession==null) {
+    		log.error("Local EJB injection failed.");
+    	}
     }
-    
-    
+
     /**
      * Handles PKCS10 certificate request, these are constructed as:
      * <pre><code>
@@ -199,7 +177,7 @@ public class AdminCertReqServlet extends HttpServlet {
             throw new ServletException("This servlet requires certificate authentication!");
         }
         
-        Admin admin = getUserAdminSession().getAdmin(certs[0]);
+        Admin admin = userAdminSession.getAdmin(certs[0]);
         
         RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -285,9 +263,9 @@ public class AdminCertReqServlet extends HttpServlet {
         try {
             p10.setUsername(username);
             p10.setPassword(password);
-            IResponseMessage resp = getSignSession().createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+            IResponseMessage resp = signSession.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-            pkcs7 = getSignSession().createPKCS7(admin, cert, true);
+            pkcs7 = signSession.createPKCS7(admin, cert, true);
         } catch (EjbcaException e) {
             // EJBCA did not accept any of all parameters in the request.
             throw new ServletException(e);

@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin.cainterface;
 import java.io.IOException;
 import java.security.cert.Certificate;
 
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -24,8 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -55,7 +56,8 @@ import org.ejbca.util.RequestMessageUtils;
  */
 public class CACertReqServlet extends HttpServlet {
 
-    private static final Logger log = Logger.getLogger(CACertReqServlet.class);
+	private static final long serialVersionUID = 1L;
+	private static final Logger log = Logger.getLogger(CACertReqServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
@@ -64,19 +66,19 @@ public class CACertReqServlet extends HttpServlet {
 	private static final String COMMAND_CERT           = "cert";    
 	private static final String COMMAND_CERTPKCS7 = "certpkcs7";
     private static final String FORMAT_PROPERTY_NAME = "format";
-	
-	private EjbLocalHelper ejb = new EjbLocalHelper();
-   
+
+    @EJB
+    private SignSessionLocal signSession;
+    
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
     }
 
-    public void doPost(HttpServletRequest req, HttpServletResponse res)
-        throws IOException, ServletException {
+    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");
         doGet(req, res);
         log.trace("<doPost()");
-    } //doPost
+    }
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         log.trace(">doGet()");
@@ -236,7 +238,7 @@ public class CACertReqServlet extends HttpServlet {
 		if (command.equalsIgnoreCase(COMMAND_CERTPKCS7)) {
 			 try {
 				Certificate cert = cabean.getProcessedCertificate();		
-		        byte[] pkcs7 = ejb.getSignSession().createPKCS7(ejbcawebbean.getAdminObject(), cert, true);							 	
+		        byte[] pkcs7 = signSession.createPKCS7(ejbcawebbean.getAdminObject(), cert, true);							 	
 			    byte[] b64cert = org.ejbca.util.Base64.encode(pkcs7);	
 			    RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);																		 					
 			 } catch (Exception e) {
@@ -246,10 +248,5 @@ public class CACertReqServlet extends HttpServlet {
 				 return;
 			 }
 		 }
-
-
-
-
     } // doGet
-
 }

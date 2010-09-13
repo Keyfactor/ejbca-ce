@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
@@ -73,7 +72,8 @@ import org.ejbca.util.query.Query;
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
-    private static Logger log = Logger.getLogger(RAInterfaceBean.class);
+	private static final long serialVersionUID = 1L;
+	private static Logger log = Logger.getLogger(RAInterfaceBean.class);
     
     // Public constants.
     public static final int MAXIMUM_QUERY_ROWCOUNT = UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT;
@@ -101,7 +101,6 @@ public class RAInterfaceBean implements java.io.Serializable {
         // Get the UserAdminSession instance.
         this.informationmemory = ejbcawebbean.getInformationMemory();
         
-        ServiceLocator locator = ServiceLocator.getInstance();
         adminsession = ejb.getUserAdminSession();
         raadminsession = ejb.getRAAdminSession();
         certificatesession = ejb.getCertStoreSession();
