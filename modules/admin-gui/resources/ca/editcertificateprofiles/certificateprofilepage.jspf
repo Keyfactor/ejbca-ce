@@ -674,7 +674,7 @@ function checkallfields(){
                  if(certificateprofiledata.getUseDefaultCRLDistributionPoint())
                  out.write(" CHECKED ");
            %>> <br> 
-           <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="60" maxlength="4096" 
+           <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="45" maxlength="4096" 
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
                       out.write(" disabled "); 
                     else 
@@ -683,7 +683,7 @@ function checkallfields(){
                       else
                        out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI().replace("\"", "&#34;") + "\"");%>>
            <br>
-           <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="60" maxlength="255" 
+           <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint()) {
                       out.write(" disabled "); 
                     } else {
@@ -719,7 +719,7 @@ function checkallfields(){
                  if(certificateprofiledata.getUseCADefinedFreshestCRL())
                  out.write(" CHECKED ");
            %>> <br> 
-           <input type="text" name="<%=TEXTFIELD_FRESHESTCRLURI%>" size="60" maxlength="255" 
+           <input type="text" name="<%=TEXTFIELD_FRESHESTCRLURI%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseFreshestCRL() || certificateprofiledata.getUseCADefinedFreshestCRL())
                       out.write(" disabled "); 
                     else 
@@ -768,7 +768,7 @@ function checkallfields(){
                  out.write(" CHECKED ");
                  
            %>> <br>
-           <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="60" maxlength="255" 
+           <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseAuthorityInformationAccess() || certificateprofiledata.getUseDefaultOCSPServiceLocator())
                       out.write(" disabled "); 
                     else 
@@ -799,7 +799,7 @@ function checkallfields(){
         </table>
       </td>
       <td width="50%">
-        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<%= uri %>" size="60" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<%= uri %>" size="45" maxlength="255"/><br/>
       </td>
     </tr>
         <% }
@@ -815,7 +815,7 @@ function checkallfields(){
           </tr>
         </table>
       <td width="50%">
-        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="60" maxlength="255" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/><br/>
+        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="45" maxlength="255" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/><br/>
       </td>
     </tr>
 
@@ -857,9 +857,9 @@ function checkallfields(){
         </table>
       </td>
       <td width="50%">
-        <input readonly type="text" name="<%= TEXTFIELD_CERTIFICATEPOLICYID + i %>" value="<%= policy.getPolicyID() %>" size="60" maxlength="255"/><br/>
-        <input readonly type="text" name="<%= TEXTAREA_POLICYNOTICE_UNOTICE + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_unotice)) && (policy.getQualifier() != null)) { %><%= policy.getQualifier() %><% } %>" size="60" maxlength="255"/><br/>
-        <input readonly type="text" name="<%= TEXTFIELD_POLICYNOTICE_CPSURL + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_cps)) && (policy.getQualifier() != null)) { %><%= policy.getQualifier() %><% } %>" size="60" maxlength="255"/>
+        <input readonly type="text" name="<%= TEXTFIELD_CERTIFICATEPOLICYID + i %>" value="<%= policy.getPolicyID() %>" size="45" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTAREA_POLICYNOTICE_UNOTICE + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_unotice)) && (policy.getQualifier() != null)) { %><%= policy.getQualifier() %><% } %>" size="45" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTFIELD_POLICYNOTICE_CPSURL + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_cps)) && (policy.getQualifier() != null)) { %><%= policy.getQualifier() %><% } %>" size="45" maxlength="255"/>
       </td>
     </tr>
         <% }
@@ -875,9 +875,9 @@ function checkallfields(){
           </tr>
         </table>
       <td width="50%">
-        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="60" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
-        <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="60" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
-        <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="60" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/>
+        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
+        <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
+        <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/>
       </td>
     </tr>
     
@@ -921,7 +921,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("SEMANTICID") %> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="60" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement())
                       out.write(" disabled "); 
                     else 
@@ -931,7 +931,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("RANAME") %> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="60" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement())
                       out.write(" disabled "); 
                     else 
@@ -1231,7 +1231,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("CNPOSTFIX") %> <br><%= ejbcawebbean.getText("INSERTEDAFTERCN") %>
       </td>
       <td width="50%"> 
-            <input type="text" name="<%=TEXTFIELD_CNPOSTFIX%>" size="60" maxlength="255" 
+            <input type="text" name="<%=TEXTFIELD_CNPOSTFIX%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseCNPostfix())
                       out.write(" disabled "); 
                     else                       

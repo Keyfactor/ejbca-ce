@@ -262,6 +262,12 @@ table.grid td {
 	padding: 2px 3px;
 	border: 1px solid #6F9AD3;
 }
+table tbody tr td {
+	line-height: 1.55em;
+}
+table tbody tr td table tbody tr td {
+	line-height: 1.75em;
+}
 
 /* Page: Home */
 h3#welcome {
