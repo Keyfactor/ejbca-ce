@@ -346,6 +346,14 @@
             <include name="dom4j-*.jar"/>
         </fileset>
 	</path>
+	
+	<condition property="bundle-hibernate-jpa">
+		<or>
+			<matches pattern="glassfish" string="${appserver.type}"/>
+			<matches pattern="weblogic" string="${appserver.type}"/>
+			<!-- ... -->
+		</or>
+	</condition>
 
 	<path id="lib.clientToolBox.classpath">
         <path location="${mod.clientToolBox.dist}/properties" />
