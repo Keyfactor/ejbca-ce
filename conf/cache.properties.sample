@@ -12,7 +12,7 @@
 #------------------- Performance settings -------------
 
 # Caches is used internally by EJBCA to optimize performance. 
-# You can manually flush internal caches using the command line command "ejbca.sh clearcaches". Run the command for more detailed documentation of this command.
+# You can manually flush internal caches using the command line command "ejbca.sh clearcache". Run the command for more detailed documentation of this command.
  
 # Set to a value for caching calls to getCAInfo and getCA in CAAdminSession. This means that for CAInfo to be updated
 # the cache time expires, an "Edit CA" or server restart is done, or flushCACache is called on CAAdminSession. 
