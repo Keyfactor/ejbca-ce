@@ -1,3 +1,5 @@
+-- This file should not be available in EJBCA 4.0 and all these changes should already have been made to EJBCA 3.11.0.
+
 
 -- AdminGroupData.pK was named "primkey" on JBoss because of a missing mapping file for Derby in EJBCA 3.x if not the doc/howto/create-tables-ejbca3-derby.sql file was used.
 ALTER TABLE AdminGroupData ADD COLUMN pK INTEGER NOT NULL DEFAULT 0;

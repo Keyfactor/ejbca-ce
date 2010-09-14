@@ -1,3 +1,4 @@
+-- This file should not be available in EJBCA 4.0 and all these changes should already have been made to EJBCA 3.11.0.
 
 -- The java.lang.Integer HardTokenProfileData.id was mapped as VARCHAR(80) BINARY in EJBCA 3.x.
 ALTER TABLE HardTokenProfileData MODIFY id int(11) DEFAULT NULL;
