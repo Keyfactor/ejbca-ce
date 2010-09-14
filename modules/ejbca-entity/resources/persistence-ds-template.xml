@@ -15,7 +15,7 @@
             	manual upgrade scripts. But we do want to create a database schema if this is a fresh install.
             	It would be nice if we could drop manual schema changes and just let Hibernate update the schema...
             -->
-            <property name="hibernate.hbm2ddl.auto" value="create"/> <!-- validate | update | create | create-drop -->
+            <property name="hibernate.hbm2ddl.auto" value="validate"/> <!-- validate | update | create | create-drop -->
             <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
         </properties>
     </persistence-unit>
