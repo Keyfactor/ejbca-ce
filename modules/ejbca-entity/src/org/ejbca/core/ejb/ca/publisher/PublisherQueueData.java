@@ -269,12 +269,19 @@ public class PublisherQueueData implements Serializable {
             return query.getResultList();
     }
 
-    /** @return return the query results as a List. */
-    public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus) {
+    /** 
+     * @param maxRows If set > 0, limits the number of rows fetched.
+     * 
+     * @return return the query results as a List. */
+    public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus, int maxRows) {
             Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus");
             query.setParameter("publisherId", publisherId);
             query.setParameter("publishStatus", publishStatus);
+            if(maxRows > 0 ) {
+                query.setMaxResults(maxRows);
+            }
             return query.getResultList();
     }
+    
 
 }

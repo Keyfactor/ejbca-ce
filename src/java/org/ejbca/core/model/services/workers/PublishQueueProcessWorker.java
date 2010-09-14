@@ -76,6 +76,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                         // Get everything from the queue for this publisher id
                         BasePublisher publisher = getPublisherSession().getPublisher(getAdmin(), publisherId);
                         getPublisherQueueSession().plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisherId, publisher);
+                
                     }
                 } else {
                     log.debug("No publisher ids configured for worker.");

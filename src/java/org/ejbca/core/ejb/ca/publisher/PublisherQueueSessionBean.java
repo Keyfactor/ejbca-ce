@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -101,14 +102,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
-	//This might lead to a circular dependency when using EJB injection..
-    /*@EJB
-    private CertificateStoreSessionLocal certificateStoreSession;*/
     @EJB
     private LogSessionLocal logSession;
-	//This might lead to a circular dependency when using EJB injection..
-    /*@EJB
-    private PublisherSessionLocal publisherSession;*/
+
 
     /**
      * Adds an entry to the publisher queue.
@@ -160,7 +156,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisher(publisherId: " + publisherId + ")");
     	}
-    	Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherQueueData.STATUS_PENDING);
+    	Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherQueueData.STATUS_PENDING, 0);
     	if (datas.size() == 0) {
 			log.debug("No publisher queue entries found for publisher "+publisherId);
     	}
@@ -260,60 +256,22 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisherWithLimit(publisherId: " + publisherId + ")");
     	}
-    	Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();
-    	Connection con = null;
-    	PreparedStatement ps = null;
-    	ResultSet result = null;
-    	try {
-    		// This should only list a few thousand certificates at a time, in case there
-    		// are really many entries.
-    		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-    		String sql = "select pk, timeCreated, lastUpdate, tryCounter, publishType, fingerprint from PublisherQueueData where publisherId=? and publishStatus=?";
-    		if (orderBy != null) {
-    			sql += " "+orderBy;
-    		}
-    		if (log.isDebugEnabled()) {
-        		log.debug("Executing SQL: "+sql);    			
-    		}
-    		ps = con.prepareStatement(sql);
-    		ps.setInt(1, publisherId);
-    		ps.setInt(2, PublisherQueueData.STATUS_PENDING);
-    		ps.setFetchSize(limit);
-    		ps.setMaxRows(limit);
-    		try {
-    			ps.setQueryTimeout(timeout);
-    		} catch (Exception e) {
-    			// ignore, in postgresql 8.4 (jdbc4 driver v701) trying this throws an exception telling you that it's not implemented yet in the driver.
-        		if (log.isDebugEnabled()) {
-            		log.debug("Error setting query timeout, I guess this is postgresql 8? In this case it is expected. "+e.getMessage());    			
-        		}
-    		}
-    		result = ps.executeQuery();
-    		while (result.next()) {
-    			String pk = result.getString(1);
-    			Date timeCreated = new Date(result.getLong(2));
-    			Date lastUpdate = new Date(result.getLong(3));
-    			int tryCounter = result.getInt(4);
-    			int publishType = result.getInt(5);
-    			String fingerprint = result.getString(6);
-	    		PublisherQueueData pqd = new PublisherQueueData(pk, timeCreated, lastUpdate, PublisherQueueData.STATUS_PENDING, tryCounter, publishType, fingerprint, publisherId, null);
-	    		org.ejbca.core.ejb.ca.publisher.PublisherQueueData dl = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findByPk(entityManager, pk);
-	    		if (dl != null) {
-	    			PublisherQueueVolatileData vol = dl.getPublisherQueueVolatileData();
-	    			pqd.setVolatileData(vol);
-	    			ret.add(pqd); // We finally have an object to return...
-	    			if (log.isDebugEnabled()) {
-	    				log.debug("Return pending record with pk "+pk+", and timeCreated "+timeCreated);
-	    			}
-	    		} else {
-	    			log.debug("All of a sudden entry with primaryKey vanished: "+pk);
-				}
-    		}
-    	} catch (SQLException e) {
-    		throw new EJBException(e);
-    	} finally {
-    		JDBCUtil.close(con, ps, result);
-    	}
+    	Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();	
+        /**
+         * TODO: This code has been modified from JDBC to JPA fetching, which might negatively affect performance. Investigate. 
+         */		
+        List<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> publisherQueueDataList = org.ejbca.core.ejb.ca.publisher.PublisherQueueData
+                .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherQueueData.STATUS_PENDING, limit);
+        for (org.ejbca.core.ejb.ca.publisher.PublisherQueueData publisherQueueData : publisherQueueDataList) {
+            PublisherQueueData pqd = new PublisherQueueData(publisherQueueData.getPk(), new Date(publisherQueueData.getTimeCreated()), new Date(
+                    publisherQueueData.getLastUpdate()), PublisherQueueData.STATUS_PENDING, publisherQueueData.getTryCounter(), 
+                    publisherQueueData.getPublishType(), publisherQueueData.getFingerprint(), publisherId, publisherQueueData.getPublisherQueueVolatileData());
+            ret.add(pqd);
+            if (log.isDebugEnabled()) {
+                log.debug("Return pending record with pk " + publisherQueueData.getPk() + ", and timeCreated "
+                        + new Date(publisherQueueData.getTimeCreated()));
+            }
+        }
     	log.trace("<getPendingEntriesForPublisherWithLimit()");
     	return ret;
     }
@@ -391,120 +349,135 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 		// this is because when publishing starts to work we want to publish everything in one go, if possible.
 		// However we don't want to publish more than 5000 certificates each time, because we want to commit to the database some time as well.
 		int totalcount = 0;
+		
 		do {
 			Collection c = getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
 			successcount = doPublish(admin, publisherId, publisher, c);
 			totalcount += successcount;
 			log.debug("Totalcount="+totalcount);
+			log.error("DBG: sss*********" + successcount + ", size: " + c.size());
 		} while ( (successcount > 0) && (totalcount < 20000) );
+		log.error("DBG: ************" + totalcount);
 	}
 
-	/**
-	 * @param publisherId
-	 * @param c
-	 * @return how many publishes that succeeded
-	 * @throws PublisherException 
-	 */
-	private int doPublish(Admin admin, int publisherId, BasePublisher publisher, Collection c) {
-		if (log.isDebugEnabled()) {
-			log.debug("Found "+c.size()+" certificates to republish for publisher "+publisherId);
-		}
-		int successcount = 0;
-		int failcount = 0;
-		// Get the publisher. Beware this can be null!
-		//BasePublisher publisher = publisherSession.getPublisher(admin, publisherId);
-		Iterator iter = c.iterator();
-		while (iter.hasNext()) {
-			PublisherQueueData pqd = (PublisherQueueData)iter.next();
-			String fingerprint = pqd.getFingerprint();
-			int publishType = pqd.getPublishType();
-			if (log.isDebugEnabled()) {
-				log.debug("Publishing from queue to publisher: "+publisherId+", fingerprint: "+fingerprint+", pk: "+pqd.getPk()+", type: "+publishType);
-			}
-			PublisherQueueVolatileData voldata = pqd.getVolatileData();
-			String username = null;
-			String password = null;
-			ExtendedInformation ei = null;
-			String userDataDN = null;
-			if (voldata != null) {
-				username = voldata.getUsername();
-				password = voldata.getPassword();
-				ei = voldata.getExtendedInformation();
-				userDataDN = voldata.getUserDN();
-			}
-			boolean published = false;
-			
-			try {
-				if (publishType == PublisherQueueData.PUBLISH_TYPE_CERT) {
-					if (log.isDebugEnabled()) {
-						log.debug("Publishing Certificate");
-					}
-					if (publisher != null) {
-						// Read the actual certificate and try to publish it again
-						// TODO: we might need change fetch-type for all but the actual cert or a native query w SqlResultSetMapping..
-						CertificateData cd = CertificateData.findByFingerprint(entityManager, fingerprint);
-						if (cd == null) {
-							throw new FinderException();
-						}
-						published = publisher.storeCertificate(admin, cd.getCertificate(), username, password, userDataDN, cd.getCaFingerprint(), cd.getStatus(), cd.getType(), cd.getRevocationDate(), cd.getRevocationReason(), cd.getTag(), cd.getCertificateProfileId(), cd.getUpdateTime(), ei);
-						//This might lead to a circular dependency when using EJB injection..
-						/*CertificateInfo info = certificateStoreSession.getCertificateInfo(admin, fingerprint);
-						Certificate cert = certificateStoreSession.findCertificateByFingerprint(admin, fingerprint);
-						if (info == null || cert == null) {
-							throw new FinderException();
-						}
-						published = publisher.storeCertificate(admin, cert, username, password, userDataDN, info.getCAFingerprint(), info.getStatus(), info.getType(), info.getRevocationDate().getTime(), info.getRevocationReason(), info.getTag(), info.getCertificateProfileId(), info.getUpdateTime().getTime(), ei);*/
-					} else {
-						String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);            	
-						log.info(msg);
-					}
-				} else if (publishType == PublisherQueueData.PUBLISH_TYPE_CRL) {
-					if (log.isDebugEnabled()) {
-						log.debug("Publishing CRL");
-					}
-					CRLData crlData = CRLData.findByFingerprint(entityManager, fingerprint);
-					if (crlData == null) {
-						throw new FinderException();
-					}
-					published = publisher.storeCRL(admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), userDataDN);
-				} else {
-					String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);            	
-					log.error(msg);					
-				}
-			} catch (FinderException e) {
-				String msg = intres.getLocalizedMessage("publisher.errornocert", fingerprint);            	
-				logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), username, null, LogConstants.EVENT_INFO_STORECERTIFICATE, msg, e);
-			} catch (PublisherException e) {
-				// Publisher session have already logged this error nicely to getLogSession().log
-				log.debug(e.getMessage());
-				// We failed to publish, update failcount so we can break early if nothing succeeds but everything fails.
-				failcount++;
-			}				
-			if (published) {
-				if (publisher.getKeepPublishedInQueue()) {
-					// Update with information that publishing was successful
-					updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, pqd.getTryCounter());
-				} else {
-					// We are done with this one.. nuke it!
-					removeQueueData(pqd.getPk());
-				}
-				successcount++; // jipeee update success counter
-			} else {
-				// Update with new tryCounter, but same status as before
-				int tryCount = pqd.getTryCounter()+1;
-				updateData(pqd.getPk(), pqd.getPublishStatus(), tryCount);								
-			}
-			// If we don't manage to publish anything, but fails on all the first ten ones we expect that this publisher is dead for now. We don't have to try with every record.
-			if ( (successcount == 0) && (failcount > 10) ) {
-				if (log.isDebugEnabled()) {
-					log.debug("Breaking out of publisher loop because everything seems to fail (at least the first 10 entries)");
-				}
-				break;
-			}
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("Returning from publisher with "+successcount+" entries published successfully.");
-		}
-		return successcount;
-	}
+    /**
+     * @param publisherId
+     * @param c
+     * @return how many publishes that succeeded
+     * @throws PublisherException
+     */
+    private int doPublish(Admin admin, int publisherId, BasePublisher publisher, Collection<PublisherQueueData> c) {
+        if (log.isDebugEnabled()) {
+            log.debug("Found " + c.size() + " certificates to republish for publisher " + publisherId);
+        }
+        int successcount = 0;
+        int failcount = 0;
+
+        for (PublisherQueueData pqd : c) {
+
+            String fingerprint = pqd.getFingerprint();
+            int publishType = pqd.getPublishType();
+            if (log.isDebugEnabled()) {
+                log.debug("Publishing from queue to publisher: " + publisherId + ", fingerprint: " + fingerprint + ", pk: " + pqd.getPk()
+                        + ", type: " + publishType);
+            }
+            PublisherQueueVolatileData voldata = pqd.getVolatileData();
+            String username = null;
+            String password = null;
+            ExtendedInformation ei = null;
+            String userDataDN = null;
+            if (voldata != null) {
+                username = voldata.getUsername();
+                password = voldata.getPassword();
+                ei = voldata.getExtendedInformation();
+                userDataDN = voldata.getUserDN();
+            }
+            boolean published = false;
+
+            
+            try {
+                if (publishType == PublisherQueueData.PUBLISH_TYPE_CERT) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Publishing Certificate");
+                    }
+                    if (publisher != null) {
+                        // Read the actual certificate and try to publish it
+                        // again
+                        // TODO: we might need change fetch-type for all but the
+                        // actual cert or a native query w SqlResultSetMapping..
+                   
+                        CertificateData cd = CertificateData.findByFingerprint(entityManager, fingerprint);
+
+                        if (cd == null) {
+                            throw new FinderException();
+                        }
+              
+                        published = publisher.storeCertificate(admin, cd.getCertificate(), username, password, userDataDN, cd.getCaFingerprint(), cd
+                                .getStatus(), cd.getType(), cd.getRevocationDate(), cd.getRevocationReason(), cd.getTag(), cd
+                                .getCertificateProfileId(), cd.getUpdateTime(), ei);
+
+                    } else {
+                        String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);
+                        log.info(msg);
+                    }
+                } else if (publishType == PublisherQueueData.PUBLISH_TYPE_CRL) {
+
+                    if (log.isDebugEnabled()) {
+                        log.debug("Publishing CRL");
+                    }
+                    CRLData crlData = CRLData.findByFingerprint(entityManager, fingerprint);
+
+                    if (crlData == null) {
+                        throw new FinderException();
+                    }
+                    published = publisher.storeCRL(admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), userDataDN);
+                } else {
+                    String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);
+                    log.error(msg);
+                }
+            } catch (FinderException e) {
+
+                String msg = intres.getLocalizedMessage("publisher.errornocert", fingerprint);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), username, null,
+                        LogConstants.EVENT_INFO_STORECERTIFICATE, msg, e);
+            } catch (PublisherException e) {
+                // Publisher session have already logged this error nicely to
+                // getLogSession().log
+                log.debug(e.getMessage());
+                // We failed to publish, update failcount so we can break early
+                // if nothing succeeds but everything fails.
+                failcount++;
+            }
+            if (published) {
+
+                if (publisher.getKeepPublishedInQueue()) {
+                    // Update with information that publishing was successful
+                    updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, pqd.getTryCounter());
+                } else {
+                    // We are done with this one.. nuke it!
+                    removeQueueData(pqd.getPk());
+                }
+
+                successcount++; // jipeee update success counter
+            } else {
+                // Update with new tryCounter, but same status as before
+                int tryCount = pqd.getTryCounter() + 1;
+                updateData(pqd.getPk(), pqd.getPublishStatus(), tryCount);
+            }
+            // If we don't manage to publish anything, but fails on all the
+            // first ten ones we expect that this publisher is dead for now. We
+            // don't have to try with every record.
+            if ((successcount == 0) && (failcount > 10)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Breaking out of publisher loop because everything seems to fail (at least the first 10 entries)");
+                }
+                break;
+            }
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Returning from publisher with " + successcount + " entries published successfully.");
+        }
+        return successcount;
+    }
 }

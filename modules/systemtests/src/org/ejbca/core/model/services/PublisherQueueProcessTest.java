@@ -81,6 +81,7 @@ public class PublisherQueueProcessTest extends TestCase {
      * with no publisher.
      * 
      */
+
     public void test01PublishQueueProcessFail() throws Exception {
         publisherQueueSession.addQueueData(12345, PublisherQueueData.PUBLISH_TYPE_CERT, "TestPublishQueueProcessService12345", null,
                 PublisherQueueData.STATUS_PENDING);
