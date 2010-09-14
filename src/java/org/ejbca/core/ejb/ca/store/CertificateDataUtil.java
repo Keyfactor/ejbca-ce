@@ -40,7 +40,6 @@ import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
-import org.jfree.util.Log;
 
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
