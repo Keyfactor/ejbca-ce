@@ -312,7 +312,13 @@ public class CertificateDataUtil {
     			adapter.debug("data.getCertificateProfileId: " + data.getCertificateProfileId());
     			adapter.debug("data.getUpdateTime: " + data.getUpdateTime());
     		}
-    		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
+    		Integer certProfileId = data.getCertificateProfileId();
+    		if (certProfileId == null) {
+    			adapter.error("CertificateData.certificateProfileId was null. Upgrade might have failed.");
+    		}
+    		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(),
+    				data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(),
+    				data.getCertificateProfileId(), data.getUpdateTime());
     		// The verify method will log failed verifies itself
     		TableVerifyResult res = tableProtectSession.verify(entry);
     		if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
