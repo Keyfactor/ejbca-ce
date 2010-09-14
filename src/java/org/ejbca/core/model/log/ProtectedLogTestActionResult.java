@@ -10,25 +10,26 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.log;
 
-import javax.ejb.Remote;
+package org.ejbca.core.model.log;
 
 /**
- * Remote interface for ProtectedLogSession.
- * 
- * @deprecated
+ * Sloppy Singleton used to hold results of ProtectedLogTestAction.
  */
-@Remote
-public interface ProtectedLogSessionRemote extends ProtectedLogSession {
-
-	/**
-	 * Set the last cause identifier if ProtectedLogTestAction is used. This method is only used for testing.
-	 */
-	public void setLastTestActionCause(String causeIdentifier);
-
-	/**
-	 * @return the last cause identifier if ProtectedLogTestAction is used. This method is only used for testing.
-	 */
-	public String getLastTestActionCause();
+public class ProtectedLogTestActionResult {
+	
+	private static ProtectedLogTestActionResult instance = null;
+	private String cause = null;
+	
+	private ProtectedLogTestActionResult() {}
+	
+	public static synchronized ProtectedLogTestActionResult getInstance() {
+		if (instance == null) {
+			instance = new ProtectedLogTestActionResult();
+		}
+		return instance;
+	}
+	
+	public String getCause() { return cause; }
+	public void setCause(String cause) { this.cause = cause; }
 }
