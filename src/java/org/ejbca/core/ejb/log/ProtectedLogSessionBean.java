@@ -72,6 +72,8 @@ import org.ejbca.core.model.log.ProtectedLogEventIdentifier;
 import org.ejbca.core.model.log.ProtectedLogEventRow;
 import org.ejbca.core.model.log.ProtectedLogExportRow;
 import org.ejbca.core.model.log.ProtectedLogExporter;
+import org.ejbca.core.model.log.ProtectedLogTestAction;
+import org.ejbca.core.model.log.ProtectedLogTestActionResult;
 import org.ejbca.core.model.log.ProtectedLogToken;
 import org.ejbca.core.model.log.ProtectedLogVerifier;
 import org.ejbca.core.model.protect.TableVerifyResult;
@@ -2058,5 +2060,13 @@ public class ProtectedLogSessionBean implements ProtectedLogSessionLocal, Protec
 	 */
 	public boolean existsAnyProtectedLogEventByTime(long time) {
 		return !ProtectedLogData.findProtectedLogEventsByTime(entityManager, time).isEmpty();
+	}
+
+	public void setLastTestActionCause(String causeIdentifier) {
+		ProtectedLogTestActionResult.getInstance().setCause(causeIdentifier);
+	}
+	
+	public String getLastTestActionCause() {
+		return ProtectedLogTestActionResult.getInstance().getCause();
 	}
 }
