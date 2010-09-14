@@ -105,7 +105,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     @EJB
     private LogSessionLocal logSession;
 
-
     /**
      * Adds an entry to the publisher queue.
 	 *
@@ -351,13 +350,10 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 		int totalcount = 0;
 		
 		do {
-			Collection c = getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
+			Collection<PublisherQueueData> c = getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
 			successcount = doPublish(admin, publisherId, publisher, c);
 			totalcount += successcount;
-			log.debug("Totalcount="+totalcount);
-			log.error("DBG: sss*********" + successcount + ", size: " + c.size());
 		} while ( (successcount > 0) && (totalcount < 20000) );
-		log.error("DBG: ************" + totalcount);
 	}
 
     /**
