@@ -1267,14 +1267,6 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
             	}
             }
         } catch (Exception e) {
-        	if (adapter.getLogger().isDebugEnabled()) {
-        		// This code was added to debug a NPE that was hard to reproduce.
-        		Throwable t = e;
-        		while (t != null) {
-            		adapter.getLogger().debug("", t);
-            		t = t.getCause();
-        		}
-        	}
             throw new EJBException(e);
         }
         if (adapter.getLogger().isTraceEnabled()) {

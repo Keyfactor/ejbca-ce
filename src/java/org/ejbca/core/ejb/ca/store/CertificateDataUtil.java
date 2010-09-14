@@ -40,6 +40,7 @@ import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
+import org.jfree.util.Log;
 
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
@@ -295,6 +296,23 @@ public class CertificateDataUtil {
     	if (data==null) {
         	adapter.error("CertificateData to verify is null.");
     	} else {
+    		if (adapter.getLogger().isDebugEnabled()) {
+    			// Debug info (temporarily) added to hunt down a hard to reproduce NPE.
+    			adapter.debug("data.getFingerprint: " + data.getFingerprint());
+    			adapter.debug("data.getCaFingerprint: " + data.getCaFingerprint());
+    			adapter.debug("data.getSerialNumber: " + data.getSerialNumber());
+    			adapter.debug("data.getIssuerDN: " + data.getIssuerDN());
+    			adapter.debug("data.getSubjectDN: " + data.getSubjectDN());
+    			adapter.debug("data.getStatus: " + data.getStatus());
+    			adapter.debug("data.getType: " + data.getType());
+    			adapter.debug("data.getExpireDate: " + data.getExpireDate());
+    			adapter.debug("data.getRevocationDate: " + data.getRevocationDate());
+    			adapter.debug("data.getRevocationReason: " + data.getRevocationReason());
+    			adapter.debug("data.getUsername: " + data.getUsername());
+    			adapter.debug("data.getTag: " + data.getTag());
+    			adapter.debug("data.getCertificateProfileId: " + data.getCertificateProfileId());
+    			adapter.debug("data.getUpdateTime: " + data.getUpdateTime());
+    		}
     		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(), data.getCertificateProfileId(), data.getUpdateTime());
     		// The verify method will log failed verifies itself
     		TableVerifyResult res = tableProtectSession.verify(entry);
