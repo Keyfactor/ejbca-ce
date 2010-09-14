@@ -1,3 +1,5 @@
+-- This file should not be available in EJBCA 4.0 and all these changes should already have been made to EJBCA 3.11.0.
+
 
 -- Perform data-type changes to have size consistency over all databases
 --  ApprovalData.approvaldata is currently VARCHAR2(4000), but is defined as CLOB on other databases

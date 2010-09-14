@@ -1,3 +1,5 @@
+-- This file should not be available in EJBCA 4.0 and all these changes should already have been made to EJBCA 3.11.0.
+
 
 -- BOOLEANs on WebSphere were created as INT2 instead of "BOOLEAN". Hibernate will map this as BOOLEAN so we probably need to update this. 
 --  We cannot cast INT2 to BOOLEAN so we have to work around it..
