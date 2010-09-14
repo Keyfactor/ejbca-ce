@@ -112,15 +112,6 @@ import org.ejbca.util.query.Query;
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *   link="CAAdminSession"
  *   
- * @ejb.ejb-external-ref
- *   description="ProtectedLogSessionBean"
- *   view-type="local"
- *   ref-name="ejb/ProtectedLogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.IProtectedLogSessionLocal"
- *   link="ProtectedLogSession"
- *   
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -212,93 +203,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     	Collections.reverse(ret);
     	return ret;
     }
-    
-    private Collection<ILogDevice> testDeviceBackup = new ArrayList<ILogDevice>();
 
-    /**
-     * Replace existing devices with a new one.
-     * Used for testing, since the JUnit has to inject a mock xxxLogDevice.
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
-     */
-    public void setTestDevice(Class implClass, String name) {
-    	try {
-    		Object fact = implClass.newInstance();
-    		Class[] paramTypes = new Class[] {String.class};
-    		Method method = implClass.getMethod("makeInstance", paramTypes);
-    		Object[] params = new Object[1];
-    		params[0] = name;
-            ILogDevice dev = (ILogDevice) method.invoke(fact, params);
-        	Iterator<ILogDevice> i = logdevices.iterator();
-        	ILogDevice dev2 = null;
-        	while (i.hasNext()) {
-        		dev2 = i.next();
-        		if (dev2.getDeviceName().equals(dev.getDeviceName())) {
-        			break;
-        		}
-        	}
-        	if (testDeviceBackup.size() == 0) {
-            	testDeviceBackup.addAll(logdevices);
-        	}
-            dev.resetDevice(name);
-        	logdevices.clear();
-    		logdevices.add(dev);
-    	} catch (Exception e) {
-			log.error(e);
-		}
-    }
-    
-    /**
-     * Replace existing devices with a new one in this LogSessionBean.
-     * Used for testing, since the JUnit has to inject a mock xxxLogDevice.
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
-     */
-    public void restoreTestDevice() {
-        ILogDevice dev = logdevices.iterator().next();
-    	Iterator<ILogDevice> i = testDeviceBackup.iterator();
-    	while (i.hasNext()) {
-    		ILogDevice dev2 = i.next();
-    		if (dev2.getDeviceName().equals(dev.getDeviceName())) {
-    			dev.resetDevice(dev.getDeviceName());
-    		}
-    	}
-    	if (testDeviceBackup.size() != 0) {
-        	logdevices.clear();
-        	logdevices.addAll(testDeviceBackup);
-        	testDeviceBackup.clear();
-    	}
-    }
-
-    /**
-     * Replace existing devices with a new one in this beans LogSession reference.
-     * Used for testing, since the JUnit has to inject a mock ProtectedLogDevice
-     * in both the instance accessed remotly and also the local instance accessed
-     * by this bean to be able to use the container managed transations.
-     * 
-     * @ejb.interface-method view-type="remote"
-     * @ejb.transaction type="Supports"
-     */
-    public void setTestDeviceOnLogSession(Class implClass, String name) {
-    	logSession.setTestDevice(implClass, name);
-    }
-
-    /**
-     * Replace existing devices with the original ones in this beans LogSession reference.
-     * Used for testing, since the JUnit has to inject a mock ProtectedLogDevice
-     * in both the instance accessed remotly and also the local instance accessed
-     * by this bean to be able to use the container managed transations.
-     * 
-     * @ejb.interface-method view-type="remote"
-     * @ejb.transaction type="Supports"
-     */
-    public void restoreTestDeviceOnLogSession() {
-    	logSession.restoreTestDevice();
-    }
-
-    
     /**
      * Session beans main function. Takes care of the logging functionality.
      *
@@ -360,7 +265,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     		try {
    				logSession.doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
     		} catch (Throwable e) {
-            	log.error(intres.getLocalizedMessage("protectedlog.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
+            	log.error(intres.getLocalizedMessage("log.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
             			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
                			+CertTools.getIssuerDN(certificate))+" "+event+" "+comment+" "+ex));
     			String msg = intres.getLocalizedMessage("log.errormissingentry");

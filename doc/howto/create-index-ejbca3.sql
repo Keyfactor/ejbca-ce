@@ -2,7 +2,7 @@
 -- If using UTF-8 character enoding in MySQL index length is limited to 1000 bytes, and UTF-8 characters take up 3 bytes.
 -- Some index rown needs to be changed because of this like:
 -- create index protect_idx1 on TableProtectData (dbKey(150),dbType(150));
--- For MySQL NDB 'using hash' should be added to all unique indexes and the protectedlog* indexes should be disabled.
+-- For MySQL NDB 'using hash' should be added to all unique indexes.
  
 -- Selecting log entries when viewing logs:
 create index logentry_idx1 on LogEntryData (time);
@@ -47,16 +47,6 @@ create unique index historydata_idx2 on CertReqHistoryData (issuerDN,serialNumbe
 
 -- Indexes on TableProtectData: searches when verifying, usually this is disabled
 create index protect_idx1 on TableProtectData (dbKey,dbType);
-
--- Indexes on ProtectedLogData;
--- ProtectedLogData does only exist in EJBCA 3.6 and later
-create index protectedlogdata_idx1 on ProtectedLogData (nodeGUID, counter);
--- Oracle and DB2 does not like the b64Protection(1) notification, use simply b64Protection instead
--- create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection);
-create index protectedlogdata_idx2 on ProtectedLogData (nodeGUID, eventTime, b64Protection(1));
-create index protectedlogdata_idx3 on ProtectedLogData (username, caId, module);
-create index protectedlogdata_idx4 on ProtectedLogData (eventTime, caId, module);
-create index protectedlogexportdata_idx1 on ProtectedLogExportData (exportStartTime);
 
 -- Indexes on CAData
 -- CAData is usually very small, but lets make good indexes overall

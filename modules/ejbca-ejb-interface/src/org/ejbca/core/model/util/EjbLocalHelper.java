@@ -45,8 +45,6 @@ import org.ejbca.core.ejb.log.LogSession;
 import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.core.ejb.log.OldLogSession;
 import org.ejbca.core.ejb.log.OldLogSessionRemote;
-import org.ejbca.core.ejb.log.ProtectedLogSession;
-import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.core.ejb.protect.TableProtectSession;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSession;
@@ -153,14 +151,6 @@ public class EjbLocalHelper {
 			hardtokensession = JndiHelper.getRemoteSession(HardTokenSessionRemote.class);
 		}
 		return hardtokensession;
-	}
-
-	private ProtectedLogSession protectedLogSession = null;
-	public ProtectedLogSession getProtectedLogSession() throws CreateException {
-		if(protectedLogSession == null){
-			protectedLogSession = JndiHelper.getRemoteSession(ProtectedLogSessionRemote.class);
-		}
-		return protectedLogSession;
 	}
 
 	private LogSession logSession = null;

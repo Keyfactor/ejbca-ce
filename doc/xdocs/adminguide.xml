@@ -4338,55 +4338,6 @@ HMAC-protection, alterations in a log event can be detected. Viewed events can
 be exported from the Admin GUI.
 </p>
 </subsection>
-<subsection name="ProtectedLogDevice">
-<p><b><i>
-The ProtectedLogDevice has been deprecated in EJBCA 3.10, since it's hard to
-configure right and extremely inefficient.
-</i></b></p>
-<p>
-The ProtectedLogDevice stores log-events in the database and has the ability
-to detect changed or missing log-events. In an environment where at least one
-node (EJBCA-instance) is constantly running, the log cannot even be rolled back
-to a an earlier state without detection.
-</p>
-<p>
-Features:
-</p>
-<ul>
-<li>No event can be removed or changed without detection (as long as one node
-is still runnning)</li>
-<li>Can perform regular signed export of log for backup (mitigates damage of
-offline rollback)</li>
-<li>Can send emails, run a script and/or kill the JVM if alterations are
-detected</li>
-<li>Can use a CA-token (hard or soft) or a soft JKS keystore (stored encrypted
-with CA-key in database)</li>
-<li>Can set a signature intensity to allow slower HSMs to use the feature</li>
-<li>Nodes can be added or removed dynamically</li>
-</ul>
-<p>
-Drawbacks:
-</p>
-<ul>
-<li>Very database intensive.</li>
-<li>Cannot yet export viewed part of log from Admin GUI</li>
-</ul>
-<p>
-It is good practise to
-</p>
-<ul>
-<li>use secure communication with the database.</li>
-<li>use asymmetric log-signing key and a HSM.</li>
-<li>use a database/database engine that supports transaction (e.g. InnoDB and not MyIsam for MySQL).</li>
-</ul>
-<p>
-The log can be verified manually using "ejbca.sh/cmd log" CLI.
-</p>
-<p>
-See conf/logdevices/propectedlog.properties.sample for more
-information on how to configure and use the device.
-</p>
-</subsection>
 </section>
 
 <section name="Reference manual">

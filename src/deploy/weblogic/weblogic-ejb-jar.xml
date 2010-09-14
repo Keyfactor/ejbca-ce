@@ -335,23 +335,6 @@
 
    </weblogic-enterprise-bean>
    <weblogic-enterprise-bean>
-      <ejb-name>ProtectedLogExportData</ejb-name>
-      <entity-descriptor>
-         <persistence>
-            <persistence-use>
-               <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-               <type-version>6.0</type-version>
-               <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
-            </persistence-use>
-         </persistence>
-      </entity-descriptor>
-      <reference-descriptor>
-      </reference-descriptor>
-
-      <local-jndi-name>ProtectedLogExportDataLocal</local-jndi-name>
-
-   </weblogic-enterprise-bean>
-   <weblogic-enterprise-bean>
       <ejb-name>HardTokenSession</ejb-name>
       <stateless-session-descriptor>
       </stateless-session-descriptor>
@@ -396,36 +379,6 @@
       </reference-descriptor>
 
       <local-jndi-name>LogEntryDataLocal</local-jndi-name>
-
-   </weblogic-enterprise-bean>
-   <weblogic-enterprise-bean>
-      <ejb-name>ProtectedLogSession</ejb-name>
-      <stateless-session-descriptor>
-      </stateless-session-descriptor>
-      <reference-descriptor>
-      </reference-descriptor>
-
-      <enable-call-by-reference>True</enable-call-by-reference>
-
-      <jndi-name>ProtectedLogSession</jndi-name>
-      <local-jndi-name>ProtectedLogSessionLocal</local-jndi-name>
-
-   </weblogic-enterprise-bean>
-   <weblogic-enterprise-bean>
-      <ejb-name>ProtectedLogData</ejb-name>
-      <entity-descriptor>
-         <persistence>
-            <persistence-use>
-               <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-               <type-version>6.0</type-version>
-               <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
-            </persistence-use>
-         </persistence>
-      </entity-descriptor>
-      <reference-descriptor>
-      </reference-descriptor>
-
-      <local-jndi-name>ProtectedLogDataLocal</local-jndi-name>
 
    </weblogic-enterprise-bean>
    <weblogic-enterprise-bean>
@@ -554,23 +507,6 @@
       </reference-descriptor>
 
       <local-jndi-name>HardTokenDataLocal</local-jndi-name>
-
-   </weblogic-enterprise-bean>
-   <weblogic-enterprise-bean>
-      <ejb-name>ProtectedLogTokenData</ejb-name>
-      <entity-descriptor>
-         <persistence>
-            <persistence-use>
-               <type-identifier>WebLogic_CMP_RDBMS</type-identifier>
-               <type-version>6.0</type-version>
-               <type-storage>META-INF/weblogic-cmp-rdbms-jar.xml</type-storage>
-            </persistence-use>
-         </persistence>
-      </entity-descriptor>
-      <reference-descriptor>
-      </reference-descriptor>
-
-      <local-jndi-name>ProtectedLogTokenDataLocal</local-jndi-name>
 
    </weblogic-enterprise-bean>
    <weblogic-enterprise-bean>

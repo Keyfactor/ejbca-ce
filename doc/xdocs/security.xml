@@ -233,7 +233,7 @@ upgrades EJCBA needs CREATE and ALTER TABLE privileges. (SELECT, UPDATE, INSERT 
 privileges are also required.)
 </p><p>
 After the installation during normal operations only regular SELECT, UPDATE, INSERT
-and DELETE commands are needed. The table LogEntryData and ProtectedLogData will only be used with SELECT and
+and DELETE commands are needed. The table LogEntryData will only be used with SELECT and
 INSERT.
 </p><p>
 Instead of changing the privileges of the EJBCA-user, it's recommended to have two

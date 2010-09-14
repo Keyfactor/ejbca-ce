@@ -126,33 +126,6 @@
             </basic>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.log.ProtectedLogData" access="PROPERTY">
-        <attributes>
-            <basic name="b64LinkedInEventIdentifiers">
-                <column name="b64LinkedInEventIdentifiers" column-definition="VARCHAR"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.log.ProtectedLogExportData" access="PROPERTY">
-        <attributes>
-            <basic name="b64SignatureCertificate">
-                <column name="b64SignatureCertificate" column-definition="VARCHAR"/>
-            </basic>
-            <basic name="deleted">
-                <column name="deleted" column-definition="BOOLEAN"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.log.ProtectedLogTokenData" access="PROPERTY">
-        <attributes>
-            <basic name="b64TokenCertificate">
-                <column name="b64TokenCertificate" column-definition="VARCHAR"/>
-            </basic>
-            <basic name="tokenReference">
-                <column name="tokenReference" column-definition="VARCHAR"/>
-            </basic>
-        </attributes>
-    </entity>
     <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY">
         <attributes>
             <basic name="data">

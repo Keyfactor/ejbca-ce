@@ -196,53 +196,6 @@ CREATE TABLE LogEntryData (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE ProtectedLogData (
-	pk varchar(250) NOT NULL DEFAULT '',
-	adminType int NOT NULL DEFAULT '0',
-	adminData varchar(250) NULL DEFAULT NULL,
-    caId int NOT NULL DEFAULT '0',
-    module int NOT NULL DEFAULT '0',
-    eventTime bigint NOT NULL DEFAULT '0',
-    username varchar(250) NULL DEFAULT NULL,
-    certificateSerialNumber varchar(250) NULL DEFAULT NULL,
-    certificateIssuerDN varchar(250) NULL DEFAULT NULL,
-    eventId int NOT NULL DEFAULT '0',
-    eventComment text NULL DEFAULT NULL,
-    nodeGUID int NOT NULL DEFAULT '0',
-    counter bigint NOT NULL DEFAULT '0',
-    nodeIP varchar(250) NULL DEFAULT NULL,
-    b64LinkedInEventIdentifiers text NULL DEFAULT NULL,
-    b64LinkedInEventsHash varchar(250) NULL DEFAULT NULL,
-    currentHashAlgorithm varchar(250) NULL DEFAULT NULL,
-    protectionKeyIdentifier int NOT NULL DEFAULT '0',
-    protectionKeyAlgorithm varchar(250) NULL DEFAULT NULL,
-    b64Protection text NULL DEFAULT NULL,
-    PRIMARY KEY (pk)
-);
-
-CREATE TABLE ProtectedLogExportData (
-	pk varchar(250) NOT NULL DEFAULT '',
-    timeOfExport bigint NOT NULL DEFAULT '0',
-    exportEndTime bigint NOT NULL DEFAULT '0',
-    exportStartTime bigint NOT NULL DEFAULT '0',
-    b64LogDataHash varchar(250) NULL DEFAULT NULL,
-    b64PreviosExportHash varchar(250) NULL DEFAULT NULL,
-    currentHashAlgorithm varchar(250) NULL DEFAULT NULL,
-    b64SignatureCertificate text NULL DEFAULT NULL,
-    deleted tinyint NOT NULL DEFAULT '0',
-    b64Signature text NULL DEFAULT NULL,
-	PRIMARY KEY (pk)
-);
-
-CREATE TABLE ProtectedLogTokenData (
-	pk varchar(250) NOT NULL DEFAULT '',
-    tokenIdentifier int NOT NULL DEFAULT '0',
-    tokenType int NOT NULL DEFAULT '0',
-    b64TokenCertificate text NULL DEFAULT NULL,
-    tokenReference text NULL DEFAULT NULL,
-    PRIMARY KEY (pk)
-);
-
 CREATE TABLE PublisherData (
     id int NOT NULL DEFAULT '0',
     name varchar(250) NULL DEFAULT NULL,

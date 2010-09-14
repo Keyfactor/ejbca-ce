@@ -24,9 +24,6 @@
         <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
         <class>org.ejbca.core.ejb.log.LogConfigurationData</class>
         <class>org.ejbca.core.ejb.log.LogEntryData</class>
-        <class>org.ejbca.core.ejb.log.ProtectedLogData</class>
-        <class>org.ejbca.core.ejb.log.ProtectedLogExportData</class>
-        <class>org.ejbca.core.ejb.log.ProtectedLogTokenData</class>
         <class>org.ejbca.core.ejb.protect.TableProtectData</class>
         <class>org.ejbca.core.ejb.ra.UserData</class>
         <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>

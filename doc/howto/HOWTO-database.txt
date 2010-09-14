@@ -113,7 +113,7 @@ Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ej
 Hardening
 ---------
 When using logging you probably do not want an attacker to be able to remove log posts, therefore you should limit the
-table rights on ProtectedLogData, ProtectedLogTokenData and LogEntryData.
+table rights on LogEntryData.
 
 MySQL specifics
 ---------------
@@ -143,7 +143,7 @@ try to add stuff if it doesn't work.
 The SQL command to show tables in MySQL is:
 show tables;
 
-To limit the table rights to ProtectedLogData, ProtectedLogTokenData and LogEntryData:
+To limit the table rights to LogEntryData:
 Configure and run $EJBCA_HOME/doc/howto/mysql-privileges.sh to generate an .sql file with the new database privileges.
 After the .sql file is generated you have to run:
 #mysql -u ejbca -p ejbca < <path to the generated .sql file>

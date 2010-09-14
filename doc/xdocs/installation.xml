@@ -771,7 +771,6 @@ sudo perl -p -i -e "s/\/sh$/\/bash/"  /opt/IBM/WebSphere/AppServer/bin/*.sh
 <li>Edit conf/jaxws.properties, set 'ejbcaws.enabled=false'<br/>
       You can use the WS-API, i.e set the property to true, in WebSphere. But if you do not plan to use it, we recommend that you keep it as false. See below for more WS-API info.</li>
 <li>Edit conf/xkms.properties, set 'xkms.enabled=false' (default from EJBCA 3.10)</li>
-<li>Edit conf/log.properties, enable the ProtectedLogDevice, 'usedLogDevices=Log4jLogDevice;ProtectedLogDevice'</li>
 <li>Edit conf/jndi.properties.websphere and set the currect port from Servers->Application servers->server1 (your server)->Ports->BOOTSTRAP_ADDRESS.</li>
 </ol>
 

@@ -223,56 +223,6 @@ CREATE TABLE LogEntryData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS ProtectedLogData;
-CREATE TABLE ProtectedLogData (
-	pk varchar(250) binary NOT NULL DEFAULT '',
-	adminType int(11) NOT NULL DEFAULT '0',
-	adminData varchar(250) binary NULL DEFAULT NULL,
-    caId int(11) NOT NULL DEFAULT '0',
-    module int(11) NOT NULL DEFAULT '0',
-    eventTime bigint(20) NOT NULL DEFAULT '0',
-    username varchar(250) binary NULL DEFAULT NULL,
-    certificateSerialNumber varchar(250) binary NULL DEFAULT NULL,
-    certificateIssuerDN varchar(250) binary NULL DEFAULT NULL,
-    eventId int(11) NOT NULL DEFAULT '0',
-    eventComment text NULL DEFAULT NULL,
-    nodeGUID int(11) NOT NULL DEFAULT '0',
-    counter bigint(20) NOT NULL DEFAULT '0',
-    nodeIP varchar(250) binary NULL DEFAULT NULL,
-    b64LinkedInEventIdentifiers text NULL DEFAULT NULL,
-    b64LinkedInEventsHash varchar(250) binary NULL DEFAULT NULL,
-    currentHashAlgorithm varchar(250) binary NULL DEFAULT NULL,
-    protectionKeyIdentifier int(11) NOT NULL DEFAULT '0',
-    protectionKeyAlgorithm varchar(250) binary NULL DEFAULT NULL,
-    b64Protection text NULL DEFAULT NULL,
-    PRIMARY KEY (pk)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
-DROP TABLE IF EXISTS ProtectedLogExportData;
-CREATE TABLE ProtectedLogExportData (
-	pk varchar(250) binary NOT NULL DEFAULT '',
-    timeOfExport bigint(20) NOT NULL DEFAULT '0',
-    exportEndTime bigint(20) NOT NULL DEFAULT '0',
-    exportStartTime bigint(20) NOT NULL DEFAULT '0',
-    b64LogDataHash varchar(250) binary NULL DEFAULT NULL,
-    b64PreviosExportHash varchar(250) binary NULL DEFAULT NULL,
-    currentHashAlgorithm varchar(250) binary NULL DEFAULT NULL,
-    b64SignatureCertificate text NULL DEFAULT NULL,
-    deleted tinyint(4) NOT NULL DEFAULT '0',
-    b64Signature text NULL DEFAULT NULL,
-	PRIMARY KEY (pk)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
-DROP TABLE IF EXISTS ProtectedLogTokenData;
-CREATE TABLE ProtectedLogTokenData (
-	pk varchar(250) binary NOT NULL DEFAULT '',
-    tokenIdentifier int(11) NOT NULL DEFAULT '0',
-    tokenType int(11) NOT NULL DEFAULT '0',
-    b64TokenCertificate text NULL DEFAULT NULL,
-    tokenReference text NULL DEFAULT NULL,
-    PRIMARY KEY (pk)
-) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
-
 DROP TABLE IF EXISTS PublisherData;
 CREATE TABLE PublisherData (
     id int(11) NOT NULL DEFAULT '0',

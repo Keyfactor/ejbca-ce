@@ -62,11 +62,6 @@
 
     </ejbExtensions>
 
-    <ejbExtensions xmi:type="ejbext:SessionExtension" xmi:id="Session_ext_13">
-        <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_ProtectedLogSession"/>
-
-    </ejbExtensions>
-
     <ejbExtensions xmi:type="ejbext:SessionExtension" xmi:id="Session_ext_14">
         <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_ServiceTimerSession"/>
 
@@ -201,14 +196,6 @@
     </ejbExtensions>
 
     <ejbExtensions 
-        xmi:type="ejbext:ContainerManagedEntityExtension" xmi:id="ContainerManagedEntity_ext_12">
-        <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_ProtectedLogExportData"/>
-        <structure xmi:id="ProtectedLogExportData_BeanStructure" inheritenceRoot="false"/>
-        <internationalization xmi:id="ContainerManagedEntity_BeanInternationalization_12" invocationLocale="CALLER"/>
-
-    </ejbExtensions>
-
-    <ejbExtensions 
         xmi:type="ejbext:ContainerManagedEntityExtension" xmi:id="ContainerManagedEntity_ext_13">
         <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_KeyRecoveryData"/>
         <structure xmi:id="KeyRecoveryData_BeanStructure" inheritenceRoot="false"/>
@@ -221,14 +208,6 @@
         <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_LogEntryData"/>
         <structure xmi:id="LogEntryData_BeanStructure" inheritenceRoot="false"/>
         <internationalization xmi:id="ContainerManagedEntity_BeanInternationalization_14" invocationLocale="CALLER"/>
-
-    </ejbExtensions>
-
-    <ejbExtensions 
-        xmi:type="ejbext:ContainerManagedEntityExtension" xmi:id="ContainerManagedEntity_ext_15">
-        <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_ProtectedLogData"/>
-        <structure xmi:id="ProtectedLogData_BeanStructure" inheritenceRoot="false"/>
-        <internationalization xmi:id="ContainerManagedEntity_BeanInternationalization_15" invocationLocale="CALLER"/>
 
     </ejbExtensions>
 
@@ -277,14 +256,6 @@
         <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_HardTokenData"/>
         <structure xmi:id="HardTokenData_BeanStructure" inheritenceRoot="false"/>
         <internationalization xmi:id="ContainerManagedEntity_BeanInternationalization_21" invocationLocale="CALLER"/>
-
-    </ejbExtensions>
-
-    <ejbExtensions 
-        xmi:type="ejbext:ContainerManagedEntityExtension" xmi:id="ContainerManagedEntity_ext_23">
-        <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_ProtectedLogTokenData"/>
-        <structure xmi:id="ProtectedLogTokenData_BeanStructure" inheritenceRoot="false"/>
-        <internationalization xmi:id="ContainerManagedEntity_BeanInternationalization_23" invocationLocale="CALLER"/>
 
     </ejbExtensions>
 

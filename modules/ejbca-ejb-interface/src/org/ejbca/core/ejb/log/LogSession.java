@@ -27,18 +27,6 @@ public interface LogSession {
 	public java.util.Collection getAvailableLogDevices();
 
     /**
-     * Replace existing devices with a new one. Used for testing, since the
-     * JUnit has to inject a mock xxxLogDevice.
-     */
-    public void setTestDevice(java.lang.Class implClass, java.lang.String name);
-
-    /**
-     * Replace existing devices with a new one in this LogSessionBean. Used for
-     * testing, since the JUnit has to inject a mock xxxLogDevice.
-     */
-    public void restoreTestDevice();
-
-    /**
      * Session beans main function. Takes care of the logging functionality.
      * 
      * @param admin

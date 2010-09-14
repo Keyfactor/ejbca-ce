@@ -39,8 +39,6 @@ public class LogConfiguration {
 					logDeviceStrings = ConfigurationHolder.getString(name, "org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties").split(";");
 				} else if ("OldLogDevice".equalsIgnoreCase(name)) {
 					logDeviceStrings = ConfigurationHolder.getString(name, "org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties").split(";");
-				} else if ("ProtectedLogDevice".equalsIgnoreCase(name)) {
-					logDeviceStrings = ConfigurationHolder.getString(name, "org.ejbca.core.model.log.ProtectedLogDeviceFactory;logdevices/protectedlog.properties").split(";");
 				} else {
 					logDeviceStrings = ConfigurationHolder.getString(name, "").split(";");
 				}
