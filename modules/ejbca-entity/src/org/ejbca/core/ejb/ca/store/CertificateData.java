@@ -80,7 +80,7 @@ public class CertificateData implements Serializable {
 	private String username;
 	private String tag;
 	private Integer certificateProfileId;
-	private long updateTime = 0;
+	private Long updateTime = Long.valueOf(0);
 	private String subjectKeyId;
 
 	/**
@@ -335,7 +335,7 @@ public class CertificateData implements Serializable {
      * @return updateTime
      */
 	@Column(name="updateTime", nullable=false)
-    public long getUpdateTime() { return updateTime; }
+    public long getUpdateTime() { return (updateTime==null?0:updateTime.longValue()); }
 
     /**
      * The time this row was last updated.
