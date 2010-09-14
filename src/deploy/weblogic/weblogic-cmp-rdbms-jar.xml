@@ -258,54 +258,6 @@
 
    </weblogic-rdbms-bean>
    <weblogic-rdbms-bean>
-      <ejb-name>ProtectedLogExportData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>ProtectedLogExportData</table-name>
-      <field-map>
-         <cmp-field>pk</cmp-field>
-         <dbms-column>pk</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>timeOfExport</cmp-field>
-         <dbms-column>timeOfExport</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>exportEndTime</cmp-field>
-         <dbms-column>exportEndTime</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>exportStartTime</cmp-field>
-         <dbms-column>exportStartTime</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>b64LogDataHash</cmp-field>
-         <dbms-column>b64LogDataHash</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>b64PreviosExportHash</cmp-field>
-         <dbms-column>b64PreviosExportHash</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>currentHashAlgorithm</cmp-field>
-         <dbms-column>currentHashAlgorithm</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>b64SignatureCertificate</cmp-field>
-         <dbms-column>b64SignatureCertificate</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>deleted</cmp-field>
-         <dbms-column>deleted</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>b64Signature</cmp-field>
-         <dbms-column>b64Signature</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
       <ejb-name>KeyRecoveryData</ejb-name>
       <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
       <table-map>
@@ -377,94 +329,6 @@
       <field-map>
          <cmp-field>comment</cmp-field>
          <dbms-column>logComment</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>ProtectedLogData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>ProtectedLogData</table-name>
-      <field-map>
-         <cmp-field>pk</cmp-field>
-         <dbms-column>pk</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>adminType</cmp-field>
-         <dbms-column>adminType</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>adminData</cmp-field>
-         <dbms-column>adminData</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>caId</cmp-field>
-         <dbms-column>cAId</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>module</cmp-field>
-         <dbms-column>module</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>eventTime</cmp-field>
-         <dbms-column>eventTime</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>username</cmp-field>
-         <dbms-column>username</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>certificateSerialNumber</cmp-field>
-         <dbms-column>certificateSerialNumber</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>certificateIssuerDN</cmp-field>
-         <dbms-column>certificateIssuerDN</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>eventId</cmp-field>
-         <dbms-column>eventId</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>eventComment</cmp-field>
-         <dbms-column>eventComment</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>nodeGUID</cmp-field>
-         <dbms-column>nodeGUID</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>counter</cmp-field>
-         <dbms-column>counter</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>nodeIP</cmp-field>
-         <dbms-column>nodeIP</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>b64LinkedInEventIdentifiers</cmp-field>
-         <dbms-column>b64LinkedInEventIdentifiers</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>b64LinkedInEventsHash</cmp-field>
-         <dbms-column>b64LinkedInEventsHash</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>currentHashAlgorithm</cmp-field>
-         <dbms-column>currentHashAlgorithm</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>protectionKeyIdentifier</cmp-field>
-         <dbms-column>protectionKeyIdentifier</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>protectionKeyAlgorithm</cmp-field>
-         <dbms-column>protectionKeyAlgorithm</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>b64Protection</cmp-field>
-         <dbms-column>b64Protection</dbms-column>
       </field-map>
       </table-map>
 
@@ -758,34 +622,6 @@
       <field-map>
          <cmp-field>data</cmp-field>
          <dbms-column>data</dbms-column>
-      </field-map>
-      </table-map>
-
-   </weblogic-rdbms-bean>
-   <weblogic-rdbms-bean>
-      <ejb-name>ProtectedLogTokenData</ejb-name>
-      <data-source-jndi-name>EjbcaDS</data-source-jndi-name>
-      <table-map>
-      <table-name>ProtectedLogTokenData</table-name>
-      <field-map>
-         <cmp-field>pk</cmp-field>
-         <dbms-column>pk</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>tokenIdentifier</cmp-field>
-         <dbms-column>tokenIdentifier</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>tokenType</cmp-field>
-         <dbms-column>tokenType</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>b64TokenCertificate</cmp-field>
-         <dbms-column>b64TokenCertificate</dbms-column>
-      </field-map>
-      <field-map>
-         <cmp-field>tokenReference</cmp-field>
-         <dbms-column>tokenReference</dbms-column>
       </field-map>
       </table-map>
 

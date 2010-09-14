@@ -147,7 +147,7 @@
         </javac>
         
     	<!-- Logging component -->
-    	<echo message=" ** Validating component: Logging (except ProtectedLog, CvsExporter, OldLogDevice) **"/>
+    	<echo message=" ** Validating component: Logging (except CvsExporter, OldLogDevice) **"/>
     	<mkdir dir="${src-temp.dir}/logging"/>
     	<mkdir dir="${build-temp.dir}/logging"/>
     	<copy todir="${src-temp.dir}/logging">
@@ -165,9 +165,6 @@
     			<include name="org/ejbca/config/OldLogConfiguration.java"/>
     			<include name="org/ejbca/util/query/**/*.java"/>
     			<include name="org/ejbca/util/ObjectCache.java"/>
-    			<exclude name="org/ejbca/core/ejb/log/**/ProtectedLog*.java"/>
-    			<exclude name="org/ejbca/core/model/log/**/ProtectedLog*.java"/>
-    			<exclude name="org/ejbca/core/model/log/**/IProtectedLog*.java"/>
     			<exclude name="org/ejbca/core/model/log/CsvLogExporter.java"/>
     			<!-- Uses EjbLocalHelper -->
     			<exclude name="org/ejbca/core/model/log/OldLogDevice*.java"/>
@@ -978,50 +975,6 @@
         	</classpath>
         </javac>
         
-    	<!-- Protected Log component -->
-    	<echo message=" ** SKIPPING: Validating component: Protected Log (deprecated unwanted dependency from Logging) **"/>
-		<!-- Depends on EjbLocalHelper
-    	<mkdir dir="${src-temp.dir}/protlog"/>
-    	<mkdir dir="${build-temp.dir}/protlog"/>
-    	<copy todir="${src-temp.dir}/protlog">
-    		<fileset dir="${src-ejbca-ejb-interface.dir}">
-    			<include name="org/ejbca/core/ejb/log/Protected*.java"/>
-    		</fileset>
-    		<fileset dir="${src-ejbca-entity.dir}">
-    			<include name="org/ejbca/core/ejb/log/Protected*.java"/>
-    		</fileset>
-    		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/config/ProtectedLogConfiguration.java"/>
-    			<include name="org/ejbca/core/ejb/log/**/ProtectedLog*SessionBean.java"/>
-    			<include name="org/ejbca/core/model/log/**/ProtectedLog*.java"/>
-    			<include name="org/ejbca/core/model/log/**/IProtectedLog*.java"/>
-    			<include name="org/ejbca/core/model/services/workers/ProtectedLogExportWorker.java"/>
-    			<include name="org/ejbca/core/model/services/workers/ProtectedLogVerificationWorker.java"/>
-    			<include name="org/ejbca/util/ManualUpdateCache.java"/>
-    			<include name="org/ejbca/util/TCPTool.java"/>
-    		</fileset>
-    	</copy>
-        <javac srcdir="${src-temp.dir}/protlog" destdir="${build-temp.dir}/protlog" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
-        	<classpath>
-        		<path refid="compile.classpath"/>
-        		<pathelement location="${build-temp.dir}/common"/>
-        		<pathelement location="${build-temp.dir}/admins"/>
-        		<pathelement location="${build-temp.dir}/caadmin"/>
-        		<pathelement location="${build-temp.dir}/catoken"/>
-        		<pathelement location="${build-temp.dir}/signing"/>
-        		<pathelement location="${build-temp.dir}/ca"/>
-        		<pathelement location="${build-temp.dir}/logging"/>
-        		<pathelement location="${build-temp.dir}/certstore"/>
-        		<pathelement location="${build-temp.dir}/protect"/>
-        		<pathelement location="${build-temp.dir}/notification"/>
-        		<pathelement location="${build-temp.dir}/authorization"/>
-        		<pathelement location="${build-temp.dir}/approval"/>
-        		<pathelement location="${build-temp.dir}/useradmin"/>
-        		<pathelement location="${build-temp.dir}/services"/>
-        	</classpath>
-        </javac>
-         -->
     </target>
 
 </project>

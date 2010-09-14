@@ -20,10 +20,8 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Date;
-import java.util.Properties;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -36,8 +34,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.LogConfiguration;
-import org.ejbca.config.ProtectedLogConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
@@ -47,16 +43,7 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.ProtectedLogDevice;
-import org.ejbca.core.model.log.ProtectedLogExporter;
-import org.ejbca.core.model.log.ProtectedLogVerifier;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
-import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.core.model.services.ServiceExistsException;
-import org.ejbca.core.model.services.actions.NoAction;
-import org.ejbca.core.model.services.intervals.PeriodicalInterval;
-import org.ejbca.core.model.services.workers.ProtectedLogExportWorker;
-import org.ejbca.core.model.services.workers.ProtectedLogVerificationWorker;
 import org.ejbca.util.CertTools;
 
 /**
@@ -98,36 +85,6 @@ public class StartServicesServlet extends HttpServlet {
 			log.error(e);
 		}
         log.trace(">destroy waiting for system services to finish");
-        ProtectedLogVerifier protectedLogVerifier = ProtectedLogVerifier.instance();
-        if (protectedLogVerifier != null) {
-        	protectedLogVerifier.cancelVerificationsPermanently();
-        	long startedWaiting = System.currentTimeMillis();
-        	log.info(intres.getLocalizedMessage("startservice.waitservicever", MAX_SERVICE_WAIT));
-        	while (protectedLogVerifier.isRunning() && startedWaiting + MAX_SERVICE_WAIT*1000 > System.currentTimeMillis()) {
-        		try {
-					Thread.sleep(1*1000);
-				} catch (InterruptedException e) {
-					throw new EJBException(e);
-				}
-        	}
-        }
-        ProtectedLogExporter protectedLogExporter = ProtectedLogExporter.instance();
-        if (protectedLogExporter != null) {
-        	protectedLogExporter.cancelExportsPermanently();
-        	long startedWaiting = System.currentTimeMillis();
-        	log.info(intres.getLocalizedMessage("startservice.waitserviceexp", MAX_SERVICE_WAIT));
-        	while (protectedLogExporter.isRunning() && startedWaiting + MAX_SERVICE_WAIT*1000 > System.currentTimeMillis()) {
-        		try {
-					Thread.sleep(1*1000);
-				} catch (InterruptedException e) {
-					throw new EJBException(e);
-				}
-        	}
-        }
-        ProtectedLogDevice protectedLogDevice = (ProtectedLogDevice) ProtectedLogDevice.instance();
-        if (protectedLogDevice != null) {
-        	protectedLogDevice.setSystemShutdownNotice();
-        }
 		super.destroy();
 	}
 
@@ -241,71 +198,6 @@ public class StartServicesServlet extends HttpServlet {
         Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
         logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
         		LogConstants.EVENT_INFO_STARTING, iMsg);
-
-        log.trace(">init ProtectedLogVerificationService is configured");
-        try {
-        	LogConfiguration.getUsedLogDevices();	// Ensures that all properties has been loaded
-        	if (ProtectedLogConfiguration.getVerificationServiceActive()) {
-        		log.debug("Activating ProtectedLog's verification service.");
-        		// Add or update service from configuration
-        		ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-        		serviceConfiguration.setWorkerClassPath(ProtectedLogVerificationWorker.class.getName());
-        		serviceConfiguration.setActionClassPath(NoAction.class.getName());
-        		Properties intervalProperties = new Properties();
-        		intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
-        		intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, ProtectedLogConfiguration.getVerificationServiceInterval());
-        		serviceConfiguration.setIntervalProperties(intervalProperties);
-        		serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
-        		serviceConfiguration.setActive(true);
-        		serviceConfiguration.setHidden(true);
-        		if (serviceSession.getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
-        			serviceSession.changeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
-        		} else {
-        			serviceSession.addService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
-        		}
-        	} else {
-        		// Remove if existing
-        		if (serviceSession.getService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME) != null) {
-        			serviceSession.removeService(internalAdmin, ProtectedLogVerificationWorker.DEFAULT_SERVICE_NAME);
-        		}
-        	}
-		} catch (ServiceExistsException e) {
-			throw new EJBException(e);
-		/*} catch (IOException e) {
-			log.error("Error init ProtectedLogVerificationService: ", e);*/
-		}
-
-        log.trace(">init ProtectedLogExportService is configured");
-        try {
-        	if (ProtectedLogConfiguration.getExportServiceActive()) {
-        		log.debug("Activating ProtectedLog's export service.");
-        		// Add or update service from configuration
-        		ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-        		serviceConfiguration.setWorkerClassPath(ProtectedLogExportWorker.class.getName());
-        		serviceConfiguration.setActionClassPath(NoAction.class.getName());
-        		Properties intervalProperties = new Properties();
-        		intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
-        		intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, ProtectedLogConfiguration.getExportServiceInterval());
-        		serviceConfiguration.setIntervalProperties(intervalProperties);
-        		serviceConfiguration.setIntervalClassPath(PeriodicalInterval.class.getName());
-        		serviceConfiguration.setActive(true);
-        		serviceConfiguration.setHidden(true);
-        		if (serviceSession.getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
-        			serviceSession.changeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration, true);
-        		} else {
-        			serviceSession.addService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME, serviceConfiguration);
-        		}
-        	} else {
-        		// Remove if existing
-        		if (serviceSession.getService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME) != null) {
-        			serviceSession.removeService(internalAdmin, ProtectedLogExportWorker.DEFAULT_SERVICE_NAME);
-        		}
-        	}
-		} catch (ServiceExistsException e) {
-			throw new EJBException(e);
-		/*} catch (IOException e) {
-			log.error("Error init ProtectedLogExportService: ", e);*/
-		}
 
         log.trace(">init calling ServiceSession.load");
         try {

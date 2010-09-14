@@ -164,11 +164,6 @@
            	<include name="org/ejbca/core/model/log/ILogExporter.java"/>
            	<include name="org/ejbca/core/model/log/LogConfiguration.java"/>
            	<include name="org/ejbca/core/model/log/ILogDevice.java"/>
-           	<include name="org/ejbca/core/model/log/IProtectedLogToken.java"/>
-           	<include name="org/ejbca/core/model/log/ProtectedLogExportRow.java"/>
-           	<include name="org/ejbca/core/model/log/ProtectedLogEventRow.java"/>
-           	<include name="org/ejbca/core/model/log/ProtectedLogEventIdentifier.java"/>
-           	<include name="org/ejbca/core/model/log/IProtectedLogExportHandler.java"/>
            	<include name="org/ejbca/core/model/protect/TableVerifyResult.java"/>
            	<include name="org/ejbca/core/model/ra/raadmin/AdminPreference.java"/>
            	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfile.java"/>
@@ -193,7 +188,6 @@
            	<include name="org/ejbca/core/model/ca/caadmin/CVCCAInfo.java"/>
            	<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
            	<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
-           	<include name="org/ejbca/core/model/log/ProtectedLogConstants.java"/>
            	<include name="org/ejbca/core/model/hardtoken/profiles/IPINEnvelopeSettings.java"/>
            	<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/CmsCAServiceInfo.java"/>

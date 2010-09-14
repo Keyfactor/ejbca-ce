@@ -19,22 +19,4 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface LogSessionRemote extends LogSession {
-    /**
-     * Replace existing devices with a new one in this beans LogSession
-     * reference. Used for testing, since the JUnit has to inject a mock
-     * ProtectedLogDevice in both the instance accessed remotly and also the
-     * local instance accessed by this bean to be able to use the container
-     * managed transations.
-     */
-    public void setTestDeviceOnLogSession(Class implClass, String name);
-
-    /**
-     * Replace existing devices with the original ones in this beans LogSession
-     * reference. Used for testing, since the JUnit has to inject a mock
-     * ProtectedLogDevice in both the instance accessed remotly and also the
-     * local instance accessed by this bean to be able to use the container
-     * managed transations.
-     */
-    public void restoreTestDeviceOnLogSession();
-
 }

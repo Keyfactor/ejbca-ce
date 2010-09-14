@@ -25,7 +25,6 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.log.LogSessionRemote;
-import org.ejbca.core.ejb.log.ProtectedLogSessionRemote;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -53,7 +52,6 @@ public class EjbRemoteHelper {
     private HardTokenSessionRemote hardTokenSession = null;
     private KeyRecoverySessionRemote keyRecoverySession = null;
     private LogSessionRemote logSession = null;
-    private ProtectedLogSessionRemote protectedLogSession = null;
     private PublisherQueueSessionRemote publisherQueueSession = null;
     private PublisherSessionRemote publisherSession = null;
     private RaAdminSessionRemote raAdminSession = null;
@@ -203,13 +201,6 @@ public class EjbRemoteHelper {
             configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
         }
         return configurationSession;
-    }
-
-    public ProtectedLogSessionRemote getProtectedLogSession() {
-        if (protectedLogSession == null) {
-            protectedLogSession = JndiHelper.getRemoteSession(ProtectedLogSessionRemote.class);
-        }
-        return protectedLogSession;
     }
 
     public ServiceSessionRemote getServiceSession() {

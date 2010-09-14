@@ -221,56 +221,6 @@ create table logentrydata (
     primary key (id)
 );
 
-drop table if exists protectedlogdata;
-create table protectedlogdata (
-	pk varchar(250) binary not null default '',
-	admintype int(11) not null default '0',
-	admindata varchar(250) binary null default null,
-    caid int(11) not null default '0',
-    module int(11) not null default '0',
-    eventtime bigint(20) not null default '0',
-    username varchar(250) binary null default null,
-    certificateserialnumber varchar(250) binary null default null,
-    certificateissuerdn varchar(250) binary null default null,
-    eventid int(11) not null default '0',
-    eventcomment text null default null,
-    nodeguid int(11) not null default '0',
-    counter bigint(20) not null default '0',
-    nodeip varchar(250) binary null default null,
-    b64linkedineventidentifiers text null default null,
-    b64linkedineventshash varchar(250) binary null default null,
-    currenthashalgorithm varchar(250) binary null default null,
-    protectionkeyidentifier int(11) not null default '0',
-    protectionkeyalgorithm varchar(250) binary null default null,
-    b64protection text null default null,
-    primary key (pk)
-);
-
-drop table if exists protectedlogexportdata;
-create table protectedlogexportdata (
-	pk varchar(250) binary not null default '',
-    timeofexport bigint(20) not null default '0',
-    exportendtime bigint(20) not null default '0',
-    exportstarttime bigint(20) not null default '0',
-    b64logdatahash varchar(250) binary null default null,
-    b64previosexporthash varchar(250) binary null default null,
-    currenthashalgorithm varchar(250) binary null default null,
-    b64signaturecertificate text null default null,
-    deleted tinyint(4) not null default '0',
-    b64signature text null default null,
-	primary key (pk)
-);
-
-drop table if exists protectedlogtokendata;
-create table protectedlogtokendata (
-	pk varchar(250) binary not null default '',
-    tokenidentifier int(11) not null default '0',
-    tokentype int(11) not null default '0',
-    b64tokencertificate text null default null,
-    tokenreference text null default null,
-    primary key (pk)
-);
-
 drop table if exists publisherdata;
 create table publisherdata (
     id int(11) not null default '0',

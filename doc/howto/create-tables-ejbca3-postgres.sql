@@ -243,59 +243,6 @@ CREATE TABLE logentrydata (
 CONSTRAINT pk_logentrydata PRIMARY KEY (id)
 );
 
-DROP TABLE PROTECTEDLOGDATA;
-
-CREATE TABLE protectedlogdata (
-  pk TEXT NOT NULL, 
-  adminType INT4 NOT NULL, 
-  adminData TEXT, 
-  caId INT4 NOT NULL, 
-  module INT4 NOT NULL, 
-  eventTime INT8 NOT NULL, 
-  username TEXT, 
-  certificateSerialNumber TEXT, 
-  certificateIssuerDN TEXT, 
-  eventId INT4 NOT NULL, 
-  eventComment TEXT, 
-  nodeGUID INT4 NOT NULL, 
-  counter INT8 NOT NULL, 
-  nodeIP TEXT, 
-  b64LinkedInEventIdentifiers TEXT, 
-  b64LinkedInEventsHash TEXT, 
-  currentHashAlgorithm TEXT, 
-  protectionKeyIdentifier INT4 NOT NULL, 
-  protectionKeyAlgorithm TEXT, 
-  b64Protection TEXT, 
-CONSTRAINT pk_protectedlogdata PRIMARY KEY (pk)
-);
-
-DROP TABLE PROTECTEDLOGEXPORTDATA;
-
-CREATE TABLE protectedlogexportdata (
-  pk TEXT NOT NULL, 
-  timeOfExport INT8 NOT NULL, 
-  exportEndTime INT8 NOT NULL, 
-  exportStartTime INT8 NOT NULL, 
-  b64LogDataHash TEXT, 
-  b64PreviosExportHash TEXT, 
-  currentHashAlgorithm TEXT, 
-  b64SignatureCertificate TEXT, 
-  deleted INT2 NOT NULL, 
-  b64Signature TEXT, 
-CONSTRAINT pk_protectedlogexportdata PRIMARY KEY (pk)
-);
-
-DROP TABLE PROTECTEDLOGTOKENDATA;
-
-CREATE TABLE protectedlogtokendata (
-  pk TEXT NOT NULL, 
-  tokenIdentifier INT4 NOT NULL, 
-  tokenType INT4 NOT NULL, 
-  b64TokenCertificate TEXT, 
-  tokenReference TEXT, 
-CONSTRAINT pk_protectedlogtokendata PRIMARY KEY (pk)
-);
-
 DROP TABLE PUBLISHERDATA;
 
 CREATE TABLE publisherdata (

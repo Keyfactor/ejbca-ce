@@ -101,14 +101,6 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *                       link="LogSession"
  * 
- * @ejb.ejb-external-ref description="ProtectedLogSessionBean" view-type="local"
- *                       ref-name="ejb/ProtectedLogSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.log.IProtectedLogSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.log.IProtectedLogSessionLocal"
- *                       link="ProtectedLogSession"
- * 
  * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
  *                       view-type="local" ref-name="ejb/CAAdminSessionLocal"
  *                       type="Session"

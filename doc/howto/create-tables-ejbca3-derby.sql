@@ -221,56 +221,6 @@ CREATE TABLE LogEntryData (
     PRIMARY KEY (id)
 );
 
-DROP TABLE ProtectedLogData;
-CREATE TABLE ProtectedLogData (
-	pk varchar(256) NOT NULL,
-	adminType integer NOT NULL,
-	adminData varchar(256),
-    caId integer NOT NULL,
-    module integer NOT NULL,
-    eventTime bigint NOT NULL,
-    username varchar(256),
-    certificateSerialNumber varchar(256),
-    certificateIssuerDN varchar(256),
-    eventId integer NOT NULL,
-    eventComment VARCHAR(32672),
-    nodeGUID integer NOT NULL,
-    counter bigint NOT NULL,
-    nodeIP varchar(256),
-    b64LinkedInEventIdentifiers long varchar,
-    b64LinkedInEventsHash varchar(256),
-    currentHashAlgorithm varchar(256),
-    protectionKeyIdentifier integer NOT NULL,
-    protectionKeyAlgorithm varchar(256),
-    b64Protection long varchar,
-    PRIMARY KEY (pk)
-);
-
-DROP TABLE ProtectedLogExportData;
-CREATE TABLE ProtectedLogExportData (
-	pk varchar(256) NOT NULL,
-    timeOfExport bigint NOT NULL,
-    exportEndTime bigint NOT NULL,
-    exportStartTime bigint NOT NULL,
-    b64LogDataHash varchar(256),
-    b64PreviosExportHash varchar(256),
-    currentHashAlgorithm varchar(256),
-    b64SignatureCertificate long varchar,
-    deleted integer NOT NULL DEFAULT 0,
-    b64Signature long varchar,
-	PRIMARY KEY (pk)
-);
-
-DROP TABLE ProtectedLogTokenData;
-CREATE TABLE ProtectedLogTokenData (
-	pk varchar(256) NOT NULL,
-    tokenIdentifier integer NOT NULL,
-    tokenType integer NOT NULL,
-    b64TokenCertificate long varchar,
-    tokenReference VARCHAR(32672),
-    PRIMARY KEY (pk)
-);
-
 DROP TABLE PublisherData;
 CREATE TABLE PublisherData (
     id integer NOT NULL,

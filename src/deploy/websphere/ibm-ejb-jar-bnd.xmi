@@ -87,9 +87,6 @@
             <ejbRefBindings xmi:id="EJBLocalRef_19" jndiName="LogSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_19"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_20" jndiName="ProtectedLogSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_20"/>
-            </ejbRefBindings>
             <ejbRefBindings xmi:id="EJBLocalRef_21" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_21"/>
             </ejbRefBindings>
@@ -279,28 +276,6 @@
 
         </ejbBindings>
 
-        <ejbBindings xmi:id="Session_bnd_13" jndiName="ProtectedLogSession">
-
-            <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_ProtectedLogSession"/>
-
-            <ejbRefBindings xmi:id="EJBLocalRef_63" jndiName="ProtectedLogDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_63"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_64" jndiName="ProtectedLogTokenDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_64"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_65" jndiName="ProtectedLogExportDataLocal">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_65"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_66" jndiName="RSASignSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_66"/>
-            </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_67" jndiName="CAAdminSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_67"/>
-            </ejbRefBindings>
-
-        </ejbBindings>
-
         <ejbBindings xmi:id="Session_bnd_3" jndiName="UpgradeSession">
 
             <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#Session_UpgradeSession"/>
@@ -455,10 +430,6 @@
             <ejbRefBindings xmi:id="EJBLocalRef_104" jndiName="CreateCRLSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_104"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_105" jndiName="ProtectedLogSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_105"/>
-            </ejbRefBindings>
-
         </ejbBindings>
 
         <ejbBindings xmi:id="Session_bnd_8" jndiName="LogSession">
@@ -483,10 +454,6 @@
             <ejbRefBindings xmi:id="EJBLocalRef_111" jndiName="CAAdminSession">
                 <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_111"/>
             </ejbRefBindings>
-            <ejbRefBindings xmi:id="EJBLocalRef_112" jndiName="ProtectedLogSession">
-                <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_112"/>
-            </ejbRefBindings>
-
         </ejbBindings>
 
         <ejbBindings xmi:id="Session_bnd_2" jndiName="AuthorizationSession">
@@ -628,16 +595,6 @@
         </ejbBindings>
 
         <ejbBindings
-            xmi:id="ContainerManagedEntity_bnd_12"
-
-            jndiName="ProtectedLogExportDataLocal"
-        >
-
-            <enterpriseBean xmi:type="ejb:Entity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_ProtectedLogExportData"/>
-
-        </ejbBindings>
-
-        <ejbBindings
             xmi:id="ContainerManagedEntity_bnd_13"
 
             jndiName="KeyRecoveryDataLocal"
@@ -654,16 +611,6 @@
         >
 
             <enterpriseBean xmi:type="ejb:Entity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_LogEntryData"/>
-
-        </ejbBindings>
-
-        <ejbBindings
-            xmi:id="ContainerManagedEntity_bnd_15"
-
-            jndiName="ProtectedLogDataLocal"
-        >
-
-            <enterpriseBean xmi:type="ejb:Entity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_ProtectedLogData"/>
 
         </ejbBindings>
 
@@ -724,16 +671,6 @@
         >
 
             <enterpriseBean xmi:type="ejb:Entity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_HardTokenData"/>
-
-        </ejbBindings>
-
-        <ejbBindings
-            xmi:id="ContainerManagedEntity_bnd_23"
-
-            jndiName="ProtectedLogTokenDataLocal"
-        >
-
-            <enterpriseBean xmi:type="ejb:Entity" href="META-INF/ejb-jar.xml#ContainerManagedEntity_ProtectedLogTokenData"/>
 
         </ejbBindings>
 

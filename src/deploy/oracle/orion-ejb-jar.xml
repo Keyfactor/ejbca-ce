@@ -27,7 +27,6 @@
 			<ejb-ref-mapping name="ejb/ServiceDataLocal" />
 			<ejb-ref-mapping name="ejb/AuthorizationSessionLocal" />
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
-			<ejb-ref-mapping name="ejb/ProtectedLogSessionLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/ServiceTimerSessionLocal" />
 			<ejb-ref-mapping name="ejb/CertificateStoreSessionLocal" />
@@ -90,13 +89,6 @@
 			<ejb-ref-mapping name="ejb/CertificateDataLocal" />
 			<ejb-ref-mapping name="ejb/TableProtectSessionLocal" />
 		</session-deployment>
-		<session-deployment name="ProtectedLogSession" location="ProtectedLogSession" local-location="ejbca-ejb_ProtectedLogSessionLocal" persistence-filename="ProtectedLogSession.ejbca_default_group_1">
-			<ejb-ref-mapping name="ejb/ProtectedLogDataLocal" />
-			<ejb-ref-mapping name="ejb/ProtectedLogTokenDataLocal" />
-			<ejb-ref-mapping name="ejb/ProtectedLogExportDataLocal" />
-			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
-			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
-		</session-deployment>
 		<session-deployment name="UpgradeSession" location="UpgradeSession" local-location="ejbca-ejb_UpgradeSessionLocal" persistence-filename="UpgradeSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/LogConfigurationDataLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
@@ -148,7 +140,6 @@
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
 			<ejb-ref-mapping name="ejb/CreateCRLSessionLocal" />
-			<ejb-ref-mapping name="ejb/ProtectedLogSessionLocal" />
 		</session-deployment>
 		<session-deployment name="LogSession" location="LogSession" local-location="ejbca-ejb_LogSessionLocal" persistence-filename="LogSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/LogEntryDataLocal" />
@@ -156,7 +147,6 @@
 			<ejb-ref-mapping name="ejb/TableProtectSessionLocal" />
 			<ejb-ref-mapping name="ejb/RSASignSessionLocal" />
 			<ejb-ref-mapping name="ejb/CAAdminSessionLocal" />
-			<ejb-ref-mapping name="ejb/ProtectedLogSessionLocal" />
 		</session-deployment>
 		<session-deployment name="AuthorizationSession" location="AuthorizationSession" local-location="ejbca-ejb_AuthorizationSessionLocal" persistence-filename="AuthorizationSession.ejbca_default_group_1">
 			<ejb-ref-mapping name="ejb/LogSessionLocal" />
@@ -191,8 +181,6 @@
 		</entity-deployment>
 		<entity-deployment name="CAData" location="CAData" local-location="ejbca-ejb_CADataLocal" concrete-bean-class="CAData_ConcreteSubClass69" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CAData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="ProtectedLogData" location="ProtectedLogData" local-location="ejbca-ejb_ProtectedLogDataLocal" concrete-bean-class="ProtectedLogData_ConcreteSubClass70" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ProtectedLogData_LocalHomeProxy_634lm59">
-		</entity-deployment>
 		<entity-deployment name="UserDataSourceData" location="UserDataSourceData" local-location="ejbca-ejb_UserDataSourceDataLocal" concrete-bean-class="UserDataSourceData_ConcreteSubClass71" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="UserDataSourceData_LocalHomeProxy_634lm59">
 		</entity-deployment>
 		<entity-deployment name="HardTokenPropertyData" location="HardTokenPropertyData" local-location="ejbca-ejb_HardTokenPropertyDataLocal" concrete-bean-class="HardTokenPropertyData_ConcreteSubClass72" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="HardTokenPropertyData_LocalHomeProxy_634lm59">
@@ -203,15 +191,11 @@
 		</entity-deployment>
 		<entity-deployment name="ServiceData" location="ServiceData" local-location="ejbca-ejb_ServiceDataLocal" concrete-bean-class="ServiceData_ConcreteSubClass74" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ServiceData_LocalHomeProxy_634lm59">
 		</entity-deployment>
-		<entity-deployment name="ProtectedLogTokenData" location="ProtectedLogTokenData" local-location="ejbca-ejb_ProtectedLogTokenDataLocal" concrete-bean-class="ProtectedLogTokenData_ConcreteSubClass75" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ProtectedLogTokenData_LocalHomeProxy_634lm59">
-		</entity-deployment>
 		<entity-deployment name="CRLData" location="CRLData" local-location="ejbca-ejb_CRLDataLocal" concrete-bean-class="CRLData_ConcreteSubClass76" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="CRLData_LocalHomeProxy_634lm59">
 		</entity-deployment>
 		<entity-deployment name="KeyRecoveryData" location="KeyRecoveryData" local-location="ejbca-ejb_KeyRecoveryDataLocal" concrete-bean-class="KeyRecoveryData_ConcreteSubClass77" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="KeyRecoveryData_LocalHomeProxy_634lm59">
 		</entity-deployment>
 		<entity-deployment name="AdminPreferencesData" location="AdminPreferencesData" local-location="ejbca-ejb_AdminPreferencesDataLocal" concrete-bean-class="AdminPreferencesData_ConcreteSubClass78" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="AdminPreferencesData_LocalHomeProxy_634lm59">
-		</entity-deployment>
-		<entity-deployment name="ProtectedLogExportData" location="ProtectedLogExportData" local-location="ejbca-ejb_ProtectedLogExportDataLocal" concrete-bean-class="ProtectedLogExportData_ConcreteSubClass79" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="ProtectedLogExportData_LocalHomeProxy_634lm59">
 		</entity-deployment>
 		<entity-deployment name="AdminEntityData" location="AdminEntityData" local-location="ejbca-ejb_AdminEntityDataLocal" concrete-bean-class="AdminEntityData_ConcreteSubClass80" data-source="@datasource.jndi-name-prefix@@datasource.jndi-name@" local-wrapper="AdminEntityData_LocalHomeProxy_634lm59">
 		</entity-deployment>

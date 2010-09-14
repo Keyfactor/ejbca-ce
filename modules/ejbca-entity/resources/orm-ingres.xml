@@ -128,42 +128,6 @@
             </basic>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.log.ProtectedLogData" access="PROPERTY">
-        <attributes>
-            <basic name="b64LinkedInEventIdentifiers">
-                <column name="b64LinkedInEventIdentifiers" column-definition="LONG VARCHAR"/>
-            </basic>
-            <basic name="b64Protection">
-                <column name="b64Protection" column-definition="LONG VARCHAR"/>
-            </basic>
-            <basic name="eventComment">
-                <column name="eventComment" column-definition="LONG VARCHAR"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.log.ProtectedLogExportData" access="PROPERTY">
-        <attributes>
-            <basic name="b64Signature">
-                <column name="b64Signature" column-definition="LONG VARCHAR"/>
-            </basic>
-            <basic name="b64SignatureCertificate">
-                <column name="b64SignatureCertificate" column-definition="LONG VARCHAR"/>
-            </basic>
-            <basic name="deleted">
-                <column name="deleted" column-definition="INTEGER(1)"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.log.ProtectedLogTokenData" access="PROPERTY">
-        <attributes>
-            <basic name="b64TokenCertificate">
-                <column name="b64TokenCertificate" column-definition="LONG VARCHAR"/>
-            </basic>
-            <basic name="tokenReference">
-                <column name="tokenReference" column-definition="LONG VARCHAR"/>
-            </basic>
-        </attributes>
-    </entity>
     <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY">
         <attributes>
             <basic name="data">

@@ -467,47 +467,6 @@
 
         </ejb>
 
-        <ejb>
-            <ejb-name>ProtectedLogSession</ejb-name>
-
-            <jndi-name>ProtectedLogSession</jndi-name>
-
-        </ejb>
-
-        <ejb>
-            <ejb-name>ProtectedLogData</ejb-name>
-
-            <jndi-name>ProtectedLogData</jndi-name>
-
-            <cmp>
-
-            </cmp>
-
-        </ejb>
-
-        <ejb>
-            <ejb-name>ProtectedLogTokenData</ejb-name>
-
-            <jndi-name>ProtectedLogTokenData</jndi-name>
-
-            <cmp>
-
-            </cmp>
-
-        </ejb>
-
-
-        <ejb>
-            <ejb-name>ProtectedLogExportData</ejb-name>
-
-            <jndi-name>ProtectedLogExportData</jndi-name>
-
-            <cmp>
-
-            </cmp>
-
-        </ejb>
-
          <ejb>
             <ejb-name>ConfigurationSession</ejb-name>
 
