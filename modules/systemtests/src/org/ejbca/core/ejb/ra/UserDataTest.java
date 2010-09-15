@@ -526,11 +526,7 @@ public class UserDataTest extends CaTestCase {
     	// Change profile, not flushing cache
     	eep.setAllowMergeDnWebServices(true);
     	raAdminSession.internalChangeEndEntityProfileNoFlushCache(admin, "TESTEEPROFCACHE2", eep);
-    	// read profile again, value should not be changed because it is cached
-    	raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
-        value = eep.getAllowMergeDnWebServices();
-        assertFalse(value);
-    	
+
     	// Wait 2 seconds and try again, now the cache should have been updated
     	Thread.sleep(2000);
         eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
