@@ -21,14 +21,14 @@ import java.util.Map;
  */
 public class LogConfiguration {
 	
-	private static Map logDeviceMap = null;
+	private static Map<String, String> logDeviceMap = null;
 	
 	/**
 	 * Get used log devices and initialize configuration
 	 */
-	public static synchronized Map getUsedLogDevices() {
+	public static synchronized Map<String, String> getUsedLogDevices() {
 		if (logDeviceMap == null) {
-			logDeviceMap = new HashMap();
+			logDeviceMap = new HashMap<String, String>();
 			String[] logDevicesList = ConfigurationHolder.getString("usedLogDevices", "Log4jLogDevice;OldLogDevice").split(";");
 			for (int i=0; i<logDevicesList.length; i++) {
 				String name = logDevicesList[i];
