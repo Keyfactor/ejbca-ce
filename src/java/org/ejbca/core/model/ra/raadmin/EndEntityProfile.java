@@ -75,7 +75,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     
     // Public constants
     /** Constant values for end entity profile. */
-    private static HashMap dataConstants = new HashMap();
+    private static HashMap<String, Integer> dataConstants = new HashMap<String, Integer>();
 
 
     // Field constants, used in the map below
@@ -117,77 +117,36 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     // These must be in a strict order that can never change 
     // Custom values configurable in a properties file (profilemappings.properties)
     static {
-    	dataConstants.put(USERNAME, new Integer(0));
-    	dataConstants.put(PASSWORD, new Integer(1));
-    	dataConstants.put(CLEARTEXTPASSWORD, new Integer(2));
-    	dataConstants.put(AUTOGENPASSWORDTYPE, new Integer(95));
-    	dataConstants.put(AUTOGENPASSWORDLENGTH, new Integer(96));
+    	dataConstants.put(USERNAME, Integer.valueOf(0));
+    	dataConstants.put(PASSWORD, Integer.valueOf(1));
+    	dataConstants.put(CLEARTEXTPASSWORD, Integer.valueOf(2));
+    	dataConstants.put(AUTOGENPASSWORDTYPE, Integer.valueOf(95));
+    	dataConstants.put(AUTOGENPASSWORDLENGTH, Integer.valueOf(96));
         // DN components
-    	/* These are loaded through DnComponents instead
-    	dataConstants.put(DnComponents.DNEMAIL, Integer.valueOf(3));
-    	dataConstants.put(DnComponents.UID, Integer.valueOf(4));
-    	dataConstants.put(DnComponents.COMMONNAME, Integer.valueOf(5));
-    	dataConstants.put(DnComponents.SN, Integer.valueOf(6));
-    	dataConstants.put(DnComponents.GIVENNAME, Integer.valueOf(7));
-    	dataConstants.put(DnComponents.INITIALS, Integer.valueOf(8));
-    	dataConstants.put(DnComponents.SURNAME, Integer.valueOf(9));
-    	dataConstants.put(DnComponents.TITLE, Integer.valueOf(10));
-    	dataConstants.put(DnComponents.ORGANIZATIONUNIT, Integer.valueOf(11));
-    	dataConstants.put(DnComponents.ORGANIZATION, Integer.valueOf(12));
-    	dataConstants.put(DnComponents.LOCALE, Integer.valueOf(13));
-    	dataConstants.put(DnComponents.STATE, Integer.valueOf(14));
-    	dataConstants.put(DnComponents.DOMAINCOMPONENT, Integer.valueOf(15));
-    	dataConstants.put(DnComponents.COUNTRY, Integer.valueOf(16));
+    
+    	dataConstants.put(EMAIL, Integer.valueOf(26));
+    	dataConstants.put(KEYRECOVERABLE, Integer.valueOf(28));
+    	dataConstants.put(DEFAULTCERTPROFILE, Integer.valueOf(29));
+    	dataConstants.put(AVAILCERTPROFILES, Integer.valueOf(30));
+    	dataConstants.put(DEFKEYSTORE, Integer.valueOf(31));
+    	dataConstants.put(AVAILKEYSTORE, Integer.valueOf(32));
+    	dataConstants.put(DEFAULTTOKENISSUER, Integer.valueOf(33));
+    	dataConstants.put(AVAILTOKENISSUER, Integer.valueOf(34));
+    	dataConstants.put(SENDNOTIFICATION, Integer.valueOf(35));
 
-    	dataConstants.put(DnComponents.UNSTRUCTUREDADDRESS, Integer.valueOf(39));
-    	dataConstants.put(DnComponents.UNSTRUCTUREDNAME, Integer.valueOf(40));
-        // AltNames
-    	dataConstants.put(DnComponents.RFC822NAME, Integer.valueOf(17));
-    	dataConstants.put(DnComponents.DNSNAME, Integer.valueOf(18));
-    	dataConstants.put(DnComponents.IPADDRESS, Integer.valueOf(19));
-    	dataConstants.put(DnComponents.OTHERNAME, Integer.valueOf(20));
-    	dataConstants.put(DnComponents.UNIFORMRESOURCEID, Integer.valueOf(21));
-    	dataConstants.put(DnComponents.X400ADDRESS, Integer.valueOf(22));
-    	dataConstants.put(DnComponents.DIRECTORYNAME, Integer.valueOf(23));
-    	dataConstants.put(DnComponents.EDIPARTNAME, Integer.valueOf(24));
-    	dataConstants.put(DnComponents.REGISTEREDID, Integer.valueOf(25));
-
-    	dataConstants.put(DnComponents.UPN, Integer.valueOf(36));
-    	dataConstants.put(DnComponents.GUID, Integer.valueOf(41));
-    	dataConstants.put(DnComponents.KRB5PRINCIPAL, Integer.valueOf(52));
-    	// Altnames end
-        // Subject directory attributes
-    	dataConstants.put(DnComponents.DATEOFBIRTH, Integer.valueOf(42));
-    	dataConstants.put(DnComponents.PLACEOFBIRTH, Integer.valueOf(43));
-    	dataConstants.put(DnComponents.GENDER, Integer.valueOf(44));
-    	dataConstants.put(DnComponents.COUNTRYOFCITIZENSHIP, Integer.valueOf(45));
-    	dataConstants.put(DnComponents.COUNTRYOFRESIDENCE, Integer.valueOf(46));
-        // Subject directory attributes end
-    	 */
-    	dataConstants.put(EMAIL, new Integer(26));
-    	//dataConstants.put(ADMINISTRATOR, new Integer(27));		// Dropped from EJBCA 3.8.0, but older installations might still use this index
-    	dataConstants.put(KEYRECOVERABLE, new Integer(28));
-    	dataConstants.put(DEFAULTCERTPROFILE, new Integer(29));
-    	dataConstants.put(AVAILCERTPROFILES, new Integer(30));
-    	dataConstants.put(DEFKEYSTORE, new Integer(31));
-    	dataConstants.put(AVAILKEYSTORE, new Integer(32));
-    	dataConstants.put(DEFAULTTOKENISSUER, new Integer(33));
-    	dataConstants.put(AVAILTOKENISSUER, new Integer(34));
-    	dataConstants.put(SENDNOTIFICATION, new Integer(35));
-
-    	dataConstants.put(DEFAULTCA, new Integer(37));
-    	dataConstants.put(AVAILCAS, new Integer(38));
+    	dataConstants.put(DEFAULTCA, Integer.valueOf(37));
+    	dataConstants.put(AVAILCAS, Integer.valueOf(38));
     	
     	// Load all DN, altName and directoryAttributes from DnComponents.
     	dataConstants.putAll(DnComponents.getProfilenameIdMap());
     	
-    	dataConstants.put(ISSUANCEREVOCATIONREASON, new Integer(94));
-    	dataConstants.put(ALLOWEDREQUESTS, new Integer(97));
-    	dataConstants.put(STARTTIME, new Integer(98));
-    	dataConstants.put(ENDTIME, new Integer(99));
-    	dataConstants.put(CARDNUMBER, new Integer(39));
-    	dataConstants.put(MAXFAILEDLOGINS, new Integer(93));
-    	dataConstants.put(CERTSERIALNR, new Integer(92));
+    	dataConstants.put(ISSUANCEREVOCATIONREASON, Integer.valueOf(94));
+    	dataConstants.put(ALLOWEDREQUESTS, Integer.valueOf(97));
+    	dataConstants.put(STARTTIME, Integer.valueOf(98));
+    	dataConstants.put(ENDTIME, Integer.valueOf(99));
+    	dataConstants.put(CARDNUMBER, Integer.valueOf(39));
+    	dataConstants.put(MAXFAILEDLOGINS, Integer.valueOf(93));
+    	dataConstants.put(CERTSERIALNR, Integer.valueOf(92));
     }
     // Type of data constants.
     private static final int VALUE      = 0;
@@ -237,7 +196,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         log.debug("The highest number in dataConstants is: "+max);
         ArrayList numberoffields = new ArrayList(max);
         for(int i =0; i <= max; i++){
-          numberoffields.add(new Integer(0));
+          numberoffields.add(Integer.valueOf(0));
         }
         data.put(NUMBERARRAY,numberoffields);
         data.put(SUBJECTDNFIELDORDER,new ArrayList());
@@ -450,10 +409,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             }
           }
         // Remove last element of the type from hashmap
-        data.remove(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
-        data.remove(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
-        data.remove(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
-        data.remove(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
+        data.remove(Integer.valueOf((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
+        data.remove(Integer.valueOf((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
+        data.remove(Integer.valueOf((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
+        data.remove(Integer.valueOf((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
 
         decrementFieldnumber(parameter);
       }
@@ -475,10 +434,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 		ArrayList arr = (ArrayList)data.get(NUMBERARRAY);
     	// This is an automatic upgrade function, if we have dynamically added new fields
     	if (parameter >= arr.size()) {
-			String msg = intres.getLocalizedMessage("ra.eeprofileaddfield", new Integer(parameter));
+			String msg = intres.getLocalizedMessage("ra.eeprofileaddfield", Integer.valueOf(parameter));
     		log.debug(msg);
     		for (int i = arr.size(); i <= parameter; i++) {
-                arr.add(new Integer(0));
+                arr.add(Integer.valueOf(0));
     		}
             data.put(NUMBERARRAY,arr);
     	}
@@ -489,9 +448,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public void setValue(int parameter, int number, String value) {
         if(value !=null){
             value=value.trim();
-            data.put(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), value);
+            data.put(Integer.valueOf((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), value);
          }else{
-            data.put(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), "");
+            data.put(Integer.valueOf((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), "");
          }
     }
     public void setValue(String parameter, int number, String value) {
@@ -499,28 +458,28 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     public void setUse(int parameter, int number, boolean use){
-          data.put(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(use));
+          data.put(Integer.valueOf((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(use));
     }
     public void setUse(String parameter, int number, boolean use){
     	setUse(getParameterNumber(parameter), number, use);
     }
 
     public void setRequired(int parameter, int number,  boolean isrequired) {
-    	data.put(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(isrequired));
+    	data.put(Integer.valueOf((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(isrequired));
     }
     public void setRequired(String parameter, int number,  boolean isrequired) {
     	setRequired(getParameterNumber(parameter), number, isrequired);
     }
 
     public void setModifyable(int parameter, int number, boolean changeable) {
-    	data.put(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(changeable));
+    	data.put(Integer.valueOf((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(changeable));
     }
     public void setModifyable(String parameter, int number, boolean changeable) {
     	setModifyable(getParameterNumber(parameter), number, changeable);
     }
 
     public String getValue(int parameter, int number) {
-        String returnval = (String) data.get(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        String returnval = (String) data.get(Integer.valueOf((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
         if(returnval != null){
             return returnval;
         }
@@ -531,7 +490,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     public boolean getUse(int parameter, int number){
-        Boolean returnval = (Boolean) data.get(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        Boolean returnval = (Boolean) data.get(Integer.valueOf((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
         if(returnval != null){
             return returnval.booleanValue();
         }
@@ -542,7 +501,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     public boolean isRequired(int parameter, int number) {
-        Boolean returnval = (Boolean) data.get(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        Boolean returnval = (Boolean) data.get(Integer.valueOf((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
         if(returnval != null){
             return returnval.booleanValue();
         }
@@ -553,7 +512,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     public boolean isModifyable(int parameter, int number){
-        Boolean returnval = (Boolean) data.get(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        Boolean returnval = (Boolean) data.get(Integer.valueOf((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
         if(returnval != null){
             return returnval.booleanValue();
         }
@@ -804,7 +763,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
     
     public void setPrintedCopies(int copies){
-    	data.put(PRINTINGCOPIES, new Integer(copies));
+    	data.put(PRINTINGCOPIES, Integer.valueOf(copies));
     }
     
     /**
@@ -1346,14 +1305,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             if(getVersion() < 1){
                 ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
                 while(numberarray.size() < 37){
-                   numberarray.add(new Integer(0));
+                   numberarray.add(Integer.valueOf(0));
                 }
                 data.put(NUMBERARRAY,numberarray);
               }
             if(getVersion() < 2){
                 ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
                 while(numberarray.size() < 39){
-                   numberarray.add(new Integer(0));
+                   numberarray.add(Integer.valueOf(0));
                 }
                 data.put(NUMBERARRAY,numberarray);
                 
@@ -1372,7 +1331,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             if(getVersion() < 4){
                 ArrayList numberoffields = (ArrayList)   data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
-                  numberoffields.add(new Integer(0));
+                  numberoffields.add(Integer.valueOf(0));
                 }               
                 data.put(NUMBERARRAY,numberoffields);                
             }
@@ -1388,7 +1347,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             if (getVersion() < 6) {
                 ArrayList numberoffields = (ArrayList)   data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
-                  numberoffields.add(new Integer(0));
+                  numberoffields.add(Integer.valueOf(0));
                 }               
                 data.put(NUMBERARRAY,numberoffields);
                 data.put(SUBJECTDIRATTRFIELDORDER,new ArrayList());
@@ -1405,7 +1364,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             if (getVersion() < 7) {
                 ArrayList numberoffields = (ArrayList) data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
-                	numberoffields.add(new Integer(0));
+                	numberoffields.add(Integer.valueOf(0));
                 }               
                 data.put(NUMBERARRAY,numberoffields);
                 addField(STARTTIME);
@@ -1444,7 +1403,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             if (getVersion() < 9) {
                 ArrayList numberoffields = (ArrayList) data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
-                	numberoffields.add(new Integer(0));
+                	numberoffields.add(Integer.valueOf(0));
                 }               
                 data.put(NUMBERARRAY,numberoffields);
                 addField(ALLOWEDREQUESTS);
@@ -1872,12 +1831,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 	
     private void  incrementFieldnumber(int parameter){
       ArrayList numberarray = (ArrayList) data.get(NUMBERARRAY);
-      numberarray.set(parameter, new Integer(((Integer) numberarray.get(parameter)).intValue() + 1));
+      numberarray.set(parameter, Integer.valueOf(((Integer) numberarray.get(parameter)).intValue() + 1));
     }
 
     private void  decrementFieldnumber(int parameter){
       ArrayList numberarray = (ArrayList) data.get(NUMBERARRAY);
-      numberarray.set(parameter, new Integer(((Integer) numberarray.get(parameter)).intValue() - 1));
+      numberarray.set(parameter, Integer.valueOf(((Integer) numberarray.get(parameter)).intValue() - 1));
     }
     
 
