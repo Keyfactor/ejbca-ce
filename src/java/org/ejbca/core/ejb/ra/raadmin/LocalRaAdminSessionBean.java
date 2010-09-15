@@ -483,7 +483,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("ra.errorremoveprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            log.error("Error was caught when trying to remove end entity profile" + profilename, e);
+            log.error("Error was caught when trying to remove end entity profile " + profilename, e);
         }
     }
 
