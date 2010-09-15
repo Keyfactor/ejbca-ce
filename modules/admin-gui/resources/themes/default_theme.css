@@ -255,10 +255,12 @@ table.grid td {
 	padding: 2px 3px;
 	border: 1px solid #2E5A94;
 }
-table tbody tr td {
+
+/* Page: ALL Edit forms */
+form.edit table tbody tr td {
 	line-height: 1.55em;
 }
-table tbody tr td table tbody tr td {
+form.edit table tbody tr td table tbody tr td {
 	line-height: 1.75em;
 }
 
