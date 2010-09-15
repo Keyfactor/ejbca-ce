@@ -15,22 +15,18 @@ package org.ejbca.core.model.services.workers;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
-import org.ejbca.util.JDBCUtil;
 
 /**
  * Worker expiring users password after a configured amount of time.
@@ -46,115 +42,71 @@ import org.ejbca.util.JDBCUtil;
  */
 public class UserPasswordExpireWorker extends EmailSendingWorker {
 
-	private static final Logger log = Logger.getLogger(UserPasswordExpireWorker.class);
+    private static final Logger log = Logger.getLogger(UserPasswordExpireWorker.class);
     /** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();	
-	
-	private PreparedStatement buildPreparedQueryStatement(Connection con) throws ServiceExecutionFailedException, SQLException {
-		// Build Query
-		String cASelectString = null;
-		Collection caIds = getCAIdsToCheck(false);
-		log.debug("Checking for "+caIds.size()+" CAs");
-		Iterator iter = caIds.iterator();
-		while (iter.hasNext()) {
-			iter.next();
-			if (cASelectString == null) {
-				cASelectString = "cAId=?";
-			} else {
-				cASelectString += " OR cAId=?";
-			}
-		}
-		StringBuffer str = new StringBuffer();
-		str.append("SELECT DISTINCT username FROM UserData WHERE (timeModified <=?) AND (status=?)");
-		if (StringUtils.isNotEmpty(cASelectString)) {
-			str.append(" AND (").append(cASelectString).append(")");
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("Generated query string: "+str.toString());
-		}
-		PreparedStatement ps = con.prepareStatement(str.toString());
-		ps.setLong(1, ((new Date()).getTime() - getTimeBeforeExpire()));
-		ps.setInt(2, UserDataConstants.STATUS_NEW);
-		iter = caIds.iterator();	
-		int i = 3;
-		while (iter.hasNext()) {
-			ps.setInt(i++, (Integer)iter.next());
-		}
-		return ps;
-	}
-	
-	/**
-	 * Worker that makes a query to the Certificate Store about
-	 * expiring certificates.
-	 * 
-	 * @see org.ejbca.core.model.services.IWorker#work()
-	 */
-	public void work() throws ServiceExecutionFailedException {
-		log.trace(">Worker started");
+    private static final InternalResources intres = InternalResources.getInstance();
 
-		ArrayList userEmailQueue = new ArrayList();
-		ArrayList adminEmailQueue = new ArrayList();
+    /**
+     * Worker that makes a query to the Certificate Store about expiring
+     * certificates.
+     * 
+     * @see org.ejbca.core.model.services.IWorker#work()
+     */
+    public void work() throws ServiceExecutionFailedException {
+        log.trace(">Worker started");
 
-		// Execute Query
-		Connection con = null;
-		PreparedStatement ps = null;
-		ResultSet result = null;
-		try{		
-			con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-			ps = buildPreparedQueryStatement(con);
+        ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
+        ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
 
-			result = ps.executeQuery();
-			while(result.next()){
-				// For each user update status.
-				String username = result.getString(1);
-				if (log.isDebugEnabled()) {
-					log.debug("User '"+username+"' has expired and will be set to generated");
-				}
+        long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());
+        
+        List<UserData> userDataList = getUserAdminSession().findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
+                timeModified, UserDataConstants.STATUS_NEW);
 
-				UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
-				// Update user to set status to generated
-				userData.setStatus(UserDataConstants.STATUS_GENERATED);
-				userData.setPassword(null);
-				getUserAdminSession().changeUser(getAdmin(), userData, false);
-				// Create notification emails, if they are configured to be sent
-				if(userData != null){
-					if(isSendToEndUsers()){
-						if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
-							String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", username);
-							log.info(msg);
-						}else{
-							// Populate end user message            	    	        		    
-							String message = new UserNotificationParamGen(userData).interpolate(getEndUserMessage());
-							MailActionInfo mailActionInfo = new MailActionInfo(userData.getEmail(),getEndUserSubject(), message);
-							userEmailQueue.add(new EmailCertData(username,mailActionInfo));
-						}					  
-					}
-					if(isSendToAdmins()){
-						// Populate admin message        		    
-						String message = new UserNotificationParamGen(userData).interpolate(getAdminMessage());
-						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
-						adminEmailQueue.add(new EmailCertData(username,mailActionInfo));
-					}	
-				}
-			}
-			
-		} catch (Exception fe) {
-			log.error("Error running service work: ", fe);
-			throw new ServiceExecutionFailedException(fe);
-		} finally {
-			JDBCUtil.close(con, ps, result);
-		}
+        log.error("mikekdbg userDatalist: " + userDataList.size());
+        
+        for (UserData userData : userDataList) {
+            UserDataVO userDataVO = userData.toUserDataVO();
+            userDataVO.setStatus(UserDataConstants.STATUS_GENERATED);
+            userDataVO.setPassword(null);
+            try {
+                getUserAdminSession().changeUser(getAdmin(), userDataVO, false);
+                log.error("mikekdbg Changed user: " + userDataVO.getUsername() + " tm: " + timeModified + " udtm: " + userData.getTimeModified());
+                if (userData != null) {
+                    if (isSendToEndUsers()) {
+                        if (userDataVO.getEmail() == null || userDataVO.getEmail().trim().equals("")) {
+                            String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", userDataVO.getUsername());
+                            log.info(msg);
+                        } else {
+                            // Populate end user message
+                            String message = new UserNotificationParamGen(userDataVO).interpolate(getEndUserMessage());
+                            MailActionInfo mailActionInfo = new MailActionInfo(userDataVO.getEmail(), getEndUserSubject(), message);
+                            userEmailQueue.add(new EmailCertData(userDataVO.getUsername(), mailActionInfo));
+                        }
+                    }
+                    if (isSendToAdmins()) {
+                        // Populate admin message
+                        String message = new UserNotificationParamGen(userDataVO).interpolate(getAdminMessage());
+                        MailActionInfo mailActionInfo = new MailActionInfo(null, getAdminSubject(), message);
+                        adminEmailQueue.add(new EmailCertData(userDataVO.getUsername(), mailActionInfo));
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error running service work: ", e);
+                throw new ServiceExecutionFailedException(e);
+            }
+        }
 
-		// Send of the mails
-		if(isSendToEndUsers()){
-			sendEmails(userEmailQueue);
-		}
-		if(isSendToAdmins()){
-			sendEmails(adminEmailQueue);
-		}	
+        // Send of the mails
+        if (isSendToEndUsers()) {
+            sendEmails(userEmailQueue);
+        }
+        if (isSendToAdmins()) {
+            sendEmails(adminEmailQueue);
+        }
 
-		log.trace("<Worker ended");
-	}
+        log.trace("<Worker ended");
+    }
 	
 	/** Method that must be implemented by all subclasses to EmailSendingWorker, used to update status of 
 	 * a certificate, user, or similar

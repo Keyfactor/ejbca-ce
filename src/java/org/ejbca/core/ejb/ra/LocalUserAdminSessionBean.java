@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -2192,6 +2193,41 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
         }
         return returnval;
     }
+    
+    /**
+     * Selects a list of specific list of UserData entities, as filtered by the below parameters. 
+     * 
+     * @param caIds The list of CAIDs to filter by. If this list is empty, all the UserData objects that match the given expiration and status are returned.
+     * @param timeModified Not modified since this date, as expressed by a Long value 
+     * @param status Status of the requested CAIDs
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<UserData> findUsers(List<Integer> caIds, long timeModified, int status) {
+        String queryString = "SELECT a FROM UserData a WHERE" /* (a.timeModified <=:timeModified) AND */ + " (a.status=:status)";
+        if(caIds.size() > 0) {
+            queryString += " AND (a.caId=:caId0";
+            for(int i = 1; i < caIds.size(); i++) {
+                queryString += " OR a.caId=:caId" + i;
+            }
+            queryString += ")";
+        }     
+        if(log.isDebugEnabled()) {
+            log.debug("Checking for "+caIds.size()+" CAs");
+            log.debug("Generated query string: "+queryString);
+        }             
+        javax.persistence.Query query = entityManager.createQuery(queryString);
+        //query.setParameter("timeModified", timeModified);
+        query.setParameter("status", status);      
+        if(caIds.size() > 0) {           
+            for(int i = 0; i < caIds.size(); i++) {
+                query.setParameter("caId" + i, caIds.get(i));
+            }
+        }
+        return (List<UserData>) query.getResultList();
+    }
+
 
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
@@ -2273,7 +2309,8 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
             throws IllegalQueryException {
         return query(admin, query, true, caauthorizationstring, endentityprofilestring, false, numberofrows);
     }
-
+    
+  
     /**
      * Help function used to retrieve user information. A query parameter of
      * null indicates all users. If caauthorizationstring or

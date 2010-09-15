@@ -418,4 +418,5 @@ public class UserData implements Serializable {
     	Query query = entityManager.createQuery("SELECT a FROM UserData a");
     	return query.getResultList();
     }
+    
 }

@@ -39,8 +39,8 @@ public class UserPasswordExpireTest extends CaTestCase {
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     private int caid = getTestCAId();
 
-    private static String username;
-    private static String pwd;
+    private static final String USERNAME = "UserPasswordExpireTestUser";
+    private static final String PWD = "foo123";
 
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -71,11 +71,9 @@ public class UserPasswordExpireTest extends CaTestCase {
         log.trace(">test01CreateNewUser()");
 
         // Create a new user
-        username = genRandomUserName();
-        pwd = genRandomPwd();
-        userAdminSession.addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
+        userAdminSession.addUser(admin, USERNAME, PWD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
-        log.debug("created user: " + username);
+        log.debug("created user: " + USERNAME);
 
         // Create a new UserPasswordExpireService
         ServiceConfiguration config = new ServiceConfiguration();
@@ -103,10 +101,9 @@ public class UserPasswordExpireTest extends CaTestCase {
         serviceSession.activateServiceTimer(admin, "TestUserPasswordService");
 
         // The service will run...
-        Thread.sleep(5000);
 
         // Now the user will not have been expired
-        UserDataVO data = userAdminSession.findUser(admin, username);
+        UserDataVO data = userAdminSession.findUser(admin, USERNAME);
         assertNotNull("User we have added can not be found", data);
         assertEquals(UserDataConstants.STATUS_NEW, data.getStatus());
 
@@ -121,10 +118,10 @@ public class UserPasswordExpireTest extends CaTestCase {
 
         // The service will run...since there is a random delay of 30 seconds we
         // have to wait a long time
-        Thread.sleep(35000);
+        Thread.sleep(5000);
 
         // Now the user will be expired
-        data = userAdminSession.findUser(admin, username);
+        data = userAdminSession.findUser(admin, USERNAME);
         assertNotNull("User we have added can not be found", data);
         assertEquals(UserDataConstants.STATUS_GENERATED, data.getStatus());
 
@@ -137,8 +134,8 @@ public class UserPasswordExpireTest extends CaTestCase {
      */
     public void test99CleanUp() throws Exception {
         log.trace(">test99CleanUp()");
-        userAdminSession.deleteUser(admin, username);
-        log.debug("Removed user: " + username);
+        userAdminSession.deleteUser(admin, USERNAME);
+        log.debug("Removed user: " + USERNAME);
         serviceSession.removeService(admin, "TestUserPasswordService");
         log.debug("Removed service: TestUserPasswordService");
         removeTestCA();
