@@ -666,7 +666,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
      * 
      * @ejb.interface-method view-type="both"
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
         if (log.isTraceEnabled()) {
             log.trace(">changeService(name: " + name + ")");

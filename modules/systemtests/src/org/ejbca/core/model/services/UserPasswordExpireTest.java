@@ -116,9 +116,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         config.setWorkerProperties(workerprop);
         serviceSession.changeService(admin, "TestUserPasswordService", config, false);
 
-        // The service will run...since there is a random delay of 30 seconds we
-        // have to wait a long time
-        Thread.sleep(5000);
+        Thread.sleep(10000);
 
         // Now the user will be expired
         data = userAdminSession.findUser(admin, USERNAME);
