@@ -56,7 +56,7 @@ To use External RA Service Workers in EJBCA:
  <li>Re-deploy EJBCA</li>
 </ol>
 </p><p>
-It is recommended to use the following indexes on the external massage database:
+It is recommended to use the following indexes on the external message database:
 </p>
 <source>
 create index message_idx1 on message (status);
