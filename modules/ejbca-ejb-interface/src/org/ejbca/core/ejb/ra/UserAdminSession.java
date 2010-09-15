@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.util.List;
+
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.PersistenceException;
 
 import org.ejbca.core.model.ra.UserDataVO;
@@ -659,5 +663,15 @@ public interface UserAdminSession {
      * TODO: Moved here from Local interface. Move back.
      */
     public java.util.Collection findAllUsersWithLimit(org.ejbca.core.model.log.Admin admin) throws javax.ejb.FinderException;
+    
+    /**
+     * Selects a list of specific list of UserData entities, as filtered by the below parameters. 
+     * 
+     * @param caIds The list of CAIDs to filter by. If this list is empty, all the UserData objects that match the given expiration and status are returned.
+     * @param timeModified Not modified since this date, as expressed by a Long value 
+     * @param status Status of the requested CAIDs
+     * @return
+     */
+    public List<UserData> findUsers(List<Integer> caIds, long timeModified, int status);
 
 }

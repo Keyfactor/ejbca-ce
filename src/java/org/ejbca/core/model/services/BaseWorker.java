@@ -112,45 +112,47 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		return admin;
 	}
 	
-	/** Returns the amount of time, in milliseconds that the expire time of configured for */
-	protected long getTimeBeforeExpire()
-	throws ServiceExecutionFailedException {
-		if(timeBeforeExpire == -1){
-			String unit = properties.getProperty(PROP_TIMEUNIT);
-			if(unit == null){				
-				String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
-				throw new ServiceExecutionFailedException(msg);
-			}
-			int unitval = 0;
-			for(int i=0;i<AVAILABLE_UNITS.length;i++){
-				if(AVAILABLE_UNITS[i].equalsIgnoreCase(unit)){
-					unitval = AVAILABLE_UNITSVALUES[i];
-					break;
-				}
-			}
-			if(unitval == 0){				
-				String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
-				throw new ServiceExecutionFailedException(msg);
-			}
-						
-		    String value =  properties.getProperty(PROP_TIMEBEFOREEXPIRING);
-		    int intvalue = 0;
-		    try{
-		      intvalue = Integer.parseInt(value);
-		    }catch(NumberFormatException e){
-				String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
-		    	throw new ServiceExecutionFailedException(msg);
-		    }
-			
-			if(intvalue == 0){
-				String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
-				throw new ServiceExecutionFailedException(msg);
-			}
-			timeBeforeExpire = intvalue * unitval;			
-		}
-	
-		return timeBeforeExpire * 1000;
-	}
+    /**
+     * Returns the amount of time, in milliseconds that the expire time of
+     * configured for
+     */
+    protected long getTimeBeforeExpire() throws ServiceExecutionFailedException {
+        if (timeBeforeExpire == -1) {
+            String unit = properties.getProperty(PROP_TIMEUNIT);
+            if (unit == null) {
+                String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
+                throw new ServiceExecutionFailedException(msg);
+            }
+            int unitval = 0;
+            for (int i = 0; i < AVAILABLE_UNITS.length; i++) {
+                if (AVAILABLE_UNITS[i].equalsIgnoreCase(unit)) {
+                    unitval = AVAILABLE_UNITSVALUES[i];
+                    break;
+                }
+            }
+            if (unitval == 0) {
+                String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "UNIT");
+                throw new ServiceExecutionFailedException(msg);
+            }
+
+
+            int intvalue = 0;
+            try {
+                intvalue = Integer.parseInt(properties.getProperty(PROP_TIMEBEFOREEXPIRING));
+            } catch (NumberFormatException e) {
+                String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
+                throw new ServiceExecutionFailedException(msg);
+            }
+
+            if (intvalue == 0) {
+                String msg = intres.getLocalizedMessage("services.errorexpireworker.errorconfig", serviceName, "VALUE");
+                throw new ServiceExecutionFailedException(msg);
+            }
+            timeBeforeExpire = intvalue * unitval;
+        }
+
+        return timeBeforeExpire * 1000;
+    }
 
 	/** returns a collection of String with CAIds as gotten from the property  BaseWorker.PROP_CAIDSTOCHECK.
 	 * @param includeAllCAsIfNonce set to true if the 'catch all' SecConst.ALLCAS should be included in the list IF there does not exist a list. This CAId is not recognized by all recipients...
