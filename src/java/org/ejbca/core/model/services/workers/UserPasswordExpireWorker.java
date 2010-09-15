@@ -63,15 +63,13 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
         List<UserData> userDataList = getUserAdminSession().findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
                 timeModified, UserDataConstants.STATUS_NEW);
 
-        log.error("mikekdbg userDatalist: " + userDataList.size());
-        
         for (UserData userData : userDataList) {
             UserDataVO userDataVO = userData.toUserDataVO();
             userDataVO.setStatus(UserDataConstants.STATUS_GENERATED);
             userDataVO.setPassword(null);
             try {
                 getUserAdminSession().changeUser(getAdmin(), userDataVO, false);
-                log.error("mikekdbg Changed user: " + userDataVO.getUsername() + " tm: " + timeModified + " udtm: " + userData.getTimeModified());
+
                 if (userData != null) {
                     if (isSendToEndUsers()) {
                         if (userDataVO.getEmail() == null || userDataVO.getEmail().trim().equals("")) {
