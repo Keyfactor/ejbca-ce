@@ -153,7 +153,7 @@ public class CertificateExpireTest extends CaTestCase {
   
         // The service will run...since there is a random delay of 10 seconds we
         // have to wait a long time
-        Thread.sleep(35000);
+        Thread.sleep(5000);
         info = certificateStoreSession.getCertificateInfo(admin, fp);
         assertEquals("Status does not match.", SecConst.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
 
