@@ -55,22 +55,36 @@
 
 <!-- If you want to use a native APR SSL Coyote HTTP/1.1 Connector, 
      you can replace the above with with this instead. 
+     Personally, on JBoss 4.2.3, I never got jboss-native-2.0.9 to work but jboss-native-2.0.8 works
      After doing this you need to change the "tomcat" user in EJBCA to use
      a PEM keystore instead of a JKS keystore. You can then generate new PEM 
      files with bin/ejbca.sh batch (for example). You have to manually copy the PEM files to the correct location. 
-     server.pem must contain both server.pem and server-CA.pem from ejbca/p12/pem. -->
+     server.pem must contain both server.pem and server-CA.pem from ejbca/p12/pem. 
+     See http://tomcat.apache.org/tomcat-6.0-doc/apr.html#HTTPS for details. -->
 <!--
 <Connector protocol="org.apache.coyote.http11.Http11AprProtocol"
-           port="@httpserver.privhttps@" address="@httpsserver.bindaddress.privhttps@"
+           port="@httpserver.pubhttps@" address="@httpsserver.bindaddress.pubhttps@"
            minSpareThreads="5" maxSpareThreads="75"
-           enableLookups="true" disableUploadTimeout="true"
+           enableLookups="false" disableUploadTimeout="true"
            acceptCount="100" maxThreads="200"
            scheme="https" secure="true" SSLEnabled="true"
            SSLCertificateFile="${jboss.server.home.dir}/conf/keystore/server.pem"
            SSLCertificateKeyFile="${jboss.server.home.dir}/conf/keystore/server-Key.pem"
-           clientAuth="false" sslProtocol="TLS"
+           SSLVerifyClient="none" sslProtocol="TLSv1"
            URIEncoding="@web.contentencoding@" />
---> 
+
+<Connector protocol="org.apache.coyote.http11.Http11AprProtocol"
+           port="@httpserver.privhttps@" address="@httpsserver.bindaddress.privhttps@"
+           minSpareThreads="5" maxSpareThreads="75"
+           enableLookups="false" disableUploadTimeout="true"
+           acceptCount="100" maxThreads="200"
+           scheme="https" secure="true" SSLEnabled="true"
+           SSLCertificateFile="${jboss.server.home.dir}/conf/keystore/server.pem"
+           SSLCertificateKeyFile="${jboss.server.home.dir}/conf/keystore/server-Key.pem"
+           SSLCACertificateFile="${jboss.server.home.dir}/conf/keystore/server-CA.pem"
+           SSLVerifyClient="require" sslProtocol="TLSv1"
+           URIEncoding="@web.contentencoding@" />
+-->
 
     <!-- Define an AJP 1.3 Connector on port 8009 -->
     <Connector port="8009" address="${jboss.bind.address}" protocol="AJP/1.3"
