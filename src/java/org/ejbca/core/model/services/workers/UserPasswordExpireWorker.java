@@ -57,13 +57,12 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 
         ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
         ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
-
-        long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());
-        
+       
+        long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());   
         List<UserData> userDataList = getUserAdminSession().findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
                 timeModified, UserDataConstants.STATUS_NEW);
 
-        for (UserData userData : userDataList) {
+        for (UserData userData : userDataList) {     
             UserDataVO userDataVO = userData.toUserDataVO();
             userDataVO.setStatus(UserDataConstants.STATUS_GENERATED);
             userDataVO.setPassword(null);

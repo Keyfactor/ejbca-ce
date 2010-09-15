@@ -2210,7 +2210,8 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
     @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<UserData> findUsers(List<Integer> caIds, long timeModified, int status) {
-        String queryString = "SELECT a FROM UserData a WHERE" /* (a.timeModified <=:timeModified) AND */ + " (a.status=:status)";
+        String queryString = "SELECT a FROM UserData a WHERE (a.timeModified <=:timeModified) AND (a.status=:status)";
+   
         if(caIds.size() > 0) {
             queryString += " AND (a.caId=:caId0";
             for(int i = 1; i < caIds.size(); i++) {
@@ -2223,7 +2224,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
             log.debug("Generated query string: "+queryString);
         }             
         javax.persistence.Query query = entityManager.createQuery(queryString);
-        //query.setParameter("timeModified", timeModified);
+        query.setParameter("timeModified", timeModified);
         query.setParameter("status", status);      
         if(caIds.size() > 0) {           
             for(int i = 0; i < caIds.size(); i++) {
