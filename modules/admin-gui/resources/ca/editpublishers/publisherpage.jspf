@@ -193,11 +193,11 @@ function checkallfields(){
     </tr>
    </form>
    </table>
-   <form name="editpublisher" method="post" action="<%=THIS_FILENAME %>" class="edit">
+   <form name="editpublisher" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= EditPublisherJSPHelper.ACTION %>' value='<%=EditPublisherJSPHelper.ACTION_EDIT_PUBLISHER %>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<%=publisherhelper.publishername %>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERTYPE %>' value='<%=publisherhelper.getPublisherType() %>'>
-   <table width="100%" border="0" cellspacing="3" cellpadding="3">
+   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
          &nbsp;

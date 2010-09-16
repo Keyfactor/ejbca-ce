@@ -420,10 +420,10 @@ function checkallfields(){
   <h2><%= ejbcawebbean.getText("EDITCERTIFICATEPROFILE") %></h2>
   <h3><%= ejbcawebbean.getText("CERTIFICATEPROFILE")+ " : " + certprofile %></h3>
 </div>
-<form name="editcertificateprofile" method="post" action="<%=THIS_FILENAME %>" class="edit">
+<form name="editcertificateprofile" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CERTIFICATEPROFILE %>'>
   <input type="hidden" name='<%= HIDDEN_CERTIFICATEPROFILENAME %>' value='<%=certprofile %>'>
-  <table width="100%" border="0" cellspacing="3" cellpadding="3">
+  <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="left"> 
