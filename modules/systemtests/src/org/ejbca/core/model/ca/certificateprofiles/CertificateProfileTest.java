@@ -347,8 +347,8 @@ public class CertificateProfileTest extends TestCase {
         String name2 = certificateStoreSession.getCertificateProfileName(admin, pid2);
         assertEquals("TESTCPMAPPINGS1", name2);
         assertEquals(pid1, pid2);
-        assertEquals(name2, name2);
-        System.out.println(pid1);
+        assertEquals(name1, name2);
+        log.debug(pid1);
 
         CertificateProfile profile = certificateStoreSession.getCertificateProfile(admin, pid1);
         assertEquals("foo", profile.getCNPostfix());
@@ -356,7 +356,7 @@ public class CertificateProfileTest extends TestCase {
         assertEquals("foo", profile.getCNPostfix());
 
         int pid3 = certificateStoreSession.getCertificateProfileId(admin, "TESTCPMAPPINGS2"); 
-        System.out.println(pid3);
+        log.debug(pid3);
         String name3 = certificateStoreSession.getCertificateProfileName(admin, pid3);
         assertEquals("TESTCPMAPPINGS2", name3);
         profile = certificateStoreSession.getCertificateProfile(admin, pid3);
@@ -437,6 +437,7 @@ public class CertificateProfileTest extends TestCase {
     	
     	// Make sure profile has the right value from the beginning
         CertificateProfile ecp = certificateStoreSession.getCertificateProfile(admin, "TESTCPCACHE1");
+        assertEquals("foo", ecp.getCNPostfix());
         ecp.setCNPostfix("bar");
         certificateStoreSession.changeCertificateProfile(admin, "TESTCPCACHE1", ecp);
     	// Read profile
