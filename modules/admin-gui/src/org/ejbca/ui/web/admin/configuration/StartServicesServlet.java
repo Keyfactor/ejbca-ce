@@ -35,6 +35,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -69,6 +70,8 @@ public class StartServicesServlet extends HttpServlet {
     private RaAdminSessionLocal raAdminSession;
     @EJB
     private ServiceSessionLocal serviceSession;
+    @EJB
+    private SignSessionLocal signSession;
     
     /**
      * Method used to remove all active timers and stop system services.
@@ -223,6 +226,9 @@ public class StartServicesServlet extends HttpServlet {
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
+        
+        log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
+        signSession.isUniqueCertificateSerialNumberIndex();
     }
     
 }
