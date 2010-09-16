@@ -14,7 +14,7 @@
     <% } %>
       </td>
       <td width="50%"> 
-        <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODE%>" size="40" maxlength="255">
+        <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODE%>" size="20" maxlength="255">
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -99,7 +99,7 @@
            <% if(editca){
                 out.write(softcatokeninfo.getSignKeySpec());
               }else{%>
-                <input type="text" name="<%=TEXTFIELD_KEYSPEC%>" size="40" maxlength="255">              
+                <input type="text" name="<%=TEXTFIELD_KEYSPEC%>" size="20" maxlength="255">              
            <% } %> 
       </td>
     </tr>

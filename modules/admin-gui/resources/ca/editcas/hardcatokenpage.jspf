@@ -8,7 +8,7 @@
         <%= ejbcawebbean.getText("HARDCATOKENPROPERTIES") %>
       </td>
       <td width="50%"> 
-        <textarea name="<%=TEXTFIELD_HARDCATOKENPROPERTIES%>" cols=40 rows=6><% if(hardcatokeninfo != null && hardcatokeninfo.getProperties() != null) out.write(hardcatokeninfo.getProperties());%></textarea>
+        <textarea name="<%=TEXTFIELD_HARDCATOKENPROPERTIES%>" cols="45" rows="8"><% if(hardcatokeninfo != null && hardcatokeninfo.getProperties() != null) out.write(hardcatokeninfo.getProperties());%></textarea>
       </td>
     </tr>
     <% if(!editca){ %>
@@ -17,7 +17,7 @@
         <%= ejbcawebbean.getText("AUTHENTICATIONCODE") %>
       </td>
       <td width="50%"> 
-        <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODE%>" size="40" maxlength="255">
+        <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODE%>" size="20" maxlength="255">
       </td>
     </tr>
     <% }%>
