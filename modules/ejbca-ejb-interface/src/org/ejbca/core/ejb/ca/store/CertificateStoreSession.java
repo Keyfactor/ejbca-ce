@@ -213,6 +213,10 @@ public interface CertificateStoreSession {
      */
     public org.ejbca.core.model.ca.store.CertificateInfo getCertificateInfo(org.ejbca.core.model.log.Admin admin, java.lang.String fingerprint);
 
+    /** Finds a certificate based on fingerprint. 
+     * You can get fingerprint by for example "String fingerprint = CertTools.getFingerprintAsString(certificate);"
+     * @return Certificate or null if it can not be found.
+     */
     public java.security.cert.Certificate findCertificateByFingerprint(org.ejbca.core.model.log.Admin admin, java.lang.String fingerprint);
 
     /**
