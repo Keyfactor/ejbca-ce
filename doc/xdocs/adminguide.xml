@@ -4765,11 +4765,13 @@ For OCSP it is more important, but OCSP is also more light weight so the default
 <p>In more specialized PKI installations there can however be the need to issue hundreds of certificates per second. Therefore we provide a small list of
 configuration items that can maximize performance of EJBCA to issue more than 100 certificates per second (depending on hardware etc).</p>
 <ul>
-<li>Disable logging to database in log.properties, only use Log4jLogDevice.</li>
-<li>Configure Log4j to log only to file, not console, and use only INFO or ERROR logging, not DEBUG.</li>
-<li>Disable use of CertReqHistory in CA configuration.</li>
-<li>Enable all caches in cache.properties. If you cache indefinately you can use the cli command 'bin/ejbca.sh clearcache' if configuration whanges are made.</li>
-<li>Do not enforce any uniqueness (keys, DN, Subject DN SerialNumber) in CA configuration.</li>
+<li>Disable logging to database in log.properties, only use Log4jLogDevice. This removes a database insert and gives a big boost.</li>
+<li>Configure Log4j to log only to file, not console, and use only INFO or ERROR logging, not DEBUG. This can give a small improvement.</li>
+<li>Disable use of CertReqHistory in CA configuration. This removes a database insert and gives a big boost.</li>
+<li>Enable all caches in cache.properties. If you cache indefinately you can use the cli command 'bin/ejbca.sh clearcache' if configuration whanges are made. This can give a small improvement.</li>
+<li>Do not enforce any uniqueness (keys, DN, Subject DN SerialNumber) in CA configuration. This will ensure no extra selects are made and can give a small improvement.</li>
+<li>Minimze the number of indexes in the database, only use the ones that are absolutely needed. This maes inserts in the database a bit faster and can give additonal 10%.</li>
+<li>Use the native JBoss connectors for http and https. This can give an additional 10%.</li>
 </ul>
 </section>
 

@@ -34,7 +34,8 @@ create index certificatedata_idx10 on CertificateData(subjectDN,issuerDN);
 create index userdata_idx1 on UserData (cAId,endEntityProfileId);
 create index userdata_idx2 on UserData (cAId,timeCreated);
 create index userdata_idx3 on UserData (cAId,timeModified);
-create index userdata_idx4 on UserData (cAId);
+-- Don't need this because cAId is included in other indexes
+-- create index userdata_idx4 on UserData (cAId);
 -- This is already the primary key.. we don't need to index it.. create index userdata_idx5 on UserData (username);
 create index userdata_idx6 on UserData (username, cAId);
 create index userdata_idx7 on UserData (status, cAId);
