@@ -193,11 +193,11 @@ function checkallfields(){
     </tr>
    </form>
    </table>
-   <table width="100%" border="0" cellspacing="3" cellpadding="3">
-   <form name="editpublisher" method="post" action="<%=THIS_FILENAME %>">
+   <form name="editpublisher" method="post" action="<%=THIS_FILENAME %>" class="edit">
     <input type="hidden" name='<%= EditPublisherJSPHelper.ACTION %>' value='<%=EditPublisherJSPHelper.ACTION_EDIT_PUBLISHER %>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<%=publisherhelper.publishername %>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERTYPE %>' value='<%=publisherhelper.getPublisherType() %>'>
+   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
          &nbsp;
@@ -231,7 +231,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
-         <%= ejbcawebbean.getText("PUBLISHERQUEUE") %>: 
+         <strong><%= ejbcawebbean.getText("PUBLISHERQUEUE") %> :</strong>
          <%= ejbcawebbean.getHelpReference("/adminguide.html#Publisher%20Queue%20and%20failures") %>
       </td>
       <td width="50%">
@@ -318,7 +318,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
-         <%= ejbcawebbean.getText("GENERALSETTINGS") %>:
+         <strong><%= ejbcawebbean.getText("GENERALSETTINGS") %> :</strong>
       </td>
       <td width="50%">
          &nbsp;  
