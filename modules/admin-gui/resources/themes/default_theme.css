@@ -257,10 +257,10 @@ table.grid td {
 }
 
 /* Page: ALL Edit forms */
-form.edit table tbody tr td {
+form.edit table tr td {
 	line-height: 1.55em;
 }
-form.edit table tbody tr td table tbody tr td {
+form.edit table tr td table tr td {
 	line-height: 1.75em;
 }
 
