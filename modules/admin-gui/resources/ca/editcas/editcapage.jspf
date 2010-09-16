@@ -387,7 +387,7 @@ function checkallfields(){
   <%   }
      }%>
 </div>
-  <table width="100%" border="0" cellspacing="3" cellpadding="3">
+  <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="left"> 
@@ -513,7 +513,7 @@ function checkallfields(){
            if (catokeninfo != null) {
         	   sequence = catokeninfo.getKeySequence();
            } else if (processrequest && (processedsequence != null)) { sequence = processedsequence; }%>
-        <input type="text" name="<%=TEXTFIELD_KEYSEQUENCE%>" size="10" <% out.write(" value='"+sequence+"'"); %> maxlength="10">
+        <input type="text" name="<%=TEXTFIELD_KEYSEQUENCE%>" size="6" <% out.write(" value='"+sequence+"'"); %> maxlength="10">
       </td>
     </tr>
     
@@ -526,7 +526,7 @@ function checkallfields(){
               out.write(cainfo.getSubjectDN() + "<br>"); 
            }else{ %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
-        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="40" <% if(processrequest) out.write(" value='" + processedsubjectdn + "'"); %> maxlength="225">
+        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" <% if(processrequest) out.write(" value='" + processedsubjectdn + "'"); %> maxlength="225">
         <% } %>
       </td>
     </tr>
@@ -680,7 +680,7 @@ function checkallfields(){
         <% if(isexternal){
               out.write(cainfo.getDescription());
            }else{ %>
-        <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols=40 rows=6><% if(editca) out.write(cainfo.getDescription());%></textarea>
+        <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols="45" rows="4"><% if(editca) out.write(cainfo.getDescription());%></textarea>
        <% } %>
       </td>
     </tr>
@@ -707,7 +707,7 @@ function checkallfields(){
               else
                 out.write(x509cainfo.getSubjectAltName());                
             else{  %>  
-         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="40" maxlength="255">
+         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="45" maxlength="255">
          <% } %>   
       </td>
     </tr> 
@@ -724,7 +724,7 @@ function checkallfields(){
                 out.write(((CertificatePolicy) x509cainfo.getPolicies().get(0)).getPolicyID());
               }
             } else {  %>  
-         <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="40" maxlength="255">
+         <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="20" maxlength="255">
          <% } %>   
       </td>
     </tr> 
@@ -761,12 +761,21 @@ function checkallfields(){
                  out.write("CHECKED");%>>         
       </td>
     </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        &nbsp;
+      </td>
+      <td width="50%"> 
+        &nbsp;
+      </td>
+    </tr>
+    
     <!--  external CAs does not have any settings at all basically, we just import the certificate -->
     <!--  if we are processing a request we are issuing certificate to an external CA and we can not set CRL stuff for that CA -->
    <% if(!processrequest && !isexternal){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLSPECIFICDATA") %>
+        <strong><%= ejbcawebbean.getText("CRLSPECIFICDATA") %></strong>
       </td>
       <td width="50%"> 
         &nbsp;
@@ -847,7 +856,7 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getDefaultCRLDistPoint());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="60" maxlength="4096"
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="45" maxlength="4096"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLDistPoint()+ "'");%>>
            <% } %> 
            <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
@@ -861,7 +870,7 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getDefaultCRLIssuer());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="60" maxlength="255"
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="45" maxlength="255"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLIssuer()+ "'");%>>
            <% } %> 
            <input type="button" name="<%=BUTTON_GENDEFAULTCRLISSUER%>" onClick="gendefaultcrlissuer()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
@@ -877,12 +886,109 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getCADefinedFreshestCRL());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="60" maxlength="255"
+         <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="45" maxlength="255"
             <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)) out.write(" value='" + x509cainfo.getCADefinedFreshestCRL()+ "'");%>>
            <% } %>
            <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
      </tr>
+
+   <tr id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+     </td>
+     <td width="50%">
+          <% if (isexternal) {
+               out.write(CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
+             } else { %>
+        <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255"
+          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %>>
+          <% } %>
+          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+     </td>
+   </tr>
+   
+   <tr id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRLISSUEINTERVAL") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+     </td>
+     <td width="50%">
+          <% if (isexternal) {
+               out.write(CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES));
+             } else { %>
+        <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="20" maxlength="255"
+          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'"); } %>>
+          <% } %> 
+          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+     </td>
+   </tr>
+
+   <tr id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRLOVERLAPTIME") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+     </td>
+     <td width="50%">
+          <% if (isexternal) {
+               out.write(CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES));
+             } else { %>
+        <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="20" maxlength="255"
+          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES) + "'"); }
+               else {out.write(" value='10"+CombineTime.TYPE_MINUTES+"'"); } %>>
+          <% } %> 
+          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+     </td>
+   </tr>
+
+   <tr id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("DELTACRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <br/>
+       <%= ejbcawebbean.getText("NODELTACRLTIP") %>
+     </td>
+     <td width="50%">
+          <% if (isexternal) {
+               out.write("" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
+             } else { %>
+        <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255"
+          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %>>
+          <% } %> 
+          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+     </td>
+   </tr>
+
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%" align="right"> 
+       <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
+     </td>
+     <td width="50%"> 
+       <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
+          <%   Collection usedpublishers = null;
+               if(editca) usedpublishers = cainfo.getCRLPublishers(); 
+               Iterator iter = publisheridtonamemap.keySet().iterator(); 
+               while(iter.hasNext()){
+                 Integer next = (Integer) iter.next(); %>
+          <option  value="<%= next %>" 
+             <%    if(editca && usedpublishers.contains(next))
+                     out.write(" selected ");
+                 %>>
+             <%= publisheridtonamemap.get(next) %>         
+          </option>  
+             <% } %>
+       </select>
+     </td>
+   </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <strong><%= ejbcawebbean.getText("OTHERDATA") %></strong>
+      </td>
+      <td width="50%"> 
+        &nbsp;
+      </td>
+    </tr>
      <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTOCSPLOCATOR") %>
@@ -893,17 +999,9 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getDefaultOCSPServiceLocator());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="60" maxlength="255"
+         <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="45" maxlength="255"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultOCSPServiceLocator()+ "'");%>>
            <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("OTHERDATA") %>
-      </td>
-      <td width="50%"> 
-        &nbsp;
       </td>
     </tr>
     <% if(!editca || (editca && ocspcainfo != null)){ %>
@@ -959,92 +1057,7 @@ function checkallfields(){
       </td>
     </tr>    
     <% } %>
-   <tr  id="Row<%=row++%2%>"> 
-     <td width="50%" align="right"> 
-       <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
-     </td>
-     <td width="50%"> 
-       <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
-          <%   Collection usedpublishers = null;
-               if(editca) usedpublishers = cainfo.getCRLPublishers(); 
-               Iterator iter = publisheridtonamemap.keySet().iterator(); 
-               while(iter.hasNext()){
-                 Integer next = (Integer) iter.next(); %>
-          <option  value="<%= next %>" 
-             <%    if(editca && usedpublishers.contains(next))
-                     out.write(" selected ");
-                 %>>
-             <%= publisheridtonamemap.get(next) %>         
-          </option>  
-             <% } %>
-       </select>
-     </td>
-   </tr>
-   <tr id="Row<%=row++%2%>"> 
-     <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
-     </td>
-     <td width="50%">
-          <% if (isexternal) {
-               out.write(CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
-             } else { %>
-        <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="40" maxlength="255"
-          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %>>
-          <% } %>
-          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
-     </td>
-   </tr>
-   
-   <tr id="Row<%=row++%2%>"> 
-     <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLISSUEINTERVAL") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
-     </td>
-     <td width="50%">
-          <% if (isexternal) {
-               out.write(CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES));
-             } else { %>
-        <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
-          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'"); } %>>
-          <% } %> 
-          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
-     </td>
-   </tr>
 
-   <tr id="Row<%=row++%2%>"> 
-     <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLOVERLAPTIME") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
-     </td>
-     <td width="50%">
-          <% if (isexternal) {
-               out.write(CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES));
-             } else { %>
-        <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
-          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else {out.write(" value='10"+CombineTime.TYPE_MINUTES+"'"); } %>>
-          <% } %> 
-          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
-     </td>
-   </tr>
-
-   <tr id="Row<%=row++%2%>"> 
-     <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("DELTACRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
-       <br/>
-       <%= ejbcawebbean.getText("NODELTACRLTIP") %>
-     </td>
-     <td width="50%">
-          <% if (isexternal) {
-               out.write("" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
-             } else { %>
-        <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="40" maxlength="255"
-          <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %>>
-          <% } %> 
-          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
-     </td>
-   </tr>
    <%
      } // if(!processrequest && !isexternal)
    } // if(catype == CAInfo.CATYPE_X509){ %>
@@ -1100,20 +1113,15 @@ function checkallfields(){
       </td>
     </tr>
     
-    <% } // if(!processrequest && !isexternal)
+    <% } // if(!processrequest && !isexternal) %>
     
-    if(editca && !waitingresponse){%>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
+      <td width="49%" valign="top" align="right">
         &nbsp;
+        <% if(editca && !waitingresponse){ %>
+           <a style="cursor:pointer;" onClick="viewcacert()"><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
+        <% } %>
       </td>
-      <td width="50%"> 
-        <a style="cursor:pointer;" onClick="viewcacert()"><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
-      </td>
-    </tr>
-    <% } %>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
       <% if(!isexternal){ 
            if(processrequest){ %>
@@ -1133,6 +1141,14 @@ function checkallfields(){
     </tr>
        <% if(editca && revokable){ %>
     <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        &nbsp;
+      </td>
+      <td width="50%"> 
+        &nbsp;
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">         
         <select name="<%=SELECT_REVOKEREASONS %>" >
@@ -1151,6 +1167,14 @@ function checkallfields(){
             if (editca && !isexternal) {
               disabledStr = "";
             } %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        &nbsp;
+      </td>
+      <td width="50%"> 
+        &nbsp;
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"></td>
       <td width="51%" valign="top">             
@@ -1203,7 +1227,7 @@ function checkallfields(){
       <td width="51%" valign="top">             
 		<input type="hidden" name='<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME %>' value='<%=caname %>' />
         <input type="password" name="<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD %>"  value="" />
-        <input type="submit" name="<%= BUTTON_EXPORTCA %>"  value="<%= ejbcawebbean.getText("EXPORTCA")+".." %>" />
+        <input type="submit" name="<%= BUTTON_EXPORTCA %>"  value="<%= ejbcawebbean.getText("EXPORTCA")+"..." %>" />
       </td>
     </tr>
 	</form>
