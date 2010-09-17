@@ -578,6 +578,11 @@
     			<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
     			<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
     			<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
+    			<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
+    		</fileset>
+    		<fileset dir="${src-ejbca-entity.dir}">
+    			<!-- Authentication dependency (unwanted.. depends on RA..) -->
+    			<include name="org/ejbca/core/ejb/ra/UserData.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/signing" destdir="${build-temp.dir}/signing" debug="on" includeantruntime="no"
