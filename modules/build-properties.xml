@@ -69,15 +69,16 @@
     <property name="mod.dist.path" location="${mod.path}/dist" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
+    <property name="mod.ocsp-entity.lib" location="${mod.dist.path}/ocsp-entity.jar" />
     <property name="mod.ejbca-ejb.lib" location="${ejbca.dist.path}/ejbca-ejb.jar" />
-    <property name="mod.ocsp-ejb.lib" location="${ocsp.dist.path}/ejbca-ejb.jar" />
+    <property name="mod.ocsp-ejb.lib" location="${ocsp.dist.path}/ocsp-ejb.jar" />
     <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
     <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.dist.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
     <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
 	<property name="mod.ejbca-ejb-interface_ejb3.lib" location="${mod.dist.path}/ejbca-ejb3-interface.jar" />
-    <property name="mod.ocsp-ejb-interface.lib" location="${mod.dist.path}/ocsp-ejb-interface.jar" />
+    <property name="mod.ocsp-ejb-interface.lib" location="${mod.dist.path}/ocsp-ejb3-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
     <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />
     <property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/ejbca-ws-cli.jar" />

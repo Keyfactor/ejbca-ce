@@ -40,9 +40,24 @@
 		<delete dir="${build.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-entity.lib}" />
+		<delete file="${mod.ocsp-entity.lib}" />
     </target>
 	
-    <target name="build" description="Build this module" depends="compile">
+    <target name="build" description="Build this module" depends="compile, handlepersistence, handleorm">
+    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml"/>
+    </target>
+
+    <target name="build-ocsp" description="Build this module" depends="compile, handlepersistence, handleorm-ocsp">
+    	<jar destfile="${mod.ocsp-entity.lib}" basedir="${build.dir}" includes="**/CertificateData.class **/TableProtectData.class **/*.xml"/>
+    </target>
+
+    <target name="compile" depends="ejbca-util">
+    	<mkdir dir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
+    </target>
+
+    <target name="handlepersistence">
     	<echo message="Database type:      ${database.name}"/>
     	<echo message="DataSource mapping: ${datasource.jndi-name-prefix}${datasource.jndi-name}"/>
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>
@@ -62,15 +77,22 @@
 				<expandproperties/>
     		</filterchain>
     	</copy>
-    	<copy file="${resources.dir}/orm-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
-    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml"/>
     </target>
 
-    <target name="compile" depends="ejbca-util">
+    <target name="handleorm">
+		<copy file="${resources.dir}/orm-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+	</target>
+
+    <target name="handleorm-ocsp">
+		<copy file="${resources.dir}/orm-ocsp-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+	</target>
+
+    <target name="compile-ocsp" depends="ejbca-util">
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
     </target>
+
 
     <target name="test" description="Perform database schema validation for all databases where the JDBC driver is available." depends="compile-test">
     	<fail unless="jdbc-loc" message="Use -Djdbc-loc=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>

@@ -32,9 +32,7 @@
 		<path location="${mod.ocsp-ejb-interface.lib}"/>
 		<path location="${mod.ocsp-ejb.lib}"/>
 		<path location="${mod.ocsp-war-ocsp-build.path}"/>
-		<!-- This is sort of embedded in ocsp-ejb
 		<path refid="lib.ejbca-util.classpath"/>
-		-->
 	</path>
 		
     <target name="clean" description="Clean up this module">

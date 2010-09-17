@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+
+	<!--
+		Stripped down ORM file for the External OCSP Responder.
+		Only contains necessary mapping for CertificateData and TableProtectData.
+	-->
+
+    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
+        <attributes>
+            <basic name="expireDate">
+                <column name="expireDate" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="revocationDate">
+                <column name="revocationDate" column-definition="DECIMAL(20,0)" />
+            </basic>
+            <basic name="updateTime">
+                <column name="updateTime" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.protect.TableProtectData" access="PROPERTY">
+        <attributes>
+            <basic name="time">
+                <column name="time" column-definition="DECIMAL(20,0)" />
+            </basic>
+        </attributes>
+    </entity>
+
+</entity-mappings>
