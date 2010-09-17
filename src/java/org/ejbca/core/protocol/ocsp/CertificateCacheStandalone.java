@@ -17,9 +17,10 @@ import java.util.Collection;
 
 import javax.ejb.EJBException;
 
+import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionRemote;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbLocalHelper;
 
 
 /**
@@ -62,8 +63,7 @@ public class CertificateCacheStandalone extends CertificateCache {
     private synchronized CertificateStoreOnlyDataSession getStoreSessionOnlyData(){
     	if(m_certStoreOnly == null){	
     		try {
-    			EjbLocalHelper ejb = new EjbLocalHelper();
-                m_certStoreOnly = ejb.getCertificateStoreOnlyDataSession();
+                m_certStoreOnly = JndiHelper.getRemoteSession(CertificateStoreOnlyDataSessionRemote.class);	// TODO: Use a local EJB stub instead
     		}catch(Exception e){
     			throw new EJBException(e);      	  	    	  	
     		}

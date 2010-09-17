@@ -86,19 +86,23 @@
     <!-- =================================================================== -->
     <!-- Compile ocsp resonder java sources                                  -->
     <!-- =================================================================== -->
-    <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-run-xdoc">
+    <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-entity, ocsp-ejb-interface">
+    	<mkdir dir="${ocsp-build}"/>
         <javac destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
-            <classpath refid="compile.classpath" />
+            <classpath>
+            	<path refid="compile.classpath" />
+            	<path location="modules/dist/ocsp-ejb3-interface.jar" />
+            	<path location="modules/dist/ocsp-entity.jar" />
+            </classpath>
+        	<!-- EJBs -->
+            <include name="org/ejbca/core/ejb/ca/store/LocalCertificateStoreOnlyDataSessionBean.java" />
+            <include name="org/ejbca/core/ejb/protect/TableProtectSessionBean.java" />
+			<!-- Classes not available in ejbca-util.jar -->
             <include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java" />
             <include name="org/ejbca/core/protocol/ocsp/CertificateCacheStandalone.java" />
-        	
             <include name="org/ejbca/core/model/ca/MalformedRequestException.java" />
             <include name="org/ejbca/ui/web/LimitLengthASN1Reader.java" />
             <include name="org/ejbca/util/DummyPatternLogger.java" />
-        	<include name="org/ejbca/core/ejb/protect/TableProtect*.java" />
-            <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionSession.java" />
-            <include name="org/ejbca/core/ejb/ca/store/ICertificateStoreOnlyDataSessionHome.java" />
-            <include name="org/ejbca/core/ejb/ca/store/CertificateDataBean.java" />
             <include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" />
             <include name="org/ejbca/ui/web/pub/HealthCheckServlet.java" />
             <include name="org/ejbca/ui/web/pub/cluster/TextResponse.java" />
@@ -110,8 +114,7 @@
             <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
             <src path="modules/ejbca-ws-cli/src-gen" />
             <src path="modules/ejbca-ws/src" />
-            <src path="${ocsp-src.gen}" />
-            <src path="${src.java}" />
+            <src path="src/java" />
         </javac>
     </target>
 
@@ -234,22 +237,27 @@
     <!-- =================================================================== -->
     <target name="ocsp-jar" depends="ocsp-compile">
         <mkdir dir="${ocsp.hardToken.classes}"/>
+    	<!-- Bundle as the library it really is instead..
     	<copy file="${dist.dir}/ejbca-util.jar" tofile="${ocsp-dist.dir}/ejbca-ejb.jar" overwrite="true"/>
-        <jar jarfile="${ocsp-dist.dir}/ejbca-ejb.jar" update="true">
+    	-->
+        <mkdir dir="${ocsp-dist.dir}"/>
+    	<copy todir="${ocsp-build}" failonerror="true">
+    		<fileset dir="${ejbca.home}/modules/ejbca-ejb/resources-ocsp/" includes="META-INF/ejb-jar.xml"/>
+			<filterchain>
+				<expandproperties/>
+			</filterchain>
+		</copy>
+        <jar destfile="${ocsp-dist.dir}/ocsp-ejb.jar">	<!-- jarfile=... update="true" -->
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="${jar.extclasspath}" />
             </manifest>
-            <fileset dir="${ocsp-src.dd}">
-            	<exclude name="WEB-INF/**"/>
-            	<exclude name="status/**"/>
-            </fileset>
             <fileset dir="${ocsp-build}"/>
             <fileset dir="${ocsp.hardToken.classes}"/>
-        	<fileset dir="${src}">
+        	<fileset dir="src">
         	    <include name="intresources/*.properties"/>
         	</fileset>	
-        	<fileset dir="${src}/java">
+        	<fileset dir="src/java">
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
         	</fileset>	
@@ -452,7 +460,7 @@
     <!-- Build OCSP-ear                                                        -->
     <!-- =================================================================== -->
     <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war">
-        <ear destfile="${ocspear}" appxml="${ocsp-eardd.src}/META-INF/application.xml"> 
+        <ear destfile="${ocspear}" appxml="src/deploy/ocsp-ear/META-INF/application.xml"> 
             <fileset dir=".">
                 <include name="${lib}/bcmail-jdk${java.ver}-145.jar" />
                 <include name="${lib}/bcprov-jdk${java.ver}-145.jar" />
@@ -464,14 +472,20 @@
                 <include name="${lib}/commons-fileupload-1.0.jar" />
                 <include name="${lib}/commons-configuration-1.5.jar" />
             </fileset>
-            <fileset dir="${ocsp-dist.dir}">
-                <include name="*-ejb.jar" />
-                <include name="*.war" />
-            </fileset>
             <fileset dir="modules/dist">
                 <include name="healthcheck.war" />
                 <include name="ocsp.war" />
             </fileset>
+            <fileset dir="ocsp-dist">
+                <include name="ocsp-ejb.jar" />
+            </fileset>
+        	<zipfileset prefix="lib" dir="modules/dist">
+                <include name="ocsp-ejb3-interface.jar" />
+                <include name="ocsp-entity.jar" />
+        	</zipfileset>
+        	<zipfileset prefix="lib" dir="dist">
+                <include name="ejbca-util.jar" />
+        	</zipfileset>
 	</ear>
     </target>
 	
@@ -865,8 +879,16 @@
     	<ant antfile="modules/build.xml" target="ejbca-entity" />
     </target>
 
+    <target name="ocsp-entity">
+    	<ant antfile="modules/build.xml" target="ocsp-entity" />
+    </target>
+
 	<target name="ejbca-ejb-interface">
        	<ant antfile="modules/build.xml" target="ejbca-ejb-interface" />
+    </target>
+
+	<target name="ocsp-ejb-interface">
+       	<ant antfile="modules/build.xml" target="ocsp-ejb-interface" />
     </target>
 
     <target name="ejbca-ejb-cli" description="Builds EJBCA command line interface">
