@@ -63,12 +63,13 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     private static final String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
 
     private static final int myCaId = issuerDN.hashCode();
-    private static final String myOcspIp = "127.0.0.1";
+    //private static final String myOcspIp = "127.0.0.1";	TODO: Refactor back to where we could use this test remotely?
 
     private CertificateStoreOnlyDataSessionRemote certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreOnlyDataSessionRemote.class);	// Stand alone OCSP version..
 
     public ProtocolOcspHttpStandaloneTest(String name) throws Exception {
-        super(name, "http://" + myOcspIp + ":8080/ejbca", "publicweb/status/ocsp");
+        //super(name, "http://" + myOcspIp + ":8080/ejbca", "publicweb/status/ocsp");
+    	super(name, "8080", "publicweb/status/ocsp");
         caid = myCaId;
     }
     
@@ -88,6 +89,14 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
             log.error("", e);
         }
         return ret;
+    }
+    
+    // Required to override check in baseclass
+    public void setUp() throws Exception {
+    }
+
+    // Required to override check in baseclass
+    public void tearDown() throws Exception {
     }
 
     protected void loadUserCert(int caid) throws Exception {

@@ -227,7 +227,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     }
 
     public ProtocolOcspHttpTest(String name, String httpPort, String resourceOcsp) throws CertificateException {
-        super(name, false);
+        super(name);
         this.httpPort = httpPort;
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         this.resourceOcsp = resourceOcsp;
@@ -238,6 +238,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     }
 
     public void setUp() throws Exception {
+    	log.debug("httpReqPath=" + httpReqPath);
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
         assertTrue("Failed to create test CA.", createTestCA());
