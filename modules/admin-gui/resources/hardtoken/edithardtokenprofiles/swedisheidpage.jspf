@@ -18,22 +18,22 @@
 %>
 
    <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
          &nbsp;
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
          &nbsp;
       </td>
    </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("MINKEYLENGTH") %>
         </div>
       </td>
-      <td width="50%" valign="top">   
+      <td width="60%" valign="top">   
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_MINKEYLENGTH%>" size="1"  >       
             <% int currentkeylength = curprofile.getMinimumKeyLength(SwedishEIDProfile.CERTUSAGE_SIGN);      
                for(int i=0;i < SwedishEIDProfile.AVAILABLEMINIMUMKEYLENGTHS.length;i++){ %>
@@ -45,32 +45,32 @@
       </td>
     </tr>
    <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
          &nbsp;
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
          &nbsp;
       </td>
     </tr>    
    <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("CERTIFICATESETTINGS") %>:
+          <strong><%= ejbcawebbean.getText("CERTIFICATESETTINGS") %> :</strong>
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
          &nbsp;
       </td>
     </tr>
    <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
          <%= ejbcawebbean.getText("CERTIFICATESREWRITABLE") %> 
         </div>
       </td>
-      <td width="50%" valign="top">           
+      <td width="60%" valign="top">           
           <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_CERTWRITABLE  %>"  value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(curprofile.getCertWritable(SwedishEIDProfile.CERTUSAGE_SIGN))
                  out.write("CHECKED");
@@ -78,22 +78,22 @@
       </td>
     </tr>    
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("SIGNINGCERTIFICATE") %>
+          <strong><em><%= ejbcawebbean.getText("SIGNINGCERTIFICATE") %></em></strong>
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
          &nbsp;
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CERTIFICATEPROFILE") %>
         </div>
       </td>
-      <td width="50%" valign="top">   
+      <td width="60%" valign="top">   
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CERTIFICATEPROFILE + "0"%>" size="1"  >       
             <% int currentcert = curprofile.getCertificateProfileId(SwedishEIDProfile.CERTUSAGE_SIGN);
                Iterator iter = authorizedcertprofiles.keySet().iterator();
@@ -108,12 +108,12 @@
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CA") %>
         </div>
       </td>
-      <td width="50%" valign="top">   
+      <td width="60%" valign="top">   
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CA + "0"%>" size="1"  >       
             <% int currentca = curprofile.getCAId(SwedishEIDProfile.CERTUSAGE_SIGN); %>
                <option value="<%=EIDProfile.CAID_USEUSERDEFINED%>" <% if(EIDProfile.CAID_USEUSERDEFINED == currentca) out.write(" selected "); %>> 
@@ -131,12 +131,12 @@
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("PINTYPE") %>
         </div>
       </td>
-      <td width="50%" valign="top">          
+      <td width="60%" valign="top">          
          <select name="<%=EditHardTokenProfileJSPHelper.SELECT_PINTYPE + "0"%>" size="1"  >
             <% int currentpintype = curprofile.getPINType(SwedishEIDProfile.CERTUSAGE_SIGN);
                
@@ -157,30 +157,30 @@
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         &nbsp;
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
          &nbsp;
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("AUTHENCCERTIFICATE") %>
+          <strong><em><%= ejbcawebbean.getText("AUTHENCCERTIFICATE") %></em></strong>
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
          &nbsp;
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CERTIFICATEPROFILE") %>
         </div>
       </td>
-      <td width="50%" valign="top">   
+      <td width="60%" valign="top">   
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CERTIFICATEPROFILE + "1"%>" size="1"  >       
             <% currentcert = curprofile.getCertificateProfileId(SwedishEIDProfile.CERTUSAGE_AUTHENC);
                iter = authorizedcertprofiles.keySet().iterator();
@@ -195,12 +195,12 @@
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CA") %>
         </div>
       </td>
-      <td width="50%" valign="top">   
+      <td width="60%" valign="top">   
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CA + "1"%>" size="1"  >       
             <% currentca = curprofile.getCAId(SwedishEIDProfile.CERTUSAGE_AUTHENC); %>
                <option value="<%=EIDProfile.CAID_USEUSERDEFINED%>" <% if(EIDProfile.CAID_USEUSERDEFINED == currentca) out.write(" selected "); %>> 
@@ -218,12 +218,12 @@
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("PINTYPE") %>
         </div>
       </td>
-      <td width="50%" valign="top">          
+      <td width="60%" valign="top">          
          <select name="<%=EditHardTokenProfileJSPHelper.SELECT_PINTYPE + "1"%>" size="1"  >
             <% currentpintype = curprofile.getPINType(SwedishEIDProfile.CERTUSAGE_AUTHENC);
                
