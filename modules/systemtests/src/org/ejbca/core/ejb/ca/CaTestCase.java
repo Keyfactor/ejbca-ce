@@ -65,10 +65,10 @@ public abstract class CaTestCase extends TestCase {
 
     private Admin admin;
 
-    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
-    protected CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private AuthorizationSessionRemote authorizationSession = null;
+    protected CAAdminSessionRemote caAdminSessionRemote = null;
+    private CertificateStoreSessionRemote certificateStoreSession = null;
+    private RaAdminSessionRemote raAdminSession = null;
 
     public CaTestCase() {
         super();
@@ -80,8 +80,20 @@ public abstract class CaTestCase extends TestCase {
         setupInterfaces();
     }
 
+    /** Use this constructor when we run tests that operate on the external OCSP Responder.. not ideal heritage.. TODO: Simplify if possible.. */
+    public CaTestCase(String name, boolean setupInterfaces) {
+        super(name);
+        if (setupInterfaces) {
+            setupInterfaces();
+        }
+    }
+
     public void setupInterfaces() {
         admin = new Admin(Admin.TYPE_INTERNALUSER);
+        authorizationSession = InterfaceCache.getAuthorizationSession();
+        caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+        certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+        raAdminSession = InterfaceCache.getRAAdminSession();
     }
 
     public void setUp() throws Exception {
