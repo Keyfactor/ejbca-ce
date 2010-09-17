@@ -379,9 +379,9 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("IPADDRESS"), new Integer(DNFieldExtractor.IPADDRESS));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("DIRECTORYNAME"), new Integer(DNFieldExtractor.DIRECTORYNAME));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("UNIFORMRESOURCEID"), new Integer(DNFieldExtractor.URI));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("UPN"), new Integer(DNFieldExtractor.UPN));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("GUID"), new Integer(DNFieldExtractor.GUID));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("KRB5PRINCIPAL"), new Integer(DNFieldExtractor.KRB5PRINCIPAL));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_UPN"), new Integer(DNFieldExtractor.UPN));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_GUID"), new Integer(DNFieldExtractor.GUID));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_KERBEROS_KPN"), new Integer(DNFieldExtractor.KRB5PRINCIPAL));
     	    
     		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("DATEOFBIRTH"), new Integer(DNFieldExtractor.DATEOFBIRTH));
     		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("PLACEOFBIRTH"),new Integer( DNFieldExtractor.PLACEOFBIRTH));
