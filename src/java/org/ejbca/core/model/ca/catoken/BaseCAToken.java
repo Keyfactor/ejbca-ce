@@ -87,17 +87,19 @@ public abstract class BaseCAToken implements ICAToken {
         return false;
     }
     private void testKey( KeyPair pair ) throws Exception {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream ps = new PrintStream(baos);
-        KeyTools.printPublicKeyInfo(pair.getPublic(), ps);
-        ps.flush();
-        log.info("Using of "+baos.toString());
+    	if (log.isDebugEnabled()) {
+    		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    		final PrintStream ps = new PrintStream(baos);
+    		KeyTools.printPublicKeyInfo(pair.getPublic(), ps);
+    		ps.flush();
+    		log.debug("Using of "+baos.toString());        	
+    	}
         if ( !doPermitExtractablePrivateKey() && KeyTools.isPrivateKeyExtractable(pair.getPrivate()) ) {
-            String msg = intres.getLocalizedMessage("catoken.extractablekey");
+            String msg = intres.getLocalizedMessage("catoken.extractablekey", EjbcaConfiguration.doPermitExtractablePrivateKeys());
             if ( !EjbcaConfiguration.doPermitExtractablePrivateKeys() ) {
                 throw new InvalidKeyException(msg);
             }
-            log.error(msg);
+            log.info(msg);
         }
         KeyTools.testKey(pair.getPrivate(), pair.getPublic(), getProvider());
     }

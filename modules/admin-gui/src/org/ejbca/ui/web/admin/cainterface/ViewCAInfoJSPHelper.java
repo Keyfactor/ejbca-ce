@@ -147,6 +147,14 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	         	 } catch (CATokenAuthenticationFailedException catafe) {
 	         		 activationerrormessage = "AUTHENTICATIONERROR";
 	         		 activationerrorreason = catafe.getMessage();
+	         		 Throwable t = catafe.getCause();
+	         		 while (t != null) {
+	         			 String msg = t.getMessage();
+	         			 if (msg != null) {
+	         				 activationerrorreason = activationerrorreason + "<br/>" + msg;							
+	         			 }
+	         			 t = t.getCause();
+	         		 }
 	         	 } catch (CATokenOfflineException catoe) {
 	         		 activationerrormessage = "ERROR";
 	         		 activationerrorreason = catoe.getMessage();
