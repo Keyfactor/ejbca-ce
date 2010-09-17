@@ -17,6 +17,7 @@ create index crldata_idx2 on CRLData (issuerDN,deltaCRLIndicator);
 -- On EJBCA 3.5: create index crldata_idx2 on CRLData (issuerDN);
 
 -- Indexes on CertificateData:
+-- With a large database at least idx1 and idx5 are needed during startup of EJBCA.
 -- unique to increase security the no two certificate with the same issuer and serial number can be issued
 -- this index can not be unique when CVC CAs are used, because CV Certificates don't have serial numbers so all is 0
 create unique index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
