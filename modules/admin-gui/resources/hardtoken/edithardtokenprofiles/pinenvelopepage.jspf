@@ -5,32 +5,26 @@
   IPINEnvelopeSettings envprofile = (IPINEnvelopeSettings) edithardtokenprofile.profiledata;
 %>
    <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
+      <td width="40%" valign="top" align="right"> 
          &nbsp;
-        </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
          &nbsp;
       </td>
    </tr>
    <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
-          <%= ejbcawebbean.getText("PINENVELOPESETTINGS") %>:
-        </div>
+      <td width="40%" valign="top" align="right"> 
+         <strong><%= ejbcawebbean.getText("PINENVELOPESETTINGS") %> :</strong>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
          &nbsp;
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
-          <%= ejbcawebbean.getText("ENVELOPETYPE") %>
-        </div>
+      <td width="40%" valign="top" align="right"> 
+         <%= ejbcawebbean.getText("ENVELOPETYPE") %>
       </td>
-      <td width="50%" valign="top">   
+      <td width="60%" valign="top">   
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_ENVELOPETYPE%>" size="1"  >       
             <% int currentenvtype = envprofile.getPINEnvelopeType();
                for(int i=0; i < envelopetypes.length ; i ++){%>
@@ -42,37 +36,31 @@
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
-          <%= ejbcawebbean.getText("CURRENTTEMPLATE") %>
-        </div>
+      <td width="40%" valign="top" align="right"> 
+         <%= ejbcawebbean.getText("CURRENTTEMPLATE") %>
       </td>
-      <td width="50%" valign="top">          
-         <% if(envprofile.getPINEnvelopeTemplateFilename() == null || envprofile.getPINEnvelopeTemplateFilename().equals("")){
-              out.write("NONE");
-            }else{
+      <td width="60%" valign="top">          
+         <% if(envprofile.getPINEnvelopeTemplateFilename() == null || envprofile.getPINEnvelopeTemplateFilename().equals("")){ %>
+        	 <%= ejbcawebbean.getText("NONE") %>
+         <% }else{
               out.write(envprofile.getPINEnvelopeTemplateFilename());
             }
          %> 
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
-          <%= ejbcawebbean.getText("UPLOADTEMPLATE") %>
-        </div>
+      <td width="40%" valign="top" align="right"> 
+         <%= ejbcawebbean.getText("UPLOADTEMPLATE") %>
       </td>
-      <td width="50%" valign="top">          
+      <td width="60%" valign="top">          
         <input type="submit" name="<%= EditHardTokenProfileJSPHelper.BUTTON_UPLOADENVELOPETEMP %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>">
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
-          <%= ejbcawebbean.getText("NUMOFPINENVCOPIES") %>
-        </div>
+      <td width="40%" valign="top" align="right"> 
+         <%= ejbcawebbean.getText("NUMOFPINENVCOPIES") %>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="60%" valign="top"> 
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_NUMOFENVELOPECOPIES%>" size="1"  >
            <%   for(int i=1; i<5;i++){ %>
            <option  value="<%= i %>" 

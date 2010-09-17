@@ -87,7 +87,7 @@ function checkallfields(){
          <%= ejbcawebbean.getText("DESCRIPTION") %> 
       </td>
       <td width="70%"> 
-          <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols=40 rows=6><% out.write(issuerdata.getHardTokenIssuer().getDescription());%></textarea>
+          <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols="45" rows="4"><% out.write(issuerdata.getHardTokenIssuer().getDescription());%></textarea>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -109,7 +109,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("AVAILABLEHARDTOKENPROFILES") %> 
       </td>
       <td width="70%"> 
-        <select name="<%=SELECT_AVAILABLEHARDTOKENPROFILES %>" size="10" multiple >
+        <select name="<%=SELECT_AVAILABLEHARDTOKENPROFILES %>" size="8" multiple >
             <% Iterator profiles = hardtokenprofiles.keySet().iterator();
                while(profiles.hasNext()){ 
                  String profilename = (String) profiles.next();
