@@ -1738,7 +1738,7 @@ function checkallfields(){
        <% if(usekeyrecovery){ %>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"TYPES\") %>"/></td>
+	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"OTHERDATA\") %>"/></td>
 	 <td>
          </td>
 	 <td></td>

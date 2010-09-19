@@ -109,7 +109,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("AVAILABLEHARDTOKENPROFILES") %> 
       </td>
       <td width="70%"> 
-        <select name="<%=SELECT_AVAILABLEHARDTOKENPROFILES %>" size="8" multiple >
+        <select name="<%=SELECT_AVAILABLEHARDTOKENPROFILES %>" size="7" multiple >
             <% Iterator profiles = hardtokenprofiles.keySet().iterator();
                while(profiles.hasNext()){ 
                  String profilename = (String) profiles.next();

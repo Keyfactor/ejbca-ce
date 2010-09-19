@@ -230,7 +230,7 @@
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0) || viewendentityhelper.profile.getUsePrinting() ){
         %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TYPES") %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("OTHERDATA") %></td>
 	 <td>
          </td>
        </tr>
