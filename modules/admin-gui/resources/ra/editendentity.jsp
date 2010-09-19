@@ -1554,7 +1554,7 @@ function checkUseInBatch(){
            || profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
            || profile.getUsePrinting()){ %>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right"><%= ejbcawebbean.getText("TYPES") %></td>
+	 <td align="right"><%= ejbcawebbean.getText("OTHERDATA") %></td>
 	 <td>
          </td>
 	 <td></td>
