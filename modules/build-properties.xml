@@ -139,7 +139,9 @@
 	<condition property="externalra.enabled.true"><istrue value="${externalra.enabled}"/></condition>
 
 	<!-- Files of global interest -->
-    <property name="jndi.properties.file" location="${ejbca.home}/src/java/jndi.properties" />
+	<!-- Depends on load of propertyDefaults.xml..
+    <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
+    -->
     <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
     <property name="log4j.test.file" location="${mod.common.path}/resources/log4j-test.xml" />
     <property name="log4j.cli.file" location="${mod.common.path}/resources/log4j-cli.xml" />
@@ -374,6 +376,7 @@
 
     <!-- Now when everything is set up, we can load the old property defaults -->
 	<import file="${build-properties.basedir}/../propertyDefaults.xml"/>
+    <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
 
 
 </project>

@@ -84,7 +84,6 @@
     <property name="ocsp-build" location="${bin}/ocsp-classes"/>
     <property name="clientToolBox.build" location="${bin}/clientToolBox-classes" />
     <property name="lib" value="lib" />
-    <property name="preprocessed" value="${tmp}/preprocessed"/>
     <property name="mainsrc" value="src"/>
     <property name="mainbin" value="bin"/>
     <property name="appserver.src" value="${mainsrc}/appserver" />
@@ -95,7 +94,7 @@
     <property name="jaxws.dir" value="${tmp}/jaxws" />
     <property name="jaxws.libdir" value="${jaxws.dir}/lib" />
 
-    <property name="src" value="${preprocessed}" />
+    <property name="src" value="${tmp}/preprocessed" />
     <property name="src.java" value="${src}/java" />
     <property name="src.gen" value="${bin}/gensrc" />
     <property name="src.dd" value="${bin}/dd" />

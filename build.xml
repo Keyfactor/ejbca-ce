@@ -492,7 +492,7 @@
     <!-- =================================================================== -->
     <!-- Build Javadoc part                                                  -->
     <!-- =================================================================== -->
-    <target name="javadoc" depends="preprocess" description="Build JavaDoc for all modules">
+    <target name="javadoc" description="Build JavaDoc for all modules">
         <mkdir dir="${apidoc}" />
     	<path id="javadoc-dependencies.classpath">
     		<fileset dir="${lib}" includes="**/*.jar"/>

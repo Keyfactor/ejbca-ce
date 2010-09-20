@@ -1,16 +1,5 @@
 	<!-- This XML file is for inclusion in build.xml, and not for usage in itself -->
 
-    <!-- Checks if the property no-xdoc or precompiled is set, if any of them are set, some targets
-         should not be executed -->
-	<target name="xdoc-or-precompiled-check">
-	    <condition property="no-xdoc-or-precompiled">
-	        <or>
-	            <isset property="no-xdoc"/>
-	            <isset property="precompiled"/>
-	        </or>
-	    </condition>
-	</target>
-	
     <target name="jboss50jsfimpl" depends="jboss50targetcheck" if="jboss50.enabled">
 	   <property name="web.jsfimpl" value="sunri"/>
 	   <echo>JBoss 5.0.x uses SunRI JSF implementation</echo>
@@ -44,14 +33,7 @@
     <!-- =================================================================== -->
     <!-- Create the time stamp and build directory -->
     <!-- =================================================================== -->
-    <target name="init" depends="xdoc-or-precompiled-check, set.jsfimpl, j2ee:check">
-    
-        <!-- httpsserver.hostname must be set cause it's used in preprocess -->
-        <condition property="httpsserver.hostname" value="localhost" else="null">
-            <not>
-	            <isset property="httpsserver.hostname"/>
-	        </not>
-	    </condition>
+    <target name="init" depends="set.jsfimpl, j2ee:check">
     
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------
@@ -158,10 +140,6 @@ xkms.serviceport                = ${xkms.serviceport}
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
             <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
 
-            <exclude name="org/ejbca/core/ejb/**/*EntityBean.java" />
-            <exclude name="org/ejbca/core/ejb/**/*DataBean.java" />
-            <exclude name="org/ejbca/core/ejb/**/*DataPK.java" />
-
 			<!-- Only for External OCSP responder.. -->
             <exclude name="org/ejbca/core/ejb/ca/store/LocalCertificateStoreOnlyDataSessionBean.java" />
             
@@ -187,9 +165,6 @@ xkms.serviceport                = ${xkms.serviceport}
             <exclude name="org/ejbca/core/protocol/ws/**" />
             <exclude name="org/ejbca/core/protocol/xkms/**/**" />
             <src path="src/java" />
-            <!--
-            <src path="${src.gen}" />
-            -->
         </javac>
         <copy todir="${build}">
             <fileset dir="src">
@@ -203,402 +178,23 @@ xkms.serviceport                = ${xkms.serviceport}
         </copy>
     </target>
 
-    <!-- =================================================================== -->
-    <!-- Postprocessing if there are any tasks that we must do after deployment descriptors have been created by XDoclet -->
-    <!-- =================================================================== -->
-    <target name="dd-postprocess" depends="wls-dd-postprocess, jboss-eap-5-dd-postprocess">
-         <!-- This is only a placeholder target, create a new target and add to the depends for this target -->
-    </target>
-    
-    <!-- Weblogic is only supported up to version 8.1 in XDoclet. For Weblogic 9 we must use a manually edited cmp-mapping file -->
-	<condition property="weblogic.version9">
-		<contains string="${appserver.home}" substring="9"/>
-	</condition>
-    <!-- Websphere -->
-	<condition property="websphere.version">
-		<contains string="${appserver.type}" substring="websphere"/>
-	</condition>
-
-    <target name="wls-dd-postprocess" if="weblogic.version9">
-         <!-- If we are using weblogic 9.x, we must replace the generated cmp-mappings file with a manually created one -->
-		<copy  file="${mainsrc}/deploy/weblogic/weblogic-cmp-rdbms-jar.xml" tofile="${src.dd}/META-INF/weblogic-cmp-rdbms-jar.xml" overwrite="true" failonerror="true"/>
-		<copy  file="${mainsrc}/deploy/weblogic/weblogic-ejb-jar.xml" tofile="${src.dd}/META-INF/weblogic-ejb-jar.xml" overwrite="true" failonerror="true"/>
-    </target>
-    
-    <target name="jboss-eap-5-dd-postprocess">
-    	<!-- Try to detect a file that is unique to JBoss EAP 5.0 -->
-    	<available file="${appserver.home}/server/production/deploy/ejb2-container-jboss-beans.xml" property="is-jboss-eap-5"/>
-    	<antcall target="jboss-eap-5-dd-postprocess-sub"/>
-    </target>
-
-    <target name="jboss-eap-5-dd-postprocess-sub" if="is-jboss-eap-5">
-    	<!-- Automate workaround for ECA-1563 -->
-		<copy file="${src.dd}/META-INF/jboss.xml" tofile="${src.dd}/META-INF/jboss.xml-new" encoding="ISO-8859-1" overwrite="true">
-			<filterchain>
-    			<tokenfilter>			    
-    		    	<replacestring from="&lt;jboss&gt;" to='&lt;jboss&gt;&lt;jmx-name&gt;jboss.j2ee:module="ejbca-ejb.jar",service=EjbModule&lt;/jmx-name&gt;'/>
-    			</tokenfilter>
-    		</filterchain>
-		</copy>
-		<copy file="${src.dd}/META-INF/jboss.xml-new" tofile="${src.dd}/META-INF/jboss.xml" encoding="ISO-8859-1" overwrite="true"/>
-		<delete file="${src.dd}/META-INF/jboss.xml-new"/>
-    </target>
-    
-    <!-- =================================================================== -->
-    <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
-    <!-- =================================================================== -->
-    <target name="run-xdoc" depends="init, preprocess" unless="no-xdoc-or-precompiled">
-        <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
-            <classpath refid="xdoclet.classpath" />
-        </taskdef>
-        <taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask">
-            <classpath refid="xdoclet.classpath" />
-        </taskdef>
-    	<!-- Copy XDoclet merge files to handle database specific settings -->
-        <ejb-merge-copy database="${database.name}" overwrite="true" />
-        <ejbdoclet force="false" destdir="${src.gen}" ejbspec="2.0" excludedtags="@version,@author">
-            <fileset dir="${src.java}">
-                <include name="**/*Bean.java" />
-                <exclude name="**/BaseEntityBean.java" />
-                <exclude name="**/AdminGroupsManagedBean.java" />
-                <exclude name="**/BaseSessionBean.java" />
-                <exclude name="**/CertificateFinderBean.java" />
-                <!-- Exlude beans ocnverted to EJB 3.0 -->
-                <exclude name="**/CAAdminSessionBean.java" />
-            </fileset>
-            <remoteinterface />
-            <homeinterface />
-            <localinterface />
-            <localhomeinterface />
-            <entitypk />
-            <session />
-            <deploymentdescriptor 
-            	destdir="${src.dd}/META-INF" 
-            	validatexml="false" 
-            	useIds="true"/>
-             <jboss version="3.2" 
-                unauthenticatedPrincipal="nobody" 
-                xmlencoding="UTF-8" 
-                validatexml="false" 
-                destdir="${src.dd}/META-INF" 
-                mergeDir="${ejbdd.src}/merge"
-                datasource="${datasource.jndi-name-prefix}${datasource.jndi-name}" 
-                datasourcemapping="${datasource.mapping}" />
- <!--                
-            <weblogic version="8.1" 
-                xmlencoding="UTF-8" 
-                validatexml="false" 
-                destdir="${src.dd}/META-INF" 
-                datasource="${datasource.jndi-name}" 
-                persistence="weblogic"
-                createTables="Disabled" />
- -->
- <!--
-            <oc4j version="9.0.4.0.0" 
-                xmlencoding="UTF-8" 
-                validatexml="false" 
-                mergeDir="${ejbdd.src}/merge"
-                destdir="${src.dd}/META-INF" />
- -->
- <!--
-            <sunone version="7.0" 
-                cmpSchema="ejbca.dbschema"
-                xmlencoding="UTF-8" 
-                destdir="${src.dd}/META-INF" 
-                cmpResourceJndiName="${datasource.jndi-name-prefix}${datasource.jndi-name}"
-                validatexml="false" />
- -->
- <!--
-            <websphere
-                xmlencoding="UTF-8" 
-                validatexml="false" 
-            	useIds="true"
-                destdir="${src.dd}/META-INF" />
--->
-<!--            
-            <jonas version="3.0" 
-                xmlencoding="UTF-8" 
-                destdir="${src.dd}/META-INF" 
-                validatexml="false" /> 
--->                
-        </ejbdoclet>
-        
-        <!-- Do some postprecessing on created dd's if needed -->
-        <antcall target="dd-postprocess" />
-        
-    </target>
-	
-    <!-- =================================================================== -->
-    <!-- Autogenerate all ejb interfaces and deployment descriptors for standalone OCSP responder         -->
-    <!-- =================================================================== -->
-    <target name="ocsp-run-xdoc" depends="init, preprocess" unless="precompiled">
-        <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
-            <classpath refid="xdoclet.classpath" />
-        </taskdef>
-        <taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask">
-            <classpath refid="xdoclet.classpath" />
-        </taskdef>
-    	<!-- Copy XDoclet merge files to handle database specific settings -->
-        <ejb-merge-copy database="${database.name}" overwrite="true" />
-        <ejbdoclet force="false" destdir="${ocsp-src.gen}" ejbspec="2.0" excludedtags="@version,@author">
-            <fileset dir="${src.java}">
-                <include name="**/CertificateDataBean.java" />
-                <include name="**/LocalCertificateStoreOnlyDataSessionBean.java" />
-                <include name="**/TableProtectDataBean.java" />
-                <include name="**/TableProtectSessionBean.java" />
-            </fileset>
-            <remoteinterface />
-            <homeinterface />
-            <localinterface />
-            <localhomeinterface />
-            <entitypk />
-            <session />
-            <deploymentdescriptor destdir="${ocsp-src.dd}/META-INF" validatexml="false" />
-             <jboss version="3.2" 
-                unauthenticatedPrincipal="nobody" 
-                xmlencoding="UTF-8" 
-                validatexml="false" 
-                destdir="${ocsp-src.dd}/META-INF" 
-                mergeDir="${ejbdd.src}/merge"
-                datasource="${datasource.jndi-name-prefix}${datasource.jndi-name}" 
-                datasourcemapping="${datasource.mapping}" />
-            <weblogic version="8.1" 
-                xmlencoding="UTF-8" 
-                destdir="${ocsp-src.dd}/META-INF" 
-                validatexml="false" 
-                datasource="${datasource.jndi-name}" 
-                persistence="weblogic"
-                createTables="Disabled" />
-<!--            
-            <sunone version="7.0" 
-                xmlencoding="UTF-8" 
-                destdir="${ocsp-src.dd}/META-INF" 
-                validatexml="false" />
-            <jonas version="3.0" 
-                xmlencoding="UTF-8" 
-                destdir="${ocsp-src.dd}/META-INF" 
-                validatexml="false" /> 
--->                
-        </ejbdoclet>
-    </target>
-	
-	<!--
-	  Preprocesses EJBCA by replacing tags with correct version and application texts.
-	-->
+	<!-- ("preprocess" is not run from anywhere right now..) -->
 	<target name="preprocess" unless="precompiled">
-        <copy todir="${preprocessed}" encoding="ISO-8859-1">
-            <fileset dir="src">
-              <include name="**"/>
-              <exclude name="java/org/ejbca/core/ejb/log/LogEntryDataBean.java"/>
-              <exclude name="java/org/ejbca/core/ejb/**/*.java"/>
-              <exclude name="**/*.java.15"/>
-              <exclude name="**/*.xml"/>
-              <exclude name="**/*.xmi"/>
-              <exclude name="adminweb/languages/**/*.properties"/>
-            </fileset>	      
-	    </copy>
-	    
-	    <!-- 
-	      Copy java files and insert some variables in them 
-	    -->
-        <available file="${appserver.home}/client/jboss-javaee.jar" property="jboss5dependencyquote"
-        	value='"'/>
-        <property name="jboss5dependencyquote" value=""/>
-        <copy todir="${preprocessed}" encoding="ISO-8859-1">
-            <fileset dir="src">
-                <include name="java/org/ejbca/core/ejb/**/*.java"/>
-            </fileset>	   
-			<filterchain>
-			<tokenfilter>			    
-		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>		<!-- src/java/org/ejbca/core/ejb/**/*.java -->
-			</tokenfilter>
-			</filterchain>
-	    </copy>
-        <copy todir="${preprocessed}" encoding="ISO-8859-1">
-            <fileset dir="src">
-                <include name="adminweb/languages/**/*.properties"/>
-            </fileset>	   
-			<filterchain>
-			<tokenfilter>			    
-		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>	<!-- src/adminweb/languages/**/*.properties -->
-			</tokenfilter>
-			</filterchain>
-	    </copy>
-        <copy todir="${preprocessed}" encoding="ISO-8859-1">
-            <fileset dir="src">
-                <include name="**/*.xml"/>
-                <include name="**/*.xmi"/>
-            </fileset>	   
-			<filterchain>
-			<tokenfilter>			    
-		        <replacestring from="@ejbca@" to="${app.name}"/>	<!-- src/deploy/**/*.xml files -->
-				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>	<!-- xml and xmi files -->
-				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>		<!-- xml and xmi files -->
-				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>	<!-- xml files -->
-			</tokenfilter>
-			</filterchain>
-	    </copy>
-		<echo>Ignore warnings about 'Couldn't find file' during preprocessing</echo>
-		
-		<!-- 
-		  Copy application server specific deployment descriptors and insert database settings etc in them 
-		-->
-		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false">
-		    <fileset dir="${deploy.src}/${appserver.type}/">
-		        <!-- Oracle uses some xml files -->
-		        <include name="*.xml"/>
-		        <!-- Websphere uses xmi, xml, properties and backends -->
-		        <include name="*.xmi"/>
-		        <include name="ejb-jar.xml"/>
-		        <include name="*.properties"/>
-		        <include name="backends/**/*"/>
-		    </fileset> 
-		    <fileset dir="${deploy.src}/sun/">
-		        <!-- Glassfish/sun uses some xml files, appserver is called glassfish, but the directory is sun... -->
-		        <include name="sun-ejb*.xml"/>
-		    </fileset> 
-			<filterchain>
-			<tokenfilter>			    
-				<replacestring from="@database.driver@" to="${database.driver}"/>
-				<replacestring from="@database.url@" to="${database.url}"/>
-				<replacestring from="@database.username@" to="${database.username}"/>
-				<replacestring from="@database.password@" to="${database.password}"/>
-				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
-				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
-				<replacestring from="@mail.jndi-name@" to="${mail.jndi-name}"/>
-			</tokenfilter>
-			</filterchain>
-		</copy>
-        <copy file="${deploy.src}/sun/sun-cmp-mappings-${database.name}.xml" tofile="${src.dd}/META-INF/sun-cmp-mappings.xml" overwrite="true" failonerror="false" />
-        <copy file="${deploy.src}/sun/schema/${database.name}/ejbca-ejb.dbschema" tofile="${src.dd}/ejbca-ejb.dbschema" overwrite="true" failonerror="false" />
-        <copy file="${deploy.src}/sun/adminweb/sun-web.xml" tofile="${src.dd}/WEB-INF/sun-web.xml" overwrite="true" failonerror="false" >
-			<filterchain>
-			<tokenfilter>			    
-				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
-				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
-			</tokenfilter>
-			</filterchain>
-        </copy>
-        <copy file="${deploy.src}/jboss/adminweb/jboss-web.xml" tofile="${src.dd}/WEB-INF/jboss-web.xml" overwrite="true" failonerror="false" >
-			<filterchain>
-			<tokenfilter>			    
-				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
-				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
-				<replacestring from="@jboss5dependencyquote@" to="${jboss5dependencyquote}"/>
-			</tokenfilter>
-			</filterchain>
-        </copy>
-        
-		<!-- 
-		  Copy the correct jndi settings for the selected application server 
-		-->
-		<copy file="conf/jndi.properties.${appserver.type}" tofile="${mainbin}/jndi.properties" overwrite="false" failonerror="false"/>
-		<copy file="conf/jndi.properties.${appserver.type}" tofile="${mainsrc}/java/jndi.properties" overwrite="false" failonerror="false"/>
-		<copy todir="bin/META-INF" overwrite="true" failonerror="false" flatten="true">
-		    <fileset dir="${deploy.src}/${appserver.type}/client/bin/META-INF">
-		        <include name="*.xml"/>
-		    </fileset> 
-		</copy>
-		<copy todir="${test.dir}/META-INF" overwrite="true" failonerror="false" flatten="true">
-		    <fileset dir="${deploy.src}/${appserver.type}/client/bin/META-INF">
-		        <include name="*.xml"/>
-		    </fileset> 
-		</copy>
-
         <!-- 
           Fix encoding of files for internal (log) internationalization) 
+		  TODO: This looks more like this is something the French langauage contributor should run before a commit. Should be combined with the diff-script to show missing and redundant translations. 
         --> 		
 		<delete file="${src}/intresources/intresources.fr.properties"/>
-    	<native2ascii  encoding="ISO8859-1" 
+    	<native2ascii encoding="ISO8859-1" 
     		src="${mainsrc}/intresources" 
     		dest="${src}/intresources"
     		includes="intresources.fr.properties" 
     	/>
-		
 	</target>
 
     <!--
-        this macro is a specialized copy for deployment descriptors (dd).
-        In the wonderful world of J2EE nothing it is always painful
-        Basically it is copying the appropriate DD for each J2EE server
-        and selected database:
-        @database.name
+        Usage: <ejb-verifier file="${dist.dir}/ejbca.ear" />
     -->
-    <macrodef name="ejb-merge-copy">
-        <attribute name="database" />
-        <attribute name="overwrite" default="false" />
-        <sequential>
-            <!-- Remove old possible files -->
-        	<delete dir="${ejbdd.src}/merge/se"/>
-        	<delete dir="${ejbdd.src}/merge/org"/>
-            <!-- jboss configuration -->
-            <copy todir="${ejbdd.src}/merge" overwrite="@{overwrite}" failonerror="false">
-                <fileset dir="${ejbdd.src}/merge/${database.name}" includes="**/*.xml" />
-            </copy>
-        </sequential>
-    </macrodef>
-
-	<!--
-        this macro is a specialized copy for deployment descriptors (dd).
-        In the wonderful world of J2EE nothing it is always painful
-    -->
-    <macrodef name="ejb-dd-copy">
-        <attribute name="todir" />
-        <attribute name="dir" />
-        <attribute name="overwrite" default="false" />
-        <sequential>
-        </sequential>
-    </macrodef>
-
-    <!--
-    Macro that creates an exploded war based on the structure in use for this
-    project. The 'name' attributes should match the org.ejbca.name package
-    and it expects to find a directory 'name' in src with the META-INF as the
-    subdirectory.
-    -->
-    <macrodef name="ejb-jar">
-        <attribute name="name" />
-        <element name="filesets" optional="yes" />
-        <sequential>
-            <property name="@{name}.id" value="@{name}-ejb.jar" />
-            <property name="@{name}.build.dir" value="${tmp}/${@{name}.id}" />
-            <mkdir dir="${@{name}.build.dir}" />
-
-            <!-- generate xdoclet sources and dd -->
-            <!-- FIXME: Comment this to use XDoclet generated DDs -->
-            <property name="@{name}.tmp.dir" location="${tmp}/xdoclet/${@{name}.id}/META-INF" />
-            <ejb-doclet dir="${src.java}" todir="${src.java}" module="@{name}" />
-
-            <!-- copy/configure the dds -->
-            <ejb-dd-copy todir="${@{name}.build.dir}" dir="${src}/@{name}" overwrite="true" />
-
-            <!-- compile the module -->
-            <javac srcdir="${src.java}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
-                <include name="org/ejbca/@{name}/**" />
-                <classpath path="${build}" />
-            </javac>
-
-            <!-- copy the appropriate classes -->
-            <copy todir="${@{name}.build.dir}">
-                <fileset dir="${build}">
-                    <include name="org/ejbca/@{name}/**" />
-                </fileset>
-                <!-- add extra classes, in case it is not enough -->
-                <filesets />
-            </copy>
-
-            <!-- jar all files -->
-            <jar basedir="${@{name}.build.dir}" jarfile="${dist.dir}/${@{name}.id}">
-                <manifest>
-                    <attribute name="Class-Path" value="${jar.extclasspath}" />
-                </manifest>
-            </jar>
-
-            <!-- add an extra step: ejb verifier -->
-            <ejb-verifier file="${dist.dir}/${@{name}.id}" />
-        </sequential>
-    </macrodef>
-
     <macrodef name="ejb-verifier">
         <attribute name="file" />
         <sequential>
@@ -615,4 +211,3 @@ xkms.serviceport                = ${xkms.serviceport}
             </java>
         </sequential>
     </macrodef>
-
