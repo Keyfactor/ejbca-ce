@@ -144,7 +144,9 @@ public class LocalAuthenticationSessionBean implements AuthenticationSessionLoca
 			
            	int status = data.getStatus();
             if ( (status == UserDataConstants.STATUS_NEW) || (status == UserDataConstants.STATUS_FAILED) || (status == UserDataConstants.STATUS_INPROCESS) || (status == UserDataConstants.STATUS_KEYRECOVERY)) {
-                log.debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());                
+            	if (log.isDebugEnabled()) {
+            		log.debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
+            	}
                 
                 UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
                 		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
