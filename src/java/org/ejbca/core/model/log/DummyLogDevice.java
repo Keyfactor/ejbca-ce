@@ -33,16 +33,9 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 	private String deviceName = null;
 
 	protected DummyLogDevice(String name) throws Exception {
-		resetDevice(name);
-	}
-	
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public void resetDevice(String name) {
 		deviceName = name;
 	}
-
+	
 	/**
 	 * Creates (if needed) the log device and returns the object.
 	 *
@@ -79,15 +72,8 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
+	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
 		return null;
-	}
-
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public void destructor() {
-		// No action needed
 	}
 
 	/**

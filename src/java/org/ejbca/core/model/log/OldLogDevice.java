@@ -18,13 +18,10 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.log.OldLogSession;
+import org.ejbca.core.ejb.log.OldLogSessionLocal;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -54,20 +51,14 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	 * Initializes
 	 */
 	protected OldLogDevice(String name) throws Exception {
-		resetDevice(name);
+		deviceName = name;
 	}
 
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public void resetDevice(String name) {
-		deviceName = name;
-		EjbLocalHelper ejb = new EjbLocalHelper();
-		try {
-			oldLogSession = ejb.getOldLogSession();
-		} catch (CreateException e) {
-			throw new EJBException();
-		}
+	// Workaround to be able to avoid local ENC lookup and use injection instead.
+	// This method might be invoked once for each LogSessionBean that is created,
+	// but this should not affect the functionality.
+	public void setOldLogSessionInterface(OldLogSessionLocal oldLogSession) {
+		this.oldLogSession = oldLogSession;
 	}
 
 	/**
@@ -124,7 +115,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter, int maxResults) throws IllegalQueryException, Exception {
 		byte[] ret = null;
 		if (query != null) {
-			Collection logentries = query(query, viewlogprivileges, capriviledges, maxResults);
+			Collection<LogEntry> logentries = query(query, viewlogprivileges, capriviledges, maxResults);
 			if (log.isDebugEnabled()) {
 				log.debug("Found "+logentries.size()+" entries when exporting");    		
 			}
@@ -144,15 +135,8 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	 * @throws IllegalQueryException when query parameters internal rules isn't fulfilled.
 	 * @see org.ejbca.util.query.Query
 	 */
-	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
+	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
 		return oldLogSession.query(query, viewlogprivileges, capriviledges, maxResults);
-	}
-
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public void destructor() {
-		// No action needed
 	}
 
 	/**

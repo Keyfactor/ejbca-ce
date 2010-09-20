@@ -123,7 +123,6 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 				LogEntry data = new LogEntry(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getInt(4), rs.getInt(5), new Date(rs.getLong(6)), rs.getString(7), 
 						rs.getString(8), rs.getInt(9), rs.getString(10));
 				if (logsigning) {
-					//TableProtectSessionLocal protect = protecthome.create();
 					TableVerifyResult res = tableProtectSession.verify(data);
 					data.setVerifyResult(res.getResultConstant());
 				}
