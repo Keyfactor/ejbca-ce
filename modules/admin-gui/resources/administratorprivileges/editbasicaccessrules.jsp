@@ -238,12 +238,12 @@ function checkallfields(){
 		</h:selectManyListbox> 
 
 		<h:outputText value="#{web.text.ENDENTITYRULES}"/>
-		<h:selectManyListbox id="selectendentityrules" value="#{adminGroupsManagedBean.currentEndEntityRules}" size="9">
+		<h:selectManyListbox id="selectendentityrules" value="#{adminGroupsManagedBean.currentEndEntityRules}" size="10">
 			<f:selectItems value="#{adminGroupsManagedBean.availableEndEntityRules}" />
 		</h:selectManyListbox> 
  
 		<h:outputText value="#{web.text.ENDENTITYPROFILES}"/>
-		<h:selectManyListbox id="selectendentityprofiles" value="#{adminGroupsManagedBean.currentEndEntityProfiles}" size="7">
+		<h:selectManyListbox id="selectendentityprofiles" value="#{adminGroupsManagedBean.currentEndEntityProfiles}" size="8">
 			<f:selectItems value="#{adminGroupsManagedBean.availableEndEntityProfiles}" />
 		</h:selectManyListbox> 
 

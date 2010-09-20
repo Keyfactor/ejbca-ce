@@ -31,19 +31,17 @@ function checkallfields(){
   <input type="hidden" name='<%= HIDDEN_ALIAS %>' value='<%=alias %>'>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
-      <td width="15%" valign="top">
+      <td width="5%" valign="top">
          &nbsp;
       </td>
-      <td width="35%" valign="top"> 
-        <div align="left"> 
-          <h3>&nbsp;</h3>
-        </div>
+      <td width="25%" valign="top" align="left"> 
+        &nbsp;
       </td>
-      <td width="50%" valign="top"> 
-        <div align="right">
-        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOHARDTOKENISSUERS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-     <!--   <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html") + "#edithardtokenissuers"%>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
+      <td width="70%" valign="top" align="right"> 
+        <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOHARDTOKENISSUERS") %></a>
+        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html") + "#edithardtokenissuers"%>")'>
+        <%= ejbcawebbean.getText("HELP") %></a> -->
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 

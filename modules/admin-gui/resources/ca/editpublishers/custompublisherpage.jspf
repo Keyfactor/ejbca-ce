@@ -14,7 +14,7 @@
          <%= ejbcawebbean.getText("CLASSPATH") %>
       </td>
       <td width="50%" valign="top">   
-        <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="30" maxlength="255" 
+        <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="40" maxlength="255" 
                value='<%= custompublisher.getClassPath()%>'>       
       </td>
     </tr>
@@ -23,7 +23,7 @@
          <%= ejbcawebbean.getText("PROPERTIESOFCUSTOM") %>
       </td>
       <td width="50%" valign="top">          
-         <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_CUSTOMPROPERTIES%>" cols=40 rows=6><% out.write(custompublisher.getPropertyData());%></textarea>
+         <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_CUSTOMPROPERTIES%>" cols="45" rows="8"><% out.write(custompublisher.getPropertyData());%></textarea>
       </td>
     </tr>
     

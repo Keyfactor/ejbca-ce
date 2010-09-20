@@ -152,16 +152,14 @@ function checkallfields(){
 </div>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="left"> 
-          <h3>&nbsp;</h3>
-        </div>
+      <td width="50%" valign="top" align="left"> 
+        &nbsp;
       </td>
-      <td width="50%" valign="top"> 
-        <div align="right">
-        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOPUBLISHERS") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-   <!--     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#publishers"%>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
+      <td width="50%" valign="top" align="right"> 
+        <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOPUBLISHERS") %></a>
+        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#publishers"%>")'>
+        <%= ejbcawebbean.getText("HELP") %></a> -->
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -329,7 +327,7 @@ function checkallfields(){
          <%= ejbcawebbean.getText("DESCRIPTION") %> 
       </td>
       <td width="50%">        
-        <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_DESCRIPTION%>" cols=40 rows=6><% out.write(publisherdata.getDescription());%></textarea>
+        <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_DESCRIPTION%>" cols="45" rows="4"><% out.write(publisherdata.getDescription());%></textarea>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 

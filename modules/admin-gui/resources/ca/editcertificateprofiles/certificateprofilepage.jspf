@@ -430,12 +430,12 @@ function checkallfields(){
           &nbsp;
         </div>
       </td>
-      <td width="50%" valign="top"> 
-        <div align="right">
-        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOCERTIFICATEPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-   <!--     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
-      </div></td>
+      <td width="50%" valign="top" align="right"> 
+        <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOCERTIFICATEPROFILES") %></a>
+        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
+        <%= ejbcawebbean.getText("HELP") %></a> -->
+      </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -448,7 +448,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br>&nbsp;
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="20" maxlength="255" 
@@ -507,8 +507,8 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEBASICCONSTRAINTS") %> <br>  <%= ejbcawebbean.getText("BASICCONSTRAINTSCRITICAL") %>
-
+        <%= ejbcawebbean.getText("USEBASICCONSTRAINTS") %><br />
+        <%= ejbcawebbean.getText("BASICCONSTRAINTSCRITICAL") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTS%>"   onClick="checkusebasicconstraintfield()" value="<%=CHECKBOX_VALUE %>"
@@ -527,8 +527,8 @@ function checkallfields(){
     </tr>  
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEPATHLENGTHCONSTRAINT") %>&nbsp;<%= ejbcawebbean.getHelpReference("/userguide.html#Path%20Length%20Constraints") %> <br>
-         <%= ejbcawebbean.getText("PATHLENGTHCONSTRAINT") %>
+        <%= ejbcawebbean.getText("USEPATHLENGTHCONSTRAINT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Path%20Length%20Constraints") %><br />
+        <%= ejbcawebbean.getText("PATHLENGTHCONSTRAINT") %>
       </td>
       <td width="50%">
            <% boolean enablepathlenconstraint = certificateprofiledata.getUseBasicConstraints() && (certificateprofiledata.getType() == SecConst.CERTTYPE_SUBCA ||certificateprofiledata.getType() == SecConst.CERTTYPE_ROOTCA); %>
@@ -546,8 +546,8 @@ function checkallfields(){
     </tr>  
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEKEYUSAGE") %> <br>  <%= ejbcawebbean.getText("KEYUSAGECRITICAL") %>
-
+        <%= ejbcawebbean.getText("USEKEYUSAGE") %><br />
+        <%= ejbcawebbean.getText("KEYUSAGECRITICAL") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_KEYUSAGE %>" onClick="checkusefield('<%=CHECKBOX_KEYUSAGE %>', '<%=CHECKBOX_KEYUSAGECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
@@ -565,8 +565,8 @@ function checkallfields(){
       </td>
     </tr><tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTKEYID") %> <br> <!-- <%= ejbcawebbean.getText("SUBJECTKEYIDCRITICAL") %> -->
-
+        <%= ejbcawebbean.getText("SUBJECTKEYID") %><!-- <br />
+        <%= ejbcawebbean.getText("SUBJECTKEYIDCRITICAL") %> -->
       </td>
       <td width="50%">
            <!-- Disable the use of critical flag, since it's easy to make misstakes
@@ -585,12 +585,13 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseSubjectKeyIdentifier())
                  out.write("CHECKED");
-           %>> <br>
+           %>>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("AUTHORITYKEYID") %> <br> <!--<%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> -->
+         <%= ejbcawebbean.getText("AUTHORITYKEYID") %><!-- <br />
+         <%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> -->
       </td>
       <td width="50%">
            <!-- Disable the use of critical flag, since it's easy to make misstakes
@@ -614,8 +615,8 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTALTNAME") %> <br>  <%= ejbcawebbean.getText("SUBJECTALTNAMECRITICAL") %>
-
+        <%= ejbcawebbean.getText("SUBJECTALTNAME") %><br />
+        <%= ejbcawebbean.getText("SUBJECTALTNAMECRITICAL") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTERNATIVENAME %>" onClick="checkusefield('<%=CHECKBOX_SUBJECTALTERNATIVENAME %>', '<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
@@ -746,7 +747,7 @@ function checkallfields(){
     <%-- authority information access (aia) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEAUTHORITYINFORMATIONACCESS") %> <br> 
+        <%= ejbcawebbean.getText("USEAUTHORITYINFORMATIONACCESS") %> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>" onClick="checkuseaiafield()" value="<%=CHECKBOX_VALUE %>" 
@@ -757,7 +758,8 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %> <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
+        <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %><br />
+        <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %> <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
       </td>
       <%-- ocsp service locator part of authority information access (aia) extension --%>
       <td width="50%">
@@ -799,7 +801,7 @@ function checkallfields(){
         </table>
       </td>
       <td width="50%">
-        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<%= uri %>" size="45" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<%= uri %>" size="45" maxlength="255"/>
       </td>
     </tr>
         <% }
@@ -815,13 +817,14 @@ function checkallfields(){
           </tr>
         </table>
       <td width="50%">
-        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="45" maxlength="255" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/><br/>
+        <input type="text" name="<%=TEXTFIELD_CAISSUERURI%>" size="45" maxlength="255" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/>
       </td>
     </tr>
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %><br/><%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %>
+        <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %><br />
+        <%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATEPOLICIES %>" onClick="checkusecertificatepoliciesfield()" value="<%=CHECKBOX_VALUE %>" 
@@ -852,7 +855,7 @@ function checkallfields(){
         <table border="0">
           <tr>
             <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_DELETE_POLICY + i %>" value="<%= ejbcawebbean.getText("DELETE") %>"/></td>
-            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %><br/></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %></td>
           </tr>
         </table>
       </td>
@@ -875,7 +878,7 @@ function checkallfields(){
           </tr>
         </table>
       <td width="50%">
-        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
+        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="20" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
         <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
         <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/>
       </td>
@@ -884,7 +887,6 @@ function checkallfields(){
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right" > 
         <%= ejbcawebbean.getText("USEQUALIFIEDCERTSTATEMENT") %>
-        
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEQCSTATEMENT %>" onClick="checkuseqcstatementfield()" value="<%=CHECKBOX_VALUE %>" 
@@ -921,7 +923,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("SEMANTICID") %> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="45" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="20" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement())
                       out.write(" disabled "); 
                     else 
@@ -980,7 +982,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("VALUELIMITCURRENCY") %> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITCUR %>" size="10" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITCUR %>" size="5" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
                       out.write(" disabled "); 
                     else 
@@ -990,7 +992,7 @@ function checkallfields(){
     </tr>     
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("VALUELIMITAMOUT") %> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMIT %>" size="10" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMIT %>" size="5" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
                       out.write(" disabled "); 
                     else 
@@ -1000,7 +1002,7 @@ function checkallfields(){
     </tr>  
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("VALUELIMITEXPONENT") %> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITEXP %>" size="10" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITEXP %>" size="5" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
                       out.write(" disabled "); 
                     else 
@@ -1047,7 +1049,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("QCCUSTOMSTRINGOID") %> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGOID %>" size="10" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGOID %>" size="20" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())
                       out.write(" disabled "); 
                     else 
@@ -1057,7 +1059,7 @@ function checkallfields(){
     </tr>     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("QCCUSTOMSTRINGTEXT") %> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="10" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())
                       out.write(" disabled "); 
                     else 
@@ -1072,7 +1074,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("KEYUSAGE") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("KEYUSAGE") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_KEYUSAGE%>" size="9" multiple >
@@ -1099,8 +1101,8 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %>
-        <br><%= ejbcawebbean.getText("EXTENDEDKEYUSAGECRITICAL") %>
+        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %><br />
+        <%= ejbcawebbean.getText("EXTENDEDKEYUSAGECRITICAL") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>"  onclick="checkuseextendedkeyusagefield()" value="<%=CHECKBOX_VALUE %>" 
@@ -1141,7 +1143,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("CVCACCESSRIGHTS") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("CVCACCESSRIGHTS") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_CVCACCESSRIGHTS%>" size="1" >
@@ -1189,7 +1191,8 @@ function checkallfields(){
     </tr>    
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("MSTEMPLATE") %> <br><%= ejbcawebbean.getText("ONLYVALUE") %>
+        <%= ejbcawebbean.getText("MSTEMPLATE") %><br />
+        <%= ejbcawebbean.getText("ONLYVALUE") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_MSTEMPLATE%>"  <% if(!certificateprofiledata.getUseMicrosoftTemplate()) out.write(" disabled "); %>>
@@ -1228,7 +1231,8 @@ function checkallfields(){
     </tr>    
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("CNPOSTFIX") %> <br><%= ejbcawebbean.getText("INSERTEDAFTERCN") %>
+        <%= ejbcawebbean.getText("CNPOSTFIX") %><br />
+        <%= ejbcawebbean.getText("INSERTEDAFTERCN") %>
       </td>
       <td width="50%"> 
             <input type="text" name="<%=TEXTFIELD_CNPOSTFIX%>" size="45" maxlength="255" 
@@ -1250,10 +1254,8 @@ function checkallfields(){
       </td>
     </tr>        
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
-          <%= ejbcawebbean.getText("SUBSETOFSUBJECTDN") %><br>
-        </div>
+      <td width="50%" valign="top" align="right"> 
+          <%= ejbcawebbean.getText("SUBSETOFSUBJECTDN") %>
       </td>
       <td width="50%" valign="top">   
         <select name="<%=SELECT_SUBJECTDNSUBSET%>" size="15" multiple <%if(!certificateprofiledata.getUseSubjectDNSubSet()){out.write(" disabled ");} %>>       
@@ -1280,10 +1282,8 @@ function checkallfields(){
       </td>
     </tr>        
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="right"> 
-          <%= ejbcawebbean.getText("SUBSETOFSUBJECTALTNAME") %><br>
-        </div>
+      <td width="50%" valign="top" align="right"> 
+          <%= ejbcawebbean.getText("SUBSETOFSUBJECTALTNAME") %>
       </td>
       <td width="50%" valign="top">   
         <select name="<%=SELECT_SUBJECTALTNAMESUBSET%>" size="6" multiple <%if(!certificateprofiledata.getUseSubjectAltNameSubSet()){out.write(" disabled ");} %>>       
@@ -1301,7 +1301,7 @@ function checkallfields(){
     <% if(certExtFact.getAvailableCertificateExtensions().size() > 0){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("USEDCERTEXTENSIONS") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("USEDCERTEXTENSIONS") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_USEDCERTIFICATEEXTENSIONS%>" size="5" multiple >
@@ -1326,7 +1326,7 @@ function checkallfields(){
     <% } %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("AVAILABLEBITLENGTHS") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("AVAILABLEBITLENGTHS") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_AVAILABLEBITLENGTHS%>" size="5" multiple >
@@ -1345,7 +1345,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("SIGNATUREALGORITHM") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("SIGNATUREALGORITHM") %>
       </td>
       <td width="50%">
         <% String signAlg = certificateprofiledata.getSignatureAlgorithm(); %>
@@ -1359,7 +1359,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("AVAILABLECAS") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("AVAILABLECAS") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_AVAILABLECAS%>" size="7" multiple >
@@ -1386,7 +1386,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("PUBLISHERS") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("PUBLISHERS") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple  <% if(certificateprofiledata.getType() != SecConst.CERTTYPE_ENDENTITY) out.write(" disabled "); %>>
@@ -1407,7 +1407,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("TYPE") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("TYPE") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_TYPE%>" size="1" onchange='typechanged()' >
