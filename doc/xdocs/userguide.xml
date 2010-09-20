@@ -1002,6 +1002,22 @@ Also check the 'bin/ejbca.sh admins' command for information how to configure ot
 After this command is run, and SSL configured correctly, you can log in to EJBCA and create your CAs in the admin GUI. No initial CA is created for you.
 </p>
 </subsubsection>
+<subsubsection name="Events Log">
+<p>
+When viewing Ejbca log, a link is provided to view the administrator's certificate in the database. However, the administrator who has his/her certificate issued by an external CA
+does not have a certificated stored in the database. So when the external administrator logs in, its certificate serialnumber, issuerDN and subjectDN are stored in the log-file. 
+When viewing the log, instead of the link, the external administrator's certificate serialnumber and issuerDN are displayed. In addition, when the viewed event is "Administrator 
+Logged In", even the external administrator's certificate subjectDN is displayed.
+</p>
+</subsubsection>
+<subsubsection name="When Approving Actions">
+<p>
+When there are actions the administrator has to approve, the current administrator's username and e-mail address from the database are compared with those of the requesting administrator
+and those administrators who already approved the request to ensure that only legitimate administrators are to approve the current request. However, the administrator whose certificate is 
+issued by an external CA has neither username or e-mail address stored in the database. Instead, the administrators' "admindata" are compared to establish the legitimacy of 
+the acting administrator. "admindata" is a string containing the administrator's certificate serialnumber and issuerDN.
+</p>
+</subsubsection>
 </subsection>
 <subsection name="Renewing Superadmin">
 <p>
