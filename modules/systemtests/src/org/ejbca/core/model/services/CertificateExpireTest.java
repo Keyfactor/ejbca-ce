@@ -146,16 +146,24 @@ public class CertificateExpireTest extends CaTestCase {
         }
         serviceSession.activateServiceTimer(admin, CERTIFICATE_EXPIRATION_SERVICE);
 
-        // The service will run...
+        // The service will run... the cert should still be active after 5 seconds..
         Thread.sleep(5000);
         info = certificateStoreSession.getCertificateInfo(admin, fp);
         assertEquals("status dotes not match.", SecConst.CERT_ACTIVE, info.getStatus());
   
         // The service will run...since there is a random delay of 10 seconds we
-        // have to wait a long time
-        Thread.sleep(5000);
+        // have to wait a long time. We also need some tolerance since timers cannot
+        // be guaranteed to executed at the exact interval. 
+        Thread.sleep(4000);
+        int tries = 0;
+        while (info.getStatus() != SecConst.CERT_NOTIFIEDABOUTEXPIRATION && tries<2) {
+        	Thread.sleep(1000);
+        	info = certificateStoreSession.getCertificateInfo(admin, fp);
+        	tries++;
+        }
         info = certificateStoreSession.getCertificateInfo(admin, fp);
         assertEquals("Status does not match.", SecConst.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
+    	log.debug("It took >" + (9+tries) + " seconds before the certificate was expired!");
 
         log.trace("<test01CreateNewUser()");
     }
