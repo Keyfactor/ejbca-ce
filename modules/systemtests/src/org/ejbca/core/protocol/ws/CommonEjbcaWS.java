@@ -1633,7 +1633,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 .getCertificateData());
         assertTrue(CertTools.isSelfSigned(cacert));
         java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(0).getCertificateData());
-        assertEquals(getDN(CA1_WSTESTUSER1), CertTools.getSubjectDN(cert));
+        assertEquals(getDN(CA1_WSTESTUSER1) + " is not " + CertTools.getSubjectDN(cert),getDN(CA1_WSTESTUSER1), CertTools.getSubjectDN(cert));
         for (int i = 1; i < foundcerts.size(); i++) {
             java.security.cert.Certificate cert2 = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
             cert.verify(cert2.getPublicKey()); // will throw if verification
