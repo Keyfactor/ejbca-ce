@@ -68,7 +68,7 @@ import org.ejbca.util.keystore.KeyTools;
 import org.jboss.logging.Logger;
 
 /**
- * To run you must have the file tmp/bin/junit/jndi.properties
+ * This test uses remote EJB calls to setup the environment.
  * 
  * @version $Id$
  */

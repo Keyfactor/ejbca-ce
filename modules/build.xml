@@ -193,24 +193,6 @@
 		<ant dir="${ejbca.home}" antfile="build.xml" target="ocsp-jar" inheritall="false"/>
 	</target>
 
-	<!--
-	<target name="ejbca-ejb-interfaces-xdoclet">
-		<available file="${ejbca.home}/tmp/bin/gensrc" type="dir" property="ejbca-ejb-interfaces-xdoclet.ran"></available>
-		<antcall target="ejbca-ejb-interfaces-xdoclet-internal"/>
-	</target>
-	<target name="ejbca-ejb-interfaces-xdoclet-internal" unless="ejbca-ejb-interfaces-xdoclet.ran">
-		<ant dir="${ejbca.home}" antfile="build.xml" target="run-xdoc" inheritall="false"/>
-	</target>
-	-->
-
-	<target name="ocsp-ejb-interfaces-xdoclet">
-		<available file="${ejbca.home}/tmp/bin/ocsp-gensrc" type="dir" property="ocsp-ejb-interfaces-xdoclet.ran"></available>
-		<antcall target="ocsp-ejb-interfaces-xdoclet-internal"/>
-	</target>
-	<target name="ocsp-ejb-interfaces-xdoclet-internal" unless="ocsp-ejb-interfaces-xdoclet.ran">
-		<ant dir="${ejbca.home}" antfile="build.xml" target="ocsp-run-xdoc" inheritall="false"/>
-	</target>
-	
 	<!-- Helper to execute the EJBCA EJB CLI -->
 	<target name="ejbca-cli" depends="ejbca-ejb-cli">
 		<fail message="ejbca-cli.arg is not set." unless="ejbca-cli.arg" />
