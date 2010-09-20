@@ -4,11 +4,12 @@
 
 
 	<h:panelGroup>
-		<h:outputText value="#{web.text.PUBLISHERQUEUESETTINGS}"/>
+		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.PUBLISHERQUEUESETTINGS}"/><f:verbatim></strong></f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>
-		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
+		<f:verbatim>&nbsp;</f:verbatim>
 	</h:panelGroup>
+
 	<h:panelGroup>
 		<h:outputText value="#{web.text.PUBLISHERSTOCHECK}"/>
 	</h:panelGroup>
@@ -17,3 +18,4 @@
 			<f:selectItems value="#{editService.availablePublishers}"/>
 		</h:selectManyListbox>		
 	</h:panelGroup>	
+

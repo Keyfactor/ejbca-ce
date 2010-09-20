@@ -39,11 +39,12 @@ function checkUseEndUserNotification(){
 
 -->
 </SCRIPT></f:verbatim>
-		<h:outputText value="#{web.text.CERTEXPIRATIONSETTINGS}"/>
+		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.CERTEXPIRATIONSETTINGS}"/><f:verbatim></strong></f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>
-		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
+		<f:verbatim>&nbsp;</f:verbatim>
 	</h:panelGroup>
+
 	<h:panelGroup>
 		<h:outputText value="#{web.text.CASTOCHECK}"/>
 	</h:panelGroup>
@@ -52,11 +53,12 @@ function checkUseEndUserNotification(){
 			<f:selectItems value="#{editService.availableCAs}"/>
 		</h:selectManyListbox>		
 	</h:panelGroup>	
+
 	<h:panelGroup>
 		<h:outputText value="#{web.text.TIMEBEFOREEXPIRATION}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-			<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="6"/>
+			<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="5"/><f:verbatim> </f:verbatim>
 			<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.notifyingType.timeUnit}">
 			  <f:selectItems value="#{editService.notifyingType.availableUnits}"/>
 		    </h:selectOneMenu>		
