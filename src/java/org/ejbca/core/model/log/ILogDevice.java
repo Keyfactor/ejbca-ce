@@ -31,6 +31,9 @@ public interface ILogDevice extends Serializable {
 	
     /**
      * Log information.
+     * 
+     * If the log device uses database, the device is responsible for starting a new transaction and committing the log data before returning.
+     * 
      * @param admininfo contains information about the administrator performing the event.
      * @param caid the id of the catch (connected to the event.
      * @param module indicates the module using the bean.

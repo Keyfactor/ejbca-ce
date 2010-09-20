@@ -147,22 +147,15 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
-	//This might lead to a circular dependency when using EJB injection..
-    // We should wither create a new SessionBean or use @TransactionManagement(TransactionManagementType.BEAN) and @Resource private UserTransaction userTransaction; to manage the transactions ourselves.
-    /*@EJB
-    private LogSessionLocal logSession;*/
-    private LogSession logSession;
-
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList<ILogDevice> logdevices;
 
     @PostConstruct
     public void ejbCreate() {
         try {
-        	logSession = JndiHelper.getRemoteSession(LogSessionRemote.class);
             // Setup Connection to signing devices.
             logdevices = new ArrayList<ILogDevice>();
-            // Load logging properties dynamically as interal resource
+            // Load logging properties dynamically as internal resource
             Map<String,String> logDeviceMap = org.ejbca.config.LogConfiguration.getUsedLogDevices();
             Iterator<String> i = logDeviceMap.keySet().iterator();
             while (i.hasNext()) {
@@ -194,7 +187,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public Collection getAvailableLogDevices() {
+    public Collection<String> getAvailableLogDevices() {
     	ArrayList<String> ret = new ArrayList<String>();
     	Iterator<ILogDevice> i = logdevices.iterator();
     	while (i.hasNext()) {
@@ -208,7 +201,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * Session beans main function. Takes care of the logging functionality.
      *
      * @param admin the administrator performing the event.
-     * @param time the time the event occured.
+     * @param time the time the event occurred.
      * @param username the name of the user involved or null if no user is involved.
      * @param certificate the certificate involved in the event or null if no certificate is involved.
      * @param event id of the event, should be one of the org.ejbca.core.model.log.LogConstants.EVENT_ constants.
@@ -263,7 +256,10 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     	while (i.hasNext()) {
     		ILogDevice dev = i.next();
     		try {
-   				logSession.doSyncronizedLog(dev, admin, caid, module, time, username, certificate, event, comment, ex);
+    	    	final LogConfiguration config = loadLogConfiguration(caid);
+    	    	if (!dev.getAllowConfigurableEvents() || config.logEvent(event)) {
+    	    		dev.log(admin, caid, module, time, username, certificate, event, comment, ex);
+    	    	}
     		} catch (Throwable e) {
             	log.error(intres.getLocalizedMessage("log.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
             			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
@@ -272,21 +268,6 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
     			log.error(msg, e);
     		}
         }
-    }
-
-    /**
-     * Internal implementation for logging.
-     * DO NOT USE! ONLY PUBLIC FOR INTERNAL LOG-IMPLEMENTATION TO START A NEW TRANSACTION..
-     *
-     * @ejb.interface-method view-type="local"
-     * @ejb.transaction type="RequiresNew"
-     */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void doSyncronizedLog(ILogDevice dev, Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception ex) {
-    	final LogConfiguration config = loadLogConfiguration(caid);
-    	if (!dev.getAllowConfigurableEvents() || config.logEvent(event)) {
-    		dev.log(admin, caid, module, time, username, certificate, event, comment, ex);
-    	}
     }
 
     /**
@@ -329,7 +310,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      */
-    public Collection query(String deviceName, Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
+    public Collection<LogEntry> query(String deviceName, Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
         log.trace(">query()");
     	Collection<LogEntry> result = null;
     	Iterator<ILogDevice> i = logdevices.iterator();
@@ -430,14 +411,11 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
 
 	/**
      * Methods for testing that a log-row is never rolled back if the rest of the transaction is.
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="RequiresNew"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-	public void testRollbackInternal(long rollbackTestTime) {
+	public void testRollback(long rollbackTestTime) {
 		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-		logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
+		log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, "Test of rollback resistance of log-system.", null);
 		throw new EJBException("Test of rollback resistance of log-system.");
 	}

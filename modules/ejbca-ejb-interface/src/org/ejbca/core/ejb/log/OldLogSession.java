@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -28,5 +29,5 @@ public interface OldLogSession {
 
 	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
 	
-	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException ;
+	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException ;
 }
