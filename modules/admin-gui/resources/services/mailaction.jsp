@@ -4,22 +4,23 @@
 
 
 	<h:panelGroup>
-		<h:outputText value="#{web.text.MAILACTIONSETTINGS}"/>
+		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.MAILACTIONSETTINGS}"/><f:verbatim></strong></f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>	
-	     <f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>	
+	     <f:verbatim>&nbsp;</f:verbatim>	
 	</h:panelGroup>
+
 	<h:panelGroup>
 		<h:outputText value="#{web.text.MAILACTIONSENDERADDRESS}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-			<h:inputText id="mailActionSenderAddressTextField" value="#{editService.mailActionType.senderAddress}" size="40"/>		
+			<h:inputText id="mailActionSenderAddressTextField" value="#{editService.mailActionType.senderAddress}" size="45"/>		
 	</h:panelGroup>
+
 	<h:panelGroup>
 		<h:outputText value="#{web.text.MAILACTIONRECIEVERADDRESS}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-			<h:inputText id="mailActionRecieverAddressTextField" value="#{editService.mailActionType.recieverAddress}" size="40"/>
+			<h:inputText id="mailActionRecieverAddressTextField" value="#{editService.mailActionType.recieverAddress}" size="45"/>
 	</h:panelGroup>
-
 

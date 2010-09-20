@@ -42,9 +42,9 @@
 	</h:commandLink>
   </div>	
 
-<h:panelGrid width="100%" columns="2" rowClasses="jsfrow1, jsfrow2">
+<h:panelGrid width="100%" columns="2" rowClasses="jsfrow2,jsfrow1" columnClasses="label,field">
 	<h:panelGroup>
-		<h:outputText value="#{web.text.SELECTWORKER}"/><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Currently%20Available%20Workers") %></h:outputText>
+		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Currently%20Available%20Workers") %></h:outputText>
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}" valueChangeListener="#{editService.changeWorker}"
@@ -58,10 +58,10 @@
      <jsp:include page="<%=workerPage %>"/>
   
   	<h:panelGroup>
-		<f:verbatim><f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim></f:verbatim>
+		<f:verbatim>&nbsp;</f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
+		<f:verbatim>&nbsp;</f:verbatim>
 	</h:panelGroup>
     <h:panelGroup>
 		<h:outputText value="#{web.text.SELECTINTERVAL}"/>
@@ -75,11 +75,11 @@
 	
      <jsp:include page="<%=intervalPage %>"/>  
  
- 	<h:panelGroup>
-		<f:verbatim><f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim></f:verbatim>
+  	<h:panelGroup>
+		<f:verbatim>&nbsp;</f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
+		<f:verbatim>&nbsp;</f:verbatim>
 	</h:panelGroup>
     <h:panelGroup>
 		<h:outputText value="#{web.text.SELECTACTION}"/>
@@ -93,23 +93,23 @@
   
      <jsp:include page="<%=actionPage %>"/>
       
-	<h:panelGroup>
-		<f:verbatim><f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim></f:verbatim>
+  	<h:panelGroup>
+		<f:verbatim>&nbsp;</f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
-	</h:panelGroup>      
-	<h:panelGroup>
-		<h:outputText value="#{web.text.ACTIVE}"/>
+		<f:verbatim>&nbsp;</f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>
-			<h:selectBooleanCheckbox id="activeCheckbox" value="#{editService.serviceConfigurationView.active}"/>
+		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.ACTIVE}"/><f:verbatim></strong></f:verbatim>
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:selectBooleanCheckbox id="activeCheckbox" value="#{editService.serviceConfigurationView.active}"/>
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:outputText value="#{web.text.DESCRIPTION}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputTextarea id="descriptionTextArea" value="#{editService.serviceConfigurationView.description}" rows="6" cols="40"/>
+		<h:inputTextarea id="descriptionTextArea" value="#{editService.serviceConfigurationView.description}" rows="4" cols="45"/>
 	</h:panelGroup>
 	<h:panelGroup>
 		

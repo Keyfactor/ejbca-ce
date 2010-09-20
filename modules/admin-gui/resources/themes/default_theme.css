@@ -257,7 +257,8 @@ table.grid td {
 }
 
 /* Page: ALL Edit forms */
-form#basicRules table tr td,
+form#edit table tr td,			/* Services */
+form#basicRules table tr td,	/* Admin privileges */
 table.edit tr td {
 	line-height: 1.55em;
 }
@@ -397,6 +398,15 @@ table#logconfigbuttons td input[type="button"] {
 }
 table#logconfigbuttons td input[type="submit"] {
 	margin-right: 1em;
+}
+
+/* Page: SYS > Services */
+form#edit div {
+	margin: .5em auto;
+	font-size: .8em;
+}
+form#edit table tr td.label {
+	text-align: right;
 }
 
 /* Page: SYS > Administrators Groups */
