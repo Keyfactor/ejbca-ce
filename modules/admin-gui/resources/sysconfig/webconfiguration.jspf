@@ -69,7 +69,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EJBCATITLEHELP\") %>"/></p>
       </td>
       <td width="50%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_TITLE %>" value='<c:out value="<%= gc.getEjbcaTitle() %>"/>' maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_TITLE %>" value='<c:out value="<%= gc.getEjbcaTitle() %>"/>' maxlength="150" size="45">
       </td>
     </tr>
     <tr id="Row1"> 
@@ -78,7 +78,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"HEADBANNERHELP\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_HEADBANNER %>" value='<c:out value="<%= gc.getHeadBannerFilename() %>"/>' maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_HEADBANNER %>" value='<c:out value="<%= gc.getHeadBannerFilename() %>"/>' maxlength="150" size="45">
       </td>
     </tr>
     <tr id="Row0"> 
@@ -87,7 +87,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"FOOTBANNERHELP\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_FOOTBANNER %>" value='<c:out value="<%= gc.getFootBannerFilename() %>"/>' maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_FOOTBANNER %>" value='<c:out value="<%= gc.getFootBannerFilename() %>"/>' maxlength="150" size="45">
       </td>
     </tr>
 <!-- /* Wait for implementation.
@@ -190,7 +190,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"USEANEMAILADDRESS\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_APPROVALADMINEMAILADDRESS %>" value='<c:out value="<%= gc.getApprovalAdminEmailAddress() %>"/>' <% if(!gc.getUseApprovalNotifications()){ out.write(" disabled "); }%>maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_APPROVALADMINEMAILADDRESS %>" value='<c:out value="<%= gc.getApprovalAdminEmailAddress() %>"/>' <% if(!gc.getUseApprovalNotifications()){ out.write(" disabled "); }%>maxlength="150" size="45">
       </td>
     </tr>
     <tr id="Row0"> 
@@ -199,7 +199,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THEADDRESSUSEDFROMFIELD\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>" value='<c:out value="<%= gc.getApprovalNotificationFromAddress() %>"/>' <% if(!gc.getUseApprovalNotifications()){ out.write(" disabled "); }%>maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>" value='<c:out value="<%= gc.getApprovalNotificationFromAddress() %>"/>' <% if(!gc.getUseApprovalNotifications()){ out.write(" disabled "); }%>maxlength="150" size="45">
       </td>
     </tr>          
     <tr id="Row1"> 
@@ -247,7 +247,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"AUTOENROLLADSERVERHELP\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_ADSERVER %>" value='<c:out value="<%= gc.getAutoEnrollADServer() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_ADSERVER %>" value='<c:out value="<%= gc.getAutoEnrollADServer() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="45">
       </td>
     </tr>          
     <tr id="Row1"> 
@@ -256,7 +256,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"AUTOENROLLADPORTHELP\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_ADPORT %>" value='<c:out value="<%= gc.getAutoEnrollADPort() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_ADPORT %>" value='<c:out value="<%= gc.getAutoEnrollADPort() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="5">
       </td>
     </tr>          
     <tr id="Row1"> 
@@ -265,7 +265,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"AUTOENROLLCONNECTIONDNHELP\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_CONNECTIONDN %>" value='<c:out value="<%= gc.getAutoEnrollConnectionDN() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_CONNECTIONDN %>" value='<c:out value="<%= gc.getAutoEnrollConnectionDN() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="45">
       </td>
     </tr>          
     <tr id="Row1"> 
@@ -274,7 +274,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"AUTOENROLLCONNECTIONPWDHELP\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="password" name="<%=TEXTFIELD_AUTOENROLL_CONNECTIONPWD %>" value='<c:out value="<%= gc.getAutoEnrollConnectionPwd() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="50">
+        <input type="password" name="<%=TEXTFIELD_AUTOENROLL_CONNECTIONPWD %>" value='<c:out value="<%= gc.getAutoEnrollConnectionPwd() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="20">
       </td>
     </tr>          
     <tr id="Row1"> 
@@ -283,6 +283,6 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"AUTOENROLLBASEDNUSERHELP\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_BASEDN_USER %>" value='<c:out value="<%= gc.getAutoEnrollBaseDNUser() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="50">
+        <input type="text" name="<%=TEXTFIELD_AUTOENROLL_BASEDN_USER %>" value='<c:out value="<%= gc.getAutoEnrollBaseDNUser() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="45">
       </td>
     </tr>          
