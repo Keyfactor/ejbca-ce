@@ -645,8 +645,11 @@ function checkallfields(){
     </td>
     <td width="50%"> 
       <input type="checkbox" name="<%=CHECKBOX_USECERTREQHISTORY %>" value="<%=CHECKBOX_VALUE %>" 
-          <% if((editca && cainfo.isUseCertReqHistory()))
-               out.write("CHECKED");%>>         
+          <% if(editca) {
+               if (cainfo.isUseCertReqHistory()) out.write("CHECKED"); // edit CA
+             } else {
+            	 out.write("CHECKED"); // new CA default to true
+             }%>>         
     </td>
     </tr>
 
