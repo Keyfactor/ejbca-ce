@@ -19,4 +19,9 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface LogSessionRemote extends LogSession {
+
+	/**
+     * Methods for testing that a log-row is never rolled back if the rest of the transaction is.
+     */
+    public void testRollback(long rollbackTestTime);
 }

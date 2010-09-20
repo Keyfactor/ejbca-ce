@@ -12,19 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.log;
 
+import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.IllegalQueryException;
 
 public interface LogSession {
 
-    /**
-     * Internal implementation for logging. DO NOT USE! ONLY PUBLIC FOR INTERNAL
-     * LOG-IMPLEMENTATION TO START A NEW TRANSACTION..
-     */
-	// TODO: This was moved from the local interface here during the JEE5 migration phase where local interface lookup didn't work.
-    public void doSyncronizedLog(org.ejbca.core.model.log.ILogDevice dev, org.ejbca.core.model.log.Admin admin, int caid, int module, java.util.Date time,
-            java.lang.String username, java.security.cert.Certificate certificate, int event, java.lang.String comment, java.lang.Exception ex);
-	
-	public java.util.Collection getAvailableLogDevices();
+	public java.util.Collection<String> getAvailableLogDevices();
 
     /**
      * Session beans main function. Takes care of the logging functionality.
@@ -111,7 +104,7 @@ public interface LogSession {
      *             when query parameters internal rules isn't fullfilled.
      * @see org.ejbca.util.query.Query
      */
-    public java.util.Collection query(java.lang.String deviceName, org.ejbca.util.query.Query query, java.lang.String viewlogprivileges,
+    public java.util.Collection<LogEntry> query(java.lang.String deviceName, org.ejbca.util.query.Query query, java.lang.String viewlogprivileges,
             java.lang.String capriviledges, int maxResults) throws org.ejbca.util.query.IllegalQueryException;
 
     /**
@@ -138,11 +131,4 @@ public interface LogSession {
      * Clear and reload log profile caches.
      */
     public void flushConfigurationCache();
-
-    /**
-     * Methods for testing that a log-row is never rolled back if the rest of
-     * the transaction is.
-     */
-    public void testRollbackInternal(long rollbackTestTime);
-
 }

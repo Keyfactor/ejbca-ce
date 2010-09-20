@@ -56,7 +56,6 @@ import org.ejbca.util.query.Query;
 public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemote {
 
 	private static final Logger log = Logger.getLogger(OldLogSessionBean.class);
-    private static final InternalResources intres = InternalResources.getInstance();
 	
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
@@ -92,7 +91,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		}
 	}
 
-	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
+	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
 		log.trace(">query()");
 		if (capriviledges == null || capriviledges.length() == 0 || !query.isLegalQuery()) {
 			throw new IllegalQueryException();

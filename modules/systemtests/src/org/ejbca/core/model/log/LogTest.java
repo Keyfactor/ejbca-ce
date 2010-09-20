@@ -23,6 +23,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.BasicMatch;
+import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.LogMatch;
 import org.ejbca.util.query.Query;
 
@@ -150,6 +151,40 @@ public class LogTest extends CaTestCase {
     	config = logSession.loadLogConfiguration(getTestCAId());
     	assertTrue(config.useExternalLogDevices()); 
     } // test03LogConfigurationCache
+    
+    /**
+     * Test that log entries for OldLogDevice are persisted even if a the main transaction rolls back.
+     * @throws IllegalQueryException 
+     */
+    public void test04rollback() throws IllegalQueryException {
+    	Date now = new Date();
+    	try {
+    		logSession.testRollback(now.getTime());
+    		assertTrue("test of rollback did not throw an exception as expected.", false);
+    	} catch (Exception e) {
+    		log.debug("Got an exception as expected: " + e.getMessage());
+    	}
+        Iterator<String> iterator = logSession.getAvailableLogDevices().iterator();
+        Collection<LogEntry> result = null;
+        while (iterator.hasNext()) {
+        	String logDeviceName = iterator.next();
+        	if (logDeviceName.equalsIgnoreCase(Log4jLogDevice.DEFAULT_DEVICE_NAME)) {
+        		continue;
+        	}
+        	Query query = new Query(Query.TYPE_LOGQUERY);
+        	query.add(LogMatch.MATCH_WITH_COMMENT, BasicMatch.MATCH_TYPE_EQUALS, "Test of rollback resistance of log-system.");
+        	result = logSession.query(logDeviceName, query, "", "caid=" + 0, 500);
+        	Iterator<LogEntry> iter = result.iterator();
+        	boolean found = false;
+        	while (iter.hasNext()) {
+        		LogEntry entry = iter.next();
+        		if ( (entry.getTime() != null) && (entry.getTime().equals(now)) ) {
+        			found = true;
+        		}
+        	}
+        	assertTrue("Log entry has been rolled back.", found);
+        }
+    }
 
 	public void test99RemoveTestCA() throws Exception {
 		removeTestCA();
