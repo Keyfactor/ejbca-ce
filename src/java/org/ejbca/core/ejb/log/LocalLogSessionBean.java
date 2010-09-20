@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -42,6 +43,7 @@ import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.log.OldLogDevice;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.ObjectCache;
 import org.ejbca.util.query.IllegalQueryException;
@@ -146,6 +148,9 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
+    
+    @EJB
+    private OldLogSessionLocal oldLogSession;	// Injected into OldLogDevice (if used).
 
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList<ILogDevice> logdevices;
@@ -169,17 +174,14 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
                 params[0] = deviceName;
                 logdevices.add((ILogDevice) method.invoke(fact, params));
             }
+        	// Workaround to be able to avoid local ENC lookup and use injection instead.
+            for (ILogDevice logDevice : logdevices) {
+            	if (logDevice instanceof OldLogDevice) {
+            		((OldLogDevice)logDevice).setOldLogSessionInterface(oldLogSession);
+            	}
+            }
         } catch (Exception e) {
             throw new EJBException(e);
-        }
-    }
-    
-    @PreDestroy
-    public void ejbRemove() {
-        Iterator<ILogDevice> i = logdevices.iterator();
-        while (i.hasNext()) {
-            ILogDevice dev = i.next();
-            dev.destructor();
         }
     }
     

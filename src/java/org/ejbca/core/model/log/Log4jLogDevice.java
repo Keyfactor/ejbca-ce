@@ -57,17 +57,9 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
      */
 
     protected Log4jLogDevice(String name) throws Exception {
-    	resetDevice(name);
+		deviceName = name;
     }
     
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public void resetDevice(String name) {
-		deviceName = name;
-	}
-
-
     /**
      * Creates (if needed) the log device and returns the object.
      *
@@ -156,16 +148,9 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
 	/**
 	 * @see org.ejbca.core.model.log.ILogDevice
 	 */
-	public Collection query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
+	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
 		// Does not make sense to implement.. just return null
 		return null;
-	}
-
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public void destructor() {
-		// No action needed
 	}
 
 	/**

@@ -166,8 +166,6 @@
     			<include name="org/ejbca/util/query/**/*.java"/>
     			<include name="org/ejbca/util/ObjectCache.java"/>
     			<exclude name="org/ejbca/core/model/log/CsvLogExporter.java"/>
-    			<!-- Uses EjbLocalHelper -->
-    			<exclude name="org/ejbca/core/model/log/OldLogDevice*.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/logging" destdir="${build-temp.dir}/logging" debug="on" includeantruntime="no"

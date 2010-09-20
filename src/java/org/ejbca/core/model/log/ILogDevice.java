@@ -72,12 +72,6 @@ public interface ILogDevice extends Serializable {
      */
     public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException;
 
-    /**
-     * This is called for the log device, right before the LogSessionBean is removed. Since there can exist several LogSessionBeans, this
-     * should be able to handle multiple calls.  
-     */
-	public void destructor();
-
 	/**
 	 * @return true if this device uses the internal log configuration framework
 	 */
@@ -87,10 +81,4 @@ public interface ILogDevice extends Serializable {
 	 * @return the name the device
 	 */
 	public String getDeviceName();
-
-	/**
-	 * Resets the status of the device. Used externally for testing.
-	 */
-	public void resetDevice(String name);
-
 }
