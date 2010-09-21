@@ -178,50 +178,8 @@
     <!-- =================================================================== -->
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
-    <target name="ejbca-ejb.jar" depends="compile, jbosscmptcpclasspath">
-        <!-- create empty directory for HW tokens if not existing -->
-        <mkdir dir="${hwtoken.class.dir}"/>
-    	<!-- Temp space where we will unpack jars to include in this jar file -->
-        <mkdir dir="${tmp}/caTokenClasses"/>
-    	<unjar dest="${tmp}/caTokenClasses">
-    		<fileset dir="${hwtoken.class.dir}">
-    			<include name="*.jar"/>
-    		</fileset>
-    	</unjar>
-    	<copy file="${dist.dir}/ejbca-util.jar" tofile="${dist.dir}/ejbca-ejb.jar" overwrite="true"/>
-    	<copy todir="${build}" failonerror="true">
-    		<fileset dir="${ejbca.home}/modules/ejbca-ejb/resources/" includes="META-INF/ejb-jar.xml"/>
-			<filterchain>
-				<expandproperties/>
-			</filterchain>
-		</copy>
-        <fileset dir="" includes="META-INF/*.*"/>
-        <jar jarfile="${dist.dir}/ejbca-ejb.jar" update="true">
-            <manifest>
-                <!-- todo: autogenerate this from a fileset -->
-                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
-            </manifest>
-        	<!--
-            <fileset dir="${src.dd}">
-            	<exclude name="WEB-INF/**"/>
-            	<exclude name="status/**"/>
-            	<exclude name="cmp/**"/>
-            </fileset>
-            -->
-            <fileset dir="${build}">            	
-        	    <exclude name="org/ejbca/core/protocol/ws/**"/>
-            </fileset>
-            <fileset dir="${ejbca.home}">
-				<include name="conf/**/*.properties"/>
-			</fileset>	
-            <fileset dir="${ejbca.home}/src">
-				<include name="internal.properties"/>
-			</fileset>	
-            <fileset dir="${ejbca.home}/src/upgrade"/>
-            <fileset dir="${tmp}/caTokenClasses">
-        		<exclude name="**/META-INF/**"/>
-        	</fileset>	
-        </jar>
+    <target name="ejbca-ejb.jar" depends="jbosscmptcpclasspath">
+    	<ant antfile="build.xml" dir="modules" target="ejbca-ejb" />
     </target>
 	
         <!-- =================================================================== -->
@@ -448,6 +406,13 @@
                 <include name="externalra-service.jar" />
                 <include name="ejbca-ejb3-interface.jar" />
                 <include name="ejbca-entity.jar" />
+        	</zipfileset>
+        	<zipfileset prefix="lib" dir="dist">
+                <include name="ejbca-util.jar" />
+        	</zipfileset>
+        	<!-- Include PrimeCard HSM libraries. TODO: Test that this works. Previously the classes were included in ejbca-ejb.jar.. -->
+        	<zipfileset prefix="lib" dir="${hwtoken.class.dir}">
+                <include name="*.jar" />
         	</zipfileset>
 	</ear>
 

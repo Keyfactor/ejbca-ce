@@ -176,15 +176,11 @@
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
-	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->
 	<target name="ejbca-ejb" description="Build EJBCA EJB module">
-		<available file="${mod.ejbca-ejb.lib}" property="mod.ejbca-ejb.lib.exists"/>
-		<antcall target="ejbca-ejb-internal"/>
-	</target>
-	<target name="ejbca-ejb-internal" unless="mod.ejbca-ejb.lib.exists">
-		<ant dir="${ejbca.home}" antfile="build.xml" target="ejbca-ejb.jar" inheritall="false"/>
+		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
+	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->
 	<target name="ocsp-ejb" description="Build OCSP EJB module">
 		<available file="${mod.ocsp-ejb.lib}" property="mod.ocsp-ejb.lib.exists"/>
 		<antcall target="ocsp-ejb-internal"/>

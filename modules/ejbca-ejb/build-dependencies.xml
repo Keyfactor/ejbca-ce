@@ -94,7 +94,7 @@
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
         		<pathelement location="${build-temp.dir}/config"/>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         	</classpath>
         </javac>
         
@@ -118,7 +118,7 @@
         <javac srcdir="${src-temp.dir}/protect" destdir="${build-temp.dir}/protect" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         	</classpath>
         </javac>
@@ -141,7 +141,7 @@
         <javac srcdir="${src-temp.dir}/admins" destdir="${build-temp.dir}/admins" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         	</classpath>
         </javac>
@@ -171,7 +171,7 @@
         <javac srcdir="${src-temp.dir}/logging" destdir="${build-temp.dir}/logging" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/protect"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -197,7 +197,7 @@
         <javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/protect"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -221,7 +221,7 @@
         <javac srcdir="${src-temp.dir}/notification" destdir="${build-temp.dir}/notification" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/protect"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -262,7 +262,7 @@
         <javac srcdir="${src-temp.dir}/approval" destdir="${build-temp.dir}/approval" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/logging"/>
@@ -304,7 +304,7 @@
         <javac srcdir="${src-temp.dir}/publish" destdir="${build-temp.dir}/publish" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/protect"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -331,7 +331,7 @@
         <javac srcdir="${src-temp.dir}/certhist" destdir="${build-temp.dir}/certhist" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/logging"/>
@@ -354,7 +354,7 @@
         <javac srcdir="${src-temp.dir}/certprof" destdir="${build-temp.dir}/certprof" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/logging"/>
@@ -386,7 +386,7 @@
         <javac srcdir="${src-temp.dir}/certstore" destdir="${build-temp.dir}/certstore" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/protect"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -417,7 +417,7 @@
         <javac srcdir="${src-temp.dir}/catoken" destdir="${build-temp.dir}/catoken" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/certprof"/>
         	</classpath>
@@ -474,7 +474,7 @@
         <javac srcdir="${src-temp.dir}/ca" destdir="${build-temp.dir}/ca" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/certprof"/>
         		<pathelement location="${build-temp.dir}/catoken"/>
@@ -501,7 +501,7 @@
         <javac srcdir="${src-temp.dir}/crl" destdir="${build-temp.dir}/crl" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/ca"/>
@@ -539,7 +539,7 @@
         <javac srcdir="${src-temp.dir}/caadmin" destdir="${build-temp.dir}/caadmin" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/ca"/>
@@ -586,7 +586,7 @@
         <javac srcdir="${src-temp.dir}/signing" destdir="${build-temp.dir}/signing" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/protect"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -622,7 +622,7 @@
         <javac srcdir="${src-temp.dir}/ocsp" destdir="${build-temp.dir}/ocsp" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/certstore"/>
@@ -649,7 +649,7 @@
         <javac srcdir="${src-temp.dir}/userdatasource" destdir="${build-temp.dir}/userdatasource" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/ca"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -682,7 +682,7 @@
         <javac srcdir="${src-temp.dir}/keyrecovery" destdir="${build-temp.dir}/keyrecovery" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/caadmin"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -716,7 +716,7 @@
         <javac srcdir="${src-temp.dir}/raadmin" destdir="${build-temp.dir}/raadmin" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/caadmin"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -750,7 +750,7 @@
         <javac srcdir="${src-temp.dir}/hardtoken" destdir="${build-temp.dir}/hardtoken" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/caadmin"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -777,7 +777,7 @@
         <javac srcdir="${src-temp.dir}/csvlogexp" destdir="${build-temp.dir}/csvlogexp" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/caadmin"/>
         		<pathelement location="${build-temp.dir}/signing"/>
@@ -823,7 +823,7 @@
         <javac srcdir="${src-temp.dir}/useradmin" destdir="${build-temp.dir}/useradmin" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/caadmin"/>
         		<pathelement location="${build-temp.dir}/admins"/>
@@ -870,7 +870,7 @@
         <javac srcdir="${src-temp.dir}/services" destdir="${build-temp.dir}/services" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/logging"/>
@@ -902,7 +902,7 @@
         <javac srcdir="${src-temp.dir}/upgrade" destdir="${build-temp.dir}/upgrade" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/approval"/>
@@ -934,7 +934,7 @@
         <javac srcdir="${src-temp.dir}/cmp" destdir="${build-temp.dir}/cmp" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
 				<pathelement location="${build-temp.dir}/ca"/>
 				<pathelement location="${build-temp.dir}/caadmin"/>
@@ -967,7 +967,7 @@
         <javac srcdir="${src-temp.dir}/scep" destdir="${build-temp.dir}/scep" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-        		<path refid="compile.classpath"/>
+        		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
 				<pathelement location="${build-temp.dir}/admins"/>
 				<pathelement location="${build-temp.dir}/ca"/>

@@ -175,8 +175,8 @@
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.xmlsec.classpath"><fileset dir="${ejbca.home}/lib/xmlsign/" includes="xmlsec-*.jar"/></path>
+	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
 	<path id="lib.clover.classpath"><pathelement location="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/></path>
-	
 
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">

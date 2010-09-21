@@ -12,14 +12,12 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-util.dir" location="${this.dir}/build-util"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
+	<property name="internalresources.base.dir" location="${ejbca.home}/src"/>
 
-	<path id="compile.classpath">
-		<path refid="compile-util.classpath"/>
-	</path>
-	
 	<path id="compile-util.classpath">
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
@@ -36,18 +34,70 @@
 		<path refid="lib.jee.classpath"/>
 	</path>
 
+	<path id="compile-ejbca-ejb.classpath">
+		<path refid="compile-util.classpath"/>
+		<path refid="lib.ejbca-util.classpath"/>
+		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+		<path location="${mod.ejbca-entity.lib}"/>
+		<path refid="lib.quickserver.classpath"/>
+	</path>
+
+	<path id="compile-test.classpath">
+		<path refid="compile-util.classpath"/>
+		<path location="${mod.ejbca-ejb.lib}" />	<!-- TODO: Refactor so this isn't neccessary for building the tests..? -->
+		<path refid="lib.ejbca-util.classpath"/>
+		<path refid="lib.junit.classpath"/>
+	</path>
+	
 	<path id="test.classpath">
 		<path location="${build-test.dir}" />
 		<path location="${mod.ejbca-ejb.lib}" />
-		<path refid="compile.classpath"/>
+		<path location="${mod.ejbca-util.lib}" />
+		<path refid="compile-test.classpath"/>
 		<path refid="lib.junit.classpath"/>
 	</path>
 
 	<!-- Import taget "dependecy-check" -->
 	<import file="${this.dir}/build-dependencies.xml"/>
 
-    <target name="build" description="Build this module" depends="dependecy-check, ejbca-ejb">
-    	<!-- This module is still JARed in the old build system -->
+    <target name="clean" depends="dependecy-check-clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${build-util.dir}" />
+		<delete dir="${build-test.dir}" />
+		<delete file="${mod.ejbca-ejb.lib}" />
+		<delete file="${mod.ejbca-util.lib}" />
+    </target>
+	
+    <target name="build" description="Build this module" depends="compile-ejbca-ejb">
+    	<copy todir="${build.dir}" failonerror="true">
+    		<fileset dir="${resources.dir}" includes="META-INF/ejb-jar.xml"/>
+			<filterchain>
+				<expandproperties/>
+			</filterchain>
+		</copy>
+        <jar destfile="${mod.ejbca-ejb.lib}">
+        	<fileset dir="${build.dir}">
+            	<!-- Include files that are not already present in ejbca-util.jar -->
+            	<present present="srconly" targetdir="${build-util.dir}"/>
+        	</fileset>
+        	<!--
+            <manifest>
+                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
+            </manifest>
+            -->
+            <fileset dir="${ejbca.home}">
+				<include name="conf/**/*.properties"/>
+			</fileset>	
+            <fileset dir="${ejbca.home}/src">
+				<include name="internal.properties"/>
+			</fileset>	
+            <fileset dir="${ejbca.home}/src/upgrade"/>
+        	<!--
+            <fileset dir="${tmp}/caTokenClasses">
+        		<exclude name="**/META-INF/**"/>
+        	</fileset>
+        	-->	
+        </jar>
     </target>
 
     <target name="build-util" description="Build the ejbca-util JAR" depends="compile-util">
@@ -65,22 +115,41 @@
     	</jar>
     </target>
 
-    <target name="clean" depends="dependecy-check-clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
-		<delete dir="${build-util.dir}" />
-		<delete dir="${build-test.dir}" />
-		<delete file="${mod.ejbca-ejb.lib}" />
-		<delete file="${mod.ejbca-util.lib}" />
-    </target>
-	
-    <target name="compile">
-    	<fail message="This component currently only holds the tests that depends on classes from the EJB component!"/>
+    <target name="compile-ejbca-ejb" depends="build-util, ejbca-entity, ejbca-ejb-interface">
+    	<mkdir dir="${build.dir}"/>
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" >
+            <classpath>
+            	<path refid="compile-ejbca-ejb.classpath" />
+            </classpath>
+			<!-- Exclude appserver specific code.. -->
+            <exclude name="org/ejbca/appserver/**" />
+			<!-- Only for External OCSP responder.. -->
+            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
+            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
+            <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
+            <exclude name="org/ejbca/core/ejb/ca/store/LocalCertificateStoreOnlyDataSessionBean.java" />
+			<!-- Samples should never be included.. -->
+            <exclude name="org/ejbca/samples/**/*.java" />
+			<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
+        	<exclude name="org/ejbca/util/PluginTool.java" />
+            <exclude name="org/ejbca/util/PerformanceTest.java" />
+            <src path="${src.dir}" />
+        </javac>
+        <copy todir="${build.dir}">
+            <fileset dir="${internalresources.base.dir}">
+                <include name="intresources/*.properties"/>
+            </fileset>	
+            <fileset dir="${src.dir}">
+                <include name="dncomponents.properties"/>
+                <include name="profilemappings.properties"/>
+                <include name="certextensions.properties"/>
+            </fileset>	
+        </copy>
     </target>
 
-    <target name="compile-util">
+	<target name="compile-util">
     	<mkdir dir="${build-util.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build-util.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        <javac srcdir="${src.dir}" destdir="${build-util.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
         		<path refid="compile-util.classpath"/>
         	</classpath>
@@ -239,14 +308,12 @@
     	</javac>
     </target>
 
-    <target name="compile-tests" depends="build">
+    <target name="compile-tests" depends="dependecy-check, build">
     	<mkdir dir="${build-test.dir}" />
         <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
         	<classpath>
-				<path location="${mod.ejbca-ejb.lib}" />
-        		<path refid="compile.classpath"/>
-        		<path refid="lib.junit.classpath"/>
+        		<path refid="compile-test.classpath"/>
         	</classpath>
     	</javac>
         <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>

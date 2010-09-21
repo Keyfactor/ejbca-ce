@@ -127,55 +127,8 @@ xkms.serviceport                = ${xkms.serviceport}
     <!-- =================================================================== -->
     <!-- Compile java sources                                                -->
     <!-- =================================================================== -->
-    <target name="compile" depends="ejbca-util.jar, ejbca-entity, ejbca-ejb-interface" unless="precompiled">
-    	<mkdir dir="${build}"/>
-        <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
-            <classpath>
-            	<path refid="compile.classpath" />
-            	<path location="modules/dist/ejbca-ejb3-interface.jar" />
-            	<path location="modules/dist/ejbca-entity.jar" />
-            </classpath>
-            <exclude name="**/appserver/**" />
-            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
-            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
-            <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
-
-			<!-- Only for External OCSP responder.. -->
-            <exclude name="org/ejbca/core/ejb/ca/store/LocalCertificateStoreOnlyDataSessionBean.java" />
-            
-            <exclude name="org/ejbca/samples/**/*.java" />
-
-            <exclude name="org/ejbca/ui/cli/*Tool.java" />
-            <exclude name="org/ejbca/ui/cli/*Test.java" />
-            <exclude name="org/ejbca/ui/cli/Ocsp.java" />
-            <exclude name="org/ejbca/ui/cli/EjbcaWsRaCli.java" />
-            <exclude name="org/ejbca/ui/cli/CvcWsRaCli.java" />
-            <exclude name="org/ejbca/ui/cli/ClientToolBox.java" />
-            <exclude name="org/ejbca/ui/cli/OcspMonitoringTool.java" />
-            <exclude name="org/ejbca/ui/cli/DatabaseCopyTool.java" />
-            <exclude name="org/ejbca/ui/cli/HSMKeyTool.java" />
-            <exclude name="org/ejbca/ui/cli/PKCS11HSMKeyTool.java" />
-            <exclude name="org/ejbca/ui/cli/NCipherHSMKeyTool.java" />
-            <exclude name="org/ejbca/ui/cli/CMPTest.java" />
-            <exclude name="org/ejbca/ui/cli/SCEPTest.java" />
-            <exclude name="org/ejbca/ui/cli/HealthCheckTest.java" />
-            <exclude name="org/ejbca/ui/cli/OCSPActivate.java" />
-            <exclude name="org/ejbca/core/ejb/ca/store/CertificateData.java" />
-
-            <exclude name="org/ejbca/core/protocol/ws/**" />
-            <exclude name="org/ejbca/core/protocol/xkms/**/**" />
-            <src path="src/java" />
-        </javac>
-        <copy todir="${build}">
-            <fileset dir="src">
-                <include name="intresources/*.properties"/>
-            </fileset>	
-            <fileset dir="src/java">
-                <include name="dncomponents.properties"/>
-                <include name="profilemappings.properties"/>
-                <include name="certextensions.properties"/>
-            </fileset>	
-        </copy>
+    <target name="compile" unless="precompiled">
+    	<echo message="THIS TARGET (compile) SHOULD NO LONGER BE USED!"/>
     </target>
 
 	<!-- ("preprocess" is not run from anywhere right now..) -->
