@@ -614,9 +614,8 @@ http://127.0.0.1:8080/ejbca/publicweb/cmp
 <subsection name="CMP over TCP">
 <p>
 You can enable a CMP TCP service by changing the option 'cmp.tcp.enabled' in conf/cmp.properties.
-The service MBean is so far JBoss specific (at least the deployment of it).
 <br/>
-When re-deploying EJBCA this will start a TCP listener on the default port for CMP over TCP. You must run JBoss as root to use the default port, since it is a low port (&lt;1024).
+When re-deploying EJBCA this will start a TCP listener on the default port for CMP over TCP. You must run the application server as root to use the default port, since it is a low port (&lt;1024).
 See the documentation in conf/cmp.properties for information about configuration options for TCP. We recommend using a non standard port > 1024.
 </p>
 </subsection>
