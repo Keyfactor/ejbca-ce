@@ -775,7 +775,7 @@ function checkallfields(){
     <!--  if we are processing a request we are issuing certificate to an external CA and we can not set CRL stuff for that CA -->
    <% if(!processrequest && !isexternal){ %>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
+      <td width="50%"  align="right" class="title"> 
         <strong><%= ejbcawebbean.getText("CRLSPECIFICDATA") %></strong>
       </td>
       <td width="50%"> 
@@ -983,7 +983,7 @@ function checkallfields(){
    </tr>
     
     <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
+      <td width="50%"  align="right" class="title"> 
         <strong><%= ejbcawebbean.getText("OTHERDATA") %></strong>
       </td>
       <td width="50%"> 
