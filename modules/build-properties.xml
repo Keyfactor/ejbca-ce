@@ -70,8 +70,8 @@
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
     <property name="mod.ocsp-entity.lib" location="${mod.dist.path}/ocsp-entity.jar" />
-    <property name="mod.ejbca-ejb.lib" location="${ejbca.dist.path}/ejbca-ejb.jar" />
-    <property name="mod.ocsp-ejb.lib" location="${ocsp.dist.path}/ocsp-ejb.jar" />
+    <property name="mod.ejbca-ejb.lib" location="${mod.dist.path}/ejbca-ejb.jar" />
+    <property name="mod.ocsp-ejb.lib" location="${mod.dist.path}/ocsp-ejb.jar" />
     <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
     <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.dist.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
