@@ -5,6 +5,24 @@ method. Any custom classes implementing this interface need to be modified in tu
 
 Ant 1.7.1 or higher is required from this version on.
 
+EJBCA 3.10.5
+-----------
+This is a maintenance release with 37 issues resolved, both features and bug fixes.   
+  
+Noteworthy changes:
+- Fixed admin GUI error running on JBoss 5.
+- Fixed some issues with audit and approvals when using admin certificates issued by an external CA.
+- Harmonized admin GUI and improved looks. Contributed by David Carella of Linagora.
+- Added and improved caches of profiles and CAs, improves performance. CLI for clearing caches.
+- Fixed installation issue on Windows when JBoss installed in root directory.
+- Fixed re-publishing of certificates when CertReqHistory is not used. CertReqHistory is enabled by default for new CAs.
+- Updated German translation, contributed by Atos Origin.
+- Support unrevocation using WS-API.
+
+Read the full changelog for details.
+
+There were many changes in the admin GUI for this release. Please let us know if you encounter any regressions using the admin GUI.
+
 EJBCA 3.10.4
 -----------
 This is a maintenance release with 23 issues resolved, both features and bug fixes.   

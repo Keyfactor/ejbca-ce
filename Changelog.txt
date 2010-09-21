@@ -1,5 +1,49 @@
+3.10.5, 2010-09-21
+---
+New Feature
+    * [ECA-1791] - Logging the certificate SubjectDN when an admin logs in with an external cert and displaying this info in Log View
+    * [ECA-1822] - Command line to clear internal caches
+
 Improvement
-    * [ECA-1806] - As part of this ticket, ServiceTimerSessionBean was merged into LocalServiceSessionBean
+    * [ECA-1663] - Option to specify CRL Expire Period fields etc. in months
+    * [ECA-1741] - Clean authentication session bean
+    * [ECA-1756] - Configurable cache for end entity profiles
+    * [ECA-1795] - It should be possible to run the CMP TCP Proxy as a Windows service
+    * [ECA-1797] - Page sub-titles harmonized
+    * [ECA-1800] - Name as a word, name as a DN attribute
+    * [ECA-1802] - Improve CAInfo cache to use configurable time
+    * [ECA-1805] - Configurable cache for certificate profiles
+    * [ECA-1807] - Document 'Finish User' CA config
+    * [ECA-1811] - Improve caching of global configuration and authorization data
+    * [ECA-1813] - Re-order all the Extended Key Usage
+    * [ECA-1816] - Forms layout improved
+    * [ECA-1818] - Make log configuration cache time configurable
+    * [ECA-1823] - HSM p11 key attribute test and default.
+    * [ECA-1824] - New "fixed" username generation scheme in CMP RA mode
+    * [ECA-1831] - Lower log level from info to debug for expired CA warnings
+    * [ECA-1834] - Use only fingerprint index to check for unique cert serialnumber
+
+Task
+    * [ECA-1745] - Can not re-publish a certificate when CertReqHistory is not used
+    * [ECA-1780] - Doc update CMP over TCP not supported on Glassfish
+    * [ECA-1830] - Update german language file
+
+Bug
+    * [ECA-1739] - Unique subjectDN serialnumber cannot be edited.
+    * [ECA-1747] - Change how an approval administrator is identified, approval does not work with external administrators
+    * [ECA-1759] - Admin GUI crashes with a stacktrace when accessed by unauthrized user cert, on JBoss 5
+    * [ECA-1779] - Error when clicking on the Adminstrator in "View Log"
+    * [ECA-1790] - Unable to choose event in Advanced Filter Mode in View Log
+    * [ECA-1793] - Mitigate Cross Site Scripting (XSS) in the Admin GUI
+    * [ECA-1794] - Admin GUI errors on JBoss 5
+    * [ECA-1804] - ProfileMappings update and fixes, for messages
+    * [ECA-1808] - WS CLI does not support unrevocation
+    * [ECA-1812] - Activation failure when EJBCA is started at high load
+    * [ECA-1817] - EJBCA fail to install, if application server is installed in the root directory.
+    * [ECA-1820] - Certificate related events in the View Log does not display the certificate in question
+    * [ECA-1821] - NullPointerException when filling certing fields in View Log
+    * [ECA-1825] - Create CA with SerialNumber in DN regression with CLI
+    * [ECA-1836] - Use CertReqHistory should be active by default
 
 3.10.4, 2010-08-12
 ---
