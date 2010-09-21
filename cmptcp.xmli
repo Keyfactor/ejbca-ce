@@ -17,18 +17,20 @@
     <!-- Build Jboss CMP tmp listener                       -->
     <!-- =================================================================== -->
     <target name="jbosscmptcplistener" if="cmptcpservices.enabled" depends="compile" unless="precompiled">
-        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
+    	<mkdir dir="${build}"/>
+        <javac srcdir="${ejbca.home}/src/java" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
             <exclude name="**/CVS/**" />
             <include name="**/ui/tcp/**/CmpTcp*" />
             <include name="**/appserver/**/CmpTcp*" />
             <!-- appserver specific files are built separately-->
             <classpath refid="jbossservices.classpath" />
             <classpath refid="compile.classpath" />
+            <classpath location="modules/dist/ejbca-ejb3-interface.jar"/>
         </javac>
 
         <mkdir dir="${cmptcpservice.build}" />
         <copy todir="${cmptcpservice.build}">
-            <fileset dir="${src}/appserver/jboss">
+            <fileset dir="${ejbca.home}/src/appserver/jboss">
                 <include name="cmptcp-service.xml" />
             </fileset>
         </copy>
@@ -74,7 +76,6 @@
         	   <include name="META-INF/jboss-app.xml" />
         	</fileset> 
     	</copy>
-    	<replace file="${tmp}/META-INF/jboss-app.xml" token="!--@cmptcpservice.jar@-->" value="module>&lt;service>cmptcpservice.jar&lt;/service>&lt;/module>"/>
         <ear update="true" destfile="${caear}" > 
             <fileset dir="${tmp}">
                 <include name="META-INF/jboss-app.xml" />
