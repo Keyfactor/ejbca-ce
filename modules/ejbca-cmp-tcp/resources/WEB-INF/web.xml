@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="cmptcpweb" version="2.5"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee" 
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+    http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+    <description><![CDATA[CMP TCP server]]></description>
+
+    <servlet>
+        <description><![CDATA[Used to handle CMP (RFC4210) protocol messages]]></description>
+        <display-name>CmpTcpInitServlet</display-name>
+        <servlet-name>CmpTcpInitServlet</servlet-name>
+        <servlet-class>org.ejbca.ui.web.protocol.CmpTcpInitServlet</servlet-class>
+        <load-on-startup>99</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CmpTcpInitServlet</servlet-name>
+        <url-pattern>/cmp-tcp</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>restricted methods</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint> 
+
+</web-app>

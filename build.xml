@@ -11,7 +11,6 @@
 	&compile;
 
 	<import file="bin/${appserver.type}.xml" />
-	<import file="./cmptcp.xmli" />
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
 	
@@ -150,7 +149,7 @@
     <!-- =================================================================== -->
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
-    <target name="ejbca-ejb.jar" depends="jbosscmptcpclasspath">
+    <target name="ejbca-ejb.jar">
     	<ant antfile="build.xml" dir="modules" target="ejbca-ejb" />
     </target>
 	
@@ -282,7 +281,7 @@
 	<target name="ejbca.ear" depends="ca.ear">
 	</target>
 	
-	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war, externalra-service">
+	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war, externalra-service, ejbca-cmp-tcp">
 		<!-- Make sure we have an application.xml since we don't do preprocessing any longer.. -->
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true"/>
@@ -302,6 +301,10 @@
 			<istrue value="${web.renewalenabled}"/>
 		</condition>
 		<replace file="${eardd.src}/META-INF/application.xml" token="!--@renew.war@-->" value="${renew.enabled.replace-string}"/>
+		<condition property="ejbca-cmp-tcp.enabled.replace-string" else="!--@ejbca-cmp-tcp.war@-->" value="module>&lt;web>&lt;web-uri>ejbca-cmp-tcp.war&lt;/web-uri>&lt;context-root>/${app.name}/cmp-tcp&lt;/context-root>&lt;/web>&lt;/module>">
+			<istrue value="${cmp.tcp.enabled}"/>
+		</condition>
+		<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-cmp-tcp.war@-->" value="${ejbca-cmp-tcp.enabled.replace-string}"/>
 		<!-- Specify that we will use a specific WS implementatio -->
 		<mkdir dir="${eardd.src}/META-INF/services"/>
 		<copy todir="${eardd.src}/META-INF/services" file="src/deploy/ear/META-INF/services/javax.xml.soap.MetaFactory" flatten="true" failonerror="true"/>
@@ -340,6 +343,7 @@
                 <include name="webdist.war" />
                 <include name="ocsp.war" />
                 <include name="renew.war" />
+                <include name="ejbca-cmp-tcp.war" />
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
@@ -566,7 +570,7 @@
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="failinproduction-ca,build, buildwithcmptcpservice,inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the main EJBCA application">
+    <target name="deploy" depends="failinproduction-ca,build, inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the main EJBCA application">
     	<antcall target="j2ee:deploy" />
         <antcall target="showtime" />
     </target>
@@ -845,6 +849,10 @@
     	<ant antfile="modules/build.xml" target="clientToolBox" />
     </target>
 
+    <target name="ejbca-cmp-tcp" description="Builds the EJBCA CMP TCP module.">
+    	<ant antfile="modules/build.xml" target="ejbca-cmp-tcp" />
+    </target>
+	
     <target name="cmpTcpProxy" description="Builds a CMP TCP proxy.">
     	<ant antfile="modules/build.xml" target="cmpTcpProxy" />
     </target>

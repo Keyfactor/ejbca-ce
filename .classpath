@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="modules/ejbca-cmp-tcp/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-interface/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-renew-war/src"/>
