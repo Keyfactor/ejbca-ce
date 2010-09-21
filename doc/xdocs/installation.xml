@@ -325,9 +325,6 @@ Currently EJBCA works with Glassfish v2 with the Derby/JavaDB database. It can a
      <li>Edit conf/xkms.properties and set 'xkms.enabled=false'. (Default from EJBCA 3.10.)</li>
      </ul>
 </li>
-<li>One limitation on Glassfish compared with JBoss is that the CMP TCP listener does not work on Glassfish. CMP over TCP is luckily deprecated in the next revision of CMP, so we do not plan to fix this.
-CMP over HTTP works on all platforms.
-</li>
 </ol>
     
 Build ejbca with 'ant'.<br/>
@@ -444,7 +441,6 @@ EJBCA should work fine with Weblogic 9.x or 10.x on Oracle 9 or 10 databases, ex
 <br/>
 Running on weblogic has some limited functionality compared to JBoss:
 <ul>
-<li>The CMP tcp listener, which runs as a JBoss MBean does not work on Weblogic.</li>
 <li>Web service interface (including xkms), which uses JaxWS does not work (yet).</li>
 <li>The timer service does not work on Weblogic 10.3, so EJBCA services will not work.</li>
 </ul>
