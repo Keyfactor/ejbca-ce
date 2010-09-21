@@ -634,8 +634,6 @@ See <a href="https://glassfish.dev.java.net/issues/show_bug.cgi?id=1673">Glassfi
 <li>Edit conf/web.properties, you should set desired values and also http/s ports.</li>
 <li>Edit conf/mail.properties set and 'mail.jndi-name=mail/DefaultMail'</li>
 <li>Edit conf/jndi.properties.oracle</li>
-<li>You may have to remove line 186 in build.xml to make everything compile:<br/>
-  &lt;jsp-compile uriroot="${adminweb.build}" /&gt;</li>
 </ol>
 
 Build EJBCA with 'ant'.<br/> 
