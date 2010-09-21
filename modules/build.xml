@@ -29,6 +29,7 @@
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"/>
@@ -65,6 +66,10 @@
 
 	<target name="clientToolBox" description="Build EJBCA client toolbox">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"/>
+	</target>
+
+	<target name="ejbca-cmp-tcp" description="Build EJBCA CMP TCP module">
+		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
 	<target name="cmpTcpProxy" description="Build CMP TCP proxy">

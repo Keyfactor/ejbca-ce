@@ -47,6 +47,9 @@
 	<condition property="renew.war.enabled">
 		<equals arg1="true" arg2="${web.renewalenabled}" casesensitive="false" trim="true" />
 	</condition>
+	<condition property="cmptcpservices.enabled">
+		<istrue value="${cmp.tcp.enabled}"/>
+	</condition>
 
 	<!-- CMP settings -->
 	<property name="cmp.allowraverifypopo" value="false" />
