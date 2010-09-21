@@ -580,48 +580,6 @@
     </target>
 
     <!-- ======================================================================= -->
-    <!-- Macro for test/pre-compiling JSP web pages    -->
-    <!-- ======================================================================= -->
-    <macrodef name="jsp-compile">
-        <attribute name="uriroot"/>
-        <attribute name="todir" default="@{uriroot}"/>
-        <sequential>
-		    <path id="jasper.classpath">
-		        <fileset dir="${ejbca.home}/lib/jasper" includes="*.jar"/>
-		        <path refid="compile.classpath"/>
-		        <path location="${build}"/>
-		    </path>
-		    <property name="jasper.classpath" refid="jasper.classpath"/>
-	        <!-- loadderref is essential here ,otherwise this taskdef can not be called twice -->
-			<taskdef name="jasper2" classname="org.apache.jasper.JspC" 
-				classpathref="jasper.classpath"
-				loaderref="jasper"/>
-	        <mkdir dir="@{todir}/WEB-INF/jspc"/>
-	        <!--echo message="jasper.classpath = ${jasper.classpath}"/-->
-			<jasper2 uriroot="@{uriroot}"
-				package="org.apache.jasper.jspc"
-				outputdir="@{todir}/WEB-INF/jspc"
-				validatexml="false"
-				webXmlFragment="@{todir}/WEB-INF/generated_web.xml"
-				addWebXmlMappings="true"
-	            verbose="0"
-	            classpath="${jasper.classpath}"/>
-			<!--
-			  Compile them cleanly, jasper is not nice for this so use javac directly
-			  Note that precompilation may not work with weblogic (see weblogic docs)
-			  -->
-			<mkdir dir="@{todir}/WEB-INF/classes"/>
-			<depend srcdir="@{todir}/WEB-INF/jspc" destdir="@{todir}/WEB-INF/classes">
-				<classpath refid="jasper.classpath"/>
-			</depend>
-			<javac srcdir="@{todir}/WEB-INF/jspc" destdir="@{todir}/WEB-INF/classes" debug="on"
-	            includeantruntime="no" encoding="iso8859-1">
-	            <classpath refid="jasper.classpath"/>
-	        </javac>
-        </sequential>
-    </macrodef>    
-	
-    <!-- ======================================================================= -->
     <!-- Make a ZIP release file of EJBCA, and a SHA1 checksum of the release    -->
 	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->
     <!-- ======================================================================= -->
