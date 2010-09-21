@@ -145,13 +145,12 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
     /**
      * Method used to add an approval to database.
      * 
-     * The main key of an approval is the approval id, which should be unique
+     * The main key of an approval is the approvalId, which should be unique
      * for one administrator doing one type of action, requesting the same
      * action twice should result in the same approvalId
      * 
-     * If the approvalId already exists, with a non expired approval an
-     * ApprovalException is thrown otherwise is an new approval request added to
-     * the database
+     * If the approvalId already exists, with a non expired approval, a new approval
+     * request is added to the database. An approvalException is thrown otherwise
      * 
      * @throws ApprovalException
      *             if an approval already exists for this request.
@@ -168,7 +167,7 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
                     "Approval with id : " + approvalId + " already exists");
             throw new ApprovalException(ErrorCode.APPROVAL_ALREADY_EXISTS, "Approval Request " + approvalId + " already exists in database");
         } else {
-            // The exists no approval request with status waiting add a new one
+            // There exists no approval request with status waiting. Add a new one
             try {
                 Integer freeId = findFreeApprovalId();
                 entityManager.persist(new ApprovalData(freeId, approvalRequest));
