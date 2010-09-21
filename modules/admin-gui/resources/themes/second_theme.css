@@ -269,6 +269,10 @@ form#basicRules table tr td,	/* Admin privileges */
 table.edit tr td {
 	line-height: 1.55em;
 }
+form#edit table tr td.title,	/* Services */
+table.edit tr td.title {
+        font-size: 1.1em;
+}
 table.edit tr td table tr td {
 	line-height: 1.75em;
 }
