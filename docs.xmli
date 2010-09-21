@@ -13,6 +13,7 @@
 	<property name="velocity.dir" location="lib/ext"/>
     <!-- Initialization properties -->
     <property name="project.name" value="ejbca"/>
+    <property name="docs.tools.dest"    location="tmp/docs-tools"/>
     <property name="docs.src"     location="doc/xdocs"/>
     <property name="docs.dest"    location="tmp/htdocs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/ws"/>
@@ -32,10 +33,16 @@
 	<path id="lib.jaxws.classpath"><fileset refid="lib.jaxws.fileset"/></path>
 	<path id="jdoc.classpath">
 		<path location="dist/ejbca-util.jar" />
-		<path location="dist/ejbca-ejb.jar" />
+		<path location="modules/dist/ejbca-ejb.jar" />
 		<path location="lib/bcprov-jdk16-145.jar" />
 		<path refid="lib.jaxws.classpath" /> 
     </path>
+
+    <target name="doc-build-tool">
+    	<mkdir dir="${docs.tools.dest}"/>
+    	<javac srcdir="${ejbca.home}/src/java" destdir="${docs.tools.dest}" debug="on" includeantruntime="no" encoding="iso8859-1"
+			includes="org/ejbca/util/JAXWSDocAndConvTools.java"/>
+    </target>
 
     <target name="prepare">
         <path id="anakia.classpath">
@@ -57,7 +64,7 @@
         <mkdir dir="${docs.dest}"/>
     </target>
 
-    <target name="doc" if="AnakiaTask.present" depends="prepare-error" description="Build EJBCA web site and docs">
+    <target name="doc" if="AnakiaTask.present" depends="prepare-error, doc-build-tool" description="Build EJBCA web site and docs">
         <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
             <classpath refid="anakia.classpath"/>
         </taskdef>
@@ -88,7 +95,7 @@
 	    </copy>
 	    <copy overwrite="yes" file="${ws.objects.dir}/package.html" todir="${jdocs.ws.tmp}/${ws.client.gen.relative-path}"/>
 	  	<java classname="org.ejbca.util.JAXWSDocAndConvTools" 
-	  		  classpath="dist/ejbca-ejb.jar"
+	  		  classpath="${docs.tools.dest}"
 	  		  failonerror="yes"
 	  		  fork="true">
 	  	    <arg value="${ws.master.file}"/>

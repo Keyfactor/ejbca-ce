@@ -180,13 +180,8 @@
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="false"/>
 	</target>
 
-	<!-- Some libraries are built using the old system. We have to do a workaround the lack of dependency control for now. -->
 	<target name="ocsp-ejb" description="Build OCSP EJB module">
-		<available file="${mod.ocsp-ejb.lib}" property="mod.ocsp-ejb.lib.exists"/>
-		<antcall target="ocsp-ejb-internal"/>
-	</target>
-	<target name="ocsp-ejb-internal" unless="mod.ocsp-ejb.lib.exists">
-		<ant dir="${ejbca.home}" antfile="build.xml" target="ocsp-jar" inheritall="false"/>
+		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-ocsp" inheritall="false"/>
 	</target>
 
 	<!-- Helper to execute the EJBCA EJB CLI -->

@@ -11,8 +11,10 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-util.dir" location="${this.dir}/build-util"/>
+	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="resources-ocsp.dir" location="${this.dir}/resources-ocsp"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
@@ -42,6 +44,13 @@
 		<path refid="lib.quickserver.classpath"/>
 	</path>
 
+	<path id="compile-ocsp-ejb.classpath">
+		<path refid="compile-util.classpath"/>
+		<path refid="lib.ejbca-util.classpath"/>
+		<path location="${mod.ocsp-ejb-interface.lib}"/>
+		<path location="${mod.ocsp-entity.lib}"/>
+	</path>
+
 	<path id="compile-test.classpath">
 		<path refid="compile-util.classpath"/>
 		<path location="${mod.ejbca-ejb.lib}" />	<!-- TODO: Refactor so this isn't neccessary for building the tests..? -->
@@ -62,9 +71,11 @@
 
     <target name="clean" depends="dependecy-check-clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
+		<delete dir="${build-ocsp.dir}" />
 		<delete dir="${build-util.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-ejb.lib}" />
+		<delete file="${mod.ocsp-ejb.lib}" />
 		<delete file="${mod.ejbca-util.lib}" />
     </target>
 	
@@ -97,6 +108,39 @@
         		<exclude name="**/META-INF/**"/>
         	</fileset>
         	-->	
+        </jar>
+    </target>
+
+    <target name="build-ocsp" description="Build this module" depends="compile-ocsp-ejb">
+    	<copy todir="${build-ocsp.dir}" failonerror="true">
+    		<fileset dir="${resources-ocsp.dir}" includes="META-INF/ejb-jar.xml"/>
+			<filterchain>
+				<expandproperties/>
+			</filterchain>
+		</copy>
+    	<mkdir dir="${ocsp.hardToken.classes}"/>	<!-- If it doesn't exist.. -->
+        <jar destfile="${mod.ocsp-ejb.lib}">
+        	<!--
+            <manifest>
+                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
+            </manifest>
+            -->
+        	<fileset dir="${build-ocsp.dir}">
+            	<!-- Include files that are not already present in ejbca-util.jar -->
+            	<present present="srconly" targetdir="${build-util.dir}"/>
+        	</fileset>
+            <fileset dir="${ocsp.hardToken.classes}"/>
+        	<fileset dir="${ejbca.home}/src">
+        	    <include name="intresources/*.properties"/>
+				<include name="internal.properties"/>
+        	</fileset>	
+        	<fileset dir="${ejbca.home}/src/java">
+        	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
+        	</fileset>	
+            <fileset dir="${ejbca.home}">
+				<include name="conf/**/*.properties"/>
+			</fileset>	
         </jar>
     </target>
 
@@ -133,9 +177,51 @@
 			<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
         	<exclude name="org/ejbca/util/PluginTool.java" />
             <exclude name="org/ejbca/util/PerformanceTest.java" />
+			<!-- Tool used to tidy up JavaDoc. -->
+            <exclude name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
             <src path="${src.dir}" />
         </javac>
         <copy todir="${build.dir}">
+            <fileset dir="${internalresources.base.dir}">
+                <include name="intresources/*.properties"/>
+            </fileset>	
+            <fileset dir="${src.dir}">
+                <include name="dncomponents.properties"/>
+                <include name="profilemappings.properties"/>
+                <include name="certextensions.properties"/>
+            </fileset>	
+        </copy>
+    </target>
+
+    <target name="compile-ocsp-ejb" depends="build-util, ocsp-entity, ocsp-ejb-interface">
+    	<mkdir dir="${build-ocsp.dir}"/>
+        <javac destdir="${build-ocsp.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" >
+            <classpath>
+            	<path refid="compile-ocsp-ejb.classpath" />
+            </classpath>
+        	<!-- EJBs -->
+            <include name="org/ejbca/core/ejb/ca/store/LocalCertificateStoreOnlyDataSessionBean.java" />
+            <include name="org/ejbca/core/ejb/protect/TableProtectSessionBean.java" />
+			<!-- Classes not available in ejbca-util.jar -->
+            <include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java" />
+            <include name="org/ejbca/core/protocol/ocsp/CertificateCacheStandalone.java" />
+            <include name="org/ejbca/core/model/ca/MalformedRequestException.java" />
+            <include name="org/ejbca/ui/web/LimitLengthASN1Reader.java" />
+            <include name="org/ejbca/util/DummyPatternLogger.java" />
+            <include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" />
+            <include name="org/ejbca/ui/web/pub/HealthCheckServlet.java" />
+            <include name="org/ejbca/ui/web/pub/cluster/TextResponse.java" />
+            <include name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
+            <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
+            <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
+            <include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java" />
+            <include name="org/ejbca/core/protocol/ws/objects/UserDataVOWS.java" />
+            <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
+            <src path="${mod.ejbca-ws-cli.path}/src-gen" />
+            <src path="${mod.ejbca-ws.path}/src" />
+            <src path="${src.dir}" />
+        </javac>
+        <copy todir="${build-ocsp.dir}">
             <fileset dir="${internalresources.base.dir}">
                 <include name="intresources/*.properties"/>
             </fileset>	
