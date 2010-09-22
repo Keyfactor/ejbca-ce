@@ -15,9 +15,6 @@ package org.ejbca.core.ejb.ca.crl;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -33,7 +30,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CRLData;
@@ -51,7 +47,6 @@ import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.JDBCUtil;
 
 /**
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs.
@@ -769,36 +764,15 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     	if (log.isTraceEnabled()) {
         	log.trace(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
     	}
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        try {
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            String sql = "select MAX(cRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator=?";
-            String deltaCRLSql = "select MAX(cRLNumber) from CRLData where issuerDN=? and deltaCRLIndicator>?";
-            int deltaCRLIndicator = -1;
-            if (deltaCRL) {
-            	sql = deltaCRLSql;
-            	deltaCRLIndicator = 0;
-            }
-            ps = con.prepareStatement(sql);
-            ps.setString(1, issuerdn);
-            ps.setInt(2, deltaCRLIndicator);            	
-            result = ps.executeQuery();
-
-            int maxnumber = 0;
-            if (result.next()) {
-                maxnumber = result.getInt(1);
-            }
-        	if (log.isTraceEnabled()) {
-                log.trace("<getLastCRLNumber(" + maxnumber + ")");
-        	}
-            return maxnumber;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
+    	int maxnumber = 0;
+    	Integer result = CRLData.findHighestCRLNumber(entityManager, issuerdn, deltaCRL);
+    	if (result != null) {
+    		maxnumber = result.intValue();
+    	}
+    	if (log.isTraceEnabled()) {
+            log.trace("<getLastCRLNumber(" + maxnumber + ")");
+    	}
+    	return maxnumber;
     }
 
     /**

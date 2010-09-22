@@ -200,4 +200,24 @@ public class CRLData implements Serializable {
 		}
     	return ret;
 	}
+
+	/**
+	 * @return the highest CRL number or null if no CRL for the specified issuer exists.
+	 */
+	public static Integer findHighestCRLNumber(EntityManager entityManager, String issuerDN, boolean deltaCRL) {
+		Integer ret = null;
+		try {
+			if (deltaCRL) {
+				Query query = entityManager.createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0");
+				query.setParameter("issuerDN", issuerDN);
+				ret = (Integer) query.getSingleResult();
+			} else {
+				Query query = entityManager.createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1");
+				query.setParameter("issuerDN", issuerDN);
+				ret = (Integer) query.getSingleResult();
+			}
+    	} catch (NoResultException e) {
+		}
+    	return ret;
+	}
 }
