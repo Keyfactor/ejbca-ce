@@ -335,6 +335,7 @@ public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @ejb.transaction type="Supports"
      *
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public LogConfiguration loadLogConfiguration(int caid) {
         // Check if log configuration exists, else create one.
         LogConfiguration ret = null; 
