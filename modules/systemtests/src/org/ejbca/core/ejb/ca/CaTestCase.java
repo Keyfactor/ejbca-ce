@@ -63,8 +63,6 @@ public abstract class CaTestCase extends TestCase {
     
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    private Admin admin;
-
     private AuthorizationSessionRemote authorizationSession = null;
     protected CAAdminSessionRemote caAdminSessionRemote = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
@@ -89,7 +87,6 @@ public abstract class CaTestCase extends TestCase {
     }
 
     public void setupInterfaces() {
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
         authorizationSession = InterfaceCache.getAuthorizationSession();
         caAdminSessionRemote = InterfaceCache.getCAAdminSession();
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();
@@ -102,7 +99,6 @@ public abstract class CaTestCase extends TestCase {
 
     public void tearDown() throws Exception {
         super.tearDown();
-        admin = null;
     }
 
     /**
@@ -139,6 +135,7 @@ public abstract class CaTestCase extends TestCase {
      */
     public boolean createTestCA(String caName, int keyStrength) {
         log.trace(">createTestCA");
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         try {
             authorizationSession.initialize(admin, ("CN=" + caName).hashCode(), DEFAULT_SUPERADMIN_CN);
         } catch (AdminGroupExistsException e) {
@@ -244,7 +241,7 @@ public abstract class CaTestCase extends TestCase {
      */
     public Certificate getTestCACert(String caName) {
         Certificate cacert = null;
-
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         CAInfo cainfo = caAdminSessionRemote.getCAInfo(admin, getTestCAId(caName));
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -287,6 +284,7 @@ public abstract class CaTestCase extends TestCase {
      */
     public boolean removeTestCA(String caName) {
         // Search for requested CA
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         try {
             CAInfo caInfo = caAdminSessionRemote.getCAInfo(admin, caName);
             if (caInfo == null) {
