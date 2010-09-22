@@ -37,7 +37,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
 	private CAAdminSession caAdminSession;	// was *Local
     private AuthorizationSession authorizationsession;	// was *Local
     private Admin administrator;    
-    private Collection authorizedadmingroups;
+    private Collection<AdminGroup> authorizedadmingroups;
     private InformationMemory informationmemory;
 
     /** Creates a new instance of ProfileDataHandler */
@@ -102,7 +102,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * Method returning a Collection of authorized AdminGroups.
      * Only the fields admingroup name and CA id is filled in these objects.
      */
-    public Collection getAdminGroupNames(){ 
+    public Collection<AdminGroup> getAdminGroupNames(){ 
       if (this.authorizedadmingroups==null) {
         this.authorizedadmingroups = authorizationsession.getAuthorizedAdminGroupNames(administrator, caAdminSession.getAvailableCAs(administrator));    
       }
@@ -198,10 +198,10 @@ public class AuthorizationDataHandler implements java.io.Serializable {
       // Authorized to group
       authorizationsession.isAuthorizedToGroup(administrator, admingroup);
       // Check if admin group is among available admin groups
-      Iterator iter = getAdminGroupNames().iterator();
+      Iterator<AdminGroup> iter = getAdminGroupNames().iterator();
       boolean exists = false;
       while (iter.hasNext()) {
-        AdminGroup next = (AdminGroup) iter.next();  
+        AdminGroup next = iter.next();  
         if (next.getAdminGroupName().equals(admingroup)) {
           exists = true;
         }
@@ -211,10 +211,10 @@ public class AuthorizationDataHandler implements java.io.Serializable {
       }
     }
     
-    private void authorizedToAddAccessRules(Collection accessrules) throws AuthorizationDeniedException{
-      Iterator iter = accessrules.iterator();
+    private void authorizedToAddAccessRules(Collection<AccessRule> accessrules) throws AuthorizationDeniedException{
+      Iterator<AccessRule> iter = accessrules.iterator();
       while (iter.hasNext()) {
-        if (!this.informationmemory.getAuthorizedAccessRules().contains(((AccessRule) iter.next()).getAccessRule())) {  
+        if (!this.informationmemory.getAuthorizedAccessRules().contains(iter.next().getAccessRule())) {  
           throw new AuthorizationDeniedException("Accessruleset contained non authorized access rules");
         }
       }

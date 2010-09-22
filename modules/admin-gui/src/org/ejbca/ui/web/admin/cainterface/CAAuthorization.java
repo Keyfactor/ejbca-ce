@@ -62,7 +62,7 @@ public class CAAuthorization implements Serializable {
      * Method returning a Collection of authorized CA id's (Integer).
      *
      */
-    public Collection getAuthorizedCAIds() {         
+    public Collection<Integer> getAuthorizedCAIds() {         
     	if(authcas == null || authcas.size() == 0){
     		authcas = caadminsession.getAvailableCAs(admin);
     	}

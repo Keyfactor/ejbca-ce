@@ -266,7 +266,7 @@ public class InformationMemory implements Serializable {
     /**
      * Returns a Collection of Integer containing authorized CA ids.
      */    
-    public Collection getAuthorizedCAIds(){
+    public Collection<Integer> getAuthorizedCAIds(){
       return caauthorization.getAuthorizedCAIds();  
     } 
     

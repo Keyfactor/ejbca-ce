@@ -33,32 +33,21 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.log.LogSession;
-import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
@@ -140,7 +129,7 @@ public class EjbcaWebBean implements Serializable {
     		administrator = userAdminSession.getAdmin(certificates[0]);    		
     	} // else we have already defined an administrator, for example in initialize_errorpage
 
-    	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raAdminSession, authorizationSession);        
+    	globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, raAdminSession, authorizationSession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
     		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, authorizationSession, certificateStoreSession, hardTokenSession,
@@ -593,7 +582,7 @@ public class EjbcaWebBean implements Serializable {
                                           ,currentadminpreference.getSecondaryLanguage());
     }
   
-    public Collection getAuthorizedCAIds(){
+    public Collection<Integer> getAuthorizedCAIds(){
       return this.informationmemory.getAuthorizedCAIds();
     }
     

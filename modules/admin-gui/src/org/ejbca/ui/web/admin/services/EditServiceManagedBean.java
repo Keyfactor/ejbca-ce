@@ -60,15 +60,11 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 public class EditServiceManagedBean extends BaseManagedBean {
 
     private static final long serialVersionUID = 1L;
-
     private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
-	
-	private ServiceConfigurationView serviceConfigurationView;
-	
-	private String serviceName = "";
-	
 
-	
+	private ServiceConfigurationView serviceConfigurationView;
+	private String serviceName = "";
+
 	public EditServiceManagedBean(){
         try {
 			setServiceConfiguration(new ServiceConfiguration());
@@ -113,16 +109,16 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
 	public String save(){
 		String retval = "listservices";
-		ArrayList errorMessages = new ArrayList();
+		ArrayList<String> errorMessages = new ArrayList<String>();
 		try {
 			serviceConfigurationView.getServiceConfiguration(errorMessages);
 			if(errorMessages.size() == 0){
 			  EjbcaJSFHelper.getBean().getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages), false);
 			  EjbcaJSFHelper.getBean().getServiceSession().activateServiceTimer(getAdmin(), serviceName);
 			}else{
-				Iterator iter = errorMessages.iterator();
+				Iterator<String> iter = errorMessages.iterator();
 				while(iter.hasNext()){
-					addErrorMessage((String) iter.next());
+					addErrorMessage(iter.next());
 				}
 				
 				retval = null;				

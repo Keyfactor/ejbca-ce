@@ -10,6 +10,12 @@
 
    <description><![CDATA[EJBCA Administration web]]></description>
 
+    <!-- TODO: Disable this when EJBCA 4 is fully stable. -->
+    <context-param>
+        <param-name>com.sun.faces.validateXml</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
    <servlet>
       <description><![CDATA[Returns the specified CA certificate]]></description>
       <display-name>CACertServlet</display-name>
