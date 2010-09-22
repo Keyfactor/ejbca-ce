@@ -175,9 +175,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	
 	public void apply() {
 		log.trace(">apply");
-		List list = caInfoList;
-		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
-			CAWrapper wrapper = (CAWrapper) iterator.next();
+		List<CAWrapper> list = caInfoList;
+		for (Iterator<CAWrapper> iterator = list.iterator(); iterator.hasNext();) {
+			CAWrapper wrapper = iterator.next();
 			try {
 				String option = wrapper.getActivateOption();
 				if (option.equals(CAActivationMBean.ACTIVATE)) {
