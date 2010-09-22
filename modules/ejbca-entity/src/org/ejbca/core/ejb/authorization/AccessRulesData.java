@@ -20,6 +20,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -97,4 +98,11 @@ public class AccessRulesData implements Serializable {
 		AccessRulesDataPK accessRulesDataPK = new AccessRulesDataPK(admingroupname, caid, accessrule); 
 		return findByPrimeKey(entityManager, accessRulesDataPK);
 	}
+
+	/** @return return the count. */
+	public static long findCountByCustomQuery(EntityManager entityManager, String whereClause) {
+		Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM ApprovalData a WHERE " + whereClause, Long.class);
+		return ((Long)query.getSingleResult()).longValue();
+	}
+
 }

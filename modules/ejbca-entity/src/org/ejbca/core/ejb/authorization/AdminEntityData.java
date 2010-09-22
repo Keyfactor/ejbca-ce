@@ -20,6 +20,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -97,4 +98,10 @@ public class AdminEntityData implements Serializable {
 		return entityManager.find(AdminEntityData.class, new AdminEntityDataPK(adminGroupName, cAId, matchWith, matchType, matchValue));
 	}
 
+	/** @return return the count. */
+	public static long findCountByCaId(EntityManager entityManager, int caId) {
+		Query query = entityManager.createQuery("SELECT COUNT(a) FROM AdminEntityData a WHERE a.caId=:caId");
+		query.setParameter("caId", caId);
+		return ((Long)query.getSingleResult()).longValue();
+	}
 }
