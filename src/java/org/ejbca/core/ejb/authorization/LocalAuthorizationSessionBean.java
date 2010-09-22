@@ -13,9 +13,6 @@
 
 package org.ejbca.core.ejb.authorization;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,7 +33,6 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.log.LogSessionLocal;
@@ -51,7 +47,6 @@ import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.util.JDBCUtil;
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as
@@ -867,31 +862,8 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsEndEntityProfileInRules(Admin admin, int profileid) {
         log.trace(">existsEndEntityProfileInRules()");
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int count = 1; // return true as default.
-
-        String whereclause = "accessRule  LIKE '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "%'";
-
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from AccessRulesData where " + whereclause);
-            // Execute query.
-            rs = ps.executeQuery();
-            // Assemble result.
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-            log.trace("<existsEndEntityProfileInRules()");
-            return count > 0;
-
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+        String whereClause = "accessRule  LIKE '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "%'";
+        return AccessRulesData.findCountByCustomQuery(entityManager, whereClause) > 0;
     }
 
     /**
@@ -945,29 +917,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      */
     private boolean existsCAInAdminGroups(int caid) {
         log.trace(">existsCAInAdminGroups()");
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int count = 1; // return true as default.
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from AdminEntityData where cAId = ?");
-            ps.setInt(1, caid);
-            // Execute query.
-            rs = ps.executeQuery();
-            // Assemble result.
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-            boolean exists = count > 0;
-            log.trace("<existsCAInAdminGroups(): " + exists);
-            return exists;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+        return AdminEntityData.findCountByCaId(entityManager, caid) > 0;
     }
 
     /**
@@ -976,31 +926,8 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      */
     private boolean existsCAInAccessRules(int caid) {
         log.trace(">existsCAInAccessRules()");
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int count = 1; // return true as default.
-
-        String whereclause = "accessRule  LIKE '" + AccessRulesConstants.CABASE + "/" + caid + "%'";
-
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from AccessRulesData where " + whereclause);
-            // Execute query.
-            rs = ps.executeQuery();
-            // Assemble result.
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-            boolean exists = count > 0;
-            log.trace("<existsCAInAccessRules(): " + exists);
-            return exists;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+        String whereClause = "accessRule LIKE '" + AccessRulesConstants.CABASE + "/" + caid + "%'";
+        return AccessRulesData.findCountByCustomQuery(entityManager, whereClause) > 0;
     }
 
     /**
