@@ -1,11 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<!DOCTYPE faces-config PUBLIC
-  "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
-  "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
+<faces-config version="1.2"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+    http://java.sun.com/xml/ns/javaee/
+    web-facesconfig_1_2.xsd"
+    >
 
-<faces-config>
-    <managed-bean>
+  <managed-bean>
     <managed-bean-name>web</managed-bean-name>
     <managed-bean-class>org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper</managed-bean-class>
     <managed-bean-scope>session</managed-bean-scope>
@@ -104,4 +107,4 @@
   		<to-view-id>/services/editservice.jsp</to-view-id>
   	</navigation-case>
   </navigation-rule>
-  </faces-config>
+</faces-config>

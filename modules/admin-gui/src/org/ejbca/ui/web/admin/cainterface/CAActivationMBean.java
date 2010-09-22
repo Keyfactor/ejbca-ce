@@ -54,7 +54,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private CADataHandler cadatahandler;
 	private CAInterfaceBean caBean;
 	private String authenticationcode;
-	private List caInfoList;
+	private List<CAWrapper> caInfoList;
 	private Admin administrator;
 	private CertificateStoreSession certificatesession;
 	private CAAdminSession caadminsession;
@@ -90,7 +90,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 			new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);
 			cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, createCrlSession, webBean);
-			caInfoList = new ArrayList();
+			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();
 		} catch (Exception e){
 			log.error("Error initializing bean: ", e);
@@ -101,11 +101,11 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	 * 
 	 * @return List of CAWrapper
 	 */
-	public List getAuthorizedCAWrappers() {
+	public List<CAWrapper> getAuthorizedCAWrappers() {
 		initializeWrappers();
-		Iterator it = caInfoList.iterator();
+		Iterator<CAWrapper> it = caInfoList.iterator();
 		while ( it.hasNext() ) {
-			CAWrapper temp = (CAWrapper) it.next();
+			CAWrapper temp = it.next();
 			try {
 				temp.setCAInfo(caBean.getCAInfo(temp.getID()).getCAInfo());
 			} catch (Exception e) {
@@ -116,14 +116,14 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	}
 
 	public void initializeWrappers() {
-		Collection idList = webBean.getAuthorizedCAIds();
-		Iterator it = idList.iterator();
+		Collection<Integer> idList = webBean.getAuthorizedCAIds();
+		Iterator<Integer> it = idList.iterator();
 		while ( it.hasNext() ) {
-			Integer caid = (Integer) it.next();
+			Integer caid = it.next();
 			boolean inList = false;
-			Iterator tempIt = caInfoList.iterator();
+			Iterator<CAWrapper> tempIt = caInfoList.iterator();
 			while (tempIt.hasNext()) {
-				CAWrapper wrapper = (CAWrapper)tempIt.next();
+				CAWrapper wrapper = tempIt.next();
 				if (wrapper.getID() == caid.intValue() ) {
 					inList = true;
 				}
@@ -216,12 +216,12 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		return KEEPCURRENT;
 	}
 	
-	public List getHasMessages() {
+	public List<CAWrapper> getHasMessages() {
 		log.trace(">getHasMessages");
-		List list = caInfoList;
-		List hasMessages = new ArrayList();
-		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
-			CAWrapper wrapper = (CAWrapper) iterator.next();
+		List<CAWrapper> list = caInfoList;
+		List<CAWrapper> hasMessages = new ArrayList<CAWrapper>();
+		for (Iterator<CAWrapper> iterator = list.iterator(); iterator.hasNext();) {
+			CAWrapper wrapper = iterator.next();
 			String msg = wrapper.getCAActivationMessage();
 			if ( (msg != null) && (!msg.equals("")) ) {
 				hasMessages.add(wrapper);

@@ -37,15 +37,15 @@ import org.ejbca.util.query.Query;
  * @author Philip Vendil
  * @version $Id$
  */
-public class ListApproveActionSessionBean extends BaseManagedBean{
+public class ListApproveActionSessionBean extends BaseManagedBean {
 	//private static final Logger log = Logger.getLogger(ListApproveActionSessionBean.class);
-	
+
 	public static int QUERY_MAX_NUM_ROWS = 300;
 	
-	private List availableStatus;
+	private List<SelectItem> availableStatus;
 	private String selectedStatus;	
 	
-	private List availableTimeSpans;
+	private List<SelectItem> availableTimeSpans;
 	private String selectedTimeSpan;
 	
 	private ApprovalDataVOViewList listData;
@@ -58,16 +58,14 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 	
 
 	public ListApproveActionSessionBean() throws AuthorizationDeniedException{		      			 			 	 	
-		
 	  setSelectedStatus("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
 	  setSelectedTimeSpan(TIME_30MIN);
-	  
       list();
 	}
 	
-	public List getAvailableStatus() {
+	public List<SelectItem> getAvailableStatus() {
 		if(availableStatus == null){
-			  availableStatus = new ArrayList();
+			  availableStatus = new ArrayList<SelectItem>();
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,getEjbcaWebBean().getText("WAITING", true),""));	 
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXPIRED,getEjbcaWebBean().getText("EXPIRED", true),""));
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED,getEjbcaWebBean().getText("EXPIREDANDNOTIFIED", true),""));	  
@@ -78,44 +76,37 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_REJECTED,getEjbcaWebBean().getText("REJECTED", true),""));
 			  availableStatus.add(new SelectItem(ALL_STATUSES,getEjbcaWebBean().getText("ALL", true),""));			
 		}
-		
-		
 		return availableStatus;
 	}
-	public void setAvailableStatus(List availableStatus) {
+
+	public void setAvailableStatus(List<SelectItem> availableStatus) {
 		this.availableStatus = availableStatus;
 	}
 
-	
-	
-	public List getAvailableTimeSpans() {
+	public List<SelectItem> getAvailableTimeSpans() {
 		if(availableTimeSpans == null){
-		  availableTimeSpans = new ArrayList();
+		  availableTimeSpans = new ArrayList<SelectItem>();
 		  availableTimeSpans.add(new SelectItem(TIME_5MIN ,"5 " + getEjbcaWebBean().getText("MINUTES", true),""));	 
 		  availableTimeSpans.add(new SelectItem(TIME_30MIN,"30 " + getEjbcaWebBean().getText("MINUTES", true),""));
 		  availableTimeSpans.add(new SelectItem(TIME_8HOURS,"8 " + getEjbcaWebBean().getText("HOURS", true),""));	
 		  availableTimeSpans.add(new SelectItem("0",getEjbcaWebBean().getText("EVER", true),""));	
 		}
-		
 		return availableTimeSpans;
 	}
-	public void setAvailableTimeSpans(List availableTimeSpans) {
+
+	public void setAvailableTimeSpans(List<SelectItem> availableTimeSpans) {
 		this.availableTimeSpans = availableTimeSpans;
 	}
 
-	
 	public String list() {
-				
 		Query query = new Query(Query.TYPE_APPROVALQUERY);
-		
 		if(selectedStatus.equals(ALL_STATUSES)){			
 			query.add(getStartDate(), new Date());			
 		}else{
 			query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, selectedStatus, Query.CONNECTOR_AND);
 			query.add(getStartDate(), new Date());
 		}
-		
-        List result = new ArrayList();
+        List<ApprovalDataVO> result = new ArrayList<ApprovalDataVO>();
 		try {
 	        RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), EjbcaJSFHelper.getBean().getRaAdminSession(), EjbcaJSFHelper.getBean().getAuthorizationSession(), EjbcaJSFHelper.getBean().getCAAdminSession());
 			result = EjbcaJSFHelper.getBean().getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
@@ -129,10 +120,7 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 		} catch (AuthorizationDeniedException e) {
 			addErrorMessage("AUTHORIZATIONDENIED");
 		}
-		
 		listData = new ApprovalDataVOViewList(result);
-
-		
 		return null;		
 	}
 	
@@ -143,7 +131,6 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 		if(Integer.parseInt(selectedTimeSpan) == 0){
 			return new Date(0);
 		}
-		
 		return new Date(new Date().getTime() - Integer.parseInt(selectedTimeSpan));
 	}
 	
@@ -154,33 +141,26 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 		if(listData.size() == 1){
 			return "jsfrow1";
 		}
-		
 		return "jsfrow1, jsfrow2";
 	}
 
 	public List getListData() {
-		
 		return listData.getData();
 	}
-	
 
-    public String getSort()
-    {
+    public String getSort() {
         return listData.getSort();
     }
 
-    public void setSort(String sort)
-    {
+    public void setSort(String sort) {
     	listData.setSort(sort);
     }
 
-    public boolean isAscending()
-    {
+    public boolean isAscending() {
         return listData.isAscending();
     }
 
-    public void setAscending(boolean ascending)
-    {
+    public void setAscending(boolean ascending) {
         listData.setAscending(ascending);
     }
 
@@ -199,8 +179,4 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 	public void setSelectedTimeSpan(String selectedTimeSpan) {
 		this.selectedTimeSpan = selectedTimeSpan;
 	}
-	
-
-
-	
 }
