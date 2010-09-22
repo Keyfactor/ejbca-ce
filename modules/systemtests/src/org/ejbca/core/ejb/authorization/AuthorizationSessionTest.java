@@ -46,7 +46,7 @@ public class AuthorizationSessionTest extends CaTestCase {
 
     //private static final Logger log = Logger.getLogger(AuthorizationSessionTest.class);
 
-    private Admin admin;
+    private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);;
 
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
@@ -79,8 +79,6 @@ public class AuthorizationSessionTest extends CaTestCase {
      *             error
      */
     public void testInitialize() throws Exception {
-
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
         int caid = "CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
 
         // Initialize with a new CA
@@ -143,7 +141,6 @@ public class AuthorizationSessionTest extends CaTestCase {
     }
 
     public void testIsAuthorizedInternalUserRegularApproveIdentity() {
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
         try {
             authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
         } catch (AuthorizationDeniedException e) {
