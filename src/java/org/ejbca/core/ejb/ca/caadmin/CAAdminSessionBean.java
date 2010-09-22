@@ -37,10 +37,6 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -66,7 +62,6 @@ import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
@@ -136,7 +131,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SimpleTime;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DnComponents;
@@ -1151,29 +1145,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.interface-method
      */
     public void verifyExistenceOfCA(int caid) throws CADoesntExistsException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            final String sql = "SELECT cAId FROM CAData WHERE cAId=?";
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, caid);
-            rs = ps.executeQuery();
-            ps.setFetchSize(1);
-            ps.setMaxRows(1);
-            rs = ps.executeQuery();
-            if (!rs.next()) {
-                String msg = "No CA with id " + caid + " found.";
-                log.debug(msg);
-                throw new CADoesntExistsException(msg);
-            }
-        } catch (SQLException e) {
-            log.error("", e);
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+    	// TODO: Test if "SELECT a.caId FROM CAData a WHERE a.caId=:caId" improves performance
+    	CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
     }
 
     /**
@@ -1197,7 +1170,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     /**
-     * Method returning id's of all CA's available in the system database. Not
+     * Method returning id's of all CA's available in the system database. Note
      * that this method does not check for authorization and can thus leak
      * information.
      * 
@@ -1207,25 +1180,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<Integer> getAvailableCAs() {
-        ArrayList<Integer> al = new ArrayList<Integer>();
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            final String sql = "SELECT cAId FROM CAData";
-            ps = con.prepareStatement(sql);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                al.add(rs.getInt(1));
-            }
-        } catch (Exception e) {
-            log.error("", e);
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
-        return al;
+    	return CAData.findAllCaIds(entityManager);
     }
 
     /**
