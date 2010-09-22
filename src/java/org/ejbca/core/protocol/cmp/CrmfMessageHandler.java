@@ -104,7 +104,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	
 	public CrmfMessageHandler(final Admin admin) throws CreateException, RemoteException {
 		this.admin = admin;
-		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
+		// Get EJB beans, we can not use local beans here because the TCP listener does not work with that
 		EjbRemoteHelper ejb = new EjbRemoteHelper();
 		this.signsession = ejb.getSignSession();
 		this.usersession = ejb.getUserAdminSession();
