@@ -128,7 +128,7 @@
 #cmp.tcp.enabled=false
 
 # The port number to listen to for TCP connections, if TCP transport is enabled.
-# Please not that the default port number, below 1024, requires JBoss to be run with root privileges.
+# Please not that the default port number, below 1024, requires the application server to be run with root privileges.
 # It may be more convenient to use a high port number (like 5587) and forward port 829 from the os/firewall level instead.
 #
 # Default: 829
