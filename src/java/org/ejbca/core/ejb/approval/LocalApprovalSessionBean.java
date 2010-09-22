@@ -14,9 +14,6 @@
 package org.ejbca.core.ejb.approval;
 
 import java.security.cert.Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,14 +34,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
-import org.ejbca.core.model.approval.ApprovalDataUtil;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
@@ -58,7 +53,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -136,11 +130,6 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private LogSessionLocal logSession;
-
-    /**
-     * Columns in the database used in select
-     */
-    private static final String APPROVALDATA_COL = "id, approvalId, approvalType, endEntityProfileId, cAId, reqAdminCertIssuerDn, reqAdminCertSn, status, approvalData, requestData, requestDate, expireDate, remainingApprovals";
 
     /**
      * Method used to add an approval to database.
@@ -613,98 +602,32 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
             throws AuthorizationDeniedException, IllegalQueryException {
         log.trace(">query()");
         ArrayList<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>();
-        String sqlquery = "select " + APPROVALDATA_COL + " from ApprovalData where ";
+        String customQuery = "";
         // Check if query is legal.
         if (query != null && !query.isLegalQuery()) {
             throw new IllegalQueryException();
         }
-
         if (query != null) {
-            sqlquery += query.getQueryString();
+            customQuery += query.getQueryString();
         }
         if (!caAuthorizationString.equals("") && query != null) {
-            sqlquery += " AND " + caAuthorizationString;
+            customQuery += " AND " + caAuthorizationString;
         } else {
-            sqlquery += caAuthorizationString;
+            customQuery += caAuthorizationString;
         }
         if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
             if (caAuthorizationString.equals("") && query == null) {
-                sqlquery += endEntityProfileAuthorizationString;
+                customQuery += endEntityProfileAuthorizationString;
             } else {
-                sqlquery += " AND " + endEntityProfileAuthorizationString;
+                customQuery += " AND " + endEntityProfileAuthorizationString;
             }
         }
-
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            log.debug(sqlquery);
-
-            ps = con.prepareStatement(sqlquery);
-
-            // Execute query.
-            rs = ps.executeQuery();
-            int direction = rs.getFetchDirection();
-            if (direction == ResultSet.FETCH_FORWARD) {
-                // Special handling for databases that do not support backward
-                // moving in the RS, i.e. Hsql
-                if (index < 0) {
-                    throw new Exception("Database does only support forward fetching, but index is " + index);
-                }
-                for (int i = 0; i < index; i++) {
-                    rs.next();
-                }
-            } else {
-                // Oracles JDBC driver in Weblogic 9.x does not support
-                // ResultSet.relative,
-                // that is why we have to move around manually.
-                boolean forward = true;
-                if (index < 0) {
-                    forward = false;
-                }
-                for (int i = 0; i < index; i++) {
-                    if (forward) {
-                        rs.next();
-                    } else {
-                        rs.previous();
-                    }
-                }
-            }
-            // Assemble result.
-            while (rs.next() && returnData.size() < numberofrows) {
-
-                // Read the variables in order, some databases (i.e. MS-SQL)
-                // seems to not like out-of-order read of columns (i.e. nr 15
-                // before nr 1)
-                int id = rs.getInt(1);
-                int approvalid = rs.getInt(2);
-                int approvaltype = rs.getInt(3);
-                int endentityprofileId = rs.getInt(4);
-                int caid = rs.getInt(5);
-                String reqadmincertissuerdn = rs.getString(6);
-                String reqadmincertserial = rs.getString(7);
-                int status = rs.getInt(8);
-                String approvaldatastring = rs.getString(9);
-                String requestdatastring = rs.getString(10);
-                long requestdate = rs.getLong(11);
-                long expiredate = rs.getLong(12);
-                int remainingapprovals = rs.getInt(13);
-                ApprovalDataVO data = new ApprovalDataVO(id, approvalid, approvaltype, endentityprofileId, caid, reqadmincertissuerdn, reqadmincertserial,
-                        status, ApprovalDataUtil.getApprovals(approvaldatastring), ApprovalDataUtil.getApprovalRequest(requestdatastring),
-                        new Date(requestdate), new Date(expiredate), remainingapprovals);
-
-                returnData.add(data);
-            }
-            log.trace("<query()");
-            return returnData;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
+        List<ApprovalData> ads = ApprovalData.findByCustomQuery(entityManager, index, numberofrows, customQuery);
+        for (ApprovalData ad : ads) {
+            returnData.add(ad.getApprovalDataVO());
         }
+        log.trace("<query()");
+        return returnData;
     }
 
     /**
@@ -718,24 +641,7 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List getAllPendingApprovalIds() {
-        List<Integer> ids = new ArrayList<Integer>();
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("SELECT approvalId FROM ApprovalData WHERE status=?");
-            ps.setInt(1, ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                ids.add(new Integer(rs.getInt(1)));
-            }
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
-        return ids;
+    	return ApprovalData.findByApprovalIdsByStatus(entityManager, ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
     }
 
     private void sendApprovalNotification(Admin admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
