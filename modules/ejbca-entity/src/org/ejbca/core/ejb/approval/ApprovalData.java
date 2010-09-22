@@ -493,8 +493,23 @@ s	 * @throws ApprovalRequestExpiredException
 	
 	/** @return return the query results as a List. */
 	public static List<ApprovalData> findByApprovalIdNonExpired(EntityManager entityManager, int approvalid) {
-		Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid AND (a.status>-3)");
+		Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
 		query.setParameter("approvalid", approvalid);
+		return query.getResultList();
+	}
+
+	/** @return return the query results as a List<Integer>. */
+	public static List<Integer> findByApprovalIdsByStatus(EntityManager entityManager, int status) {
+		Query query = entityManager.createQuery("SELECT a.approvalid FROM ApprovalData a WHERE a.status=:status");
+		query.setParameter("status", status);
+		return query.getResultList();
+	}
+
+	/** @return return the query results as a List<ApprovalData>. */
+	public static List<ApprovalData> findByCustomQuery(EntityManager entityManager, int index, int numberofrows, String customQuery) {
+		Query query = entityManager.createNativeQuery("SELECT * FROM ApprovalData a WHERE " + customQuery, ApprovalData.class);
+		query.setFirstResult(index);
+		query.setMaxResults(numberofrows);
 		return query.getResultList();
 	}
 
