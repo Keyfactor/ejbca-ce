@@ -25,9 +25,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.log.Admin;
@@ -52,11 +52,11 @@ public class RenewServlet extends HttpServlet {
 	public static final String BUTTONRENEW = "buttonrenew";
 
 	@EJB
-	private CertificateStoreSessionRemote certificateStoreSession;
+	private CertificateStoreSessionLocal certificateStoreSession;
 	@EJB
-	private RaAdminSessionRemote raadminsession;
+	private RaAdminSessionLocal raadminsession;
 	@EJB
-	private UserAdminSessionRemote useradminhome;
+	private UserAdminSessionLocal useradminhome;
     
     /**
      * Servlet init
@@ -66,15 +66,10 @@ public class RenewServlet extends HttpServlet {
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-    
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProviderIfNotAvailable();
-
-            
-      
     }
 
-    
     public void doRequest(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     	
     	Admin admin = new Admin(Admin.TYPE_RA_USER);
