@@ -291,9 +291,15 @@ public class CAData implements Serializable {
 		return ret;
 	}
 
-	/** @return return the query results as a List. */
+	/** @return return the query results as a List<CAData>. */
 	public static List<CAData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("SELECT a FROM CAData a");
+		return query.getResultList();
+	}
+
+	/** @return return the query results as a List<Integer>. */
+	public static List<Integer> findAllCaIds(EntityManager entityManager) {
+		Query query = entityManager.createQuery("SELECT a.caId FROM CAData a");
 		return query.getResultList();
 	}
 }
