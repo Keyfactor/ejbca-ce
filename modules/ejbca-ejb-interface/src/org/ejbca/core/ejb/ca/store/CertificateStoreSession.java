@@ -55,8 +55,7 @@ public interface CertificateStoreSession {
      *            Administrator performing the operation
      * @param issuerdn
      *            the dn of the certificates issuer.
-     * @return Collection of fingerprints, i.e. Strings, reverse ordered by
-     *         expireDate where last expireDate is first in array.
+     * @return Collection of fingerprints, i.e. Strings
      */
     public java.util.Collection listAllCertificates(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn);
 

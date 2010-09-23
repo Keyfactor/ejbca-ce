@@ -228,6 +228,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     public void test19RevocationApprovals() throws Exception {
+    	log.trace(">test19RevocationApprovals");
         setUpAdmin();
         final String APPROVINGADMINNAME = "superadmin";
         final String TOKENSERIALNUMBER = "42424242";
@@ -331,6 +332,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 caAdminSessionRemote.removeCA(intAdmin, caID);
             }
         }
+    	log.trace("<test19RevocationApprovals");
     }
 
     public void test20KeyRecoverNewest() throws Exception {
