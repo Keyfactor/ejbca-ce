@@ -13,10 +13,7 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,7 +23,6 @@ import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -35,7 +31,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.store.CRLData;
 import org.ejbca.core.ejb.ca.store.CertificateData;
@@ -48,7 +43,6 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.util.JDBCUtil;
 
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchonously. 
@@ -178,7 +172,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
      * @ejb.interface-method view-type="both"
      */
     public int getPendingEntriesCountForPublisher(int publisherId) {
-    	return getPendingEntriesCountForPublisherInIntervals(publisherId, new int[]{0}, new int[]{-1})[0];
+    	return Long.valueOf(PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId)).intValue();
     }
     
     /**
@@ -200,44 +194,11 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if(lowerBounds.length != upperBounds.length) {
     		throw new IllegalArgumentException("lowerBounds and upperBounds must have equal length");
     	}
+    	List<BigInteger> entryCountList = PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId, lowerBounds, upperBounds);
     	int[] result = new int[lowerBounds.length];
-    	Connection con = null;
-    	PreparedStatement ps = null;
-    	ResultSet rs = null;
-    	try {
-	    	con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-	    	StringBuilder sql = new StringBuilder();
-	    	long now = new Date().getTime();
-	    	for(int i = 0; i < lowerBounds.length; i++) {
-	    		sql.append("select count(*) from PublisherQueueData where publisherId=");
-	    		sql.append(publisherId);
-	    		sql.append(" and publishStatus=");
-	    		sql.append(PublisherQueueData.STATUS_PENDING);
-	    		if(lowerBounds[i] > 0) {
-		    		sql.append(" and timeCreated < ");
-		    		sql.append(now - 1000 * lowerBounds[i]);
-	    		}
-	    		if(upperBounds[i] > 0) {
-		    		sql.append(" and timeCreated > ");
-		    		sql.append(now - 1000 * upperBounds[i]);
-	    		}
-	    		if(i < lowerBounds.length-1) {
-	    			sql.append(" union all ");
-	    		}
-	    	}
-	    	if (log.isDebugEnabled()) {
-	    		log.debug("Executing SQL: "+sql.toString());    			
-			}
-	    	ps = con.prepareStatement(sql.toString());
-			rs = ps.executeQuery();
-			for(int i = 0; i < lowerBounds.length && rs.next(); i++) {
-				result[i] = rs.getInt(1);
-			}
-    	} catch(SQLException e) {
-    		throw new EJBException(e);
-    	} finally {
-    		JDBCUtil.close(con, ps, rs);
-    	}
+		for(int i = 0; i < lowerBounds.length && i < result.length; i++) {
+			result[i] = entryCountList.get(i).intValue();
+		}
     	log.trace("<getPendingEntriesCountForPublisherInIntervals()");
     	return result;
     }
@@ -256,9 +217,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
             log.trace(">getPendingEntriesForPublisherWithLimit(publisherId: " + publisherId + ")");
     	}
     	Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();	
-        /**
-         * TODO: This code has been modified from JDBC to JPA fetching, which might negatively affect performance. Investigate. 
-         */		
+        //TODO: This code has been modified from JDBC to JPA fetching, which might negatively affect performance. Investigate. 
         List<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> publisherQueueDataList = org.ejbca.core.ejb.ca.publisher.PublisherQueueData
                 .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherQueueData.STATUS_PENDING, limit);
         for (org.ejbca.core.ejb.ca.publisher.PublisherQueueData publisherQueueData : publisherQueueDataList) {
