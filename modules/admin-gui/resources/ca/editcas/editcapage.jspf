@@ -1185,7 +1185,7 @@ function checkallfields(){
         <% } %>   
        <% if(editca && !isexternal && !waitingresponse){ %>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RENEWCA") %> <%= ejbcawebbean.getHelpReference("/manual.html#Renewing%20a%20SubCA%20signed%20by%20an%20external%20CA") %></td>
+      <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RENEWCA") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Renewing%20a%20SubCA%20signed%20by%20an%20external%20CA") %></td>
       <td width="51%" valign="top">             
         <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" > 
            &nbsp; <%= ejbcawebbean.getText("RENEWKEYS") %><input type="checkbox" name="<%=CHECKBOX_RENEWKEYS %>" value="<%=CHECKBOX_VALUE %>" >
