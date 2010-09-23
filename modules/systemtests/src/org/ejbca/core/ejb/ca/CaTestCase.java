@@ -327,6 +327,7 @@ public abstract class CaTestCase extends TestCase {
      */
     protected int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
             CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, int approvalCAID) throws Exception {
+    	log.debug("approvingAdmin=" + approvingAdmin.getAdminType() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType + " approvalCAID=" + approvalCAID);
         Collection userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
         Iterator i = userCerts.iterator();
         int approvedRevocations = 0;

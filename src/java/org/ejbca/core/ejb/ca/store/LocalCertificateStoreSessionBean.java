@@ -22,7 +22,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -251,16 +250,12 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public String getDatabaseStatus() {
 		String returnval = "";
-		Connection con = null;
 		try {
-		  con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-		  Statement statement = con.createStatement();
-		  statement.execute(EjbcaConfiguration.getHealthCheckDbQuery());		  
+			entityManager.createNativeQuery(EjbcaConfiguration.getHealthCheckDbQuery()).getResultList();
+			// TODO: Do we need to flush() the connection to avoid that this is executed in a batch after the method returns?
 		} catch (Exception e) {
 			returnval = "\nDB: Error creating connection to database: " + e.getMessage();
 			log.error("Error creating connection to database.",e);
-		} finally {
-			JDBCUtil.close(con);
 		}
 		return returnval;
     }
@@ -366,31 +361,13 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      *
      * @param admin    Administrator performing the operation
      * @param issuerdn the dn of the certificates issuer.
-     * @return Collection of fingerprints, i.e. Strings, reverse ordered by expireDate where last expireDate is first in array.
+     * @return Collection of fingerprints, i.e. Strings.
      * @ejb.interface-method
      */
     public Collection listAllCertificates(Admin admin, String issuerdn) {
     	log.trace(">listAllCertificates()");
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        String dn = CertTools.stringToBCDNString(StringTools.strip(issuerdn));
-        try {
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select fingerprint, expireDate from CertificateData where issuerDN=? ORDER BY expireDate DESC");
-            ps.setString(1, dn);
-            result = ps.executeQuery();
-            ArrayList<String> vect = new ArrayList<String>();
-            while (result.next()) {
-                vect.add(result.getString(1));
-            }
-            log.trace("<listAllCertificates()");
-            return vect;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
+    	// This method was only used from CertificateDataTest and it didn't care about the expireDate, so it will only select fingerprints now.
+    	return CertificateData.findFingerprintsByIssuerDN(entityManager, CertTools.stringToBCDNString(StringTools.strip(issuerdn)));
     }
 
     /**
@@ -406,63 +383,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public Collection listRevokedCertInfo(Admin admin, String issuerdn, long lastbasecrldate) {
     	log.trace(">listRevokedCertInfo()");
-
-    	Connection con = null;
-    	PreparedStatement ps = null;
-    	ResultSet result = null;
-    	String dn = CertTools.stringToBCDNString(StringTools.strip(issuerdn));
-    	try {
-    		// TODO:
-    		// This should only list a few thousand certificates at a time, in case there
-    		// are really many revoked certificates after some time...
-    		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-    		String sql = "select fingerprint, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and status=?";
-    		// For delta CRLs we must select both revoked certificates, and certificates that are active because they have been un-revoked
-    		String deltaCRLSql = "select fingerprint, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where issuerDN=? and revocationDate>? and (status=? or (status=? and revocationReason=?))";
-    		if (lastbasecrldate > 0) {
-    			sql = deltaCRLSql;
-    		}
-    		if (log.isDebugEnabled()) {
-        		log.debug("Executing SQL: "+sql);    			
-    		}
-    		ps = con.prepareStatement(sql);
-    		ps.setString(1, dn);
-    		if (lastbasecrldate > 0) {
-    			ps.setLong(2, lastbasecrldate);
-    			ps.setInt(3, SecConst.CERT_REVOKED);
-    			ps.setInt(4, SecConst.CERT_ACTIVE);
-    			ps.setInt(5, RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL);
-    		} else {
-    			ps.setInt(2, SecConst.CERT_REVOKED);            	
-    		}
-    		result = ps.executeQuery();
-    		log.trace("listRevokedCertInfo(): query done");
-    		ArrayList<RevokedCertInfo> vect = new ArrayList<RevokedCertInfo>();
-    		while (result.next()) {
-    			String fp = result.getString(1);
-    			BigInteger serNo = new BigInteger(result.getString(2));
-    			long exptime = result.getLong(3);
-    			Date expDate = null;
-    			if (exptime > 0) {
-    				expDate = new Date(exptime);
-    			}
-    			long revtime = result.getLong(4);
-    			Date revDate = null;
-    			if (revtime > 0) {
-    				revDate = new Date(revtime);            	
-    			}
-    			int revReason = result.getInt(5);
-    			RevokedCertInfo certinfo = new RevokedCertInfo(fp, serNo, revDate, revReason, expDate);
-    			// Add to the result
-    			vect.add(certinfo);
-    		}
-    		log.trace("<listRevokedCertInfo()");
-    		return vect;
-    	} catch (Exception e) {
-    		throw new EJBException(e);
-    	} finally {
-    		JDBCUtil.close(con, ps, result);
-    	}
+    	return CertificateData.getRevokedCertInfos(entityManager, CertTools.stringToBCDNString(StringTools.strip(issuerdn)), lastbasecrldate);
     }
 
     /**
@@ -625,33 +546,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesByExpireTimeWithLimit: "+expiretime);    		
     	}
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        ArrayList<String> returnval = new ArrayList<String>();
-        long currentdate = new Date().getTime();
-        try {
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("SELECT DISTINCT username FROM CertificateData WHERE expireDate>=? AND expireDate<? AND (status=? OR status=?)");
-            ps.setLong(1, currentdate);
-            ps.setLong(2, expiretime.getTime());
-            ps.setInt(3, SecConst.CERT_ACTIVE);
-            ps.setInt(4, SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
-            result = ps.executeQuery();
-            while (result.next() && returnval.size() <= SecConst.MAXIMUM_QUERY_ROWCOUNT + 1) {
-                if (result.getString(1) != null && !result.getString(1).equals("")) {
-                    returnval.add(result.getString(1));
-                }
-            }
-        	if (log.isTraceEnabled()) {
-        		log.trace("<findCertificatesByExpireTimeWithLimit()");
-        	}
-            return returnval;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
+    	return CertificateData.findUsernamesByExpireTimeWithLimit(entityManager, new Date().getTime(), expiretime.getTime());
     }
 
     /**

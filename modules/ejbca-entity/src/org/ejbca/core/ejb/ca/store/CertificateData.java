@@ -14,20 +14,24 @@
 package org.ejbca.core.ejb.ca.store;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Query;
+import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -46,6 +50,9 @@ import org.ejbca.util.keystore.KeyTools;
  */ 
 @Entity
 @Table(name="CertificateData")
+@SqlResultSetMapping(name = "RevokedCertInfoSubset", columns={
+		@ColumnResult(name="fingerprint"), @ColumnResult(name="serialNumber"), @ColumnResult(name="expireDate"), @ColumnResult(name="revocationDate"), @ColumnResult(name="revocationReason")}
+)
 public class CertificateData implements Serializable {
 
 	private static final long serialVersionUID = -8493105317760641442L;
@@ -581,6 +588,13 @@ public class CertificateData implements Serializable {
 		return query.getResultList();
 	}
 
+	/** @return return the query results as a List<String>. */
+	public static List<String> findFingerprintsByIssuerDN(EntityManager entityManager, String issuerDN) {
+		Query query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN");
+		query.setParameter("issuerDN", issuerDN);
+		return query.getResultList();
+	}
+
 	/**
 	 * Get next batchSize row ordered by fingerprint
 	 * @param entityManager
@@ -629,5 +643,47 @@ public class CertificateData implements Serializable {
 	public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
 		Query query = entityManager.createQuery("SELECT DISTINCT certificateProfileId FROM CertificateData ORDER BY certificateProfileId");
 	    return query.getResultList();
+	}
+
+	/** @return return the query results as a List<RevokedCertInfo>. */
+	public static List<RevokedCertInfo> getRevokedCertInfos(EntityManager entityManager, String issuerDN, long lastbasecrldate) {
+		Query query;
+		if (lastbasecrldate > 0) {
+			query = entityManager.createNativeQuery("SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
+	    			+ "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR (a.status=:status2 AND a.revocationReason=:revocationReason))", "RevokedCertInfoSubset");
+			query.setParameter("issuerDN", issuerDN);
+			query.setParameter("revocationDate", lastbasecrldate);
+			query.setParameter("status1", SecConst.CERT_REVOKED);
+			query.setParameter("status2", SecConst.CERT_ACTIVE);
+			query.setParameter("revocationReason", RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL);
+		} else {
+			query = entityManager.createNativeQuery("SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
+					+ "a.issuerDN=:issuerDN AND a.status=:status", "RevokedCertInfoSubset");
+			query.setParameter("issuerDN", issuerDN);
+			query.setParameter("status", SecConst.CERT_REVOKED);
+		}
+		List<Object[]> incompleteCertificateDatas = query.getResultList();
+		List<RevokedCertInfo> revokedCertInfos = new ArrayList<RevokedCertInfo>();
+		for (Object[] current : incompleteCertificateDatas) {
+			// The order of the results are defined by the SqlResultSetMapping annotation
+			String fingerprint = (String) current[0];
+			BigInteger serialNumber = new BigInteger((String)current[1]);
+			Date expireDate = new Date(((BigInteger)current[2]).longValue());
+			Date revocationDate = new Date(((BigInteger)current[3]).longValue());
+			int revocationReason = (((Integer)current[4])).intValue();
+			revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
+		}
+	    return revokedCertInfos;
+	}
+	
+	public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime) {
+		// TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
+		Query query = entityManager.createQuery("SELECT DISTINCT a.username FROM CertificateData a WHERE a.expireDate>=:minExpireTime AND a.expireDate<:maxExpireTime AND (a.status=:status1 OR a.status=:status2) AND a.username NOT NULL");
+		query.setParameter("minExpireTime", minExpireTime);
+		query.setParameter("maxExpireTime", maxExpireTime);
+		query.setParameter("status1", SecConst.CERT_ACTIVE);
+		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+		query.setMaxResults(SecConst.MAXIMUM_QUERY_ROWCOUNT);
+		return query.getResultList();
 	}
 }
