@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.crl;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.cert.X509CRL;
@@ -271,6 +270,7 @@ public class CreateCRLSessionTest extends CaTestCase {
         } // If no revoked certificates exist at all, this test passed...
 
         certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, userDN);
+        assertTrue("Failed to revoke certificate!", certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
         // Create a new CRL again...
         createCrlSession.run(admin, ca);
         // Check that our newly signed certificate IS present in a new CRL
@@ -290,6 +290,7 @@ public class CreateCRLSessionTest extends CaTestCase {
         assertTrue(found);
 
         certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED, userDN);
+        assertTrue("Was able to re-activate permanently revoked certificate!", certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
         // Create a new CRL again...
         createCrlSession.run(admin, ca);
         // Check that our newly signed certificate is present in the new CRL,
