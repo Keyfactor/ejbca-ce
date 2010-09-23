@@ -13,7 +13,14 @@
  
 package org.ejbca.core.model.ca.publisher;
 
+import java.math.BigInteger;
 import java.util.Date;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.apache.log4j.Logger;
 
 
 /**
@@ -30,7 +37,9 @@ public class PublisherQueueData implements java.io.Serializable {
     
     public static final int PUBLISH_TYPE_CERT = 1; // Is it a certificate we publish
     public static final int PUBLISH_TYPE_CRL  = 2; // Is it a CRL we publish
-    
+
+    private static final Logger log = Logger.getLogger(PublisherQueueData.class);
+
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -132,4 +141,40 @@ public class PublisherQueueData implements java.io.Serializable {
 		this.volatileData = volatileData;
 	}
     
+	/** @return return the count. */
+	public static long findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId) {
+		Query query = entityManager.createQuery("SELECT COUNT(a) FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND publishStatus=" + PublisherQueueData.STATUS_PENDING);
+		query.setParameter("publisherId", publisherId);
+		return ((Long)query.getSingleResult()).longValue();
+	}
+
+	/**
+	 * @return the count of pending entries for a publisher in the specified intervals.
+	 */
+	public static List<BigInteger> findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId, int[] lowerBounds, int[] upperBounds) {
+    	StringBuilder sql = new StringBuilder();
+    	long now = new Date().getTime();
+    	for(int i = 0; i < lowerBounds.length; i++) {
+    		sql.append("SELECT COUNT(*) FROM PublisherQueueData where publisherId=");
+    		sql.append(publisherId);
+    		sql.append(" AND publishStatus=");
+    		sql.append(PublisherQueueData.STATUS_PENDING);
+    		if(lowerBounds[i] > 0) {
+	    		sql.append(" AND timeCreated < ");
+	    		sql.append(now - 1000 * lowerBounds[i]);
+    		}
+    		if(upperBounds[i] > 0) {
+	    		sql.append(" AND timeCreated > ");
+	    		sql.append(now - 1000 * upperBounds[i]);
+    		}
+    		if(i < lowerBounds.length-1) {
+    			sql.append(" UNION ALL ");
+    		}
+    	}
+    	if (log.isDebugEnabled()) {
+    		log.debug("findCountOfPendingEntriesForPublisher executing SQL: "+sql.toString());    			
+		}
+    	Query query = entityManager.createNativeQuery(sql.toString());
+		return query.getResultList();
+	}
 }
