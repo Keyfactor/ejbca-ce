@@ -16,19 +16,16 @@ package org.ejbca.core.ejb.ca.store;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -38,7 +35,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
 
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
@@ -136,50 +132,14 @@ public class CertificateDataUtil {
             }
             ctypes.append(SecConst.CERTTYPE_ROOTCA);
         }
-
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        try {
-            ArrayList<Certificate> vect;
-            // Status 20 = CertificateDataBean.CERT_ACTIVE, 21 = CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION 
-            StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE (status="+SecConst.CERT_ACTIVE+" or status="+SecConst.CERT_NOTIFIEDABOUTEXPIRATION+") AND ");
-            stmt.append(" type IN (");
-            stmt.append(ctypes.toString());
-            stmt.append(')');
-            if (null != issuerDN && issuerDN.length() > 0) {
-                String dn = CertTools.stringToBCDNString(issuerDN);
-                dn = StringTools.strip(dn);
-                if (adapter.getLogger().isDebugEnabled()) {
-                    adapter.debug("findCertificatesByType() : Looking for cert with (transformed)DN: " + dn);
-                }
-                stmt.append(" AND issuerDN = '");
-                stmt.append(dn);
-                stmt.append('\'');
-            }
-            if (adapter.getLogger().isDebugEnabled()) {
-                adapter.debug("findCertificatesByType() : executing SQL statement\n"
-                        + stmt.toString());
-            }
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement(stmt.toString());
-            result = ps.executeQuery();
-
-            vect = new ArrayList<Certificate>();
-            while (result.next()) {
-                Certificate cert = findCertificateByFingerprint(admin, result.getString(1),
-                                                                entityManager, adapter);
-                if (cert != null) {
-                    vect.add(cert);
-                }
-            }
-            adapter.getLogger().trace("<findCertificatesByType()");
-            return vect;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
+        List<Certificate> ret;
+        if (null != issuerDN && issuerDN.length() > 0) {
+        	ret = CertificateData.findActiveCertificatesByTypeAndIssuer(entityManager, ctypes.toString(), CertTools.stringToBCDNString(issuerDN));
+        } else {
+        	ret = CertificateData.findActiveCertificatesByType(entityManager, ctypes.toString());
         }
+        adapter.getLogger().trace("<findCertificatesByType()");
+        return ret;
     }
     
     public static Collection<Certificate> findCertificatesByUsername(Admin admin, String username, EntityManager entityManager, Adapter adapter) {

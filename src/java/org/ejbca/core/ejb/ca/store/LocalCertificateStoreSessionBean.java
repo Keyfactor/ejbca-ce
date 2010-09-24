@@ -18,10 +18,6 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECParameterSpec;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -47,7 +43,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ProtectConfiguration;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
@@ -79,7 +74,6 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -578,58 +572,21 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     public Collection findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection sernos) {
     	log.trace(">findCertificateByIssuerAndSernos()");
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        ArrayList<Certificate> vect = null;
+        List<Certificate> ret = null;
         if (null == admin) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException();	// TODO: Either check authorization properly or skip the Admin parameter.. this is just wrong..
         }
-        if (null == issuerDN || issuerDN.length() <= 0
-                || null == sernos || sernos.isEmpty()) {
-            return new ArrayList<Certificate>();
-        }
-        String dn = CertTools.stringToBCDNString(issuerDN);
-        log.debug("Looking for cert with (transformed)DN: " + dn);
-        try {
-            final StringBuffer sb = new StringBuffer();
-            {
-                Iterator<BigInteger> iter = sernos.iterator();
-                while (iter.hasNext()) {
-                    sb.append(", '");
-                    // Make sure this is really a BigInteger passed in as (untrusted param)
-                    BigInteger serno = iter.next();
-                    sb.append(serno.toString());
-                    sb.append("'");
-                }
+        if (null == issuerDN || issuerDN.length() <= 0 || null == sernos || sernos.isEmpty()) {
+            ret = new ArrayList<Certificate>();
+        } else {
+            String dn = CertTools.stringToBCDNString(issuerDN);
+            if (log.isDebugEnabled()) {
+                log.debug("Looking for cert with (transformed)DN: " + dn);
             }
-            /*
-             * to save the repeating if-statement in the above
-             * Closure not to add ', ' as the first characters
-             * in the StringBuffer we remove the two chars here :)
-             */
-            sb.delete(0, ", ".length());
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("SELECT DISTINCT fingerprint"
-                    + " FROM CertificateData WHERE"
-                    + " issuerDN = ?"
-                    + " AND serialNumber IN (" + sb.toString() + ")");
-            ps.setString(1, dn);
-            result = ps.executeQuery();
-            vect = new ArrayList<Certificate>();
-            while (result.next()) {
-                Certificate cert = findCertificateByFingerprint(admin, result.getString(1));
-                if (cert != null) {
-                    vect.add(cert);
-                }
-            }
-            log.trace("<findCertificateByIssuerAndSernos()");
-            return vect;
-        } catch (Exception fe) {
-            throw new EJBException(fe);
-        } finally {
-            JDBCUtil.close(con, ps, result);
+            ret = CertificateData.findCertificatesByIssuerDnAndSerialNumbers(entityManager, dn, sernos);
         }
+        log.trace("<findCertificateByIssuerAndSernos()");
+        return ret;
     }
 
     /**
@@ -729,49 +686,9 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @ejb.interface-method
      */
     public CertificateInfo getCertificateInfo(Admin admin, String fingerprint) {
+    	// TODO: Either enforce authorization check or drop the Admin parameter
     	log.trace(">getCertificateInfo()");
-        CertificateInfo ret = null;
-        Connection con = null;
-        ResultSet rs = null;
-        PreparedStatement ps = null;
-    	try {
-            // Now go on with the real select
-	    	con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-	    	StringBuilder sql = new StringBuilder();
-	    	sql.append("select issuerDN,subjectDN,cAFingerprint,status,type,serialNumber,expireDate,revocationDate,revocationReason,username,tag,certificateProfileId,updateTime from CertificateData where fingerprint=?");
-	    	if (log.isDebugEnabled()) {
-	    		log.debug("Executing SQL: "+sql.toString());    			
-			}
-	    	ps = con.prepareStatement(sql.toString());
-	    	ps.setString(1, fingerprint);
-			rs = ps.executeQuery();
-			// This query can only return one row (fingerprint is the primary key)
-			if (rs.next()) {
-				String cafp = rs.getString(3);
-				String serno = rs.getString(6);
-				String issuerDN = rs.getString(1);
-				String subjectDN = rs.getString(2);
-				int status = rs.getInt(4);
-				int type = rs.getInt(5);
-				long expireDate = rs.getLong(7);
-				long revocationDate = rs.getLong(8);
-				int revocationReason = rs.getInt(9);
-				String username = rs.getString(10);
-				String tag = rs.getString(11);
-				int cProfId = rs.getInt(12);
-				long updateTime = rs.getLong(13);
-	            ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, 
-	            		type, expireDate, revocationDate, revocationReason, username, tag, cProfId, updateTime);				
-			}
-        } catch (SQLException e) {
-        	String msg = intres.getLocalizedMessage("store.errorcertinfo", fingerprint);            	
-            log.error(msg);
-            throw new EJBException(e);
-        } finally {
-        	JDBCUtil.close(con, ps, rs);
-        }
-        log.trace("<getCertificateInfo()");
-        return ret;
+    	return CertificateData.getCertificateInfo(entityManager, fingerprint);
     }
 
     /**
@@ -1035,49 +952,21 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void revokeAllCertByCA(Admin admin, String issuerdn, int reason) {
-        Connection con = null;
-        PreparedStatement ps = null;
-        PreparedStatement ps2 = null;
+    	// TODO: Enforce or drop Admin parameter
         int temprevoked = 0;
         int revoked = 0;
-
         String bcdn = CertTools.stringToBCDNString(issuerdn);
-
-        final String firstsqlstatement = "UPDATE CertificateData SET status=?" +
-                " WHERE issuerDN=? AND status = ? ";
-        final String secondsqlstatement = "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=?" +
-                " WHERE issuerDN=? AND status <> ?";
-
-        long currentdate = new Date().getTime();
-
         try {
-            // First SQL statement, changing all temporaty revoked certificates to permanently revoked certificates
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement(firstsqlstatement);
-            ps.setInt(1, SecConst.CERT_REVOKED); // first statusfield
-            ps.setString(2, bcdn); // issuerdn field
-            ps.setInt(3, SecConst.CERT_TEMP_REVOKED); // second statusfield
-            temprevoked = ps.executeUpdate();
-
-            // Second SQL statement, revoking all non revoked certificates.
-            ps2 = con.prepareStatement(secondsqlstatement);
-            ps2.setInt(1, SecConst.CERT_REVOKED); // first statusfield
-            ps2.setLong(2, currentdate); // revokedate field
-            ps2.setInt(3, reason); // revokation reason
-            ps2.setString(4, bcdn); // issuer dn
-            ps2.setInt(5, SecConst.CERT_REVOKED); // second statusfield
-
-            revoked = ps2.executeUpdate();
-
+            // Change all temporaty revoked certificates to permanently revoked certificates
+        	temprevoked = CertificateData.revokeOnHoldPermanently(entityManager, bcdn);
+            // Revoking all non revoked certificates.
+        	revoked = CertificateData.revokeAllNonRevokedCertificates(entityManager, bcdn, reason);
     		String msg = intres.getLocalizedMessage("store.revokedallbyca", issuerdn, new Integer(revoked + temprevoked), new Integer(reason));            	
             logSession.log(admin, bcdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
         } catch (Exception e) {
     		String msg = intres.getLocalizedMessage("store.errorrevokeallbyca", issuerdn);            	
             logSession.log(admin, bcdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg, e);
             throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, null);
-            JDBCUtil.close(ps2);
         }
     }
 
