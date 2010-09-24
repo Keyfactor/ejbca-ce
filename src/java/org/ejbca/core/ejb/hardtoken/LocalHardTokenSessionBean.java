@@ -21,9 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +41,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -80,7 +76,6 @@ import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.JDBCUtil;
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as
@@ -1218,31 +1213,8 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      */
     public Collection matchHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
-        ArrayList<String> returnval = new ArrayList<String>();
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select distinct username from HardTokenData where tokenSN LIKE '%" + searchpattern + "%'");
-            // Execute query.
-            rs = ps.executeQuery();
-            // Assemble result.
-            while (rs.next() && returnval.size() <= UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT) {
-                returnval.add(rs.getString(1));
-            }
-            log.trace("<findHardTokenByTokenSerialNumber()");
-            return returnval;
-
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+        return org.ejbca.core.ejb.hardtoken.HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
-    
-    
 
     /**
      * Adds a mapping between a hard token and a certificate
