@@ -21,7 +21,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -32,12 +34,14 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.SqlResultSetMapping;
+import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
@@ -50,9 +54,18 @@ import org.ejbca.util.keystore.KeyTools;
  */ 
 @Entity
 @Table(name="CertificateData")
-@SqlResultSetMapping(name = "RevokedCertInfoSubset", columns={
-		@ColumnResult(name="fingerprint"), @ColumnResult(name="serialNumber"), @ColumnResult(name="expireDate"), @ColumnResult(name="revocationDate"), @ColumnResult(name="revocationReason")}
-)
+@SqlResultSetMappings(value={
+	@SqlResultSetMapping(name="RevokedCertInfoSubset", columns={
+		@ColumnResult(name="fingerprint"), @ColumnResult(name="serialNumber"), @ColumnResult(name="expireDate"), @ColumnResult(name="revocationDate"),
+		@ColumnResult(name="revocationReason")
+	}),
+	@SqlResultSetMapping(name="CertificateInfoSubset", columns={
+		@ColumnResult(name="issuerDN"), @ColumnResult(name="subjectDN"), @ColumnResult(name="cAFingerprint"), @ColumnResult(name="status"),
+		@ColumnResult(name="type"), @ColumnResult(name="serialNumber"), @ColumnResult(name="expireDate"), @ColumnResult(name="revocationDate"),
+		@ColumnResult(name="revocationReason"), @ColumnResult(name="username"), @ColumnResult(name="tag"), @ColumnResult(name="certificateProfileId"),
+		@ColumnResult(name="updateTime")
+	})
+})
 public class CertificateData implements Serializable {
 
 	private static final long serialVersionUID = -8493105317760641442L;
@@ -685,5 +698,118 @@ public class CertificateData implements Serializable {
 		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
 		query.setMaxResults(SecConst.MAXIMUM_QUERY_ROWCOUNT);
 		return query.getResultList();
+	}
+
+	public static List<Certificate> findCertificatesByIssuerDnAndSerialNumbers(EntityManager entityManager, String issuerDN, Collection<BigInteger> serialNumbers) {
+        List<Certificate> certificateList = new ArrayList<Certificate>();
+        StringBuffer sb = new StringBuffer();
+        Iterator<BigInteger> iter = serialNumbers.iterator();
+        while (iter.hasNext()) {
+        	sb.append(", '");
+        	// Make sure this is really a BigInteger passed in as (untrusted param)
+        	BigInteger serno = iter.next();
+        	sb.append(serno.toString());
+        	sb.append("'");
+        }
+        // to save the repeating if-statement in the above closure not to add ', ' as the first characters in the StringBuffer we remove the two chars here :)
+        sb.delete(0, ", ".length());
+        Query query = entityManager.createQuery("SELECT DISTINCT a.base64Cert FROM CertificateData a WHERE a.issuerDN=:issuerDN AND serialNumber IN (" + sb.toString() + ")");
+		query.setParameter("issuerDN", issuerDN);
+        List<String> base64CertificateList = query.getResultList();
+        for (String base64Certificate : base64CertificateList) {
+    		try {
+                certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
+    		} catch (CertificateException ce) {
+    			log.error("Can't decode certificate.", ce);
+    			// Continue with the rest of the results, even if this one exploded..
+    		}
+        }
+		return certificateList;
+	}
+
+	/** @return the CertificateInfo representation (all fields except the actual cert) */
+	public static CertificateInfo getCertificateInfo(EntityManager entityManager, String fingerprint) {
+		CertificateInfo ret = null;
+		Query query = entityManager.createNativeQuery(
+				"SELECT a.issuerDN, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason, "
+				+ "a.username, a.tag, a.certificateProfileId, a.updateTime FROM CertificateData a WHERE a.fingerprint=:fingerprint", "CertificateInfoSubset");
+			query.setParameter("fingerprint", fingerprint);
+		List<Object[]> resultList = (List<Object[]>) query.getResultList();
+		if (!resultList.isEmpty()) {
+			Object[] fields = resultList.get(0);
+			// The order of the results are defined by the SqlResultSetMapping annotation
+			String issuerDN = (String) fields[0];
+			String subjectDN = (String) fields[1];
+			String cafp = (String) fields[2];
+			int status = ((Integer)fields[3]).intValue();
+			int type = ((Integer)fields[4]).intValue();
+			String serno = (String) fields[5];
+			long expireDate = ((BigInteger)fields[6]).longValue();
+			long revocationDate = ((BigInteger)fields[7]).longValue();
+			int revocationReason = ((Integer)fields[8]).intValue();
+			String username = (String) fields[9];
+			String tag = (String) fields[10];
+			int cProfId = ((Integer)fields[11]).intValue();
+			long updateTime = ((BigInteger)fields[12]).longValue();
+	        ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, expireDate, revocationDate, revocationReason, username, tag, cProfId, updateTime);				
+		}
+		return ret;
+	}
+
+	/** @return the number of certificates that had their status changed from On Hold to Revoked for this issuer. */
+	public static int revokeOnHoldPermanently(EntityManager entityManager, String issuerDN) {
+		Query query = entityManager.createQuery("UPDATE CertificateData a SET a.status=:status1 WHERE a.issuerDN=:issuerDN AND a.status=:status2");
+		query.setParameter("status1", SecConst.CERT_REVOKED);
+		query.setParameter("issuerDN", issuerDN);
+		query.setParameter("status2", SecConst.CERT_TEMP_REVOKED);
+		return query.executeUpdate();
+	}
+
+	/** @return the number of certificates that had their status changed from On Hold to Revoked for this issuer. */
+	public static int revokeAllNonRevokedCertificates(EntityManager entityManager, String issuerDN, int reason) {
+		Query query = entityManager.createQuery("UPDATE CertificateData SET status=:status1, revocationDate=:revocationDate, revocationReason=:revocationReason WHERE issuerDN=:issuerDN AND status <> :status2");
+		query.setParameter("status1", SecConst.CERT_REVOKED);
+		query.setParameter("revocationDate", new Date().getTime());
+		query.setParameter("revocationReason", reason);
+		query.setParameter("issuerDN", issuerDN);
+		query.setParameter("status2", SecConst.CERT_REVOKED);
+		return query.executeUpdate();
+	}
+
+	/** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
+	public static List<Certificate> findActiveCertificatesByType(EntityManager entityManager, String certificateTypes) {
+        List<Certificate> certificateList = new ArrayList<Certificate>();
+        Query query = entityManager.createQuery("SELECT DISTINCT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ")");
+		query.setParameter("status1", SecConst.CERT_ACTIVE);
+		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+        List<String> base64CertificateList = query.getResultList();
+		for (String base64Certificate : base64CertificateList) {
+    		try {
+                certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
+    		} catch (CertificateException ce) {
+    			log.error("Can't decode certificate.", ce);
+    			// Continue with the rest of the results, even if this one exploded..
+    		}
+        }
+		return certificateList;
+	}
+
+	/** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types for the given issuer. */
+	public static List<Certificate> findActiveCertificatesByTypeAndIssuer(EntityManager entityManager, String certificateTypes, String issuerDN) {
+        List<Certificate> certificateList = new ArrayList<Certificate>();
+        Query query = entityManager.createQuery("SELECT DISTINCT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ") AND issuerDN=:issuerDN");
+		query.setParameter("status1", SecConst.CERT_ACTIVE);
+		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+		query.setParameter("issuerDN", issuerDN);
+        List<String> base64CertificateList = query.getResultList();
+		for (String base64Certificate : base64CertificateList) {
+    		try {
+                certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
+    		} catch (CertificateException ce) {
+    			log.error("Can't decode certificate.", ce);
+    			// Continue with the rest of the results, even if this one exploded..
+    		}
+        }
+		return certificateList;
 	}
 }
