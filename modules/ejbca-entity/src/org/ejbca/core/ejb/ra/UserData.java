@@ -418,5 +418,34 @@ public class UserData implements Serializable {
     	Query query = entityManager.createQuery("SELECT a FROM UserData a");
     	return query.getResultList();
     }
+
+	/** @return return a List<UserData> with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
+	public static List<UserData> findNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId, int maxResults) {
+    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
+    	query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
+    	query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
+    	query.setParameter("status1", UserDataConstants.STATUS_NEW);
+    	query.setParameter("status2", UserDataConstants.STATUS_KEYRECOVERY);
+    	if (maxResults > 0) {
+    		query.setMaxResults(maxResults);
+    	}
+    	return query.getResultList();
+	}
     
+	/** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
+	public static long countNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId) {
+    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
+    	query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
+    	query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
+    	query.setParameter("status1", UserDataConstants.STATUS_NEW);
+    	query.setParameter("status2", UserDataConstants.STATUS_KEYRECOVERY);
+    	return ((Long)query.getSingleResult()).longValue();
+	}
+
+	/** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
+	public static long countByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId) {
+    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId");
+    	query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
+    	return ((Long)query.getSingleResult()).longValue();
+	}
 }
