@@ -16,8 +16,6 @@ package org.ejbca.core.ejb.ca.store;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.Collection;
 import java.util.Date;
 
@@ -29,13 +27,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.JDBCUtil;
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
@@ -115,16 +111,12 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      */
     public String getDatabaseStatus() {
 		String returnval = "";
-		Connection con = null;
 		try {
-		  con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-		  Statement statement = con.createStatement();
-		  statement.execute(OcspConfiguration.getHealthCheckDbQuery());		  
+			entityManager.createNativeQuery(EjbcaConfiguration.getHealthCheckDbQuery()).getResultList();
+			// TODO: Do we need to flush() the connection to avoid that this is executed in a batch after the method returns?
 		} catch (Exception e) {
 			returnval = "\nDB: Error creating connection to database: " + e.getMessage();
 			log.error("Error creating connection to database.",e);
-		} finally {
-			JDBCUtil.close(con);
 		}
 		return returnval;
     }
