@@ -5,7 +5,6 @@
 	<classpathentry kind="src" path="modules/ejbca-ejb-interface/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-renew-war/src"/>
-	<classpathentry kind="src" path="tmp/bin/ocsp-gensrc"/>
 	<classpathentry kind="src" path="modules/ocsp-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webdist-war/src"/>
 	<classpathentry kind="src" path="modules/healtcheck-war/src"/>
@@ -29,7 +28,6 @@
 	<classpathentry kind="src" path="modules/ejbca-entity/src"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
-	<classpathentry kind="src" path="tmp/bin/gensrc"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/jstl-1.1.0.jar"/>
@@ -84,44 +82,14 @@
 	<classpathentry kind="lib" path="lib/reports/jfreechart-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/reports/jcommon-1.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/reports/jasperreports-1.3.3.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME/client/jbossall-client.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME/client/activation.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system.jar"/>
-	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/commons-httpclient.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-j2ee.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-logging-log4j.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system-jmx.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-j2se.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-kernel.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-javaee.jar">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/jbossall-client.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/activation.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-logging-log4j.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system-jmx.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-j2se.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-kernel.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-javaee.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.5.jar"/>
