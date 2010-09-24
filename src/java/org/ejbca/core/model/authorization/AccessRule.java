@@ -31,7 +31,10 @@ import java.io.Serializable;
  * @version $Id$
  */
 public class AccessRule implements Serializable, Comparable<Object> {
-    // Public rule constants. 
+
+	private static final long serialVersionUID = 3554408014578253352L;
+	
+	// Public rule constants. 
     public static final int RULE_NOTUSED = 0;
     public static final int RULE_ACCEPT = 1;
     public static final int RULE_DECLINE = 2;
