@@ -133,4 +133,11 @@ public class HardTokenData implements Serializable {
     	query.setParameter("username", username);
     	return query.getResultList();
     }
+
+	/** @return return a List<String> of all usernames where the searchPattern matches the token serial number. */
+	public static List<String> findUsernamesByHardTokenSerialNumber(EntityManager entityManager, String searchPattern, int maxResults) {
+    	Query query = entityManager.createNativeQuery("SELECT DISTINCT a.username FROM HardTokenData a WHERE tokenSN LIKE '%" + searchPattern + "%'");
+    	query.setMaxResults(maxResults);
+    	return query.getResultList();
+	}
 }
