@@ -36,7 +36,6 @@ import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
-import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;

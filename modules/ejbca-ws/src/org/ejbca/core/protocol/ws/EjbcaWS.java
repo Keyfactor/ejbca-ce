@@ -1328,11 +1328,11 @@ public class EjbcaWS implements IEjbcaWS {
 		boolean success = false;
 		try{
             logAdminName(admin,logger);
-			Collection<X509Certificate> certs = hardTokenSession.findCertificatesInHardToken(admin,hardTokenSN);
-			Iterator<X509Certificate> iter = certs.iterator();
+			Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(admin,hardTokenSN);
+			Iterator<java.security.cert.Certificate> iter = certs.iterator();
 			String username = null;
 			while(iter.hasNext()){
-				X509Certificate next = iter.next();
+				X509Certificate next = (X509Certificate) iter.next();
 				if(username == null){
 					username = certificateStoreSession.findUsernameByCertSerno(admin,CertTools.getSerialNumber(next),CertTools.getIssuerDN(next));
 				}
@@ -1611,11 +1611,11 @@ public class EjbcaWS implements IEjbcaWS {
 			if(hardTokenExists){
 				if(overwriteExistingSN){
 					// fetch all old certificates and revoke them.
-					Collection<java.security.cert.X509Certificate> currentCertificates = hardTokenSession.findCertificatesInHardToken(admin, hardTokenDataWS.getHardTokenSN());
+					Collection<java.security.cert.Certificate> currentCertificates = hardTokenSession.findCertificatesInHardToken(admin, hardTokenDataWS.getHardTokenSN());
 					HardTokenData currentHardToken = hardTokenSession.getHardToken(admin, hardTokenDataWS.getHardTokenSN(), false);
-					Iterator<java.security.cert.X509Certificate> iter = currentCertificates.iterator();
+					Iterator<java.security.cert.Certificate> iter = currentCertificates.iterator();
 					while(iter.hasNext()){
-						java.security.cert.X509Certificate nextCert = iter.next();
+						java.security.cert.X509Certificate nextCert = (java.security.cert.X509Certificate) iter.next();
 						try {
 							userAdminSession.revokeCert(admin, CertTools.getSerialNumber(nextCert), CertTools.getIssuerDN(nextCert), currentHardToken.getUsername(), RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
 						} catch (AlreadyRevokedException e) {
@@ -1643,10 +1643,10 @@ public class EjbcaWS implements IEjbcaWS {
 						  if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD) && toRevoke.getLabel() != null && !toRevoke.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
 
 								// Token have extended key usage MS Logon, don't revoke it
-								Iterator<X509Certificate> revokeCerts = hardTokenSession.findCertificatesInHardToken(admin, toRevoke.getHardTokenSN()).iterator();
+								Iterator<java.security.cert.Certificate> revokeCerts = hardTokenSession.findCertificatesInHardToken(admin, toRevoke.getHardTokenSN()).iterator();
 
 								while(revokeCerts.hasNext()){
-									X509Certificate next = revokeCerts.next();							 
+									X509Certificate next = (X509Certificate) revokeCerts.next();							 
 									try{
 										if(WebServiceConfiguration.getSuspendAllCertificates() || next.getExtendedKeyUsage() == null || !next.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_smartcardlogon.getId())){
 											userAdminSession.revokeCert(admin,next.getSerialNumber(), CertTools.getIssuerDN(next), userDataWS.getUsername(),  RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);

@@ -773,7 +773,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
 
             if (userData != null) {
                 if (userData.getSubjectDN() != null) {
-                    Map dnMap = new HashMap();
+                    Map<String, String> dnMap = new HashMap<String, String>();
                     if (profile.getUse(DnComponents.DNEMAIL, 0)) {
                         dnMap.put(DnComponents.DNEMAIL, userdata.getEmail());
                     }
@@ -785,7 +785,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
                     }
                 }
                 if (userData.getSubjectAltName() != null) {
-                    Map dnMap = new HashMap();
+                    Map<String, String> dnMap = new HashMap<String, String>();
                     if (profile.getUse(DnComponents.RFC822NAME, 0)) {
                         dnMap.put(DnComponents.RFC822NAME, userdata.getEmail());
                     }
@@ -1911,24 +1911,22 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
         UserDataVO ret = null;
         UserData data = UserData.findByUsername(entityManager, username);
         if (data != null) {
-            if (data != null) {
-                if (!authorizedToCA(admin, data.getCaId())) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthcaexist", new Integer(data.getCaId()), username);
+        	if (!authorizedToCA(admin, data.getCaId())) {
+        		String msg = intres.getLocalizedMessage("ra.errorauthcaexist", new Integer(data.getCaId()), username);
+                throw new AuthorizationDeniedException(msg);
+            }
+            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+                // Check if administrator is authorized to view user.
+                if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", new Integer(data.getEndEntityProfileId()), username);
                     throw new AuthorizationDeniedException(msg);
                 }
-                if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-                    // Check if administrator is authorized to view user.
-                    if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
-                        String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", new Integer(data.getEndEntityProfileId()), username);
-                        throw new AuthorizationDeniedException(msg);
-                    }
-                }
-                ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data
-                        .getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(), new java.util.Date(data.getTimeCreated()),
-                        new java.util.Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
-                ret.setPassword(data.getClearPassword());
-                ret.setCardNumber(data.getCardNumber());
             }
+            ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data
+                    .getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(), new java.util.Date(data.getTimeCreated()),
+                    new java.util.Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
+            ret.setPassword(data.getClearPassword());
+            ret.setCardNumber(data.getCardNumber());
         }
         if (log.isTraceEnabled()) {
             log.trace("<findUser(" + username + "): " + (ret == null ? "null" : ret.getDN()));
@@ -2037,7 +2035,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException {
+    public Collection<UserDataVO> findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUserByEmail(" + email + ")");
         }
@@ -2139,7 +2137,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection findAllUsersByStatus(Admin admin, int status) throws FinderException {
+    public Collection<UserDataVO> findAllUsersByStatus(Admin admin, int status) throws FinderException {
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatus(" + status + ")");
         }
@@ -2173,7 +2171,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection findAllUsersByCaId(Admin admin, int caid) {
+    public Collection<UserDataVO> findAllUsersByCaId(Admin admin, int caid) {
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByCaId(" + caid + ")");
         }
@@ -2243,7 +2241,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection findAllUsersWithLimit(Admin admin) {
+    public Collection<UserDataVO> findAllUsersWithLimit(Admin admin) {
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersWithLimit()");
         }
@@ -2268,7 +2266,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException {
+    public Collection<UserDataVO> findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException {
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatusWithLimit()");
         }
@@ -2311,7 +2309,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      * @see se.anatom.ejbca.util.query.Query
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection query(Admin admin, Query query, String caauthorizationstring, String endentityprofilestring, int numberofrows)
+    public Collection<UserDataVO> query(Admin admin, Query query, String caauthorizationstring, String endentityprofilestring, int numberofrows)
             throws IllegalQueryException {
         return query(admin, query, true, caauthorizationstring, endentityprofilestring, false, numberofrows);
     }
@@ -2327,7 +2325,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
      *            the number of rows to fetch, use 0 for default
      *            UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT
      */
-    private Collection query(Admin admin, Query query, boolean withlimit, String caauthorizationstr, String endentityprofilestr, boolean onlybatchusers,
+    private Collection<UserDataVO> query(Admin admin, Query query, boolean withlimit, String caauthorizationstr, String endentityprofilestr, boolean onlybatchusers,
             int numberofrows) throws IllegalQueryException {
         if (log.isTraceEnabled()) {
             log.trace(">query(): withlimit=" + withlimit);

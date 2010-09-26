@@ -214,7 +214,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @return Collection Collection of X509Certificate, never <tt>null</tt>
      * @ejb.interface-method
      */
-    public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
+    public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) {
         return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, entityManager, adapter);
     }
 
@@ -226,7 +226,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
      * @return Collection of Certificates ordered by expire date, with last expire date first, or null if none found.
      * @ejb.interface-method
      */
-    public Collection findCertificatesByUsername(Admin admin, String username) {
+    public Collection<Certificate> findCertificatesByUsername(Admin admin, String username) {
     	return CertificateDataUtil.findCertificatesByUsername(admin, username, entityManager, adapter);
     }
 

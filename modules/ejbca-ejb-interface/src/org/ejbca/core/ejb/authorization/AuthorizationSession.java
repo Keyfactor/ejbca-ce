@@ -14,6 +14,8 @@ package org.ejbca.core.ejb.authorization;
 
 import java.util.Collection;
 
+import org.ejbca.core.model.authorization.AccessRule;
+import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -120,34 +122,34 @@ public interface AuthorizationSession {
      * @param availableCaIds
      *            A Collection<Integer> of all CA Ids
      */
-    public Collection getAuthorizedAdminGroupNames(Admin admin, Collection availableCaIds);
+    public Collection<AdminGroup> getAuthorizedAdminGroupNames(Admin admin, Collection<Integer> availableCaIds);
 
     /**
      * Adds a Collection of AccessRule to an an admin group.
      */
-    public void addAccessRules(Admin admin, String admingroupname, Collection accessrules);
+    public void addAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
 
     /**
      * Removes a Collection of (String) containing accessrules to remove from
      * admin group.
      */
-    public void removeAccessRules(Admin admin, String admingroupname, Collection accessrules);
+    public void removeAccessRules(Admin admin, String admingroupname, Collection<String> accessrules);
 
     /**
      * Replaces a groups accessrules with a new set of rules
      */
-    public void replaceAccessRules(Admin admin, String admingroupname, Collection accessrules);
+    public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
 
     /**
      * Adds a Collection of AdminEnity to the admingroup. Changes their values
      * if they already exists.
      */
-    public void addAdminEntities(Admin admin, String admingroupname, Collection adminentities);
+    public void addAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities);
 
     /**
      * Removes a Collection of AdminEntity from the administrator group.
      */
-    public void removeAdminEntities(Admin admin, String admingroupname, Collection adminentities);
+    public void removeAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities);
 
     public void isAuthorizedToGroup(Admin administrator, String admingroupname)
             throws AuthorizationDeniedException;
@@ -172,9 +174,9 @@ public interface AuthorizationSession {
      *            A Collection<Integer> of all auhtorized user data sources ids
      * @return a Collection of String containing available accessrules.
      */
-    public Collection getAuthorizedAvailableAccessRules(Admin admin, Collection availableCaIds,
-            boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery, Collection authorizedEndEntityProfileIds,
-            Collection authorizedUserDataSourceIds);
+    public Collection<String> getAuthorizedAvailableAccessRules(Admin admin, Collection<Integer> availableCaIds,
+            boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
+            Collection<Integer> authorizedUserDataSourceIds);
 
     /**
      * Method used to return an Collection of Integers indicating which CAids a
@@ -186,7 +188,7 @@ public interface AuthorizationSession {
      *            A Collection<Integer> of all CA Ids
      * @return Collection of Integer
      */
-    public Collection getAuthorizedCAIds(Admin admin, Collection availableCaIds);
+    public Collection<Integer> getAuthorizedCAIds(Admin admin, Collection<Integer> availableCaIds);
 
     /**
      * Method used to return an Collection of Integers indicating which end
@@ -200,8 +202,8 @@ public interface AuthorizationSession {
      * @param authorizedEndEntityProfileIds
      *            A Collection<Integer> of all auhtorized EEP ids
      */
-    public Collection getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge,
-            Collection availableEndEntityProfileId);
+    public Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge,
+            Collection<Integer> availableEndEntityProfileId);
 
     /**
      * Method to check if an end entity profile exists in any end entity profile

@@ -12,6 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.hardtoken;
 
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+
+import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
+
 public interface HardTokenSession {
     /**
      * Adds a hard token profile to the database.
@@ -82,13 +88,13 @@ public interface HardTokenSession {
      * 
      * @return Collection of id:s (Integer)
      */
-    public java.util.Collection getAuthorizedHardTokenProfileIds(org.ejbca.core.model.log.Admin admin);
+    public java.util.Collection<Integer> getAuthorizedHardTokenProfileIds(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name
      * (String).
      */
-    public java.util.HashMap getHardTokenProfileIdToNameMap(org.ejbca.core.model.log.Admin admin);
+    public java.util.HashMap<Integer, String> getHardTokenProfileIdToNameMap(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Retrives a named hard token profile.
@@ -187,7 +193,7 @@ public interface HardTokenSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public java.util.Collection getHardTokenIssuerDatas(org.ejbca.core.model.log.Admin admin);
+    public java.util.Collection<HardTokenIssuerData> getHardTokenIssuerDatas(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Returns the available hard token issuer alliases authorized to the
@@ -197,7 +203,7 @@ public interface HardTokenSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public java.util.Collection getHardTokenIssuerAliases(org.ejbca.core.model.log.Admin admin);
+    public java.util.Collection<String> getHardTokenIssuerAliases(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Returns the available hard token issuers authorized to the administrator.
@@ -206,7 +212,7 @@ public interface HardTokenSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public java.util.TreeMap getHardTokenIssuers(org.ejbca.core.model.log.Admin admin);
+    public java.util.TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Returns the specified hard token issuer.
@@ -298,7 +304,7 @@ public interface HardTokenSession {
      *             if tokensn already exists in databas.
      */
     public void addHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, java.lang.String username, java.lang.String significantissuerdn,
-            int tokentype, org.ejbca.core.model.hardtoken.types.HardToken hardtokendata, java.util.Collection certificates, java.lang.String copyof)
+            int tokentype, org.ejbca.core.model.hardtoken.types.HardToken hardtokendata, java.util.Collection<Certificate> certificates, java.lang.String copyof)
             throws org.ejbca.core.model.hardtoken.HardTokenExistsException;
 
     /**
@@ -371,7 +377,7 @@ public interface HardTokenSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public java.util.Collection getHardTokens(org.ejbca.core.model.log.Admin admin, java.lang.String username, boolean includePUK);
+    public java.util.Collection<HardTokenData> getHardTokens(org.ejbca.core.model.log.Admin admin, java.lang.String username, boolean includePUK);
 
     /**
      * Method that searches the database for a tokensn. It returns all
@@ -383,7 +389,7 @@ public interface HardTokenSession {
      *            of begining of hard token sn
      * @return a Collection of username(String) matching the search string
      */
-    public java.util.Collection matchHardTokenByTokenSerialNumber(org.ejbca.core.model.log.Admin admin, java.lang.String searchpattern);
+    public java.util.Collection<String> matchHardTokenByTokenSerialNumber(org.ejbca.core.model.log.Admin admin, java.lang.String searchpattern);
 
     /**
      * Adds a mapping between a hard token and a certificate
@@ -422,7 +428,7 @@ public interface HardTokenSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public java.util.Collection findCertificatesInHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn);
+    public java.util.Collection<Certificate> findCertificatesInHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn);
 
     /**
      * Returns the tokensn that the have blongs to a given certificatesn and

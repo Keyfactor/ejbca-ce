@@ -18,6 +18,7 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 public interface CreateCRLSession {
     /**
@@ -152,7 +153,7 @@ public interface CreateCRLSession {
      *         CertTools.getCRLfromByteArray to convert to X509CRL.
      * @throws CATokenOfflineException
      */
-    public byte[] createCRL(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, java.util.Collection certs, int basecrlnumber)
+    public byte[] createCRL(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, java.util.Collection<RevokedCertInfo> certs, int basecrlnumber)
             throws CATokenOfflineException;
 
     /**
@@ -250,6 +251,6 @@ public interface CreateCRLSession {
      * @param doPublishDeltaCRL
      *            should delta CRLs be published?
      */
-    public void publishCRL(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate caCert, Collection usedpublishers,
+    public void publishCRL(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate caCert, Collection<Integer> usedpublishers,
             java.lang.String caDataDN, boolean doPublishDeltaCRL);
 }

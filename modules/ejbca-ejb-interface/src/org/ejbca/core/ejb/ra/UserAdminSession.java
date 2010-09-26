@@ -500,7 +500,7 @@ public interface UserAdminSession {
      * @param email
      * @return UserDataVO or null if the user is not found.
      */
-    public java.util.Collection findUserByEmail(org.ejbca.core.model.log.Admin admin, java.lang.String email)
+    public java.util.Collection<UserDataVO> findUserByEmail(org.ejbca.core.model.log.Admin admin, java.lang.String email)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
 
     /**
@@ -534,7 +534,7 @@ public interface UserAdminSession {
      *            the status to look for, from 'UserData'.
      * @return Collection of UserDataVO
      */
-    public java.util.Collection findAllUsersByStatus(org.ejbca.core.model.log.Admin admin, int status) throws javax.ejb.FinderException;
+    public java.util.Collection<UserDataVO> findAllUsersByStatus(org.ejbca.core.model.log.Admin admin, int status) throws javax.ejb.FinderException;
 
     /**
      * Finds all users registered to a specified ca.
@@ -544,7 +544,7 @@ public interface UserAdminSession {
      * @return Collection of UserDataVO, or empty collection if the query is
      *         illegal or no users exist
      */
-    public java.util.Collection findAllUsersByCaId(org.ejbca.core.model.log.Admin admin, int caid);
+    public java.util.Collection<UserDataVO> findAllUsersByCaId(org.ejbca.core.model.log.Admin admin, int caid);
 
     /**
      * Finds all users with a specified status and returns the first
@@ -553,7 +553,7 @@ public interface UserAdminSession {
      * @param status
      *            the new status, from 'UserData'.
      */
-    public java.util.Collection findAllUsersByStatusWithLimit(org.ejbca.core.model.log.Admin admin, int status, boolean onlybatchusers)
+    public java.util.Collection<UserDataVO> findAllUsersByStatusWithLimit(org.ejbca.core.model.log.Admin admin, int status, boolean onlybatchusers)
             throws javax.ejb.FinderException;
 
     /**
@@ -579,7 +579,7 @@ public interface UserAdminSession {
      *             when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query
      */
-    public java.util.Collection query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, java.lang.String caauthorizationstring,
+    public java.util.Collection<UserDataVO> query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, java.lang.String caauthorizationstring,
             java.lang.String endentityprofilestring, int numberofrows) throws org.ejbca.util.query.IllegalQueryException;
 
     /**
@@ -662,7 +662,7 @@ public interface UserAdminSession {
      * 
      * TODO: Moved here from Local interface. Move back.
      */
-    public java.util.Collection findAllUsersWithLimit(org.ejbca.core.model.log.Admin admin) throws javax.ejb.FinderException;
+    public java.util.Collection<UserDataVO> findAllUsersWithLimit(org.ejbca.core.model.log.Admin admin) throws javax.ejb.FinderException;
     
     /**
      * Selects a list of specific list of UserData entities, as filtered by the below parameters. 

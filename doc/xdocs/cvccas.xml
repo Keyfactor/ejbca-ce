@@ -227,7 +227,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoun
  * @throws WaitingForApprovalException if the operation requires approval from another CA administrator, in this case an approval request is created for another administrator to approve
  * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCade is set in the EjbcaException
  */
-public byte[] caRenewCertRequest(String caname, List&lt;byte[]&gt; cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException; 
+public byte[] caRenewCertRequest(String caname, List&lt;java.security.cert.Certificate&gt; cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException; 
 
 /** Receives a certificate as a response to a CSR from the CA. The CSR might have been generated using the caRenewCertRequest. 
  * When the certificate is imported it is verified that the CA keys match the received certificate. 

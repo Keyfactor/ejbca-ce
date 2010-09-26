@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ca.publisher;
 
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -45,7 +46,7 @@ public interface PublisherQueueSession {
      * 
      * @return Collection of PublisherQueueData, never null
      */
-    public java.util.Collection getPendingEntriesForPublisher(int publisherId);
+    public java.util.Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId);
 
     /**
      * Gets the number of pending entries for a publisher.
@@ -78,14 +79,14 @@ public interface PublisherQueueSession {
      *            "order by timeCreated desc".
      * @return Collection of PublisherQueueData, never null
      */
-    public java.util.Collection getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, java.lang.String orderBy);
+    public java.util.Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, java.lang.String orderBy);
 
     /**
      * Finds all entries for a specific fingerprint.
      * 
      * @return Collection of PublisherQueueData, never null
      */
-    public java.util.Collection getEntriesByFingerprint(java.lang.String fingerprint);
+    public java.util.Collection<PublisherQueueData> getEntriesByFingerprint(java.lang.String fingerprint);
 
     /**
      * Updates a record with new status

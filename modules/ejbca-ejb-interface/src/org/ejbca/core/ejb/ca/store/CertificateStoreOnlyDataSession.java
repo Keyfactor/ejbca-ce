@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.store;
 
+import java.security.cert.Certificate;
+
 public interface CertificateStoreOnlyDataSession {
     /**
      * Get status fast
@@ -78,7 +80,7 @@ public interface CertificateStoreOnlyDataSession {
      *            CERTTYPE_* types from CertificateDataBean
      * @return Collection Collection of X509Certificate, never <tt>null</tt>
      */
-    public java.util.Collection findCertificatesByType(org.ejbca.core.model.log.Admin admin, int type, java.lang.String issuerDN);
+    public java.util.Collection<Certificate> findCertificatesByType(org.ejbca.core.model.log.Admin admin, int type, java.lang.String issuerDN);
 
     /**
      * Finds certificate(s) for a given username.
@@ -90,5 +92,5 @@ public interface CertificateStoreOnlyDataSession {
      * @return Collection of Certificates ordered by expire date, with last
      *         expire date first, or null if none found.
      */
-    public java.util.Collection findCertificatesByUsername(org.ejbca.core.model.log.Admin admin, java.lang.String username);
+    public java.util.Collection<Certificate> findCertificatesByUsername(org.ejbca.core.model.log.Admin admin, java.lang.String username);
 }

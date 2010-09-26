@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
 import java.util.Collection;
 
 import javax.ejb.CreateException;
@@ -199,7 +200,7 @@ public interface CAAdminSession {
      * 
      * @return HashMap with Integer->String mappings
      */
-    public java.util.HashMap getCAIdToNameMap(Admin admin);
+    public java.util.HashMap<Integer, String> getCAIdToNameMap(Admin admin);
 
     /**
      * Method returning id's of all CA's available to the system. i.e. not
@@ -207,7 +208,7 @@ public interface CAAdminSession {
      * 
      * @return a Collection (Integer) of available CA id's
      */
-    public Collection getAvailableCAs();
+    public Collection<Integer> getAvailableCAs();
 
     /**
      * Method returning id's of all CA's available to the system that the
@@ -218,7 +219,7 @@ public interface CAAdminSession {
      *            The administrator
      * @return a Collection<Integer> of available CA id's
      */
-    public Collection getAvailableCAs(Admin admin);
+    public Collection<Integer> getAvailableCAs(Admin admin);
 
     /**
      * Creates a certificate request that should be sent to External Root CA for
@@ -255,7 +256,7 @@ public interface CAAdminSession {
      *            be null if regenerateKeys and activatekey is false.
      * @return request message in binary format, can be a PKCS10 or CVC request
      */
-    public byte[] makeRequest(Admin admin, int caid, Collection cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
+    public byte[] makeRequest(Admin admin, int caid, Collection<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
             throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException,
             CATokenOfflineException, CATokenAuthenticationFailedException;
 
@@ -304,7 +305,7 @@ public interface CAAdminSession {
      *            new keys immediately. See makeRequest method
      * @throws EjbcaException
      */
-    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection cachain,
+    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<byte[]> cachain,
             String tokenAuthenticationCode) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException;
 
     /**
@@ -321,7 +322,7 @@ public interface CAAdminSession {
     /**
      * Add an external CA's certificate as a CA
      */
-    public void importCACertificate(Admin admin, String caname, Collection certificates) throws javax.ejb.CreateException;
+    public void importCACertificate(Admin admin, String caname, Collection<Certificate> certificates) throws javax.ejb.CreateException;
 
     /**
      * Inits an external CA service. this means that a new key and certificate
@@ -478,7 +479,7 @@ public interface CAAdminSession {
      * certificate response are not returned, because we don't have certificates
      * for them. Uses getAvailableCAs to list CAs.
      */
-    public Collection getAllCACertificates();
+    public Collection<Certificate> getAllCACertificates();
 
     /**
      * Retrieve fingerprint for all keys as a String. Used for testing.
@@ -608,7 +609,7 @@ public interface CAAdminSession {
      *            object to be used by the publisher this DN could be searched
      *            for the object.
      */
-    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, String caDataDN);
+    public void publishCACertificate(Admin admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers, String caDataDN);
 
     /**
      * Retrives a Collection of id:s (Integer) to authorized publishers.
@@ -616,7 +617,7 @@ public interface CAAdminSession {
      * @param admin
      * @return Collection of id:s (Integer)
      */
-    public Collection getAuthorizedPublisherIds(Admin admin);
+    public Collection<Integer> getAuthorizedPublisherIds(Admin admin);
 
     /**
      * Method that checks if there are any CRLs needed to be updated and then
@@ -668,7 +669,7 @@ public interface CAAdminSession {
      * @throws EJBException
      *             if communication or system error occurrs
      */
-    public int createCRLs(Admin admin, Collection caids, long addtocrloverlaptime);
+    public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime);
 
     /**
      * Method that checks if there are any delta CRLs needed to be updated and
@@ -686,7 +687,7 @@ public interface CAAdminSession {
      * @throws EJBException
      *             if communication or system error occurrs
      */
-    public int createDeltaCRLs(Admin admin, Collection caids, long crloverlaptime);
+    public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime);
 
     /**
      * Method used to perform a extended CA Service, like OCSP CA Service.

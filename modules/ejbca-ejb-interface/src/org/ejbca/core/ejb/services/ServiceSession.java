@@ -80,7 +80,7 @@ public interface ServiceSession {
      * 
      * @return Collection of id:s (Integer)
      */
-    public java.util.Collection getAuthorizedVisibleServiceIds(org.ejbca.core.model.log.Admin admin);
+    public java.util.Collection<Integer> getAuthorizedVisibleServiceIds(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Retrives a named service.

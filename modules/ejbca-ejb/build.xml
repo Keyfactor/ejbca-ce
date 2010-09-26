@@ -293,6 +293,7 @@
            	<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
            	<include name="org/ejbca/core/model/ca/publisher/PublisherConnectionException.java"/>
            	<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>
+           	<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>
            	<include name="org/ejbca/core/model/ca/publisher/PublisherExistsException.java"/>
            	<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
            	<include name="org/ejbca/core/model/ca/SignRequestSignatureException.java"/>

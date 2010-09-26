@@ -30,7 +30,7 @@ public interface PublisherSession {
      * @return true if sucessfull result on all given publishers
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCertificate(org.ejbca.core.model.log.Admin admin, Collection publisherids, java.security.cert.Certificate incert,
+    public boolean storeCertificate(org.ejbca.core.model.log.Admin admin, Collection<Integer> publisherids, java.security.cert.Certificate incert,
             java.lang.String username, java.lang.String password, java.lang.String userDN, java.lang.String cafp, int status, int type, long revocationDate,
             int revocationReason, java.lang.String tag, int certificateProfileId, long lastUpdate,
             ExtendedInformation extendedinformation);
@@ -43,7 +43,7 @@ public interface PublisherSession {
      *            a Collection (Integer) of publisherids.
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public void revokeCertificate(org.ejbca.core.model.log.Admin admin, java.util.Collection publisherids, java.security.cert.Certificate cert,
+    public void revokeCertificate(org.ejbca.core.model.log.Admin admin, java.util.Collection<Integer> publisherids, java.security.cert.Certificate cert,
             java.lang.String username, java.lang.String userDN, java.lang.String cafp, int type, int reason, long revocationDate, java.lang.String tag,
             int certificateProfileId, long lastUpdate);
 
@@ -56,7 +56,7 @@ public interface PublisherSession {
      * @return true if sucessfull result on all given publishers
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCRL(org.ejbca.core.model.log.Admin admin, java.util.Collection publisherids, byte[] incrl, java.lang.String cafp,
+    public boolean storeCRL(org.ejbca.core.model.log.Admin admin, java.util.Collection<Integer> publisherids, byte[] incrl, java.lang.String cafp,
             java.lang.String userDN);
 
     /**
@@ -140,13 +140,13 @@ public interface PublisherSession {
      * @throws AuthorizationDeniedException
      *             if the admin does not have superadmin credentials
      */
-    public java.util.Collection getAllPublisherIds(org.ejbca.core.model.log.Admin admin) throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+    public java.util.Collection<Integer> getAllPublisherIds(org.ejbca.core.model.log.Admin admin) throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
 
     /**
      * Method creating a hashmap mapping publisher id (Integer) to publisher
      * name (String).
      */
-    public java.util.HashMap getPublisherIdToNameMap(org.ejbca.core.model.log.Admin admin);
+    public java.util.HashMap<Integer,String> getPublisherIdToNameMap(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Retrives a named publisher.

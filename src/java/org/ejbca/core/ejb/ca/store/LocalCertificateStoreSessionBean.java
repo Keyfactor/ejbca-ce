@@ -358,7 +358,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return Collection of fingerprints, i.e. Strings.
      * @ejb.interface-method
      */
-    public Collection listAllCertificates(Admin admin, String issuerdn) {
+    public Collection<String> listAllCertificates(Admin admin, String issuerdn) {
     	log.trace(">listAllCertificates()");
     	// This method was only used from CertificateDataTest and it didn't care about the expireDate, so it will only select fingerprints now.
     	return CertificateData.findFingerprintsByIssuerDN(entityManager, CertTools.stringToBCDNString(StringTools.strip(issuerdn)));
@@ -375,7 +375,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      *
      * @ejb.interface-method
      */
-    public Collection listRevokedCertInfo(Admin admin, String issuerdn, long lastbasecrldate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(Admin admin, String issuerdn, long lastbasecrldate) {
     	log.trace(">listRevokedCertInfo()");
     	return CertificateData.getRevokedCertInfos(entityManager, CertTools.stringToBCDNString(StringTools.strip(issuerdn)), lastbasecrldate);
     }
@@ -390,7 +390,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method
      */
-    public Collection findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuerDN) {
+    public Collection<Certificate> findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuerDN) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "' and issuer='" + issuerDN + "'");
     	}
@@ -430,7 +430,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method
      */
-    public Set findUsernamesByIssuerDNAndSubjectDN(Admin admin, String issuerDN, String subjectDN) {
+    public Set<String> findUsernamesByIssuerDNAndSubjectDN(Admin admin, String issuerDN, String subjectDN) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
         }
@@ -457,7 +457,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method
      */
-    public Set findUsernamesByIssuerDNAndSubjectKeyId(Admin admin, String issuerDN, byte subjectKeyId[]) {
+    public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(Admin admin, String issuerDN, byte subjectKeyId[]) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
         }
@@ -484,7 +484,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or an empty Collection.
      * @ejb.interface-method
      */
-    public Collection findCertificatesBySubject(Admin admin, String subjectDN) {
+    public Collection<Certificate> findCertificatesBySubject(Admin admin, String subjectDN) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "'");
     	}
@@ -507,7 +507,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
     /**
      * @ejb.interface-method
      */
-    public Collection findCertificatesByExpireTime(Admin admin, Date expireTime) {
+    public Collection<Certificate> findCertificatesByExpireTime(Admin admin, Date expireTime) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesByExpireTime(), time=" + expireTime);
     	}
@@ -536,7 +536,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      *
      * @ejb.interface-method
      */
-    public Collection findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) {
+    public Collection<String>  findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesByExpireTimeWithLimit: "+expiretime);    		
     	}
@@ -570,7 +570,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return Collection a list of certificates; never <tt>null</tt>
      * @ejb.interface-method
      */
-    public Collection findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection sernos) {
+    public Collection<Certificate> findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection<BigInteger> sernos) {
     	log.trace(">findCertificateByIssuerAndSernos()");
         List<Certificate> ret = null;
         if (null == admin) {
@@ -597,7 +597,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return Certificate or null if none found.
      * @ejb.interface-method
      */
-    public Collection findCertificatesBySerno(Admin admin, BigInteger serno) {
+    public Collection<Certificate> findCertificatesBySerno(Admin admin, BigInteger serno) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesBySerno(),  serno=" + serno);
     	}
@@ -646,7 +646,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return Collection of Certificates ordered by expire date, with last expire date first, or null if none found.
      * @ejb.interface-method
      */
-    public Collection findCertificatesByUsername(Admin admin, String username) {
+    public Collection<Certificate> findCertificatesByUsername(Admin admin, String username) {
     	return CertificateDataUtil.findCertificatesByUsername(admin, username, entityManager, adapter);
     }
 
@@ -659,7 +659,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return Collection of Certificates ordered by expire date, with last expire date first, or empty list if user can not be found
      * @ejb.interface-method
      */
-    public Collection findCertificatesByUsernameAndStatus(Admin admin, String username, int status) {
+    public Collection<Certificate> findCertificatesByUsernameAndStatus(Admin admin, String username, int status) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesByUsername(),  username=" + username);
     	}
@@ -766,7 +766,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return Collection Collection of Certificate, never <tt>null</tt>
      * @ejb.interface-method
      */
-    public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
+    public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) {
         return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, entityManager, adapter);
     }
 
@@ -814,7 +814,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason, String userDataDN) {
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection<Integer> publishers, int reason, String userDataDN) {
     	if (log.isTraceEnabled()) {
         	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
     	}
@@ -845,7 +845,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      * @throws FinderException 
      */
-    private void setRevokeStatus(Admin admin, Certificate certificate, Collection publishers, int reason, String userDataDN) throws FinderException {
+    private void setRevokeStatus(Admin admin, Certificate certificate, Collection<Integer> publishers, int reason, String userDataDN) throws FinderException {
     	if (certificate == null) {
     		return;
     	}
@@ -932,7 +932,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason, String userDataDN) {
+    public void revokeCertificate(Admin admin, Certificate cert, Collection<Integer> publishers, int reason, String userDataDN) {
         if (cert instanceof X509Certificate) {
             setRevokeStatus(admin, CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert), publishers, reason, userDataDN);
         }
@@ -1190,7 +1190,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return a collection of CertReqHistory
      * @ejb.interface-method
      */
-    public List getCertReqHistory(Admin admin, String username){
+    public List<CertReqHistory> getCertReqHistory(Admin admin, String username){
     	ArrayList<CertReqHistory> retval = new ArrayList<CertReqHistory>();
     	Collection<CertReqHistoryData> result = CertReqHistoryData.findByUsername(entityManager, username);
     	Iterator<CertReqHistoryData> iter = result.iterator();
@@ -1286,7 +1286,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename, Collection authorizedCaIds) throws CertificateProfileExistsException {
+    public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename, Collection<Integer> authorizedCaIds) throws CertificateProfileExistsException {
         CertificateProfile certificateprofile = null;
 
         if (isCertificateProfileNameFixed(newcertificateprofilename)) {
@@ -1421,7 +1421,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
      * @return Collection of id:s (Integer)
      * @ejb.interface-method
      */
-    public Collection getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype, Collection authorizedCaIds) {
+    public Collection<Integer> getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype, Collection<Integer> authorizedCaIds) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
         HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizedCaIds);
 

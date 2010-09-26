@@ -145,7 +145,7 @@ public class LocalUserDataSourceSessionBean implements UserDataSourceSessionLoca
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public Collection fetch(Admin admin, Collection userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{
+    public Collection<UserDataSourceVO> fetch(Admin admin, Collection<Integer> userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{
     	Iterator<Integer> iter = userdatasourceids.iterator();
     	ArrayList<UserDataSourceVO> result = new ArrayList<UserDataSourceVO>();
     	while (iter.hasNext()) {
@@ -192,7 +192,7 @@ public class LocalUserDataSourceSessionBean implements UserDataSourceSessionLoca
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public boolean removeUserData(Admin admin, Collection userdatasourceids, String searchstring, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException{
+    public boolean removeUserData(Admin admin, Collection<Integer> userdatasourceids, String searchstring, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException{
     	boolean retval = false;
     	Iterator<Integer> iter = userdatasourceids.iterator();
     	while (iter.hasNext()) {
@@ -468,7 +468,7 @@ public class LocalUserDataSourceSessionBean implements UserDataSourceSessionLoca
      * @return Collection of id:s (Integer)
      * @ejb.interface-method view-type="both"
      */
-    public Collection getAuthorizedUserDataSourceIds(Admin admin, boolean includeAnyCA) {
+    public Collection<Integer> getAuthorizedUserDataSourceIds(Admin admin, boolean includeAnyCA) {
         HashSet<Integer> returnval = new HashSet<Integer>();
         boolean superadmin = false;
         // If superadmin return all available user data sources
@@ -506,7 +506,7 @@ public class LocalUserDataSourceSessionBean implements UserDataSourceSessionLoca
      * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public HashMap getUserDataSourceIdToNameMap(Admin admin) {
+    public HashMap<Integer,String> getUserDataSourceIdToNameMap(Admin admin) {
         HashMap<Integer,String> returnval = new HashMap<Integer,String>();
         Collection<UserDataSourceData> result = UserDataSourceData.findAll(entityManager);
         Iterator<UserDataSourceData> i = result.iterator();

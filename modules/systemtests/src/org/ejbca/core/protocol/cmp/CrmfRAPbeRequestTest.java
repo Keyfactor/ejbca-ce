@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
+import javax.security.cert.Certificate;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -326,9 +328,9 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             File tmpfile = File.createTempFile("ejbca", "p12");
             makep12.setMainStoreDir(tmpfile.getParent());
             makep12.createAllNew();
-            Collection<X509Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(admin, username);
+            Collection<java.security.cert.Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(admin, username);
             assertTrue(userCerts.size() == 1);
-            X509Certificate cert = userCerts.iterator().next();
+            X509Certificate cert = (X509Certificate) userCerts.iterator().next();
             // revoke via CMP and verify response
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -418,11 +420,11 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
      */
     public int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
                     CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, int approvalCAID) throws Exception {
-        Collection<X509Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
-        Iterator<X509Certificate> i = userCerts.iterator();
+        Collection<java.security.cert.Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
+        Iterator<java.security.cert.Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
         while ( i.hasNext() ) {
-            X509Certificate cert = i.next();
+            X509Certificate cert = (X509Certificate) i.next();
             String issuerDN = cert.getIssuerDN().toString();
             BigInteger serialNumber = cert.getSerialNumber();
             boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);

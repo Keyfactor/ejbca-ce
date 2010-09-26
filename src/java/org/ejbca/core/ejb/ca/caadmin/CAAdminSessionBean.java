@@ -1195,7 +1195,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection getAvailableCAs(Admin admin) {
+    public Collection<Integer> getAvailableCAs(Admin admin) {
         return authorizationSession.getAuthorizedCAIds(admin, getAvailableCAs());
     }
 
@@ -1238,7 +1238,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @ejb.interface-method
      */
-    public byte[] makeRequest(Admin admin, int caid, Collection cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
+    public byte[] makeRequest(Admin admin, int caid, Collection<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
             throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException,
             CATokenAuthenticationFailedException {
         if (log.isTraceEnabled()) {
@@ -1275,14 +1275,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             	CardVerifiableCertificate dvcert = (CardVerifiableCertificate)ca.getCACertificate();
     			String ca_ref = dvcert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated();
             	log.debug("DV renewal missing CVCA cert, try finding CA for:"+ ca_ref);
-	        	Iterator cas = getAvailableCAs (admin).iterator();
+	        	Iterator<Integer> cas = getAvailableCAs(admin).iterator();
 	        	while (cas.hasNext()){
 	        		CA cvca = getCAInternal(admin, (Integer)cas.next(), null);
 	        		if (cvca.getCAType() == CAInfo.CATYPE_CVC && cvca.getSignedBy() == CAInfo.SELFSIGNED){
 	        			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cvca.getCACertificate();
 	        			if (ca_ref.equals (cvccert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated())){
 	                    	log.debug("Added missing CVCA to rewnewal request: "+ cvca.getName());
-	        				cachain.add(cvccert);
+	        				cachain.add(cvccert.getEncoded());
 	        				break;
 	        			}
 	        		}
@@ -1485,7 +1485,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @ejb.interface-method
      */
-    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection cachain, String tokenAuthenticationCode)
+    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<byte[]> cachain, String tokenAuthenticationCode)
             throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException {
         // check authorization
         Certificate cacert = null;
@@ -1934,7 +1934,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @ejb.interface-method
      */
-    public void importCACertificate(Admin admin, String caname, Collection certificates) throws CreateException {
+    public void importCACertificate(Admin admin, String caname, Collection<Certificate> certificates) throws CreateException {
         Certificate caCertificate = (Certificate) certificates.iterator().next();
         CA ca = null;
         CAInfo cainfo = null;
@@ -1996,7 +1996,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
             cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(), certprofileid, validity, null, CAInfo.CATYPE_CVC, signedby, null, null, description, -1,
-                    null, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, finishuser, new ArrayList(), approvalsettings,
+                    null, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, finishuser, new ArrayList<ExtendedCAServiceInfo>(), approvalsettings,
                     numofreqapprovals, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
@@ -3387,7 +3387,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            for the object.
      * @ejb.interface-method view-type="both"
      */
-    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, String caDataDN) {
+    public void publishCACertificate(Admin admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers, String caDataDN) {
         try {
             Object[] certs = certificatechain.toArray();
             for (int i = 0; i < certs.length; i++) {
@@ -3459,8 +3459,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @return Collection of id:s (Integer)
      * @ejb.interface-method view-type="both"
      */
-    public Collection getAuthorizedPublisherIds(Admin admin) {
-        HashSet returnval = new HashSet();
+    public Collection<Integer> getAuthorizedPublisherIds(Admin admin) {
+        HashSet<Integer> returnval = new HashSet<Integer>();
         try {
             // If superadmin return all available publishers
             returnval.addAll(publisherSession.getAllPublisherIds(admin));
@@ -3547,10 +3547,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *             if communication or system error occurrs
      * @ejb.interface-method
      */
-    public int createCRLs(Admin admin, Collection caids, long addtocrloverlaptime) {
+    public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime) {
         int createdcrls = 0;
         try {
-            Iterator iter = null;
+            Iterator<Integer> iter = null;
             if (caids != null) {
                 iter = caids.iterator();
             }
@@ -3595,7 +3595,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *             if communication or system error occurrs
      * @ejb.interface-method
      */
-    public int createDeltaCRLs(Admin admin, Collection caids, long crloverlaptime) {
+    public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime) {
         int createddeltacrls = 0;
         try {
             Iterator<Integer> iter = null;
@@ -3752,9 +3752,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * certificates, if the services are marked as active
      * 
      */
-    private void activateAndPublishExternalCAServices(Admin admin, Collection extendedCAServiceInfos, CA ca) {
+    private void activateAndPublishExternalCAServices(Admin admin, Collection<ExtendedCAServiceInfo> extendedCAServiceInfos, CA ca) {
         // activate External CA Services
-        Iterator iter = extendedCAServiceInfos.iterator();
+        Iterator<ExtendedCAServiceInfo> iter = extendedCAServiceInfos.iterator();
         while (iter.hasNext()) {
             ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
             ArrayList certificate = new ArrayList();

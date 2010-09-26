@@ -405,7 +405,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return Collection of id:s (Integer)
      * @ejb.interface-method view-type="both"
      */
-    public Collection getAuthorizedHardTokenProfileIds(Admin admin) {
+    public Collection<Integer> getAuthorizedHardTokenProfileIds(Admin admin) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
         HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateStoreSession.getAuthorizedCertificateProfileIds(admin,
                 SecConst.CERTTYPE_HARDTOKEN, caAdminSession.getAvailableCAs(admin)));
@@ -433,7 +433,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @ejb.interface-method view-type="both"
      */
-    public HashMap getHardTokenProfileIdToNameMap(Admin admin) {
+    public HashMap<Integer, String> getHardTokenProfileIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<HardTokenProfileData> result = HardTokenProfileData.findAll(entityManager);
         Iterator<HardTokenProfileData> i = result.iterator();
@@ -723,7 +723,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return A collection of available HardTokenIssuerData.
      * @ejb.interface-method view-type="both"
      */
-    public Collection getHardTokenIssuerDatas(Admin admin) {
+    public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(Admin admin) {
         log.trace(">getHardTokenIssuerDatas()");
         ArrayList<HardTokenIssuerData> returnval = new ArrayList<HardTokenIssuerData>();
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
@@ -747,7 +747,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return A collection of available hard token issuer aliases.
      * @ejb.interface-method view-type="both"
      */
-    public Collection getHardTokenIssuerAliases(Admin admin) {
+    public Collection<String> getHardTokenIssuerAliases(Admin admin) {
         log.trace(">getHardTokenIssuerAliases()");
         ArrayList<String> returnval = new ArrayList<String>();
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
@@ -770,7 +770,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return A treemap of available hard token issuers.
      * @ejb.interface-method view-type="both"
      */
-    public TreeMap getHardTokenIssuers(Admin admin) {
+    public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(Admin admin) {
         log.trace(">getHardTokenIssuers()");
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
         TreeMap<String, HardTokenIssuerData> returnval = new TreeMap<String, HardTokenIssuerData>();
@@ -938,7 +938,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata,
-            Collection certificates, String copyof) throws HardTokenExistsException {
+            Collection<Certificate> certificates, String copyof) throws HardTokenExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardToken(tokensn : " + tokensn + ")");
         }
@@ -950,9 +950,9 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
                         tokentype, bcdn, setHardToken(admin, signSession, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                                 hardtokendata)));
                 if (certificates != null) {
-                    Iterator<X509Certificate> i = certificates.iterator();
+                    Iterator<Certificate> i = certificates.iterator();
                     while (i.hasNext()) {
-                        addHardTokenCertificateMapping(admin, tokensn, i.next());
+                        addHardTokenCertificateMapping(admin, tokensn, (X509Certificate)i.next());
                     }
                 }
                 if (copyof != null) {
@@ -1156,7 +1156,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return a Collection of all hard token user data.
      * @ejb.interface-method view-type="both"
      */
-    public Collection getHardTokens(Admin admin, String username, boolean includePUK) {
+    public Collection<HardTokenData> getHardTokens(Admin admin, String username, boolean includePUK) {
         if (log.isTraceEnabled()) {
             log.trace("<getHardToken(username :" + username + ")");
         }
@@ -1211,7 +1211,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return a Collection of username(String) matching the search string
      * @ejb.interface-method view-type="both"
      */
-    public Collection matchHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
+    public Collection<String> matchHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
         return org.ejbca.core.ejb.hardtoken.HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
@@ -1326,7 +1326,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return a collection of X509Certificates
      * @ejb.interface-method view-type="both"
      */
-    public Collection findCertificatesInHardToken(Admin admin, String tokensn) {
+    public Collection<Certificate> findCertificatesInHardToken(Admin admin, String tokensn) {
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesInHardToken(username :" + tokensn + ")");
         }
@@ -1561,7 +1561,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Method that saves the hard token issuer data to a HashMap that can be
      * saved to database.
      */
-    private HashMap setHardToken(Admin admin, SignSessionLocal signsession, int encryptcaid, HardToken tokendata) {
+	private HashMap setHardToken(Admin admin, SignSessionLocal signsession, int encryptcaid, HardToken tokendata) {
         HashMap retval = null;
         if (encryptcaid != 0) {
             try {
@@ -1571,7 +1571,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
                 HardTokenEncryptCAServiceRequest request = new HardTokenEncryptCAServiceRequest(HardTokenEncryptCAServiceRequest.COMMAND_ENCRYPTDATA, baos
                         .toByteArray());
                 HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
-                HashMap data = new HashMap();
+                HashMap<String,byte[]> data = new HashMap<String,byte[]>();
                 data.put(ENCRYPTEDDATA, response.getData());
                 retval = data;
             } catch (Exception e) {

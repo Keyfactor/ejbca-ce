@@ -12,10 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.store;
 
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertReqHistory;
 
 public interface CertificateStoreSession {
 
@@ -57,7 +62,7 @@ public interface CertificateStoreSession {
      *            the dn of the certificates issuer.
      * @return Collection of fingerprints, i.e. Strings
      */
-    public java.util.Collection listAllCertificates(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn);
+    public java.util.Collection<String> listAllCertificates(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn);
 
     /**
      * Lists RevokedCertInfo of ALL revoked certificates (status =
@@ -77,7 +82,7 @@ public interface CertificateStoreSession {
      * @return Collection of RevokedCertInfo, reverse ordered by expireDate
      *         where last expireDate is first in array.
      */
-    public java.util.Collection listRevokedCertInfo(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, long lastbasecrldate);
+    public java.util.Collection<RevokedCertInfo> listRevokedCertInfo(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, long lastbasecrldate);
 
     /**
      * Lists certificates for a given subject signed by the given issuer.
@@ -93,11 +98,11 @@ public interface CertificateStoreSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public java.util.Collection findCertificatesBySubjectAndIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String subjectDN, java.lang.String issuerDN);
+    public java.util.Collection<Certificate> findCertificatesBySubjectAndIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String subjectDN, java.lang.String issuerDN);
 
-    public java.util.Set findUsernamesByIssuerDNAndSubjectDN(org.ejbca.core.model.log.Admin admin, java.lang.String issuerDN, java.lang.String subjectDN);
+    public java.util.Set<String> findUsernamesByIssuerDNAndSubjectDN(org.ejbca.core.model.log.Admin admin, java.lang.String issuerDN, java.lang.String subjectDN);
 
-    public java.util.Set findUsernamesByIssuerDNAndSubjectKeyId(org.ejbca.core.model.log.Admin admin, java.lang.String issuerDN, byte[] subjectKeyId);
+    public java.util.Set<String> findUsernamesByIssuerDNAndSubjectKeyId(org.ejbca.core.model.log.Admin admin, java.lang.String issuerDN, byte[] subjectKeyId);
 
     /**
      * Lists certificates for a given subject.
@@ -109,9 +114,9 @@ public interface CertificateStoreSession {
      * @return Collection of Certificates (java.security.cert.Certificate) in no
      *         specified order or an empty Collection.
      */
-    public java.util.Collection findCertificatesBySubject(org.ejbca.core.model.log.Admin admin, java.lang.String subjectDN);
+    public java.util.Collection<Certificate> findCertificatesBySubject(org.ejbca.core.model.log.Admin admin, java.lang.String subjectDN);
 
-    public java.util.Collection findCertificatesByExpireTime(org.ejbca.core.model.log.Admin admin, java.util.Date expireTime);
+    public java.util.Collection<Certificate> findCertificatesByExpireTime(org.ejbca.core.model.log.Admin admin, java.util.Date expireTime);
 
     /**
      * Finds usernames of users having certificate(s) expiring within a
@@ -120,7 +125,7 @@ public interface CertificateStoreSession {
      * @see org.ejbca.core.model.SecConst#CERT_ACTIVE
      * @see org.ejbca.core.model.SecConst#CERT_NOTIFIEDABOUTEXPIRATION
      */
-    public java.util.Collection findCertificatesByExpireTimeWithLimit(org.ejbca.core.model.log.Admin admin, java.util.Date expiretime);
+    public java.util.Collection<String> findCertificatesByExpireTimeWithLimit(org.ejbca.core.model.log.Admin admin, java.util.Date expiretime);
 
     /**
      * Finds a certificate specified by issuer DN and serial number.
@@ -151,7 +156,7 @@ public interface CertificateStoreSession {
      *            a collection of certificate serialnumbers
      * @return Collection a list of certificates; never <tt>null</tt>
      */
-    public java.util.Collection findCertificatesByIssuerAndSernos(org.ejbca.core.model.log.Admin admin, java.lang.String issuerDN, java.util.Collection sernos);
+    public java.util.Collection<Certificate> findCertificatesByIssuerAndSernos(org.ejbca.core.model.log.Admin admin, java.lang.String issuerDN, java.util.Collection<BigInteger> sernos);
 
     /**
      * Finds certificate(s) for a given serialnumber.
@@ -162,7 +167,7 @@ public interface CertificateStoreSession {
      *            the serialnumber of the certificate(s) that will be retrieved
      * @return Certificate or null if none found.
      */
-    public java.util.Collection findCertificatesBySerno(org.ejbca.core.model.log.Admin admin, java.math.BigInteger serno);
+    public java.util.Collection<Certificate> findCertificatesBySerno(org.ejbca.core.model.log.Admin admin, java.math.BigInteger serno);
 
     /**
      * Finds username for a given certificate serial number.
@@ -185,7 +190,7 @@ public interface CertificateStoreSession {
      * @return Collection of Certificates ordered by expire date, with last
      *         expire date first, or null if none found.
      */
-    public java.util.Collection findCertificatesByUsername(org.ejbca.core.model.log.Admin admin, java.lang.String username);
+    public java.util.Collection<Certificate> findCertificatesByUsername(org.ejbca.core.model.log.Admin admin, java.lang.String username);
 
     /**
      * Finds certificate(s) for a given username and status.
@@ -199,7 +204,7 @@ public interface CertificateStoreSession {
      * @return Collection of Certificates ordered by expire date, with last
      *         expire date first, or empty list if user can not be found
      */
-    public java.util.Collection findCertificatesByUsernameAndStatus(org.ejbca.core.model.log.Admin admin, java.lang.String username, int status);
+    public java.util.Collection<Certificate> findCertificatesByUsernameAndStatus(org.ejbca.core.model.log.Admin admin, java.lang.String username, int status);
 
     /**
      * Gets certificate info, which is basically all fields except the
@@ -260,7 +265,7 @@ public interface CertificateStoreSession {
      *            CERTTYPE_* types from CertificateDataBean
      * @return Collection Collection of Certificate, never <tt>null</tt>
      */
-    public java.util.Collection findCertificatesByType(org.ejbca.core.model.log.Admin admin, int type, java.lang.String issuerDN);
+    public java.util.Collection<Certificate> findCertificatesByType(org.ejbca.core.model.log.Admin admin, int type, java.lang.String issuerDN);
 
     /**
      * Method that sets status CertificateDataBean.CERT_ARCHIVED on the
@@ -291,7 +296,7 @@ public interface CertificateStoreSession {
      *            if an DN object is not found in the certificate, the object
      *            could be taken from user data instead.
      */
-    public void setRevokeStatus(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, java.math.BigInteger serno, java.util.Collection publishers,
+    public void setRevokeStatus(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, java.math.BigInteger serno, java.util.Collection<Integer> publishers,
             int reason, java.lang.String userDataDN);
 
     /**
@@ -303,7 +308,7 @@ public interface CertificateStoreSession {
      *            and array of publiserids (Integer) of publishers to revoke the
      *            certificate in.
      */
-    public void revokeCertificate(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate cert, java.util.Collection publishers, int reason,
+    public void revokeCertificate(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate cert, java.util.Collection<Integer> publishers, int reason,
             java.lang.String userDataDN);
 
     /**
@@ -422,7 +427,7 @@ public interface CertificateStoreSession {
      * @param username
      * @return a collection of CertReqHistory
      */
-    public java.util.List getCertReqHistory(org.ejbca.core.model.log.Admin admin, java.lang.String username);
+    public java.util.List<CertReqHistory> getCertReqHistory(org.ejbca.core.model.log.Admin admin, java.lang.String username);
 
     /**
      * A method designed to be called at startuptime to (possibly) upgrade
@@ -479,7 +484,7 @@ public interface CertificateStoreSession {
      *            readable name of new certificate profile
      */
     public void cloneCertificateProfile(org.ejbca.core.model.log.Admin admin, java.lang.String originalcertificateprofilename,
-            java.lang.String newcertificateprofilename, java.util.Collection authorizedCaIds)
+            java.lang.String newcertificateprofilename, java.util.Collection<Integer> authorizedCaIds)
             throws org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 
     /**
@@ -528,8 +533,8 @@ public interface CertificateStoreSession {
      *            Admin
      * @return Collection of id:s (Integer)
      */
-    public java.util.Collection getAuthorizedCertificateProfileIds(org.ejbca.core.model.log.Admin admin, int certprofiletype,
-            java.util.Collection authorizedCaIds);
+    public java.util.Collection<Integer> getAuthorizedCertificateProfileIds(org.ejbca.core.model.log.Admin admin, int certprofiletype,
+            java.util.Collection<Integer> authorizedCaIds);
 
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name

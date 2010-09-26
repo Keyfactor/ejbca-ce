@@ -544,7 +544,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection getAuthorizedAdminGroupNames(Admin admin, Collection availableCaIds) {
+    public Collection<AdminGroup> getAuthorizedAdminGroupNames(Admin admin, Collection<Integer> availableCaIds) {
         ArrayList<AdminGroup> returnval = new ArrayList<AdminGroup>();
         boolean issuperadmin = false;
         try {
@@ -623,7 +623,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * 
      * @ejb.interface-method view-type="both"
      */
-    public void addAccessRules(Admin admin, String admingroupname, Collection accessrules) {
+    public void addAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
                 AdminGroupData agd = AdminGroupData.findByGroupName(entityManager, admingroupname);
@@ -650,7 +650,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * 
      * @ejb.interface-method view-type="both"
      */
-    public void removeAccessRules(Admin admin, String admingroupname, Collection accessrules) {
+    public void removeAccessRules(Admin admin, String admingroupname, Collection<String> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
                 AdminGroupData agd = AdminGroupData.findByGroupName(entityManager, admingroupname);
@@ -676,7 +676,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * 
      * @ejb.interface-method view-type="both"
      */
-    public void replaceAccessRules(Admin admin, String admingroupname, Collection accessrules) {
+    public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
                 AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
@@ -711,7 +711,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * @ejb.interface-method view-type="both"
      */
 
-    public void addAdminEntities(Admin admin, String admingroupname, Collection adminentities) {
+    public void addAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
                 AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
@@ -737,7 +737,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * 
      * @ejb.interface-method view-type="both"
      */
-    public void removeAdminEntities(Admin admin, String admingroupname, Collection adminentities) {
+    public void removeAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
                 AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
@@ -805,8 +805,8 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection getAuthorizedAvailableAccessRules(Admin admin, Collection availableCaIds, boolean enableendentityprofilelimitations,
-            boolean usehardtokenissuing, boolean usekeyrecovery, Collection authorizedEndEntityProfileIds, Collection authorizedUserDataSourceIds) {
+    public Collection<String> getAuthorizedAvailableAccessRules(Admin admin, Collection<Integer> availableCaIds, boolean enableendentityprofilelimitations,
+            boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds, Collection<Integer> authorizedUserDataSourceIds) {
         AvailableAccessRules availableAccessRules = new AvailableAccessRules(admin, getAuthorizer(), customaccessrules, availableCaIds,
                 enableendentityprofilelimitations, usehardtokenissuing, usekeyrecovery);
         return availableAccessRules.getAvailableAccessRules(admin, authorizedEndEntityProfileIds, authorizedUserDataSourceIds);
@@ -826,7 +826,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection getAuthorizedCAIds(Admin admin, Collection availableCaIds) {
+    public Collection<Integer> getAuthorizedCAIds(Admin admin, Collection<Integer> availableCaIds) {
         return getAuthorizer().getAuthorizedCAIds(admin, availableCaIds);
     }
 
@@ -845,7 +845,7 @@ public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal,
      * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge, Collection availableEndEntityProfileId) {
+    public Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge, Collection<Integer> availableEndEntityProfileId) {
         return getAuthorizer().getAuthorizedEndEntityProfileIds(admin, rapriviledge, availableEndEntityProfileId);
     }
 

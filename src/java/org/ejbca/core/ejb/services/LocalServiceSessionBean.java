@@ -32,8 +32,6 @@ import javax.ejb.Timer;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -346,7 +344,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
      * @return Collection of id:s (Integer)
      * @ejb.interface-method view-type="both"
      */
-    public Collection getAuthorizedVisibleServiceIds(Admin admin) {
+    public Collection<Integer> getAuthorizedVisibleServiceIds(Admin admin) {
         Collection<Integer> allServiceIds = new ArrayList<Integer>();
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
@@ -925,7 +923,7 @@ public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSess
      * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public HashMap getServiceIdToNameMap(Admin admin) {
+    public HashMap<Integer, String> getServiceIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<ServiceData> result = serviceDataSession.findAll();
         Iterator<ServiceData> i = result.iterator();
