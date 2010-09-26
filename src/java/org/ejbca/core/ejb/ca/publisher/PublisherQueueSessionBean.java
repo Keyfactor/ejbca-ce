@@ -145,7 +145,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	 * 
      * @ejb.interface-method view-type="both"
      */
-    public Collection getPendingEntriesForPublisher(int publisherId) {
+    public Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId) {
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisher(publisherId: " + publisherId + ")");
     	}
@@ -212,7 +212,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	 * 
      * @ejb.interface-method view-type="both"
      */
-    public Collection getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy) {
+    public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy) {
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisherWithLimit(publisherId: " + publisherId + ")");
     	}
@@ -241,7 +241,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	 * 
      * @ejb.interface-method view-type="both"
      */
-    public Collection getEntriesByFingerprint(String fingerprint) {
+    public Collection<PublisherQueueData> getEntriesByFingerprint(String fingerprint) {
     	if (log.isTraceEnabled()) {
             log.trace(">getEntriesByFingerprint(fingerprint: " + fingerprint + ")");
     	}

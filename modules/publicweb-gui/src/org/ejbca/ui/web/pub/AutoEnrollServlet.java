@@ -254,13 +254,13 @@ public class AutoEnrollServlet extends HttpServlet {
 		if (!userAdminSession.existsUser(admin, username)) {
 			return "NO_SUCH_USER";
 		}
-		Collection<X509Certificate> certificates = certificateStoreSession.findCertificatesByUsername(admin, username);
-		Iterator<X509Certificate> iter = certificates.iterator();
+		Collection<Certificate> certificates = certificateStoreSession.findCertificatesByUsername(admin, username);
+		Iterator<Certificate> iter = certificates.iterator();
 		if (!iter.hasNext()) {
 			return "NO_CERTIFICATES";
 		}
 		while (iter.hasNext()) {
-			X509Certificate cert = iter.next();
+			X509Certificate cert = (X509Certificate)iter.next();
 			try {
 				cert.checkValidity(new Date(System.currentTimeMillis() + 14 * 24 * 3600 * 1000));
 				return "OK";

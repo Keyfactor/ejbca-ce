@@ -205,7 +205,6 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
             log.trace(">addAdminPreference(fingerprint : " + certificatefingerprint + ")");
         }
         boolean ret = false;
-        boolean exists = false;
         // EJB 2.1 only?: We must actually check if there is one before we try
         // to add it, because wls does not allow us to catch any errors if
         // creating fails, that sux

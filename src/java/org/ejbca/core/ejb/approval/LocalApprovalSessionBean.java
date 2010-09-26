@@ -562,7 +562,7 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
      * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection findApprovalDataVO(Admin admin, int approvalId) {
+    public Collection<ApprovalDataVO> findApprovalDataVO(Admin admin, int approvalId) {
         log.trace(">findApprovalDataVO");
         ArrayList<ApprovalDataVO> retval = new ArrayList<ApprovalDataVO>();
         Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
@@ -598,7 +598,7 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
      * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString)
+    public List<ApprovalDataVO> query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString)
             throws AuthorizationDeniedException, IllegalQueryException {
         log.trace(">query()");
         ArrayList<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>();
@@ -640,7 +640,7 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
      * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List getAllPendingApprovalIds() {
+    public List<Integer> getAllPendingApprovalIds() {
     	return ApprovalData.findByApprovalIdsByStatus(entityManager, ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
     }
 
@@ -686,7 +686,7 @@ public class LocalApprovalSessionBean implements ApprovalSessionLocal, ApprovalS
                         approveComment, requestAdminUsername, requestAdminDN, approvalAdminUsername, approvalAdminDN);
                 String subject = paramGen.interpolate(notificationSubject);
                 String message = paramGen.interpolate(notificationMsg);
-                List toList = Arrays.asList(approvalAdminsEmail);
+                List<String> toList = Arrays.asList(approvalAdminsEmail);
                 if (sendAdmin.getEmail() == null || sendAdmin.getEmail().length() == 0) {
                     logSession.log(sendAdmin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), requestAdminUsername, null,
                             LogConstants.EVENT_ERROR_NOTIFICATION,

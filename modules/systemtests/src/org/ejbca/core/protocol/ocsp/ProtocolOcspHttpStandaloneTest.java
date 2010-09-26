@@ -20,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
@@ -353,10 +354,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
 
     private X509Certificate getTestCert(boolean isRevoked) throws Exception {
         try {
-            Collection<X509Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername(admin, "ocspTest");
-            Iterator<X509Certificate> i = certs.iterator();
+            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername(admin, "ocspTest");
+            Iterator<Certificate> i = certs.iterator();
             while (i.hasNext()) {
-                X509Certificate cert = i.next();
+                X509Certificate cert = (X509Certificate) i.next();
                 CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(issuerDN, CertTools.getSerialNumber(cert));
                 if (isRevoked == cs.equals(CertificateStatus.REVOKED)) {
                     return cert;
@@ -370,7 +371,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     }
 
     private X509Certificate getCaCert(X509Certificate cert) throws Exception {
-        Collection<X509Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(admin, SecConst.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
+        Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(admin, SecConst.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
         assertTrue("Could not determine or find the CA cert.", certs != null && !certs.isEmpty());
         return (X509Certificate) certs.iterator().next();
     }

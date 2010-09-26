@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.userdatasource;
 
+import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
+
 public interface UserDataSourceSession {
     /**
      * Main method used to fetch userdata from the given user data sources See
@@ -24,7 +26,7 @@ public interface UserDataSourceSession {
      *         found.
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public java.util.Collection fetch(org.ejbca.core.model.log.Admin admin, java.util.Collection userdatasourceids, java.lang.String searchstring)
+    public java.util.Collection<UserDataSourceVO> fetch(org.ejbca.core.model.log.Admin admin, java.util.Collection<Integer> userdatasourceids, java.lang.String searchstring)
             throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 
     /**
@@ -40,7 +42,7 @@ public interface UserDataSourceSession {
      *         user data sources.
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public boolean removeUserData(org.ejbca.core.model.log.Admin admin, java.util.Collection userdatasourceids, java.lang.String searchstring,
+    public boolean removeUserData(org.ejbca.core.model.log.Admin admin, java.util.Collection<Integer> userdatasourceids, java.lang.String searchstring,
             boolean removeMultipleMatch) throws org.ejbca.core.model.authorization.AuthorizationDeniedException,
             org.ejbca.core.model.ra.userdatasource.MultipleMatchException, org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 
@@ -126,13 +128,13 @@ public interface UserDataSourceSession {
      *            if sources with anyca set should be included
      * @return Collection of id:s (Integer)
      */
-    public java.util.Collection getAuthorizedUserDataSourceIds(org.ejbca.core.model.log.Admin admin, boolean includeAnyCA);
+    public java.util.Collection<Integer> getAuthorizedUserDataSourceIds(org.ejbca.core.model.log.Admin admin, boolean includeAnyCA);
 
     /**
      * Method creating a hashmap mapping user data source id (Integer) to user
      * data source name (String).
      */
-    public java.util.HashMap getUserDataSourceIdToNameMap(org.ejbca.core.model.log.Admin admin);
+    public java.util.HashMap<Integer,String> getUserDataSourceIdToNameMap(org.ejbca.core.model.log.Admin admin);
 
     /**
      * Retrives a named user data source.

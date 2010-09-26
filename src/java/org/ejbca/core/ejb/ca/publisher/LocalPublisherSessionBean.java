@@ -146,7 +146,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String userDN, String cafp,
+    public boolean storeCertificate(Admin admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,
             int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
             ExtendedInformation extendedinformation) {
         return storeCertificate(admin, LogConstants.EVENT_INFO_STORECERTIFICATE, LogConstants.EVENT_ERROR_STORECERTIFICATE, publisherids, incert, username,
@@ -162,7 +162,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
+    public void revokeCertificate(Admin admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
             long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
         storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, userDN, cafp,
                 SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
@@ -190,7 +190,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      * @param extendedinformation
      * @return true if publishing was successful for all publishers (or no publishers were given as publisherids), false if not or if was queued for any of the publishers
      */
-    private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection publisherids, Certificate cert, String username,
+    private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection<Integer> publisherids, Certificate cert, String username,
             String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
             long lastUpdate, ExtendedInformation extendedinformation) {
     	if (publisherids == null) {
@@ -263,7 +263,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCRL(Admin admin, Collection publisherids, byte[] incrl, String cafp, String userDN) {
+    public boolean storeCRL(Admin admin, Collection<Integer> publisherids, byte[] incrl, String cafp, String userDN) {
         log.trace(">storeCRL");
         Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
@@ -530,7 +530,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      *             if the admin does not have superadmin credentials
      * @ejb.interface-method view-type="both"
      */
-    public Collection getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
+    public Collection<Integer> getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
         HashSet<Integer> returnval = new HashSet<Integer>();
         authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
@@ -548,7 +548,7 @@ public class LocalPublisherSessionBean implements PublisherSessionLocal, Publish
      * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public HashMap getPublisherIdToNameMap(Admin admin) {
+    public HashMap<Integer,String> getPublisherIdToNameMap(Admin admin) {
         HashMap<Integer,String> returnval = new HashMap<Integer,String>();
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {

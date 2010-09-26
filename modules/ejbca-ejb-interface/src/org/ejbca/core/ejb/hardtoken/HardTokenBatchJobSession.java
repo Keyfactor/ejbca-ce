@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.hardtoken;
 
+import org.ejbca.core.model.ra.UserDataVO;
+
 public interface HardTokenBatchJobSession {
     /**
      * Returns the next user scheduled for batch generation for the given
@@ -38,7 +40,7 @@ public interface HardTokenBatchJobSession {
      * @throws EJBException
      *             if a communication or other error occurs.
      */
-    public java.util.Collection getNextHardTokensToGenerate(org.ejbca.core.model.log.Admin admin, java.lang.String alias)
+    public java.util.Collection<UserDataVO> getNextHardTokensToGenerate(org.ejbca.core.model.log.Admin admin, java.lang.String alias)
             throws org.ejbca.core.model.hardtoken.UnavailableTokenException;
 
     /**

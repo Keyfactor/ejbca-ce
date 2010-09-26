@@ -549,7 +549,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @throws CATokenOfflineException 
      * @ejb.interface-method view-type="both"
      */
-    public byte[] createCRL(Admin admin, CA ca, Collection certs, int basecrlnumber) throws CATokenOfflineException {
+    public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException {
         log.trace(">createCRL()");
         byte[] crlBytes = null; // return value
         try {
@@ -785,7 +785,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param doPublishDeltaCRL should delta CRLs be published?
      * @ejb.interface-method view-type="both"
      */
-    public void publishCRL(Admin admin, Certificate caCert, Collection usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
+    public void publishCRL(Admin admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
     	if ( usedpublishers==null ) {
     		return;
     	}

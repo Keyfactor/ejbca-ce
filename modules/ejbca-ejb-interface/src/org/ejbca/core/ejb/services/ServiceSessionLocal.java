@@ -39,6 +39,6 @@ public interface ServiceSessionLocal extends ServiceSession {
      * Method creating a hashmap mapping service id (Integer) to service name
      * (String).
      */
-    public HashMap getServiceIdToNameMap(Admin admin);
+    public HashMap<Integer, String> getServiceIdToNameMap(Admin admin);
    
 }

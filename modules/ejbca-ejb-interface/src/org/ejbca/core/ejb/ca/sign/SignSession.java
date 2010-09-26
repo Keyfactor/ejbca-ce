@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import java.security.cert.Certificate;
+
 public interface SignSession {
 
     public boolean isUniqueCertificateSerialNumberIndex();
@@ -27,7 +29,7 @@ public interface SignSession {
      *            is the issuerdn.hashCode()
      * @return Collection of Certificate, the certificate chain, never null.
      */
-    public java.util.Collection getCertificateChain(org.ejbca.core.model.log.Admin admin, int caid);
+    public java.util.Collection<Certificate> getCertificateChain(org.ejbca.core.model.log.Admin admin, int caid);
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain,

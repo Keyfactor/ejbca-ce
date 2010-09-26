@@ -16,6 +16,7 @@ import java.io.File;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.SecureRandom;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -651,9 +652,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        Collection<X509Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(intAdmin, username);
+        Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(intAdmin, username);
         assertTrue(userCerts.size() == 1);
-        return userCerts.iterator().next();
+        return (X509Certificate) userCerts.iterator().next();
     }
 
 }

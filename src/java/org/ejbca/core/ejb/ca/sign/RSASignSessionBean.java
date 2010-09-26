@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
@@ -329,7 +328,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @ejb.interface-method view-type="both"
      */
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS) 
-    public Collection getCertificateChain(Admin admin, int caid) {
+    public Collection<Certificate> getCertificateChain(Admin admin, int caid) {
     	try {
     		return caAdminSession.getCA(admin, caid).getCertificateChain();
     	} catch (CADoesntExistsException e) {
