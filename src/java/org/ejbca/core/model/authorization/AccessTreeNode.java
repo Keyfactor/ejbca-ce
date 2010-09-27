@@ -29,12 +29,14 @@ import org.apache.log4j.Logger;
  */
 public class AccessTreeNode implements Serializable{
 
-    private static final Logger log = Logger.getLogger(AccessTreeNode.class);
+	private static final long serialVersionUID = 8809680045615040588L;
+
+	private static final Logger log = Logger.getLogger(AccessTreeNode.class);
 
     // Private fields.
     private String name;
-    private ArrayList useraccesspairs;
-    private HashMap leafs;
+    private ArrayList<Object> useraccesspairs;
+    private HashMap<String,AccessTreeNode> leafs;
 
     // Private Constants
     // OBSERVE that the order is important!!
@@ -50,8 +52,8 @@ public class AccessTreeNode implements Serializable{
         	log.trace(">AccessTreeNode:" +resource);
         }*/
         name = resource;
-        useraccesspairs = new ArrayList();
-        leafs = new HashMap();
+        useraccesspairs = new ArrayList<Object>();
+        leafs = new HashMap<String,AccessTreeNode>();
     }
 
     /** Checks the tree if the users X509Certificate is authorized to view the requested resource */
@@ -175,7 +177,7 @@ public class AccessTreeNode implements Serializable{
           int state     = STATE_UNKNOWN;
           int stateprio = 0;
           Object[] accessuserpair;
-          Collection adminentities;
+          Collection<AdminEntity> adminentities;
            
           for (int i = 0; i < useraccesspairs.size();i++){ 
             accessuserpair = (Object[]) useraccesspairs.get(i);
@@ -185,9 +187,9 @@ public class AccessTreeNode implements Serializable{
               }	
             }else{                                    
               adminentities = ((AdminGroup) accessuserpair[ADMINGROUP]).getAdminEntities();
-              Iterator iter = adminentities.iterator();
+              Iterator<AdminEntity> iter = adminentities.iterator();
               while(iter.hasNext()){
-                AdminEntity adminentity = (AdminEntity) iter.next();  
+                AdminEntity adminentity = iter.next();  
                 // If user entity match.
                 if(adminentity.match(admininformation)){
                   int thisuserstate = ((AccessRule) accessuserpair[ACCESSRULE]).getRuleState();
