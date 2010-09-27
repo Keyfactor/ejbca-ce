@@ -1123,13 +1123,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             String msg = intres.getLocalizedMessage("signsession.caexpired", ca.getSubjectDN());
             msg += " "+cee.getMessage();
-            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_UNKNOWN, msg);
+            log.info(msg);
         } catch (CertificateNotYetValidException e) {
             // Signers Certificate is not yet valid.
             String msg = intres.getLocalizedMessage("signsession.canotyetvalid", ca.getSubjectDN());
             msg += " "+e.getMessage();
             log.warn(msg);
-            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_UNKNOWN, msg);
         }
     } // checkCAExpireAndUpdateCA
 
@@ -3712,7 +3711,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Checks the signer validity given a CADataLocal object, as a side-effect
      * marks the signer as expired if it is expired, and throws an EJBException
-     * to the caller.
+     * to the caller. This should only be called from create and edit CA methods.
      * 
      * @param admin
      *            administrator calling the method
@@ -3721,7 +3720,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws UnsupportedEncodingException
      *             if there is an error getting the CA from the CADataLoca
      * @throws IllegalKeyStoreException
-     *             l
+     *             if we can not read the CA, with it's keystore
      * @throws EJBException
      *             embedding a CertificateExpiredException or a
      *             CertificateNotYetValidException if the certificate has
