@@ -17,7 +17,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.sql.PreparedStatement;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
@@ -40,7 +39,6 @@ import org.ejbca.core.model.protect.Protectable;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.GUIDGenerator;
-import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
 
 /** For some setups there are requirements for integrity protection of 
@@ -130,10 +128,27 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
     	String dbKey = entry.getDbKeyString();
     	String dbType = entry.getEntryType();
 		log.debug("Protecting entry, type: "+dbType+", with key: "+dbKey);
-    	String hash;
+    	//String hash;
     	try {
-    		hash = entry.getHash();
+    		String hash = entry.getHash();
     		String signature = createHmac(key, HMAC_ALG, hash);
+    		TableProtectData tableProtectData = TableProtectData.findByDbTypeAndKey(entityManager, dbType, dbKey);
+    		if (tableProtectData != null) {
+				log.info(intres.getLocalizedMessage("protect.rowexistsupdate", dbType, dbKey));
+    			tableProtectData.setDbKey(dbKey);
+    			tableProtectData.setDbType(dbType);
+    			tableProtectData.setHash(hash);
+    			tableProtectData.setHashVersion(hashVersion);
+    			tableProtectData.setKeyType(keyType);
+    			tableProtectData.setProtectionAlg(HMAC_ALG);
+    			tableProtectData.setSignature(signature);
+    			tableProtectData.setTime(new Date().getTime());
+    			tableProtectData.setVersion(TableProtectData.CURRENT_VERSION);
+    		} else {
+    			tableProtectData = new TableProtectData(GUIDGenerator.generateGUID(this), hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyType);
+    			entityManager.persist(tableProtectData);
+    		}
+    		/*
     		String id = null;
     		try {
     			SelectProtectPreparer prep = new SelectProtectPreparer(dbType, dbKey);
@@ -162,7 +177,7 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
 	                String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
 					log.error(msg, e);
 	        	}
-			} 
+			} */
     	} catch (Exception e) {
             String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
     		log.error(msg, e);
@@ -297,7 +312,7 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
     	return new String(Hex.encode(out));
     }
 
-    protected class SelectProtectPreparer implements JDBCUtil.Preparer {
+    /*protected class SelectProtectPreparer implements JDBCUtil.Preparer {
     	private final String dbType;
     	private final String dbKey;
 		public SelectProtectPreparer(final String dbType, final String dbKey) {
@@ -354,5 +369,5 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
         public String getInfoString() {
         	return "Store:, id: "+id+", dbKey:"+dbKey+", dbType: "+dbType;
         }
-    }
+    }*/
 }

@@ -448,4 +448,47 @@ public class UserData implements Serializable {
     	query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
     	return ((Long)query.getSingleResult()).longValue();
 	}
+
+	public static String findSubjectEmailByUsername(EntityManager entityManager, String username) {
+    	Query query = entityManager.createQuery("SELECT a.subjectEmail FROM UserData a WHERE a.username=:username");
+    	query.setParameter("username", username);
+		return (String) query.getSingleResult();
+	}
+
+	/** @return return a List<UserData> matching the custom query. */
+	public static List<UserData> findByCustomQuery(EntityManager entityManager, String customQuery, int maxResults) {
+    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE " + customQuery);
+    	if (maxResults > 0) {
+    		query.setMaxResults(maxResults);
+    	}
+    	return query.getResultList();
+	}
+
+	/** @return return a count of UserDatas with the specified End Entity Profile. */
+	public static long countByEndEntityProfileId(EntityManager entityManager, int endEntityProfileId) {
+    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.endEntityProfileId=:endEntityProfileId");
+    	query.setParameter("endEntityProfileId", endEntityProfileId);
+    	return ((Long)query.getSingleResult()).longValue();
+	}
+
+	/** @return return a count of UserDatas with the specified Certificate Profile. */
+	public static long countByCertificateProfileId(EntityManager entityManager, int certificateProfileId) {
+    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
+    	query.setParameter("certificateProfileId", certificateProfileId);
+    	return ((Long)query.getSingleResult()).longValue();
+	}
+
+	/** @return return a count of UserDatas with the specified CA. */
+	public static long countByCaId(EntityManager entityManager, int cAId) {
+    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.cAId=:cAId");
+    	query.setParameter("cAId", cAId);
+    	return ((Long)query.getSingleResult()).longValue();
+	}
+
+	/** @return return a count of UserDatas with the specified Hard Token Profile. */
+	public static long countByHardTokenProfileId(EntityManager entityManager, int hardTokenProfileId) {
+    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.tokenType=:tokenType");
+    	query.setParameter("tokenType", hardTokenProfileId);
+    	return ((Long)query.getSingleResult()).longValue();
+	}
 }
