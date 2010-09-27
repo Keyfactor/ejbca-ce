@@ -9,7 +9,7 @@ CREATE TABLE accessrulesdata (
   pK INT4 NOT NULL, 
   accessRule TEXT, 
   rule INT4 NOT NULL, 
-  isRecursive INT2 NOT NULL, 
+  isRecursive BOOLEAN DEFAULT FALSE NOT NULL, 
   AdminGroupData_accessRules INT4, 
 CONSTRAINT pk_accessrulesdata PRIMARY KEY (pK)
 );
@@ -213,7 +213,7 @@ CREATE TABLE keyrecoverydata (
   certSN TEXT NOT NULL, 
   issuerDN TEXT NOT NULL, 
   username TEXT, 
-  markedAsRecoverable INT2 NOT NULL, 
+  markedAsRecoverable BOOLEAN DEFAULT FALSE NOT NULL, 
   keyData TEXT, 
 CONSTRAINT pk_keyrecoverydata PRIMARY KEY (certSN, issuerDN)
 );

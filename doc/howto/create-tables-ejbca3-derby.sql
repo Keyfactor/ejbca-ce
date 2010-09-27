@@ -111,7 +111,7 @@ CREATE TABLE CertificateData (
     expireDate bigint NOT NULL,
     revocationDate bigint NOT NULL,
     revocationReason integer NOT NULL,
-    base64Cert long varchar,
+    base64Cert clob DEFAULT NULL,
     username varchar(256),
     tag varchar(256),
     certificateProfileId integer,
@@ -194,7 +194,7 @@ CREATE TABLE KeyRecoveryData (
     issuerDN varchar(256) NOT NULL,
     username varchar(256),
     markedAsRecoverable smallint NOT NULL,
-    keyData long varchar,
+    keyData clob DEFAULT NULL,
     PRIMARY KEY (certSN, issuerDN)
 );
 
@@ -226,7 +226,7 @@ CREATE TABLE PublisherData (
     id integer NOT NULL,
     name varchar(256),
     updateCounter integer NOT NULL,
-    data long varchar,
+    data clob DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -240,7 +240,7 @@ CREATE TABLE PublisherQueueData (
     publishType integer NOT NULL,
     fingerprint varchar(256),
     publisherId integer NOT NULL,
-    volatileData long varchar,
+    volatileData clob DEFAULT NULL,
     PRIMARY KEY (pk)
 );
 
@@ -248,7 +248,7 @@ DROP TABLE ServiceData;
 CREATE TABLE ServiceData (
     id integer NOT NULL,
     name varchar(256),
-    data long varchar,
+    data clob DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -295,6 +295,6 @@ CREATE TABLE UserDataSourceData (
     id integer NOT NULL,
     name varchar(256),
     updateCounter integer NOT NULL,
-    data long varchar,
+    data clob DEFAULT NULL,
     PRIMARY KEY (id)
 );

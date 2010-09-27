@@ -26,12 +26,12 @@
 <cmp-field>
   <field-name>approvalData</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>VARCHAR(4000)</sql-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>requestData</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>VARCHAR(8000)</sql-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>requestDate</field-name>

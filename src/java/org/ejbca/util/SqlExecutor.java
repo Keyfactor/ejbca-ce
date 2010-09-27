@@ -111,6 +111,9 @@ public class SqlExecutor {
             	if (!temp.startsWith("#")) { // Don't include comments
             		list.add(temp);
             	}
+            	if (!temp.startsWith("--")) { // Don't include SQL comments
+            		list.add(temp);
+            	}
                 if (!temp.endsWith(";")) {
                     continue;
                 }

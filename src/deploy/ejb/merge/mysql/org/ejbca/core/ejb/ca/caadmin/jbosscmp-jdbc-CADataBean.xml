@@ -20,5 +20,5 @@
 <cmp-field>
   <field-name>data</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>TEXT</sql-type>
+  <sql-type>LONGTEXT</sql-type>
 </cmp-field>

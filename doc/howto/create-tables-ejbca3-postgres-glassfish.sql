@@ -213,7 +213,7 @@ CREATE TABLE keyrecoverydata (
   certSN TEXT NOT NULL, 
   issuerDN TEXT NOT NULL, 
   username TEXT, 
-  markedAsRecoverable INT2 NOT NULL, 
+  markedAsRecoverable boolean NOT NULL, 
   keyData TEXT, 
 CONSTRAINT pk_keyrecoverydata PRIMARY KEY (certSN, issuerDN)
 );

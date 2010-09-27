@@ -1,7 +1,5 @@
 <cmp-field>
   <field-name>id</field-name>
-  <jdbc-type>VARCHAR</jdbc-type>
-  <sql-type>VARCHAR(80) BINARY</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>name</field-name>

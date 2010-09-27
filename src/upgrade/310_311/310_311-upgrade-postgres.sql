@@ -1,9 +1,7 @@
--- This file should not be available in EJBCA 4.0 and all these changes should already have been made to EJBCA 3.11.0.
-
 
 -- BOOLEANs on WebSphere were created as INT2 instead of "BOOLEAN". Hibernate will map this as BOOLEAN so we probably need to update this. 
 --  We cannot cast INT2 to BOOLEAN so we have to work around it..
--- NOTE! This is only for WebSphere, not other application servers.
+-- NOTE! This is only for WebSphere, not other application servers. Therefore we do not run them by default
 --ALTER TABLE AccessRulesData ADD tmp BOOLEAN DEFAULT FALSE NOT NULL;
 --UPDATE AccessRulesData SET tmp=TRUE WHERE isRecursive=1;
 --ALTER TABLE AccessRulesData DROP isRecursive;
