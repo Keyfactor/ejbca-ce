@@ -750,7 +750,7 @@ public class CertificateData implements Serializable {
 			String username = (String) fields[9];
 			String tag = (String) fields[10];
 			int cProfId = ((Integer)fields[11]).intValue();
-			long updateTime = ((BigInteger)fields[12]).longValue();
+			long updateTime = (fields[12]==null?0:((BigInteger)fields[12]).longValue());	// Might be null in an upgraded installation
 	        ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, expireDate, revocationDate, revocationReason, username, tag, cProfId, updateTime);				
 		}
 		return ret;
