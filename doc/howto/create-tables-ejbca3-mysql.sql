@@ -71,7 +71,7 @@ CREATE TABLE CAData (
     status int(11) NOT NULL DEFAULT '0',
     expireTime bigint(20) NOT NULL DEFAULT '0',
     updateTime bigint(20) NOT NULL DEFAULT '0',
-    data text NULL DEFAULT NULL,
+    data longtext NULL DEFAULT NULL,
     PRIMARY KEY (cAId)
 );
 
@@ -111,7 +111,7 @@ CREATE TABLE CertificateData (
     expireDate bigint(20) NOT NULL DEFAULT '0',
     revocationDate bigint(20) NOT NULL DEFAULT '0',
     revocationReason int(11) NOT NULL DEFAULT '0',
-    base64Cert text NULL DEFAULT NULL,
+    base64Cert longtext NULL DEFAULT NULL,
     username varchar(250) binary NULL DEFAULT NULL,
     tag varchar(250) binary NULL DEFAULT NULL,
     certificateProfileId int(11) NULL DEFAULT '0',
@@ -194,7 +194,7 @@ CREATE TABLE KeyRecoveryData (
     issuerDN varchar(250) binary NOT NULL DEFAULT '',
     username varchar(250) binary NULL DEFAULT NULL,
     markedAsRecoverable tinyint(4) NOT NULL DEFAULT '0',
-    keyData text NULL DEFAULT NULL,
+    keyData longtext NULL DEFAULT NULL,
     PRIMARY KEY (certSN, issuerDN)
 );
 
@@ -226,7 +226,7 @@ CREATE TABLE PublisherData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
     updateCounter int(11) NOT NULL DEFAULT '0',
-    data text NULL DEFAULT NULL,
+    data longtext NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -240,7 +240,7 @@ CREATE TABLE PublisherQueueData (
     publishType int(11) NOT NULL DEFAULT '0',
     fingerprint varchar(250) binary NULL DEFAULT NULL,
     publisherId int(11) NOT NULL DEFAULT '0',
-    volatileData text NULL DEFAULT NULL,
+    volatileData longtext NULL DEFAULT NULL,
     PRIMARY KEY (pk)
 );
 
@@ -248,7 +248,7 @@ DROP TABLE ServiceData;
 CREATE TABLE ServiceData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
-    data text NULL DEFAULT NULL,
+    data longtext NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -295,6 +295,6 @@ CREATE TABLE UserDataSourceData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
     updateCounter int(11) NOT NULL DEFAULT '0',
-    data text NULL DEFAULT NULL,
+    data longtext NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );

@@ -71,7 +71,7 @@ create table cadata (
     status int(11) not null default '0',
     expiretime bigint(20) not null default '0',
     updatetime bigint(20) not null default '0',
-    data text null default null,
+    data longtext null default null,
     primary key (caid)
 );
 
@@ -111,7 +111,7 @@ create table certificatedata (
     expiredate bigint(20) not null default '0',
     revocationdate bigint(20) not null default '0',
     revocationreason int(11) not null default '0',
-    base64cert text null default null,
+    base64cert longtext null default null,
     username varchar(250) binary null default null,
     tag varchar(250) binary null default null,
     certificateprofileid int(11) null default '0',
@@ -194,7 +194,7 @@ create table keyrecoverydata (
     issuerdn varchar(250) binary not null default '',
     username varchar(250) binary null default null,
     markedasrecoverable tinyint(4) not null default '0',
-    keydata text null default null,
+    keydata longtext null default null,
     primary key (certsn, issuerdn)
 );
 
@@ -226,7 +226,7 @@ create table publisherdata (
     id int(11) not null default '0',
     name varchar(250) binary null default null,
     updatecounter int(11) not null default '0',
-    data text null default null,
+    data longtext null default null,
     primary key (id)
 );
 
@@ -240,7 +240,7 @@ create table publisherqueuedata (
     publishtype int(11) not null default '0',
     fingerprint varchar(250) binary null default null,
     publisherid int(11) not null default '0',
-    volatiledata text null default null,
+    volatiledata longtext null default null,
     primary key (pk)
 );
 
@@ -248,7 +248,7 @@ drop table if exists servicedata;
 create table servicedata (
     id int(11) not null default '0',
     name varchar(250) binary null default null,
-    data text null default null,
+    data longtext null default null,
     primary key (id)
 );
 
@@ -295,6 +295,6 @@ create table userdatasourcedata (
     id int(11) not null default '0',
     name varchar(250) binary null default null,
     updatecounter int(11) not null default '0',
-    data text null default null,
+    data longtext null default null,
     primary key (id)
 );

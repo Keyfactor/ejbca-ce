@@ -198,9 +198,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         if (oldVersion <= 309) {
             return postMigrateDatabase310();
         }
-        // Upgrade database change between ejbca 3.9.x and 3.10.x if needed
-        if (oldVersion <= 400) {
-            return postMigrateDatabase400();
+        // Upgrade database change between ejbca 3.10.x and 3.11.x if needed
+        if (oldVersion <= 310) {
+            return postMigrateDatabase311();
         }
         return false;
     }
@@ -242,12 +242,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
-        // Upgrade database change between ejbca 3.10.x and 4.0.x if needed
+
+        // Upgrade database change between ejbca 3.10.x and 3.11.x if needed
         if (oldVersion <= 310) {
-            if (!migrateDatabase400(dbtype)) {
-                return false;
-            }
+        	if (!migrateDatabase311(dbtype)) {
+        		return false;
+        	}
         }
+        
         return true;
     }
 
@@ -437,6 +439,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return ret;
     }
 
+	/** In 3.10 we can upgrade and set subject key id on all certificate entry rows.
+	 * On large installations this may not be possible to do in reasonable time.
+	 * 
+	 */
     private boolean postMigrateDatabase310() {
         log.error("(this is not an error) Starting post upgrade from ejbca 3.9.x to ejbca 3.10.x");
         final String lKeyID = "subjectKeyId";
@@ -489,17 +495,17 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return false;
     }
 
-    private boolean migrateDatabase400(String dbtype) {
-        log.error("(this is not an error) Starting post upgrade from ejbca 3.10.x to ejbca 4.0.x");
-        boolean ret = migradeDatabase("/310_40/310_40-upgrade-" + dbtype + ".sql");
+	private boolean migrateDatabase311(String dbtype) {
+		log.error("(this is not an error) Starting upgrade from ejbca 3.10.x to ejbca 3.11.x");
+		boolean ret = migradeDatabase("/310_311/310_311-upgrade-"+dbtype+".sql");
         log.error("(this is not an error) Finished migrating database.");
         return ret;
-    }
+	}
 
-    private boolean postMigrateDatabase400() {
+    private boolean postMigrateDatabase311() {
         // TODO: Here we could access all serialized objects so they are stored
         // in a non-JBoss-proprietary way and allow an app-server switch..
-        log.error("Post upgrade not yet implemented for EJBCA 4.0.x.");
+        log.error("Post upgrade not yet implemented for EJBCA 3.11.x.");
         return false;
     }
 }

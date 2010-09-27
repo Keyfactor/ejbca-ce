@@ -13,5 +13,5 @@
 <cmp-field>
   <field-name>keyData</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>VARCHAR(8000)</sql-type>
+  <sql-type>CLOB(10K)</sql-type>
 </cmp-field>

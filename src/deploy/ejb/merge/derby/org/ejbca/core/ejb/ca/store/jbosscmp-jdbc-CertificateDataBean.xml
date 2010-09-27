@@ -43,8 +43,8 @@
 </cmp-field>
 <cmp-field>
   <field-name>base64Cert</field-name>
-  <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG VARCHAR</sql-type>
+  <jdbc-type>CLOB</jdbc-type>
+  <sql-type>CLOB</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>subjectKeyId</field-name>
