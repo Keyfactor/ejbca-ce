@@ -31,19 +31,21 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 public class AccessRulesView implements java.io.Serializable {
 
     
-    /**
+	private static final long serialVersionUID = -3783242205091345836L;
+
+	/**
      * Creates an AccessRulesView and sorts the accessrules into their approriate
      * sets.
      */
-    public AccessRulesView(Collection accessrules){
-      this.rolebasedaccessrules = new ArrayList();
-      this.regularaccessrules = new ArrayList();
-      this.endentityprofileaccessrules = new ArrayList();
-      this.caaccessrules = new ArrayList();
-      this.userdatasourceaccessrules = new ArrayList();
+    public AccessRulesView(Collection<?> accessrules){
+      this.rolebasedaccessrules = new ArrayList<AccessRule>();
+      this.regularaccessrules = new ArrayList<AccessRule>();
+      this.endentityprofileaccessrules = new ArrayList<AccessRule>();
+      this.caaccessrules = new ArrayList<AccessRule>();
+      this.userdatasourceaccessrules = new ArrayList<AccessRule>();
         
         
-      Iterator iter = accessrules.iterator();
+      Iterator<?> iter = accessrules.iterator();
       while(iter.hasNext()){
         Object obj = iter.next();
         String accessrulestring = "";
@@ -101,44 +103,44 @@ public class AccessRulesView implements java.io.Serializable {
     /**
      *  Method that returns all role based access rules, sorted.
      */
-    public Collection getRoleBasedAccessRules(){
+    public Collection<AccessRule> getRoleBasedAccessRules(){
       return this.rolebasedaccessrules;   
     }
 
     /**
      *  Method that returns all regular access rules, sorted.
      */    
-    public Collection getRegularAccessRules(){
+    public Collection<AccessRule> getRegularAccessRules(){
       return this.regularaccessrules;   
     }
     
     /**
      *  Method that returns all end entity profile access rules, sorted.
      */    
-    public Collection getEndEntityProfileAccessRules(){
+    public Collection<AccessRule> getEndEntityProfileAccessRules(){
       return this.endentityprofileaccessrules;   
     }
 
     /**
      *  Method that returns all CA access rules, sorted.
      */
-    public Collection getCAAccessRules(){
+    public Collection<AccessRule> getCAAccessRules(){
       return this.caaccessrules;   
     }    
 
     /**
      *  Method that returns all User Data Source access rules, sorted.
      */
-    public Collection getUserDataSourceAccessRules(){
+    public Collection<AccessRule> getUserDataSourceAccessRules(){
       return this.userdatasourceaccessrules;   
     }
     
     // Private constants.  
     
     // Private methods.
-    private ArrayList rolebasedaccessrules;
-    private ArrayList regularaccessrules;
-    private ArrayList endentityprofileaccessrules;
-    private ArrayList userdatasourceaccessrules;
-    private ArrayList caaccessrules;
+    private ArrayList<AccessRule> rolebasedaccessrules;
+    private ArrayList<AccessRule> regularaccessrules;
+    private ArrayList<AccessRule> endentityprofileaccessrules;
+    private ArrayList<AccessRule> userdatasourceaccessrules;
+    private ArrayList<AccessRule> caaccessrules;
 }
