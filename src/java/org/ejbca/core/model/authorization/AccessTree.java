@@ -26,7 +26,9 @@ import java.util.Iterator;
  */
 public class AccessTree implements Serializable {
 
-    private AccessTreeNode rootnode = null;
+	private static final long serialVersionUID = 3934081242242148918L;
+
+	private AccessTreeNode rootnode = null;
 	
     /** Builds an accesstree out of the given admingroup data. */
     public void buildTree(Collection<AdminGroup> admingroups) {
