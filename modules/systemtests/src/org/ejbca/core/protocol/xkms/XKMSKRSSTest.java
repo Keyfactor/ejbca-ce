@@ -1155,13 +1155,13 @@ public class XKMSKRSSTest extends TestCase {
      */
     public int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
                     CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, int approvalCAID) throws Exception {
-        Collection<X509Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
-        Iterator<X509Certificate> i = userCerts.iterator();
+        Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
+        Iterator<Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
         while ( i.hasNext() ) {
-            X509Certificate cert = i.next();
-            String issuerDN = cert.getIssuerDN().toString();
-            BigInteger serialNumber = cert.getSerialNumber();
+            Certificate cert = i.next();
+            String issuerDN = CertTools.getIssuerDN(cert);
+            BigInteger serialNumber = CertTools.getSerialNumber(cert);
             boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);
                 if ( (reason != RevokedCertInfo.NOT_REVOKED && !isRevoked )
                             || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked) )  {
