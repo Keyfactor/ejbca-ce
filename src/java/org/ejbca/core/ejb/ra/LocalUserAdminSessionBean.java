@@ -16,13 +16,9 @@ package org.ejbca.core.ejb.ra;
 import java.awt.print.PrinterException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -47,7 +43,6 @@ import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -93,7 +88,6 @@ import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.PrinterManager;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DistinguishedName;
@@ -232,9 +226,8 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
     private LogSessionLocal logSession;
 
     /**
-     * Columns in the database used in select
+     * Columns in the database used in select.
      */
-    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearPassword, timeCreated, timeModified, endEntityProfileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId, extendedInformationData, cardnumber";
     private static final String USERDATA_CREATED_COL = "timeCreated";
 
     /**
@@ -1868,26 +1861,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
                 CertTools.getIssuerDN(certificate));
         String adminEmail = null;
         if (adminUsername != null) {
-            Connection con = null;
-            PreparedStatement ps = null;
-            ResultSet rs = null;
-            try {
-                con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-                String sql = "SELECT subjectEmail FROM UserData WHERE username=?";
-                ps = con.prepareStatement(sql);
-                ps.setString(1, adminUsername);
-                ps.setFetchSize(1);
-                ps.setMaxRows(1);
-                rs = ps.executeQuery();
-                if (rs.next()) {
-                    adminEmail = rs.getString(1);
-                }
-            } catch (Exception e) {
-                log.error("", e);
-                throw new EJBException(e);
-            } finally {
-                JDBCUtil.close(con, ps, rs);
-            }
+        	adminEmail = UserData.findSubjectEmailByUsername(entityManager, adminUsername);
         }
         return new Admin(certificate, adminUsername, adminEmail);
     }
@@ -2331,9 +2305,6 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
             log.trace(">query(): withlimit=" + withlimit);
         }
         boolean authorizedtoanyprofile = true;
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         String caauthorizationstring = StringTools.strip(caauthorizationstr);
         String endentityprofilestring = StringTools.strip(endentityprofilestr);
         ArrayList<UserDataVO> returnval = new ArrayList<UserDataVO>();
@@ -2341,7 +2312,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
         RAAuthorization raauthorization = null;
         String caauthstring = caauthorizationstring;
         String endentityauth = endentityprofilestring;
-        String sqlquery = "select " + USERDATA_COL + " from UserData where ";
+        String sqlquery = "";
         int fetchsize = UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT;
 
         if (numberofrows != 0) {
@@ -2384,62 +2355,23 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
             }
         }
         // Finally order the return values
-        sqlquery += " order by " + USERDATA_CREATED_COL + " desc";
+        sqlquery += " ORDER BY " + USERDATA_CREATED_COL + " DESC";
         if (log.isDebugEnabled()) {
             log.debug("generated query: " + sqlquery);
         }
-
-        try {
-            if (authorizedtoanyprofile) {
-                // Construct SQL query.
-                con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-                ps = con.prepareStatement(sqlquery);
-                ps.setFetchSize(fetchsize + 1);
-
-                // Execute query.
-                rs = ps.executeQuery();
-
-                // Assemble result.
-                while (rs.next() && (!withlimit || returnval.size() <= fetchsize)) {
-                    // Read the variables in order, some databases (i.e. MS-SQL)
-                    // seems to not like out-of-order read of columns (i.e. nr
-                    // 15 before nr 1)
-                    String user = rs.getString(1);
-                    String dn = rs.getString(2);
-                    String subaltname = rs.getString(3);
-                    String email = rs.getString(4);
-                    int status = rs.getInt(5);
-                    int type = rs.getInt(6);
-                    String pwd = rs.getString(7);
-                    Date timecreated = new java.util.Date(rs.getLong(8));
-                    Date timemodified = new java.util.Date(rs.getLong(9));
-                    int eprofileid = rs.getInt(10);
-                    int cprofileid = rs.getInt(11);
-                    int tokentype = rs.getInt(12);
-                    int tokenissuerid = rs.getInt(13);
-                    int caid = rs.getInt(14);
-                    String extendedInformation = rs.getString(15);
-                    String cardnumber = rs.getString(16);
-                    UserDataVO data = new UserDataVO(user, dn, caid, subaltname, email, status, type, eprofileid, cprofileid, timecreated, timemodified,
-                            tokentype, tokenissuerid, UserDataVO.getExtendedInformation(extendedInformation));
-                    data.setPassword(pwd);
-                    data.setCardNumber(cardnumber);
-
-                    if (!onlybatchusers || (data.getPassword() != null && data.getPassword().length() > 0)) {
-                        returnval.add(data);
-                    }
-                }
-            }
-            if (log.isTraceEnabled()) {
-                log.trace("<query()");
-            }
-            return returnval;
-
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
+        if (authorizedtoanyprofile) {
+        	List<UserData> userDataList = UserData.findByCustomQuery(entityManager, sqlquery, fetchsize+1);
+        	for (UserData userData : userDataList) {
+        		UserDataVO userDataVO = userData.toUserDataVO();
+        		if (!onlybatchusers || (userDataVO.getPassword() != null && userDataVO.getPassword().length() > 0)) {
+        			returnval.add(userDataVO);
+        		}
+        	}
         }
+        if (log.isTraceEnabled()) {
+        	log.trace("<query()");
+        }
+        return returnval;
     }
 
     /**
@@ -2458,33 +2390,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
         if (log.isTraceEnabled()) {
             log.trace(">checkForEndEntityProfileId()");
         }
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int count = 1; // return true as default.
-
-        Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_ENDENTITYPROFILE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(endentityprofileid));
-
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from UserData where " + query.getQueryString());
-            // Execute query.
-            rs = ps.executeQuery();
-            // Assemble result.
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-            if (log.isTraceEnabled()) {
-                log.trace("<checkForEndEntityProfileId()");
-            }
-            return count > 0;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+        return UserData.countByEndEntityProfileId(entityManager, endentityprofileid) > 0;
     }
 
     /**
@@ -2503,34 +2409,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
         if (log.isTraceEnabled()) {
             log.trace(">checkForCertificateProfileId()");
         }
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int count = 1; // return true as default.
-
-        Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_CERTIFICATEPROFILE, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(certificateprofileid));
-
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from UserData where " + query.getQueryString());
-            // Execute query.
-            rs = ps.executeQuery();
-            // Assemble result.
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-            if (log.isTraceEnabled()) {
-                log.trace("<checkForCertificateProfileId()");
-            }
-            return count > 0;
-
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+        return UserData.countByCertificateProfileId(entityManager, certificateprofileid) > 0;
     }
 
     /**
@@ -2549,34 +2428,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
         if (log.isTraceEnabled()) {
             log.trace(">checkForCAId()");
         }
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int count = 1; // return true as default.
-
-        Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_CA, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(caid));
-
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from UserData where " + query.getQueryString());
-            // Execute query.
-            rs = ps.executeQuery();
-            // Assemble result.
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-            boolean exists = count > 0;
-            if (log.isTraceEnabled()) {
-                log.trace("<checkForCAId(): " + exists);
-            }
-            return exists;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+        return UserData.countByCaId(entityManager, caid) > 0;
     }
 
     /**
@@ -2595,33 +2447,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
         if (log.isTraceEnabled()) {
             log.trace(">checkForHardTokenProfileId()");
         }
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int count = 1; // return true as default.
-
-        Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_TOKEN, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(profileid));
-
-        try {
-            // Construct SQL query.
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select COUNT(*) from UserData where " + query.getQueryString());
-            // Execute query.
-            rs = ps.executeQuery();
-            // Assemble result.
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-            if (log.isTraceEnabled()) {
-                log.trace("<checkForHardTokenProfileId()");
-            }
-            return count > 0;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, rs);
-        }
+        return UserData.countByHardTokenProfileId(entityManager, profileid) > 0;
     }
 
     private void print(Admin admin, EndEntityProfile profile, UserDataVO userdata) {
