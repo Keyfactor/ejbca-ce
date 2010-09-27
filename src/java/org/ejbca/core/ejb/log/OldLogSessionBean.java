@@ -14,15 +14,12 @@
 package org.ejbca.core.ejb.log;
 
 import java.security.cert.Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -33,7 +30,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.OldLogConfiguration;
 import org.ejbca.config.ProtectConfiguration;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.log.Admin;
@@ -42,7 +38,6 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -61,12 +56,6 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 
 	@EJB
     private TableProtectSessionLocal tableProtectSession;
-
-    /** Columns in the database used in select */
-    private final String LOGENTRYDATA_TABLE = "LogEntryData";
-    private final String LOGENTRYDATA_COL = "id, adminType, adminData, cAId, module, time, username, certificateSNR, event";
-    private final String LOGENTRYDATA_TIMECOL = "time";
-    private final String LOGENTRYDATA_COL_COMMENT = "logComment";
 
     /** If signing of logs is enabled of not, default not */
     private boolean logsigning = OldLogConfiguration.getLogSigning() || ProtectConfiguration.getLogProtectionEnabled();
@@ -95,45 +84,17 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		if (capriviledges == null || capriviledges.length() == 0 || !query.isLegalQuery()) {
 			throw new IllegalQueryException();
 		}
-
-		Connection con = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		try {
-			// Construct SQL query.
-			con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-			String sql = "select "+LOGENTRYDATA_COL+", "+LOGENTRYDATA_COL_COMMENT+" from "+LOGENTRYDATA_TABLE+" where ( "
-				+ query.getQueryString() + ") and (" + capriviledges + ")";
-			if (StringUtils.isNotEmpty(viewlogprivileges)) {
-				sql += " and (" + viewlogprivileges + ")";
+		List<LogEntryData> logEntryDataList = LogEntryData.findByCustomQueryAndPrivileges(entityManager, query.getQueryString(), capriviledges, viewlogprivileges, maxResults+1);
+		List<LogEntry> returnval = new ArrayList<LogEntry>();
+		for (LogEntryData logEntryData : logEntryDataList) {
+			LogEntry logEntry = logEntryData.getLogEntry();
+			if (logsigning) {
+				TableVerifyResult res = tableProtectSession.verify(logEntry);
+				logEntry.setVerifyResult(res.getResultConstant());
 			}
-			sql += " order by "+LOGENTRYDATA_TIMECOL+" desc";
-			if (log.isDebugEnabled()) {
-				log.debug("Query: "+sql);
-			}
-			ps = con.prepareStatement(sql);
-			//ps.setFetchDirection(ResultSet.FETCH_REVERSE);
-			ps.setFetchSize(maxResults + 1);
-			// Execute query.
-			rs = ps.executeQuery();
-			// Assemble result.
-			ArrayList<LogEntry> returnval = new ArrayList<LogEntry>();
-			while (rs.next() && returnval.size() <= maxResults) {
-				LogEntry data = new LogEntry(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getInt(4), rs.getInt(5), new Date(rs.getLong(6)), rs.getString(7), 
-						rs.getString(8), rs.getInt(9), rs.getString(10));
-				if (logsigning) {
-					TableVerifyResult res = tableProtectSession.verify(data);
-					data.setVerifyResult(res.getResultConstant());
-				}
-				returnval.add(data);
-			}
-			return returnval;
-
-		} catch (Exception e) {
-			throw new EJBException(e);
-		} finally {
-			JDBCUtil.close(con, ps, rs);
+			returnval.add(logEntry);
 		}
+		return returnval;
 	}
 
     private Integer getAndIncrementRowCount() {

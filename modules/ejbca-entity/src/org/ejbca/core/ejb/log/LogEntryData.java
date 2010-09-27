@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.log;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,6 +25,7 @@ import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.StringTools;
@@ -137,5 +139,20 @@ public class LogEntryData implements Serializable {
 	/** @return the found entity instance or null if the entity does not exist */
 	public static LogEntryData findById(EntityManager entityManager, Integer id) {
 		return entityManager.find(LogEntryData.class, id);
+	}
+
+	/** @return a List<LogEntryData> from a custom SQL query. */
+	public static List<LogEntryData> findByCustomQueryAndPrivileges(EntityManager entityManager, String queryString, String caPriviledges, String viewLogPrivileges, int maxResults) {
+		String sql = "SELECT * FROM LogEntryData WHERE ( " + queryString + ") AND (" + caPriviledges + ")";
+		if (StringUtils.isNotEmpty(viewLogPrivileges)) {
+			sql += " AND (" + viewLogPrivileges + ")";
+		}
+		sql += " ORDER BY time DESC";
+		if (log.isDebugEnabled()) {
+			log.debug("Query: "+sql);
+		}
+		Query query = entityManager.createNativeQuery(sql, LogEntryData.class);
+		query.setMaxResults(maxResults);
+		return query.getResultList();
 	}
 }
