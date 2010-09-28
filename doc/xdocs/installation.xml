@@ -357,7 +357,8 @@ Do 'ant clean' first if you have tried with different appservers, or database se
   Access the Glassfish admin console at http://127.0.0.1:4848/.</li>
 <li>Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.<br/>
     When adding a Derby Pool use values: Name=EjbcaPool, Type=javax.sql.DataSource, Vendor=JavaDB.<br/>
-    Properties: user=APP, password=APP, DatabaseName=ejbca</li>    
+    Properties: user=APP, password=APP, DatabaseName=ejbca<br/>
+    Save and use the Ping-button for the pool. If you get 'Parameter wrong for this method : off', go to Additional Properties and delete 'Ssl'.</li>    
 <li>Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.<br/>
     Use the connection pool you just created.</li>
 </ol>

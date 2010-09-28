@@ -782,7 +782,9 @@ public class CertificateData implements Serializable {
 	/** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
 	public static List<Certificate> findActiveCertificatesByType(EntityManager entityManager, String certificateTypes) {
         List<Certificate> certificateList = new ArrayList<Certificate>();
-        Query query = entityManager.createQuery("SELECT DISTINCT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ")");
+        // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements because comparisons are not supported for that type.
+        // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
+        Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ")");
 		query.setParameter("status1", SecConst.CERT_ACTIVE);
 		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
         List<String> base64CertificateList = query.getResultList();
@@ -800,7 +802,9 @@ public class CertificateData implements Serializable {
 	/** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types for the given issuer. */
 	public static List<Certificate> findActiveCertificatesByTypeAndIssuer(EntityManager entityManager, String certificateTypes, String issuerDN) {
         List<Certificate> certificateList = new ArrayList<Certificate>();
-        Query query = entityManager.createQuery("SELECT DISTINCT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ") AND issuerDN=:issuerDN");
+        // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements because comparisons are not supported for that type.
+        // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
+        Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ") AND issuerDN=:issuerDN");
 		query.setParameter("status1", SecConst.CERT_ACTIVE);
 		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
 		query.setParameter("issuerDN", issuerDN);

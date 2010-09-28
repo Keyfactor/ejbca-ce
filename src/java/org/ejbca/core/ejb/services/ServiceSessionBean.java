@@ -496,7 +496,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *            timer whose expiration caused this notification.
      */
     @Timeout
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    // Glassfish 2.1.1: "Timeout method ....timeoutHandler(javax.ejb.Timer)must have TX attribute of TX_REQUIRES_NEW or TX_REQUIRED or TX_NOT_SUPPORTED"
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void timeoutHandler(Timer timer) {
         if (log.isTraceEnabled()) {
             log.trace(">ejbTimeout");
