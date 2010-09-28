@@ -326,7 +326,7 @@ public class HSMKeyTool extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#getName()
      */
     @Override
-    String getName() {
+    public String getName() {
         return "HSMKeyTool";
     }
 }

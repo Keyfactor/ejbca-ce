@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
+import org.ejbca.ui.cli.dbmanager.DBManager;
+
 /**
  * Extend this class for each new tool you want to add and add the new extended class to the toolBox array in {@link #main(String[])}
  * @author primelars
@@ -24,11 +26,11 @@ public abstract class ClientToolBox {
      * Execute the command issued from the command line.
      * @param args from command line
      */
-    abstract void execute(String[] args);
+    abstract public void execute(String[] args);
     /**
      * @return the name of the tool.
      */
-    abstract String getName();
+    abstract public String getName();
     /**
      * Check if this tool should be executed.
      * @param args Command line from the user.
@@ -58,7 +60,8 @@ public abstract class ClientToolBox {
         		new CvcWsRaCli(), 
         		new CMPTest(),
         		new SCEPTest(),
-                new OCSPActivate()
+                new OCSPActivate(),
+                new DBManager()
         		};
         for ( int i=0; args.length>0 && i<toolBox.length; i++) {
             if ( toolBox[i].executeIfSelected(args) ) {

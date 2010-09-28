@@ -32,7 +32,7 @@ public class OCSPActivate extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
-    void execute(String[] args) {
+    public void execute(String[] args) {
         if (args.length < 2) {
             System.out.println(args[0] + " <hostname:port>");
             System.out.println(" Useed for HSM activation on an OCSP server install.");
@@ -75,7 +75,7 @@ public class OCSPActivate extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#getName()
      */
     @Override
-    String getName() {
+    public String getName() {
         return "OCSPActivate";
     }
 }

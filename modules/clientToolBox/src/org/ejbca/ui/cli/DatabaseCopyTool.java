@@ -61,7 +61,7 @@ public class DatabaseCopyTool extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#getName()
      */
 	@Override
-	String getName() {
+	public String getName() {
         return "DBCOPY";
 	}
 
@@ -69,7 +69,7 @@ public class DatabaseCopyTool extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
-    void execute(String[] args) {
+    public void execute(String[] args) {
         try {
         	System.exit(executeInternal(args));
         } catch (Exception e) {
