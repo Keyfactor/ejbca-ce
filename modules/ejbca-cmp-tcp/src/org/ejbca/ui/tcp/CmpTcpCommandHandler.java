@@ -33,6 +33,7 @@ import java.security.cert.CertificateEncodingException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
 import org.quickserver.net.server.ClientBinaryHandler;
@@ -51,7 +52,15 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 	private static final Logger log = Logger.getLogger(CmpTcpCommandHandler.class.getName());
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
+	private static EjbRemoteHelper ejb = null;
 	
+	private static EjbRemoteHelper getEjb() {
+		if (ejb == null) {
+			ejb = new EjbRemoteHelper();
+		}
+		return ejb;
+	}
+    
 	public void gotConnected(ClientHandler handler)
 	throws SocketTimeoutException, IOException {
 		log.debug("CMP connection opened: "+handler.getHostAddress());
@@ -77,7 +86,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		}
 		// We must use an administrator with rights to create users
 		final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
-		final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator);
+		final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, getEjb().getCAAdminSession(), getEjb().getCertStoreSession(), getEjb().getCertficateRequestSession(), getEjb().getRAAdminSession(), getEjb().getSignSession(), getEjb().getUserAdminSession());
 		final IResponseMessage resp = dispatcher.dispatch(cmpTcpMessage.message);
 		log.debug("Sending back CMP response to client.");
 		// Send back reply

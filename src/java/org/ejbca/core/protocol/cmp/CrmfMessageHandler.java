@@ -95,23 +95,23 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private String responseProt = null;
 	
 	private final Admin admin;
-	private final SignSession signsession;
-	private final UserAdminSession usersession;
-	private final CAAdminSession casession;
-	private final RaAdminSession rasession;
-	private final CertificateStoreSession storesession;
-	private final CertificateRequestSession reqsession;
+	private final SignSession signSession;
+	private final UserAdminSession userAdminSession;
+	private final CAAdminSession caAdminSession;
+	private final RaAdminSession raAdminSession;
+	private final CertificateStoreSession certificateStoreSession;
+	private final CertificateRequestSession certificateRequestSession;
 	
-	public CrmfMessageHandler(final Admin admin) throws CreateException, RemoteException {
+	public CrmfMessageHandler(final Admin admin, CAAdminSession caAdminSession, CertificateStoreSession certificateStoreSession, CertificateRequestSession certificateRequestSession,
+			RaAdminSession raAdminSession, SignSession signSession, UserAdminSession userAdminSession) {
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the TCP listener does not work with that
-		EjbRemoteHelper ejb = new EjbRemoteHelper();
-		this.signsession = ejb.getSignSession();
-		this.usersession = ejb.getUserAdminSession();
-		this.casession = ejb.getCAAdminSession();
-		this.rasession = ejb.getRAAdminSession();
-		this.storesession = ejb.getCertStoreSession();
-		this.reqsession = ejb.getCertficateRequestSession();
+		this.signSession = signSession;
+		this.userAdminSession = userAdminSession;
+		this.caAdminSession = caAdminSession;
+		this.raAdminSession = raAdminSession;
+		this.certificateStoreSession = certificateStoreSession;
+		this.certificateRequestSession = certificateRequestSession;
 
 		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams
@@ -131,7 +131,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				}
 				eeProfileId = -1;
 			} else {
-				eeProfileId = rasession.getEndEntityProfileId(admin, endEntityProfile);
+				eeProfileId = raAdminSession.getEndEntityProfileId(admin, endEntityProfile);
 			}
 			final String certificateProfile = CmpConfiguration.getRACertificateProfile();
 			if (StringUtils.equals(certificateProfile, "KeyId")) {
@@ -140,7 +140,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				}
 				certProfileId = -1;
 			} else {
-				certProfileId = storesession.getCertificateProfileId(admin, certificateProfile);					
+				certProfileId = certificateStoreSession.getCertificateProfileId(admin, certificateProfile);					
 			}
 			final String caName = CmpConfiguration.getRACAName();
 			if (StringUtils.equals(caName, "ProfileDefault")) {
@@ -154,7 +154,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				}
 				caId = -2;										
 			} else {
-				final CAInfo info = casession.getCAInfo(admin, caName);
+				final CAInfo info = caAdminSession.getCAInfo(admin, caName);
 				caId = info.getCAId();					
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("Using fixed caName when adding users in RA mode: "+caName+"("+caId+")");
@@ -198,13 +198,13 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("looking for user with dn: "+dn);
 						}
-						data = usersession.findUserBySubjectDN(admin, dn);
+						data = userAdminSession.findUserBySubjectDN(admin, dn);
 					} else {
 						final String username = CertTools.getPartFromDN(dn,usernameComp);
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("looking for user with username: "+username);
 						}						
-						data = usersession.findUser(admin, username);
+						data = userAdminSession.findUser(admin, username);
 					}
 					if (data != null) {
 						if (LOG.isDebugEnabled()) {
@@ -223,7 +223,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			// This is a request message, so we want to enroll for a certificate, if we have not created an error already
 			if (resp == null) {
 				// Get the certificate
-				resp = signsession.createCertificate(admin, crmfreq, -1,
+				resp = signSession.createCertificate(admin, crmfreq, -1,
 						Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));				
 			}
 			if (resp == null) {
@@ -343,7 +343,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							if (LOG.isDebugEnabled()) {
 								LOG.debug("Using end entity profile with name: "+keyId);
 							}
-							eeProfileId = rasession.getEndEntityProfileId(admin, keyId);
+							eeProfileId = raAdminSession.getEndEntityProfileId(admin, keyId);
 							if (eeProfileId == 0) {
 								LOG.info("No end entity profile found matching keyId: "+keyId);
 								throw new NotFoundException("End entity profile with name '"+keyId+"' not found.");
@@ -353,7 +353,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							if (LOG.isDebugEnabled()) {
 								LOG.debug("Using certificate profile with name: "+keyId);
 							}
-							certProfileId = storesession.getCertificateProfileId(admin, keyId);
+							certProfileId = certificateStoreSession.getCertificateProfileId(admin, keyId);
 							if (certProfileId == 0) {
 								LOG.info("No certificate profile found matching keyId: "+keyId);
 								throw new NotFoundException("Certificate profile with name '"+keyId+"' not found.");
@@ -361,7 +361,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						}
 						if (caId == -1) {
 							// get default CA id from end entity profile
-							final EndEntityProfile eeProfile = rasession.getEndEntityProfile(admin, eeProfileId);
+							final EndEntityProfile eeProfile = raAdminSession.getEndEntityProfile(admin, eeProfileId);
 							caId = eeProfile.getDefaultCA();
 							if (caId == -1) {
 								LOG.error("No default CA id for end entity profile: "+eeProfileId);
@@ -372,7 +372,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							}
 						} else if (caId == -2) {
 							// Use keyId as CA name
-							final CAInfo info = casession.getCAInfo(admin, keyId);
+							final CAInfo info = caAdminSession.getCAInfo(admin, keyId);
 							if (info == null) {
 								LOG.info("No CA found matching keyId: "+keyId);
 								throw new NotFoundException("CA with name '"+keyId+"' not found");
@@ -405,7 +405,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							if (LOG.isDebugEnabled()) {
 								LOG.debug("Creating new user with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
 							}
-							resp = reqsession.processCertReq(admin, userdata, crmfreq, Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));
+							resp = certificateRequestSession.processCertReq(admin, userdata, crmfreq, Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));
 							addedUser = true;
 						} catch (PersistenceException e) {
 							// This was very strange, we didn't find it before, but now it exists?
@@ -413,7 +413,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
 							LOG.info(updateMsg);
 							// Try again
-							resp = reqsession.processCertReq(admin, userdata, crmfreq, Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));
+							resp = certificateRequestSession.processCertReq(admin, userdata, crmfreq, Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));
 							addedUser = true;
 						}
 					} catch (NotFoundException e) {

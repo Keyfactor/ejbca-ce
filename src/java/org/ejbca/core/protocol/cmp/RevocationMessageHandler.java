@@ -45,7 +45,6 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
@@ -76,17 +75,16 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 	private String responseProtection = null;
 	
 	private Admin admin;
-	private UserAdminSession usersession = null;
-	private CertificateStoreSession storesession = null;
+	private UserAdminSession userAdminSession;
+	private CertificateStoreSession certificateStoreSession;
 	
-	public RevocationMessageHandler(Admin admin) throws CreateException, RemoteException {
+	public RevocationMessageHandler(Admin admin, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession) throws CreateException, RemoteException {
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
-		EjbRemoteHelper ejb = new EjbRemoteHelper();
-		this.usersession = ejb.getUserAdminSession();
-		this.storesession = ejb.getCertStoreSession();
+		this.userAdminSession = userAdminSession;
+		this.certificateStoreSession = certificateStoreSession;
 
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
@@ -157,8 +155,8 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 						String iMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
 						log.info(iMsg);
 						try {
-							String username = storesession.findUsernameByCertSerno(admin, serno.getValue(), issuer.toString());
-							usersession.revokeCert(admin, serno.getValue(), issuer.toString(), username, reason);
+							String username = certificateStoreSession.findUsernameByCertSerno(admin, serno.getValue(), issuer.toString());
+							userAdminSession.revokeCert(admin, serno.getValue(), issuer.toString(), username, reason);
 							status = ResponseStatus.SUCCESS;
 						} catch (AuthorizationDeniedException e) {
 							failInfo = FailInfo.NOT_AUTHORIZED;

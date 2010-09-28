@@ -15,6 +15,7 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.IOException;
 
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -24,6 +25,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -39,10 +46,24 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * @version $Id$
  */
 public class CmpServlet extends HttpServlet {
+
+	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(CmpServlet.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
-	
+    private static final InternalResources intres = InternalResources.getInstance();	// Internal localization of logs and errors
+
+    @EJB
+	private SignSessionLocal signSession;
+	@EJB
+	private UserAdminSessionLocal userAdminSession;
+	@EJB
+	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private RaAdminSessionLocal raAdminSession;
+	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
+	private CertificateRequestSessionLocal certificateRequestSession;
+
 	/**
 	 * Inits the CMP servlet
 	 *
@@ -107,7 +128,7 @@ public class CmpServlet extends HttpServlet {
 			// We must use an administrator with rights to create users
 			final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
 			log.info( intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr) );
-			final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator);
+			final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, caAdminSession, certificateStoreSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
 			final IResponseMessage resp = dispatcher.dispatch(message);
 			if ( resp==null ) { // If resp is null, it means that the dispatcher failed to process the message.
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, intres.getLocalizedMessage("cmp.errornullresp"));
