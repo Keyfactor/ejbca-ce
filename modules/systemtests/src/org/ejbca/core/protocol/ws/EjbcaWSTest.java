@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
@@ -66,7 +67,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
-import org.jboss.logging.Logger;
 
 /**
  * This test uses remote EJB calls to setup the environment.
