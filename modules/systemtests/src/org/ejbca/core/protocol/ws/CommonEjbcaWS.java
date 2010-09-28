@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.cms.CMSSignedData;
@@ -60,9 +61,11 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
@@ -74,6 +77,7 @@ import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.ErrorCode;
+import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
@@ -149,6 +153,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected static final String CA2_WSTESTUSER1CVCEC = "TstCVCEC";
     private static final String CA1 = "CA1";
     private static final String CA2 = "CA2";
+    private static final String WS_EEPROF_EI = "WS_EEPROF_EI";
 
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
@@ -262,8 +267,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user.setSubjectAltName(null);
         user.setStatus(UserDataVOWS.STATUS_NEW);
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-        user.setEndEntityProfileName("EMPTY");
+        user.setEndEntityProfileName("WS_EEPROF_EI");
         user.setCertificateProfileName("ENDUSER");
+
+        List<ExtendedInformationWS> ei = new ArrayList<ExtendedInformationWS> ();
+		ei.add(new ExtendedInformationWS (ExtendedInformation.CUSTOMDATA+ExtendedInformation.CUSTOM_REVOCATIONREASON,
+                                          Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD)));
+		ei.add(new ExtendedInformationWS (ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
+
+		user.setExtendedInformation(ei);
 
         ejbcaraws.editUser(user);
 
@@ -284,9 +296,27 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdata.getSubjectAltName() == null);
         assertTrue(userdata.getEmail() == null);
         assertTrue(userdata.getCertificateProfileName().equals("ENDUSER"));
-        assertTrue(userdata.getEndEntityProfileName().equals("EMPTY"));
+        assertTrue(userdata.getEndEntityProfileName().equals("WS_EEPROF_EI"));
         assertTrue(userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_USERGENERATED));
         assertTrue(userdata.getStatus() == UserDataVOWS.STATUS_NEW);
+
+		List<ExtendedInformationWS> userei = userdata.getExtendedInformation();
+		assertNotNull (userei);
+        // The extended information can contain other stuff as well
+        boolean foundrevreason = false;
+        boolean founddirattrs = false;
+        for (ExtendedInformationWS item : userei) {
+        	if (StringUtils.equals(item.getName(), ExtendedInformation.CUSTOMDATA+ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
+		        assertEquals(Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD), item.getValue());
+		        foundrevreason = true;
+			}
+			if (StringUtils.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
+		        assertEquals("DATEOFBIRTH=19761123", item.getValue());
+		        founddirattrs = true;
+			}
+		}
+        assertTrue(foundrevreason);
+        assertTrue(founddirattrs);
 
         // Edit the user
         final String sDN = getDN(userName);
@@ -297,6 +327,24 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdatas2.size() == 1);
         UserDataVOWS userdata2 = userdatas2.get(0);
         assertTrue(userdata2.getSubjectDN().equals(sDN));
+
+		userei = userdata.getExtendedInformation();
+        assertNotNull(userei);
+        // The extended information can contain other stuff as well
+        foundrevreason = false;
+        founddirattrs = false;
+        for (ExtendedInformationWS item : userei) {
+			if (StringUtils.equals(item.getName(), ExtendedInformation.CUSTOMDATA+ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
+		        assertEquals(Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD), item.getValue());
+		        foundrevreason = true;
+			}
+			if (StringUtils.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
+		        assertEquals("DATEOFBIRTH=19761123", item.getValue());
+		        founddirattrs = true;
+			}
+		}
+        assertTrue(foundrevreason);
+        assertTrue(founddirattrs);
 
     }
 
@@ -319,6 +367,21 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void editUser() throws Exception {
         createTestCA(CA1);
         createTestCA(CA2);
+        // Create suitable EE prof
+        try {
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.ORGANIZATION);
+            profile.addField(DnComponents.COUNTRY);
+            profile.addField(DnComponents.COMMONNAME);
+            profile.addField(DnComponents.DATEOFBIRTH);
+            profile.setValue(EndEntityProfile.AVAILCAS,0,Integer.toString(SecConst.ALLCAS));
+            profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
+            profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON,0,""+RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+            raAdminSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
+            raAdminSession.getEndEntityProfileId(intAdmin, WS_EEPROF_EI);
+        } catch (EndEntityProfileExistsException pee) {
+        	assertTrue("Can not create end entity profile", false);
+        }
         editUser(CA1_WSTESTUSER1, CA1);
         editUser(CA1_WSTESTUSER2, CA1);
         editUser(CA2_WSTESTUSER1, CA2);
@@ -2335,8 +2398,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-    }
+        try {        	
+        	raAdminSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+    } // cleanUpAdmins
 
     /**
      * Create a CVCA, and a DV CA signed by the CVCA
