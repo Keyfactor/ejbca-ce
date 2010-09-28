@@ -43,7 +43,7 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
     
     private Admin admin = null;
 
-	private transient Collection cAIdsToCheck = null;
+	private transient Collection<Integer> cAIdsToCheck = null;
 	private transient long timeBeforeExpire = -1;
 
 	/**
@@ -160,9 +160,9 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 	 * 
 	 * @return Collection<String> of integer CA ids in String form, use Integer.valueOf to convert to int.
 	 */
-	protected Collection getCAIdsToCheck(boolean includeAllCAsIfNull) throws ServiceExecutionFailedException {
+	protected Collection<Integer> getCAIdsToCheck(boolean includeAllCAsIfNull) throws ServiceExecutionFailedException {
 		if(cAIdsToCheck == null){
-			cAIdsToCheck = new ArrayList();
+			cAIdsToCheck = new ArrayList<Integer>();
 			String cas = properties.getProperty(PROP_CAIDSTOCHECK);
 		    if (log.isDebugEnabled()) {
 		    	log.debug("CAIds to check: "+cas);

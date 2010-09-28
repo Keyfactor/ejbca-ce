@@ -64,6 +64,9 @@ import org.ejbca.util.keystore.KeyTools;
 		@ColumnResult(name="type"), @ColumnResult(name="serialNumber"), @ColumnResult(name="expireDate"), @ColumnResult(name="revocationDate"),
 		@ColumnResult(name="revocationReason"), @ColumnResult(name="username"), @ColumnResult(name="tag"), @ColumnResult(name="certificateProfileId"),
 		@ColumnResult(name="updateTime")
+	}),
+	@SqlResultSetMapping(name="FingerprintUsernameSubset", columns={
+			@ColumnResult(name="fingerprint"), @ColumnResult(name="username")
 	})
 })
 public class CertificateData implements Serializable {
@@ -811,5 +814,33 @@ public class CertificateData implements Serializable {
     		}
         }
 		return certificateList;
+	}
+
+    /**
+     * Fetch a List of all certificate fingerprints and corresponding username
+     * @return [0] = (String) fingerprint, [1] = (String) username
+     */
+	public static List<Object[]> findExpirationInfo(EntityManager entityManager, String cASelectString, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin) {
+        // We can not select the base64 certificate data here, because it may be a LONG data type which we can't simply select.
+        // TODO: Still true for JPA?
+		Query query = entityManager.createNativeQuery(
+				"SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE (" + cASelectString + ") AND "
+                + "(expireDate>:activeNotifiedExpireDateMin) AND" + "(expireDate<:activeNotifiedExpireDateMax) AND (status=:status1"
+                + " OR status=:status2) AND (expireDate>=:activeExpireDateMin OR " + "status=:status3)", "FingerprintUsernameSubset");
+		query.setParameter("activeNotifiedExpireDateMin", activeNotifiedExpireDateMin);
+		query.setParameter("activeNotifiedExpireDateMax", activeNotifiedExpireDateMax);
+		query.setParameter("status1", SecConst.CERT_ACTIVE);
+		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+		query.setParameter("activeExpireDateMin", activeExpireDateMin);
+		query.setParameter("status3", SecConst.CERT_ACTIVE);
+		return query.getResultList();
+	}
+
+	/** @return true if a row with the given fingerprint was updated */
+	public static boolean updateStatus(EntityManager entityManager, String fingerprint, int status) {
+		Query query = entityManager.createQuery("UPDATE CertificateData a SET a.status=:status WHERE a.fingerprint=:fingerprint");
+		query.setParameter("status", status);
+		query.setParameter("fingerprint", fingerprint);
+		return query.executeUpdate() == 1;
 	}
 }
