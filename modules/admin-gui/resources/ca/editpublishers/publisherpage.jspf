@@ -5,11 +5,11 @@
   TreeMap authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
   HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
-  int[] publishertypes = {LdapPublisher.TYPE_LDAPPUBLISHER, 
-                          LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER,
-                          ActiveDirectoryPublisher.TYPE_ADPUBLISHER,
-                          ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER,
-                          CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER};
+  int[] publishertypes = {PublisherConst.TYPE_LDAPPUBLISHER, 
+                          PublisherConst.TYPE_LDAPSEARCHPUBLISHER,
+                          PublisherConst.TYPE_ADPUBLISHER,
+                          PublisherConst.TYPE_EXTOCSPPUBLISHER,
+                          PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER};
   String[] publishertypetexts = {"LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER", "EXTERNALOCSPPUBLISHER", "CUSTOMPUBLISHER"};
 
   int row = 0;

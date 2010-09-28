@@ -118,9 +118,9 @@ import org.ejbca.util.Base64GetHashMap;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "UserDataSourceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalUserDataSourceSessionBean implements UserDataSourceSessionLocal, UserDataSourceSessionRemote {
+public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, UserDataSourceSessionRemote {
 
-	private static final Logger log = Logger.getLogger(LocalUserDataSourceSessionBean.class);
+	private static final Logger log = Logger.getLogger(UserDataSourceSessionBean.class);
 	/** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     

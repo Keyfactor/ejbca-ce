@@ -61,8 +61,6 @@ public class LdapPublisher extends BasePublisher {
 	private static final InternalResources intres = InternalResources.getInstance();
 
 	public static final float LATEST_VERSION = 11;
-
-	public static final int TYPE_LDAPPUBLISHER = 2;
 	
 	// Create some constraints used when connecting, disconnecting, reading and storing in LDAP servers
 	/** Use a time limit for generic (non overridden) LDAP operations */
@@ -133,7 +131,7 @@ public class LdapPublisher extends BasePublisher {
 
 	public LdapPublisher(){
 		super();
-		data.put(TYPE, new Integer(TYPE_LDAPPUBLISHER));
+		data.put(TYPE, new Integer(PublisherConst.TYPE_LDAPPUBLISHER));
 
 		setHostnames("");
 		setUseSSL(true);

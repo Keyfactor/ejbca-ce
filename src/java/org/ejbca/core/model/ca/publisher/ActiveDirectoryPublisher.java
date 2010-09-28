@@ -41,8 +41,6 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 	private static final Logger log = Logger.getLogger(ActiveDirectoryPublisher.class);
 	 	
 	public static final float LATEST_VERSION = 1;
-
-	public static final int TYPE_ADPUBLISHER = 3;
 	
 	// Constants indicating characteristics of created user accounts
 	public static final int UAC_DISABLE           = 2;
@@ -65,7 +63,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
     
     public ActiveDirectoryPublisher(){
     	super();
-    	data.put(TYPE, new Integer(TYPE_ADPUBLISHER));
+    	data.put(TYPE, new Integer(PublisherConst.TYPE_ADPUBLISHER));
     	    	
         setUserObjectClass(DEFAULT_USEROBJECTCLASS);
         setCAObjectClass(DEFAULT_CAOBJECTCLASS);

@@ -171,7 +171,7 @@
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
             <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
-            <exclude name="org/ejbca/core/ejb/ca/store/LocalCertificateStoreOnlyDataSessionBean.java" />
+            <exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
 			<!-- Samples should never be included.. -->
             <exclude name="org/ejbca/samples/**/*.java" />
 			<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
@@ -200,7 +200,7 @@
             	<path refid="compile-ocsp-ejb.classpath" />
             </classpath>
         	<!-- EJBs -->
-            <include name="org/ejbca/core/ejb/ca/store/LocalCertificateStoreOnlyDataSessionBean.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
             <include name="org/ejbca/core/ejb/protect/TableProtectSessionBean.java" />
 			<!-- Classes not available in ejbca-util.jar -->
             <include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java" />

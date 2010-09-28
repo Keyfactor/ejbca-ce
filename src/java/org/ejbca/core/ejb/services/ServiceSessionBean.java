@@ -130,9 +130,9 @@ import org.ejbca.core.model.services.ServiceExistsException;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ServiceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalServiceSessionBean implements ServiceSessionLocal, ServiceSessionRemote {
+public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRemote {
 
-    private static final Logger log = Logger.getLogger(LocalServiceSessionBean.class);
+    private static final Logger log = Logger.getLogger(ServiceSessionBean.class);
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();

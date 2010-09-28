@@ -84,9 +84,9 @@ import org.ejbca.util.CryptoProviderTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreOnlyDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStoreOnlyDataSessionLocal, CertificateStoreOnlyDataSessionRemote {
+public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnlyDataSessionLocal, CertificateStoreOnlyDataSessionRemote {
     
-    private static final Logger log = Logger.getLogger(LocalCertificateStoreOnlyDataSessionBean.class);
+    private static final Logger log = Logger.getLogger(CertificateStoreOnlyDataSessionBean.class);
     
     private final CertificateDataUtil.Adapter adapter;
 
@@ -96,7 +96,7 @@ public class LocalCertificateStoreOnlyDataSessionBean implements CertificateStor
     @EJB
     private TableProtectSessionLocal tableProtectSession;
     
-    public LocalCertificateStoreOnlyDataSessionBean() {
+    public CertificateStoreOnlyDataSessionBean() {
         super();
         CryptoProviderTools.installBCProvider();
         adapter = new MyAdapter();

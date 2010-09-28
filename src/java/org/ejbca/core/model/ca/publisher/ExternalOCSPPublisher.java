@@ -48,9 +48,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     private static final InternalResources intres = InternalResources.getInstance();
     
     public static final float LATEST_VERSION = 1;
-    
-    public static final int TYPE_EXTOCSPPUBLISHER = 5;
-    
+        
     protected static final String DATASOURCE 				= "dataSource";
     protected static final String PROTECT 					= "protect";
     protected static final String STORECERT					= "storeCert";
@@ -66,7 +64,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
      */
     public ExternalOCSPPublisher() {
         super();
-        data.put(TYPE, new Integer(TYPE_EXTOCSPPUBLISHER));
+        data.put(TYPE, new Integer(PublisherConst.TYPE_EXTOCSPPUBLISHER));
         setDataSource(DEFAULT_DATASOURCE);
         setProtect(DEFAULT_PROTECT);
     }

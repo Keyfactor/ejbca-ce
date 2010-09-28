@@ -21,15 +21,13 @@ public class LdapSearchPublisher extends LdapPublisher {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 	
-	public static final int TYPE_LDAPSEARCHPUBLISHER = 4;
-
 	// Default Values
 	protected static final String SEARCHBASEDN = "searchbasedn";
 	protected static final String SEARCHFILTER = "searchfilter";
 	
 	public LdapSearchPublisher() {
 		super();
-		data.put(TYPE, new Integer(TYPE_LDAPSEARCHPUBLISHER));
+		data.put(TYPE, new Integer(PublisherConst.TYPE_LDAPSEARCHPUBLISHER));
 		
 		setSearchBaseDN("");
 		setSearchFilter("");

@@ -31,13 +31,6 @@ import org.apache.log4j.Logger;
  */
 public class PublisherQueueData implements java.io.Serializable {
 
-	public static final int STATUS_SUCCESS = 10; // If the entry has been published successfully
-    public static final int STATUS_PENDING = 20; // If we should retry publishing
-    public static final int STATUS_FAILED = 30; // If publishing failed completely so we will not try again
-    
-    public static final int PUBLISH_TYPE_CERT = 1; // Is it a certificate we publish
-    public static final int PUBLISH_TYPE_CRL  = 2; // Is it a CRL we publish
-
     private static final Logger log = Logger.getLogger(PublisherQueueData.class);
 
     /**
@@ -143,7 +136,7 @@ public class PublisherQueueData implements java.io.Serializable {
     
 	/** @return return the count. */
 	public static long findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId) {
-		Query query = entityManager.createQuery("SELECT COUNT(a) FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND publishStatus=" + PublisherQueueData.STATUS_PENDING);
+		Query query = entityManager.createQuery("SELECT COUNT(a) FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND publishStatus=" + PublisherConst.STATUS_PENDING);
 		query.setParameter("publisherId", publisherId);
 		return ((Long)query.getSingleResult()).longValue();
 	}
@@ -158,7 +151,7 @@ public class PublisherQueueData implements java.io.Serializable {
     		sql.append("SELECT COUNT(*) FROM PublisherQueueData where publisherId=");
     		sql.append(publisherId);
     		sql.append(" AND publishStatus=");
-    		sql.append(PublisherQueueData.STATUS_PENDING);
+    		sql.append(PublisherConst.STATUS_PENDING);
     		if(lowerBounds[i] > 0) {
 	    		sql.append(" AND timeCreated < ");
 	    		sql.append(now - 1000 * lowerBounds[i]);

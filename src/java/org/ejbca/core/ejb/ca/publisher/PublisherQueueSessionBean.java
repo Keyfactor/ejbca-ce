@@ -37,6 +37,7 @@ import org.ejbca.core.ejb.ca.store.CertificateData;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
@@ -149,7 +150,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisher(publisherId: " + publisherId + ")");
     	}
-    	Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherQueueData.STATUS_PENDING, 0);
+    	Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherConst.STATUS_PENDING, 0);
     	if (datas.size() == 0) {
 			log.debug("No publisher queue entries found for publisher "+publisherId);
     	}
@@ -219,10 +220,10 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();	
         //TODO: This code has been modified from JDBC to JPA fetching, which might negatively affect performance. Investigate. 
         List<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> publisherQueueDataList = org.ejbca.core.ejb.ca.publisher.PublisherQueueData
-                .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherQueueData.STATUS_PENDING, limit);
+                .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherConst.STATUS_PENDING, limit);
         for (org.ejbca.core.ejb.ca.publisher.PublisherQueueData publisherQueueData : publisherQueueDataList) {
             PublisherQueueData pqd = new PublisherQueueData(publisherQueueData.getPk(), new Date(publisherQueueData.getTimeCreated()), new Date(
-                    publisherQueueData.getLastUpdate()), PublisherQueueData.STATUS_PENDING, publisherQueueData.getTryCounter(), 
+                    publisherQueueData.getLastUpdate()), PublisherConst.STATUS_PENDING, publisherQueueData.getTryCounter(), 
                     publisherQueueData.getPublishType(), publisherQueueData.getFingerprint(), publisherId, publisherQueueData.getPublisherQueueVolatileData());
             ret.add(pqd);
             if (log.isDebugEnabled()) {
@@ -351,7 +352,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 
             
             try {
-                if (publishType == PublisherQueueData.PUBLISH_TYPE_CERT) {
+                if (publishType == PublisherConst.PUBLISH_TYPE_CERT) {
                     if (log.isDebugEnabled()) {
                         log.debug("Publishing Certificate");
                     }
@@ -375,7 +376,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                         String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);
                         log.info(msg);
                     }
-                } else if (publishType == PublisherQueueData.PUBLISH_TYPE_CRL) {
+                } else if (publishType == PublisherConst.PUBLISH_TYPE_CRL) {
 
                     if (log.isDebugEnabled()) {
                         log.debug("Publishing CRL");
@@ -407,7 +408,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 
                 if (publisher.getKeepPublishedInQueue()) {
                     // Update with information that publishing was successful
-                    updateData(pqd.getPk(), PublisherQueueData.STATUS_SUCCESS, pqd.getTryCounter());
+                    updateData(pqd.getPk(), PublisherConst.STATUS_SUCCESS, pqd.getTryCounter());
                 } else {
                     // We are done with this one.. nuke it!
                     removeQueueData(pqd.getPk());

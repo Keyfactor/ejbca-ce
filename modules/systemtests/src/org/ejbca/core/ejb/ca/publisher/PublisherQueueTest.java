@@ -25,6 +25,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.ExternalOCSPPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
@@ -71,7 +72,7 @@ public class PublisherQueueTest extends TestCase {
     }
 
     public void test01QueueData() throws Exception {
-    	publisherQueueSession.addQueueData(123456, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+    	publisherQueueSession.addQueueData(123456, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
     	Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(12345);
     	assertEquals(0, c.size());
     	c = publisherQueueSession.getPendingEntriesForPublisher(123456);
@@ -82,7 +83,7 @@ public class PublisherQueueTest extends TestCase {
     	Date lastUpdate1 = d.getLastUpdate();
     	assertNotNull(lastUpdate1);
     	assertNotNull(d.getTimeCreated());
-    	assertEquals(PublisherQueueData.STATUS_PENDING, d.getPublishStatus());
+    	assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
     	assertEquals(0,d.getTryCounter());
     	assertNull(d.getVolatileData());
     	
@@ -94,7 +95,7 @@ public class PublisherQueueTest extends TestCase {
     	ExtendedInformation ei = new ExtendedInformation();
     	ei.setSubjectDirectoryAttributes("directoryAttr");
     	vd.setExtendedInformation(ei);
-    	publisherQueueSession.addQueueData(123456, PublisherQueueData.PUBLISH_TYPE_CRL, "YY", vd, PublisherQueueData.STATUS_PENDING);
+    	publisherQueueSession.addQueueData(123456, PublisherConst.PUBLISH_TYPE_CRL, "YY", vd, PublisherConst.STATUS_PENDING);
     	
     	c = publisherQueueSession.getPendingEntriesForPublisher(123456);
     	assertEquals(2, c.size());
@@ -104,16 +105,16 @@ public class PublisherQueueTest extends TestCase {
     	while (i.hasNext()) {
         	d = i.next();
         	if (d.getFingerprint().equals("XX")) {
-        		assertEquals(PublisherQueueData.PUBLISH_TYPE_CERT, d.getPublishType());
+        		assertEquals(PublisherConst.PUBLISH_TYPE_CERT, d.getPublishType());
             	assertNotNull(d.getLastUpdate());
             	assertNotNull(d.getTimeCreated());
-            	assertEquals(PublisherQueueData.STATUS_PENDING, d.getPublishStatus());
+            	assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
             	assertEquals(0,d.getTryCounter());
             	testedXX = true;
         	}
         	if (d.getFingerprint().equals("YY")) {
-        		assertEquals(PublisherQueueData.PUBLISH_TYPE_CRL, d.getPublishType());
-            	assertEquals(PublisherQueueData.STATUS_PENDING, d.getPublishStatus());
+        		assertEquals(PublisherConst.PUBLISH_TYPE_CRL, d.getPublishType());
+            	assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
             	assertEquals(0,d.getTryCounter());
             	PublisherQueueVolatileData v = d.getVolatileData();
             	assertEquals("bar", v.getPassword());
@@ -127,7 +128,7 @@ public class PublisherQueueTest extends TestCase {
     	assertTrue(testedXX);
     	assertTrue(testedYY);
     	
-    	publisherQueueSession.updateData(xxpk, PublisherQueueData.STATUS_SUCCESS, 4);
+    	publisherQueueSession.updateData(xxpk, PublisherConst.STATUS_SUCCESS, 4);
     	c = publisherQueueSession.getEntriesByFingerprint("XX");
     	assertEquals(1, c.size());
     	i = c.iterator();
@@ -136,7 +137,7 @@ public class PublisherQueueTest extends TestCase {
     	Date lastUpdate2 = d.getLastUpdate();
     	assertTrue(lastUpdate2.after(lastUpdate1));
     	assertNotNull(d.getTimeCreated());
-    	assertEquals(PublisherQueueData.STATUS_SUCCESS, d.getPublishStatus());
+    	assertEquals(PublisherConst.STATUS_SUCCESS, d.getPublishStatus());
     	assertEquals(4,d.getTryCounter());    	
     }
 
@@ -258,7 +259,7 @@ public class PublisherQueueTest extends TestCase {
     	assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0}, new int[]{-1})[0]);
     	
     	// Add data
-    	publisherQueueSession.addQueueData(56789, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+    	publisherQueueSession.addQueueData(56789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
     	
     	// One entry in the queue
     	assertEquals(1, publisherQueueSession.getPendingEntriesCountForPublisher(56789));
@@ -273,7 +274,7 @@ public class PublisherQueueTest extends TestCase {
     		fail(ex.getMessage());
     	}
     	// Another entry in the queue, atleast 1s after the first one
-    	publisherQueueSession.addQueueData(56789, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+    	publisherQueueSession.addQueueData(56789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
     	 
     	actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0, 1, 10}, new int[]{-1, -1, -1});
     	assertEquals(3, actual.length);
@@ -288,7 +289,7 @@ public class PublisherQueueTest extends TestCase {
     	assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0}, new int[]{-1})[0]);
     	
     	// Add data
-    	publisherQueueSession.addQueueData(456789, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+    	publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
     	
     	// One entry in the queue
     	assertEquals(1, publisherQueueSession.getPendingEntriesCountForPublisher(456789));
@@ -303,7 +304,7 @@ public class PublisherQueueTest extends TestCase {
     		fail(ex.getMessage());
     	}
     	// Another entry in the queue, atleast 1s after the first one
-    	publisherQueueSession.addQueueData(456789, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+    	publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
     	 
     	actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0, 1, 10, 0}, new int[]{1, 10, -1, -1}); //new int[]{0, 1, 10});
     	assertEquals(4, actual.length);

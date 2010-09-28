@@ -205,7 +205,7 @@ import org.ejbca.util.CertTools;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTokenSessionRemote {
 
-    private static final Logger log = Logger.getLogger(LocalEjbcaHardTokenBatchJobSessionBean.class);
+    private static final Logger log = Logger.getLogger(EjbcaHardTokenBatchJobSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
