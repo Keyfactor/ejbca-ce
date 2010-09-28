@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.publisher;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -144,7 +145,7 @@ public class PublisherQueueData implements java.io.Serializable {
 	/**
 	 * @return the count of pending entries for a publisher in the specified intervals.
 	 */
-	public static List<BigInteger> findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId, int[] lowerBounds, int[] upperBounds) {
+	public static List<Integer> findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId, int[] lowerBounds, int[] upperBounds) {
     	StringBuilder sql = new StringBuilder();
     	long now = new Date().getTime();
     	for(int i = 0; i < lowerBounds.length; i++) {
@@ -168,6 +169,17 @@ public class PublisherQueueData implements java.io.Serializable {
     		log.debug("findCountOfPendingEntriesForPublisher executing SQL: "+sql.toString());    			
 		}
     	Query query = entityManager.createNativeQuery(sql.toString());
-		return query.getResultList();
+    	List<?> resultList = query.getResultList();
+    	List<Integer> returnList;
+    	// Derby returns Integers, MySQL returns BigIntegers
+    	if (resultList.size()>0 && resultList.get(0) instanceof BigInteger) {
+    		returnList = new ArrayList<Integer>();
+    		for (Object o : resultList) {
+    			returnList.add(Integer.valueOf(((BigInteger)o).intValue()));
+    		}
+    	} else {
+    		returnList = (List<Integer>) resultList;
+    	}
+		return returnList;
 	}
 }

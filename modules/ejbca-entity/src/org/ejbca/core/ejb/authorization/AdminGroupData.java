@@ -16,13 +16,16 @@ package org.ejbca.core.ejb.authorization;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.NoResultException;
@@ -56,8 +59,8 @@ public class AdminGroupData implements Serializable {
 	private Integer pK;
 	private String adminGroupName;
 	private int cAId;
-	private Collection<AdminEntityData> adminEntityDatas = new ArrayList<AdminEntityData>();
-	private Collection<AccessRulesData> accessRulesDatas = new ArrayList<AccessRulesData>();
+	private Set<AdminEntityData> adminEntityDatas = new HashSet<AdminEntityData>();
+	private Set<AccessRulesData> accessRulesDatas = new HashSet<AccessRulesData>();
 	
 	/**
 	 * Entity holding data of admin profile groups.
@@ -106,10 +109,11 @@ public class AdminGroupData implements Serializable {
 	 * column="AdminGroupData.pK"
 	 * target="AdminEntityData.AdminGroupData_adminEntities"
 	 */
-	@OneToMany(cascade={CascadeType.ALL})
+	// If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for Hibernate.
+	@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER)
 	@JoinColumn(name="AdminGroupData_adminEntities")
-	public Collection<AdminEntityData> getAdminEntities() { return adminEntityDatas; }
-	public void setAdminEntities(Collection<AdminEntityData> adminEntityDatas) { this.adminEntityDatas = adminEntityDatas; }
+	public Set<AdminEntityData> getAdminEntities() { return adminEntityDatas; }
+	public void setAdminEntities(Set<AdminEntityData> adminEntityDatas) { this.adminEntityDatas = adminEntityDatas; }
 
 	/*
 	 * @ejb.relation
@@ -128,10 +132,11 @@ public class AdminGroupData implements Serializable {
 	 * column="AdminGroupData.pK"
 	 * target="AccessRulesData.AdminGroupData_accessRules"
 	 */
-	@OneToMany(cascade={CascadeType.ALL})
+	// If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for Hibernate.
+	@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER)
 	@JoinColumn(name="AdminGroupData_accessRules")
-	public Collection<AccessRulesData> getAccessRules() { return accessRulesDatas; }
-	public void setAccessRules(Collection<AccessRulesData> accessRulesDatas) { this.accessRulesDatas = accessRulesDatas; }
+	public Set<AccessRulesData> getAccessRules() { return accessRulesDatas; }
+	public void setAccessRules(Set<AccessRulesData> accessRulesDatas) { this.accessRulesDatas = accessRulesDatas; }
 
 	/**
 	 * Adds a Collection of AccessRule to the database. Changing their values if they already exists

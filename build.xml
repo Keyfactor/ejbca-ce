@@ -288,25 +288,31 @@
 		<copy todir="${eardd.src}/META-INF/services" file="src/deploy/ear/META-INF/services/javax.xml.soap.MetaFactory" flatten="true" failonerror="true"/>
 		<!-- This dir has to exist here -->
 		<mkdir dir="${hwtoken.class.dir}"/>
+		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
+		<condition property="bundle-hibernate-exclude" value="" else="**">
+			<isset property="bundle-hibernate-jpa"/>
+		</condition>
 		<!-- Build the EAR -->
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
             </fileset>
-            <fileset dir=".">
-                <include name="${lib}/bcmail-jdk${java.ver}-145.jar" />
-                <include name="${lib}/bcprov-jdk${java.ver}-145.jar" />
-                <include name="${lib}/bctsp-jdk${java.ver}-145.jar" />
-                <include name="${lib}/cert-cvc.jar" />
-                <include name="${lib}/log4j.jar" />
-                <include name="${lib}/ldap.jar" />
-                <include name="${lib}/commons-*.jar" />
-                <include name="${lib}/batik/*.jar" />
-                <include name="${lib}/xmlsign/xmlsec-1.3.0.jar" />
-			    <include name="${lib}/reports/jasperreports-1.3.3.jar" />
-			    <include name="${lib}/reports/jfreechart-1.0.0.jar" />
-			    <include name="${lib}/reports/jcommon-1.0.8.jar" />
-            </fileset>
+            <zipfileset prefix="lib" dir="${lib}">
+                <include name="bcmail-jdk${java.ver}-145.jar" />
+                <include name="bcprov-jdk${java.ver}-145.jar" />
+                <include name="bctsp-jdk${java.ver}-145.jar" />
+                <include name="cert-cvc.jar" />
+                <include name="log4j.jar" />
+                <include name="ldap.jar" />
+                <include name="commons-*.jar" />
+            </zipfileset>
+            <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar"/>
+            <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="xmlsec-1.3.0.jar"/>
+            <zipfileset prefix="lib" dir="${lib}/reports">
+			    <include name="jasperreports-1.3.3.jar" />
+			    <include name="jfreechart-1.0.0.jar" />
+			    <include name="jcommon-1.0.8.jar" />
+            </zipfileset>
             <fileset dir="${dist.dir}">
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
@@ -333,6 +339,7 @@
                 <include name="ejbca-ejb3-interface.jar" />
                 <include name="ejbca-entity.jar" />
         	</zipfileset>
+        	<zipfileset prefix="lib" dir="lib/hibernate" excludes="${bundle-hibernate-exclude}"/>
         	<zipfileset prefix="lib" dir="dist">
                 <include name="ejbca-util.jar" />
         	</zipfileset>

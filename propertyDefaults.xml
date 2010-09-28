@@ -8,6 +8,15 @@
 	<!-- Should be auto-detected, configured or fail
 	<property name="appserver.type" value="jboss"/>
 	-->
+	
+	<condition property="bundle-hibernate-jpa">
+		<or>
+			<matches pattern="glassfish" string="${appserver.type}"/>
+			<matches pattern="weblogic" string="${appserver.type}"/>
+			<!-- ... -->
+		</or>
+	</condition>
+	
 	<property name="ejbca.productionmode" value="true"/>
 	<property name="ca.tokentype" value="soft"/>
 	<property name="ca.tokenproperties" value=""/>

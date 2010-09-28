@@ -195,7 +195,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if(lowerBounds.length != upperBounds.length) {
     		throw new IllegalArgumentException("lowerBounds and upperBounds must have equal length");
     	}
-    	List<BigInteger> entryCountList = PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId, lowerBounds, upperBounds);
+    	List<Integer> entryCountList = PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId, lowerBounds, upperBounds);
     	int[] result = new int[lowerBounds.length];
 		for(int i = 0; i < lowerBounds.length && i < result.length; i++) {
 			result[i] = entryCountList.get(i).intValue();
