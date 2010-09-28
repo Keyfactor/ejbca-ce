@@ -94,7 +94,7 @@ class HealthCheckTest extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
-    void execute(String[] args) {
+    public void execute(String[] args) {
         final String httpPath;
         final int numberOfThreads;
         final int waitTime;
@@ -117,7 +117,7 @@ class HealthCheckTest extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#getName()
      */
     @Override
-    String getName() {
+    public String getName() {
         return "healthCheckTest";
     }
 

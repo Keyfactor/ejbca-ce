@@ -1,0 +1,31 @@
+Version: $Id$
+
+Each subdirectory to this directory contains the configuration for a database type.
+The name of this database is fetched from database.properties in the EJBCA configuration directory.
+
+In each of the subdirectories there is a 'config.properties' file.
+This file defines management commands for the database.
+
+
+Each command has keys in the 'config.properties' file with the name of the command followed by a suffix. These
+are the suffixes and the meaning of them:
+'_command' defines a command where the command name is the string before the '_'.
+'_resource_input_name' defines a resource in the same directory to be used as input to the command.
+'_password' tells that the command will ask for a password. The value will be the prompt.
+'_output_gzip' tells that the output should be gzipped and stored in a file. The file name should be given by the user as an argument. The value is a description of the file to be used when showing the syntax pf the argument.
+'_input_gzip' same as the former but for output.
+
+
+Both the '_command' string and the contents of '_resource_input_name' are parsed. The strings ${xxx} are replaced with a value from the database.properties file.
+xxx could be any key in the database.properties file or a some or a part from the database URL (the database.url key).
+The keys for the URL parts are the following:
+'url.port' the port to connect to
+'url.host' the name of the host
+'url.path' the name of the database to use
+'url.authority'
+'url.fragment'
+'url.query'
+'url.scheme'
+'url.userinfo'
+
+If the user is prompted for password the 'password' key are also parsed with the submitted password.

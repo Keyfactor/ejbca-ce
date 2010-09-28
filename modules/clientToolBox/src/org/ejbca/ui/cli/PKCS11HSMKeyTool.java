@@ -51,7 +51,7 @@ public class PKCS11HSMKeyTool extends HSMKeyTool {
      * @see org.ejbca.ui.cli.HSMKeyTool#getName()
      */
     @Override
-    String getName() {
+    public String getName() {
         return "PKCS11HSMKeyTool";
     }
 

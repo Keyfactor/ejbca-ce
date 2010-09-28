@@ -816,7 +816,7 @@ class CMPTest extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
-    void execute(String[] args) {
+    public void execute(String[] args) {
         final String hostName;
         final int numberOfThreads;
         final int waitTime;
@@ -860,7 +860,7 @@ class CMPTest extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#getName()
      */
     @Override
-    String getName() {
+    public String getName() {
         return "CMPTest";
     }
 

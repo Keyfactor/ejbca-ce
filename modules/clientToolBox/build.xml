@@ -9,6 +9,7 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="src.dir" location="${this.dir}/src"/>
+    <property name="intresources.dir" location="${this.dir}/intresources"/>
 
 	<path id="clientToolBox.lib.classpath">
         <fileset dir="${ejbca.home}/lib">
@@ -42,6 +43,7 @@
     			<attribute name="Main-Class" value="org.ejbca.ui.cli.ClientToolBox"/>
     		</manifest>
             <fileset dir="${build.dir}"/>
+            <fileset dir="${intresources.dir}"/>
             <fileset dir="${ejbca.home}/src">
                 <include name="intresources/**"/>
             </fileset>
