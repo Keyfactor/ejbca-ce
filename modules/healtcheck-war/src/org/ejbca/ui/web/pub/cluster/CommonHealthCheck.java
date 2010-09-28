@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +44,7 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 	
 	public abstract String checkHealth(HttpServletRequest request);
 
-	public void init(ServletConfig config) {
+	public void init() {
 		initMaintenanceFile();
 	}
 

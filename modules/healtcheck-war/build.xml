@@ -52,13 +52,14 @@
     <target name="ejbca-compile" depends="ejbca-ejb-interface, ejbca-util, ejbca-ejb">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" classpathref="compile-ejbca.classpath"/>
+			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java, org/ejbca/ui/web/pub/OCSPHealthServlet.java" classpathref="compile-ejbca.classpath"/>
+    		
     </target>
 
 	<target name="ocsp-compile" depends="ocsp-ejb-interface, ocsp-ejb, ocsp-ocsp-war">
 		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
 		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java" classpathref="compile-ocsp.classpath"/>
+			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java, org/ejbca/ui/web/pub/HealthCheckServlet.java" classpathref="compile-ocsp.classpath"/>
 	</target>
 
 </project>

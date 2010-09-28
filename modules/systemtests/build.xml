@@ -346,7 +346,7 @@
 		<available file="${build.dir}/keys/ocspTestSigner.p12" property="noOcspTestSigner" />
 		<fail unless="noOcspTestSigner" message="Could not batch generate OCSP signing keystore."/>
 	</target>
-
+<!--
 	<target name="runocsp" depends="ejbca-util" description="Run stand alone OCSP test">
 		<echo>
 			Hint: For a simple test using the EJBCA database you can use 'ant runocsp.setuptest'
@@ -361,6 +361,39 @@
     	<property name="reports.dir" location="${reports.base.dir}/runocsp"/>
 		<antcall target="runone-internal"/>
 	</target>
+
+-->
+	<target name="runocsp" depends="build, assert-appserverrunning-ocsp">
+		<property name="reports.dir" location="${reports.base.dir}/runocsp"/>
+		<fail message="'reports.dir' is not set." unless="reports.dir" />
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<echo>
+			Hint: For a simple test using the EJBCA database you can use 'ant runocsp.setuptest'
+			when EJBCA is deployed in CA mode to setup the database for this test.
+		</echo>
+		<condition property="runocsp.warning" else=""
+			value="WARNING: EJBCA/OCSP must be deployed with ocsp.untilNextUpdate configured for all OCSP tests to succeed.">
+			<equals arg1="${ocsp.untilNextUpdate}" arg2="0"/>
+		</condition>
+		<echo message="${runocsp.warning}"/>
+		<junit printsummary="yes" haltonfailure="no" >
+        	<jvmarg value="-Djava.endorsed.dirs=${lib.jaxws.dir}"/>	<!-- Use our bundled JAX-WS implementation instead of the one from the JDK -->
+			<classpath>
+				<path location="${build.dir}" />
+				<path refid="systemtests.classpath" />
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build.dir}">
+					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.class" />
+					<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="createreport"/>
+	</target>
+
 	
     <target name="runctb" depends="build, clientToolBox" description="run JUnit ClientToolBox tests">
 		<echo message="Use ejbca-custom/dist/clientToolBox/lib for your JDBC driver and ejbca-custom/dist/clientToolBox/properties/META-INF/persistence.xml for your modified database config."/>
