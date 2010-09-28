@@ -183,11 +183,6 @@
 				<equals arg1="${appserver.type}" arg2="weblogic"/>
 			</condition>
 	</target>
-	<target name="oc4jtargetcheck">
-			<condition property="oc4j.enabled">
-				<equals arg1="${appserver.type}" arg2="oracle"/>
-			</condition>
-	</target>
 	<target name="glassfishtargetcheck">
 			<condition property="glassfish.enabled">
 				<equals arg1="${appserver.type}" arg2="glassfish"/>
@@ -237,23 +232,6 @@
         <property name="jar.jsftaglibs" value="tomahawk-1.1.6.jar,myfaces-impl-1.1.5.jar,jstl-1.1.0.jar" />
 	</target>
 
-	<!-- We need to include all the myfaces libs in Oc4j -->	
-	<target name="jsflibsoc4j" depends="oc4jtargetcheck" if="oc4j.enabled">
-		<echo>OC4J JSF target</echo>
-        <copy todir="${jsf.libdir}">
-            <fileset dir="${lib}/myfaces" >
-            	<include name="*.jar"/>
-            </fileset>
-        </copy>
-	    <copy todir="${jsf.libdir}">
-	        <fileset dir="${lib}" >
-	        	<include name="commons-*.jar"/>
-	        </fileset>
-	    </copy>
-        <property name="jar.jsfclasspath" value="lib/jstl-1.1.0.jar lib/myfaces-api-1.1.5.jar lib/myfaces-impl-1.1.5.jar lib/commons-logging.jar lib/commons-digester-1.8.jar lib/commons-el-1.0.jar lib/commons-beanutils.jar lib/commons-codec-1.3.jar lib/commons-collections-3.2 lib/commons-io-1.3.2.jar" />
-        <property name="jar.jsftaglibs" value="tomahawk-1.1.6.jar,myfaces-impl-1.1.5.jar,jstl-1.1.0.jar" />
-	</target>
-
 	<!-- We need to include commons on the classpath for Glassfish -->	
 	<target name="jsflibsglassfish" depends="glassfishtargetcheck" if="glassfish.enabled">
 		<echo>Glassfish JSF target</echo>
@@ -270,7 +248,7 @@
         <mkdir dir="${jsf.libdir}" />
 	</target>
 	
-	<target name="jsflibs" depends="jsflibspre,jsflibswls,jsflibsglassfish,jsflibsoc4j">
+	<target name="jsflibs" depends="jsflibspre,jsflibswls,jsflibsglassfish">
         <property name="jar.jsfclasspath" value="" />
         <property name="jar.jsftaglibs" value="tomahawk-1.1.6.jar" />
 	</target>
