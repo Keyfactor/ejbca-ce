@@ -64,7 +64,7 @@
 <li>Possible to integrate into large java applications for optimal integration into business process.</li>
 <li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
-<li>Supports multiple application servers: JBoss, Weblogic, Glassfish, OC4J, Websphere</li>
+<li>Supports multiple application servers: JBoss, Weblogic, Glassfish, Websphere</li>
 <li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, Ingres, MS-SQL, Derby, Sybase, Informix.</li>
 </ul>    
 

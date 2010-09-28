@@ -25,14 +25,6 @@
 	</path>
 	
     <target name="build" description="Build this module" depends="compile">
-    	<!-- OC4J requires a META-INF/application-client.xml file -->
-    	<mkdir dir="${build.dir}/META-INF"/>
-    	<condition property="application-client.filter" value="application-client.xml" else="nofile">
-    		<equals arg1="${appserver.type}" arg2="oracle"/>
-    	</condition>
-    	<copy todir="${build.dir}/META-INF">
-    		<fileset dir="${ejbca.home}/src/deploy/oracle/client/bin/META-INF" includes="${application-client.filter}"/>
-    	</copy>
     	<!-- Upgrade of certificate profiles requires extendedkeyusage.properties -->
     	<mkdir dir="${build.dir}/conf"/>
     	<copy todir="${build.dir}/conf">

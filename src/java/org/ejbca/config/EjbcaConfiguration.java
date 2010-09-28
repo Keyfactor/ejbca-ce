@@ -128,7 +128,7 @@ public class EjbcaConfiguration {
 	}
 
 	/**
-	 * Determines if log4j should be initialized explicitly, needed for glassfish, oracle
+	 * Determines if log4j should be initialized explicitly, needed for glassfish
 	 */
 	public static String getLoggingLog4jConfig() {
 		return ConfigurationHolder.getExpandedString("logging.log4j.config", "false");

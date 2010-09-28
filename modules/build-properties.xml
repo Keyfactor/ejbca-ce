@@ -245,9 +245,6 @@
 			<include name="server/lib/wls-api.jar"/>	<!-- For 10.3 -->
 			<include name="server/lib/wljmsclient.jar"/>	<!-- For 10.3 -->
 			<include name="server/lib/wlsafclient.jar"/>	<!-- For 10.3 -->
-			<!-- oracle -->
-			<include name="j2ee/home/oc4jclient.jar"/>
-			<include name="j2ee/home/lib/ejb.jar"/>
 			<!-- websphere -->
 			<include name="runtimes/com.ibm.*.jar"/>
 		</fileset>
@@ -281,7 +278,6 @@
 			<include name="common/lib/el-api.jar" /> <!-- 5.x -->
 			<!-- glassfish ? -->
 			<!-- weblogic ? -->
-			<!-- oracle ? -->
 			<!-- websphere ? -->
 		</fileset>
 	</path>
@@ -299,7 +295,6 @@
 			<include name="common/lib/el-api.jar" /> <!-- 5.x -->
 			<!-- glassfish ? -->
 			<!-- weblogic ? -->
-			<!-- oracle ? -->
 			<!-- websphere ? -->
 		</fileset>
 	</path>
@@ -313,7 +308,6 @@
 			<include name="lib/jboss-logging-spi.jar" /> <!-- 5.x -->
 			<!-- glassfish ? -->
 			<!-- weblogic ? -->
-			<!-- oracle ? -->
 			<!-- websphere ? -->
 		</fileset>
 	</path>
@@ -332,7 +326,6 @@
 	</path>
 
 	<path id="lib.jpa.classpath">
-        <fileset dir="${ejbca.home}/lib/xdoclet/lib" includes="dom4j-1.6.1.jar.jar"/>
         <fileset dir="${ejbca.home}/lib/hibernate">
             <include name="antlr-2.7.6.jar"/>
             <include name="hibernate3.jar"/>
