@@ -286,7 +286,7 @@
        			<include name="org/ejbca/core/ejb/ca/store/CertificateData.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">
-    			<include name="org/ejbca/core/ejb/ca/publisher/*SessionBean.java"/>
+    			<include name="org/ejbca/core/ejb/ca/publisher/*QueueSessionBean.java"/>
     			<include name="org/ejbca/core/model/ca/publisher/*.java"/>
     			<!-- Use by the LDAP Publisher -->
     			<include name="org/ejbca/util/TCPTool.java"/>
@@ -298,7 +298,7 @@
     			<!-- Uses EjbRemoteHelper -->
     			<exclude name="org/ejbca/core/model/ca/publisher/ExternalOCSPPublisher.java"/>
     			<!-- Uses ExternalOCSPPublisher -->
-    			<exclude name="org/ejbca/core/ejb/ca/publisher/LocalPublisherSessionBean.java"/>
+    			<exclude name="org/ejbca/core/ejb/ca/publisher/PublisherSessionBean.java"/>
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/publish" destdir="${build-temp.dir}/publish" debug="on" includeantruntime="no"
