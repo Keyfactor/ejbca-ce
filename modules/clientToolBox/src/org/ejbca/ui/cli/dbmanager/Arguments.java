@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.dbmanager;
 import java.io.File;
 import java.io.IOException;
 
-import org.ejbca.ui.cli.util.ConsolePasswordReader;
-
 /**
  * Holds arguments given by the user.
  * @author Lars Silven PrimeKey Solution AB
@@ -95,7 +93,7 @@ class Arguments {
 		}
 		if ( this.commandLine.passwordPrompt!=null ) {
 			System.err.print(this.commandLine.passwordPrompt);
-			this.password = new String (new ConsolePasswordReader().readPassword());
+			this.password = String.valueOf(System.console().readPassword());            	
 			System.err.println();
 		} else {
 			this.password = null;
