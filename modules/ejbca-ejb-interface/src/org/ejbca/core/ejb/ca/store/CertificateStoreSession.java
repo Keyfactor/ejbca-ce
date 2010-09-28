@@ -14,10 +14,12 @@ package org.ejbca.core.ejb.ca.store;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
@@ -615,4 +617,17 @@ public interface CertificateStoreSession {
      * TODO: This should only be in the local interface.
      */
     public java.lang.String getDatabaseStatus();
+    
+    /**
+     * Fetch a List of all certificate fingerprints and corresponding username
+     * @return [0] = (String) fingerprint, [1] = (String) username
+     */
+    public List<Object[]> findExpirationInfo(String cASelectString, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
+    
+    /**
+     * Update the status of a cert in the database.
+     * @param fingerprint
+     * @param status one of SecConst.CERT_...
+     */
+    public boolean setStatus(String fingerprint, int status);
 }

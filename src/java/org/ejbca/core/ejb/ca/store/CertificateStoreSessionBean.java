@@ -1746,6 +1746,24 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
         return id;
     }
 
+    /**
+     * Fetch a List of all certificate fingerprints and corresponding username
+     * @return [0] = (String) fingerprint, [1] = (String) username
+     */
+    public List<Object[]> findExpirationInfo(String cASelectString, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin) {
+    	return CertificateData.findExpirationInfo(entityManager, cASelectString, activeNotifiedExpireDateMin, activeNotifiedExpireDateMax, activeExpireDateMin);
+    }
+
+    /**
+     * Update the staus of a cert in the database.
+     * @param fingerprint
+     * @param status one of SecConst.CERT_...
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public boolean setStatus(String fingerprint, int status) {
+    	return CertificateData.updateStatus(entityManager, fingerprint, status);
+    }
+
     // Private methods
 
     private boolean isCertificateProfileNameFixed(String certificateprofilename) {
