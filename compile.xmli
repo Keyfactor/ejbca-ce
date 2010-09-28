@@ -1,39 +1,9 @@
 	<!-- This XML file is for inclusion in build.xml, and not for usage in itself -->
 
-    <target name="jboss50jsfimpl" depends="jboss50targetcheck" if="jboss50.enabled">
-	   <property name="web.jsfimpl" value="sunri"/>
-	   <echo>JBoss 5.0.x uses SunRI JSF implementation</echo>
-    </target>
-    <target name="jboss42jsfimpl" depends="jboss42targetcheck" if="jboss42.enabled">
-	   <property name="web.jsfimpl" value="sunri"/>
-	   <echo>JBoss 4.2.x uses SunRI JSF implementation</echo>
-    </target>
-    <target name="jboss40jsfimpl" depends="jboss40targetcheck" if="jboss40.enabled">
-	   <property name="web.jsfimpl" value="myfaces"/>
-	   <echo>JBoss 4.0.x uses Apache Myfaces JSF implementation</echo>
-    </target>
-    <target name="glassfishjsfimpl" depends="glassfishtargetcheck" if="glassfish.enabled">
-	   <property name="web.jsfimpl" value="sunri"/>
-	   <echo>Glassfish uses SunRI JSF implementation</echo>
-    </target>
-    <target name="weblogicjsfimpl" depends="wlstargetcheck" if="weblogic.enabled">
-	   <property name="web.jsfimpl" value="myfaces"/>
-	   <echo>Weblogic uses Apache Myfaces JSF implementation</echo>
-    </target>
-    <target name="oc4jjsfimpl" depends="oc4jtargetcheck" if="oc4j.enabled">
-	   <property name="web.jsfimpl" value="myfaces"/>
-	   <echo>OC4J uses Apache Myfaces JSF implementation</echo>
-    </target>
-    <target name="webspherejsfimpl" depends="webspheretargetcheck" if="websphere.enabled">
-	   <property name="web.jsfimpl" value="sunri"/>
-	   <echo>Websphere uses SunRI JSF implementation</echo>
-    </target>
-	<target name="set.jsfimpl" depends="jboss50jsfimpl,jboss42jsfimpl,jboss40jsfimpl,glassfishjsfimpl,weblogicjsfimpl,oc4jjsfimpl,webspherejsfimpl">
-	</target>
     <!-- =================================================================== -->
     <!-- Create the time stamp and build directory -->
     <!-- =================================================================== -->
-    <target name="init" depends="set.jsfimpl, j2ee:check">
+    <target name="init" depends="j2ee:check">
     
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------
@@ -66,7 +36,6 @@ httpserver.privhttps     = ${httpserver.privhttps}
 httpsserver.hostname     = ${httpsserver.hostname}
 httpsserver.password     = ${httpsserver.password}
 web.contentencoding      = ${web.contentencoding}
-web.jsfimpl              = ${web.jsfimpl}
 web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
 cmp.allowraverifypopo           = ${cmp.allowraverifypopo}

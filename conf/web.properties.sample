@@ -89,21 +89,6 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default = 1000
 #log.maxqueryrowcount=1000
 
-# Overrides the automatic selection of the JSF implementation used by the application server EJBCA is deployed on.
-# Possible values are: myfaces, sunri
-# Using nojsf means that the admin-GUI will be limited with some functions not working. 
-# It can however be useful if there are problems with your application server and JSF/MyFaces.
-# Use nojsf for JBoss < 4.0.3
-# Use myfaces for JBoss 4.0.3-4.0.5, Weblogic and OC4J
-# Use sunri for Glassfish and JBoss 4.2.x
-#
-# DO NOT SET THIS UNLESS YOU KNOW WHAT YOU ARE DOING (it will probably not work anyway). 
-# It is normally automatically detected, which should work fine. 
-# Autodetection is handled in build.xml and compile.xml.
-#
-# Default: automatically detected
-#web.jsfimpl=myfaces
-
 # Show links to the EJBCA documentation. The links can either point to internally deployed
 # documentation on the server or any exteral location like ejbca.org.
 # Default = internal

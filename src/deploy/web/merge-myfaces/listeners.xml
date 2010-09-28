@@ -1,4 +1,0 @@
-  <listener>
-    <!-- Listener, that does all the startup work (configuration, init). -->
-    <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
-  </listener>

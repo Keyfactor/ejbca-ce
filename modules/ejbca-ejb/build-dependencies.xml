@@ -34,7 +34,6 @@
 		<delete dir="${build-temp.dir}" />
     </target>
 
-	<!-- depends="ejbca-ejb-interfaces-xdoclet" -->
     <target name="dependecy-check" unless="no-depcheck" description="Perform a dependency check on the different EJBCA core components.">
     	<echo message="This check can be disabled by running ant with '-Dno-depcheck=1'"/>
     	<mkdir dir="${src-temp.dir}"/>

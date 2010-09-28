@@ -209,7 +209,6 @@
     </path>
 
     <path id="jpa.classpath">
-        <fileset dir="${lib}/xdoclet/lib" includes="dom4j-1.6.1.jar.jar"/>
         <fileset dir="${lib}/hibernate">
             <include name="antlr-2.7.6.jar"/>
             <include name="hibernate3.jar"/>
@@ -237,8 +236,6 @@
         	<!-- weblogic -->
             <include name="server/lib/weblogic.jar"/>	<!-- For 9.2 -->
             <include name="server/lib/wlclient.jar"/>	<!-- For 10.3 -->
-        	<!-- oracle -->
-            <include name="j2ee/home/oc4jclient.jar"/>
         	<!-- websphere -->
             <include name="runtimes/com.ibm.*.jar"/>
         </fileset>
@@ -253,14 +250,6 @@
         <pathelement location="${appserver.home}/lib/jboss-kernel.jar" />
     </path>
         
-    <path id="xdoclet.classpath">
-        <fileset dir="lib" includes="*.jar" />
-        <fileset dir="lib/ext" includes="*.jar" />
-        <fileset dir="lib/xdoclet/lib" includes="*.jar" excludes="commons-logging.jar log4j.jar"/>    
-        <path refid="j2ee.classpath" />
-    	<fileset dir="dist" includes="ejbca-util.jar"/>
-    </path>
-
     <path id="test.base.classpath">
         <path refid="nonj2ee-compile.classpath" />
         <path location="${build}" />
