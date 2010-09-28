@@ -27,6 +27,7 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.log.Admin;
@@ -83,8 +84,8 @@ public class PublisherQueueProcessTest extends TestCase {
      */
 
     public void test01PublishQueueProcessFail() throws Exception {
-        publisherQueueSession.addQueueData(12345, PublisherQueueData.PUBLISH_TYPE_CERT, "TestPublishQueueProcessService12345", null,
-                PublisherQueueData.STATUS_PENDING);
+        publisherQueueSession.addQueueData(12345, PublisherConst.PUBLISH_TYPE_CERT, "TestPublishQueueProcessService12345", null,
+                PublisherConst.STATUS_PENDING);
         Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(12345);
         assertEquals(1, c.size());
         Iterator<PublisherQueueData> i = c.iterator();
@@ -122,7 +123,7 @@ public class PublisherQueueProcessTest extends TestCase {
         i = c.iterator();
         d = i.next();
         assertEquals(1, d.getTryCounter());
-        assertEquals(PublisherQueueData.STATUS_PENDING, d.getPublishStatus());
+        assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
     }
 
     /**
@@ -152,8 +153,8 @@ public class PublisherQueueProcessTest extends TestCase {
             // Perhaps the cert already exists
         }
 
-        publisherQueueSession.addQueueData(publisherId, PublisherQueueData.PUBLISH_TYPE_CERT, CertTools.getFingerprintAsString(testcert), null,
-                PublisherQueueData.STATUS_PENDING);
+        publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, CertTools.getFingerprintAsString(testcert), null,
+                PublisherConst.STATUS_PENDING);
         Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(publisherId);
         assertEquals(1, c.size());
         Iterator<PublisherQueueData> i = c.iterator();
@@ -191,7 +192,7 @@ public class PublisherQueueProcessTest extends TestCase {
         i = c.iterator();
         d = i.next();
         assertEquals(0, d.getTryCounter());
-        assertEquals(PublisherQueueData.STATUS_SUCCESS, d.getPublishStatus());
+        assertEquals(PublisherConst.STATUS_SUCCESS, d.getPublishStatus());
     }
 
     /**

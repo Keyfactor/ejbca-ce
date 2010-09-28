@@ -52,7 +52,7 @@ import org.ejbca.core.model.log.LogConstants;
  * Stores data used by web server clients. Uses JNDI name for datasource as
  * defined in env 'Datasource' in ejb-jar.xml.
  * 
- * @version $Id: LocalAuthorizationSessionBean.java 9579 2010-07-30 18:07:23Z
+ * @version $Id: AuthorizationSessionBean.java 9579 2010-07-30 18:07:23Z
  *          jeklund $
  * 
  * @ejb.bean description="Session bean handling interface with ra authorization"
@@ -118,9 +118,9 @@ import org.ejbca.core.model.log.LogConstants;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthorizationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalAuthorizationSessionBean implements AuthorizationSessionLocal, AuthorizationSessionRemote {
+public class AuthorizationSessionBean implements AuthorizationSessionLocal, AuthorizationSessionRemote {
 
-    private static final Logger log = Logger.getLogger(LocalAuthorizationSessionBean.class);
+    private static final Logger log = Logger.getLogger(AuthorizationSessionBean.class);
     private static final long serialVersionUID = 1L;
 
     /** Internal localization of logs and errors */

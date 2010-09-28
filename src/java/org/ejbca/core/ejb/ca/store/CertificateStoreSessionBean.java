@@ -198,9 +198,9 @@ import org.ejbca.util.keystore.KeyTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class LocalCertificateStoreSessionBean  implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
+public class CertificateStoreSessionBean  implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
 
-    private final static Logger log = Logger.getLogger(LocalCertificateStoreSessionBean.class);
+    private final static Logger log = Logger.getLogger(CertificateStoreSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
@@ -230,7 +230,7 @@ public class LocalCertificateStoreSessionBean  implements CertificateStoreSessio
 
     final private CertificateDataUtil.Adapter adapter;
     
-    public LocalCertificateStoreSessionBean() {
+    public CertificateStoreSessionBean() {
         super();
         adapter = new MyAdapter();
     }

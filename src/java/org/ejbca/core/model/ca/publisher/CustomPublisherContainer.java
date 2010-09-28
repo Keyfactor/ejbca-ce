@@ -36,9 +36,7 @@ public class CustomPublisherContainer extends BasePublisher{
 	private ICustomPublisher custompublisher = null; 
 	
 	public static final float LATEST_VERSION = 1;
-	
-	public static final int TYPE_CUSTOMPUBLISHERCONTAINER = 1;
-	
+		
 	// Default Values
     
     protected static final String CLASSPATH                       = "classpath";
@@ -48,7 +46,7 @@ public class CustomPublisherContainer extends BasePublisher{
     
     public CustomPublisherContainer(){
     	super();
-    	data.put(TYPE, new Integer(TYPE_CUSTOMPUBLISHERCONTAINER));
+    	data.put(TYPE, new Integer(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER));
     	setClassPath("");
     	setPropertyData("");
     }

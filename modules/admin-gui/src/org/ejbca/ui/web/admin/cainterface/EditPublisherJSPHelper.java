@@ -27,6 +27,7 @@ import org.ejbca.core.model.ca.publisher.ExternalOCSPPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -246,19 +247,19 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
 
                             if(publisherdata == null){
                                 int tokentype = new Integer(request.getParameter(HIDDEN_PUBLISHERTYPE)).intValue();
-                                if(tokentype == CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER) {
+                                if(tokentype == PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
                                     publisherdata = new CustomPublisherContainer();
                                 }
-                                if(tokentype == LdapPublisher.TYPE_LDAPPUBLISHER) {
+                                if(tokentype == PublisherConst.TYPE_LDAPPUBLISHER) {
                                     publisherdata = new LdapPublisher();
                                 }
-                                if (tokentype == LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER) {
+                                if (tokentype == PublisherConst.TYPE_LDAPSEARCHPUBLISHER) {
                                     publisherdata = new LdapSearchPublisher();
                                 }
-                                if(tokentype == ActiveDirectoryPublisher.TYPE_ADPUBLISHER) {
+                                if(tokentype == PublisherConst.TYPE_ADPUBLISHER) {
                                     publisherdata = new ActiveDirectoryPublisher();
                                 }
-                                if(tokentype == ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER) {
+                                if(tokentype == PublisherConst.TYPE_EXTOCSPPUBLISHER) {
                                     publisherdata = new ExternalOCSPPublisher();
                                 }
                             }
@@ -543,19 +544,19 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                 if(value!=null){
                     int profiletype = Integer.parseInt(value);
                     switch(profiletype){
-                    case CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER :
+                    case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER :
                         publisherdata = new CustomPublisherContainer();
                         break;
-                    case LdapPublisher.TYPE_LDAPPUBLISHER :
+                    case PublisherConst.TYPE_LDAPPUBLISHER :
                         publisherdata =  new LdapPublisher();
                         break;
-                    case LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER:
+                    case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
                         publisherdata = new LdapSearchPublisher();
                         break;
-                    case ActiveDirectoryPublisher.TYPE_ADPUBLISHER :
+                    case PublisherConst.TYPE_ADPUBLISHER :
                         publisherdata =  new ActiveDirectoryPublisher();
                         break;
-                    case ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER:
+                    case PublisherConst.TYPE_EXTOCSPPUBLISHER:
                         publisherdata =  new ExternalOCSPPublisher();
                         break;
                     }
@@ -569,22 +570,22 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     }
 
     public int getPublisherType(){
-        int retval = CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER;
+        int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
 
         if(publisherdata instanceof CustomPublisherContainer) {
-            retval = CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER;
+            retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
         }
         if(publisherdata instanceof LdapPublisher) {
-            retval = LdapPublisher.TYPE_LDAPPUBLISHER;
+            retval = PublisherConst.TYPE_LDAPPUBLISHER;
         }
         if (publisherdata instanceof LdapSearchPublisher) {
-            retval = LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER;
+            retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
         }
         if(publisherdata instanceof ActiveDirectoryPublisher) {
-            retval = ActiveDirectoryPublisher.TYPE_ADPUBLISHER;
+            retval = PublisherConst.TYPE_ADPUBLISHER;
         }
         if(publisherdata instanceof ExternalOCSPPublisher) {
-            retval = ExternalOCSPPublisher.TYPE_EXTOCSPPUBLISHER;
+            retval = PublisherConst.TYPE_EXTOCSPPUBLISHER;
         }
         return retval;
     }

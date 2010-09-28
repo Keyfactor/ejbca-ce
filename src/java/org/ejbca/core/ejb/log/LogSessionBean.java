@@ -132,9 +132,9 @@ import org.ejbca.util.query.Query;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "LogSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class LocalLogSessionBean implements LogSessionLocal, LogSessionRemote {
+public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
 
-    private static final Logger log = Logger.getLogger(LocalLogSessionBean.class);
+    private static final Logger log = Logger.getLogger(LogSessionBean.class);
     
 	/** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();

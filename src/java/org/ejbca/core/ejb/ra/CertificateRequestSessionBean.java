@@ -168,10 +168,10 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalCertificateRequestSessionBean implements CertificateRequestSessionRemote, CertificateRequestSessionLocal {
+public class CertificateRequestSessionBean implements CertificateRequestSessionRemote, CertificateRequestSessionLocal {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(LocalCertificateRequestSessionBean.class);
+    private static final Logger log = Logger.getLogger(CertificateRequestSessionBean.class);
     
     @EJB
     private AuthenticationSessionLocal authenticationSession;

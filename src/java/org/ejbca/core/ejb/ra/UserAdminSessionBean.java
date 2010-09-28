@@ -102,7 +102,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean. Uses JNDI
  * name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  * 
- * @version $Id: LocalUserAdminSessionBean.java 9677 2010-08-18 16:15:32Z
+ * @version $Id: UserAdminSessionBean.java 9677 2010-08-18 16:15:32Z
  *          mikekushner $
  * 
  * @ejb.bean display-name="UserAdminSB" name="UserAdminSession"
@@ -201,9 +201,9 @@ import org.ejbca.util.query.UserMatch;
  */
 @Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "UserAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdminSessionRemote {
+public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSessionRemote {
 
-    private static final Logger log = Logger.getLogger(LocalUserAdminSessionBean.class);
+    private static final Logger log = Logger.getLogger(UserAdminSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
@@ -999,11 +999,11 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
 
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
             new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest.class.getName(), null),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(), "revokeUser"),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(), "revokeCert"),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ca.auth.LocalAuthenticationSessionBean.class.getName(), "finishUser"),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(), "unrevokeCert"),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(), "prepareForKeyRecovery"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "revokeUser"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "revokeCert"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ca.auth.AuthenticationSessionBean.class.getName(), "finishUser"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "unrevokeCert"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "prepareForKeyRecovery"),
             /**
              * can not use .class.getName() below, because it is not part of
              * base EJBCA dist
@@ -1637,7 +1637,7 @@ public class LocalUserAdminSessionBean implements UserAdminSessionLocal, UserAdm
     }
 
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKEUSER = {
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.LocalUserAdminSessionBean.class.getName(), "revokeAndDeleteUser"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "revokeAndDeleteUser"),
             new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(), null), };
 
     /**

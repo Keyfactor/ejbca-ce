@@ -105,11 +105,11 @@ import org.ejbca.core.model.ra.UserDataVO;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "HardTokenBatchJobSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalEjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessionRemote, HardTokenBatchJobSessionLocal  {
+public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessionRemote, HardTokenBatchJobSessionLocal  {
 
     public static final int MAX_RETURNED_QUEUE_SIZE = 300;
 
-    private static final Logger log = Logger.getLogger(LocalEjbcaHardTokenBatchJobSessionBean.class);
+    private static final Logger log = Logger.getLogger(EjbcaHardTokenBatchJobSessionBean.class);
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();

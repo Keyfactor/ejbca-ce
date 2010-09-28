@@ -100,9 +100,9 @@ import org.ejbca.core.model.ra.UserDataVO;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthenticationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalAuthenticationSessionBean implements AuthenticationSessionLocal, AuthenticationSessionRemote {
+public class AuthenticationSessionBean implements AuthenticationSessionLocal, AuthenticationSessionRemote {
 
-    private static final Logger log = Logger.getLogger(LocalAuthenticationSessionBean.class);
+    private static final Logger log = Logger.getLogger(AuthenticationSessionBean.class);
     
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;

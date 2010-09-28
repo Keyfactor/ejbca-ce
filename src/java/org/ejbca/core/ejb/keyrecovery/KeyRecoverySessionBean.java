@@ -156,9 +156,9 @@ import org.ejbca.util.CertTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "KeyRecoverySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalKeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecoverySessionRemote {
+public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecoverySessionRemote {
 
-    private static final Logger log = Logger.getLogger(LocalKeyRecoverySessionBean.class);
+    private static final Logger log = Logger.getLogger(KeyRecoverySessionBean.class);
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();

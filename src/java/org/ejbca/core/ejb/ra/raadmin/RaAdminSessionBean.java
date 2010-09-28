@@ -49,7 +49,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients. Uses JNDI name for datasource as
  * defined in env 'Datasource' in ejb-jar.xml.
  * 
- * @version $Id: LocalRaAdminSessionBean.java 9579 2010-07-30 18:07:23Z jeklund
+ * @version $Id: RaAdminSessionBean.java 9579 2010-07-30 18:07:23Z jeklund
  *          $
  * 
  * @ejb.bean 
@@ -131,7 +131,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  */
 @Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "RaAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRemote {
+public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRemote {
 
     public static final String EMPTY_ENDENTITYPROFILENAME = "EMPTY";
     public static final String EMPTY_ENDENTITYPROFILE = EMPTY_ENDENTITYPROFILENAME;
@@ -139,7 +139,7 @@ public class LocalRaAdminSessionBean implements RaAdminSessionLocal, RaAdminSess
 
     private static final String DEFAULTUSERPREFERENCE = "default";
 
-    private static final Logger log = Logger.getLogger(LocalRaAdminSessionBean.class);
+    private static final Logger log = Logger.getLogger(RaAdminSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 

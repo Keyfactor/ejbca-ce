@@ -56,6 +56,7 @@ import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.log.Admin;
@@ -1914,9 +1915,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             publisherSession.addPublisher(admin, PUBLISHER_NAME, publisher);
             assertEquals(0, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
             final int publisherID = publisherSession.getPublisherId(admin, PUBLISHER_NAME);
-            publisherQueueSession.addQueueData(publisherID, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+            publisherQueueSession.addQueueData(publisherID, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
             assertEquals(1, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
-            publisherQueueSession.addQueueData(publisherID, PublisherQueueData.PUBLISH_TYPE_CERT, "XX", null, PublisherQueueData.STATUS_PENDING);
+            publisherQueueSession.addQueueData(publisherID, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
             assertEquals(2, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
             publisherQueueSession.removeQueueData(
                     ((PublisherQueueData) publisherQueueSession.getPendingEntriesForPublisher(publisherID).iterator().next()).getPk());
