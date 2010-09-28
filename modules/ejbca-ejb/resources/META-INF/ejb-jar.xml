@@ -29,7 +29,7 @@
             </env-entry>
         </session>
         <session>
-            <ejb-name>LocalAuthorizationSessionBean</ejb-name>
+            <ejb-name>AuthorizationSessionBean</ejb-name>
             <ejb-class>org.ejbca.core.ejb.authorization.AuthorizationSessionBean</ejb-class>
             <env-entry>
                 <description>Custom Available Access Rules, use ';' to separate multiple accessrules></description>
@@ -57,7 +57,7 @@
             </env-entry>
         </session>
         <session>
-            <ejb-name>LocalPublisherSessionBean</ejb-name>
+            <ejb-name>PublisherSessionBean</ejb-name>
             <ejb-class>org.ejbca.core.ejb.ca.publisher.PublisherSessionBean</ejb-class>
             <env-entry>
                 <env-entry-name>DataSource</env-entry-name>
