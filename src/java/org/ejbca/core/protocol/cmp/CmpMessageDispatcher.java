@@ -16,6 +16,12 @@ package org.ejbca.core.protocol.cmp;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ra.CertificateRequestSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.FailInfo;
@@ -61,9 +67,22 @@ public class CmpMessageDispatcher {
 	/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
 	private String extractUsernameComponent = null;
 	private Admin admin;
+	private final SignSession signSession;
+	private final UserAdminSession userAdminSession;
+	private final CAAdminSession caAdminSession;
+	private final RaAdminSession raAdminSession;
+	private final CertificateStoreSession certificateStoreSession;
+	private final CertificateRequestSession certificateRequestSession;
 	
-	public CmpMessageDispatcher(Admin adm) {
+	public CmpMessageDispatcher(Admin adm, CAAdminSession caAdminSession, CertificateStoreSession certificateStoreSession, CertificateRequestSession certificateRequestSession,
+			RaAdminSession raAdminSession, SignSession signSession, UserAdminSession userAdminSession) {
 		this.admin = adm;
+		this.signSession = signSession;
+		this.userAdminSession = userAdminSession;
+		this.caAdminSession = caAdminSession;
+		this.raAdminSession = raAdminSession;
+		this.certificateStoreSession = certificateStoreSession;
+		this.certificateRequestSession = certificateRequestSession;
 		// Install BouncyCastle provider
 		CryptoProviderTools.installBCProvider();
 		
@@ -108,11 +127,11 @@ public class CmpMessageDispatcher {
 			switch (tagno) {
 			case 0:
 				// 0 and 2 are both certificate requests
-				handler = new CrmfMessageHandler(this.admin);
+				handler = new CrmfMessageHandler(admin, caAdminSession, certificateStoreSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
 				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(this.admin);
+				handler = new CrmfMessageHandler(admin, caAdminSession, certificateStoreSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
 				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
 				break;
 			case 19:
@@ -127,7 +146,7 @@ public class CmpMessageDispatcher {
 				break;
 			case 11:
 				// Revocation request
-				handler = new RevocationMessageHandler(this.admin);
+				handler = new RevocationMessageHandler(admin, certificateStoreSession, userAdminSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			default:
