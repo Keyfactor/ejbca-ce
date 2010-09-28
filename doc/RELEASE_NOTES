@@ -5,6 +5,38 @@ method. Any custom classes implementing this interface need to be modified in tu
 
 Ant 1.7.1 or higher is required from this version on.
 
+EJBCA 3.11.0
+-----------
+This is a major release but with limited number of issues resolved. 
+The major goal with this release is to prepare for a seamless migration to EJBCA 4.0. 
+To make the migration path to EJBCA 4.0 a simple plug-in upgrade, EJBCA 3.11 introduces a few database changes
+needed to make the schema fully compatible and consistent across all supported databases.
+
+Upgrade to EJBCA 3.11 should be simple as usual, just follow the instructions in doc/UPGRADE.
+
+Noteworthy changes:
+- Upgrade database schema to be consistent across databases.
+
+Note:
+If you have a very large database (>1 million issued certificates) you can probably not run the database schema upgrade 
+scripts automatically, but you want better control of the changes. You can then run the upgrade SQL statements manually.
+You can find them under src/upgrade/310_311, with an individual sql file for your database.
+
+EJBCA 3.10.6
+-----------
+This is a maintenance release with one new feature.
+
+Changes:
+- ExtendedInformation, such as issuance revocation reason, can now be added when editing users with the WebService API.
+
+Read the full changelog for details.
+
+Note: The WebService WSLD has changed for adding ExtendedInformation in the UserDataVOWS object. 
+Old WS clients without this should still work and we have tested with older EJBCA clients. 
+However if you depend on the WS-API you must test in your environment before bringing this new version in production.
+ 
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.10.5
 -----------
 This is a maintenance release with 37 issues resolved, both features and bug fixes.   
@@ -130,6 +162,23 @@ Read the full changelog for details.
 
 This version removes the SafeNet Luna JCE class for use as a CA Token. You must now use the more generic, and well tested, PKCS#11 CA token type instead.
 The usage of PKCS11 CA tokens is well documented in the Admin Guide.
+ 
+For upgrade instructions, please see UPGRADE. 
+
+EJBCA 3.9.9
+-----------
+This is a maintenance release with one new feature and a few backported fixes from 3.10.
+
+Changes:
+- ExtendedInformation, such as issuance revocation reason, can now be added when editing users with the WebService API.
+- Added correct URIEncoding also for port 8080 in Tomcat's server.xml.
+- Fixed Issuer CA DN HTML escaping when revoking through Admin GUI.  
+
+Read the full changelog for details.
+
+Note: The WebService WSLD has changed for adding ExtendedInformation in the UserDataVOWS object. 
+Old WS clients without this should still work and we have tested with older EJBCA clients. 
+However if you depend on the WS-API you must test in your environment before bringing this new version in production.
  
 For upgrade instructions, please see UPGRADE. 
 

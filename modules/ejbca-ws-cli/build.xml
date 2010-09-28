@@ -127,6 +127,9 @@
         <antcall target="overwritegenerated">
            <param name="class" value="UserMatch"/>
     	</antcall>
+    	<antcall target="overwritegenerated">
+           <param name="class" value="ExtendedInformationWS"/>
+    	</antcall>
 		<delete dir="${build.dir}" />	<!-- Since we cannot specify the target java version we have to recompile -->
     </target>
 

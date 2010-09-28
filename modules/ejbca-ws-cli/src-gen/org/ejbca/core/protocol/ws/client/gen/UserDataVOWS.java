@@ -14,6 +14,7 @@ package org.ejbca.core.protocol.ws.client.gen;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.List;
 
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -37,7 +38,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  *</pre>
  * 
  * @author Philip Vendil
- * @version $Id: UserDataVOWS.java 8920 2010-04-21 09:58:36Z anatom $
+ * @version $Id: UserDataVOWS.java 9298 2010-06-28 09:46:44Z primelars $
  */
 public class UserDataVOWS implements Serializable{
 	
@@ -72,6 +73,7 @@ public class UserDataVOWS implements Serializable{
     private java.lang.String startTime = null;
     private java.lang.String endTime = null;
     private BigInteger certificateSerialNumber;
+    private List<ExtendedInformationWS> extendedInformation = null;
 
     /**
      * Emtpy constructor used by internally by web services
@@ -237,16 +239,16 @@ public class UserDataVOWS implements Serializable{
 	public int getType() {
 		int type = 1;
 		
-    	if(sendNotification) {
+    	if(sendNotification)
     		type = type | SecConst.USER_SENDNOTIFICATION;
-    	} else {
+    	else
     		type = type & (~SecConst.USER_SENDNOTIFICATION);
-    	}
-    	if(keyRecoverable) {
+    	
+    	if(keyRecoverable)
     		type = type | SecConst.USER_KEYRECOVERABLE;
-    	} else {
+    	else
     		type = type & (~SecConst.USER_KEYRECOVERABLE);
-    	}
+    			
 		return type;
 	}
 
@@ -384,6 +386,22 @@ public class UserDataVOWS implements Serializable{
 	 */
 	public void setCertificateSerialNumber(BigInteger sn) {
 		this.certificateSerialNumber = sn;
+	}
+
+	/**
+	 * @return optional extended information list
+	 */
+    public List<ExtendedInformationWS> getExtendedInformation() {
+		return extendedInformation;
+	}
+
+    /**
+     * Generic setter for extendedInformation. Set with values from ExtendedInformation such as:
+     * ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD)
+     * @param extendedInformation
+     */
+	public void setExtendedInformation(List<ExtendedInformationWS> extendedInformation) {
+		this.extendedInformation = extendedInformation;
 	}
 
 }
