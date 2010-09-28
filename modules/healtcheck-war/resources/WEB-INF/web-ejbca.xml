@@ -13,18 +13,6 @@
         <display-name>EJBCAHealthCheckServlet</display-name>
         <servlet-name>EJBCAHealthCheckServlet</servlet-name>
         <servlet-class>org.ejbca.ui.web.pub.HealthCheckServlet</servlet-class>
-
-        <init-param>
-            <description>Text string used to say that every thing is ok with this node.</description>
-            <param-name>OKMessage</param-name>
-            <param-value>ALLOK</param-value>
-        </init-param>
-        <init-param>
-            <description>Parameter saying if a errorcode 500 should be sent in case of error.</description>
-            <param-name>SendServerError</param-name>
-            <param-value>true</param-value>
-        </init-param>
-  
     </servlet>
 
     <servlet-mapping>

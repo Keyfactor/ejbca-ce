@@ -16,10 +16,6 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
     private static final Logger log = Logger.getLogger(WebOcspHealthCheckTest.class);
 
-    //private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
-    
-
-
     /**
      * Creates a new TestSignSession object.
      *
@@ -27,7 +23,7 @@ public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
      */
     public WebOcspHealthCheckTest(String name) {
         super(name);
-        httpPort = "8080"; //configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        httpPort = "8080"; 
         httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/ocsphealthcheck/extocsphealth";
     }
 

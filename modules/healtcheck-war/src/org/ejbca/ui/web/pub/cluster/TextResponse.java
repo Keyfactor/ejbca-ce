@@ -41,21 +41,17 @@ public class TextResponse implements IHealthResponse {
 	private static final String OK_MESSAGE = "ALLOK";
 	
 	private String okMessage = null;
-	private boolean sendServerError = false;
+	/* Parameter saying if a errorcode 500 should be sent in case of error. */
+	private final boolean sendServerError = true;
 	private String customErrorMessage = null;
-	
-	public void init(ServletConfig config) {
-		okMessage = config.getInitParameter("OKMessage");
-		if(okMessage == null){
-			okMessage = OK_MESSAGE;
-		}
 
-		if(config.getInitParameter("SendServerError") != null){
-		  sendServerError = config.getInitParameter("SendServerError").equalsIgnoreCase("TRUE");	
-		}
-		customErrorMessage = config.getInitParameter("CustomErrorMessage");
-
-	}
+    public void init(ServletConfig config) {
+        okMessage = config.getInitParameter("OKMessage");
+        if (okMessage == null) {
+            okMessage = OK_MESSAGE;
+        }
+        customErrorMessage = config.getInitParameter("CustomErrorMessage");
+    }
 
 	public void respond(String status, HttpServletResponse resp) {
 		resp.setContentType("text/plain");
