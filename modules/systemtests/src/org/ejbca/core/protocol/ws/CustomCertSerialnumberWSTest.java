@@ -15,6 +15,7 @@ import javax.ejb.CreateException;
 import javax.naming.NamingException;
 import javax.xml.namespace.QName;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -33,7 +34,6 @@ import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.util.InterfaceCache;
-import org.jboss.logging.Logger;
 
 /** This test requires that "Enable End Entity Profile Limitations" in syste configuration is turned of.
  * 
