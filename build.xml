@@ -286,6 +286,8 @@
 		<!-- Specify that we will use a specific WS implementatio -->
 		<mkdir dir="${eardd.src}/META-INF/services"/>
 		<copy todir="${eardd.src}/META-INF/services" file="src/deploy/ear/META-INF/services/javax.xml.soap.MetaFactory" flatten="true" failonerror="true"/>
+		<!-- This dir has to exist here -->
+		<mkdir dir="${hwtoken.class.dir}"/>
 		<!-- Build the EAR -->
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">

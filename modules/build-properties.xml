@@ -276,7 +276,8 @@
 			<include name="server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar" /> <!-- 5.x -->
 			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.x -->
 			<include name="common/lib/el-api.jar" /> <!-- 5.x -->
-			<!-- glassfish ? -->
+			<!-- glassfish -->
+			<include name="lib/jsf-impl.jar" /> <!-- 2.1.1 -->
 			<!-- weblogic ? -->
 			<!-- websphere ? -->
 		</fileset>
@@ -290,9 +291,9 @@
 		-->
 		<fileset dir="${appserver.home}">
 			<!-- jboss -->
-			<include name="common/lib/jsp-api.jar" /> <!-- 5.x -->
-			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.x -->
-			<include name="common/lib/el-api.jar" /> <!-- 5.x -->
+			<include name="common/lib/jsp-api.jar" /> <!-- 5.1.0 -->
+			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.1.0 -->
+			<include name="common/lib/el-api.jar" /> <!-- 5.1.0 -->
 			<!-- glassfish ? -->
 			<!-- weblogic ? -->
 			<!-- websphere ? -->
@@ -302,11 +303,14 @@
 	<path id="lib.jasper.classpath">
 		<fileset dir="${appserver.home}">
 			<!-- jboss -->
-			<include name="server/default/deploy/jbossweb.sar/jasper-jdt.jar" /> <!-- 5.x -->
-			<include name="server/default/deploy/jbossweb.sar/jbossweb.jar" /> <!-- 5.x -->
-			<include name="common/lib/servlet-api.jar" /> <!-- 5.x -->
-			<include name="lib/jboss-logging-spi.jar" /> <!-- 5.x -->
-			<!-- glassfish ? -->
+			<include name="server/default/deploy/jbossweb.sar/jasper-jdt.jar" /> <!-- 5.1.0 -->
+			<include name="server/default/deploy/jbossweb.sar/jbossweb.jar" /> <!-- 5.1.0 -->
+			<include name="common/lib/servlet-api.jar" /> <!-- 5.1.0 -->
+			<include name="lib/jboss-logging-spi.jar" /> <!-- 5.1.0 -->
+			<!-- glassfish -->
+			<include name="lib/appserv-rt.jar" /> <!-- 2.1.1 -->
+			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
+			<include name="lib/javaee.jar" /> <!-- 2.1.1 -->
 			<!-- weblogic ? -->
 			<!-- websphere ? -->
 		</fileset>
