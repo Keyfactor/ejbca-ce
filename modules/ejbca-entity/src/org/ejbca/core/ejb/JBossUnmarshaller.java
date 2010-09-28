@@ -32,7 +32,7 @@ public class JBossUnmarshaller {
 	 * Helper method for extracting objects Serialized on JBoss under J2EE.
 	 * 
 	 * The methods uses the fact that org.jboss.invocation.MarshalledValue is also a Serializable object
-	 * and and extracts the real object from the MarshalledValue if this is passes as a parameter.
+	 * and extracts the real object from the MarshalledValue if this is passed as a parameter.
 	 * Otherwise the object is returned in it's current form.
 	 * 
 	 * @param <T>  Class that we are trying to extract.
