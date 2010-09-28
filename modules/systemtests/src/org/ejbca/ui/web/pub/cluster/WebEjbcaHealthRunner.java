@@ -27,7 +27,7 @@ public class WebEjbcaHealthRunner implements Runnable {
 
 	public static final int NO_TESTS=100;
 	
-    private String httpReqPath = "http://localhost:8080/ejbca/publicweb/healthcheck/ejbcahealth";
+    private String httpReqPath; 
 
 	public WebEjbcaHealthRunner(String reqPath) {
 		httpReqPath = reqPath;

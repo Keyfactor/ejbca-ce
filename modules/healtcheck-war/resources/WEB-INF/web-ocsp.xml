@@ -12,18 +12,8 @@
     <servlet>
         <display-name>ExtOCSPHealthCheckServlet</display-name>
         <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
-        <servlet-class>org.ejbca.ui.web.pub.HealthCheckServlet</servlet-class>
-        <!-- Required parameters -->
-        <init-param>
-            <description>Class performing the healthcheck. Must implement the IHealthCheck interface.</description>
-            <param-name>HealthCheckClassPath</param-name>
-            <param-value>org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck</param-value>
-        </init-param>
-        <init-param>
-            <description>Class creating the response to the loadbalancer or monitor software. Must implement the IHealthResponse interface.</description>
-            <param-name>HealthResponseClassPath</param-name>
-            <param-value>org.ejbca.ui.web.pub.cluster.TextResponse</param-value>
-        </init-param>
+        <servlet-class>org.ejbca.ui.web.pub.OCSPHealthServlet</servlet-class>
+   
         <!-- TextResponse specific init parameters -->
         <init-param>
             <description>Text string used to say that every thing is ok with this node.</description>
@@ -35,6 +25,7 @@
             <param-name>SendServerError</param-name>
             <param-value>true</param-value>
         </init-param>
+       
         <!-- 
         <init-param>
             <description>Uncomment this parameter if you want a static error message instead of one generated´by the HealthChecker.</description>
@@ -60,13 +51,4 @@
         <auth-constraint />
     </security-constraint> 
 
-<!--
-    <ejb-local-ref id="EJBLocalRef_1">
-        <ejb-ref-name>ejb/CertificateStoreOnlyDataSessionLocal</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-    	<local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome</local-home>
-    	<local>org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal</local>
-        <ejb-link>CertificateStoreOnlyDataSession</ejb-link>
-    </ejb-local-ref>
--->
 </web-app>

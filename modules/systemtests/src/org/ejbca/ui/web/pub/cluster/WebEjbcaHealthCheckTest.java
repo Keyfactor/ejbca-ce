@@ -15,8 +15,6 @@ package org.ejbca.ui.web.pub.cluster;
 
 import java.net.URL;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
@@ -31,14 +29,10 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  *
  * @version $Id$
  */
-public class WebEjbcaHealthCheckTest extends TestCase {
+public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
     private static final Logger log = Logger.getLogger(WebEjbcaHealthCheckTest.class);
 
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
-    
-	protected final String httpPort;
-
-	private final String httpReqPath;
 
     /**
      * Creates a new TestSignSession object.
@@ -61,8 +55,8 @@ public class WebEjbcaHealthCheckTest extends TestCase {
      * Creates a number of threads that bombards the health check servlet 1000
      * times each
      */
-    public void test01EjbcaHealthHttp() throws Exception {
-        log.trace(">test01EjbcaHealthHttp()");
+    public void testEjbcaHealthHttp() throws Exception {
+        log.trace(">testEjbcaHealthHttp()");
 
         // Make a quick test first that it works at all before starting all
         // threads
@@ -72,32 +66,12 @@ public class WebEjbcaHealthCheckTest extends TestCase {
         WebResponse resp = con.getResponse(settings);
         assertEquals("Response code", 200, resp.getStatusCode());
         assertEquals("ALLOK", resp.getContentAsString());
-
         long before = System.currentTimeMillis();
-        Thread no1 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no1");
-        Thread no2 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no2");
-        Thread no3 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no3");
-        Thread no4 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no4");
-        Thread no5 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no5");
-        no1.start();
-        log.info("Started no1");
-        no2.start();
-        log.info("Started no2");
-        no3.start();
-        log.info("Started no3");
-        no4.start();
-        log.info("Started no4");
-        no5.start();
-        log.info("Started no5");
-        no1.join();
-        no2.join();
-        no3.join();
-        no4.join();
-        no5.join();
+        createThreads();
         long after = System.currentTimeMillis();
         long diff = after - before;
         log.info("All threads finished. Total time: " + diff + " ms");
-        log.trace("<test01EjbcaHealthHttp()");
+        log.trace("<testEjbcaHealthHttp()");
     }
 
 }

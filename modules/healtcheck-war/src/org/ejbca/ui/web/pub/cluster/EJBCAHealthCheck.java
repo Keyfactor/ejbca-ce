@@ -13,16 +13,13 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
-import javax.ejb.CreateException;
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.publisher.PublisherSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 
 /**
  * EJBCA Health Checker. 
@@ -47,27 +44,16 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 
 	private boolean checkPublishers = EjbcaConfiguration.getHealthCheckPublisherConnections();
 	
-	private CAAdminSession caAdminSession;
-	private PublisherSession publisherSession;
-	private CertificateStoreSession certificateStoreSession;
+	private CAAdminSessionLocal caAdminSession;
+	private PublisherSessionLocal publisherSession;
+	private CertificateStoreSessionLocal certificateStoreSession;
 
-	
-	public void init(ServletConfig config) {
-		super.init(config);
-		EjbLocalHelper ejb = new EjbLocalHelper();
-		try {
-			caAdminSession = ejb.getCAAdminSession();
-			publisherSession = ejb.getPublisherSession();
-			certificateStoreSession = ejb.getCertStoreSession();
-		} catch (CreateException e) {
-			throw new RuntimeException(e);
-		}
-		if(config.getInitParameter("CheckPublishers") != null){
-			log.warn("CheckPublishers servlet parameter has been dropped. Use \"healthcheck.publisherconnections\" property instead.");
-		}
-		log.debug("CheckPublishers: "+checkPublishers);
+	public EJBCAHealthCheck(CAAdminSessionLocal caAdminSession, PublisherSessionLocal publisherSession, CertificateStoreSessionLocal certificateStoreSession) {
+	    this.caAdminSession = caAdminSession;
+	    this.publisherSession = publisherSession;
+	    this.certificateStoreSession = certificateStoreSession;
 	}
-
+	
 	public String checkHealth(HttpServletRequest request) {
 		log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
 		String errormessage = "";
@@ -109,5 +95,9 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		log.debug("Checking publishers.");
 		return publisherSession.testAllConnections();
 	}
+
+    public void setCheckPublishers(boolean checkPublishers) {
+        this.checkPublishers = checkPublishers;
+    }
 	
 }

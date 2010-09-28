@@ -32,7 +32,7 @@ public interface IHealthCheck {
 	 * 
 	 *
 	 */
-	public void init(ServletConfig config);
+	public void init();
 	
 	/**
 	 * Method used to check the health of a specific application.

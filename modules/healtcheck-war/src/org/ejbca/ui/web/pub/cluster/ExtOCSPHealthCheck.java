@@ -16,8 +16,6 @@ package org.ejbca.ui.web.pub.cluster;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.ejb.EJB;
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -33,6 +31,8 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
  * * Database connection can be established.
  * * All OCSPSignTokens are active if not set as offline.
  * 
+ * TODO: System test this class.
+ * 
  * @author Philip Vendil
  * @version $Id$
  */
@@ -44,13 +44,12 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 	private boolean doSignTest = OcspConfiguration.getHealthCheckSignTest();
 	private boolean doValidityTest = OcspConfiguration.getHealthCheckCertificateValidity();
 
-	@EJB
 	private CertificateStoreOnlyDataSessionLocal certificateStoreOnlyDataSessionLocal;
 	
-	public void init(ServletConfig config) {
-		super.init(config);
-		log.debug("OCSPSignTest: '"+this.doSignTest+"'. OCSCertificateValidityTest: '"+this.doValidityTest+"'.");
+	public ExtOCSPHealthCheck(CertificateStoreOnlyDataSessionLocal certificateStoreOnlyDataSessionLocal) {
+	    this.certificateStoreOnlyDataSessionLocal = certificateStoreOnlyDataSessionLocal;
 	}
+	
 	
 	public String checkHealth(HttpServletRequest request) {
 		log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
@@ -80,21 +79,24 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 		return certificateStoreOnlyDataSessionLocal.getDatabaseStatus();
 	}
 
-	/**
-	 * Since the classes are deployed in a separate WAR, we cannot access the healtcheck directly.
-	 */
-	private String checkOCSPSignTokens() {
+    /**
+     * Since the classes are deployed in a separate WAR, we cannot access the
+     * healtcheck directly.
+     */
+    private String checkOCSPSignTokens() {
         try {
-            URL url = new URL("http://127.0.0.1:8080/ejbca/publicweb/status/ocsp?healthcheck=true&doSignTest=" + this.doSignTest + "&doValidityTest=" + this.doValidityTest);
+            URL url = new URL("http://127.0.0.1:8080/ejbca/publicweb/status/ocsp?healthcheck=true&doSignTest=" + this.doSignTest + "&doValidityTest="
+                    + this.doValidityTest);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             int responseCode = con.getResponseCode();
             String responseMessage = con.getResponseMessage();
             if (responseCode != 200) {
-                return "Unexpected result code " +responseCode+" for URL: '" + url + "'. Message was: '" + responseMessage+'\'';
+                return "Unexpected result code " + responseCode + " for URL: '" + url + "'. Message was: '" + responseMessage + '\'';
             }
-            return responseMessage;
-        } catch (Exception e){
-        	return "Network problems: '"+e.getMessage()+'\'';
+            return "";
+        } catch (Exception e) {
+            return "Network problems: '" + e.getMessage() + '\'';
         }
-	}
+    }
+
 }
