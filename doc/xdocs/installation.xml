@@ -313,7 +313,7 @@ Currently EJBCA works with Glassfish v2 with the Derby/JavaDB database. It can a
 <ol>
 <li>Set the environment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
   The variable must be available when working with EJBCA.</li> 
-<li>Edit conf/ejbca.properties, you should at least set appserver.type, appserver.home and logging.log4j.config.</li>
+<li>Edit conf/ejbca.properties, you should at least set appserver.home and logging.log4j.config.</li>
 <li>Edit conf/database.properties, you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database. Derby is supported for Glassfish, and default options for Derby should work.</li>
 <li>Edit conf/web.properties, you should set desired values and also the http/s ports (default 8080 and 8181) for your installation.</li>
 <li>Configuration of ejbcaws and xkms only have to be done in Glassfish v1.<br/>
