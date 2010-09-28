@@ -5,7 +5,9 @@
     </description>
     
 	<!-- those are the default values used within JBoss for easy startup -->
+	<!-- Should be auto-detected, configured or fail
 	<property name="appserver.type" value="jboss"/>
+	-->
 	<property name="ejbca.productionmode" value="true"/>
 	<property name="ca.tokentype" value="soft"/>
 	<property name="ca.tokenproperties" value=""/>

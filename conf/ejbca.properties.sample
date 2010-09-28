@@ -8,8 +8,8 @@
 # and customize at will.
 #
 
-# Which application server is used?
-# Possible values: jboss, glassfish, weblogic, websphere
+# Which application server is used? Normally this is auto-detected from 'appserver.home' and should not be configured. 
+# Possible values: jboss, glassfish (, geronimo, weblogic, websphere)
 # Default jboss
 #appserver.type=jboss
 

@@ -59,6 +59,17 @@
         <contains string="${jboss.home}" substring="JBOSS_HOME"/>
     </condition>
 	
+	<!-- Auto-detect supported application server type (also still present in ../propertiesAndPaths.xmli) -->
+	<echo message="appserver.home: ${appserver.home}"/>
+	<available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.type" value="jboss"/>
+	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
+	<!-- Not yet tested:
+		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
+		<available file="${appserver.home}/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
+	-->
+	<fail message="'appserver.type' could not be detected and is not configured. (Normally you should not have to configure this.)" unless="appserver.type"/>
+	<echo message="appserver.type: ${appserver.type}"/>
+	
     <property name="ejbca.dist.path" location="${ejbca.home}/dist" />
     <property name="ocsp.dist.path" location="${ejbca.home}/ocsp-dist" />
     <!-- Define the different modules -->

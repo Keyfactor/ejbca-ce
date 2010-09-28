@@ -73,6 +73,15 @@
     	    </or>
     	</condition>
     </fail>
+
+	<!-- Auto-detect supported application server type (also present in modules/build-properties.xml) -->
+	<available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.type" value="jboss"/>
+	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
+	<!-- Not yet tested:
+		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
+		<available file="${appserver.home}/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
+	-->
+	<fail message="'appserver.type' could not be detected and is not configured. (Normally you should not have to configure this.)" unless="appserver.type"/>
 	
     <!-- Default to 16 -->    
     <property name="java.ver" value="16" />
