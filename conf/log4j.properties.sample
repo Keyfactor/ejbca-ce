@@ -1,6 +1,6 @@
 # A suitable example log4j.properties file that can be used from ejbca.properties
 # to configure logging on application server that does not use Log4J by default.
-# JBoss already uses Log4J, but for Glassfish, Weblogic, Oracle etc it is good
+# JBoss already uses Log4J, but for Glassfish, Weblogic etc it is good
 # to be able to configure where EJBCA logging will go.
  
 log4j.rootLogger=debug, R

@@ -9,13 +9,13 @@
 #
 
 # Which application server is used?
-# Possible values: jboss, glassfish, weblogic, oracle, websphere
+# Possible values: jboss, glassfish, weblogic, websphere
 # Default jboss
 #appserver.type=jboss
 
 # Application server home directory used during development. The path can not end with a slash or backslash.
 # Default: $APPSRV_HOME
-#appserver.home=/home/jboss/jboss-4.2.3.GA
+#appserver.home=/home/jboss/jboss-5.1.0.GA
 #appserver.home=/home/ibm/WebSphere/Appserver
 #appserver.home=${env.APPSRV_HOME}
 
