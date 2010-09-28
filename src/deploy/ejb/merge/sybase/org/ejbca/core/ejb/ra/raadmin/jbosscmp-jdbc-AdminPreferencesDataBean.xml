@@ -1,8 +1,0 @@
-<cmp-field>
-  <field-name>id</field-name>
-</cmp-field>
-<cmp-field>
-  <field-name>data</field-name>
-  <jdbc-type>BLOB</jdbc-type>
-  <sql-type>IMAGE</sql-type>
-</cmp-field>

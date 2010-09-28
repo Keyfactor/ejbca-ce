@@ -1,8 +1,0 @@
-<cmp-field>
-  <field-name>id</field-name>
-</cmp-field>
-<cmp-field>
-  <field-name>data</field-name>
-  <jdbc-type>VARBINARY</jdbc-type>
-  <sql-type>BLOB</sql-type>
-</cmp-field>
