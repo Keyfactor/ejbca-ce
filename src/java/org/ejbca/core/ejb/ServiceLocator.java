@@ -63,37 +63,6 @@ public class ServiceLocator {
     }
 
     /**
-     * return the ejb local home.
-     * clients need to cast to the type of EJBHome they desire
-     * @param jndiHomeName the jndi home name matching the requested local home.
-     * @return the Local EJB Home corresponding to the home name
-     */
-    public EJBLocalHome getLocalHome(String jndiHomeName) throws ServiceLocatorException {
-        EJBLocalHome home = (EJBLocalHome)ejbHomes.get(jndiHomeName);
-        if (home == null) {
-            home = (EJBLocalHome)getObject(jndiHomeName);
-            ejbHomes.put(jndiHomeName, home);
-        }
-        return home;
-    }
-
-    /**
-     * return the ejb remote home.
-     * clients need to cast to the type of EJBHome they desire
-     * @param jndiHomeName the jndi home name matching the requested remote home.
-     * @return the Local EJB Home corresponding to the home name
-     */
-    public EJBHome getRemoteHome(String jndiHomeName, Class className) throws ServiceLocatorException {
-        EJBHome home = (EJBHome)ejbHomes.get(className);
-        if (home == null) {
-            Object objref = getObject(jndiHomeName);
-            home = (EJBHome) PortableRemoteObject.narrow(objref, className);
-            ejbHomes.put(className, home);
-        }
-        return home;
-    }
-
-    /**
      * return the datasource object corresponding the the env entry name
      * @return the DataSource corresponding to the env entry name parameter
      * @throws ServiceLocatorException if the lookup fails
