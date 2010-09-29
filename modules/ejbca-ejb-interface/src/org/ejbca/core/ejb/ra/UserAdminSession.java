@@ -15,8 +15,6 @@ package org.ejbca.core.ejb.ra;
 import java.util.List;
 
 import javax.ejb.ObjectNotFoundException;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.persistence.PersistenceException;
 
 import org.ejbca.core.model.ra.UserDataVO;
@@ -70,8 +68,7 @@ public interface UserAdminSession {
             java.lang.String subjectaltname, java.lang.String email, boolean clearpwd, int endentityprofileid, int certificateprofileid, int type,
             int tokentype, int hardwaretokenissuerid, int caid) throws javax.persistence.PersistenceException,
             org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException,
-            java.rmi.RemoteException;
+            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
 
     /**
      * addUserFromWS is called from EjbcaWS if profile specifies merge data from
@@ -274,8 +271,7 @@ public interface UserAdminSession {
      *             if the user could not be removed
      */
     public void deleteUser(org.ejbca.core.model.log.Admin admin, java.lang.String username)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.NotFoundException, javax.ejb.RemoveException,
-            java.rmi.RemoteException;
+            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.NotFoundException, javax.ejb.RemoveException;
 
     /**
      * Resets the remaining failed login attempts counter to the user's max
