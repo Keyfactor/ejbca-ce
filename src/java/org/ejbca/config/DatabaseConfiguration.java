@@ -13,14 +13,20 @@
 
 package org.ejbca.config;
 
+/**
+ * Parses embedded or overridden database.properties for info.
+ * @version $Id$
+ */
 public class DatabaseConfiguration {
 
 	public static final String CONFIG_DATASOURCENAME             = "datasource.jndi-name";
 	public static final String CONFIG_DATASOURCENAMEPREFIX       = "datasource.jndi-name-prefix";
-	
+
+	public static String getDataSourceJndiNamePrefix(){
+		return ConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX, "java:/");
+	}
+
 	public static String getFullDataSourceJndiName(){
-		String fullname = ConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX, "java:/") + 
-						  ConfigurationHolder.getString(CONFIG_DATASOURCENAME, "EjbcaDS");
-		return fullname;
+		return getDataSourceJndiNamePrefix() + ConfigurationHolder.getString(CONFIG_DATASOURCENAME, "EjbcaDS");
 	}
 }
