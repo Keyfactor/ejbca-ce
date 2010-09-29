@@ -358,7 +358,7 @@ public class CertificateData implements Serializable {
      * @return updateTime
      */
 	@Column(name="updateTime", nullable=false)
-    public long getUpdateTime() { return updateTime; }
+    public Long getUpdateTime() { return updateTime; }
 
     /**
      * The time this row was last updated.
@@ -716,7 +716,9 @@ public class CertificateData implements Serializable {
         }
         // to save the repeating if-statement in the above closure not to add ', ' as the first characters in the StringBuffer we remove the two chars here :)
         sb.delete(0, ", ".length());
-        Query query = entityManager.createQuery("SELECT DISTINCT a.base64Cert FROM CertificateData a WHERE a.issuerDN=:issuerDN AND serialNumber IN (" + sb.toString() + ")");
+        // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements because comparisons are not supported for that type.
+        // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
+        Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE a.issuerDN=:issuerDN AND serialNumber IN (" + sb.toString() + ")");
 		query.setParameter("issuerDN", issuerDN);
         List<String> base64CertificateList = query.getResultList();
         for (String base64Certificate : base64CertificateList) {
