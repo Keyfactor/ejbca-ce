@@ -20,8 +20,10 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -90,6 +92,7 @@ public class PublisherTest extends TestCase {
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
 
     /**
@@ -272,7 +275,10 @@ public class PublisherTest extends TestCase {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ExternalOCSPPublisher.class.getName());
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-            publisher.setPropertyData("dataSource java:/EjbcaDS");
+            String jndiName = configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
+            	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
+            log.debug("jndiName=" + jndiName);
+            publisher.setPropertyData("dataSource " + jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
             publisherSession.addPublisher(admin, "TESTEXTOCSP", publisher);
             ret = true;
@@ -302,7 +308,10 @@ public class PublisherTest extends TestCase {
 		try {
 			ExternalOCSPPublisher publisher = new ExternalOCSPPublisher();
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-            publisher.setDataSource("java:/EjbcaDS");
+            String jndiName = configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
+            	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
+            log.debug("jndiName=" + jndiName);
+            publisher.setDataSource(jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
             publisherSession.addPublisher(admin, "TESTEXTOCSP2", publisher);
             ret = true;
