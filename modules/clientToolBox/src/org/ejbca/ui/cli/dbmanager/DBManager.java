@@ -38,10 +38,8 @@ public class DBManager extends ClientToolBox {
 	@Override
 	public void execute(final String[] args) {
 		if (args.length<2) {
-			System.out.println(args[0]+" <config file directory> <command>");
-			if ( args.length<1 ) {
-				System.out.println("Give just the config file directory to get available commands for this database");
-			}
+			System.out.println(args[0]+" <EJBCA home> <command>");
+			System.out.println("Give just the <EJBCA home> to get available commands for this database");
 			return;
 		}
 		try {
