@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ServiceLocatorException;
 
@@ -91,9 +92,10 @@ public class JDBCUtil {
      * @return the requested datasource
      * @throws ServiceLocatorException if there is an error locating the datasource
      */
-    public static DataSource getDataSource(String dsName)
+    public static DataSource getDataSource()
             throws ServiceLocatorException {
-        String dataSourceName = ServiceLocator.getInstance().getString(dsName);
+        //String dataSourceName = ServiceLocator.getInstance().getString(dsName);
+    	String dataSourceName = DatabaseConfiguration.getFullDataSourceJndiName();
         return ServiceLocator.getInstance().getDataSource(dataSourceName);
     }
 
@@ -105,9 +107,9 @@ public class JDBCUtil {
      * @throws ServiceLocatorException if it cannot get the datasource connection
      * @see #getDataSource(java.lang.String)
      */
-    public static Connection getDBConnection(String dsName) throws ServiceLocatorException {
+    public static Connection getDBConnection() throws ServiceLocatorException {
         try {
-            return getDataSource(dsName).getConnection();
+            return getDataSource().getConnection();
         } catch (SQLException e) {
             throw new ServiceLocatorException("Error while getting db connection", e);
         }

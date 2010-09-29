@@ -32,6 +32,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -67,11 +68,6 @@ import org.ejbca.core.model.log.LogConstants;
  * 
  * @ejb.env-entry name="DataSource" type="java.lang.String"
  *                value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
- * @ejb.env-entry description=
- *                "Custom Available Access Rules, use ';' to separate multiple accessrules"
- *                name="CustomAvailableAccessRules" type="java.lang.String"
- *                value=""
  * 
  * @ejb.ejb-external-ref description="The log session bean" view-type="local"
  *                       ref-name="ejb/LogSessionLocal" type="Session"
@@ -156,11 +152,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     public void ejbCreate() throws CreateException {
         log.trace(">ejbCreate()");
         ServiceLocator locator = ServiceLocator.getInstance();
-        // TODO: Read from property file via commons config
-        String customrules = locator.getString("java:comp/env/CustomAvailableAccessRules");
-        if (customrules == null) {
-            customrules = "";
-        }
+        String customrules = ConfigurationHolder.getString("ejbca.customavailableaccessaules", "");
         customaccessrules = StringUtils.split(customrules, ';');
         log.trace("<ejbCreate()");
     }

@@ -45,6 +45,11 @@
 # Default: false
 #allow.external-dynamic.configuration=false
 
+# Custom Available Access Rules. Use ';' to separate multiple accessrules
+# Available values are the Access Rules strings in Advanced mode of 'Access Rules' in 'Edit Administrator Privileges'
+# Default: ""
+#ejbca.customavailableaccessrules=''
+
 # ------------ Administrative CA configuration ---------------------
 # This installation will create a first administrative CA. This CA will be used to create the first
 # superadministrator and for the SSL server certificate of administrative web server.
@@ -99,6 +104,11 @@
 # Available algorithms are:
 # SHA1WithRSA, SHA1WithECDSA, SHA256WithRSA, SHA256WithECDSA.
 #ca.signaturealgorithm=SHA1WithRSA
+
+# Default Random Number Generator algorithm.
+# Available algorithms are:
+# SHA1PRNG
+#ca.rngalgorithm=SHA1PRNG
 
 # The validity in days for the administrative CA, only digits.
 #ca.validity=3650

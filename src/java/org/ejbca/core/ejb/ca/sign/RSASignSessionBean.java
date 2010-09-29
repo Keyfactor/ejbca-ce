@@ -106,13 +106,6 @@ import org.ejbca.util.keystore.KeyTools;
  *
  * @weblogic.enable-call-by-reference True
  *
- * @ejb.env-entry description="Name of PRNG algorithm used for random source - refer to Appendix A in the
- * Java Cryptography Architecture API Specification And Reference for
- * information about standard PRNG algorithm names"
- *   name="randomAlgorithm"
- *   type="java.lang.String"
- *   value="SHA1PRNG"
- *
  * @ejb.ejb-external-ref description="The CRL Create bean"
  *   view-type="local"
  *   ref-name="ejb/CreateCRLSessionLocal"
@@ -222,11 +215,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // Set up the serial number generator for Certificate Serial numbers
             // The serial number generator is a Singleton, so it can be initialized here and 
             // used by X509CA
-        	// TODO: Read this from a property file via Commons Config
-            String randomAlgorithm = ServiceLocator.getInstance().getString("java:comp/env/randomAlgorithm");
-            if (randomAlgorithm != null) {
-                SernoGenerator.instance().setAlgorithm(randomAlgorithm);
-            }
+        	String randomAlgorithm = EjbcaConfiguration.getRNGAlgorithm();
             SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());            	
             if ( isUniqueCertificateSerialNumberIndex==null ) {
             	isUniqueCertificateSerialNumberIndex = new Boolean( testUniqueCertificateSerialNumberIndex() );
