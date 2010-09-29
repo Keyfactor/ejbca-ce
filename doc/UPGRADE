@@ -29,13 +29,19 @@ Support for ProtectedLog that was deprecated in EJBCA 3.10.0 has been dropped. I
 export the logs before upgrading. If you don't have any data in these tables, the indexes and tables can
 be dropped.
 
+EJBCA 4.0 requires an application server supporting JEE5. For JBoss this means at least JBoss 5.1.x. 
+
+*Note for on-line upgrades*
+If you were running an earlier version of EJBCA on an older JBoss (4.2.3 was recommended for EJBCA 3.x), 
+*and* you need to do an on-line upgrade (upgrade one cluster node while another is running) you should 
+first upgrade your cluster to to running on JBoss 5.1.x before upgrading any of the cluster nodes to EJBCA 4. 
+
 The values of "customAvailableAccessRules" and "RNGAlgorithm" (Random Number Generator) are now configurable 
 from conf/ejbca.properties instead of being read through the ENC.
 
-
 From EJBCA 3.10.x to EJBCA 3.11.x
 -------------------------------
-
+TODO:
 Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
 
 From EJBCA 3.10.x to EJBCA 3.10.x
