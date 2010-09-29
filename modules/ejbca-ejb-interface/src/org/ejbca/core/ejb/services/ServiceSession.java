@@ -137,24 +137,6 @@ public interface ServiceSession {
      *             if a communication or other error occurs.
      */
     public void unload();
-
-    /**
-     * Adds a timer to the bean, and cancels all existing timeouts for this id.
-     * 
-     * @param id
-     *            the id of the timer
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void addTimer(long interval, java.lang.Integer id);
-
-    /**
-     * cancels a timer with the given Id
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    public void cancelTimer(java.lang.Integer id);
     
     /**
      * Updates service configuration, but does not re-set the timer

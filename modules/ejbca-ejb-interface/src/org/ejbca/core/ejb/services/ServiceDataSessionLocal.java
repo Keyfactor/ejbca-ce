@@ -46,7 +46,13 @@ public interface ServiceDataSessionLocal extends ServiceDataSession {
      * @param serviceConfiguration
      */
     void addServiceData(Integer id, String name, ServiceConfiguration serviceConfiguration);
-    
+
+    /**
+     * Update the named ServiceData entity with a new ServiceConfiguration.
+     * @return true if the ServiceData exists and was updated.
+     */
+    boolean updateServiceConfiguration(String name, ServiceConfiguration serviceConfiguration);
+
     /**
      * Removes given parameter from persistence.
      * 
