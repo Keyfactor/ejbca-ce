@@ -81,123 +81,6 @@ import org.ejbca.util.CertTools;
  * Stores data used by web server clients. Uses JNDI name for datasource as
  * defined in env 'Datasource' in ejb-jar.xml.
  * 
- * @ejb.bean description="Session bean handling hard token data, both about hard tokens and hard token issuers."
- *           display-name="HardTokenSessionSB" name="HardTokenSession"
- *           jndi-name="HardTokenSession"
- *           local-jndi-name="HardTokenSessionLocal" view-type="both"
- *           type="Stateless" transaction-type="Container"
- * 
- * @ejb.transaction type="Supports"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * @ejb.env-entry description="The JDBC datasource to be used" name="DataSource"
- *                type="java.lang.String"
- *                value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
- * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
- *           local
- *           -class="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
- *           remote-class="org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
- *                remote
- *                -class="org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote"
- * 
- * @ejb.ejb-external-ref description="The hard token profile data entity bean"
- *                       view-type="local"
- *                       ref-name="ejb/HardTokenProfileDataLocal" type="Entity"
- *                       home=
- *                       "org.ejbca.core.ejb.hardtoken.HardTokenProfileDataLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.hardtoken.HardTokenProfileDataLocal"
- *                       link="HardTokenProfileData"
- * 
- * @ejb.ejb-external-ref description="The hard token issuers data entity bean"
- *                       view-type="local"
- *                       ref-name="ejb/HardTokenIssuerDataLocal" type="Entity"
- *                       home=
- *                       "org.ejbca.core.ejb.hardtoken.HardTokenIssuerDataLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.hardtoken.HardTokenIssuerDataLocal"
- *                       link="HardTokenIssuerData"
- * 
- * @ejb.ejb-external-ref description="The hard token data entity bean"
- *                       view-type="local" ref-name="ejb/HardTokenDataLocal"
- *                       type="Entity"
- *                       home="org.ejbca.core.ejb.hardtoken.HardTokenDataLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.hardtoken.HardTokenDataLocal"
- *                       link="HardTokenData"
- * 
- * @ejb.ejb-external-ref description="The hard token property data entity bean"
- *                       view-type="local"
- *                       ref-name="ejb/HardTokenPropertyDataLocal" type="Entity"
- *                       home=
- *                       "org.ejbca.core.ejb.hardtoken.HardTokenPropertyLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.hardtoken.HardTokenPropertyLocal"
- *                       link="HardTokenPropertyData"
- * 
- * @ejb.ejb-external-ref 
- *                       description="The hard token to certificate map data entity bean"
- *                       view-type="local"
- *                       ref-name="ejb/HardTokenCertificateMapLocal"
- *                       type="Entity"
- *                       home="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMapLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.hardtoken.HardTokenCertificateMapLocal"
- *                       link="HardTokenCertificateMap"
- * 
- * @ejb.ejb-external-ref description="The Authorization session bean"
- *                       view-type="local"
- *                       ref-name="ejb/AuthorizationSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *                       link="AuthorizationSession"
- * 
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *                       view-type="local" ref-name="ejb/CAAdminSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *                       link="CAAdminSession"
- * 
- * @ejb.ejb-external-ref description="The Certificate Store session bean"
- *                       view-type="local"
- *                       ref-name="ejb/CertificateStoreSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *                       link="CertificateStoreSession"
- * 
- * @ejb.ejb-external-ref description="The Sign Session Bean" view-type="local"
- *                       ref-name="ejb/RSASignSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *                       business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *                       link="RSASignSession"
- * 
- * @ejb.ejb-external-ref description="The RA Session Bean" view-type="local"
- *                       ref-name="ejb/RaAdminSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *                       link="RaAdminSession"
- * 
- * @ejb.ejb-external-ref description="The log session bean" view-type="local"
- *                       ref-name="ejb/LogSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *                       link="LogSession"
- * 
- * @jonas.bean ejb-name="HardTokenSession"
- * 
  * @version $Id: LocalHardTokenSessionBean.java 9666 2010-08-18 11:22:12Z
  *          mikekushner $
  */
@@ -235,7 +118,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *             if hard token already exists.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
@@ -252,8 +134,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @throws HardTokenProfileExistsException
      *             if hard token already exists.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addHardTokenProfile(Admin admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
@@ -278,8 +158,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     /**
      * Updates hard token profile data
      * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void changeHardTokenProfile(Admin admin, String name, HardTokenProfile profile) {
@@ -307,8 +185,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *             if hard token already exists.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void cloneHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException {
@@ -340,8 +216,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeHardTokenProfile(Admin admin, String name) {
@@ -367,8 +241,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @throws HardTokenProfileExistsException
      *             if hard token already exists.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void renameHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException {
@@ -403,7 +275,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * certificate profiles and caids.
      * 
      * @return Collection of id:s (Integer)
-     * @ejb.interface-method view-type="both"
      */
     public Collection<Integer> getAuthorizedHardTokenProfileIds(Admin admin) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
@@ -430,8 +301,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name
      * (String).
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public HashMap<Integer, String> getHardTokenProfileIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
@@ -446,8 +315,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 
     /**
      * Retrives a named hard token profile.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public HardTokenProfile getHardTokenProfile(Admin admin, String name) {
         HardTokenProfile returnval = null;
@@ -460,8 +327,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
 
     /**
      * Finds a hard token profile by id.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public HardTokenProfile getHardTokenProfile(Admin admin, int id) {
         HardTokenProfile returnval = null;
@@ -475,8 +340,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     /**
      * Help method used by hard token profile proxys to indicate if it is time
      * to update it's profile data.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public int getHardTokenProfileUpdateCount(Admin admin, int hardtokenprofileid) {
         int returnval = 0;
@@ -491,7 +354,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Returns a hard token profile id, given it's hard token profile name
      * 
      * @return the id or 0 if hardtokenprofile cannot be found.
-     * @ejb.interface-method view-type="both"
      */
     public int getHardTokenProfileId(Admin admin, String name) {
         int returnval = 0;
@@ -506,7 +368,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Returns a hard token profile name given its id.
      * 
      * @return the name or null if id doesn't exist
-     * @ejb.interface-method view-type="both"
      */
     public String getHardTokenProfileName(Admin admin, int id) {
         if (log.isTraceEnabled()) {
@@ -527,8 +388,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return false if hard token issuer already exists.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean addHardTokenIssuer(Admin admin, String alias, int admingroupid, HardTokenIssuer issuerdata) {
@@ -562,8 +421,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return false if alias doesn't exists
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean changeHardTokenIssuer(Admin admin, String alias, HardTokenIssuer issuerdata) {
@@ -593,8 +450,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return false if the new alias or certificatesn already exists.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, int admingroupid) {
@@ -629,8 +484,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeHardTokenIssuer(Admin admin, String alias) {
@@ -657,8 +510,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return false if new alias or certificatesn already exists
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean renameHardTokenIssuer(Admin admin, String oldalias, String newalias, int newadmingroupid) {
@@ -697,7 +548,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            alias of hardtoken issuer.
      * @return true if administrator is authorized to issue hardtoken with given
      *         alias.
-     * @ejb.interface-method view-type="both"
      */
     public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias) {
         if (log.isTraceEnabled()) {
@@ -721,7 +571,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Returns the available hard token issuers authorized to the administrator.
      * 
      * @return A collection of available HardTokenIssuerData.
-     * @ejb.interface-method view-type="both"
      */
     public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(Admin admin) {
         log.trace(">getHardTokenIssuerDatas()");
@@ -745,7 +594,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * administrator.
      * 
      * @return A collection of available hard token issuer aliases.
-     * @ejb.interface-method view-type="both"
      */
     public Collection<String> getHardTokenIssuerAliases(Admin admin) {
         log.trace(">getHardTokenIssuerAliases()");
@@ -768,7 +616,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Returns the available hard token issuers authorized to the administrator.
      * 
      * @return A treemap of available hard token issuers.
-     * @ejb.interface-method view-type="both"
      */
     public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(Admin admin) {
         log.trace(">getHardTokenIssuers()");
@@ -792,7 +639,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @return the hard token issuer data or null if hard token issuer doesn't
      *         exists.
-     * @ejb.interface-method view-type="both"
      */
     public HardTokenIssuerData getHardTokenIssuerData(Admin admin, String alias) {
         if (log.isTraceEnabled()) {
@@ -812,7 +658,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @return the hard token issuer data or null if hard token issuer doesn't
      *         exists.
-     * @ejb.interface-method view-type="both"
      */
     public HardTokenIssuerData getHardTokenIssuerData(Admin admin, int id) {
         if (log.isTraceEnabled()) {
@@ -831,7 +676,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Returns the number of available hard token issuer.
      * 
      * @return the number of available hard token issuer.
-     * @ejb.interface-method view-type="both"
      */
     public int getNumberOfHardTokenIssuers(Admin admin) {
         log.trace(">getNumberOfHardTokenIssuers()");
@@ -844,7 +688,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Returns a hard token issuer id given its alias.
      * 
      * @return id number of hard token issuer.
-     * @ejb.interface-method view-type="both"
      */
     public int getHardTokenIssuerId(Admin admin, String alias) {
         if (log.isTraceEnabled()) {
@@ -863,7 +706,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Returns a hard token issuer alias given its id.
      * 
      * @return the alias or null if id noesnt exists
-     * @ejb.interface-method view-type="both"
      */
     public String getHardTokenIssuerAlias(Admin admin, int id) {
         if (log.isTraceEnabled()) {
@@ -892,7 +734,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @throws UnavailableTokenException
      *             if users tokentype isn't among hard token issuers available
      *             tokentypes.
-     * @ejb.interface-method view-type="both"
      */
     public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException {
         if (log.isTraceEnabled()) {
@@ -933,8 +774,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @throws HardTokenExistsException
      *             if tokensn already exists in databas.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata,
@@ -988,8 +827,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @throws HardTokenDoesntExistsException
      *             if tokensn doesn't exists in databas.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void changeHardToken(Admin admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException {
@@ -1029,8 +866,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *             if a communication or other error occurs.
      * @throws HardTokenDoesntExistsException
      *             if tokensn doesn't exists in databas.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeHardToken(Admin admin, String tokensn) throws HardTokenDoesntExistsException {
@@ -1074,7 +909,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            The serialnumber of token.
      * 
      * @return true if it exists or false otherwise.
-     * @ejb.interface-method view-type="both"
      */
     public boolean existsHardToken(Admin admin, String tokensn) {
         if (log.isTraceEnabled()) {
@@ -1099,7 +933,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @return the hard token data or NULL if tokensn doesnt exists in database.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public HardTokenData getHardToken(Admin admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
@@ -1154,7 +987,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            The username owning the tokens.
      * 
      * @return a Collection of all hard token user data.
-     * @ejb.interface-method view-type="both"
      */
     public Collection<HardTokenData> getHardTokens(Admin admin, String username, boolean includePUK) {
         if (log.isTraceEnabled()) {
@@ -1209,7 +1041,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @param searchpattern
      *            of begining of hard token sn
      * @return a Collection of username(String) matching the search string
-     * @ejb.interface-method view-type="both"
      */
     public Collection<String> matchHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
@@ -1228,8 +1059,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addHardTokenCertificateMapping(Admin admin, String tokensn, Certificate certificate) {
@@ -1265,8 +1094,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * @param certificate
      *            the certificate to map to.
      * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeHardTokenCertificateMapping(Admin admin, Certificate certificate) {
@@ -1324,7 +1151,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            The serialnumber of token.
      * 
      * @return a collection of X509Certificates
-     * @ejb.interface-method view-type="both"
      */
     public Collection<Certificate> findCertificatesInHardToken(Admin admin, String tokensn) {
         if (log.isTraceEnabled()) {
@@ -1359,7 +1185,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            the issuerdn of the certificate.
      * 
      * @return the serialnumber or null if no tokensn could be found.
-     * @ejb.interface-method view-type="both"
      */
     public String findHardTokenByCertificateSNIssuerDN(Admin admin, BigInteger certificatesn, String issuerdn) {
         if (log.isTraceEnabled()) {
@@ -1388,8 +1213,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            username of user token was generated for.
      * @param significantissuerdn
      *            indicates which CA the hard token should belong to.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void tokenGenerated(Admin admin, String tokensn, String username, String significantissuerdn) {
@@ -1414,8 +1237,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            username of user token was generated for.
      * @param significantissuerdn
      *            indicates which CA the hard token should belong to.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void errorWhenGeneratingToken(Admin admin, String tokensn, String username, String significantissuerdn) {
@@ -1436,7 +1257,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            the certificateprofileid to search for.
      * @return true if certificateprofileid exists in any of the hard token
      *         profiles.
-     * @ejb.interface-method view-type="both"
      */
     public boolean existsCertificateProfileInHardTokenProfiles(Admin admin, int id) {
         HardTokenProfile profile = null;
@@ -1464,7 +1284,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      *            the hard token profileid to search for.
      * @return true if hard token profileid exists in any of the hard token
      *         issuers.
-     * @ejb.interface-method view-type="both"
      */
     public boolean existsHardTokenProfileInHardTokenIssuer(Admin admin, int id) {
         HardTokenIssuer issuer = null;

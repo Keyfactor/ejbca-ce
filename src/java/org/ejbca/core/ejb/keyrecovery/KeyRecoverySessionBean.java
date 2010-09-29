@@ -59,99 +59,6 @@ import org.ejbca.util.CertTools;
  *
  * @version $Id$
  *
- * @ejb.bean
- *   display-name="Stores key recovery data"
- *   name="KeyRecoverySession"
- *   jndi-name="KeyRecoverySession"
- *   local-jndi-name="KeyRecoverySessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @ejb.transaction type="Required"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry description="JDBC datasource to be used"
- * name="DataSource"
- * type="java.lang.String"
- * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.ejb-external-ref
- *   description="The key recovery data entity bean"
- *   view-type="local"
- *   ref-name="ejb/KeyRecoveryDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataLocalHome"
- *   business="org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataLocal"
- *   link="KeyRecoveryData"
- *
- * @ejb.ejb-external-ref
- *   description="The Sign Session Bean"
- *   view-type="local"
- *   ref-name="ejb/RSASignSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *   link="RSASignSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate Store session bean"
- *   view-type="local"
- *   ref-name="ejb/CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *   
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *   
- * @ejb.ejb-external-ref description="The Approval Session Bean"
- *   view-type="local"
- *   ref-name="ejb/ApprovalSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
- *   business="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
- *   link="ApprovalSession"
- *   
- * @ejb.ejb-external-ref
- *   description="The Authorization session bean"
- *   view-type="local"
- *   ref-name="ejb/AuthorizationSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *   link="AuthorizationSession"
- *
- * @ejb.ejb-external-ref
- *   description="The log session bean"
- *   view-type="local"
- *   ref-name="ejb/LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
- *   remote-class="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote"
- *
- * @jonas.bean
- *   ejb-name="KeyRecoverySession"
  *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "KeyRecoverySessionRemote")
@@ -248,8 +155,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param keypair the actual keypair to save.
      *
      * @return false if the certificates keyrecovery data already exists.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public boolean addKeyRecoveryData(Admin admin, Certificate certificate, String username, KeyPair keypair) {
     	if (log.isTraceEnabled()) {
@@ -287,8 +192,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @return false if certificates keyrecovery data doesn't exists
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair) {
     	if (log.isTraceEnabled()) {
@@ -328,8 +231,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param certificate the certificate used with the keys about to be removed.
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public void removeKeyRecoveryData(Admin admin, Certificate certificate) {
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
@@ -363,8 +264,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param username DOCUMENT ME!
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public void removeAllKeyRecoveryData(Admin admin, String username) {
     	if (log.isTraceEnabled()) {
@@ -399,8 +298,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @throws AuthorizationDeniedException 
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public KeyRecoveryData keyRecovery(Admin admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
@@ -462,8 +359,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @throws ApprovalException 
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public boolean markNewestAsRecoverable(Admin admin, String username, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
     	if (log.isTraceEnabled()) {
@@ -525,8 +420,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @throws ApprovalException 
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
@@ -564,8 +457,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param username DOCUMENT ME!
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public void unmarkUser(Admin admin, String username) {
     	if (log.isTraceEnabled()) {
@@ -590,9 +481,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @return true if user is already marked for key recovery.
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isUserMarked(Admin admin, String username) {
@@ -625,9 +513,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @return true if user is already marked for key recovery.
      *
      * @throws EJBException if a communication or other error occurs.
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsKeys(Admin admin, Certificate certificate) {

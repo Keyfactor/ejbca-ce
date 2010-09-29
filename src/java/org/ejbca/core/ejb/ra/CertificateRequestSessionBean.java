@@ -86,84 +86,6 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  *
  * @version $Id$
  * 
- * @ejb.bean
- *   display-name="CerificateRequestSB"
- *   name="CertificateRequestSession"
- *   jndi-name="CertificateRequestSession"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @ejb.transaction type="Required"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry
- *  name="DataSource"
- *  type="java.lang.String"
- *  value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.ra.ICertificateRequestSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.ra.ICertificateRequestSessionHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.ra.ICertificateRequestSessionLocal"
- *   remote-class="org.ejbca.core.ejb.ra.ICertificateRequestSessionRemote"
- *   
- * @ejb.ejb-external-ref
- *   description="The User Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/UserAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *   link="UserAdminSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Authorization session bean"
- *   view-type="local"
- *   ref-name="ejb/AuthorizationSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *   link="AuthorizationSession"
- *
- * @ejb.ejb-external-ref description="The Sign Session Bean"
- *   view-type="local"
- *   ref-name="ejb/RSASignSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *   link="RSASignSession"
- *
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *
- * @ejb.ejb-external-ref description="The Ra Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/RaAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *   link="RaAdminSession"
- *   
- * @ejb.ejb-external-ref description="The Hard token session bean"
- *   view-type="local"
- *   ref-name="ejb/HardTokenSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
- *   link="HardTokenSession"
  *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
@@ -202,8 +124,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	 * @param hardTokenSN is the hard token to associate this or null
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
-	 * 
-     * @ejb.interface-method
 	 */
 	public byte[] processCertReq(Admin admin, UserDataVO userdata, String req, int reqType,
 			String hardTokenSN, int responseType) throws CADoesntExistsException,
@@ -318,7 +238,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	 * @throws AuthorizationDeniedException 
 	 * @throws PersistenceException 
 	 * @throws EjbcaException 
-	 * @ejb.interface-method
 	 */
 	public IResponseMessage processCertReq(Admin admin, UserDataVO userdata, IRequestMessage req, Class responseClass) throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException {
 		
@@ -426,8 +345,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @return an encoded keystore of the type specified in responseType 
-     * 
-     * @ejb.interface-method
      */
 	public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException,

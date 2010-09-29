@@ -62,53 +62,6 @@ import org.ejbca.util.query.Query;
  * 
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  * 
- * @ejb.bean 
- *           description="Session bean handling interface with user data sources"
- *           display-name="ApprovalSessionSB" name="ApprovalSession"
- *           jndi-name="ApprovalSession" local-jndi-name="ApprovalSessionLocal"
- *           view-type="both" type="Stateless" transaction-type="Container"
- * 
- * @ejb.transaction type="Required"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * @ejb.env-entry name="DataSource" type="java.lang.String"
- *                value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
- * @ejb.ejb-external-ref description="The Approval entity bean"
- *                       view-type="local" ref-name="ejb/ApprovalDataLocal"
- *                       type="Entity"
- *                       home="org.ejbca.core.ejb.approval.ApprovalDataLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.approval.ApprovalDataLocal"
- *                       link="ApprovalData"
- * 
- * @ejb.ejb-external-ref description="The Authorization Session Bean"
- *                       view-type="local"
- *                       ref-name="ejb/AuthorizationSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *                       link="AuthorizationSession"
- * 
- * @ejb.ejb-external-ref description="The log session bean" view-type="local"
- *                       ref-name="ejb/LogSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *                       link="LogSession"
- * 
- * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
- *           local-class="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
- *           remote-class="org.ejbca.core.ejb.approval.IApprovalSessionHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
- *                remote
- *                -class="org.ejbca.core.ejb.approval.IApprovalSessionRemote"
- * 
- * @jonas.bean ejb-name="ApprovalSession"
  * 
  * @version $Id$
  */
@@ -144,7 +97,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * @throws ApprovalException
      *             if an approval already exists for this request.
      * 
-     * @ejb.interface-method view-type="both"
      */
     public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException {
         log.trace(">addApprovalRequest");
@@ -186,7 +138,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * 
      * @throws ApprovalException
      * 
-     * @ejb.interface-method view-type="both"
      */
     public void removeApprovalRequest(Admin admin, int id) throws ApprovalException {
         log.trace(">removeApprovalRequest");
@@ -238,7 +189,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * @throws ApprovalRequestDoesntExistException
      * @throws AdminAlreadyApprovedRequestException
      * @throws EjbcaException
-     * @ejb.interface-method view-type="both"
      */
     public void approve(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException {
@@ -315,8 +265,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * @throws ApprovalException
      * @throws AdminAlreadyApprovedRequestException
      * 
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void reject(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException {
@@ -432,8 +380,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      *             expired, once notified it wont throw it anymore. But If the
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public int isApproved(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
@@ -483,7 +429,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
      * 
-     * @ejb.interface-method view-type="both"
      */
     public int isApproved(Admin admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException {
         return isApproved(admin, approvalId, 0);
@@ -500,7 +445,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * @throws ApprovalException
      *             if approvalId doesn't exists,
      * 
-     * @ejb.interface-method view-type="both"
      */
     public void markAsStepDone(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
@@ -522,8 +466,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * Method returning an approval requests with status 'waiting', 'Approved'
      * or 'Reject' returns null if no non expired exists
      * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ApprovalDataVO findNonExpiredApprovalRequest(Admin admin, int approvalId) {
@@ -558,8 +500,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * @param approvalId
      * @return and collection of ApprovalDataVO, empty if no approvals exists.
      * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<ApprovalDataVO> findApprovalDataVO(Admin admin, int approvalId) {
@@ -594,8 +534,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * @throws AuthorizationDeniedException
      * @throws IllegalQueryException
      * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<ApprovalDataVO> query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString)
@@ -636,8 +574,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * 
      * @return a List<Integer> with all pending approval ids, never null
      * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Integer> getAllPendingApprovalIds() {

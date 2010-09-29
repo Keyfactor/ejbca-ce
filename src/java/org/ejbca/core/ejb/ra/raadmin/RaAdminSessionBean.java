@@ -52,81 +52,6 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * @version $Id: RaAdminSessionBean.java 9579 2010-07-30 18:07:23Z jeklund
  *          $
  * 
- * @ejb.bean 
- *           description="Session bean handling core CA function,signing certificates"
- *           display-name="RaAdminSB" name="RaAdminSession"
- *           jndi-name="RaAdminSession" local-jndi-name="RaAdminSessionLocal"
- *           view-type="both" type="Stateless" transaction-type="Container"
- * 
- * @ejb.transaction type="Required"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * @ejb.home extends="javax.ejb.EJBHome"
- *           remote-class="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome"
- *           local-extends="javax.ejb.EJBLocalHome"
- *           local-class="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                remote-class="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- * 
- * @ejb.ejb-external-ref description="The log session bean" view-type="local"
- *                       ref-name="ejb/LogSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *                       link="LogSession"
- * 
- * @ejb.ejb-external-ref description="The Authorization session bean"
- *                       view-type="local"
- *                       ref-name="ejb/AuthorizationSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *                       link="AuthorizationSession"
- * 
- * @ejb.ejb-external-ref description="The AdminPreferencesData Entity bean"
- *                       view-type="local"
- *                       ref-name="ejb/AdminPreferencesDataLocal" type="Entity"
- *                       home=
- *                       "org.ejbca.core.ejb.ra.raadmin.AdminPreferencesDataLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ra.raadmin.AdminPreferencesDataLocal"
- *                       link="AdminPreferencesData"
- * 
- * @ejb.ejb-external-ref description="The EndEntityProfileData Entity bean"
- *                       view-type="local"
- *                       ref-name="ejb/EndEntityProfileDataLocal" type="Entity"
- *                       home=
- *                       "org.ejbca.core.ejb.ra.raadmin.EndEntityProfileDataLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ra.raadmin.EndEntityProfileDataLocal"
- *                       link="EndEntityProfileData"
- * 
- * @ejb.ejb-external-ref description="The GlobalConfigurationData Entity bean"
- *                       view-type="local"
- *                       ref-name="ejb/GlobalConfigurationDataLocal"
- *                       type="Entity"
- *                       home="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationDataLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationDataLocal"
- *                       link="GlobalConfigurationData"
- * 
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *                       view-type="local" ref-name="ejb/CAAdminSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *                       link="CAAdminSession"
- * 
- * @jboss.method-attributes pattern = "get*" read-only = "true"
- * 
- * @jboss.method-attributes pattern = "is*" read-only = "true"
- * 
- * @jboss.method-attributes pattern = "exists*" read-only = "true"
  * 
  */
 @Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "RaAdminSessionRemote")
@@ -176,8 +101,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     /**
      * Finds the admin preference belonging to a certificate serialnumber (??).
      * Returns null if admin doesn't exists.
-     * 
-     * @ejb.interface-method
      */
     public AdminPreference getAdminPreference(Admin admin, String certificatefingerprint) {
         if (log.isTraceEnabled()) {
@@ -197,8 +120,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     /**
      * Adds a admin preference to the database. Returns false if admin already
      * exists.
-     * 
-     * @ejb.interface-method
      */
     public boolean addAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
@@ -233,8 +154,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     /**
      * Changes the admin preference in the database. Returns false if admin
      * doesn't exists.
-     * 
-     * @ejb.interface-method
      */
     public boolean changeAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
@@ -246,8 +165,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     /**
      * Changes the admin preference in the database. Returns false if admin
      * doesn't exists.
-     * 
-     * @ejb.interface-method
      */
     public boolean changeAdminPreferenceNoLog(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
@@ -258,9 +175,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     /**
      * Checks if a admin preference exists in the database.
-     * 
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsAdminPreference(Admin admin, String certificatefingerprint) {
@@ -282,8 +196,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     // We access an entity manager.. we must have be in a transaction!
@@ -316,7 +228,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method
      */
     public void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference) {
         if (log.isTraceEnabled()) {
@@ -348,9 +259,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * 
      * @param admin
      *            administrator calling the method
-     * 
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     public void initializeAndUpgradeProfiles(Admin admin) {
         Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
@@ -375,7 +283,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      *            readable profile name
      * @param profile
      *            profile to be added
-     * @ejb.interface-method
      * 
      */
     public void addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException {
@@ -393,7 +300,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      *            readable profile name
      * @param profile
      *            profile to be added
-     * @ejb.interface-method
      * 
      */
     public void addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException {
@@ -432,8 +338,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     /**
      * Adds a end entity profile to a group with the same content as the
      * original profile.
-     * 
-     * @ejb.interface-method
      */
     public void cloneEndEntityProfile(Admin admin, String originalprofilename, String newprofilename) throws EndEntityProfileExistsException {
         if (newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
@@ -469,8 +373,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     /**
      * Removes an end entity profile from the database.
-     * 
-     * @ejb.interface-method
      */
     public void removeEndEntityProfile(Admin admin, String profilename) {
         try {
@@ -488,8 +390,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     /**
      * Renames a end entity profile
-     * 
-     * @ejb.interface-method
      */
     public void renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename) throws EndEntityProfileExistsException {
         if (newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
@@ -518,8 +418,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     /**
      * Updates profile data
-     * 
-     * @ejb.interface-method
      */
     public void changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) {
     	internalChangeEndEntityProfileNoFlushCache(admin, profilename, profile);
@@ -528,7 +426,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     /** Do not use, use changeEndEntityProfile instead.
      * Used internally for testing only. Updates a profile without flushing caches.
-     * @ejb.interface-method
      */
     public void internalChangeEndEntityProfileNoFlushCache(Admin admin, String profilename, EndEntityProfile profile){
         EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
@@ -544,9 +441,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin) {
@@ -599,9 +493,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     /**
      * Method creating a hashmap mapping profile id (Integer) to profile name
      * (String).
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap<Integer, String> getEndEntityProfileIdToNameMap(Admin admin) {
@@ -613,8 +504,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     /**
      * Clear and reload end entity profile caches.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     public void flushProfileCache() {
     	if (log.isTraceEnabled()) {
@@ -679,9 +568,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * Finds a end entity profile by id.
      * 
      * @return EndEntityProfile or null if it does not exist
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public EndEntityProfile getEndEntityProfile(Admin admin, int id) {
@@ -704,9 +590,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * Finds a end entity profile by id.
      * 
      * @return EndEntityProfile or null if it does not exist
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public EndEntityProfile getEndEntityProfile(Admin admin, String profilename) {
@@ -730,8 +613,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * Returns a end entity profiles id, given it's profilename
      * 
      * @return the id or 0 if profile cannot be found.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getEndEntityProfileId(Admin admin, String profilename) {
@@ -756,8 +637,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * Returns a end entity profiles name given it's id.
      * 
      * @return profilename or null if profile id doesn't exists.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getEndEntityProfileName(Admin admin, int id) {
@@ -783,8 +662,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      *            the certificatetype id to search for.
      * @return true if certificateprofile exists in any of the end entity
      *         profiles.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsCertificateProfileInEndEntityProfiles(Admin admin, int certificateprofileid) {
@@ -811,8 +688,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * @param caid
      *            the caid to search for.
      * @return true if ca exists in any of the end entity profiles.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsCAInEndEntityProfiles(Admin admin, int caid) {
@@ -863,9 +738,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * response isn't necessary, otherwise use {@link #flushCache()}.
      * 
      * @return the cached GlobalConfiguration value.
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public GlobalConfiguration getCachedGlobalConfiguration(Admin admin) {
@@ -909,7 +781,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method
      */
     public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) {
         if (log.isTraceEnabled()) {
@@ -943,8 +814,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     /**
      * Clear and load global configuration cache.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     public void flushGlobalConfigurationCache()  {
     	if (log.isTraceEnabled()) {
@@ -960,9 +829,6 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     	}
     }
 
-    /**
-     * @ejb.interface-method
-     */
     public synchronized int findFreeEndEntityProfileId() {
         int id = Math.abs(random.nextInt());
         while (!(EndEntityProfileData.findById(entityManager, id) == null)) {

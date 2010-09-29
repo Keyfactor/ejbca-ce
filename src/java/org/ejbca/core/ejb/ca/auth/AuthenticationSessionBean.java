@@ -46,57 +46,6 @@ import org.ejbca.core.model.ra.UserDataVO;
  *
  * @version $Id$
  *
- * @ejb.bean
- *   display-name="AuthenticationSB"
- *   name="AuthenticationSession"
- *   jndi-name="AuthenticationSession"
- *   local-jndi-name="AuthenticationSessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @ejb.transaction type="Required"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal"
- *   remote-class="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote"
- *
- * @ejb.ejb-external-ref
- *   description="The User Admin session bean"
- *   view-type="local"
- *   ref-name="ejb/UserAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *   link="UserAdminSession"
- *   
- * @ejb.ejb-external-ref
- *   description="The User entity bean"
- *   view-type="local"
- *   ref-name="ejb/UserDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ra.UserDataLocalHome"
- *   business="org.ejbca.core.ejb.ra.UserDataLocal"
- *   link="UserData"
- *
- * @ejb.ejb-external-ref
- *   description="The Log session bean"
- *   view-type="local"
- *   ref-name="ejb/LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthenticationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -126,7 +75,6 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
      * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthStatusException If the users status is incorrect.
      * @throws AuthLoginException If the password is incorrect.
-     * @ejb.interface-method
      */
     public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
@@ -198,7 +146,6 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
 	 *
 	 * @param data
 	 * @throws ObjectNotFoundException if the user does not exist.
-	 * @ejb.interface-method
 	 */
 	public void finishUser(UserDataVO data) throws ObjectNotFoundException {
 		if (log.isTraceEnabled()) {

@@ -93,86 +93,6 @@ import org.ejbca.util.keystore.KeyTools;
 /**
  * Creates and signs certificates.
  *
- * @ejb.bean description="Session bean handling core CA function,signing certificates"
- *   display-name="RSASignSessionSB"
- *   name="RSASignSession"
- *   jndi-name="RSASignSession"
- *   local-jndi-name="SignSessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @ejb.transaction type="Required"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.ejb-external-ref description="The CRL Create bean"
- *   view-type="local"
- *   ref-name="ejb/CreateCRLSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
- *   link="CreateCRLSession"
- *   
- * @ejb.ejb-external-ref description="The log session bean"
- *   view-type="local"
- *   ref-name="ejb/LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
- * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
- *   view-type="local"
- *   ref-name="ejb/CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *
- * @ejb.ejb-external-ref description="The Authentication session used to authenticate users when issuing certificates.
- * Alter this to enable a custom made authentication session implementing the
- * IAuthenticationSessionLocal interface"
- *   view-type="local"
- *   ref-name="ejb/AuthenticationSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal"
- *   link="AuthenticationSession"
- *
- * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places
- * from the main database. Publishers runs as local beans"
- *   view-type="local"
- *   ref-name="ejb/PublisherSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
- *   link="PublisherSession"
- *
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   remote-class="org.ejbca.core.ejb.ca.sign.ISignSessionHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   remote-class="org.ejbca.core.ejb.ca.sign.ISignSessionRemote"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *   
- * @jboss.method-attributes
- *   pattern = "verify*"
- *   read-only = "true"
- *   
  *   @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "SignSessionRemote")
@@ -202,8 +122,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 	static private Boolean isUniqueCertificateSerialNumberIndex;
     /**
      * Default create for SessionBean without any creation Arguments.
-     *
-     * @ejb.create-method 
      */
 	@PostConstruct
     public void ejbCreate() {
@@ -228,7 +146,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 	/**
 	 * @return true if index could be generated
-	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean isUniqueCertificateSerialNumberIndex() {
 		return isUniqueCertificateSerialNumberIndex!=null && isUniqueCertificateSerialNumberIndex.booleanValue();
@@ -312,9 +229,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param admin Information about the administrator or admin preforming the event.
      * @param caid  is the issuerdn.hashCode()
      * @return Collection of Certificate, the certificate chain, never null.
-     * @ejb.permission unchecked="true"
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS) 
     public Collection<Certificate> getCertificateChain(Admin admin, int caid) {
@@ -335,7 +249,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException       if the CA does not exist or is expired, or has an invalid cert
      * @throws SignRequestSignatureException if the certificate is not signed by the CA
-     * @ejb.interface-method view-type="both"
      */
     public byte[] createPKCS7(Admin admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
         Integer caid = new Integer(CertTools.getIssuerDN(cert).hashCode());
@@ -349,7 +262,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param caId  CA for which we want a PKCS7 certificate chain.
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
-     * @ejb.interface-method view-type="both"
      */
     public byte[] createPKCS7(Admin admin, int caId, boolean includeChain) throws CADoesntExistsException {
         try {
@@ -395,8 +307,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException {
         // Default key usage is defined in certificate profiles
@@ -424,8 +334,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws EjbcaException, ObjectNotFoundException {
         return createCertificate(admin, username, password, pk, CertTools.sunKeyUsageToBC(keyusage));
@@ -452,8 +360,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, EjbcaException {
         return createCertificate(admin, username, password, pk, keyusage, null, null, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
@@ -481,8 +387,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws EjbcaException, ObjectNotFoundException {
         return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
@@ -507,8 +411,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws EjbcaException, ObjectNotFoundException {
         if (log.isTraceEnabled()) {
@@ -564,9 +466,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthLoginException            If the password is incorrect.
      * @throws IllegalKeyException           if the public key is of wrong type.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *                                       the CA.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws EjbcaException, ObjectNotFoundException {
         if (log.isTraceEnabled()) {
@@ -608,8 +507,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      */
     public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws EjbcaException {
         return createCertificate(admin, req, -1, responseClass);
@@ -645,8 +542,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
      * 
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
     	return createCertificate(admin, username, password, pk, keyusage, null, null, certificateprofileid, caid);
@@ -678,8 +573,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.ejb.ca.store.CertificateDataBean
      * @see org.ejbca.core.protocol.IRequestMessage
      * @see org.ejbca.core.protocol.IResponseMessage
@@ -844,8 +737,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the the request couldn't be verified.
      * @throws IllegalKeyException 
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.protocol.IRequestMessage
      * @see org.ejbca.core.protocol.IResponseMessage
      * @see org.ejbca.core.protocol.X509ResponseMessage
@@ -910,8 +801,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws CADoesntExistsException       if the targeted CA does not exist
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the the request couldn't be verified.
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.protocol.IRequestMessage
      * @see org.ejbca.core.protocol.IResponseMessage
      * @see org.ejbca.core.protocol.X509ResponseMessage
@@ -963,7 +852,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
-     * @ejb.interface-method view-type="both"
      */
     public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException {
         log.trace(">getCRL(IRequestMessage)");
@@ -1450,7 +1338,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * Sign an array of bytes with CA.
      * 
      * @param keyPupose one of SecConst.CAKEYPURPOSE_...
-     * @ejb.interface-method view-type="both"
      */
     public byte[] signData(byte[] data, int caId, int keyPurpose) throws NoSuchAlgorithmException, CATokenOfflineException, IllegalKeyStoreException,
     		InvalidKeyException, SignatureException, CADoesntExistsException {
@@ -1466,7 +1353,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     /**
      * Verify an array of bytes with a signature
      * @param keyPupose one of SecConst.CAKEYPURPOSE_...
-     * @ejb.interface-method view-type="both"
      */
     public boolean verifySignedData(byte[] data, int caId, int keyPurpose, byte[] signature) throws IllegalKeyStoreException, 
     		CATokenOfflineException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CADoesntExistsException {

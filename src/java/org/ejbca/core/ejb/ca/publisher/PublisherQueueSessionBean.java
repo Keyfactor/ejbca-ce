@@ -48,42 +48,6 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchonously. 
  *
- * @ejb.bean description="Session bean handling interface with publisher queue data"
- *   display-name="PublisherQueueSessionSB"
- *   name="PublisherQueueSession"
- *   jndi-name="PublisherQueueSession"
- *   local-jndi-name="PublisherQueueSessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @ejb.transaction type="Required"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry description="JDBC datasource to be used"
- * name="DataSource"
- * type="java.lang.String"
- * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
- * @ejb.ejb-external-ref description="The Publisher entity bean"
- *   view-type="local"
- *   ref-name="ejb/PublisherQueueDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ca.publisher.PublisherQueueDataLocalHome"
- *   business="org.ejbca.core.ejb.ca.publisher.PublisherQueueDataLocal"
- *   link="PublisherQueueData"
- *
- * @ejb.home extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionHome"
- *
- * @ejb.interface extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal"
- *   remote-class="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionRemote"
- *
  * @author Tomas Gustavsson
  * @version $Id$
  */
@@ -106,8 +70,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	 * @param publisherId the publisher that this should be published to
 	 * @param publishType the type of entry it is, {@link PublisherQueueData#PUBLISH_TYPE_CERT} or CRL
      * @throws CreateException if the entry can not be created
-     *
-     * @ejb.interface-method view-type="both"
      */
     public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) throws CreateException {
     	if (log.isTraceEnabled()) {
@@ -123,8 +85,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 
     /**
      * Removes an entry from the publisher queue.
-     *
-     * @ejb.interface-method view-type="both"
      */
     public void removeQueueData(String pk) {
     	if (log.isTraceEnabled()) {
@@ -143,8 +103,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
      * Finds all entries with status PublisherQueueData.STATUS_PENDING for a specific publisherId.
 	 *
 	 * @return Collection of PublisherQueueData, never null
-	 * 
-     * @ejb.interface-method view-type="both"
      */
     public Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId) {
     	if (log.isTraceEnabled()) {
@@ -169,8 +127,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
      * Gets the number of pending entries for a publisher.
      * @param publisherId The publisher to count the number of pending entries for.
      * @return The number of pending entries.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public int getPendingEntriesCountForPublisher(int publisherId) {
     	return Long.valueOf(PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId)).intValue();
@@ -185,8 +141,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
      * 
      * @param publisherId The publisher to count the number of pending entries for.
      * @return Array with the number of pending entries corresponding to each element in <i>interval</i>.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] lowerBounds, int[] upperBounds) {
     	if (log.isTraceEnabled()) {
@@ -210,8 +164,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	 * @param orderBy order by clause for the SQL to the database, for example "order by timeCreated desc".
 	 * 
 	 * @return Collection of PublisherQueueData, never null
-	 * 
-     * @ejb.interface-method view-type="both"
      */
     public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy) {
     	if (log.isTraceEnabled()) {
@@ -239,8 +191,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
      * Finds all entries for a specific fingerprint.
 	 *
 	 * @return Collection of PublisherQueueData, never null
-	 * 
-     * @ejb.interface-method view-type="both"
      */
     public Collection<PublisherQueueData> getEntriesByFingerprint(String fingerprint) {
     	if (log.isTraceEnabled()) {
@@ -267,8 +217,6 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
      * @param pk primary key of data entry
      * @param status status from PublisherQueueData.STATUS_SUCCESS etc, or -1 to not update status
      * @param tryCounter an updated try counter, or -1 to not update counter
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void updateData(String pk, int status, int tryCounter) {
     	if (log.isTraceEnabled()) {

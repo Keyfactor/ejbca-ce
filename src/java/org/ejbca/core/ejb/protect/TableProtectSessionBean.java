@@ -44,37 +44,6 @@ import org.ejbca.util.StringTools;
 /** For some setups there are requirements for integrity protection of 
  * database rows. 
  *
- * @ejb.bean
- *   display-name="TableProtectSB"
- *   name="TableProtectSession"
- *   jndi-name="TableProtectSession"
- *   local-jndi-name="TableProtectSessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.ejb-external-ref
- *   description="The Protect Entry Data entity bean"
- *   view-type="local"
- *   ref-name="ejb/TableProtectDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.protect.TableProtectDataLocalHome"
- *   business="org.ejbca.core.ejb.protect.TableProtectDataLocal"
- *   link="TableProtectData"
- *
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.protect.TableProtectSessionHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
- *   remote-class="org.ejbca.core.ejb.protect.TableProtectSessionRemote"
  *
  * @version $Id$
  */
@@ -116,9 +85,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
      * Store a protection entry in an external, remote database.
      *
      * @param Protectable the object beeing protected
-     *
-     * @ejb.interface-method
-     * @ejb.transaction type="Required"
      */
     public void protectExternal(Protectable entry, String dataSource) {
     	if (!ProtectConfiguration.getProtectionEnabled()) {
@@ -189,9 +155,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
      *
      * @param admin the administrator performing the event.
      * @param Protectable the object beeing protected
-     *
-     * @ejb.interface-method
-     * @ejb.transaction type="Required"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void protect(Protectable entry) {
@@ -242,9 +205,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
      * @param admin the administrator performing the event.
      * @param Protectable the object beeing verified
      * @return TableVerifyResult, never null
-     * 
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public TableVerifyResult verify(Protectable entry) {

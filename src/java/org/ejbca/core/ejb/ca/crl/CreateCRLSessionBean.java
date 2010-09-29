@@ -53,83 +53,6 @@ import org.ejbca.util.CertTools;
  * CRLs are signed using RSASignSessionBean.
  * 
  * @version $Id$
- * @ejb.bean
- *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
- *   display-name="CreateCRLSB"
- *   name="CreateCRLSession"
- *   jndi-name="CreateCRLSession"
- *   local-jndi-name="CreateCRLSessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @ejb.transaction type="Required"
- *
- * @weblogic.enable-call-by-reference True
- * 
- * Increase transaction timeout for all methods in this class to one hour on JBoss.
- * @jboss.method-attributes pattern="*" transaction-timeout="3600"
- *
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
- *   remote-class="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote"
- *   
- * @ejb.ejb-external-ref description="The CRL entity bean used to store and fetch CRLs"
- *   view-type="local"
- *   ref-name="ejb/CRLDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ca.store.CRLDataLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.CRLDataLocal"
- *   link="CRLData"
- *
- * @ejb.env-entry description="JDBC datasource to be used"
- *   name="DataSource"
- *   type="java.lang.String"
- *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.ejb-external-ref
- *   description="The log session bean"
- *   view-type="local"
- *   ref-name="ejb/LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate entity bean used manipulate certificates"
- *   view-type="local"
- *   ref-name="ejb/CertificateDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ca.store.CertificateDataLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
- *   link="CertificateData"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate Store session bean"
- *   view-type="local"
- *   ref-name="ejb/CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *
- * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places
- * from the main database. Publishers runs as local beans"
- *   view-type="local"
- *   ref-name="ejb/PublisherSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
- *   link="PublisherSession"
  *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CreateCRLSessionRemote")
@@ -153,9 +76,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     private LogSessionLocal logSession;
 
 	/** Same as generating a new CRL but this is in a new separate transaction.
-	 *
-     * @ejb.interface-method
-     * @ejb.transaction type="RequiresNew"
 	 */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void runNewTransaction(Admin admin, CA ca) throws CATokenOfflineException {
@@ -174,9 +94,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      *
      * @return true if a CRL was created
      * @throws EJBException if communication or system error occurs
-     * 
-     * @ejb.interface-method
-     * @ejb.transaction type="RequiresNew" 
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public boolean runNewTransactionConditioned(Admin admin, CA ca, long addtocrloverlaptime) throws CATokenOfflineException {
@@ -282,9 +199,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     /** Same as generating a new delta CRL but this is in a new separate transaction.
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
-	 * 
-     * @ejb.interface-method
-     * @ejb.transaction type="RequiresNew"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public byte[] runDeltaCRLnewTransaction(Admin admin, CA ca)  {
@@ -300,9 +214,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
 	 * 
      * @return true if a Delta CRL was created
      * @throws EJBException if communication or system error occurrs
-     * 
-     * @ejb.interface-method
-     * @ejb.transaction type="RequiresNew"
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public boolean runDeltaCRLnewTransactionConditioned(Admin admin, CA ca, long crloverlaptime) {
@@ -377,7 +288,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
 	 * @return fingerprint (primarey key) of the generated CRL or null if generation failed
 	 * 
 	 * @throws EJBException if a communications- or system error occurs
-     * @ejb.interface-method
 	 */
     public String run(Admin admin, CA ca) throws CATokenOfflineException {
     	log.trace(">run()");
@@ -463,8 +373,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
 	 *
 	 * @param certificateFingerprint is the fingerprint of the certifiate
 	 * @throws FinderException is thrown when no such certificate exists
-	 *
-     * @ejb.interface-method
 	 */
     public void setArchivedStatus(String certificateFingerprint) throws FinderException {
     	CertificateData certdata = CertificateData.findByFingerprint(entityManager, certificateFingerprint);
@@ -485,7 +393,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @return the bytes of the Delta CRL generated or null of no delta CRL was generated.
      * 
      * @throws EJBException if a communications- or system error occurs
-     * @ejb.interface-method
      */
     public byte[] runDeltaCRL(Admin admin, CA ca, int baseCrlNumber, long baseCrlCreateTime)  {
 		if (ca == null) {
@@ -547,7 +454,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param nextCrlNumber The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
      * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
      * @throws CATokenOfflineException 
-     * @ejb.interface-method view-type="both"
      */
     public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException {
         log.trace(">createCRL()");
@@ -610,8 +516,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param nextUpdate when this CRL expires
      * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
      * @return true if storage was successful.
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
     	if (log.isTraceEnabled()) {
@@ -644,8 +548,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param issuerdn the CRL issuers DN (CAs subject DN)
      * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
      * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
@@ -682,8 +584,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param issuerdn the CRL issuers DN (CAs subject DN)
      * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
      * @return CRLInfo of last CRL by CA or null if no CRL exists.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
@@ -723,8 +623,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param admin Administrator performing the operation
      * @param fingerprint fingerprint of the CRL
      * @return CRLInfo of CRL or null if no CRL exists.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
@@ -756,8 +654,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param admin    Administrator performing the operation
      * @param issuerdn the subjectDN of a CA certificate
      * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
@@ -783,7 +679,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
      * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
      * @param doPublishDeltaCRL should delta CRLs be published?
-     * @ejb.interface-method view-type="both"
      */
     public void publishCRL(Admin admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
     	if ( usedpublishers==null ) {

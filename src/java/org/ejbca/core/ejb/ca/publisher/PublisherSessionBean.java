@@ -61,62 +61,6 @@ import org.ejbca.util.CertTools;
  * Handles management of Publishers.
  * 
  * @version $Id$
- * 
- * @ejb.bean description="Session bean handling interface with publisher data"
- *           display-name="PublisherSessionSB" name="PublisherSession"
- *           jndi-name="PublisherSession"
- *           local-jndi-name="PublisherSessionLocal" view-type="both"
- *           type="Stateless" transaction-type="Container"
- * 
- * @ejb.transaction type="Required"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * 
- * @ejb.ejb-external-ref description="The Publisher entity bean"
- *                       view-type="local" ref-name="ejb/PublisherDataLocal"
- *                       type="Entity"
- *                       home="org.ejbca.core.ejb.ca.publisher.PublisherDataLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ca.publisher.PublisherDataLocal"
- *                       link="PublisherData"
- * 
- * @ejb.ejb-external-ref description="The Authorization Session Bean"
- *                       view-type="local"
- *                       ref-name="ejb/AuthorizationSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *                       link="AuthorizationSession"
- * 
- * @ejb.ejb-external-ref description="The log session bean" view-type="local"
- *                       ref-name="ejb/LogSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *                       link="LogSession"
- * 
- * @ejb.ejb-external-ref description="The publisher queue" view-type="local"
- *                       ref-name="ejb/PublisherQueueSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal"
- *                       link="PublisherQueueSession"
- * 
- * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
- *           local-class=
- *           "org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
- *           remote-
- *           class="org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
- *                remote-class=
- *                "org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote"
- * 
- * @jonas.bean ejb-name="PublisherSession"
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "PublisherSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -144,7 +88,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * @param publisherids
      *            a Collection (Integer) of publisherids.
      * @return true if successful result on all given publishers, or if publisherids is null or empty
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public boolean storeCertificate(Admin admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,
@@ -160,7 +103,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * 
      * @param publisherids
      *            a Collection (Integer) of publisherids.
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public void revokeCertificate(Admin admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
@@ -261,7 +203,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * @param publisherids
      *            a Collection (Integer) of publisherids.
      * @return true if sucessfull result on all given publishers
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public boolean storeCRL(Admin admin, Collection<Integer> publisherids, byte[] incrl, String cafp, String userDN) {
@@ -326,7 +267,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * 
      * @param publisherid
      *            the id of the publisher to test.
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public void testConnection(Admin admin, int publisherid) throws PublisherConnectionException {
@@ -363,7 +303,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      *             if hard token already exists.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public void addPublisher(Admin admin, String name, BasePublisher publisher) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
@@ -378,7 +317,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * profiles from xml-files.
      * 
      * @throws PublisherExistsException if publisher already exists.
-     * @ejb.interface-method view-type="both"
      */
     public void addPublisher(Admin admin, int id, String name, BasePublisher publisher) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
@@ -409,8 +347,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     /**
      * Updates publisher data
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void changePublisher(Admin admin, String name, BasePublisher publisher) {
         if (log.isTraceEnabled()) {
@@ -434,7 +370,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * @throws PublisherExistsException
      *             if publisher already exists.
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public void clonePublisher(Admin admin, String oldname, String newname) {
         if (log.isTraceEnabled()) {
@@ -466,8 +401,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     /**
      * Removes a publisher from the database.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void removePublisher(Admin admin, String name) {
         if (log.isTraceEnabled()) {
@@ -492,7 +425,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      *             if publisher already exists.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public void renamePublisher(Admin admin, String oldname, String newname) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
@@ -529,7 +461,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * @return Collection of id:s (Integer)
      * @throws AuthorizationDeniedException
      *             if the admin does not have superadmin credentials
-     * @ejb.interface-method view-type="both"
      */
     public Collection<Integer> getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
         HashSet<Integer> returnval = new HashSet<Integer>();
@@ -544,9 +475,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     /**
      * Method creating a hashmap mapping publisher id (Integer) to publisher
      * name (String).
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap<Integer,String> getPublisherIdToNameMap(Admin admin) {
@@ -564,9 +492,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * 
      * @return a BasePublisher or null of a publisher with the given id does not
      *         exist
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public BasePublisher getPublisher(Admin admin, String name) {
@@ -583,9 +508,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * 
      * @return a BasePublisher or null of a publisher with the given id does not
      *         exist
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public BasePublisher getPublisher(Admin admin, int id) {
@@ -600,9 +522,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     /**
      * Help method used by publisher proxys to indicate if it is time to update
      * it's data.
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getPublisherUpdateCount(Admin admin, int publisherid) {
@@ -618,8 +537,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * Returns a publisher id, given it's publishers name
      * 
      * @return the id or 0 if the publisher cannot be found.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getPublisherId(Admin admin, String name) {
@@ -635,8 +552,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * Returns a publishers name given its id.
      * 
      * @return the name or null if id doesn't exists
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getPublisherName(Admin admin, int id) {
@@ -657,8 +572,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * authorization checks are performed.
      * 
      * @return an error message or an empty String if all are ok.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="local"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String testAllConnections() {
