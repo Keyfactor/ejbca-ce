@@ -53,81 +53,6 @@ import org.ejbca.util.query.Query;
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
  *
- * @ejb.bean
- *   display-name="LogSessionSB"
- *   name="LogSession"
- *   jndi-name="LogSession"
- *   local-jndi-name="LogSessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry
- * name="DataSource"
- * type="java.lang.String"
- * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.ejb-external-ref
- *   description="The Log Entry Data entity bean"
- *   view-type="local"
- *   ref-name="ejb/LogEntryDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.log.LogEntryDataLocalHome"
- *   business="org.ejbca.core.ejb.log.LogEntryDataLocal"
- *   link="LogEntryData"
- *
- * @ejb.ejb-external-ref
- *   description="The Log Configuration Data Entity bean"
- *   view-type="local"
- *   ref-name="ejb/LogConfigurationDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.log.LogConfigurationDataLocalHome"
- *   business="org.ejbca.core.ejb.log.LogConfigurationDataLocal"
- *   link="LogConfigurationData"
- *
- * @ejb.ejb-external-ref
- *   description="The table protection session bean"
- *   view-type="local"
- *   ref-name="ejb/TableProtectSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
- *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
- *   link="TableProtectSession"
- *   
- * @ejb.ejb-external-ref description="The Sign Session Bean"
- *   view-type="local"
- *   ref-name="ejb/RSASignSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *   link="RSASignSession"
- *   
- * @ejb.ejb-external-ref
- *   description="The CA Admin Session"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *   
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.log.ILogSessionHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   remote-class="org.ejbca.core.ejb.log.ILogSessionRemote"
- *
- * @jonas.bean
- *   ejb-name="LogSession"
- *
  * @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "LogSessionRemote")
@@ -184,10 +109,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         }
     }
     
-    /**
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
-     */
     public Collection<String> getAvailableLogDevices() {
     	ArrayList<String> ret = new ArrayList<String>();
     	Iterator<ILogDevice> i = logdevices.iterator();
@@ -207,9 +128,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @param certificate the certificate involved in the event or null if no certificate is involved.
      * @param event id of the event, should be one of the org.ejbca.core.model.log.LogConstants.EVENT_ constants.
      * @param comment comment of the event.
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment) {
         doLog(admin, caid, module, time, username, certificate, event, comment, null);
@@ -217,9 +135,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
 
     /**
      * Same as above but with the difference of CAid which is taken from the issuerdn of given certificate.
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     public void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment) {
         doLog(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, null);
@@ -230,10 +145,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * See function above for more documentation.
      *
      * @param exception the exception that has occured
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
-     *
      */
     public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
         doLog(admin, caid, module, time, username, certificate, event, comment, exception);
@@ -241,9 +152,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
 
     /**
      * Same as above but with the difference of CAid which is taken from the issuerdn of given certificate.
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     public void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
         doLog(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
@@ -282,9 +190,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @throws Exception differs depending on the ILogExporter implementation
      * @see org.ejbca.util.query.Query
      *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
-     *
      */
     public byte[] export(String deviceName, Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter, int maxResults) throws IllegalQueryException, Exception {
     	byte[] result = null;
@@ -307,9 +212,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @return a collection of LogEntry. Maximum size of Collection is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see org.ejbca.util.query.Query
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     public Collection<LogEntry> query(String deviceName, Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
         log.trace(">query()");
@@ -329,10 +231,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * Loads the log configuration from the database.
      *
      * @return the logconfiguration
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
-     *
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public LogConfiguration loadLogConfiguration(int caid) {
@@ -367,10 +265,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * Saves the log configuration to the database.
      *
      * @param logconfiguration the logconfiguration to save.
-     *
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     *
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration) {

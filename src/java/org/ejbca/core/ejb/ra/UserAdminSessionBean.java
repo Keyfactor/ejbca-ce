@@ -105,99 +105,6 @@ import org.ejbca.util.query.UserMatch;
  * @version $Id: UserAdminSessionBean.java 9677 2010-08-18 16:15:32Z
  *          mikekushner $
  * 
- * @ejb.bean display-name="UserAdminSB" name="UserAdminSession"
- *           jndi-name="UserAdminSession" view-type="both" type="Stateless"
- *           transaction-type="Container"
- * 
- * @ejb.transaction type="Required"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * @ejb.env-entry name="DataSource" type="java.lang.String"
- *                value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
- * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
- *           local-class="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *           remote-class="org.ejbca.core.ejb.ra.IUserAdminSessionHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *                remote-class="org.ejbca.core.ejb.ra.IUserAdminSessionRemote"
- * 
- * @ejb.ejb-external-ref description="The Certificate Store session bean"
- *                       view-type="local"
- *                       ref-name="ejb/CertificateStoreSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *                       link="CertificateStoreSession"
- * 
- * @ejb.ejb-external-ref description="The Log session bean" view-type="local"
- *                       ref-name="ejb/LogSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *                       link="LogSession"
- * 
- * @ejb.ejb-external-ref description="The Authorization session bean"
- *                       view-type="local"
- *                       ref-name="ejb/AuthorizationSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *                       link="AuthorizationSession"
- * 
- * @ejb.ejb-external-ref description="The Ra Admin session bean"
- *                       view-type="local" ref-name="ejb/RaAdminSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *                       link="RaAdminSession"
- * 
- * @ejb.ejb-external-ref description="The Key Recovery session bean"
- *                       view-type="local"
- *                       ref-name="ejb/KeyRecoverySessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
- *                       link="KeyRecoverySession"
- * 
- * @ejb.ejb-external-ref description="The Approval Session Bean"
- *                       view-type="local" ref-name="ejb/ApprovalSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
- *                       link="ApprovalSession"
- * 
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *                       view-type="local" ref-name="ejb/CAAdminSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *                       link="CAAdminSession"
- * 
- * @ejb.ejb-external-ref description="The User entity bean" view-type="local"
- *                       ref-name="ejb/UserDataLocal" type="Entity"
- *                       home="org.ejbca.core.ejb.ra.UserDataLocalHome"
- *                       business="org.ejbca.core.ejb.ra.UserDataLocal"
- *                       link="UserData"
- * 
- * @ejb.resource-ref res-ref-name="mail/DefaultMail"
- *                   res-type="javax.mail.Session" res-auth="Container"
- * 
- * @weblogic.resource-description res-ref-name="mail/DefaultMail"
- *                                jndi-name="EjbcaMail"
- * 
- * @jboss.method-attributes pattern = "find*" read-only = "true"
- * 
- * @jboss.method-attributes pattern = "check*" read-only = "true"
- * 
  */
 @Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "UserAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -310,7 +217,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @throws CADoesntExistsException
      *             if the caid of the user does not exist
      * @throws EjbcaException
-     * @ejb.interface-method
      */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
             int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int caid) throws PersistenceException,
@@ -353,7 +259,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
      * 
-     * @ejb.interface-method
      */
     public void addUserFromWS(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
     	PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
@@ -392,7 +297,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
      * @throws WaitingForApprovalException
-     * @ejb.interface-method
      */
     public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException,
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, PersistenceException {
@@ -648,8 +552,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *             if a communication or other error occurs.
      * 
      * @deprecated use {@link #changeUser(Admin, UserDataVO, boolean)} instead
-     * 
-     * @ejb.interface-method
      */
     public void changeUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
             int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int status, int caid)
@@ -695,7 +597,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *             with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
-     * @ejb.interface-method
      */
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             WaitingForApprovalException, CADoesntExistsException, EjbcaException {
@@ -732,7 +633,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @throws EJBException
      *             if the user does not exist
      * 
-     * @ejb.interface-method
      */
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromWebService) throws AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
@@ -955,7 +855,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *             if the user does not exist
      * @throws RemoveException
      *             if the user could not be removed
-     * @ejb.interface-method
      */
     public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, RemoveException {
         if (log.isTraceEnabled()) {
@@ -1023,7 +922,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *             if administrator isn't authorized to edit user
      * @throws FinderException
      *             if the entity does not exist
-     * @ejb.interface-method
      */
     public void resetRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
         if (log.isTraceEnabled()) {
@@ -1076,7 +974,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *             if administrator isn't authorized to edit user
      * @throws FinderException
      *             if the entity does not exist
-     * @ejb.interface-method
      */
     public void decRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
         if (log.isTraceEnabled()) {
@@ -1146,7 +1043,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @throws ApprovalException
      * @throws FinderException
      *             if user does not exist
-     * @ejb.interface-method
      */
     public int decRequestCounter(Admin admin, String username) throws AuthorizationDeniedException, FinderException, ApprovalException,
             WaitingForApprovalException {
@@ -1252,7 +1148,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param data
      * @throws ObjectNotFoundException
      *             if the user does not exist.
-     * @ejb.interface-method
      */
     public void cleanUserCertDataSN(UserDataVO data) throws ObjectNotFoundException {
         if (log.isTraceEnabled()) {
@@ -1297,7 +1192,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @throws FinderException
      * @throws ApprovalException
      * @throws WaitingForApprovalException
-     * @ejb.interface-method
      */
     public void cleanUserCertDataSN(Admin admin, String username) throws AuthorizationDeniedException, FinderException, ApprovalException,
             WaitingForApprovalException {
@@ -1353,7 +1247,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
-     * @ejb.interface-method
      */
     public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException, ApprovalException,
             WaitingForApprovalException {
@@ -1433,7 +1326,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *            the unique username.
      * @param password
      *            the new password for the user, NOT null.
-     * @ejb.interface-method
      */
     public void setPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
             FinderException {
@@ -1451,7 +1343,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *            the new password to be stored in clear text. Setting password
      *            to 'null' effectively deletes any previous clear text
      *            password.
-     * @ejb.interface-method
      */
     public void setClearTextPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
             FinderException {
@@ -1547,7 +1438,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *            the unique username.
      * @param password
      *            the password to be verified.
-     * @ejb.interface-method
      */
     public boolean verifyPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
             FinderException {
@@ -1589,9 +1479,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER = { new ApprovalOveradableClassName(
             org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(), null), };
 
-    /**
-     * @ejb.interface-method
-     */
     public void revokeAndDeleteUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, ApprovalException,
             WaitingForApprovalException, RemoveException, NotFoundException {
         UserData data = UserData.findByUsername(entityManager, username);
@@ -1646,7 +1533,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param username
      *            the username to revoke.
      * @throws AlreadyRevokedException
-     * @ejb.interface-method
      */
     public void revokeUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException,
             WaitingForApprovalException, AlreadyRevokedException {
@@ -1736,7 +1622,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *            certificate on hold.
      * @throws AlreadyRevokedException
      *             if the certificate was already revoked
-     * @ejb.interface-method
      */
     public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException,
             FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
@@ -1851,9 +1736,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * 
      * @param certificate
      *            is the administrators certificate
-     * 
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Admin getAdmin(Certificate certificate) {
@@ -1874,8 +1756,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param username
      *            username.
      * @return UserDataVO or null if the user is not found.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public UserDataVO findUser(Admin admin, String username) throws AuthorizationDeniedException {
@@ -1915,8 +1795,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param subjectdn
      * @param issuerdn
      * @return UserDataVO or null if the user is not found.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public UserDataVO findUserBySubjectAndIssuerDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
@@ -1949,8 +1827,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param admin
      * @param subjectdn
      * @return UserDataVO or null if the user is not found.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public UserDataVO findUserBySubjectDN(Admin admin, String subjectdn) throws AuthorizationDeniedException {
@@ -2005,8 +1881,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * 
      * @param email
      * @return UserDataVO or null if the user is not found.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<UserDataVO> findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException {
@@ -2058,8 +1932,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param subjectdn
      * @throws AuthorizationDeniedException
      *             if user doesn't exist
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void checkIfCertificateBelongToAdmin(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
@@ -2073,8 +1945,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param subjectdn
      * @throws AuthorizationDeniedException
      *             if user doesn't exist
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void checkIfCertificateBelongToUser(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
@@ -2107,8 +1977,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param status
      *            the status to look for, from 'UserData'.
      * @return Collection of UserDataVO
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<UserDataVO> findAllUsersByStatus(Admin admin, int status) throws FinderException {
@@ -2141,8 +2009,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *            the caid of the CA, from 'UserData'.
      * @return Collection of UserDataVO, or empty collection if the query is
      *         illegal or no users exist
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<UserDataVO> findAllUsersByCaId(Admin admin, int caid) {
@@ -2211,8 +2077,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
      * 
      * @return Collection of UserDataVO
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<UserDataVO> findAllUsersWithLimit(Admin admin) {
@@ -2236,8 +2100,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * 
      * @param status
      *            the new status, from 'UserData'.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<UserDataVO> findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException {
@@ -2278,8 +2140,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *         i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException
      *             when query parameters internal rules isn't fullfilled.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      * @see se.anatom.ejbca.util.query.Query
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -2382,8 +2242,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param endentityprofileid
      *            the id of end entity profile to look for.
      * @return true if endentityprofileid exists in userdatabase.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid) {
@@ -2401,8 +2259,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param certificateprofileid
      *            the id of certificateprofile to look for.
      * @return true if certificateproileid exists in userdatabase.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForCertificateProfileId(Admin admin, int certificateprofileid) {
@@ -2420,8 +2276,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param caid
      *            the id of CA to look for.
      * @return true if caid exists in userdatabase.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForCAId(Admin admin, int caid) {
@@ -2439,8 +2293,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param profileid
      *            of hardtokenprofile to look for.
      * @return true if proileid exists in userdatabase.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForHardTokenProfileId(Admin admin, int profileid) {
@@ -2594,8 +2446,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * there instead.
      * 
      * @return true if username already exists.
-     * @ejb.interface-method
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsUser(Admin admin, String username) {
@@ -2622,8 +2472,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @throws ApprovalException
      * @throws AuthorizationDeniedException
      * 
-     * @ejb.interface-method
-     * @ejb.transaction type="Required"
      */
     public boolean prepareForKeyRecovery(Admin admin, String username, int endEntityProfileId, Certificate certificate) throws AuthorizationDeniedException,
             ApprovalException, WaitingForApprovalException {

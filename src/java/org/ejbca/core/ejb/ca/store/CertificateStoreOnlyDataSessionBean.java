@@ -36,49 +36,6 @@ import org.ejbca.util.CryptoProviderTools;
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
- *
- * @ejb.bean display-name="CertificateStoreOnlyDataSB"
- * name="CertificateStoreOnlyDataSession"
- * jndi-name="CertificateStoreOnlyDataSession"
- * view-type="both"
- * type="Stateless"
- * transaction-type="Container"
- *
- * @ejb.transaction type="Supports"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry description="JDBC datasource to be used"
- * name="DataSource"
- * type="java.lang.String"
- * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
- * view-type="local"
- * ref-name="ejb/CertificateDataLocal"
- * type="Entity"
- * home="org.ejbca.core.ejb.ca.store.CertificateDataLocalHome"
- * business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
- * link="CertificateData"
- *
- * @ejb.ejb-external-ref
- *   description="The table protection session bean"
- *   view-type="local"
- *   ref-name="ejb/TableProtectSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
- *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
- *   link="TableProtectSession"
- *   
- * @ejb.home extends="javax.ejb.EJBHome"
- * local-extends="javax.ejb.EJBLocalHome"
- * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome"
- * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionHome"
- *
- * @ejb.interface extends="javax.ejb.EJBObject"
- * local-extends="javax.ejb.EJBLocalObject"
- * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
- * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionRemote"
  * 
  * @version $Id$
  */
@@ -106,8 +63,6 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * Used by healthcheck. Validate database connection.
      * @return an error message or an empty String if all are ok.
      * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="local"
      */
     public String getDatabaseStatus() {
 		String returnval = "";
@@ -127,7 +82,6 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * @param issuerDN
      * @param serno
      * @return the status of the certificate
-     * @ejb.interface-method
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
         return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, tableProtectSession, adapter);
@@ -140,7 +94,6 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * @param issuerDN issuer DN of the desired certificate.
      * @param serno    serial number of the desired certificate!
      * @return Certificate if found or null
-     * @ejb.interface-method
      */
     public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
     	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager, adapter);
@@ -212,7 +165,6 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      *                 the issuer.
      * @param type     CERTTYPE_* types from CertificateDataBean
      * @return Collection Collection of X509Certificate, never <tt>null</tt>
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) {
         return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, entityManager, adapter);
@@ -224,7 +176,6 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * @param admin Administrator performing the operation
      * @param username the username of the certificate(s) that will be retrieved
      * @return Collection of Certificates ordered by expire date, with last expire date first, or null if none found.
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesByUsername(Admin admin, String username) {
     	return CertificateDataUtil.findCertificatesByUsername(admin, username, entityManager, adapter);

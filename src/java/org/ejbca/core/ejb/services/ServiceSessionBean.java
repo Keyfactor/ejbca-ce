@@ -55,78 +55,6 @@ import org.ejbca.core.model.services.ServiceExistsException;
  * 
  * @version $Id$
  * 
- * @ejb.bean 
- *           description="Session bean handling interface with service configuration"
- *           display-name="ServiceSessionSB" name="ServiceSession"
- *           jndi-name="ServiceSession" local-jndi-name="ServiceSessionLocal"
- *           view-type="both" type="Stateless" transaction-type="Container"
- * 
- * @ejb.transaction type="Required"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * @ejb.env-entry name="DataSource" type="java.lang.String"
- *                value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
- * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
- *           local-class="org.ejbca.core.ejb.services.IServiceSessionLocalHome"
- *           remote-class="org.ejbca.core.ejb.services.IServiceSessionHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.services.IServiceSessionLocal"
- *                remote
- *                -class="org.ejbca.core.ejb.services.IServiceSessionRemote"
- * 
- * @ejb.ejb-external-ref description="The Service entity bean" view-type="local"
- *                       ref-name="ejb/ServiceDataLocal" type="Entity"
- *                       home="org.ejbca.core.ejb.services.ServiceDataLocalHome"
- *                       business="org.ejbca.core.ejb.services.ServiceDataLocal"
- *                       link="ServiceData"
- * 
- * @ejb.ejb-external-ref description="The Authorization Session Bean"
- *                       view-type="local"
- *                       ref-name="ejb/AuthorizationSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *                       link="AuthorizationSession"
- * 
- * @ejb.ejb-external-ref description="The log session bean" view-type="local"
- *                       ref-name="ejb/LogSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *                       link="LogSession"
- * 
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *                       view-type="local" ref-name="ejb/CAAdminSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *                       link="CAAdminSession"
- * 
- * @ejb.ejb-external-ref description="The Service Timer Session Bean"
- *                       view-type="local"
- *                       ref-name="ejb/ServiceTimerSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.services.IServiceTimerSessionLocal"
- *                       link="ServiceTimerSession"
- * 
- * @ejb.ejb-external-ref 
- *                       description="The Certificate store used to store and fetch certificates"
- *                       view-type="local"
- *                       ref-name="ejb/CertificateStoreSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *                       link="CertificateStoreSession"
- * 
- * @jonas.bean ejb-name="ServiceSession"
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ServiceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -169,7 +97,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *             if service already exists.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public void addService(Admin admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
@@ -185,7 +112,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @throws ServiceExistsException
      *             if service already exists.
-     * @ejb.interface-method view-type="both"
      */
     public void addService(Admin admin, int id, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
@@ -227,7 +153,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *             if service already exists.
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public void cloneService(Admin admin, String oldname, String newname) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
@@ -265,8 +190,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     /**
      * Removes a service from the database.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean removeService(Admin admin, String name) {
@@ -307,7 +230,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @throws ServiceExistsException
      *             if service already exists.
-     * @ejb.interface-method view-type="both"
      */
     public void renameService(Admin admin, String oldname, String newname) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
@@ -342,7 +264,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * Currently is the only check if the superadmin can see them all
      * 
      * @return Collection of id:s (Integer)
-     * @ejb.interface-method view-type="both"
      */
     public Collection<Integer> getAuthorizedVisibleServiceIds(Admin admin) {
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
@@ -370,8 +291,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * Retrieves a named service.
      * 
      * @returns the service configuration or null if it doesn't exist.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ServiceConfiguration getService(Admin admin, String name) {
@@ -395,8 +314,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * Returns a service id, given it's service name
      * 
      * @return the id or 0 if the service cannot be found.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getServiceId(Admin admin, String name) {
@@ -418,8 +335,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *            The administrator performing the action
      * @param name
      *            the name of the service for which to activate the timer
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void activateServiceTimer(Admin admin, String name) {
@@ -466,8 +381,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * Returns a Service name given its id.
      * 
      * @return the name or null if id doesnt exists
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getServiceName(Admin admin, int id) {
@@ -603,9 +516,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @return true if the service should run, false if the service should not
      *         run
-     * 
-     * @ejb.interface-method view-type="local"
-     * @ejb.transaction type="RequiresNew"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceConfiguration serviceConfiguration, String serviceName) {
@@ -659,8 +569,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @param noLogging
      *            if true no logging (to the database will be done
-     * 
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
@@ -737,7 +645,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -783,7 +690,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @throws EJBException
      *             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -808,7 +714,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @param id
      *            the id of the timer
-     * @ejb.interface-method view-type="both"
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
     private void addTimer(long interval, Integer id) {
@@ -817,8 +722,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     /**
      * cancels a timer with the given Id
-     * 
-     * @ejb.interface-method view-type="both"
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
     private void cancelTimer(Integer id) {
@@ -872,8 +775,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * Finds a service configuration by id.
      * 
      * @returns the service configuration or null if it doesn't exist.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ServiceConfiguration getServiceConfiguration(Admin admin, int id) {
@@ -911,9 +812,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     /**
      * Method creating a hashmap mapping service id (Integer) to service name
      * (String).
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap<Integer, String> getServiceIdToNameMap(Admin admin) {

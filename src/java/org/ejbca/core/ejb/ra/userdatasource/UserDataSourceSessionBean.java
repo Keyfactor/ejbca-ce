@@ -53,68 +53,6 @@ import org.ejbca.util.Base64GetHashMap;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @ejb.bean description="Session bean handling interface with user data sources"
- *   display-name="UserDataSourceSessionSB"
- *   name="UserDataSourceSession"
- *   jndi-name="UserDataSourceSession"
- *   local-jndi-name="UserDataSourceSessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @ejb.transaction type="Required"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry name="DataSource"
- *   type="java.lang.String"
- *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- *
- * @ejb.ejb-external-ref description="The UserDataSource entity bean"
- *   view-type="local"
- *   ref-name="ejb/UserDataSourceDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceDataLocalHome"
- *   business="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceDataLocal"
- *   link="UserDataSourceData"
- *
- * @ejb.ejb-external-ref description="The Authorization Session Bean"
- *   view-type="local"
- *   ref-name="ejb/AuthorizationSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *   link="AuthorizationSession"
- *
- *
- * @ejb.ejb-external-ref description="The log session bean"
- *   view-type="local"
- *   ref-name="ejb/LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *
- * @ejb.home extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionHome"
- *
- * @ejb.interface extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal"
- *   remote-class="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionRemote"
- *
- *  @jonas.bean ejb-name="UserDataSourceSession"
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "UserDataSourceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -142,7 +80,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * 
      * @param userdatasourceids a Collection (Integer) of userdatasource Ids.
      * @return Collection of UserDataSourceVO, empty if no userdata could be found.
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
     public Collection<UserDataSourceVO> fetch(Admin admin, Collection<Integer> userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{
@@ -189,7 +126,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * 
      * @param userdatasourceids a Collection (Integer) of userdatasource Ids.
      * @return true if the user was remove successfully from at least one of the user data sources.
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
     public boolean removeUserData(Admin admin, Collection<Integer> userdatasourceids, String searchstring, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException{
@@ -231,7 +167,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * Test the connection to a user data source
      *
      * @param userdatasourceid the id of the userdatasource to test.
-     * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
     public void testConnection(Admin admin, int userdatasourceid) throws UserDataSourceConnectionException {
@@ -272,7 +207,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      *
      * @throws UserDataSourceExistsException if user data source already exists.
      * @throws EJBException             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public void addUserDataSource(Admin admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
@@ -287,7 +221,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * Used for importing and exporting profiles from xml-files.
      *
      * @throws UserDataSourceExistsException if user data source already exists.
-     * @ejb.interface-method view-type="both"
      */
     public void addUserDataSource(Admin admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
@@ -322,8 +255,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     /**
      * Updates user data source data
-     *
-     * @ejb.interface-method view-type="both"
      */
     public void changeUserDataSource(Admin admin, String name, BaseUserDataSource userdatasource) {
     	if (log.isTraceEnabled()) {
@@ -356,7 +287,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      *
      * @throws UserDataSourceExistsException if user data source already exists.
      * @throws EJBException             if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public void cloneUserDataSource(Admin admin, String oldname, String newname) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
@@ -397,7 +327,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * Removes a user data source from the database.
      *
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public boolean removeUserDataSource(Admin admin, String name) {
     	if (log.isTraceEnabled()) {
@@ -431,7 +360,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * Renames a user data source
      *
      * @throws UserDataSourceExistsException if user data source already exists.
-     * @ejb.interface-method view-type="both"
      */
     public void renameUserDataSource(Admin admin, String oldname, String newname) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
@@ -466,7 +394,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      *
      * @param indicates if sources with anyca set should be included
      * @return Collection of id:s (Integer)
-     * @ejb.interface-method view-type="both"
      */
     public Collection<Integer> getAuthorizedUserDataSourceIds(Admin admin, boolean includeAnyCA) {
         HashSet<Integer> returnval = new HashSet<Integer>();
@@ -501,9 +428,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     /**
      * Method creating a hashmap mapping user data source id (Integer) to user data source name (String).
-     *
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap<Integer,String> getUserDataSourceIdToNameMap(Admin admin) {
@@ -519,9 +443,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     /**
      * Retrieves a named user data source.
-     *
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public BaseUserDataSource getUserDataSource(Admin admin, String name) {
@@ -541,9 +462,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     /**
      * Finds a user data source by id.
-     *
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public BaseUserDataSource getUserDataSource(Admin admin, int id) {
@@ -564,9 +482,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     /**
      * Help method used by user data source proxys to indicate if it is time to
      * update it's data.
-     *
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getUserDataSourceUpdateCount(Admin admin, int userdatasourceid) {
@@ -582,8 +497,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * Returns a user data source id, given it's user data source name
      *
      * @return the id or 0 if the user data source cannot be found.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getUserDataSourceId(Admin admin, String name) {
@@ -600,8 +513,6 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      *
      * @return the name or null if id doesnt exists
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getUserDataSourceName(Admin admin, int id) {

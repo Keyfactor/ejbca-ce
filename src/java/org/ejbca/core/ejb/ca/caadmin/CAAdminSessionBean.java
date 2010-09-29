@@ -141,90 +141,6 @@ import org.ejbca.util.keystore.KeyTools;
  * 
  * @version $Id$
  * 
- * @ejb.bean 
- *           description="Session bean handling core CA function,signing certificates"
- *           display-name="CAAdminSB" name="CAAdminSession"
- *           jndi-name="CAAdminSession" local-jndi-name="CAAdminSessionLocal"
- *           view-type="both" type="Stateless" transaction-type="Container"
- * 
- * @ejb.transaction type="Required"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * @ejb.env-entry name="DataSource" type="java.lang.String"
- *                value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
- * @ejb.home extends="javax.ejb.EJBHome"
- *           remote-class="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome"
- *           local-extends="javax.ejb.EJBLocalHome"
- *           local-class="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                remote-class="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- * 
- * @ejb.ejb-external-ref description="The CA entity bean" view-type="local"
- *                       ref-name="ejb/CADataLocal" type="Entity"
- *                       home="org.ejbca.core.ejb.ca.caadmin.CADataLocalHome"
- *                       business="org.ejbca.core.ejb.ca.caadmin.CADataLocal"
- *                       link="CAData"
- * 
- * @ejb.ejb-external-ref description="The log session bean" view-type="local"
- *                       ref-name="ejb/LogSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *                       link="LogSession"
- * 
- * @ejb.ejb-external-ref description="The Authorization Session Bean"
- *                       view-type="local"
- *                       ref-name="ejb/AuthorizationSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *                       link="AuthorizationSession"
- * 
- * @ejb.ejb-external-ref description="The Approval Session Bean"
- *                       view-type="local" ref-name="ejb/ApprovalSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
- *                       link="ApprovalSession"
- * 
- * @ejb.ejb-external-ref 
- *                       description="The Certificate store used to store and fetch certificates"
- *                       view-type="local"
- *                       ref-name="ejb/CertificateStoreSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *                       link="CertificateStoreSession"
- * 
- * @ejb.ejb-external-ref description="The CRL Create bean" view-type="local"
- *                       ref-name="ejb/CreateCRLSessionLocal" type="Session"
- *                       home=
- *                       "org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
- *                       link="CreateCRLSession"
- * 
- * @ejb.ejb-external-ref description="Publishers are configured to store
- *                       certificates and CRLs in additional places from the
- *                       main database. Publishers runs as local beans"
- *                       view-type="local" ref-name="ejb/PublisherSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
- *                       link="PublisherSession"
- * 
- * @jboss.method-attributes pattern = "get*" read-only = "true"
- * 
- * @jboss.method-attributes pattern = "verify*" read-only = "true"
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CAAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -273,8 +189,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param admin
      *            administrator calling the method
      * 
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     public void initializeAndUpgradeCAs(Admin admin) {
     	Collection<CAData> result = CAData.findAll(entityManager);
@@ -306,9 +220,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @see org.ejbca.core.model.ca.caadmin.CAInfo
      * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
-     * 
-     * @ejb.interface-method
-     * @jboss.method-attributes transaction-timeout="900"
      */
     public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException,
             CATokenAuthenticationFailedException {
@@ -538,8 +449,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            For values see:
      * @see org.ejbca.core.model.ca.caadmin.CAInfo
      * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
-     * 
-     * @ejb.interface-method
      */
     public void editCA(Admin admin, CAInfo cainfo) throws AuthorizationDeniedException {
         boolean xkmsrenewcert = false;
@@ -638,8 +547,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * Should be used with care. If any certificate has been created with the CA
      * use revokeCA instead and don't remove it.
-     * 
-     * @ejb.interface-method
      */
     public void removeCA(Admin admin, int caid) throws AuthorizationDeniedException {
         // check authorization
@@ -674,8 +581,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Renames the name of CA used in administrators web interface. This name
      * doesn't have to be the same as SubjectDN and is only used for reference.
-     * 
-     * @ejb.interface-method
      */
     public void renameCA(Admin admin, String oldname, String newname) throws CAExistsException, AuthorizationDeniedException {
         // Get CA from database
@@ -733,9 +638,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws CADoesntExistsException
      *             if CA with name does not exist or admin is not authorized to
      *             CA
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfoOrThrowException(Admin admin, String name) throws CADoesntExistsException {
@@ -772,9 +674,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            human readable name of CA
      * @return CAInfo value object or null if CA does not exist or admin is not
      *         authorized to CA
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfo(Admin admin, String name) {
@@ -801,9 +700,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws CADoesntExistsException
      *             if CA with caid does not exist or admin is not authorized to
      *             CA
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfoOrThrowException(Admin admin, int caid) throws CADoesntExistsException {
@@ -887,9 +783,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            numerical id of CA (subjectDN.hashCode()) that we search for
      * @return CAInfo value object or null if CA does not exist or administrator
      *         is not authorized to CA
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfo(Admin admin, int caid) {
@@ -915,9 +808,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            to false.
      * @return CAInfo value object or null if CA does not exist or administrator
      *         is not authorized to CA
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfo(Admin admin, int caid, boolean doSignTest) {
@@ -944,7 +834,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @return CA value object, never null
      * @throws CADoesntExistsException
      *             if no CA was found
-     * @ejb.interface-method
      */
     public CA getCA(Admin admin, int caid) throws CADoesntExistsException {
         return getCAInternal(admin, caid, null);
@@ -952,7 +841,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /**
      * Makes sure that no CAs are cached to ensure that we read from database next time we try to access it. 
-     * @ejb.interface-method
      */
     public void flushCACache() {
     	lastCACacheUpdateTime = -1;
@@ -1140,8 +1028,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            is the id of the CA
      * @throws CADoesntExistsException
      *             if the CA isn't found
-     * 
-     * @ejb.interface-method
      */
     public void verifyExistenceOfCA(int caid) throws CADoesntExistsException {
     	// TODO: Test if "SELECT a.caId FROM CAData a WHERE a.caId=:caId" improves performance
@@ -1153,8 +1039,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * (String) of all CAs in the system.
      * 
      * @return HashMap with Integer->String mappings
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public HashMap<Integer, String> getCAIdToNameMap(Admin admin) {
@@ -1174,8 +1058,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * information.
      * 
      * @return a Collection (Integer) of CA id's
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<Integer> getAvailableCAs() {
@@ -1234,8 +1116,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            password used when regenerating keys or activating keys, can
      *            be null if regenerateKeys and activatekey is false.
      * @return request message in binary format, can be a PKCS10 or CVC request
-     * 
-     * @ejb.interface-method
      */
     public byte[] makeRequest(Admin admin, int caid, Collection<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
             throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException,
@@ -1427,8 +1307,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
      * @throws CATokenOfflineException
-     * 
-     * @ejb.interface-method
      */
     public byte[] signRequest(Admin admin, int caid, byte[] request, boolean usepreviouskey, boolean createlinkcert) throws AuthorizationDeniedException,
             CADoesntExistsException, CATokenOfflineException {
@@ -1481,8 +1359,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            new keys immediately. See makeRequest method
      * 
      * @throws EjbcaException
-     * 
-     * @ejb.interface-method
      */
     public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<byte[]> cachain, String tokenAuthenticationCode)
             throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException {
@@ -1729,8 +1605,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param cainfo
      *            the info for the CA that should be created, or already exists.
      *            Don't forget to set signedBy in the info.
-     * 
-     * @ejb.interface-method
      */
     public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) throws CAExistsException, CADoesntExistsException,
             AuthorizationDeniedException, CATokenOfflineException {
@@ -1930,8 +1804,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /**
      * Add an external CA's certificate as a CA
-     * 
-     * @ejb.interface-method
      */
     public void importCACertificate(Admin admin, String caname, Collection<Certificate> certificates) throws CreateException {
         Certificate caCertificate = (Certificate) certificates.iterator().next();
@@ -2030,7 +1902,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws AuthorizationDeniedException
      * @throws IllegalKeyStoreException
      * @throws UnsupportedEncodingException
-     * @ejb.interface-method
      */
     public void initExternalCAService(Admin admin, int caid, ExtendedCAServiceInfo info) throws CATokenOfflineException, AuthorizationDeniedException,
             CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException {
@@ -2078,9 +1949,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param regenerateKeys
      *            , if true and the CA have a softCAToken the keys are
      *            regenerated before the certrequest.
-     * 
-     * @ejb.interface-method
-     * @jboss.method-attributes transaction-timeout="900"
      */
     public void renewCA(Admin admin, int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException,
             CertPathValidatorException, CATokenOfflineException, CATokenAuthenticationFailedException {
@@ -2273,8 +2141,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @param reason
      *            one of RevokedCertInfo.REVOKATION_REASON values.
-     * 
-     * @ejb.interface-method
      */
     public void revokeCA(Admin admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {
         // check authorization
@@ -2332,8 +2198,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            Administrator probably Admin.TYPE_CACOMMANDLINE_USER
      * @param caid
      *            id of CA to upgrade
-     * 
-     * @ejb.interface-method
      */
     public void upgradeFromOldCAHSMKeyStore(Admin admin, int caid) {
         try {
@@ -2392,8 +2256,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            the alias for the private key in the keystore.
      * @param privateEncryptionKeyAlias
      *            the alias for the private encryption key in the keystore
-     * 
-     * @ejb.interface-method
      */
     public void importCAFromKeyStore(Admin admin, String caname, byte[] p12file, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
             String privateEncryptionKeyAlias) throws Exception {
@@ -2469,8 +2331,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @see CAAdminSessionBean#exportCAKeyStore(Admin, String, String, String,
      *      String, String)
-     * 
-     * @ejb.interface-method
      */
     public void removeCAKeyStore(Admin admin, String caname) throws EJBException {
         try {
@@ -2534,8 +2394,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *             already has an active catoken or if any of the aliases can
      *             not be found or if the keystore does not contain the right
      *             private key
-     * 
-     * @ejb.interface-method
      */
     public void restoreCAKeyStore(Admin admin, String caname, byte[] p12file, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
             String privateEncryptionKeyAlias) throws EJBException {
@@ -2661,8 +2519,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws CATokenOfflineException
      * @throws IllegalKeyStoreException
      * @throws CreateException
-     * 
-     * @ejb.interface-method
      */
     public void importCAFromKeys(Admin admin, String caname, String keystorepass, Certificate[] signatureCertChain, PublicKey p12PublicSignatureKey,
             PrivateKey p12PrivateSignatureKey, PrivateKey p12PrivateEncryptionKey, PublicKey p12PublicEncryptionKey) throws Exception,
@@ -2704,8 +2560,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param catokenproperties
      *            the catoken properties, same as usually entered in the
      *            adminGUI for hard token CAs.
-     * 
-     * @ejb.interface-method
      */
     public void importCAFromHSM(Admin admin, String caname, Certificate[] signatureCertChain, String catokenpassword, String catokenclasspath,
             String catokenproperties) throws Exception {
@@ -2898,8 +2752,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @return A byte array of the CAs p12 in case of X509 CA and pkcs8 private
      *         certificate signing key in case of CVC CA.
-     * 
-     * @ejb.interface-method
      */
     public byte[] exportCAKeyStore(Admin admin, String caname, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
             String privateEncryptionKeyAlias) throws Exception {
@@ -2987,9 +2839,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * to the system. Certificates for External CAs or CAs that are awaiting
      * certificate response are not returned, because we don't have certificates
      * for them. Uses getAvailableCAs to list CAs.
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<Certificate> getAllCACertificates() {
@@ -3030,7 +2879,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            the name of the CA whose fingerprint should be retrieved.
      * @throws Exception
      *             if the CA is not a soft token CA
-     * @ejb.interface-method
      */
     public String getKeyFingerPrint(Admin admin, String caname) throws Exception {
         try {
@@ -3088,8 +2936,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
-     * 
-     * @ejb.interface-method
      */
     public void activateCAToken(Admin admin, int caid, String authorizationcode, GlobalConfiguration gc) throws AuthorizationDeniedException,
             CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException {
@@ -3201,8 +3047,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *             it the administrator isn't authorized to activate the CA.
      * @throws EjbcaException
      *             if the given caid couldn't be found or its status is wrong.
-     * 
-     * @ejb.interface-method
      */
     public void deactivateCAToken(Admin admin, int caid) throws AuthorizationDeniedException, EjbcaException {
         // Authorize
@@ -3257,8 +3101,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /**
      * Method used to check if certificate profile id exists in any CA.
-     * 
-     * @ejb.interface-method
      */
     public boolean exitsCertificateProfileInCAs(Admin admin, int certificateprofileid) {
         boolean returnval = false;
@@ -3284,8 +3126,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            is the data to process
      * @return processed data
      * @throws Exception
-     * 
-     * @ejb.interface-method
      */
     public byte[] encryptWithCA(int caid, byte[] data) throws Exception {
     	CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
@@ -3302,8 +3142,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            is the data to process
      * @return processed data
      * @throws Exception
-     * 
-     * @ejb.interface-method
      */
     public byte[] decryptWithCA(int caid, byte[] data) throws Exception {
     	CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
@@ -3314,8 +3152,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Method used to check if publishers id exists in any CAs CRLPublishers
      * Collection.
-     * 
-     * @ejb.interface-method
      */
     public boolean exitsPublisherInCAs(Admin admin, int publisherid) {
         boolean returnval = false;
@@ -3350,8 +3186,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param certprofile
      *            of the ca to check
      * @return 0 if no approvals is required otherwise the number of approvals
-     * 
-     * @ejb.interface-method
      */
     public int getNumOfApprovalRequired(Admin admin, int action, int caid, int certProfileId) {
         int retval = 0;
@@ -3384,7 +3218,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            DN from CA data. If a the CA certificate does not have a DN
      *            object to be used by the publisher this DN could be searched
      *            for the object.
-     * @ejb.interface-method view-type="both"
      */
     public void publishCACertificate(Admin admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers, String caDataDN) {
         try {
@@ -3456,7 +3289,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @param admin
      * @return Collection of id:s (Integer)
-     * @ejb.interface-method view-type="both"
      */
     public Collection<Integer> getAuthorizedPublisherIds(Admin admin) {
         HashSet<Integer> returnval = new HashSet<Integer>();
@@ -3496,7 +3328,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @return the number of crls created.
      * @throws EJBException
      *             om ett kommunikations eller systemfel intr?ffar.
-     * @ejb.interface-method
      */
     public int createCRLs(Admin admin) {
         return createCRLs(admin, null, 0);
@@ -3513,7 +3344,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @return the number of delta crls created.
      * @throws EJBException
      *             if communication or system error happens
-     * @ejb.interface-method
      */
     public int createDeltaCRLs(Admin admin) {
         return createDeltaCRLs(admin, null, 0);
@@ -3544,7 +3374,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @return the number of crls created.
      * @throws EJBException
      *             if communication or system error occurrs
-     * @ejb.interface-method
      */
     public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime) {
         int createdcrls = 0;
@@ -3592,7 +3421,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @return the number of delta crls created.
      * @throws EJBException
      *             if communication or system error occurrs
-     * @ejb.interface-method
      */
     public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime) {
         int createddeltacrls = 0;
@@ -3629,9 +3457,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * a signature test.
      * 
      * @return an error message or an empty String if all are ok.
-     * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="local"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String healthCheck() {
@@ -3666,7 +3491,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws ExtendedCAServiceNotActiveException
      *                                 thrown when the service for the given CA isn't activated
      * @throws CADoesntExistsException The given caid doesn't exists.
-     * @ejb.interface-method view-type="both"
      */
     public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request)
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException {
@@ -3749,7 +3573,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Helper method that activates CA services and publisher their
      * certificates, if the services are marked as active
-     * 
      */
     private void activateAndPublishExternalCAServices(Admin admin, Collection<ExtendedCAServiceInfo> extendedCAServiceInfos, CA ca) {
         // activate External CA Services

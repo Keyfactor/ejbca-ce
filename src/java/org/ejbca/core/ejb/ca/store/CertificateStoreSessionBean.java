@@ -81,118 +81,6 @@ import org.ejbca.util.keystore.KeyTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @ejb.bean display-name="CertificateStoreSB"
- * name="CertificateStoreSession"
- * jndi-name="CertificateStoreSession"
- * view-type="both"
- * type="Stateless"
- * transaction-type="Container"
- *
- * @ejb.transaction type="Supports"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry description="JDBC datasource to be used"
- * name="DataSource"
- * type="java.lang.String"
- * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
- * view-type="local"
- * ref-name="ejb/CertificateDataLocal"
- * type="Entity"
- * home="org.ejbca.core.ejb.ca.store.CertificateDataLocalHome"
- * business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
- * link="CertificateData"
- *
- * @ejb.ejb-external-ref description="The CertReqHistoryData Entity bean"
- * view-type="local"
- * ref-name="ejb/CertReqHistoryDataLocal"
- * type="Entity"
- * home="org.ejbca.core.ejb.ca.store.CertReqHistoryDataLocalHome"
- * business="org.ejbca.core.ejb.ca.store.CertReqHistoryDataLocal"
- * link="CertReqHistoryData"
- *
- * @ejb.ejb-external-ref description="The CertificateProfileData Entity bean"
- * view-type="local"
- * ref-name="ejb/CertificateProfileDataLocal"
- * type="Entity"
- * home="org.ejbca.core.ejb.ca.store.CertificateProfileDataLocalHome"
- * business="org.ejbca.core.ejb.ca.store.CertificateProfileDataLocal"
- * link="CertificateProfileData"
- * 
- * @ejb.ejb-external-ref description="The Log session bean"
- * view-type="local"
- * ref-name="ejb/LogSessionLocal"
- * type="Session"
- * home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- * business="org.ejbca.core.ejb.log.ILogSessionLocal"
- * link="LogSession"
- *
- * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
- *   view-type="local"
- *   ref-name="ejb/CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *
- * @ejb.ejb-external-ref description="The Authorization session bean"
- * view-type="local"
- * ref-name="ejb/AuthorizationSessionLocal"
- * type="Session"
- * home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- * business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- * link="AuthorizationSession"
- *
- * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places from the main database.
- * Publishers runs as local beans"
- * view-type="local"
- * ref-name="ejb/PublisherSessionLocal"
- * type="Session"
- * home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
- * business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
- * link="PublisherSession"
- *
- * @ejb.ejb-external-ref
- *   description="The table protection session bean"
- *   view-type="local"
- *   ref-name="ejb/TableProtectSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
- *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
- *   link="TableProtectSession"
- *   
- * @ejb.home extends="javax.ejb.EJBHome"
- * local-extends="javax.ejb.EJBLocalHome"
- * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome"
- *
- * @ejb.interface extends="javax.ejb.EJBObject"
- * local-extends="javax.ejb.EJBLocalObject"
- * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
- * 
- * @jboss.method-attributes
- *   pattern = "get*"
- *   read-only = "true"
- *
- * @jboss.method-attributes
- *   pattern = "find*"
- *   read-only = "true"
- *   
- * @jboss.method-attributes
- *   pattern = "list*"
- *   read-only = "true"
- *   
- * @jboss.method-attributes
- *   pattern = "is*"
- *   read-only = "true"
- *   
- * @jboss.method-attributes
- *   pattern = "exists*"
- *   read-only = "true"
- * 
  * @version $Id$
  * 
  */
@@ -239,8 +127,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * Used by healthcheck. Validate database connection.
      * @return an error message or an empty String if all are ok.
      * 
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="local"
      */
     public String getDatabaseStatus() {
 		String returnval = "";
@@ -266,8 +152,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param tag a custom string tagging this certificate for some purpose
      * @return true if storage was successful.
      * @throws CreateException if the certificate can not be stored in the database
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
@@ -356,7 +240,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin    Administrator performing the operation
      * @param issuerdn the dn of the certificates issuer.
      * @return Collection of fingerprints, i.e. Strings.
-     * @ejb.interface-method
      */
     public Collection<String> listAllCertificates(Admin admin, String issuerdn) {
     	log.trace(">listAllCertificates()");
@@ -372,8 +255,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param issuerdn the dn of the certificates issuer.
      * @param lastbasecrldate a date (Date.getTime()) of last base CRL or -1 for a complete CRL
      * @return Collection of RevokedCertInfo, reverse ordered by expireDate where last expireDate is first in array.
-     *
-     * @ejb.interface-method
      */
     public Collection<RevokedCertInfo> listRevokedCertInfo(Admin admin, String issuerdn, long lastbasecrldate) {
     	log.trace(">listRevokedCertInfo()");
@@ -388,7 +269,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param issuerDN  the dn of the certificates issuer.
      * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or an empty Collection.
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuerDN) {
     	if (log.isTraceEnabled()) {
@@ -428,7 +308,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param subjectDN
      * @return set of users with certificates with specified subject DN issued by specified issuer.
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method
      */
     public Set<String> findUsernamesByIssuerDNAndSubjectDN(Admin admin, String issuerDN, String subjectDN) {
         if (log.isTraceEnabled()) {
@@ -455,7 +334,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param subjectKeyId
      * @return set of users with certificates with specified key issued by specified issuer.
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method
      */
     public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(Admin admin, String issuerDN, byte subjectKeyId[]) {
         if (log.isTraceEnabled()) {
@@ -482,7 +360,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin     Administrator performing the operation
      * @param subjectDN the DN of the subject whos certificates will be retrieved.
      * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or an empty Collection.
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesBySubject(Admin admin, String subjectDN) {
     	if (log.isTraceEnabled()) {
@@ -504,9 +381,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
         return ret;
     }
 
-    /**
-     * @ejb.interface-method
-     */
     public Collection<Certificate> findCertificatesByExpireTime(Admin admin, Date expireTime) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesByExpireTime(), time=" + expireTime);
@@ -533,8 +407,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * status "active" or "notifiedaboutexpiration".
      * @see org.ejbca.core.model.SecConst#CERT_ACTIVE
      * @see org.ejbca.core.model.SecConst#CERT_NOTIFIEDABOUTEXPIRATION
-     *
-     * @ejb.interface-method
      */
     public Collection<String>  findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) {
     	if (log.isTraceEnabled()) {
@@ -550,7 +422,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param issuerDN issuer DN of the desired certificate.
      * @param serno    serial number of the desired certificate!
      * @return Certificate if found or null
-     * @ejb.interface-method
      */
     public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
     	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager, adapter);
@@ -568,7 +439,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param issuerDN the subjectDN of a CA certificate
      * @param sernos a Collection<BigInteger> of certificate serialnumbers
      * @return Collection a list of certificates; never <tt>null</tt>
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection<BigInteger> sernos) {
     	log.trace(">findCertificateByIssuerAndSernos()");
@@ -595,7 +465,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin Administrator performing the operation
      * @param serno the serialnumber of the certificate(s) that will be retrieved
      * @return Certificate or null if none found.
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesBySerno(Admin admin, BigInteger serno) {
     	if (log.isTraceEnabled()) {
@@ -619,7 +488,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin Administrator performing the operation
      * @param serno the serialnumber of the certificate to find username for.
      * @return username or null if none found.
-     * @ejb.interface-method
      */
     public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) {
     	if (log.isTraceEnabled()) {
@@ -644,7 +512,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin Administrator performing the operation
      * @param username the username of the certificate(s) that will be retrieved
      * @return Collection of Certificates ordered by expire date, with last expire date first, or null if none found.
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesByUsername(Admin admin, String username) {
     	return CertificateDataUtil.findCertificatesByUsername(admin, username, entityManager, adapter);
@@ -657,7 +524,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param username the username of the certificate(s) that will be retrieved
      * @param status the status of the CertificateDataBean.CERT_ constants
      * @return Collection of Certificates ordered by expire date, with last expire date first, or empty list if user can not be found
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesByUsernameAndStatus(Admin admin, String username, int status) {
     	if (log.isTraceEnabled()) {
@@ -683,7 +549,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * This is because this method uses direct SQL.
      * 
      * @return CertificateInfo or null if certificate does not exist.
-     * @ejb.interface-method
      */
     public CertificateInfo getCertificateInfo(Admin admin, String fingerprint) {
     	// TODO: Either enforce authorization check or drop the Admin parameter
@@ -691,9 +556,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     	return CertificateData.getCertificateInfo(entityManager, fingerprint);
     }
 
-    /**
-     * @ejb.interface-method
-     */
     public Certificate findCertificateByFingerprint(Admin admin, String fingerprint) {
         return CertificateDataUtil.findCertificateByFingerprint(admin, fingerprint, entityManager, adapter);
     }
@@ -764,7 +626,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      *                 the issuer.
      * @param type     CERTTYPE_* types from CertificateDataBean
      * @return Collection Collection of Certificate, never <tt>null</tt>
-     * @ejb.interface-method
      */
     public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) {
         return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, entityManager, adapter);
@@ -774,8 +635,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * Can only be performed by an Admin.TYPE_INTERNALUSER. 
      * Normally ARCHIVED is set by the CRL creation job, after a certificate has expired and been added to a CRL 
      * (expired certificates that are revoked must be present on at least one CRL).
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void setArchivedStatus(Admin admin, String fingerprint) throws AuthorizationDeniedException {
@@ -810,8 +669,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
      * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
      * @param userDataDN if an DN object is not found in the certificate, the object could be taken from user data instead.
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection<Integer> publishers, int reason, String userDataDN) {
@@ -928,8 +785,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
      * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
      * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void revokeCertificate(Admin admin, Certificate cert, Collection<Integer> publishers, int reason, String userDataDN) {
@@ -947,8 +802,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin    the administrator performing the event.
      * @param issuerdn the dn of CA about to be revoked
      * @param reason   the reason of revokation.
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void revokeAllCertByCA(Admin admin, String issuerdn, int reason) {
@@ -976,7 +829,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin    Administrator performing the operation
      * @param username the username to check for.
      * @return returns true if all certificates are revoked.
-     * @ejb.interface-method
      */
     public boolean checkIfAllRevoked(Admin admin, String username) {
         boolean returnval = true;
@@ -1014,7 +866,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param issuerDN the DN of the issuer.
      * @param serno    the serialnumber of the certificate that will be checked
      * @return true if the certificate is revoked or can not be found in the database, false if it exists and is not revoked.
-     * @ejb.interface-method
      */
     public boolean isRevoked(String issuerDN, BigInteger serno) {
         if (adapter.getLogger().isTraceEnabled()) {
@@ -1065,7 +916,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param issuerDN
      * @param serno
      * @return the status of the certificate
-     * @ejb.interface-method
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
         return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, tableProtectSession, adapter);
@@ -1077,7 +927,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param certificate the certificate to be authenticated.
      * @param requireAdminCertificateInDatabase if true the certificate has to exist in the database
      * @throws AuthenticationFailedException if authentication failed.
-     * @ejb.interface-method
      */
     public void authenticate(X509Certificate certificate, boolean requireAdminCertificateInDatabase) throws AuthenticationFailedException {
         // Check Validity
@@ -1107,7 +956,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin    Administrator performing the operation
      * @param issuerDN the DN of the issuer.
      * @param serno    the serialnumber of the certificate that will be checked
-     * @ejb.interface-method
      */
     public void verifyProtection(Admin admin, String issuerDN, BigInteger serno) {
         CertificateDataUtil.verifyProtection(admin, issuerDN, serno, entityManager, tableProtectSession, adapter);
@@ -1119,8 +967,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin calling the methods
      * @param cert the certificate to store (Only X509Certificate used for now)
      * @param useradmindata the user information used when issuing the certificate.
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method     
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addCertReqHistoryData(Admin admin, Certificate cert, UserDataVO useradmindata){
@@ -1145,8 +991,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * Method to remove CertReqHistory data.
      * @param admin
      * @param certFingerprint the primary key.
-     * @ejb.transaction type="Required"    
-     * @ejb.interface-method  
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeCertReqHistoryData(Admin admin, String certFingerprint){
@@ -1172,7 +1016,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param certificateSN serial number of the certificate
      * @param issuerDN
      * @return the CertReqHistory or null if no data is stored with the certificate.
-     * @ejb.interface-method
      */
     public CertReqHistory getCertReqHistory(Admin admin, BigInteger certificateSN, String issuerDN){
     	CertReqHistory retval = null;
@@ -1188,7 +1031,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin
      * @param username
      * @return a collection of CertReqHistory
-     * @ejb.interface-method
      */
     public List<CertReqHistory> getCertReqHistory(Admin admin, String username){
     	ArrayList<CertReqHistory> retval = new ArrayList<CertReqHistory>();
@@ -1207,8 +1049,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * 
      * @param admin administrator calling the method
      * 
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void initializeAndUpgradeProfiles(Admin admin) {
@@ -1230,8 +1070,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin                  administrator performing the task
      * @param certificateprofilename readable name of new certificate profile
      * @param certificateprofile     the profile to be added
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addCertificateProfile(Admin admin, String certificateprofilename,
@@ -1246,8 +1084,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param certificateprofileid   internal ID of new certificate profile, use only if you know it's right.
      * @param certificateprofilename readable name of new certificate profile
      * @param certificateprofile     the profile to be added
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename,
@@ -1282,8 +1118,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin                          Administrator performing the operation
      * @param originalcertificateprofilename readable name of old certificate profile
      * @param newcertificateprofilename      readable name of new certificate profile
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void cloneCertificateProfile(Admin admin, String originalcertificateprofilename, String newcertificateprofilename, Collection<Integer> authorizedCaIds) throws CertificateProfileExistsException {
@@ -1328,8 +1162,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * Removes a certificateprofile from the database, does not throw any errors if the profile does not exist, but it does log a message.
      *
      * @param admin Administrator performing the operation
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeCertificateProfile(Admin admin, String certificateprofilename) {
@@ -1347,9 +1179,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
 
     /**
      * Renames a certificateprofile
-     *
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void renameCertificateProfile(Admin admin, String oldcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException {
@@ -1385,8 +1214,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * Updates certificateprofile data
      *
      * @param admin Administrator performing the operation
-     * @ejb.transaction type="Required"
-     * @ejb.interface-method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void changeCertificateProfile(Admin admin, String certificateprofilename, CertificateProfile certificateprofile) {
@@ -1419,7 +1246,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      *                        Retrives certificate profile names sorted.
      * @param authorizedCaIds Collection<Integer> of authorized CA Ids for the specified Admin
      * @return Collection of id:s (Integer)
-     * @ejb.interface-method
      */
     public Collection<Integer> getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype, Collection<Integer> authorizedCaIds) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
@@ -1477,7 +1303,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * Method creating a hashmap mapping profile id (Integer) to profile name (String).
      *
      * @param admin Administrator performing the operation
-     * @ejb.interface-method
      */
     public HashMap<Integer, String> getCertificateProfileIdToNameMap(Admin admin) {
     	if (log.isTraceEnabled()) {
@@ -1488,8 +1313,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     
     /**
      * Clear and reload certificate profile caches.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     public void flushProfileCache() {
     	if (log.isTraceEnabled()) {
@@ -1569,8 +1392,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
 
     /**
      * Retrives a named certificate profile or null if none was found.
-     *
-     * @ejb.interface-method
      */
     public CertificateProfile getCertificateProfile(Admin admin, String certificateprofilename) {
 		Integer id = getCertificateProfileNameIdMapInternal().get(certificateprofilename);
@@ -1586,7 +1407,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      *
      * @param admin Administrator performing the operation
      * @return CertificateProfiles or null if it can not be found.
-     * @ejb.interface-method
      */
     public CertificateProfile getCertificateProfile(Admin admin, int id) {
     	if (log.isTraceEnabled()) {
@@ -1639,7 +1459,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      *
      * @param admin Administrator performing the operation
      * @return the id or 0 if certificateprofile cannot be found.
-     * @ejb.interface-method
      */
     public int getCertificateProfileId(Admin admin, String certificateprofilename) {
     	if (log.isTraceEnabled()) {
@@ -1661,7 +1480,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      *
      * @param admin Administrator performing the operation
      * @return certificateprofilename or null if certificateprofile id doesn't exists.
-     * @ejb.interface-method
      */
     public String getCertificateProfileName(Admin admin, int id) {
     	if (log.isTraceEnabled()) {
@@ -1681,7 +1499,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param admin Administrator performing the operation
      * @param caid  the caid to search for.
      * @return true if ca exists in any of the certificate profiles.
-     * @ejb.interface-method
      */
     public boolean existsCAInCertificateProfiles(Admin admin, int caid) {
         boolean exists = false;
@@ -1709,7 +1526,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      *
      * @param publisherid the publisherid to search for.
      * @return true if publisher exists in any of the certificate profiles.
-     * @ejb.interface-method
      */
     public boolean existsPublisherInCertificateProfiles(Admin admin, int publisherid) {
         boolean exists = false;
@@ -1727,9 +1543,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
         return exists;
     }
 
-    /**
-     * @ejb.interface-method
-     */
     public int findFreeCertificateProfileId() {
         Random random = new Random((new Date()).getTime());
         int id = random.nextInt();

@@ -31,20 +31,6 @@ import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
  * @version $Id: ConfigurationSessionBean.java 9508 2010-07-22 23:13:44Z jeklund
  *          $
  * 
- * @ejb.bean display-name="ConfigurationSessionBean" name="ConfigurationSession"
- *           jndi-name="ConfigurationSession" view-type="remote"
- *           type="Stateless" transaction-type="Container" generate="true"
- * 
- * @ejb.transaction type="Supports"
- * 
- * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
- *           local
- *           -class="org.ejbca.core.ejb.config.IConfigurationSessionLocalHome"
- *           remote-class="org.ejbca.core.ejb.config.IConfigurationSessionHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                remote-class="org.ejbca.core.ejb.upgrade.IConfigurationSessionRemote"
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ConfigurationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -65,8 +51,6 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
      * Try to backup the current configuration.
      * 
      * @return false if a backup already exists.
-     * 
-     * @ejb.interface-method
      */
     public boolean backupConfiguration() {
         assertIsNotInProductionMode();
@@ -77,8 +61,6 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
      * Restore configuration from backup.
      * 
      * @return false if no backup exists.
-     * 
-     * @ejb.interface-method
      */
     public boolean restoreConfiguration() {
         assertIsNotInProductionMode();
@@ -88,8 +70,6 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
     /**
      * Makes sure there is a backup of the configuration and then alters the
      * active configuration with all the properties.
-     * 
-     * @ejb.interface-method
      */
     public boolean updateProperties(Properties properties) {
         assertIsNotInProductionMode();
@@ -99,8 +79,6 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
     /**
      * Makes sure there is a backup of the configuration and then alters the
      * active configuration with the property.
-     * 
-     * @ejb.interface-method
      */
     public boolean updateProperty(String key, String value) {
         assertIsNotInProductionMode();
@@ -109,8 +87,6 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 
     /**
      * Verifies that the property is set to the expected value.
-     * 
-     * @ejb.interface-method
      */
     public boolean verifyProperty(String key, String value) {
         assertIsNotInProductionMode();
@@ -126,8 +102,6 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 
     /**
      * Returns a property from the current server configuration
-     * 
-     * @ejb.interface-method
      */
     public String getProperty(String key, String defaultValue) {
         assertIsNotInProductionMode();
@@ -136,8 +110,6 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 
     /**
      * @return all currently used properties
-     * 
-     * @ejb.interface-method
      */
     public Properties getAllProperties() {
         assertIsNotInProductionMode();

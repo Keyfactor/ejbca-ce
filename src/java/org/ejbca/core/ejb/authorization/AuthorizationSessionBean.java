@@ -56,61 +56,6 @@ import org.ejbca.core.model.log.LogConstants;
  * @version $Id: AuthorizationSessionBean.java 9579 2010-07-30 18:07:23Z
  *          jeklund $
  * 
- * @ejb.bean description="Session bean handling interface with ra authorization"
- *           display-name="AuthorizationSessionSB" name="AuthorizationSession"
- *           jndi-name="AuthorizationSession"
- *           local-jndi-name="AuthorizationSessionLocal" view-type="both"
- *           type="Stateless" transaction-type="Container"
- * 
- * @ejb.transaction type="Required"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * @ejb.env-entry name="DataSource" type="java.lang.String"
- *                value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
- * @ejb.ejb-external-ref description="The log session bean" view-type="local"
- *                       ref-name="ejb/LogSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *                       business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *                       link="LogSession"
- * 
- * @ejb.ejb-external-ref description="Authorization Tree Update Bean"
- *                       view-type="local"
- *                       ref-name="ejb/AuthorizationTreeUpdateDataLocal"
- *                       type="Entity" home=
- *                       "org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateDataLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateDataLocal"
- *                       link="AuthorizationTreeUpdateData"
- * 
- * @ejb.ejb-external-ref description="Admin Groups" view-type="local"
- *                       ref-name="ejb/AdminGroupDataLocal" type="Entity"
- *                       home="org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.AdminGroupDataLocal"
- *                       link="AdminGroupData"
- * 
- * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
- *           local-class=
- *           "org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *           remote-class=
- *           "org.ejbca.core.ejb.authorization.IAuthorizationSessionHome"
- * 
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *                remote-class=
- *                "org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote"
- * 
- * @jonas.bean ejb-name="AuthorizationSession"
- * 
- * @jboss.method-attributes pattern = "get*" read-only = "true"
- * 
- * @jboss.method-attributes pattern = "is*" read-only = "true"
- * 
- * @jboss.method-attributes pattern = "exists*" read-only = "true"
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthorizationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -167,8 +112,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     /**
      * Method to initialize authorization bean, must be called directly after
      * creation of bean. Should only be called once.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void initialize(Admin admin, int caid, String superAdminCN) throws AdminGroupExistsException {
         if (log.isTraceEnabled()) {
@@ -284,8 +227,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @param resource
      *            the resource to check authorization for.
      * @return true if authorized
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
@@ -306,8 +247,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      *            the resource to check authorization for.
      * @return true if authorized, but not false if not authorized, throws
      *         exception instead so return value can safely be ignored.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
@@ -321,8 +260,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * Method to check if a group is authorized to a resource.
      * 
      * @return true if authorized
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isGroupAuthorized(Admin admin, int adminGroupId, String resource) throws AuthorizationDeniedException {
@@ -337,8 +274,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * logging.
      * 
      * @return true if authorized
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) throws AuthorizationDeniedException {
@@ -352,8 +287,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * Method to check if an administrator exists in the specified admingroup.
      * 
      * @return true if administrator exists in group
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsAdministratorInGroup(Admin admin, int admingrouppk) {
@@ -379,7 +312,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      *            name of new admingroup, have to be unique.
      * @throws AdminGroupExistsException
      *             if admingroup already exists.
-     * @ejb.interface-method view-type="both"
      */
     public void addAdminGroup(Admin admin, String admingroupname) throws AdminGroupExistsException {
         if (!(admingroupname.equals(AdminGroup.DEFAULTGROUPNAME))) {
@@ -408,8 +340,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /**
      * Method to remove a admingroup.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void removeAdminGroup(Admin admin, String admingroupname) {
         if (log.isDebugEnabled()) {
@@ -456,7 +386,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * 
      * @throws AdminGroupExistsException
      *             if admingroup already exists.
-     * @ejb.interface-method view-type="both"
      */
     public void renameAdminGroup(Admin admin, String oldname, String newname) throws AdminGroupExistsException {
         if (!(oldname.equals(AdminGroup.DEFAULTGROUPNAME))) {
@@ -491,9 +420,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /**
      * Method to get a reference to a admingroup.
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AdminGroup getAdminGroup(Admin admin, String admingroupname) {
@@ -532,8 +458,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      *            The current administrator
      * @param availableCaIds
      *            A Collection<Integer> of all CA Ids
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<AdminGroup> getAuthorizedAdminGroupNames(Admin admin, Collection<Integer> availableCaIds) {
@@ -612,8 +536,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /**
      * Adds a Collection of AccessRule to an an admin group.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void addAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
@@ -640,7 +562,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * Removes a Collection of (String) containing accessrules to remove from
      * admin group.
      * 
-     * @ejb.interface-method view-type="both"
      */
     public void removeAccessRules(Admin admin, String admingroupname, Collection<String> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
@@ -665,8 +586,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /**
      * Replaces a groups accessrules with a new set of rules
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
@@ -699,8 +618,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     /**
      * Adds a Collection of AdminEnity to the admingroup. Changes their values
      * if they already exists.
-     * 
-     * @ejb.interface-method view-type="both"
      */
 
     public void addAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities) {
@@ -726,8 +643,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /**
      * Removes a Collection of AdminEntity from the administrator group.
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void removeAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
@@ -754,8 +669,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to all issuers of the admin
      *             certificates in this group
-     * 
-     * @ejb.interface-method view-type="both"
      */
     public void isAuthorizedToGroup(Admin administrator, String admingroupname) throws AuthorizationDeniedException {
         ArrayList<Integer> al = new ArrayList<Integer>();
@@ -793,8 +706,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @param authorizedUserDataSourceIds
      *            A Collection<Integer> of all auhtorized user data sources ids
      * @return a Collection of String containing available accessrules.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<String> getAuthorizedAvailableAccessRules(Admin admin, Collection<Integer> availableCaIds, boolean enableendentityprofilelimitations,
@@ -813,9 +724,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @param availableCaIds
      *            A Collection<Integer> of all CA Ids
      * @return Collection of Integer
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<Integer> getAuthorizedCAIds(Admin admin, Collection<Integer> availableCaIds) {
@@ -833,8 +741,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      *            defined in AccessRulesConstants.
      * @param authorizedEndEntityProfileIds
      *            A Collection<Integer> of all auhtorized EEP ids
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge, Collection<Integer> availableEndEntityProfileId) {
@@ -848,8 +754,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @param profileid
      *            the profile id to search for.
      * @return true if profile exists in any of the accessrules.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsEndEntityProfileInRules(Admin admin, int profileid) {
@@ -865,8 +769,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @param caid
      *            the ca id to search for.
      * @return true if ca exists in any of the accessrules.
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsCAInRules(Admin admin, int caid) {
@@ -875,9 +777,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /**
      * Method to force an update of the autorization rules without any wait.
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Supports"
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void forceRuleUpdate(Admin admin) {
@@ -887,8 +786,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /**
      * Clear and load authorization rules cache.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
      */
     public void flushAuthorizationRuleCache()  {
     	if (log.isTraceEnabled()) {

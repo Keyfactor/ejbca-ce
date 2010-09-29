@@ -64,79 +64,6 @@ import org.ejbca.util.keystore.KeyTools;
  * releases.
  * 
  * @version $Id$
- * @ejb.bean display-name="UpgradeSB" name="UpgradeSession"
- *           jndi-name="UpgradeSession" view-type="both" type="Stateless"
- *           transaction-type="Container" generate="true"
- * 
- * @ejb.transaction type="RequiresNew"
- * 
- * @weblogic.enable-call-by-reference True
- * 
- * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
- *           local-class="org.ejbca.core.ejb.upgrade.IUpgradeSessionLocalHome"
- *           remote-class="org.ejbca.core.ejb.upgrade.IUpgradeSessionHome"
-
- * @ejb.interface extends="javax.ejb.EJBObject"
- *                local-extends="javax.ejb.EJBLocalObject"
- *                local-class="org.ejbca.core.ejb.upgrade.IUpgradeSessionLocal"
- *                remote
- *                -class="org.ejbca.core.ejb.upgrade.IUpgradeSessionRemote"
- * 
- * @ejb.ejb-external-ref description="The Log Configuration Data Entity bean"
- *                       view-type="local"
- *                       ref-name="ejb/LogConfigurationDataLocal" type="Entity"
- *                       home=
- *                       "org.ejbca.core.ejb.log.LogConfigurationDataLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.log.LogConfigurationDataLocal"
- *                       link="LogConfigurationData"
- * 
- * @ejb.ejb-external-ref description="The CA Admin Session" view-type="local"
- *                       ref-name="ejb/CAAdminSessionLocal" type="Session"
- *                       home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *                       link="CAAdminSession"
- * 
- * @ejb.ejb-external-ref description="Admin Groups" view-type="local"
- *                       ref-name="ejb/AdminGroupDataLocal" type="Entity"
- *                       home="org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.authorization.AdminGroupDataLocal"
- *                       link="AdminGroupData"
- * 
- * @ejb.ejb-external-ref description="The Approval Session Bean"
- *                       view-type="local" ref-name="ejb/ApprovalSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
- *                       link="ApprovalSession"
- * 
- * @ejb.ejb-external-ref description="The Approval entity bean"
- *                       view-type="local" ref-name="ejb/ApprovalDataLocal"
- *                       type="Entity"
- *                       home="org.ejbca.core.ejb.approval.ApprovalDataLocalHome"
- *                       business
- *                       ="org.ejbca.core.ejb.approval.ApprovalDataLocal"
- *                       link="ApprovalData"
- * 
- * @ejb.ejb-external-ref description="The User Admin session bean"
- *                       view-type="local" ref-name="ejb/UserAdminSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *                       business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *                       link="UserAdminSession"
- * 
- * @ejb.ejb-external-ref 
- *                       description="The Certificate store used to store and fetch certificates"
- *                       view-type="local"
- *                       ref-name="ejb/CertificateStoreSessionLocal"
- *                       type="Session"
- *                       home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *                       business=
- *                       "org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *                       link="CertificateStoreSession"
  * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "UpgradeSessionRemote")
@@ -160,7 +87,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * Upgrades the database
      * 
-     * @ejb.interface-method
      * @jboss.method-attributes transaction-timeout="3600"
      * 
      * @param admin

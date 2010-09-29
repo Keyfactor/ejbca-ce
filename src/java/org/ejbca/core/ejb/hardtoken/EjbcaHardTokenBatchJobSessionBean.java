@@ -39,68 +39,6 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @ejb.bean
- *   description="Session bean handling userdata queue for hard token issuers"
- *   display-name="HardTokenBatchJobSessionSB"
- *   name="HardTokenBatchJobSession"
- *   jndi-name="HardTokenBatchJobSession"
- *   local-jndi-name="HardTokenBatchJobSessionLocal"
- *   view-type="both"
- *   type="Stateless"
- *   transaction-type="Container"
- *
- * @ejb.transaction type="Required"
- *
- * @weblogic.enable-call-by-reference True
- *
- * @ejb.env-entry
- *  description="The JDBC datasource to be used"
- *  name="DataSource"
- *  type="java.lang.String"
- *  value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- *
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionLocal"
- *   remote-class="org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionRemote"
- *
- * @ejb.ejb-external-ref
- *   description="The User entity bean"
- *   view-type="local"
- *   ref-name="ejb/UserDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ra.UserDataLocalHome"
- *   business="org.ejbca.core.ejb.ra.UserDataLocal"
- *   link="UserData"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate Store session bean"
- *   view-type="local"
- *   ref-name="ejb/HardTokenSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
- *   link="HardTokenSession"
- *
- * @ejb.ejb-external-ref
- *   description="The log session bean"
- *   view-type="local"
- *   ref-name="ejb/LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
- * @jonas.bean
- *   ejb-name="HardTokenSession"
- *
  * @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "HardTokenBatchJobSessionRemote")
@@ -132,7 +70,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
      *
      * @return The next user to generate or NULL if there are no users i queue.
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public UserDataVO getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
     	log.trace(">getNextHardTokenToGenerate()");
@@ -172,7 +109,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
      *
      * @return A Collection of users to generate or NULL if there are no users i queue.
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public Collection getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException {
     	log.trace(">getNextHardTokensToGenerate()");
@@ -211,7 +147,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
      *
      * @return The next token to generate or NULL if the given user doesn't exist in queue.
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public UserDataVO getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException {
     	log.trace(">getNextHardTokenToGenerateInQueue()");
@@ -243,7 +178,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
      *
      * @return the number of users to generate.
      * @throws EJBException if a communication or other error occurs.
-     * @ejb.interface-method view-type="both"
      */
     public int getNumberOfHardTokensToGenerate(Admin admin, String alias){
     	log.trace(">getNumberOfHardTokensToGenerate()");
@@ -262,7 +196,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
      *
      * @param hardtokenissuerid the id of hard token issuer to look for.
      * @return true if hardtokenissuerid exists in userdatabase.
-     * @ejb.interface-method view-type="both"
      */
     public boolean checkForHardTokenIssuerId(Admin admin, int hardtokenissuerid){
     	if (log.isTraceEnabled()) {
