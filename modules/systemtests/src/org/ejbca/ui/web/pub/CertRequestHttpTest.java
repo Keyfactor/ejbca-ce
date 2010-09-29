@@ -20,12 +20,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.rmi.ServerException;
 import java.security.KeyStore;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
@@ -342,9 +342,22 @@ public class CertRequestHttpTest extends CaTestCase {
             userAdminSession.addUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
             log.debug("created user: reqtest, foo123, C=SE, O=PrimeKey, CN=ReqTest");
-        } catch (EJBException e) {
-        	if (e.getCause() instanceof PersistenceException) {
-                userExists = true;
+        } catch (EJBException ejbException) {
+        	// On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used. 
+        	Exception e = ejbException.getCausedByException();
+           	log.debug("Exception cause thrown: " + e.getClass().getName() + " message: " + e.getMessage());
+        	if (e instanceof PersistenceException) {
+        		userExists = true;	// This is what we want
+        	} else if (e instanceof ServerException) {
+                // Glassfish 2 throws EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))), can you believe this?
+        		Throwable t = e.getCause();
+            	if (t != null && t instanceof RemoteException) {
+            		t = t.getCause();
+                	log.debug("Exception cause thrown: " + t.getClass().getName() + " message: " + t.getMessage());
+            		if (t != null && t instanceof PersistenceException) {
+                		userExists = true;	// This is what we want
+            		}
+            	}
         	}
         }
         if (userExists) {
