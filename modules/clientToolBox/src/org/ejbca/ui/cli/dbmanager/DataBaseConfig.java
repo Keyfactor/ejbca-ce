@@ -33,11 +33,11 @@ class DataBaseConfig {
 	final private URI uri;
 	/**
 	 * Loads properties from the database properties of EJBCA.
-	 * @param configDir
+	 * @param ejbcaHome the root directory of the EJBCA
 	 * @throws IOException
 	 */
-	DataBaseConfig(String configDir) throws IOException {
-		this.propertiesFile = configDir+"/database.properties";
+	DataBaseConfig(String ejbcaHome) throws IOException {
+		this.propertiesFile = ejbcaHome+"/conf/database.properties";
 		this.dbProps = new Properties();
 		try {
 			this.dbProps.load(new FileInputStream(this.propertiesFile));

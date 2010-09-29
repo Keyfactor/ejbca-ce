@@ -50,13 +50,13 @@ class CommandLine {
 	
 	/**
 	 * Read information from the properties file of the used DB.
-	 * @param configDir the directory with the EJBCA .properties files
+	 * @param ejbcaHome the root directory of EJBCA
 	 * @param _command the command label
 	 * @throws IOException should not be thrown
 	 */
-	CommandLine(String configDir, String _command) throws IOException {
+	CommandLine(String ejbcaHome, String _command) throws IOException {
 		this.command = _command;
-		this.dataBaseConfig = new DataBaseConfig(configDir);
+		this.dataBaseConfig = new DataBaseConfig(ejbcaHome);
 		final Properties properties = new Properties();
 		properties.load(getResourceInputStream("config.properties"));
 		if ( this.command==null ) {
