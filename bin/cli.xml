@@ -86,8 +86,6 @@ appserver.home         : ${appserver.home}
 	</target>
 
     <target name="ejbca:javatruststore-removeold" if="javatruststore.file.present">
-		<echo>Trying to remove old certificates. Ignore any Exception regarding 'EJBCA-CA'.</echo>
-	    <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
 	    <ejbca:keytool arg="-v -alias '${ca.name}' -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>
     </target>
 	
