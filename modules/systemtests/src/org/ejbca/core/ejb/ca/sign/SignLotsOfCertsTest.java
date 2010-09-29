@@ -106,8 +106,8 @@ public class SignLotsOfCertsTest extends CaTestCase {
         try {
             userAdminSession.deleteUser(admin, "performancefoo" + post);
             log.debug("deleted user: performancefoo" + post);
-        } catch (RemoteException re) {
-            // User did not exist, which is fine so do nothing.
+        } catch (EJBException e) {
+        	log.debug("Delete operation failed.. User probably did not exist, which is fine so do nothing." + e.getMessage());
         }
     }
 
