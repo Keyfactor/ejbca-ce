@@ -126,20 +126,23 @@ public class UserAdminSessionTest extends CaTestCase {
         try {
             userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
-        } catch (EJBException e) {
-        	if (e.getCause() instanceof PersistenceException) {
-        		// This is what we want
-        		userexists = true;
+        } catch (EJBException ejbException) {
+        	// On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used. 
+        	Exception e = ejbException.getCausedByException();
+           	log.debug("Exception cause thrown: " + e.getClass().getName() + " message: " + e.getMessage());
+        	if (e instanceof PersistenceException) {
+        		userexists = true;	// This is what we want
+        	} else if (e instanceof ServerException) {
+                // Glassfish 2 throws EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))), can you believe this?
+        		Throwable t = e.getCause();
+            	if (t != null && t instanceof RemoteException) {
+            		t = t.getCause();
+                	log.debug("Exception cause thrown: " + t.getClass().getName() + " message: " + t.getMessage());
+            		if (t != null && t instanceof PersistenceException) {
+                		userexists = true;	// This is what we want
+            		}
+            	}
         	}
-        } catch (TransactionRolledbackException e) {
-            // weblogic throws transactionrolledbackexception instead wrapping
-            // the duplicatekey ex
-            if (e.getCause() instanceof PersistenceException) {
-                userexists = true;
-            }
-        } catch (ServerException e) {
-            // glassfish throws serverexception, can you believe this?
-            userexists = true;
         }
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 

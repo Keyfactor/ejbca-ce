@@ -298,6 +298,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *             the CA that it should be unique.
      * @throws WaitingForApprovalException
      */
+    // TODO: Try to throw an application exception instead if the PersistenceException, since this becomes
+    // EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))) on Glassfish
+    // See UserAdminSessionTest
     public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException,
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, PersistenceException {
         try {
