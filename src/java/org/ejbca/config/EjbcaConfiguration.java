@@ -79,6 +79,13 @@ public class EjbcaConfiguration {
         final String value = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys", null);
         return value!=null && value.trim().equalsIgnoreCase("true");
     }
+    
+    /**
+     * The algorith that should be used to generate random numbers (Random Number Generator Algorithm)
+     */
+    public static String getRNGAlgorithm() {
+    	return ConfigurationHolder.getString("ca.rngalgorithm", "SHA1PRNG");
+    }
 
 	/**
 	 * The language that should be used internally for logging, exceptions and approval notifications.

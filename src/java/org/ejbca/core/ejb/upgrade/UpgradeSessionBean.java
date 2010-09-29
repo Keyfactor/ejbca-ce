@@ -40,7 +40,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
@@ -76,10 +75,7 @@ import org.ejbca.util.keystore.KeyTools;
  * @ejb.home extends="javax.ejb.EJBHome" local-extends="javax.ejb.EJBLocalHome"
  *           local-class="org.ejbca.core.ejb.upgrade.IUpgradeSessionLocalHome"
  *           remote-class="org.ejbca.core.ejb.upgrade.IUpgradeSessionHome"
- * 
- * @ejb.env-entry name="DataSource" type="java.lang.String"
- *                value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
- * 
+
  * @ejb.interface extends="javax.ejb.EJBObject"
  *                local-extends="javax.ejb.EJBLocalObject"
  *                local-class="org.ejbca.core.ejb.upgrade.IUpgradeSessionLocal"
@@ -271,7 +267,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Start migration of database.");
         try {
             InputStreamReader inreader = new InputStreamReader(in);
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+            con = JDBCUtil.getDBConnection();
             SqlExecutor sqlex = new SqlExecutor(con, false);
             sqlex.runCommands(inreader);
         } catch (SQLException e) {
@@ -448,7 +444,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final String lKeyID = "subjectKeyId";
         final String lCert = "base64Cert";
         final String lFingerPrint = "fingerprint";
-        final Connection connection = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+        final Connection connection = JDBCUtil.getDBConnection();
         try {
             final Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
             final ResultSet srs = stmt.executeQuery("select " + lFingerPrint + "," + lKeyID + "," + lCert + " from CertificateData where " + lKeyID
