@@ -21,6 +21,9 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
+import org.ejbca.config.DatabaseConfiguration;
+import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
@@ -56,8 +59,10 @@ public class PublisherQueueTest extends TestCase {
             + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
             + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
+    private static final Logger log = Logger.getLogger(PublisherQueueTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
     
@@ -142,6 +147,7 @@ public class PublisherQueueTest extends TestCase {
     }
 
     public void test02ExternalOCSPPublisherFail() throws Exception {
+    	log.trace(">test02ExternalOCSPPublisherFail");
         boolean ret = false;
 
         ret = false;
@@ -149,7 +155,9 @@ public class PublisherQueueTest extends TestCase {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ExternalOCSPPublisher.class.getName());
 		    // We use a datasource that we know don't exist, so we know publishing will fail
-            publisher.setPropertyData("dataSource java:/NoExist234DS");
+            String jndiNamePrefix = configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/");
+            log.debug("jndiNamePrefix=" + jndiNamePrefix);
+            publisher.setPropertyData("dataSource " + jndiNamePrefix + "NoExist234DS");
             publisher.setDescription("Used in Junit Test, Remove this one");
             publisherSession.addPublisher(admin, "TESTEXTOCSPQUEUE", publisher);
             ret = true;
@@ -172,10 +180,11 @@ public class PublisherQueueTest extends TestCase {
     	Iterator<PublisherQueueData> i = c.iterator();
     	PublisherQueueData d = i.next();
     	assertEquals(CertTools.getFingerprintAsString(cert), d.getFingerprint());
-    	
+    	log.trace("<test02ExternalOCSPPublisherFail");
     }
 
     public void test03ExternalOCSPPublisherOk() throws Exception {
+    	log.trace(">test03ExternalOCSPPublisherOk");
         boolean ret = false;
 
         // Remove publisher since we probably have one from the test above
@@ -187,8 +196,11 @@ public class PublisherQueueTest extends TestCase {
 		try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ExternalOCSPPublisher.class.getName());
-		    // We use a datasource that we know don't exist, so we know publishing will fail
-            publisher.setPropertyData("dataSource java:/EjbcaDS");
+		    // We use a datasource that we know don't exist, so we know publishing will be successful
+            String jndiName = configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
+            	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
+            log.debug("jndiName=" + jndiName);
+            publisher.setPropertyData("dataSource " + jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
             publisherSession.addPublisher(admin, "TESTEXTOCSPQUEUE", publisher);
             ret = true;
@@ -208,9 +220,11 @@ public class PublisherQueueTest extends TestCase {
         // Now this certificate fingerprint should NOT be in the queue
     	Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(id);
     	assertEquals(0, c.size());
+    	log.trace("<test03ExternalOCSPPublisherOk");
     }
     
     public void test04ExternalOCSPPublisherOnlyUseQueue() throws Exception {
+    	log.trace(">test04ExternalOCSPPublisherOnlyUseQueue");
         boolean ret = false;
 
         // Remove publisher since we probably have one from the test above
@@ -223,7 +237,10 @@ public class PublisherQueueTest extends TestCase {
 			CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ExternalOCSPPublisher.class.getName());
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-            publisher.setPropertyData("dataSource java:/EjbcaDS");
+            String jndiName = configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
+        		+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
+            log.debug("jndiName=" + jndiName);
+            publisher.setPropertyData("dataSource " + jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
             
             // Set to only use the publisher queue instead of publish directly
@@ -251,6 +268,7 @@ public class PublisherQueueTest extends TestCase {
     	Iterator<PublisherQueueData> i = c.iterator();
     	PublisherQueueData d = i.next();
     	assertEquals(CertTools.getFingerprintAsString(cert), d.getFingerprint());
+    	log.trace("<test04ExternalOCSPPublisherOnlyUseQueue");
     }
     
     public void test05PublisherQueueCountInInterval1() throws Exception {
