@@ -19,6 +19,7 @@
     -->
 
     <enterprise-beans>
+    	<!--
         <session>
             <ejb-name>RSASignSessionBean</ejb-name>
             <ejb-class>org.ejbca.core.ejb.ca.sign.RSASignSessionBean</ejb-class>
@@ -47,6 +48,7 @@
                 <env-entry-value><![CDATA[${datasource.jndi-name-prefix}${datasource.jndi-name}]]></env-entry-value>
             </env-entry>
         </session>
+        -->
         <session>
             <ejb-name>PublisherQueueSessionBean</ejb-name>
             <ejb-class>org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionBean</ejb-class>
