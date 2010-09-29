@@ -789,7 +789,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void unload() {
         // Get all services
         for (Timer timer : (Collection<Timer>) timerService.getTimers()) {
@@ -813,10 +814,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *            the id of the timer
      * @ejb.interface-method view-type="both"
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void addTimer(long interval, Integer id) {
         timerService.createTimer(interval, id);
-
     }
 
     /**
@@ -824,14 +825,11 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @ejb.interface-method view-type="both"
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void cancelTimer(Integer id) {
-
         for (Timer next : (Collection<Timer>) timerService.getTimers()) {
-            
-           
             try {
-
                 if (id.equals(next.getInfo())) {
                     next.cancel();
                     break;
