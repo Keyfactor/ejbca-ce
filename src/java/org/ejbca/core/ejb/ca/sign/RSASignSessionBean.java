@@ -99,7 +99,7 @@ import org.ejbca.util.keystore.KeyTools;
 @TransactionAttribute(TransactionAttributeType.REQUIRED) 
 public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
-    private static Logger log = Logger.getLogger(RSASignSessionBean.class);
+    private static final Logger log = Logger.getLogger(RSASignSessionBean.class);
     
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
