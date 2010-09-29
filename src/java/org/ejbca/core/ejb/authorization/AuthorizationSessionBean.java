@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.Random;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
@@ -35,7 +34,6 @@ import org.apache.log4j.Logger;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRule;
@@ -89,14 +87,10 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     /**
      * Default create for SessionBean without any creation Arguments.
-     * 
-     * @throws CreateException
-     *             if bean instance can't be created
      */
     @PostConstruct
-    public void ejbCreate() throws CreateException {
+    public void ejbCreate() {
         log.trace(">ejbCreate()");
-        ServiceLocator locator = ServiceLocator.getInstance();
         String customrules = ConfigurationHolder.getString("ejbca.customavailableaccessaules", "");
         customaccessrules = StringUtils.split(customrules, ';');
         log.trace("<ejbCreate()");
