@@ -345,12 +345,11 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * @ejb.interface-method view-type="both"
      */
     public Collection<Integer> getAuthorizedVisibleServiceIds(Admin admin) {
-        Collection<Integer> allServiceIds = new ArrayList<Integer>();
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
         try {
             authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
-            allServiceIds = getServiceIdToNameMap(admin).keySet();
+            Collection<Integer> allServiceIds = getServiceIdToNameMap(admin).keySet();
             Iterator<Integer> i = allServiceIds.iterator();
             while (i.hasNext()) {
                 int id = i.next().intValue();
@@ -368,7 +367,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
 
     /**
-     * Retrives a named service.
+     * Retrieves a named service.
      * 
      * @returns the service configuration or null if it doesn't exist.
      * @ejb.transaction type="Supports"
@@ -497,7 +496,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      */
     @Timeout
     // Glassfish 2.1.1: "Timeout method ....timeoutHandler(javax.ejb.Timer)must have TX attribute of TX_REQUIRES_NEW or TX_REQUIRED or TX_NOT_SUPPORTED"
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    // JBoss 5.1.0.GA: We cannot mix timer updates with our EJBCA DataSource transactions. 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeoutHandler(Timer timer) {
         if (log.isTraceEnabled()) {
             log.trace(">ejbTimeout");
@@ -509,18 +509,18 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             }
             load();
         } else {
-            ServiceConfiguration serviceData = null;
+            ServiceConfiguration serviceConfiguration = null;
             IWorker worker = null;
             String serviceName = null;
             boolean run = false;
             try {
-                serviceData = getServiceConfiguration(intAdmin, timerInfo.intValue());
-                if (serviceData != null) {
+                serviceConfiguration = getServiceConfiguration(intAdmin, timerInfo.intValue());
+                if (serviceConfiguration != null) {
                     serviceName = getServiceName(intAdmin, timerInfo.intValue());
-                    worker = getWorker(serviceData, serviceName);
+                    worker = getWorker(serviceConfiguration, serviceName);
                     // This might lead to a circular dependency when using EJB
                     // injection..
-                    run = checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceData, serviceName);
+                    run = checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceConfiguration, serviceName);
                     log.debug("Service will run: " + run);
                 } else {
                     log.debug("Service was null and will not run, neither will it be rescheduled, so it will never run. Id: " + timerInfo.intValue());
@@ -570,9 +570,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 }
             }
             if (run) {
-                if (serviceData != null) {
+                if (serviceConfiguration != null) {
                     try {
-                        if (serviceData.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
+                        if (serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
                             worker.work();
                             logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
                                     LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
@@ -601,17 +601,14 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * Internal method should not be called from external classes, method is
      * public to get automatic transaction handling.
      * 
-     * This method need "RequiresNew" transaction handling, because we want to
-     * make sure that the timer runs the next time even if the execution fails.
-     * 
      * @return true if the service should run, false if the service should not
      *         run
      * 
      * @ejb.interface-method view-type="local"
      * @ejb.transaction type="RequiresNew"
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceConfiguration serviceData, String serviceName) {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceConfiguration serviceConfiguration, String serviceName) {
         boolean ret = false;
         /*
          * Add a random delay within 30 seconds to the interval, just to make
@@ -622,7 +619,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         long intervalMillis = getNextIntervalMillis(nextInterval);
         addTimer(intervalMillis, timerInfo); 
         // Calculate the nextRunTimeStamp, since we set a new timer
-        Date runDateCheck = serviceData.getNextRunTimestamp();  
+        Date runDateCheck = serviceConfiguration.getNextRunTimestamp();  
         /*
          * nextRunDateCheck will typically be the same (or just a millisecond earlier) as now
          * here
@@ -650,8 +647,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
              * running otherwise it will, in theory, be a race to exclude each
              * other between the nodes.
              */
-            serviceData.setNextRunTimestamp(nextRunDate);
-            changeService(intAdmin, serviceName, serviceData, true);
+            serviceConfiguration.setNextRunTimestamp(nextRunDate);
+            changeService(intAdmin, serviceName, serviceConfiguration, true);
             ret = true;
         }
         return ret;
@@ -665,16 +662,14 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @ejb.interface-method view-type="both"
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
         if (log.isTraceEnabled()) {
             log.trace(">changeService(name: " + name + ")");
         }
         boolean success = false;
         if (isAuthorizedToEditService(admin, serviceConfiguration)) {
-            ServiceData htp = serviceDataSession.findByName(name);
-            if (htp != null) {
-                htp.setServiceConfiguration(serviceConfiguration);
+        	if (serviceDataSession.updateServiceConfiguration(name, serviceConfiguration)) {
                 success = true;
             } else {
                 log.error("Can not find service to change: " + name);
@@ -744,7 +739,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void load() {
         // Get all services
         Collection<Timer> currentTimers = timerService.getTimers(); 
@@ -790,7 +786,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * @ejb.interface-method view-type="both"
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void unload() {
         // Get all services
         for (Timer timer : (Collection<Timer>) timerService.getTimers()) {
@@ -814,9 +810,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *            the id of the timer
      * @ejb.interface-method view-type="both"
      */
-    // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void addTimer(long interval, Integer id) {
+    // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
+    private void addTimer(long interval, Integer id) {
         timerService.createTimer(interval, id);
     }
 
@@ -825,9 +820,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @ejb.interface-method view-type="both"
      */
-    // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void cancelTimer(Integer id) {
+    // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
+    private void cancelTimer(Integer id) {
         for (Timer next : (Collection<Timer>) timerService.getTimers()) {
             try {
                 if (id.equals(next.getInfo())) {

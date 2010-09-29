@@ -51,6 +51,24 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
     }
     
     /**
+     * Update the named ServiceData entity with a new ServiceConfiguration.
+     * @return true if the ServiceData exists and was updated.
+     */
+    /* 
+     * This method need "RequiresNew" transaction handling, because we want to
+     * make sure that the timer runs the next time even if the execution fails.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public boolean updateServiceConfiguration(String name, ServiceConfiguration serviceConfiguration) {
+    	ServiceData serviceData = findByName(name);
+    	if (serviceData != null) {
+        	serviceData.setServiceConfiguration(serviceConfiguration);
+    		return true;
+    	}
+    	return false;
+    }
+    
+    /**
      * Removes given parameter from persistence.
      * 
      * @param serviceData
@@ -85,6 +103,5 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
     public List<ServiceData> findAll() {
         Query query = entityManager.createQuery("SELECT a FROM ServiceData a");
         return query.getResultList();
-    }   
-
+    }
 }
