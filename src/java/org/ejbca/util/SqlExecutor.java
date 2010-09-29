@@ -106,21 +106,18 @@ public class SqlExecutor {
             String temp;
             StringBuffer strBuf = new StringBuffer();
             commands = 0;
-            List list = new LinkedList();
+            List<String> list = new LinkedList<String>();
             while ((temp = br.readLine()) != null) {
-            	if (!temp.startsWith("#")) { // Don't include comments
-            		list.add(temp);
-            	}
-            	if (!temp.startsWith("--")) { // Don't include SQL comments
+            	if (!temp.startsWith("#") && !temp.startsWith("--")) { // Don't include comments and SQL comments
             		list.add(temp);
             	}
                 if (!temp.endsWith(";")) {
                     continue;
                 }
             }
-            Iterator it = list.iterator();
+            Iterator<String> it = list.iterator();
             while (it.hasNext()) {
-                temp = (String) it.next();
+                temp = it.next();
                 temp = temp.trim();
                 if (temp.length() != 0) {
                     strBuf.append(temp);
