@@ -56,6 +56,7 @@
     		</fileset>
     		<fileset dir="${src.dir}">
     			<include name="org/ejbca/config/ConfigurationHolder.java"/>
+                <include name="org/ejbca/config/DatabaseConfiguration.java"/>
     			<include name="org/ejbca/config/EjbcaConfiguration.java"/>
     			<include name="org/ejbca/util/CryptoProviderTools.java"/>
     			<include name="org/ejbca/util/GUIDGenerator.java"/>
@@ -64,7 +65,7 @@
     			<include name="org/ejbca/util/FileTools.java"/>
     			<include name="org/ejbca/util/Base64.java"/>
     			<include name="org/ejbca/core/ejb/InitialContextBuilder.java"/>
-    			<include name="org/ejbca/core/ejb/JNDINames.java"/>
+    			<!-- <include name="org/ejbca/core/ejb/JNDINames.java"/> -->
     			<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
     			<include name="org/ejbca/core/ejb/ServiceLocatorException.java"/>
     			<include name="org/ejbca/core/model/AlgorithmConstants.java"/>
