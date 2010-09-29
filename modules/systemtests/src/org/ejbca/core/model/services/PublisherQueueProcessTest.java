@@ -122,7 +122,7 @@ public class PublisherQueueProcessTest extends TestCase {
         assertEquals(1, c.size());
         i = c.iterator();
         d = i.next();
-        assertEquals(1, d.getTryCounter());
+        assertEquals("Service should have run at least one time and updated trycounter.", 1, d.getTryCounter());
         assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
     }
 
