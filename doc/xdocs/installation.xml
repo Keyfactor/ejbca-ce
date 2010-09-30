@@ -344,10 +344,8 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <li>Create a database and a database user with privileges.
 <pre>
   > cd /home/sun/glassfish/bin
+  > ./asadmin start-database
   > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/bin/ij   
-   (For glassfish v1 use this command instead: 
-    > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/frameworks/NetworkServer/bin/ij.ksh)
-
   ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
   ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';
   ij> quit;
