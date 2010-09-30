@@ -14,9 +14,18 @@ package org.ejbca.core.ejb.log;
 
 import javax.ejb.Local;
 
+import org.ejbca.core.model.log.LogConfiguration;
+
 /**
  * Local interface for LogSession.
  */
 @Local
 public interface LogSessionLocal extends LogSession {
+	
+    /**
+     * Saves the log configuration to the database without logging.
+     * Should only be used from loadLogConfiguration(..)
+     * @param logConfiguration the logconfiguration to save.
+     */
+	public void saveNewLogConfiguration(int caid, LogConfiguration logConfiguration);
 }
