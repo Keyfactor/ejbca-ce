@@ -24,8 +24,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -72,9 +74,13 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
-    
+
+    @Resource
+    private SessionContext sessionContext;
+
     @EJB
     private OldLogSessionLocal oldLogSession;	// Injected into OldLogDevice (if used).
+    private LogSessionLocal logSession;	// Reference to an instance of this SSB to be able to get the right transaction attributes.
 
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList<ILogDevice> logdevices;
@@ -82,6 +88,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     @PostConstruct
     public void ejbCreate() {
         try {
+        	logSession = sessionContext.getBusinessObject(LogSessionLocal.class);
             // Setup Connection to signing devices.
             logdevices = new ArrayList<ILogDevice>();
             // Load logging properties dynamically as internal resource
@@ -232,7 +239,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      *
      * @return the logconfiguration
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public LogConfiguration loadLogConfiguration(int caid) {
         // Check if log configuration exists, else create one.
         LogConfiguration ret = null; 
@@ -245,7 +251,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     			log.debug("Can't find log configuration during load (caid="+caid+"), trying to create new.");
     			try {
     				ret = new LogConfiguration();
-    				entityManager.persist(new LogConfigurationData(new Integer(caid), ret));
+    				logSession.saveNewLogConfiguration(caid, ret);	// Need invocation through interface to start transaction
     			} catch (Exception f) {
     				String msg = intres.getLocalizedMessage("log.errorcreateconf", new Integer(caid));            	
     				log.error(msg, f);
@@ -261,6 +267,18 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         return ret;
     }
 
+    /**
+     * Saves the log configuration to the database without logging.
+     * Should only be used from loadLogConfiguration(..)
+     * @param logConfiguration the logconfiguration to save.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void saveNewLogConfiguration(int caid, LogConfiguration logConfiguration) {
+		entityManager.persist(new LogConfigurationData(new Integer(caid), logConfiguration));
+        // Update cache
+		logConfCache.put(Integer.valueOf(caid), logConfiguration);
+    }
+    
     /**
      * Saves the log configuration to the database.
      *
