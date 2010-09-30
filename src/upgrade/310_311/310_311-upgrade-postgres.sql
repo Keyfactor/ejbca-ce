@@ -15,3 +15,7 @@
 --ALTER TABLE KeyRecoveryData ADD markedAsRecoverable BOOLEAN DEFAULT FALSE NOT NULL;
 --UPDATE KeyRecoveryData SET markedAsRecoverable=tmp;
 --ALTER TABLE KeyRecoveryData DROP tmp;
+
+-- ServiceData gets two new columns
+ALTER TABLE ServiceData ADD nextRunTimeStamp INT8 NOT NULL DEFAULT 0;
+ALTER TABLE ServiceData ADD runTimeStamp INT8 NOT NULL DEFAULT 0;

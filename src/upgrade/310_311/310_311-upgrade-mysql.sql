@@ -11,3 +11,7 @@ ALTER TABLE CertificateData MODIFY base64Cert longtext DEFAULT NULL;
 ALTER TABLE KeyRecoveryData MODIFY keyData longtext DEFAULT NULL;
 ALTER TABLE UserDataSourceData MODIFY data longtext DEFAULT NULL;
 ALTER TABLE ServiceData MODIFY data longtext DEFAULT NULL;
+
+-- ServiceData gets two new columns
+ALTER TABLE ServiceData ADD nextRunTimeStamp bigint(20) NOT NULL DEFAULT '0';
+ALTER TABLE ServiceData ADD runTimeStamp bigint(20) NOT NULL DEFAULT '0';

@@ -203,9 +203,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 throw new FinderException("Cannot find service " + name);
             }
             ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
-
             if (isAuthorizedToEditService(admin, serviceConfiguration)) {
-                IWorker worker = getWorker(serviceConfiguration, name);
+                IWorker worker = getWorker(serviceConfiguration, name, htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
                 if (worker != null) {
                     cancelTimer(htp.getId());
                 }
@@ -345,7 +344,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (htp != null) {
             ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
             if (isAuthorizedToEditService(admin, serviceConfiguration)) {
-                IWorker worker = getWorker(serviceConfiguration, name);
+                IWorker worker = getWorker(serviceConfiguration, name, htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
                 if (worker != null) {
                     cancelTimer(htp.getId());
                     if (serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
@@ -427,24 +426,24 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             String serviceName = null;
             boolean run = false;
             try {
-                serviceConfiguration = getServiceConfiguration(intAdmin, timerInfo.intValue());
-                if (serviceConfiguration != null) {
-                    serviceName = getServiceName(intAdmin, timerInfo.intValue());
-                    worker = getWorker(serviceConfiguration, serviceName);
-                    // This might lead to a circular dependency when using EJB
-                    // injection..
-                    run = checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceConfiguration, serviceName);
-                    log.debug("Service will run: " + run);
+                ServiceData htp = serviceDataSession.findById(timerInfo);
+                if (htp != null) {
+                    serviceConfiguration = htp.getServiceConfiguration();
+                    serviceName = htp.getName();
+                    worker = getWorker(serviceConfiguration, serviceName, htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
+                    run = checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, htp);
+					if (log.isDebugEnabled()) {
+						log.debug("Service "+serviceName+" will run: "+run);
+					}
                 } else {
                     log.debug("Service was null and will not run, neither will it be rescheduled, so it will never run. Id: " + timerInfo.intValue());
                 }
             } catch (Throwable e) {
                 // We need to catch wide here in order to continue even if there
                 // is some error
-                log.info("Error getting and running service, we must see if we need to re-schedule: " + e.getMessage());
+				log.info("Error getting and running service ("+timerInfo+"), we must see if we need to re-schedule: "+ e.getMessage());
                 if (log.isDebugEnabled()) {
-                    // Don't spam log with stacktraces in normal production
-                    // cases
+                    // Don't spam log with stacktraces in normal production cases
                     log.debug("Exception: ", e);
                 }
 
@@ -518,7 +517,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      *         run
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceConfiguration serviceConfiguration, String serviceName) {
+	public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceData serviceData) {
+		if (log.isTraceEnabled()) {
+			log.trace(">checkAndUpdateServiceTimeout");
+		}
         boolean ret = false;
         /*
          * Add a random delay within 30 seconds to the interval, just to make
@@ -529,7 +531,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         long intervalMillis = getNextIntervalMillis(nextInterval);
         addTimer(intervalMillis, timerInfo); 
         // Calculate the nextRunTimeStamp, since we set a new timer
-        Date runDateCheck = serviceConfiguration.getNextRunTimestamp();  
+		Date runDateCheck = new Date(serviceData.getNextRunTimeStamp()); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
         /*
          * nextRunDateCheck will typically be the same (or just a millisecond earlier) as now
          * here
@@ -545,7 +547,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
          * Check if the current date is after when the service should run. If a
          * service on another cluster node has updated this timestamp already,
          * then it will return false and this service will not run. This is a
-         * semaphor (not the best one admitted) so that services in a cluster
+         * semaphore (not the best one admitted) so that services in a cluster
          * only runs on one node and don't compete with each other. If a worker
          * on one node for instance runs for a very long time, there is a chance
          * that another worker on another node will break this semaphore and run
@@ -557,10 +559,13 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
              * running otherwise it will, in theory, be a race to exclude each
              * other between the nodes.
              */
-            serviceConfiguration.setNextRunTimestamp(nextRunDate);
-            changeService(intAdmin, serviceName, serviceConfiguration, true);
+			serviceData.setRunTimeStamp(runDateCheck.getTime());
+			serviceData.setNextRunTimeStamp(nextRunDate.getTime());
             ret = true;
         }
+		if (log.isTraceEnabled()) {
+			log.trace("<checkAndUpdateServiceTimeout: "+ret);
+		}
         return ret;
     }
 
@@ -670,12 +675,18 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         Iterator<Integer> iter2 = allServices.iterator();
         while (iter2.hasNext()) {
             Integer id = iter2.next();
-            ServiceConfiguration serviceConfiguration = getServiceConfiguration(intAdmin, id.intValue());
-            if (!existingTimers.contains(id)) {
-                IWorker worker = getWorker(serviceConfiguration, idToNameMap.get(id));
-                if (worker != null && serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
-                   addTimer((worker.getNextInterval()) * 1000, id);
-                }
+            ServiceData htp = serviceDataSession.findById(id);
+            if (htp != null) {
+                if (!existingTimers.contains(id)) {
+                	ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
+                    IWorker worker = getWorker(serviceConfiguration, idToNameMap.get(id), htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
+                    if (worker != null && serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
+                       addTimer((worker.getNextInterval()) * 1000, id);
+                    }
+                }            	
+            } else {
+    			// Service does not exist, strange, but no panic.
+    			log.debug("Can not find service with id "+id);
             }
         }
 
@@ -747,15 +758,17 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @param serviceConfiguration
      * @param serviceName
+     * @param runTimeStamp the time this service runs
+     * @param nextRunTimeStamp the time this service will run next time
      * @return a worker object or null if the worker is misconfigured.
      */
-    private IWorker getWorker(ServiceConfiguration serviceConfiguration, String serviceName) {
+    private IWorker getWorker(ServiceConfiguration serviceConfiguration, String serviceName, long runTimeStamp, long nextRunTimeStamp) {
         IWorker worker = null;
         try {
             String clazz = serviceConfiguration.getWorkerClassPath();
             if (StringUtils.isNotEmpty(clazz)) {
                 worker = (IWorker) Thread.currentThread().getContextClassLoader().loadClass(clazz).newInstance();
-                worker.init(intAdmin, serviceConfiguration, serviceName);
+                worker.init(intAdmin, serviceConfiguration, serviceName, runTimeStamp, nextRunTimeStamp);
             } else {
                 log.info("Worker has empty classpath for service " + serviceName);
             }

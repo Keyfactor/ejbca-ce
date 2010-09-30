@@ -8,3 +8,6 @@ ALTER TABLE ApprovalData ADD approvaldata CLOB DEFAULT NULL;
 UPDATE ApprovalData SET approvaldata=tmpapprovaldata;
 ALTER TABLE ApprovalData DROP COLUMN tmpapprovaldata;
 
+-- ServiceData gets two new columns
+ALTER TABLE ServiceData ADD nextRunTimeStamp NUMBER(19) NOT NULL DEFAULT 0;
+ALTER TABLE ServiceData ADD runTimeStamp NUMBER(19) NOT NULL DEFAULT 0;

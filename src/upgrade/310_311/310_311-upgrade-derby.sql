@@ -53,3 +53,7 @@ ALTER TABLE UserDataSourceData DROP COLUMN data;
 ALTER TABLE UserDataSourceData ADD data CLOB DEFAULT NULL;
 UPDATE UserDataSourceData SET data=tmpdata;
 ALTER TABLE UserDataSourceData DROP COLUMN tmpdata;
+
+-- ServiceData gets two new columns
+ALTER TABLE ServiceData ADD COLUMN nextRunTimeStamp BIGINT NOT NULL WITH DEFAULT 0;
+ALTER TABLE ServiceData ADD COLUMN runTimeStamp BIGINT NOT NULL WITH DEFAULT 0;

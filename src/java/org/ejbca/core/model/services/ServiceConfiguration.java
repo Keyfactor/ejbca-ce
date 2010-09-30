@@ -13,7 +13,6 @@
 package org.ejbca.core.model.services;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
@@ -37,7 +36,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-	private static final float LATEST_VERSION = 3;
+	private static final float LATEST_VERSION = 4;
 	
 	private static final String INTERVALCLASSPATH = "INTERVALCLASSPATH";
 	private static final String INTERVALPROPERTIES = "INTERVALPROPERTIES";
@@ -47,8 +46,6 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	private static final String ACTIONPROPERTIES = "ACTIONPROPERTIES";
 	private static final String DESCRIPTION = "DESCRIPTION";
 	private static final String ACTIVE = "ACTIVE";
-	private static final String NEXTRUNTIMESTAMP = "NEXTRUNTIMESTAMP";
-	private static final String OLDRUNTIMESTAMP = "OLDRUNTIMESTAMP";
 	private static final String HIDDEN = "HIDDEN";
 	
 	/**
@@ -64,7 +61,6 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		setWorkerProperties(new Properties());
 		setIntervalClassPath("");
 		setIntervalProperties(new Properties());
-		setNextRunTimestamp(new Date(0));
 	}
 	
 	
@@ -118,44 +114,6 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		data.put(HIDDEN, new Boolean(b));
 	}
 	
-	/**
-	 * @return the date of the next time this service should run.
-	 * This is a special service flag ensuring that not two nodes
-	 * runs the service at the same time.
-	 * 
-	 */
-	public Date getNextRunTimestamp() {
-		if(data.get(NEXTRUNTIMESTAMP) == null){
-			return new Date(0);
-		}
-		
-		return new Date(((Long) data.get(NEXTRUNTIMESTAMP)).longValue());
-	}
-
-	/**
-	 * @return the last value of the previous method.
-	 * @see setNextRunTimestap
-	 * 
-	 */
-	public Date getOldRunTimestamp() {
-		if(data.get(OLDRUNTIMESTAMP) == null){
-			return new Date(0);
-		}
-		
-		return new Date(((Long) data.get(OLDRUNTIMESTAMP)).longValue());
-	}
-
-	/**
-	 * @param nextRunTimeStamp the active time to set
-	 * This method saves the previous value so that workers can access
-	 * when they are to be run in the future as well as when they
-	 * should have been run.
-	 */
-	public void setNextRunTimestamp(Date nextRunTimeStamp) {
-		data.put (OLDRUNTIMESTAMP, new Long(getNextRunTimestamp ().getTime()));
-		data.put(NEXTRUNTIMESTAMP, new Long(nextRunTimeStamp.getTime()));
-	}
-
 	/**
 	 * @return the description
 	 */
@@ -238,7 +196,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 
             log.debug(LATEST_VERSION);
 			// We changed the names of properties between v1 and v2, so we have to upgrade a few of them
-			if (Float.compare(LATEST_VERSION, Float.valueOf(2)) >= 0) {
+            if (Float.compare(Float.valueOf(2), getVersion()) > 0) { // v2
 	            log.debug("Upgrading to version 2");
 				Properties prop = getWorkerProperties();
 				if (prop != null) {
@@ -291,10 +249,16 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 					setWorkerProperties(prop);
 				}
 				
-				if (Float.compare(LATEST_VERSION, Float.valueOf(3)) >= 0) {
+	            if (Float.compare(Float.valueOf(3), getVersion()) > 0) { // v3
 		            log.debug("Upgrading to version 3");
 		            // The hidden field was added
 		            setHidden(false);
+				}
+	            
+	            if (Float.compare(Float.valueOf(4), getVersion()) > 0) { // v4
+		            log.debug("Upgrading to version 4");
+		            // The NEXTRUNTIMESTAMP and OLDRUNTIMESTAMP disappeared in version 4 but we don't do anything here. 
+		            // This is handled in ServiceData.getServiceConfiguration when we check if the service is upgraded
 				}
 			}
 			data.put(VERSION, new Float(LATEST_VERSION));

@@ -37,3 +37,6 @@ UPDATE KeyRecoveryData SET keyData=tmpkeyData;
 ALTER TABLE KeyRecoveryData DROP COLUMN tmpkeyData;
 CALL SYSPROC.ADMIN_CMD('REORG TABLE KeyRecoveryData');
 
+-- ServiceData gets two new columns
+ALTER TABLE ServiceData ADD COLUMN nextRunTimeStamp BIGINT NOT NULL WITH DEFAULT 0;
+ALTER TABLE ServiceData ADD COLUMN runTimeStamp BIGINT NOT NULL WITH DEFAULT 0;

@@ -55,7 +55,7 @@ public interface IWorker {
 	 * @param serviceConfiguration
 	 * @param serviceName
 	 */
-	public void init(Admin admin, ServiceConfiguration serviceConfiguration, String serviceName);
+	public void init(Admin admin, ServiceConfiguration serviceConfiguration, String serviceName, long runTimeStamp, long nextRunTimeStamp);
 	
 	/**
 	 * The main method that is called by the TimeSessionBean each time
