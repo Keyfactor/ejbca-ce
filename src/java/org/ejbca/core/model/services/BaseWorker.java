@@ -38,6 +38,10 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
     protected Properties properties = null;
     protected String serviceName = null;
     protected ServiceConfiguration serviceConfiguration = null;
+    /** The time this service should have been running. Usually this is 'now'. But is the appserver was down it can have been delayed execution */
+    protected long runTimeStamp;
+    /** The next time the service is scheduled to run */
+    protected long nextRunTimeStamp;
     private IAction action = null;
     private IInterval interval = null;
     
@@ -50,11 +54,13 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 	 * @see org.ejbca.core.model.services.IWorker#init(org.ejbca.core.model.services.ServiceConfiguration, java.lang.String)
 	 */
 	public void init(Admin admin, ServiceConfiguration serviceConfiguration,
-			String serviceName) {
+			String serviceName, long runTimeStamp, long nextRunTimeStamp) {
 		this.admin = admin;
 		this.serviceName = serviceName;
-		this.properties = serviceConfiguration.getWorkerProperties();
+		this.runTimeStamp = runTimeStamp;
+		this.nextRunTimeStamp = nextRunTimeStamp;
 		this.serviceConfiguration = serviceConfiguration;
+		this.properties = serviceConfiguration.getWorkerProperties();
 		
 		String actionClassPath = serviceConfiguration.getActionClassPath();
 		if(actionClassPath != null){

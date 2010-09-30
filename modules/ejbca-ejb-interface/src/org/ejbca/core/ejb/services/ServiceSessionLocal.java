@@ -29,11 +29,9 @@ public interface ServiceSessionLocal extends ServiceSession {
      * "RequiresNew" transaction handling, because we want to make sure that the
      * timer runs the next time even if the execution fails.
      * 
-     * @return true if the service should run, false if the service should not
-     *         run
+     * @return true if the service should run, false if the service should not run
      */
-    public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, org.ejbca.core.model.services.ServiceConfiguration serviceData,
-            java.lang.String serviceName);
+	public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceData serviceData);
 
     /**
      * Method creating a hashmap mapping service id (Integer) to service name

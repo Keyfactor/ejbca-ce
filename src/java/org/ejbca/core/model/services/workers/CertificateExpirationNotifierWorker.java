@@ -118,12 +118,10 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
              */
 
             long thresHold = getTimeBeforeExpire();
-            long currRunTimestamp = serviceConfiguration.getOldRunTimestamp().getTime();
-            long nextRunTimestamp = serviceConfiguration.getNextRunTimestamp().getTime();
             long now = new Date().getTime();
             if (!cASelectString.equals("")) {
                 try {
-                    List<Object[]> fingerprintUsernameList = getCertificateSession().findExpirationInfo(cASelectString, now, (nextRunTimestamp + thresHold), (currRunTimestamp + thresHold));
+                    List<Object[]> fingerprintUsernameList = getCertificateSession().findExpirationInfo(cASelectString, now, (nextRunTimeStamp + thresHold), (runTimeStamp + thresHold));
                     int count = 0;
                     for (Object[] next : fingerprintUsernameList) {
                         count++;
