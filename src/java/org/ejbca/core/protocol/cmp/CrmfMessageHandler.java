@@ -21,7 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
@@ -53,7 +52,6 @@ import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
@@ -94,13 +92,17 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProt = null;
 	
-	private final Admin admin;
-	private final SignSession signSession;
-	private final UserAdminSession userAdminSession;
-	private final CAAdminSession caAdminSession;
-	private final RaAdminSession raAdminSession;
-	private final CertificateStoreSession certificateStoreSession;
-	private final CertificateRequestSession certificateRequestSession;
+	private Admin admin;
+	private SignSession signSession;
+	private UserAdminSession userAdminSession;
+	private CAAdminSession caAdminSession;
+	private RaAdminSession raAdminSession;
+	private CertificateStoreSession certificateStoreSession;
+	private CertificateRequestSession certificateRequestSession;
+	
+	public CrmfMessageHandler () {
+	    
+	}
 	
 	public CrmfMessageHandler(final Admin admin, CAAdminSession caAdminSession, CertificateStoreSession certificateStoreSession, CertificateRequestSession certificateRequestSession,
 			RaAdminSession raAdminSession, SignSession signSession, UserAdminSession userAdminSession) {
