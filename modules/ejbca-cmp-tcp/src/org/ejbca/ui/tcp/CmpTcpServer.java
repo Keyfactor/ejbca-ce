@@ -44,8 +44,9 @@ import org.quickserver.net.server.QuickServer;
  */
 public class CmpTcpServer {
 
+	private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(CmpTcpServer.class);
+
 	public static String VER = "1.0";
-	
 	public static QuickServer myServer = null;
 	
 	public static void start() throws UnknownHostException	{
@@ -58,7 +59,7 @@ public class CmpTcpServer {
 		myServer.setPort(CmpConfiguration.getTCPPortNumber());
 		myServer.setName("CMP TCP Server v " + VER);
 		if(getQuickServerVersion() >= 1.2) {
-			System.out.println("Using 1.2 feature");
+			log.info("Using 1.2 feature");
 			myServer.setClientBinaryHandler(cmdHandle);
 			myServer.setClientEventHandler(cmdHandle);
 
@@ -70,9 +71,9 @@ public class CmpTcpServer {
 		Logger logger = null;
 		FileHandler txtLog = null;
 		String logDir = CmpConfiguration.getTCPLogDir();
-		File log = new File(logDir + "/");
-		if(!log.canRead()) {
-			log.mkdir();
+		File logFile = new File(logDir + "/");
+		if(!logFile.canRead()) {
+			logFile.mkdir();
 		}
 		try	{
 			logger = Logger.getLogger("");
@@ -91,7 +92,7 @@ public class CmpTcpServer {
 			myServer.setConsoleLoggingFormatter("org.quickserver.util.logging.SimpleTextFormatter");
 			myServer.setConsoleLoggingLevel(Level.INFO);
 		} catch(Exception e){
-			System.err.println("Could not create xmlLog FileHandler : "+e);
+			log.error("Could not create xmlLog FileHandler : ", e);
 		}
 		//end of logger code
 
@@ -100,7 +101,7 @@ public class CmpTcpServer {
 			if (!StringUtils.isEmpty(confFile)) {
 				Object config[] = new Object[] {confFile};
 				if (myServer.initService(config) == false) {
-					System.out.println("Configuration from config file "+confFile+" failed!");
+					log.error("Configuration from config file "+confFile+" failed!");
 				}
 			}
 
@@ -108,8 +109,7 @@ public class CmpTcpServer {
 			//myServer.getQSAdminServer().setShellEnable(true);
 			//myServer.startQSAdminServer();			
 		} catch(AppException e){
-			System.out.println("Error in server : "+e);
-			e.printStackTrace();
+			log.error("Error in server : ", e);
 		}
 	}
 
@@ -118,7 +118,7 @@ public class CmpTcpServer {
 			try {
 				myServer.stopServer();
 			} catch (AppException e) {
-				System.out.println("Error in server : "+e);
+				log.error("Error in server : ", e);
 				e.printStackTrace();
 			}			
 		}
