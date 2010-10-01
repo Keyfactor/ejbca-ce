@@ -607,21 +607,14 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void enforcementOfUniqueSubjectDN() throws Exception {
-
+    	log.trace(">enforcementOfUniqueSubjectDN");
         final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         final UserDataVOWS ca1userData1 = getUserData(CA1_WSTESTUSER1);
         final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
         final UserDataVOWS ca2userData1 = getUserData(CA2_WSTESTUSER1);
         final CAInfo ca1Info = caAdminSessionRemote.getCAInfo(admin, CA1);
         final int iRandom = SecureRandom.getInstance("SHA1PRNG").nextInt(); // to
-        // make
-        // sure
-        // a
-        // new
-        // DN
-        // is
-        // used
-        // in next test
+        // make sure a new DN is used in next test
         final String subjectDN_A = "CN=EnforcementOfUniqueSubjectDN Test A " + iRandom;
         final String subjectDN_B = "CN=EnforcementOfUniqueSubjectDN Test B " + iRandom;
 
@@ -672,6 +665,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         editUser(ca1userData1, getDN(CA1_WSTESTUSER1));
         editUser(ca1userData2, getDN(CA1_WSTESTUSER2));
         editUser(ca2userData1, getDN(CA2_WSTESTUSER1));
+    	log.trace("<enforcementOfUniqueSubjectDN");
     }
 
     protected void generateCrmf() throws Exception {
@@ -727,7 +721,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void generatePkcs12() throws Exception {
-
+    	log.trace(">generatePkcs12");
         boolean exceptionThrown = false;
         try {
             ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, "foo123", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -833,6 +827,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         cert2 = (X509Certificate) ks2.getCertificate(alias);
         assertEquals(cert2.getSubjectX500Principal().getName(), getReversedDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
+    	log.trace("<generatePkcs12");
     }
 
     protected void findCerts() throws Exception {
@@ -1688,15 +1683,18 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void getLastCertChain() throws Exception {
-
+        log.trace(">getLastCertChain");
         List<Certificate> foundcerts = ejbcaraws.getLastCertChain(CA1_WSTESTUSER1);
         assertTrue(foundcerts != null);
         assertTrue(foundcerts.size() > 1);
-
+        log.debug("foundcerts.size: " + foundcerts.size());
         java.security.cert.Certificate cacert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(foundcerts.size() - 1)
                 .getCertificateData());
-        assertTrue(CertTools.isSelfSigned(cacert));
+        assertTrue("(What we expected to be) the CA certificate was not self signed.", CertTools.isSelfSigned(cacert));
         java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(0).getCertificateData());
+        log.debug("CA cert's SubjectDN: " + CertTools.getSubjectDN(cacert));
+        log.debug("Cert's IssuerDN: " + CertTools.getIssuerDN(cert));
+        log.debug("Cert's SubjectDN: " + CertTools.getSubjectDN(cert));
         assertEquals(getDN(CA1_WSTESTUSER1) + " is not " + CertTools.getSubjectDN(cert),getDN(CA1_WSTESTUSER1), CertTools.getSubjectDN(cert));
         for (int i = 1; i < foundcerts.size(); i++) {
             java.security.cert.Certificate cert2 = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
@@ -1709,6 +1707,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         List<Certificate> foundnocerts = ejbcaraws.getLastCertChain(randomuser);
         assertTrue(foundnocerts != null);
         assertTrue(foundnocerts.size() == 0);
+        log.trace("<getLastCertChain");
     }
 
     protected void errorOnEditUser() throws Exception {
