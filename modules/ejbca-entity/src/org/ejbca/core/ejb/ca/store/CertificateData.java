@@ -581,8 +581,8 @@ public class CertificateData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
-	public static List<CertificateData> findByUsername(EntityManager entityManager, String username) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.username=:username");
+	public static List<CertificateData> findByUsernameOrdered(EntityManager entityManager, String username) {
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.username=:username ORDER BY a.expireDate DESC, a.serialNumber DESC");
 		query.setParameter("username", username);
 		return query.getResultList();
 	}

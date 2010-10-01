@@ -149,7 +149,7 @@ public class CertificateDataUtil {
     	// Strip dangerous chars
     	username = StringTools.strip(username);
     	// This method on the entity bean does the ordering in the database
-    	Collection<CertificateData> coll = CertificateData.findByUsername(entityManager, username);
+    	Collection<CertificateData> coll = CertificateData.findByUsernameOrdered(entityManager, username);
     	ArrayList<Certificate> ret = new ArrayList<Certificate>();
     	Iterator<CertificateData> iter = coll.iterator();
     	while (iter.hasNext()) {
