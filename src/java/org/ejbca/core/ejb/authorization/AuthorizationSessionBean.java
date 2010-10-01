@@ -51,8 +51,7 @@ import org.ejbca.core.model.log.LogConstants;
  * Stores data used by web server clients. Uses JNDI name for datasource as
  * defined in env 'Datasource' in ejb-jar.xml.
  * 
- * @version $Id: AuthorizationSessionBean.java 9579 2010-07-30 18:07:23Z
- *          jeklund $
+ * @version $Id$
  * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthorizationSessionRemote")
