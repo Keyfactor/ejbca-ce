@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.common;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.security.cert.CertificateExpiredException;
 import java.util.List;
@@ -55,7 +56,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * @author Philip Vendil et al
  * $Id$
  */
-public interface IEjbcaWS {
+public interface IEjbcaWS extends Remote {
 	
 	public static final int CUSTOMLOG_LEVEL_INFO  = 1;
 	public static final int CUSTOMLOG_LEVEL_ERROR = 2;
