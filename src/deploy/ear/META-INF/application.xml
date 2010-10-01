@@ -54,7 +54,7 @@
             <context-root>/ejbca/adminweb</context-root>
         </web>
     </module> 
-       <!--@ejbcaws.war@-->
+       <!--@ejbca-ws-ejb.jar@-->
        <!--@xkms.war@-->
        <!--@doc.war@-->
        <!--@renew.war@-->

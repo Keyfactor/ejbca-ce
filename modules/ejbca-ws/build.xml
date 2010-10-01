@@ -50,23 +50,14 @@
 		<pathelement location="${build.dir}" /> 
 	</path>
 
-    <target name="build" description="Build this module" depends="build-war, build-jar"/>
+    <target name="build" description="Build this module" depends="build-ejb-jar, build-jar"/>
 
-    <target name="build-war" description="Build the WAR that handles Web Services in EJBCA" depends="compile">
-    	<dirname file="${mod.ejbca-ws.war}" property="mod.ejbca-ws.war.dir"/>
-    	<mkdir dir="${mod.ejbca-ws.war.dir}" />
-    	<!--
-    		From the EJBCA 3.9 build-scripts it is clear that WebSphere should bundle ejbca-ejb.jar, ejbca-util.jar, log4j.jar,
-    		and bc*.jar, but no jax-ws libs. Since WebSphere is not officially supported since EJBCA 3.6 this is left as an
-    		exercise to the interested developer.. =)
-    		
-    		The file WEB-INF/web-websphere.xml should be used instead of WEB-INF/web.xml as webxml on WebSphere.
-    	-->
-        <war warfile="${mod.ejbca-ws.war}" webxml="${this.dir}/WEB-INF/web.xml">
-            <webinf dir="${this.dir}/WEB-INF" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
-            <classes dir="${build.dir}"/>
-         	<lib refid="lib.jaxws.fileset"/>
-        </war>
+    <target name="build-ejb-jar" description="Build the EJB JAR that handles Web Services in EJBCA" depends="compile">
+    	<dirname file="${mod.ejbca-ws-ejb.jar}" property="mod.ejbca-ws-ejb.jar.dir"/>
+    	<mkdir dir="${mod.ejbca-ws-ejb.jar.dir}" />
+        <jar destfile="${mod.ejbca-ws-ejb.jar}" basedir="${build.dir}">
+        	<fileset dir="${this.dir}/resources" includes="**"/>
+        </jar>
     </target>
 
     <target name="build-jar" description="Build EJBCA WS common library" depends="compile-library">
@@ -88,7 +79,6 @@
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
-        	<src path="${src-gen.dir}"/>
         	<src path="${src.dir}"/>
     	</javac>
     </target>
@@ -118,6 +108,7 @@
 		<delete dir="temp" includeemptydirs="true"/>
     </target>
 
+	<!--
     <target name="generate" depends="ejbca-util, ejbca-ejb, ejbca-ejb-interface" description="Generate WS server stubs from implementation">
 		<available classname="com.sun.tools.ws.ant.Apt" classpathref="lib.jaxws.classpath" property="tool.present"/>
 		<fail unless="tool.present" message="Generation of server side Web Services code requires the tool com.sun.tools.ws.ant.Apt to be present."/>
@@ -125,13 +116,14 @@
     	<taskdef name="apt" classname="com.sun.tools.ws.ant.Apt" classpathref="lib.jaxws.classpath"/>
 		<apt fork="true" sourcedestdir="${src-gen.dir}" sourcepath="${src.dir}"
 			verbose="false" debug="true" deprecation="true" classpathref="generate.classpath" nocompile="true">
-			<!-- This is used for..?
+			<!- - This is used for..?
 			<option key="r" value="dist" />
-			-->
+			- ->
 			<source dir="${src.dir}">
 				<include name="org/ejbca/core/protocol/ws/EjbcaWS.java"/>
 			</source>
 		</apt>
     </target>
+	-->
 
 </project>

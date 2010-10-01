@@ -267,10 +267,10 @@
 			<istrue value="${doc.war.enabled}"/>
 		</condition>
     	<replace file="${eardd.src}/META-INF/application.xml" token="!--@doc.war@-->" value="${doc.war.enabled.replace-string}"/>
-		<condition property="ejbcaws.enabled.replace-string" else="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>">
+		<condition property="ejbcaws.enabled.replace-string" else="!--@ejbca-ws-ejb.jar@-->" value="module>&lt;ejb>ejbca-ws-ejb.jar&lt;/ejb>&lt;/module>">
 			<istrue value="${ejbcaws.enabled}"/>
 		</condition>
-    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="${ejbcaws.enabled.replace-string}"/>
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-ws-ejb.jar@-->" value="${ejbcaws.enabled.replace-string}"/>
 		<condition property="xkms.enabled.replace-string" else="!--@xkms.war@-->" value="module>&lt;web>&lt;web-uri>xkms.war&lt;/web-uri>&lt;context-root>/${app.name}/xkms&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${xkms.enabled}"/>
 		</condition>
@@ -283,7 +283,7 @@
 			<istrue value="${cmp.tcp.enabled}"/>
 		</condition>
 		<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-cmp-tcp.war@-->" value="${ejbca-cmp-tcp.enabled.replace-string}"/>
-		<!-- Specify that we will use a specific WS implementatio -->
+		<!-- Specify that we will use a specific WS implementation -->
 		<mkdir dir="${eardd.src}/META-INF/services"/>
 		<copy todir="${eardd.src}/META-INF/services" file="src/deploy/ear/META-INF/services/javax.xml.soap.MetaFactory" flatten="true" failonerror="true"/>
 		<!-- This dir has to exist here -->
@@ -319,7 +319,7 @@
             </fileset>
             <fileset dir="modules/dist">
                 <include name="ejbca-ejb.jar" />
-                <include name="ejbcaws.war" />
+                <include name="ejbca-ws-ejb.jar" />
                 <include name="xkms.war" />
                 <include name="adminweb.war" />
                 <include name="cmp.war" />

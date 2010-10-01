@@ -45,9 +45,11 @@ import java.util.TreeMap;
 
 import javax.annotation.Resource;
 import javax.ejb.CreateException;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.ejb.Stateless;
 import javax.jws.WebService;
 import javax.persistence.PersistenceException;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -65,23 +67,23 @@ import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ServiceLocatorException;
-import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
-import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
-import org.ejbca.core.ejb.log.LogSessionRemote;
-import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -129,7 +131,6 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
-import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.IRequestMessage;
@@ -183,39 +184,45 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  * @author Philip Vendil
  * @version $Id$
  */
-@WebService
+@Stateless
+@WebService(name="EjbcaWS", serviceName="EjbcaWSService", targetNamespace="http://ws.protocol.core.ejbca.org/", portName="EjbcaWSPort")	//portName="EjbcaWSPort" default 
 public class EjbcaWS implements IEjbcaWS {
 	@Resource
 	private WebServiceContext wsContext;	
 	
-    /**
-     * Although dependency injection of the following members would have been
-     * nice, it's prohibited due to the fact that this class is declared as a
-     * com.sun.xml.ws.transport.http.servlet.WSServlet in web.xml
-     * 
-     * See https://jira.primekey.se/browse/ECA-1719 for more information.
-     * 
-     */
+	@EJB
+	private ApprovalSessionLocal approvalSession;
+	@EJB
+    private AuthenticationSessionLocal authenticationSession;
+	@EJB
+    private AuthorizationSessionLocal authorizationSession;
+	@EJB
+    private CAAdminSessionLocal caAdminSession;
+	@EJB
+    private CertificateRequestSessionLocal certificateRequestSession;
+	@EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
+    private CreateCRLSessionLocal crlSession;
+	@EJB
+    private HardTokenSessionLocal hardTokenSession;
+	@EJB
+    private KeyRecoverySessionLocal keyRecoverySession;
+	@EJB
+    private LogSessionLocal logSession;
+	@EJB
+    private PublisherQueueSessionLocal publisherQueueSession;
+	@EJB
+    private PublisherSessionLocal publisherSession;
+	@EJB
+    private RaAdminSessionLocal raAdminSession;
+	@EJB
+    private SignSessionLocal signSession;
+	@EJB
+    private UserAdminSessionLocal userAdminSession;
+	@EJB
+    private UserDataSourceSessionLocal userDataSourceSession;
 
-	// TODO: Is more than one instance created of this class? If so, we should probably cache the helper..
-	private EjbRemoteHelper ejb = new EjbRemoteHelper();
-	private ApprovalSessionRemote approvalSession = ejb.getApprovalSession();
-    private AuthenticationSessionRemote authenticationSession = ejb.getAuthenticationSession();
-    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CertificateRequestSessionRemote certificateRequestSession = ejb.getCertficateRequestSession();
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
-    private CreateCRLSessionRemote crlSession = ejb.getCrlSession();
-    private HardTokenSessionRemote hardTokenSession = ejb.getHardTokenSession();
-    private KeyRecoverySessionRemote keyRecoverySession = ejb.getKeyRecoverySession();
-    private LogSessionRemote logSession = ejb.getLogSession();
-    private PublisherQueueSessionRemote publisherQueueSession = ejb.getPublisherQueueSession();
-    private PublisherSessionRemote publisherSession = ejb.getPublisherSession();
-    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
-    private SignSessionRemote signSession = ejb.getSignSession();
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    private UserDataSourceSessionRemote userDataSourceSession = ejb.getUserDataSourceSession();
-	
 	/** The maximum number of rows returned in array responses. */
 	private static final int MAXNUMBEROFROWS = 100;
 	
@@ -239,7 +246,6 @@ public class EjbcaWS implements IEjbcaWS {
 	 */	
 	public void editUser(UserDataVOWS userdata)
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
-
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
         	EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
