@@ -114,6 +114,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
     /** preferred digest algorithm to use in replies, if applicable */
     private String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
 
+    public CrmfRequestMessage() {
+        
+    }
+    
     /**
      * 
      * @param msg PKIMessage
