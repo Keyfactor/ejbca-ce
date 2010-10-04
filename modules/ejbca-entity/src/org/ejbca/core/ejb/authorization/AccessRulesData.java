@@ -24,6 +24,7 @@ import javax.persistence.IdClass;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AccessRule;
@@ -45,6 +46,7 @@ public class AccessRulesData implements Serializable {
 	private String accessRule;
 	private int rule;
 	private boolean isRecursive;
+	private int rowVersion;
 	
 	public AccessRulesData(String admingroupname, int caid, String accessrule, int rule, boolean isrecursive) {
 		AccessRulesDataPK accessRulesDataPK = new AccessRulesDataPK(admingroupname, caid, new AccessRule(accessrule, rule, isrecursive));
@@ -75,6 +77,11 @@ public class AccessRulesData implements Serializable {
 	@Column(name="isRecursive", nullable=false)
 	public boolean getIsRecursive() { return isRecursive; }
 	public void setIsRecursive(boolean isRecursive) { this.isRecursive = isRecursive; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	/**
 	 * Return the access rule transfer object

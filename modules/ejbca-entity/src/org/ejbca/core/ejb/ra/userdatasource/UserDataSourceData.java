@@ -28,6 +28,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
@@ -49,7 +50,8 @@ public class UserDataSourceData implements Serializable {
     private String name;
     private int updateCounter;
     private String data;
-    
+	private int rowVersion;
+
     /**
      * Entity holding data of a userdatasource.
      * @throws UnsupportedEncodingException 
@@ -88,6 +90,11 @@ public class UserDataSourceData implements Serializable {
     @Lob
     public String getData() { return data; }
     public void setData(String data) { this.data = data; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
     /**
      * Method that returns the cached UserDataSource.

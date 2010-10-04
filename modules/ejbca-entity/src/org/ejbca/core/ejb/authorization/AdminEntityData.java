@@ -23,6 +23,7 @@ import javax.persistence.IdClass;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AdminEntity;
@@ -45,7 +46,8 @@ public class AdminEntityData implements Serializable {
 	private int matchType;
 	private String matchValue;
 	private Integer cAId;
-	
+	private int rowVersion;
+
 	public AdminEntityData(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) {
 		AdminEntityDataPK adminEntityDataPK = new AdminEntityDataPK(admingroupname, caid, matchwith, matchtype, matchvalue);
 		setPrimeKey(adminEntityDataPK.getPrimeKey());
@@ -78,6 +80,11 @@ public class AdminEntityData implements Serializable {
 	@Column(name="cAId")
 	public Integer getCaId() { return cAId; }
 	public void setCaId(Integer caId) { this.cAId = caId; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	@Transient
 	public AdminEntity getAdminEntity() {

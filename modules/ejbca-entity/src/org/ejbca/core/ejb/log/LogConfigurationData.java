@@ -22,6 +22,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.ejbca.core.ejb.JBossUnmarshaller;
 import org.ejbca.core.model.log.LogConfiguration;
@@ -41,6 +42,7 @@ public class LogConfigurationData implements Serializable {
 	private Integer id;
 	private Serializable logConfiguration;
 	private int logEntryRowNumber;
+	private int rowVersion;
 
 	/**
 	 * Entity holding data of log configuration.
@@ -81,6 +83,11 @@ public class LogConfigurationData implements Serializable {
 	@Column(name="logEntryRowNumber", nullable=false)
 	public int getLogEntryRowNumber() { return logEntryRowNumber; }
 	public void setLogEntryRowNumber(int logEntryRowNumber) { this.logEntryRowNumber = logEntryRowNumber; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	@Transient
 	public LogConfiguration loadLogConfiguration() {

@@ -9,6 +9,7 @@ CREATE TABLE AccessRulesData (
     rule int(11) NOT NULL DEFAULT '0',
     isRecursive tinyint(4) NOT NULL DEFAULT '0',
     `AdminGroupData_accessRules` int(11) NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (pK)
 );
 
@@ -20,6 +21,7 @@ CREATE TABLE AdminEntityData (
     matchValue varchar(250) binary NULL DEFAULT NULL,
     `AdminGroupData_adminEntities` int(11) NULL DEFAULT NULL,
     cAId int(11) NOT NULL DEFAULT '0',
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (pK)
 );
 
@@ -28,6 +30,7 @@ CREATE TABLE AdminGroupData (
     pK int(11) NOT NULL DEFAULT '0',
     adminGroupName varchar(250) binary NULL DEFAULT NULL,
     cAId int(11) NOT NULL DEFAULT '0',
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (pK)
 );
 
@@ -35,6 +38,7 @@ DROP TABLE AdminPreferencesData;
 CREATE TABLE AdminPreferencesData (
     id varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -53,6 +57,7 @@ CREATE TABLE ApprovalData (
     requestdate bigint(20) NOT NULL DEFAULT '0',
     expiredate bigint(20) NOT NULL DEFAULT '0',    
     remainingapprovals int(11) NOT NULL DEFAULT '0',
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -60,6 +65,7 @@ DROP TABLE AuthorizationTreeUpdateData;
 CREATE TABLE AuthorizationTreeUpdateData (
     pK int(11) NOT NULL DEFAULT '0',
     authorizationTreeUpdateNumber int(11) NOT NULL DEFAULT '0',
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (pK)
 );
 
@@ -72,6 +78,7 @@ CREATE TABLE CAData (
     expireTime bigint(20) NOT NULL DEFAULT '0',
     updateTime bigint(20) NOT NULL DEFAULT '0',
     data longtext NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (cAId)
 );
 
@@ -85,6 +92,7 @@ CREATE TABLE CRLData (
     nextUpdate bigint(20) NOT NULL DEFAULT '0',
     deltaCRLIndicator int(11) NOT NULL DEFAULT '-1',
     base64Crl longtext NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (fingerprint)
 );
 
@@ -96,6 +104,7 @@ CREATE TABLE CertReqHistoryData (
     `timestamp` bigint(20) NOT NULL DEFAULT '0',
     userDataVO longtext NULL DEFAULT NULL,
     username varchar(250) binary NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (fingerprint)
 );
 
@@ -117,6 +126,7 @@ CREATE TABLE CertificateData (
     certificateProfileId int(11) NULL DEFAULT '0',
     updateTime bigint(20) NOT NULL DEFAULT '0',
     subjectKeyId varchar(250) binary NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (fingerprint)
 );
 
@@ -125,6 +135,7 @@ CREATE TABLE CertificateProfileData (
     id int(11) NOT NULL DEFAULT '0',
     certificateProfileName varchar(250) binary NULL DEFAULT NULL,
     data longblob NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -133,6 +144,7 @@ CREATE TABLE EndEntityProfileData (
     id int(11) NOT NULL DEFAULT '0',
     profileName varchar(250) binary NULL DEFAULT NULL,
     data longblob NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -140,6 +152,7 @@ DROP TABLE GlobalConfigurationData;
 CREATE TABLE GlobalConfigurationData (
     configurationId varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (configurationId)
 );
 
@@ -147,6 +160,7 @@ DROP TABLE HardTokenCertificateMap;
 CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint varchar(250) binary NOT NULL DEFAULT '',
     tokenSN varchar(250) binary NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (certificateFingerprint)
 );
 
@@ -159,6 +173,7 @@ CREATE TABLE HardTokenData (
     tokenType int(11) NOT NULL DEFAULT '0',
     significantIssuerDN varchar(250) binary NULL DEFAULT NULL,
     data longblob NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (tokenSN)
 );
 
@@ -168,6 +183,7 @@ CREATE TABLE HardTokenIssuerData (
     alias varchar(250) binary NULL DEFAULT NULL,
     adminGroupId int(11) NOT NULL DEFAULT '0',
     data longblob NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -177,6 +193,7 @@ CREATE TABLE HardTokenProfileData (
     name varchar(250) binary NULL DEFAULT NULL,
     updateCounter int(11) NOT NULL DEFAULT '0',
     data longtext NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -185,6 +202,7 @@ CREATE TABLE HardTokenPropertyData (
     id varchar(250) binary NOT NULL DEFAULT '',
     property varchar(250) binary NOT NULL DEFAULT '',
     value varchar(250) binary NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id, property)
 );
 
@@ -195,6 +213,7 @@ CREATE TABLE KeyRecoveryData (
     username varchar(250) binary NULL DEFAULT NULL,
     markedAsRecoverable tinyint(4) NOT NULL DEFAULT '0',
     keyData longtext NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (certSN, issuerDN)
 );
 
@@ -203,6 +222,7 @@ CREATE TABLE LogConfigurationData (
     id int(11) NOT NULL DEFAULT '0',
     logConfiguration longblob NULL DEFAULT NULL,
     logEntryRowNumber int(11) NOT NULL DEFAULT '0',
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -218,57 +238,8 @@ CREATE TABLE LogEntryData (
     certificateSNR varchar(250) binary NULL DEFAULT NULL,
     event int(11) NOT NULL DEFAULT '0',
     logComment varchar(250) binary NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
-);
-
-DROP TABLE ProtectedLogData;
-CREATE TABLE ProtectedLogData (
-	pk varchar(250) binary NOT NULL DEFAULT '',
-	adminType int(11) NOT NULL DEFAULT '0',
-	adminData varchar(250) binary NULL DEFAULT NULL,
-    caId int(11) NOT NULL DEFAULT '0',
-    module int(11) NOT NULL DEFAULT '0',
-    eventTime bigint(20) NOT NULL DEFAULT '0',
-    username varchar(250) binary NULL DEFAULT NULL,
-    certificateSerialNumber varchar(250) binary NULL DEFAULT NULL,
-    certificateIssuerDN varchar(250) binary NULL DEFAULT NULL,
-    eventId int(11) NOT NULL DEFAULT '0',
-    eventComment text NULL DEFAULT NULL,
-    nodeGUID int(11) NOT NULL DEFAULT '0',
-    counter bigint(20) NOT NULL DEFAULT '0',
-    nodeIP varchar(250) binary NULL DEFAULT NULL,
-    b64LinkedInEventIdentifiers text NULL DEFAULT NULL,
-    b64LinkedInEventsHash varchar(250) binary NULL DEFAULT NULL,
-    currentHashAlgorithm varchar(250) binary NULL DEFAULT NULL,
-    protectionKeyIdentifier int(11) NOT NULL DEFAULT '0',
-    protectionKeyAlgorithm varchar(250) binary NULL DEFAULT NULL,
-    b64Protection text NULL DEFAULT NULL,
-    PRIMARY KEY (pk)
-);
-
-DROP TABLE ProtectedLogExportData;
-CREATE TABLE ProtectedLogExportData (
-	pk varchar(250) binary NOT NULL DEFAULT '',
-    timeOfExport bigint(20) NOT NULL DEFAULT '0',
-    exportEndTime bigint(20) NOT NULL DEFAULT '0',
-    exportStartTime bigint(20) NOT NULL DEFAULT '0',
-    b64LogDataHash varchar(250) binary NULL DEFAULT NULL,
-    b64PreviosExportHash varchar(250) binary NULL DEFAULT NULL,
-    currentHashAlgorithm varchar(250) binary NULL DEFAULT NULL,
-    b64SignatureCertificate text NULL DEFAULT NULL,
-    deleted tinyint(4) NOT NULL DEFAULT '0',
-    b64Signature text NULL DEFAULT NULL,
-	PRIMARY KEY (pk)
-);
-
-DROP TABLE ProtectedLogTokenData;
-CREATE TABLE ProtectedLogTokenData (
-	pk varchar(250) binary NOT NULL DEFAULT '',
-    tokenIdentifier int(11) NOT NULL DEFAULT '0',
-    tokenType int(11) NOT NULL DEFAULT '0',
-    b64TokenCertificate text NULL DEFAULT NULL,
-    tokenReference text NULL DEFAULT NULL,
-    PRIMARY KEY (pk)
 );
 
 DROP TABLE PublisherData;
@@ -277,6 +248,7 @@ CREATE TABLE PublisherData (
     name varchar(250) binary NULL DEFAULT NULL,
     updateCounter int(11) NOT NULL DEFAULT '0',
     data longtext NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -291,6 +263,7 @@ CREATE TABLE PublisherQueueData (
     fingerprint varchar(250) binary NULL DEFAULT NULL,
     publisherId int(11) NOT NULL DEFAULT '0',
     volatileData longtext NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (pk)
 );
 
@@ -301,6 +274,7 @@ CREATE TABLE ServiceData (
     data longtext NULL DEFAULT NULL,
     nextRunTimeStamp bigint(20) NOT NULL DEFAULT '0',
     runTimeStamp bigint(20) NOT NULL DEFAULT '0',    
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -316,6 +290,7 @@ CREATE TABLE TableProtectData (
     dbKey varchar(250) binary NULL DEFAULT NULL,
     dbType varchar(250) binary NULL DEFAULT NULL,
     keyType varchar(250) binary NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -339,6 +314,7 @@ CREATE TABLE UserData (
     extendedInformationData longtext NULL DEFAULT NULL,
     keyStorePassword varchar(250) binary NULL DEFAULT NULL,
     cardnumber varchar(19) binary NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (username)
 );
 
@@ -348,5 +324,6 @@ CREATE TABLE UserDataSourceData (
     name varchar(250) binary NULL DEFAULT NULL,
     updateCounter int(11) NOT NULL DEFAULT '0',
     data longtext NULL DEFAULT NULL,
+    rowVersion int(11) DEFAULT 0,
     PRIMARY KEY (id)
 );

@@ -9,6 +9,7 @@ CREATE TABLE AccessRulesData (
     rule integer NOT NULL,
     isRecursive smallint NOT NULL,
     AdminGroupData_accessRules integer DEFAULT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (pK)
 );
 
@@ -20,6 +21,7 @@ CREATE TABLE AdminEntityData (
     matchValue varchar(256),
     AdminGroupData_adminEntities integer DEFAULT NULL,
     cAId integer NOT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (pK)
 );
 
@@ -28,6 +30,7 @@ CREATE TABLE AdminGroupData (
     pK integer NOT NULL,
     adminGroupName varchar(256),
     cAId integer NOT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (pK)
 );
 
@@ -35,6 +38,7 @@ DROP TABLE AdminPreferencesData;
 CREATE TABLE AdminPreferencesData (
     id varchar(256) NOT NULL DEFAULT '',
     data blob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -53,6 +57,7 @@ CREATE TABLE ApprovalData (
     requestdate bigint NOT NULL,
     expiredate bigint NOT NULL,    
     remainingapprovals integer NOT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -60,6 +65,7 @@ DROP TABLE AuthorizationTreeUpdateData;
 CREATE TABLE AuthorizationTreeUpdateData (
     pK integer NOT NULL,
     authorizationTreeUpdateNumber integer NOT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (pK)
 );
 
@@ -72,6 +78,7 @@ CREATE TABLE CAData (
     expireTime bigint NOT NULL,
     updateTime bigint NOT NULL,
     data clob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (cAId)
 );
 
@@ -85,6 +92,7 @@ CREATE TABLE CRLData (
     nextUpdate bigint NOT NULL,
     deltaCRLIndicator integer NOT NULL,
     base64Crl clob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (fingerprint)
 );
 
@@ -96,6 +104,7 @@ CREATE TABLE CertReqHistoryData (
     timestamp bigint NOT NULL,
     userDataVO clob,
     username varchar(256),
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (fingerprint)
 );
 
@@ -117,6 +126,7 @@ CREATE TABLE CertificateData (
     certificateProfileId integer,
     updateTime bigint NOT NULL,
     subjectKeyId varchar(256),
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (fingerprint)
 );
 
@@ -125,6 +135,7 @@ CREATE TABLE CertificateProfileData (
     id integer NOT NULL,
     certificateProfileName varchar(256),
     data blob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -133,6 +144,7 @@ CREATE TABLE EndEntityProfileData (
     id integer NOT NULL,
     profileName varchar(256),
     data blob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -140,6 +152,7 @@ DROP TABLE GlobalConfigurationData;
 CREATE TABLE GlobalConfigurationData (
     configurationId varchar(256) NOT NULL,
     data blob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (configurationId)
 );
 
@@ -147,6 +160,7 @@ DROP TABLE HardTokenCertificateMap;
 CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint varchar(256) NOT NULL,
     tokenSN varchar(256),
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (certificateFingerprint)
 );
 
@@ -159,6 +173,7 @@ CREATE TABLE HardTokenData (
     tokenType integer NOT NULL,
     significantIssuerDN varchar(256),
     data blob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (tokenSN)
 );
 
@@ -168,6 +183,7 @@ CREATE TABLE HardTokenIssuerData (
     alias varchar(256),
     adminGroupId integer NOT NULL,
     data blob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -177,6 +193,7 @@ CREATE TABLE HardTokenProfileData (
     name varchar(256),
     updateCounter integer NOT NULL,
     data clob,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -185,6 +202,7 @@ CREATE TABLE HardTokenPropertyData (
     id varchar(256) NOT NULL,
     property varchar(256) NOT NULL,
     value varchar(256),
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id, property)
 );
 
@@ -195,6 +213,7 @@ CREATE TABLE KeyRecoveryData (
     username varchar(256),
     markedAsRecoverable smallint NOT NULL,
     keyData clob DEFAULT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (certSN, issuerDN)
 );
 
@@ -203,6 +222,7 @@ CREATE TABLE LogConfigurationData (
     id integer NOT NULL,
     logConfiguration blob,
     logEntryRowNumber integer NOT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -218,57 +238,8 @@ CREATE TABLE LogEntryData (
     certificateSNR varchar(256),
     event integer NOT NULL,
     logComment varchar(256),
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
-);
-
-DROP TABLE ProtectedLogData;
-CREATE TABLE ProtectedLogData (
-	pk varchar(256) NOT NULL,
-	adminType integer NOT NULL,
-	adminData varchar(256),
-    caId integer NOT NULL,
-    module integer NOT NULL,
-    eventTime bigint NOT NULL,
-    username varchar(256),
-    certificateSerialNumber varchar(256),
-    certificateIssuerDN varchar(256),
-    eventId integer NOT NULL,
-    eventComment VARCHAR(32672),
-    nodeGUID integer NOT NULL,
-    counter bigint NOT NULL,
-    nodeIP varchar(256),
-    b64LinkedInEventIdentifiers long varchar,
-    b64LinkedInEventsHash varchar(256),
-    currentHashAlgorithm varchar(256),
-    protectionKeyIdentifier integer NOT NULL,
-    protectionKeyAlgorithm varchar(256),
-    b64Protection long varchar,
-    PRIMARY KEY (pk)
-);
-
-DROP TABLE ProtectedLogExportData;
-CREATE TABLE ProtectedLogExportData (
-	pk varchar(256) NOT NULL,
-    timeOfExport bigint NOT NULL,
-    exportEndTime bigint NOT NULL,
-    exportStartTime bigint NOT NULL,
-    b64LogDataHash varchar(256),
-    b64PreviosExportHash varchar(256),
-    currentHashAlgorithm varchar(256),
-    b64SignatureCertificate long varchar,
-    deleted integer NOT NULL DEFAULT 0,
-    b64Signature long varchar,
-	PRIMARY KEY (pk)
-);
-
-DROP TABLE ProtectedLogTokenData;
-CREATE TABLE ProtectedLogTokenData (
-	pk varchar(256) NOT NULL,
-    tokenIdentifier integer NOT NULL,
-    tokenType integer NOT NULL,
-    b64TokenCertificate long varchar,
-    tokenReference VARCHAR(32672),
-    PRIMARY KEY (pk)
 );
 
 DROP TABLE PublisherData;
@@ -277,6 +248,7 @@ CREATE TABLE PublisherData (
     name varchar(256),
     updateCounter integer NOT NULL,
     data clob DEFAULT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -291,6 +263,7 @@ CREATE TABLE PublisherQueueData (
     fingerprint varchar(256),
     publisherId integer NOT NULL,
     volatileData clob DEFAULT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (pk)
 );
 
@@ -301,6 +274,7 @@ CREATE TABLE ServiceData (
     data clob DEFAULT NULL,
     nextRunTimeStamp BIGINT NOT NULL WITH DEFAULT 0,
     runTimeStamp BIGINT NOT NULL WITH DEFAULT 0,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -316,6 +290,7 @@ CREATE TABLE TableProtectData (
     dbKey varchar(256),
     dbType varchar(256),
     keyType varchar(256),
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );
 
@@ -339,6 +314,7 @@ CREATE TABLE UserData (
     extendedInformationData clob,
     keyStorePassword varchar(256),
     cardnumber varchar(19),
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (username)
 );
 
@@ -348,5 +324,6 @@ CREATE TABLE UserDataSourceData (
     name varchar(256),
     updateCounter integer NOT NULL,
     data clob DEFAULT NULL,
+    rowVersion INTEGER NOT NULL WITH DEFAULT 0,
     PRIMARY KEY (id)
 );

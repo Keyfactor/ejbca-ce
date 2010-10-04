@@ -23,6 +23,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.UpgradeableDataHashMap;
@@ -47,6 +48,7 @@ public class ServiceData implements Serializable {
 	private long runTimeStamp;
 	private long nextRunTimeStamp;
 	private String data;
+	private int rowVersion;
 
     /**
      * Entity Bean holding data of a service configuration.
@@ -99,6 +101,11 @@ public class ServiceData implements Serializable {
 	@Lob
     public String getData() { return data; }
     public void setData(String data) { this.data = data; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
     /**
      * Method that returns the service configuration data and updates it if necessary.

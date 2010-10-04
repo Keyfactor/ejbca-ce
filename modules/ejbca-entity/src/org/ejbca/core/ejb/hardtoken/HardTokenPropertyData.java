@@ -24,6 +24,7 @@ import javax.persistence.IdClass;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
 /**
  * Complimentary class used to assign extended properties like copyof to a hard
@@ -42,6 +43,7 @@ public class HardTokenPropertyData implements Serializable {
     private String id;
     private String property;
     private String value;
+	private int rowVersion;
 
     /**
      * Entity holding data of a hard token properties.
@@ -87,6 +89,11 @@ public class HardTokenPropertyData implements Serializable {
     public void setValue(String value) {
         this.value = value;
     }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
     //
     // Search functions.

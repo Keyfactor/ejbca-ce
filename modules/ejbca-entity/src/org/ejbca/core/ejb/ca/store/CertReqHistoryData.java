@@ -27,6 +27,7 @@ import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.store.CertReqHistory;
@@ -56,6 +57,7 @@ public class CertReqHistoryData implements Serializable {
 	private long timestamp;
 	private String userDataVO;
 	private String username;
+	private int rowVersion;
 
 	/**
 	 * Entity Bean holding info about a request data at the time the certificate was issued.
@@ -181,6 +183,11 @@ public class CertReqHistoryData implements Serializable {
 	 * @param username username
 	 */
 	private void setUsername(String username) { this.username = StringTools.strip(username); }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	//
 	// Public business methods used to help us manage certificates

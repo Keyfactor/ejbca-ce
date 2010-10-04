@@ -30,6 +30,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -75,6 +76,7 @@ public class UserData implements Serializable {
 	private int hardTokenIssuerId;
 	private String extendedInformationData;
 	private String keyStorePassword;
+	private int rowVersion;
 
     /**
      * Entity Bean holding info about a User.
@@ -245,6 +247,11 @@ public class UserData implements Serializable {
     @Column(name="keyStorePassword" )
     public String getKeyStorePassword() { return keyStorePassword; }
     public void setKeyStorePassword(String keyStorePassword) { this.keyStorePassword = keyStorePassword; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
     //
     // Public methods used to help us manage passwords

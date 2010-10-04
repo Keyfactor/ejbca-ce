@@ -37,6 +37,7 @@ import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
@@ -105,6 +106,7 @@ public class CertificateData implements Serializable {
 	private Integer certificateProfileId;
 	private long updateTime = 0;
 	private String subjectKeyId;
+	private int rowVersion;
 
 	/**
 	 * Entity holding info about a certificate. Create by sending in the certificate, which
@@ -377,6 +379,10 @@ public class CertificateData implements Serializable {
      */
 	public void setSubjectKeyId(String subjectKeyId) { this.subjectKeyId = subjectKeyId; }
 
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	//
 	// Public business methods used to help us manage certificates

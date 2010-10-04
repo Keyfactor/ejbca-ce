@@ -20,6 +20,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
 /**
  * @version $Id$
@@ -33,6 +34,7 @@ public class AuthorizationTreeUpdateData implements Serializable {
 
 	private Integer pK;
 	private int authorizationTreeUpdateNumber;
+	private int rowVersion;
 	
 	@Id
 	@Column(name="pK")
@@ -47,6 +49,11 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	@Column(name="authorizationTreeUpdateNumber", nullable=false)
 	public int getAuthorizationTreeUpdateNumber() { return authorizationTreeUpdateNumber; }
 	public void setAuthorizationTreeUpdateNumber(int authorizationTreeUpdateNumber) { this.authorizationTreeUpdateNumber = authorizationTreeUpdateNumber; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	public AuthorizationTreeUpdateData() {
 		setPrimKey(AUTHORIZATIONTREEUPDATEDATA);

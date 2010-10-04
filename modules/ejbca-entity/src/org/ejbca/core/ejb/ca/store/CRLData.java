@@ -28,6 +28,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.util.Base64;
@@ -53,7 +54,8 @@ public class CRLData implements Serializable {
 	private long thisUpdate;
 	private long nextUpdate;
 	private String base64Crl;
-	
+	private int rowVersion;
+
 	/**
 	 * Entity holding info about a CRL. Create by sending in the CRL, which extracts (from the
 	 * crl) fingerprint (primary key), CRLNumber, issuerDN, thisUpdate, nextUpdate. CAFingerprint
@@ -126,6 +128,11 @@ public class CRLData implements Serializable {
 	@Lob
 	public String getBase64Crl() { return base64Crl; }
 	public void setBase64Crl(String base64Crl) { this.base64Crl = base64Crl; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	//
 	// Public methods used to help us manage CRLs
