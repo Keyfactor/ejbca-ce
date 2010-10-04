@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.authorization;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -101,8 +102,9 @@ public class AccessRulesData implements Serializable {
 
 	/** @return return the count. */
 	public static long findCountByCustomQuery(EntityManager entityManager, String whereClause) {
-		Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM ApprovalData a WHERE " + whereClause, Long.class);
-		return ((Long)query.getSingleResult()).longValue();
+		Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
+		BigInteger v = (BigInteger)query.getSingleResult();
+		return v.longValue();
 	}
 
 }
