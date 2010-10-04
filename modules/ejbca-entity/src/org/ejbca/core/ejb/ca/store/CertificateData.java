@@ -831,7 +831,7 @@ public class CertificateData implements Serializable {
         // TODO: Still true for JPA?
 		Query query = entityManager.createNativeQuery(
 				"SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE (" + cASelectString + ") AND "
-                + "(expireDate>:activeNotifiedExpireDateMin) AND" + "(expireDate<:activeNotifiedExpireDateMax) AND (status=:status1"
+                + "(expireDate>:activeNotifiedExpireDateMin) AND " + "(expireDate<:activeNotifiedExpireDateMax) AND (status=:status1"
                 + " OR status=:status2) AND (expireDate>=:activeExpireDateMin OR " + "status=:status3)", "FingerprintUsernameSubset");
 		query.setParameter("activeNotifiedExpireDateMin", activeNotifiedExpireDateMin);
 		query.setParameter("activeNotifiedExpireDateMax", activeNotifiedExpireDateMax);
