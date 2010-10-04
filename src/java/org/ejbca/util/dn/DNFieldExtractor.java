@@ -180,10 +180,18 @@ public class DNFieldExtractor implements java.io.Serializable {
                         }
                         if (dnex.startsWith(field)) {
                             exists = true;
-                            String rdn = LDAPDN.unescapeRDN(dnexploded[i]);
+                            final String rdn;
+                            final String tmp;
+                            if ( dnexploded[i].charAt(dnexploded[i].length()-1)!='=' ) {
+                                tmp = LDAPDN.unescapeRDN(dnexploded[i]);
+                            } else {
+                                tmp = dnexploded[i];
+                            }
                             // We don't want the CN= (or whatever) part of the RDN
-                            if (rdn.toUpperCase().startsWith(field)) {
-                                rdn = rdn.substring(field.length(),rdn.length());                                
+                            if (tmp.toUpperCase().startsWith(field)) {
+                                rdn = tmp.substring(field.length(),tmp.length());                                
+                            } else {
+                                rdn = tmp;
                             }
 
                             if (type == TYPE_SUBJECTDN) {

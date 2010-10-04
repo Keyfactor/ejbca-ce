@@ -30,10 +30,16 @@ if [ -d ${NFAST_JARS} ] ; then
     done
 fi
 
+endorsed="-Djava.endorsed.dirs=${TOOLBOX_HOME}/endorsed"
+if [ "x${JAVA_OPT}" = "x" ] ; then
+	JAVA_OPT=${endorsed}
+else
+	JAVA_OPT="${JAVA_OPT} ${endorsed}"
+fi
 # Finally run java
 #set -x
 if [ "x$CLASSES" = "x" ] ; then
-	${JAVACMD} ${JAVA_OPT} -Djava.endorsed.dirs=${TOOLBOX_HOME}/endorsed -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
+	${JAVACMD} "${JAVA_OPT}" -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
 else
-	${JAVACMD} ${JAVA_OPT} -Djava.endorsed.dirs=${TOOLBOX_HOME}/endorsed -cp ${CLASSES} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
+	${JAVACMD} "${JAVA_OPT}" -cp ${CLASSES} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
 fi

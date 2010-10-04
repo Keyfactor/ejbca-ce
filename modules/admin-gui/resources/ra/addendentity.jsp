@@ -307,17 +307,21 @@
              }
              if(value !=null){
                value= value.trim(); 
-               if(!value.equals("")){
             	     if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.SN)) {
             	    	 serialnumber = value;
             	     }
             		 oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
-            		 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value);  
+            		 final String field = DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value;
+                     final String dnPart;
+                     if ( field.charAt(field.length()-1)!='=' ) {
+                         dnPart = org.ietf.ldap.LDAPDN.escapeRDN(field);
+                     } else {
+                         dnPart = field;
+                     }
             		 if(subjectdn.equals(""))
-            			 subjectdn = value;
+            			 subjectdn = dnPart;
             		 else
-            			 subjectdn += ", " + value;
-            	}
+            			 subjectdn += ", " + dnPart;
               }
              
              value = request.getParameter(SELECT_SUBJECTDN+i);

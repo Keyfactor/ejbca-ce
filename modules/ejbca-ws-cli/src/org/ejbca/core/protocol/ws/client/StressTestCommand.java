@@ -44,7 +44,7 @@ import org.ejbca.util.query.BasicMatch;
  * @version $Id$
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
-
+    final static private String USER_NAME_TAG = "<userName>";
     final PerformanceTest performanceTest;
     enum TestType {
         BASIC,
@@ -52,24 +52,26 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         REVOKEALOT
     }
     private class MyCommandFactory implements CommandFactory {
-        final String caName;
-        final String endEntityProfileName;
-        final String certificateProfileName;
-        final TestType testType;
-        final int maxCertificateSN;
+        final private String caName;
+        final private String endEntityProfileName;
+        final private String certificateProfileName;
+        final private TestType testType;
+        final private int maxCertificateSN;
+        final private String subjectDN;
         MyCommandFactory( String _caName, String _endEntityProfileName, String _certificateProfileName,
-                          TestType _testType, int _maxCertificateSN ) {
+                          TestType _testType, int _maxCertificateSN, String _subjectDN ) {
             this.testType = _testType;
             this.caName = _caName;
             this.endEntityProfileName = _endEntityProfileName;
             this.certificateProfileName = _certificateProfileName;
             this.maxCertificateSN = _maxCertificateSN;
+            this.subjectDN = _subjectDN;
         }
         public Command[] getCommands() throws Exception {
             final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(1024);
             final EjbcaWS ejbcaWS = getEjbcaRAWSFNewReference();
-            final JobData jobData = new JobData();
+            final JobData jobData = new JobData(this.subjectDN);
             switch (this.testType) {
             case BASIC:
                 return new Command[]{
@@ -99,9 +101,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
     class JobData {
         String userName;
         String passWord;
+        final String subjectDN;
         X509Certificate userCertsToBeRevoked[];
+        public JobData(String subjectDN) {
+            this.subjectDN = subjectDN;
+        }
         String getDN() {
-            return "CN="+this.userName;
+            return this.subjectDN.replace(USER_NAME_TAG, this.userName);
         }
         @Override
         public String toString() {
@@ -322,8 +328,12 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         getPrintStream().println("Here is an example of how the test could be started:");
         getPrintStream().println("./ejbcawsracli.sh stress AdminCA1 20 5000");
         getPrintStream().println("20 threads is started. After adding a user the thread waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA AdminCA1.");
+        getPrintStream().println();
+        getPrintStream().println("To define a template for the subject DN of each new user use the java system property 'subjectDN'.");
+        getPrintStream().println("If the property value contains one or several '<userName>' string these strings will be substituted with the user name.");
+        getPrintStream().println("Example: JAVA_OPT=\"-DsubjectDN=CN=<userName>,O=Acme,UID=hej<userName>,OU=,OU=First Fixed,OU=sfsdf,OU=Middle Fixed,OU=fsfsd,OU=Last Fixed\" ../../PWE/ejbca_3_11/dist/clientToolBox/ejbcaClientToolBox.sh EjbcaWsRaCli stress ldapDirect 1 1000 ldapClientOUTest ldapClientDirect");
         getPrintStream().print("Types of stress tests:");
-        TestType testTypes[] = TestType.values(); 
+        TestType testTypes[] = TestType.values();
         for ( TestType testType : testTypes ) {
             getPrintStream().print(" " + testType);
         }
@@ -347,6 +357,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             final String certificateProfileName = this.args.length>5 ? this.args[5] : "ENDUSER";
             final TestType testType = this.args.length>6 ? TestType.valueOf(this.args[6]) : TestType.BASIC;
             final int maxCertificateSN;
+            final String subjectDN = System.getProperty("subjectDN", "CN="+USER_NAME_TAG);
             {
                 final String sTmp = System.getProperty("maxCertSN");
                 int iTmp;
@@ -357,7 +368,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 }
                 maxCertificateSN = iTmp;
             }
-            this.performanceTest.execute(new MyCommandFactory(caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN),
+            this.performanceTest.execute(new MyCommandFactory(caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN, subjectDN),
                                          numberOfThreads, waitTime, getPrintStream());
             getPrintStream().println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
             synchronized(this) {

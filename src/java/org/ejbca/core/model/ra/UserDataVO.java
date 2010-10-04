@@ -289,4 +289,10 @@ public class UserDataVO implements Serializable {
     	}
     	return ret;
     }
+
+    public String getCertificateDN() {
+        final String userDN = getDN();
+        final String tmp = userDN.replaceAll("[a-zA-Z]*=[,$]","");
+        return tmp.replaceAll(",$", "");
+    }
 }
