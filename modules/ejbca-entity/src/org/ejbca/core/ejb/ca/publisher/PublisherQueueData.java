@@ -27,6 +27,7 @@ import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
@@ -70,6 +71,7 @@ public class PublisherQueueData implements Serializable {
     private String fingerprint;
     private int publisherId;
     private String volatileData; // LOB
+	private int rowVersion;
 
     /**
      * @param publishType
@@ -193,6 +195,11 @@ public class PublisherQueueData implements Serializable {
     public void setVolatileData(String volatileData) {
         this.volatileData = volatileData;
     }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
     /**
      * Method that returns the PublisherQueueVolatileData data and updates it if

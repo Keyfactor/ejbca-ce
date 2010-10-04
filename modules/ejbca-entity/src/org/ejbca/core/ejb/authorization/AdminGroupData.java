@@ -34,6 +34,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AccessRule;
@@ -61,7 +62,8 @@ public class AdminGroupData implements Serializable {
 	private int cAId;
 	private Set<AdminEntityData> adminEntityDatas = new HashSet<AdminEntityData>();
 	private Set<AccessRulesData> accessRulesDatas = new HashSet<AccessRulesData>();
-	
+	private int rowVersion;
+
 	/**
 	 * Entity holding data of admin profile groups.
 	 * @param admingroupname
@@ -89,6 +91,11 @@ public class AdminGroupData implements Serializable {
 	public int getCaId() { return cAId; }
 	@Deprecated
 	public void setCaId(int cAId) { this.cAId = cAId; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	/*
 	 * TODO: Mapping between admins and group ok?

@@ -26,6 +26,7 @@ import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.util.Base64;
@@ -49,6 +50,7 @@ public class KeyRecoveryData implements Serializable {
 	private String username;
 	private boolean markedAsRecoverable;
 	private String keyData;
+	private int rowVersion;
 
 	/**
 	 * Entity holding key recovery data of users certificate.
@@ -92,6 +94,11 @@ public class KeyRecoveryData implements Serializable {
 	@Lob
 	public String getKeyData() { return keyData; } 
 	public void setKeyData(String keyData) { this.keyData = keyData; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	@Transient
 	public BigInteger getCertificateSN() {

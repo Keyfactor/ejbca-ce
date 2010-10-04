@@ -22,6 +22,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Query;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 
@@ -39,6 +40,7 @@ public class HardTokenCertificateMap implements Serializable {
 
 	private String certificateFingerprint;
 	private String tokenSN;
+	private int rowVersion;
 
 	/**
 	 * Entity holding data of a certificate to hard token relation.
@@ -59,6 +61,11 @@ public class HardTokenCertificateMap implements Serializable {
 	@Column(name="tokenSN")
 	public String getTokenSN() { return tokenSN; }
 	public void setTokenSN(String tokenSN) { this.tokenSN = tokenSN; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	//
 	// Search functions. 

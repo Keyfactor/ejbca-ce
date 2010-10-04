@@ -16,6 +16,7 @@ Upgrade to EJBCA 3.11 should be simple as usual, just follow the instructions in
 
 Noteworthy changes:
 - Upgrade database schema to be consistent across databases.
+- Add rowVersion columns to database tables, a preparation to be used in EJBCA 4.0. 
 
 Note:
 If you have a very large database (>1 million issued certificates) you can probably not run the database schema upgrade 

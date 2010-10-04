@@ -24,6 +24,7 @@ import javax.persistence.Id;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,6 +56,7 @@ public class LogEntryData implements Serializable {
 	private String certificateSNR;
 	private int event;
 	private String logComment;
+	private int rowVersion;
 
 	public LogEntryData(Integer id, int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String logComment) {
 		setId(id);
@@ -121,6 +123,11 @@ public class LogEntryData implements Serializable {
 	@Column(name="logComment")
 	public String getLogComment() { return logComment; }
 	public void setLogComment(String logComment) { this.logComment = logComment; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	@Transient
 	public Date getTimeAsDate() {

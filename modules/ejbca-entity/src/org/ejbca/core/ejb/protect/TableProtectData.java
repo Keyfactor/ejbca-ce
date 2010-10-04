@@ -25,6 +25,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 /**
  * Representation of a table protection entry in the database.
@@ -49,6 +50,7 @@ public class TableProtectData implements Serializable {
 	private String dbKey;
 	private String dbType;
 	private String keyType;
+	private int rowVersion;
 
 	public TableProtectData(String id, int hashVersion, String alg, String hash, String signature, Date time, String dbKey, String dbType, String keyType) {
 		setId(id);
@@ -114,6 +116,11 @@ public class TableProtectData implements Serializable {
 	@Column(name="keyType")
 	public String getKeyType() { return keyType; }
 	public void setKeyType(String keyType) { this.keyType = keyType; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	@Transient
 	public Date getTimeAsDate() {

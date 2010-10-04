@@ -31,6 +31,7 @@ import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.approval.Approval;
@@ -67,8 +68,9 @@ public class ApprovalData implements Serializable {
 	private String requestdata;
 	private long requestdate;
 	private long expiredate;
-	private int remainingapprovals;
-	
+	private int remainingapprovals;	
+	private int rowVersion;
+
 	/**
 	 * Entity holding data of a approval data
 	 */
@@ -242,6 +244,11 @@ s	 */
 	 * Indicates the number of approvals that remains in order to execute the action  
 	 */
 	public void setRemainingapprovals(int remainingapprovals) { this.remainingapprovals = remainingapprovals; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	@Transient
 	public Collection<Approval> getApprovals() {   

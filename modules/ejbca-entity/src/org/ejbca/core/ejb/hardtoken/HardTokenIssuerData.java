@@ -27,6 +27,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JBossUnmarshaller;
@@ -50,6 +51,7 @@ public class HardTokenIssuerData implements Serializable {
 	private String alias;
 	private int adminGroupId;
 	private Serializable data;
+	private int rowVersion;
 
 	/**
 	 * Entity holding data of a hard token issuer.
@@ -89,6 +91,11 @@ public class HardTokenIssuerData implements Serializable {
 	}
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
 	public void setDataUnsafe(Serializable data) { this.data = data; }
+
+	@Version
+	@Column(name = "rowVersion", nullable = false, length = 5)
+	public int getRowVersion() { return rowVersion; }
+	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	@Transient
 	private HashMap getData() { return (HashMap) getDataUnsafe(); }
