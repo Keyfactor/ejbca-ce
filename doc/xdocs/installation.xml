@@ -340,8 +340,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
     Restart Glassfish</li>
 <li>Derby:
 <ol>
-<li>Start the database: asadmin start-database.</li>
-<li>Create a database and a database user with privileges.
+<li>Start the database and create the database.
 <pre>
   > cd /home/sun/glassfish/bin
   > ./asadmin start-database
