@@ -539,7 +539,7 @@ public class X509CA extends CA implements Serializable {
             sigAlg = certProfile.getSignatureAlgorithm();
         }
         final X509Certificate cacert = (X509Certificate)getCACertificate();
-        String dn = subject.getDN();        
+        String dn = subject.getCertificateDN();        
         // Check if this is a root CA we are creating
         final boolean isRootCA = certProfile.getType()==CertificateProfile.TYPE_ROOTCA;
 
@@ -764,7 +764,7 @@ public class X509CA extends CA implements Serializable {
         	}
         }
         if (log.isDebugEnabled()) {
-        	log.debug("X509CA: generated certificate, CA "+ this.getCAId() + " for DN: " + subject.getDN());
+        	log.debug("X509CA: generated certificate, CA "+ this.getCAId() + " for DN: " + subject.getCertificateDN());
         }
       return cert;                                                                                        
     }
