@@ -67,7 +67,7 @@
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 		<available file="${appserver.home}/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
 	-->
-	<fail message="'appserver.type' could not be detected and is not configured. (Normally you should not have to configure this.)" unless="appserver.type"/>
+	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1 and JBoss 5.1.0.GA are currently supported. (Normally you should not have to configure this.)" unless="appserver.type"/>
 	<echo message="appserver.type: ${appserver.type}"/>
 	
     <property name="ejbca.dist.path" location="${ejbca.home}/dist" />
