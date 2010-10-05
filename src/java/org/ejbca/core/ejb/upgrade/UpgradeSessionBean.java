@@ -32,8 +32,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -77,6 +80,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
+    @Resource
+    private SessionContext sessionContext;
+
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -86,9 +92,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private UpgradeSessionLocal upgradeSession;
-    @EJB
     private ServiceSessionLocal serviceSession;
+    private UpgradeSessionLocal upgradeSession;
+
+    @PostConstruct
+    public void ejbCreate() {
+    	upgradeSession = sessionContext.getBusinessObject(UpgradeSessionLocal.class);
+    }
 
     /**
      * Upgrades the database
