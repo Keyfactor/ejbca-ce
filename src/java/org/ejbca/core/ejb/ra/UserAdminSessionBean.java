@@ -2217,6 +2217,14 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 authorizedtoanyprofile = false;
             }
         }
+        if (onlybatchusers) {
+        	String onlybatchquery = "( clearPassword is not null )";
+            if (caauthstring.trim().equals("") && query == null) {
+                sqlquery = sqlquery + onlybatchquery;
+            } else {
+                sqlquery = sqlquery + " AND " + onlybatchquery;
+            }        	
+        }
         // Finally order the return values
         sqlquery += " ORDER BY " + USERDATA_CREATED_COL + " DESC";
         if (log.isDebugEnabled()) {
@@ -2230,9 +2238,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         			returnval.add(userDataVO);
         		}
         	}
+        } else {
+        	if (log.isDebugEnabled()) {
+        		log.debug("authorizedtoanyprofile=false");
+        	}
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<query()");
+        	log.trace("<query(): "+returnval.size());
         }
         return returnval;
     }
