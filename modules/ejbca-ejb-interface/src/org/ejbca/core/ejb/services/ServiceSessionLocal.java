@@ -12,31 +12,35 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 import javax.ejb.Local;
 
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.services.IWorker;
 
 /**
  * Local interface for ServiceSession.
  */
 @Local
 public interface ServiceSessionLocal extends ServiceSession {
-    /**
-     * Internal method should not be called from external classes, method is
-     * public to get automatic transaction handling. This method need
-     * "RequiresNew" transaction handling, because we want to make sure that the
-     * timer runs the next time even if the execution fails.
-     * 
-     * @return true if the service should run, false if the service should not run
-     */
-	public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceData serviceData);
 
     /**
      * Method creating a hashmap mapping service id (Integer) to service name
      * (String).
      */
     public HashMap<Integer, String> getServiceIdToNameMap(Admin admin);
+
+	public Map<Integer, Long> getNewServiceTimeouts(HashSet<Serializable> existingTimers);
    
+	public long getServiceInterval(Integer serviceId);
+
+	public IWorker getWorkerIfItShouldRun(Integer timerInfo, long nextTimeout);
+
+	public void executeServiceInTransaction(IWorker worker, String serviceName);
+	
+	public void cancelTimer(Integer id);
 }

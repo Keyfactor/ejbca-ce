@@ -99,9 +99,32 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
         return entityManager.find(ServiceData.class, id);
     }
     
+    /** @return the name of the service with the given id */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public String findNameById(Integer id) {
+        String ret = null;
+        try {
+            Query query = entityManager.createQuery("SELECT a.name FROM ServiceData a WHERE a.id=:id");
+            query.setParameter("id", id);
+            ret = (String) query.getSingleResult();
+        } catch (NoResultException e) {
+        }
+        return ret;
+    }
+    
     /** @return return the query results as a List. */
     public List<ServiceData> findAll() {
         Query query = entityManager.createQuery("SELECT a FROM ServiceData a");
         return query.getResultList();
+    }
+ 
+    /**
+     * Updates a database row with the matching values. This way we can ensure atomic operation for acquiring the semaphore for a service,
+     * independent of the underlying database isolation level.
+     * @return true if 1 row was updated
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+	public boolean updateTimestamps(Integer serviceId, long oldRunTimeStamp, long oldNextRunTimeStamp, long newRunTimeStamp, long newNextRunTimeStamp) {
+    	return ServiceData.updateTimestamps(entityManager, serviceId, oldRunTimeStamp, oldNextRunTimeStamp, newRunTimeStamp, newNextRunTimeStamp);
     }
 }
