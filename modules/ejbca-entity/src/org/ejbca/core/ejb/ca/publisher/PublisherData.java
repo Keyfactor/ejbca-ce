@@ -49,7 +49,7 @@ public class PublisherData implements Serializable {
 	private String name;
 	private int updateCounter;
 	private String data;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	@Id
 	@Column(name="id")

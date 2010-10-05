@@ -106,7 +106,7 @@ public class CertificateData implements Serializable {
 	private Integer certificateProfileId;
 	private long updateTime = 0;
 	private String subjectKeyId;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding info about a certificate. Create by sending in the certificate, which

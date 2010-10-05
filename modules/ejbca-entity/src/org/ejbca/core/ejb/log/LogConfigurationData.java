@@ -42,7 +42,7 @@ public class LogConfigurationData implements Serializable {
 	private Integer id;
 	private Serializable logConfiguration;
 	private int logEntryRowNumber;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of log configuration.

@@ -49,7 +49,7 @@ public class EndEntityProfileData implements Serializable {
 	private Integer id;
 	private String profileName;
 	private Serializable data;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of a end entity profile.

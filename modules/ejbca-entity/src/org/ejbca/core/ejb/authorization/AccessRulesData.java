@@ -46,7 +46,7 @@ public class AccessRulesData implements Serializable {
 	private String accessRule;
 	private int rule;
 	private boolean isRecursive;
-	private int rowVersion;
+	private int rowVersion = 0;
 	
 	public AccessRulesData(String admingroupname, int caid, String accessrule, int rule, boolean isrecursive) {
 		AccessRulesDataPK accessRulesDataPK = new AccessRulesDataPK(admingroupname, caid, new AccessRule(accessrule, rule, isrecursive));

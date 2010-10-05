@@ -50,7 +50,7 @@ public class TableProtectData implements Serializable {
 	private String dbKey;
 	private String dbType;
 	private String keyType;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	public TableProtectData(String id, int hashVersion, String alg, String hash, String signature, Date time, String dbKey, String dbType, String keyType) {
 		setId(id);

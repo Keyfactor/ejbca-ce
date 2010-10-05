@@ -43,7 +43,7 @@ public class AdminPreferencesData implements Serializable {
 
 	private String id;
 	private Serializable data;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of admin preferences.

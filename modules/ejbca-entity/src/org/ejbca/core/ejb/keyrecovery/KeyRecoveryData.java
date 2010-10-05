@@ -50,7 +50,7 @@ public class KeyRecoveryData implements Serializable {
 	private String username;
 	private boolean markedAsRecoverable;
 	private String keyData;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding key recovery data of users certificate.

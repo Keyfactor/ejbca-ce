@@ -69,7 +69,7 @@ public class ApprovalData implements Serializable {
 	private long requestdate;
 	private long expiredate;
 	private int remainingapprovals;	
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of a approval data

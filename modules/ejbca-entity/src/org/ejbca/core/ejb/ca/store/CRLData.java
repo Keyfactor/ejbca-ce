@@ -54,7 +54,7 @@ public class CRLData implements Serializable {
 	private long thisUpdate;
 	private long nextUpdate;
 	private String base64Crl;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding info about a CRL. Create by sending in the CRL, which extracts (from the

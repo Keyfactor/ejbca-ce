@@ -71,7 +71,7 @@ public class PublisherQueueData implements Serializable {
     private String fingerprint;
     private int publisherId;
     private String volatileData; // LOB
-	private int rowVersion;
+	private int rowVersion = 0;
 
     /**
      * @param publishType

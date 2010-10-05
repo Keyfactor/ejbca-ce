@@ -46,7 +46,7 @@ public class AdminEntityData implements Serializable {
 	private int matchType;
 	private String matchValue;
 	private Integer cAId;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	public AdminEntityData(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) {
 		AdminEntityDataPK adminEntityDataPK = new AdminEntityDataPK(admingroupname, caid, matchwith, matchtype, matchvalue);
