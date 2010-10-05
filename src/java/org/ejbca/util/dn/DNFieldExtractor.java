@@ -182,6 +182,7 @@ public class DNFieldExtractor implements java.io.Serializable {
                             exists = true;
                             final String rdn;
                             final String tmp;
+                            // LDAPDN.unescapeRDN don't like fields with just a key but no contents. Example: 'OU='
                             if ( dnexploded[i].charAt(dnexploded[i].length()-1)!='=' ) {
                                 tmp = LDAPDN.unescapeRDN(dnexploded[i]);
                             } else {

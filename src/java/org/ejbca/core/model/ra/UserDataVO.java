@@ -290,6 +290,11 @@ public class UserDataVO implements Serializable {
     	return ret;
     }
 
+    /**
+     * Removes all emtpty fields of the DN.
+     * 'CN=Hej Svejs,OU=,OU=abra,OU=' will be just 'CN=Hej Svejs,OU=abra'
+     * @return the DN to be used when creating a certificate.
+     */
     public String getCertificateDN() {
         final String userDN = getDN();
         final String tmp = userDN.replaceAll("[a-zA-Z]*=[,$]","");
