@@ -910,6 +910,7 @@
 				<pathelement location="${build-temp.dir}/useradmin"/>
         		<pathelement location="${build-temp.dir}/authorization"/>
         		<pathelement location="${build-temp.dir}/certstore"/>
+        		<pathelement location="${build-temp.dir}/services"/>
         		<!-- Since Upgrade depends on all other components we can add more here later without bother..
         		<pathelement location="${build-temp.dir}/..."/>
         		-->
