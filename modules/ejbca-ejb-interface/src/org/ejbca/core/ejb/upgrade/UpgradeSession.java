@@ -22,4 +22,11 @@ public interface UpgradeSession {
      * @return true or false if upgrade was done or not
      */
     public boolean upgrade(Admin admin, String dbtype, String sOldVersion, boolean isPost);
+
+    /** Checks if the column rowVersion exists in table PublisherQueueData
+     * 
+     * @return true or false if the column exists or not
+     */
+    public boolean checkColumnExists311();
+    
 }
