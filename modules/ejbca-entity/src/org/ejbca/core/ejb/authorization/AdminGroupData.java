@@ -62,7 +62,7 @@ public class AdminGroupData implements Serializable {
 	private int cAId;
 	private Set<AdminEntityData> adminEntityDatas = new HashSet<AdminEntityData>();
 	private Set<AccessRulesData> accessRulesDatas = new HashSet<AccessRulesData>();
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of admin profile groups.

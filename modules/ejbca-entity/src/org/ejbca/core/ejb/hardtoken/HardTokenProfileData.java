@@ -50,7 +50,7 @@ public class HardTokenProfileData implements Serializable {
 	private String name;
 	private int updateCounter;
 	private String data;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of a hard token profile.

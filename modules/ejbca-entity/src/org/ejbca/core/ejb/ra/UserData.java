@@ -76,7 +76,7 @@ public class UserData implements Serializable {
 	private int hardTokenIssuerId;
 	private String extendedInformationData;
 	private String keyStorePassword;
-	private int rowVersion;
+	private int rowVersion = 0;
 
     /**
      * Entity Bean holding info about a User.

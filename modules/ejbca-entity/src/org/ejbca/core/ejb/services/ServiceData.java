@@ -50,7 +50,7 @@ public class ServiceData implements Serializable {
 	private long runTimeStamp;
 	private long nextRunTimeStamp;
 	private String data;
-	private int rowVersion;
+	private int rowVersion = 0;
 
     /**
      * Entity Bean holding data of a service configuration.

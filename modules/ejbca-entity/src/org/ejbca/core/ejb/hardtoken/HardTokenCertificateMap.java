@@ -40,7 +40,7 @@ public class HardTokenCertificateMap implements Serializable {
 
 	private String certificateFingerprint;
 	private String tokenSN;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of a certificate to hard token relation.

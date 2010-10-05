@@ -52,7 +52,7 @@ public class HardTokenData implements Serializable {
 	private int tokenType;
 	private String significantIssuerDN;
 	private Serializable data;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of a hard token issuer.

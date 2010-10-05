@@ -51,7 +51,7 @@ public class HardTokenIssuerData implements Serializable {
 	private String alias;
 	private int adminGroupId;
 	private Serializable data;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of a hard token issuer.

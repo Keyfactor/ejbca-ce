@@ -43,7 +43,7 @@ public class HardTokenPropertyData implements Serializable {
     private String id;
     private String property;
     private String value;
-	private int rowVersion;
+	private int rowVersion = 0;
 
     /**
      * Entity holding data of a hard token properties.

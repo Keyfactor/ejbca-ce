@@ -52,7 +52,7 @@ public class CertificateProfileData implements Serializable {
 	private Integer id;
 	private String certificateProfileName;
 	private Serializable data;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity holding data of a certificate profile.

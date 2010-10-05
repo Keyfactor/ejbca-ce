@@ -34,7 +34,7 @@ public class AuthorizationTreeUpdateData implements Serializable {
 
 	private Integer pK;
 	private int authorizationTreeUpdateNumber;
-	private int rowVersion;
+	private int rowVersion = 0;
 	
 	@Id
 	@Column(name="pK")

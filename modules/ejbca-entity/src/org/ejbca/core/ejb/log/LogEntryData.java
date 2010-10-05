@@ -56,7 +56,7 @@ public class LogEntryData implements Serializable {
 	private String certificateSNR;
 	private int event;
 	private String logComment;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	public LogEntryData(Integer id, int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String logComment) {
 		setId(id);

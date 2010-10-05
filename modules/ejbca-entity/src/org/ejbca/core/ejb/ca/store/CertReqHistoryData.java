@@ -57,7 +57,7 @@ public class CertReqHistoryData implements Serializable {
 	private long timestamp;
 	private String userDataVO;
 	private String username;
-	private int rowVersion;
+	private int rowVersion = 0;
 
 	/**
 	 * Entity Bean holding info about a request data at the time the certificate was issued.
