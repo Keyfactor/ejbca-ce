@@ -20,6 +20,7 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -48,6 +49,7 @@ import org.ejbca.core.ejb.authorization.AdminGroupData;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRule;
@@ -83,6 +85,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private UserAdminSessionLocal userAdminSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private UpgradeSessionLocal upgradeSession;
+    @EJB
+    private ServiceSessionLocal serviceSession;
 
     /**
      * Upgrades the database
@@ -107,7 +113,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
             }
             if (isPost) {
-                return postUpgrade(oldVersion);
+                return postUpgrade(dbtype, oldVersion);
             }
             return upgrade(admin, dbtype, oldVersion);
         } finally {
@@ -115,14 +121,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    private boolean postUpgrade(int oldVersion) {
+    private boolean postUpgrade(String dbtype, int oldVersion) {
         // Upgrade database change between ejbca 3.9.x and 3.10.x if needed
         if (oldVersion <= 309) {
             return postMigrateDatabase310();
         }
         // Upgrade database change between ejbca 3.10.x and 3.11.x if needed
         if (oldVersion <= 310) {
-            return postMigrateDatabase311();
+            return postMigrateDatabase311(dbtype);
         }
         return false;
     }
@@ -424,10 +430,58 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return ret;
 	}
 
-    private boolean postMigrateDatabase311() {
-        // TODO: Here we could access all serialized objects so they are stored
-        // in a non-JBoss-proprietary way and allow an app-server switch..
-        log.error("Post upgrade not yet implemented for EJBCA 3.11.x.");
-        return false;
+    private boolean postMigrateDatabase311(String dbtype) {
+    	log.error("(this is not an error) Starting post upgrade from ejbca 3.10.x to ejbca 3.11.x");
+    	boolean ret = true; // we want to run service migration even if !exists
+    	boolean exists = upgradeSession.checkColumnExists311();
+    	if (!exists) {
+    		ret = migradeDatabase("/310_311/310_311-post-upgrade-"+dbtype+".sql");			
+    	}
+    	if (ret == true) {
+    		// Make sure services are upgraded and time stamps copied to new columns
+    		Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+			HashMap<Integer,String> ids = serviceSession.getServiceIdToNameMap(admin);
+			Collection<Integer> allServiceIds = ids.keySet();
+			Iterator<Integer> i = allServiceIds.iterator();
+    		while (i.hasNext()) {
+    			int id = i.next().intValue();
+    			// Load serviceConfiguration, this will populate new columns if needed
+    			serviceSession.getServiceConfiguration(admin, id);
+    		}
+    		ret = true;
+    	}
+    	log.error("(this is not an error) Finished post upgrade from ejbca 3.10.x to ejbca 3.11.x with result: "+ret);    	
+        return ret;
     }
+    
+    /** Checks if the column rowVersion exists in table PublisherQueueData
+     * 
+     * @return true or false if the column exists or not
+     */
+    public boolean checkColumnExists311() {
+		// Try to find out if rowVersion exists and upgrade the PublisherQueueData in that case
+		// This is needed since PublisherQueueData is a rather new table so it may have been created when the server started 
+		// and we are upgrading from a not so new version
+        final Connection connection = JDBCUtil.getDBConnection();
+		boolean exists = false;
+		try {
+			final PreparedStatement stmt = connection.prepareStatement("select rowVersion from PublisherQueueData where pk='foo'");
+			final ResultSet rs = stmt.executeQuery();
+			// If it did not throw an exception the column exists and we do not want to run the post upgrade sql
+			exists = true; 
+			log.info("rowVersion column already exists in PublisherQueueData");
+		} catch (SQLException e) {
+			// Column did not exist
+			log.info("rowVersion column does not exist in PublisherQueueData");
+			log.error(e);
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// do nothing
+			}
+		}
+		return exists;
+    }
+    
 }
