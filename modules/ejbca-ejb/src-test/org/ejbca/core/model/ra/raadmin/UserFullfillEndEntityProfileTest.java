@@ -34,6 +34,7 @@ import org.ejbca.util.dn.DnComponents;
  */
 public class UserFullfillEndEntityProfileTest extends TestCase {
     private static final Logger log = Logger.getLogger(UserFullfillEndEntityProfileTest.class);
+    final private static String standardDN = "CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE";
     
 
     /**
@@ -61,12 +62,13 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
      */
     public void test01fulfillEndEntityProfiles() throws Exception {
         log.trace(">test01fulfillEndEntityProfiles()");
-
-        EndEntityProfile profile = new EndEntityProfile();
-        
         // Dummy caids
-        int testca1 = 2;
-        int testca2 = 3;
+        final int testca1 = 2;
+        final int testca2 = 3;
+        
+        int currentSubTest = 1;
+        {
+        final EndEntityProfile profile = new EndEntityProfile();
         
         // Set so CN=modifyable required, OU0={DEP1_1,DEP1_2} required, OU1={DEP2_1,DEP2_2} required, C=OU1={SE,DK} not required 
         profile.addField(DnComponents.ORGANIZATIONUNIT);
@@ -86,7 +88,6 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
         
-        int currentSubTest = 1;
         // Test completly erronious DN
         try{ 
           profile.doesUserFullfillEndEntityProfile("username","password","blabla","","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
@@ -98,7 +99,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
 
         // Test correct DN
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           log.debug("End Entity Profile Fulfill Test " + (currentSubTest++) + " " + " = OK");
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -107,7 +108,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test no username even though is required
         try{ 
-          profile.doesUserFullfillEndEntityProfile("","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("","password",standardDN,"null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("UserName is not checked even though it's required", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -116,7 +117,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test no password even though is required
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","",standardDN,"null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Password is not checked even though it's required", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -196,7 +197,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test completly erronious Alt Name
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","blabla","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"blabla","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Profile does not check altname at all.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -205,7 +206,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
 
         // Test correct Alt Name
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","RFC822NAME=test@test.com, dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"RFC822NAME=test@test.com, dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           log.debug("End Entity Profile Fulfill Test " + (currentSubTest++) + " " + " = OK");
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -215,7 +216,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test with no RFC822NAME (required)
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Error Required RFC822NAME field wasn't checked", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -224,7 +225,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test with one RFC822NAME to many
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE", "rfc822name=test@test.com, rfc822name=test@primekey.se, dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN, "rfc822name=test@test.com, rfc822name=test@primekey.se, dnsname=test.primekey.se, Upn=test@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("To many RFC822 names fields wasn't checked", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -233,7 +234,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test that only domain is checked for RFC822name and UPN
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE", "rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN, "rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
            log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + "  = OK");
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -242,7 +243,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test were DNS have illegal value
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","rfc822name=test@test.com, dnsname=test2.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"rfc822name=test@test.com, dnsname=test2.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Error value of DNS not checked.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -251,7 +252,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test without IPADDRESS (required)
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Error not checking number of IPADDRESS properly.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -262,7 +263,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test without email field (required) 1
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.1","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.1","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Inproper check of email field.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){        	        	
@@ -271,7 +272,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test without email field (required) 2
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.1","","null",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.1","","null",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Inproper check of email field.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){        	        	
@@ -280,7 +281,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test without email field (required) 3
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","",null,SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"rfc822name=test@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","",null,SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Inproper check of email field.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){        	        	
@@ -289,7 +290,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test illegal value of  email field (test.com or primekey.se) 1
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","rfc822name=test11@test1.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test1.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"rfc822name=test11@test1.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test1.com",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Inproper check of email field values.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){        	        	
@@ -300,7 +301,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test illegal value of  Certificate Profile
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","rfc822name=test11@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test.com",SecConst.CERTPROFILE_FIXED_ROOTCA, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"rfc822name=test11@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test.com",SecConst.CERTPROFILE_FIXED_ROOTCA, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           assertTrue("Inproper check of certificate profile values.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){        	        	
@@ -309,7 +310,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test Wrong CA
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE","rfc822name=test11@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+          profile.doesUserFullfillEndEntityProfile("username","password",standardDN,"rfc822name=test11@test.com, dnsname=test.primekey.se, Upn=test12@primekey.se,ipaddress=11.11.1.1","","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
           assertTrue("Inproper check of available ca's.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){        	        	
@@ -339,7 +340,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         profile.setValue(DnComponents.RFC822NAME,3,"somebar.com");
         // Make sure normal usage works
         try { 
-            profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",
+            profile.doesUserFullfillEndEntityProfile("username","password",standardDN,
             		"rfc822name=test@test.com, rfc822name=test@anything.com, rfc822name=test@somefoo.com, "+
             		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
             		SecConst.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
@@ -350,7 +351,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         }
         // Test missing required rfc822name field
         try { 
-            profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",
+            profile.doesUserFullfillEndEntityProfile("username","password",standardDN,
             		"rfc822name=test@test.com, rfc822name=test@somefoo.com, "+
             		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
             		SecConst.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
@@ -361,7 +362,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         }
         // Try non-existing required "use end entity e-mail"
         try { 
-            profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",
+            profile.doesUserFullfillEndEntityProfile("username","password",standardDN,
             		"rfc822name=test@nodomain.com, rfc822name=test@anything.com, rfc822name=test@somefoo.com, "+
             		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
             		SecConst.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
@@ -372,7 +373,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         }
         // Try to ignore a required non-modifyable domain
         try { 
-            profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",
+            profile.doesUserFullfillEndEntityProfile("username","password",standardDN,
             		"rfc822name=test@test.com, rfc822name=test@anything.com, rfc822name=test@somebar.com, "+
             		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
             		SecConst.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
@@ -383,7 +384,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         }
         // Use same as required non-mod field in non-req field
         try { 
-            profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",
+            profile.doesUserFullfillEndEntityProfile("username","password",standardDN,
             		"rfc822name=test@test.com, rfc822name=test@anything.com, rfc822name=test@somefoo.com, rfc822name=test@somefoo.com, "+
             		"dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
             		SecConst.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
@@ -393,36 +394,39 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         	assertTrue("Did not check RFC822Name against profile." + e.getMessage(), false);
         }
 
-        
-        // New profile
-        profile = new EndEntityProfile();
+        }{// New profile
+        final EndEntityProfile profile = new EndEntityProfile();        
         
         
         // Set so CN=modifyable required, OU0={DEP1_1,DEP1_2} required, OU1={DEP2_1,DEP2_2} required, OU3=Optional, C=O{SE,DK} not required 
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.addField(DnComponents.COUNTRY);
         
-        profile.setRequired(DnComponents.ORGANIZATIONUNIT,0,true);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,0,false);
         profile.setRequired(DnComponents.ORGANIZATIONUNIT,1,true);
         profile.setRequired(DnComponents.ORGANIZATIONUNIT,2,false);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,3,true);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,4,false);
         
-        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,0,false);
         profile.setModifyable(DnComponents.ORGANIZATIONUNIT,1,false);
-        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,2,true);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,3,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,4,true);
         profile.setModifyable(DnComponents.COUNTRY,0,false);
         
-        profile.setValue(DnComponents.ORGANIZATIONUNIT,0,"DEP1_1;DEP1_2");
-        profile.setValue(DnComponents.ORGANIZATIONUNIT,1,"DEP2_1;DEP2_2");
-        profile.setValue(DnComponents.ORGANIZATIONUNIT,2,"DEP3_1;DEP3_2");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,1,"DEP1_1;DEP1_2");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,3,"DEP2_1;DEP2_2");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,4,"DEP3_1;DEP3_2");
         profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
         profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
                 
         // Test with two OU  (2 required)
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_2,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -432,17 +436,17 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test with tree OU  (2 required)
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_2,OU=DEP3_1,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,OU=DEP3_3,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         }catch(UserDoesntFullfillEndEntityProfile e){
         	assertTrue("Error Required OU fields wasn't checked propertly: " + e.getMessage(), false);        	
         } 
         
-        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,2,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,4,false);
         // Test with tree OU  (2 required)
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_2,OU=DEP3_1,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,OU=DEP3_1,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -451,16 +455,16 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test with tree OU  (2 required)
         try{ 
-          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_2,OU=DEP3_3,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
+          profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=,OU=DEP1_1,OU=,OU=DEP2_2,OU=DEP3_3,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
             assertTrue("Error Required OU fields wasn't checked propertly " , false);
         }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         }  
-
+        }{
         // Test Reverse Checks
         // New profile
-        profile = new EndEntityProfile();
+        final EndEntityProfile profile = new EndEntityProfile();
         profile.setReverseFieldChecks(true);
         
         // Set so CN=modifyable required, OU0=Modifyable not required, OU1=Modifyable not required, OU3=required {hard,soft}, C=O{SE,DK} not required 
@@ -759,9 +763,9 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         }catch(UserDoesntFullfillEndEntityProfile e){
         	assertTrue("Error DateOfBirth wasn't checked propertly", false);        	        	
         } 
-
+        }{
         // Test time constraints
-        profile = new EndEntityProfile();
+        final EndEntityProfile profile = new EndEntityProfile();
         Date now = new Date();
         Date endOfTime = new Date(Long.MAX_VALUE);
         String staticNow = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(now);
@@ -929,10 +933,10 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
 		if ( magicDateTime != magicDateTime2 ) {
 	        assertTrue("Error: Java does not parse dates correctly. "+magicDateTime+" "+magicDateTime2+" "+value1+" "+value2, false);
 		}
-		
+        }{
         // Test allow multiple requests
-        profile = new EndEntityProfile();
-        ei = new ExtendedInformation();
+        final EndEntityProfile profile = new EndEntityProfile();
+        final ExtendedInformation ei = new ExtendedInformation();
         // Use empty, should fail
         profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
         profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
@@ -959,9 +963,9 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         } catch (UserDoesntFullfillEndEntityProfile e) {
         	assertTrue("Error: Allowedrequests not checked correctly, should be allowed.", false);
         } 
-        
+        }{
         // New profile
-        profile = new EndEntityProfile();
+        final EndEntityProfile profile = new EndEntityProfile();
         
         
         // Set so maxFailedLogins=non-modifyable required 
@@ -973,7 +977,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
         
         try {
-        	ei = new ExtendedInformation();
+        	final ExtendedInformation ei = new ExtendedInformation();
         	ei.setMaxLoginAttempts(1234);
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith","","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false,false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -983,7 +987,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         }
         
         try {
-        	ei = new ExtendedInformation();
+        	final ExtendedInformation ei = new ExtendedInformation();
         	ei.setMaxLoginAttempts(7);
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith","","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false,false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);
@@ -993,6 +997,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         }
 
         log.trace("<test01fulfillEndEntityProfiles()");
+        }
     } // test01fulfillEndEntityProfiles
     
     public void test02fulfillEndEntityProfilesAvailableCAs() throws Exception {
@@ -1022,7 +1027,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
 
         // Test right CA
         try{ 
-        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+        	profile.doesUserFullfillEndEntityProfile("username","password",standardDN,null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
         			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
         }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	assertTrue(e.getMessage(), false);
@@ -1030,7 +1035,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test Wrong CA
         try{ 
-        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+        	profile.doesUserFullfillEndEntityProfile("username","password",standardDN,null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
         			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
         	assertTrue("Improper check of available ca's.", false);
         }catch(UserDoesntFullfillEndEntityProfile e){
@@ -1043,7 +1048,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
 
         // Test right CA
         try{ 
-        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+        	profile.doesUserFullfillEndEntityProfile("username","password",standardDN,null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
         			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
         }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	assertTrue(e.getMessage(), false);
@@ -1051,7 +1056,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Test Wrong CA
         try{ 
-        	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE",null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
+        	profile.doesUserFullfillEndEntityProfile("username","password",standardDN,null,"","test11@test.com",SecConst.CERTPROFILE_FIXED_SUBCA, false,
         			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
         }catch(UserDoesntFullfillEndEntityProfile e){
         	assertTrue(e.getMessage(), false);
