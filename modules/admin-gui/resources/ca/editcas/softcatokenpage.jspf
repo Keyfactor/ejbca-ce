@@ -8,9 +8,9 @@
         <%= ejbcawebbean.getText("AUTHENTICATIONCODE") %>
         <br/>
     <% if(!editca){ %>
-        <%= ejbcawebbean.getText("AUTHENTICATIONCODEEMPTYFORDEFAULT") %>
+        <em><%= ejbcawebbean.getText("AUTHENTICATIONCODEEMPTYFORDEFAULT") %></em>
     <% } else { %>
-        <%= ejbcawebbean.getText("AUTHENTICATIONCODEONLYACTIVATION") %>
+        <em><%= ejbcawebbean.getText("AUTHENTICATIONCODEONLYACTIVATION") %></em>
     <% } %>
       </td>
       <td width="50%"> 

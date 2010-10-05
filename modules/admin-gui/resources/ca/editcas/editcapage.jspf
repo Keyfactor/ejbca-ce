@@ -517,7 +517,7 @@ function checkallfields(){
     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTDN") %>
+        <strong><%= ejbcawebbean.getText("SUBJECTDN") %></strong>
       </td>
       <td width="50%"> 
         <% if(editca){
@@ -715,7 +715,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("POLICYID") %>
-        <% if(!editca) out.write("<br><i>" + ejbcawebbean.getText("LEAVEBLANKTOUSEDEFAULT") + "</i>");%>
+        <% if(!editca) out.write("<br/> <em>" + ejbcawebbean.getText("LEAVEBLANKTOUSEDEFAULT") + "</em>");%>
       </td>
       <td width="50%">
          <% if(editca) {
@@ -851,7 +851,7 @@ function checkallfields(){
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTCRLDISTPOINT") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
-        <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+        <br/> <em><%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %></em>
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -881,7 +881,7 @@ function checkallfields(){
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CADEFINEDFRESHESTCRL") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
-        <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+        <br/> <em><%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %></em>
       </td>
       <td width="50%">
            <% if(isexternal){
@@ -906,7 +906,7 @@ function checkallfields(){
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %>>
           <% } %>
-          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
    </tr>
    
@@ -922,7 +922,7 @@ function checkallfields(){
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'"); } %>>
           <% } %> 
-          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
    </tr>
 
@@ -938,7 +938,7 @@ function checkallfields(){
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else {out.write(" value='10"+CombineTime.TYPE_MINUTES+"'"); } %>>
           <% } %> 
-          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
    </tr>
 
@@ -946,7 +946,7 @@ function checkallfields(){
      <td width="50%"  align="right"> 
        <%= ejbcawebbean.getText("DELTACRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
        <br/>
-       <%= ejbcawebbean.getText("NODELTACRLTIP") %>
+       <em><%= ejbcawebbean.getText("NODELTACRLTIP") %></em>
      </td>
      <td width="50%">
           <% if (isexternal) {
@@ -956,7 +956,7 @@ function checkallfields(){
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %>>
           <% } %> 
-          <br/><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
      </td>
    </tr>
 
@@ -994,7 +994,7 @@ function checkallfields(){
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTOCSPLOCATOR") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
-        <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+        <br/> <em><%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %></em>
       </td>
       <td width="50%">
            <% if(isexternal){
