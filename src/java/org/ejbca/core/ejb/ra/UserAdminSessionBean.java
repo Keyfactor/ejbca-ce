@@ -1119,10 +1119,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                     }
                 }
                 if (!serialNumberCleared && ei.getCertificateSerialNumber() != null) {
-                    ei.setCertificateSerialNumber(null);// cert serial number
-                                                        // should also be
-                                                        // cleared after
-                                                        // successfull command.
+                    ei.setCertificateSerialNumber(null);// cert serial number should also be cleared after successful command.
                     data1.setExtendedInformation(ei);
                 }
             } else {
