@@ -151,12 +151,11 @@ public class CertificateExpireTest extends CaTestCase {
         info = certificateStoreSession.getCertificateInfo(admin, fp);
         assertEquals("status dotes not match.", SecConst.CERT_ACTIVE, info.getStatus());
   
-        // The service will run...since there is a random delay of 10 seconds we
-        // have to wait a long time. We also need some tolerance since timers cannot
+        // The service will run...We need some tolerance since timers cannot
         // be guaranteed to executed at the exact interval. 
         Thread.sleep(4000);
         int tries = 0;
-        while (info.getStatus() != SecConst.CERT_NOTIFIEDABOUTEXPIRATION && tries<2) {
+        while (info.getStatus() != SecConst.CERT_NOTIFIEDABOUTEXPIRATION && tries<5) {
         	Thread.sleep(1000);
         	info = certificateStoreSession.getCertificateInfo(admin, fp);
         	tries++;

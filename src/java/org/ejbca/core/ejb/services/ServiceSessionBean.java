@@ -20,12 +20,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -74,22 +77,25 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private static final long SERVICELOADER_PERIOD = 5 * 60 * 1000;
 
     @Resource
-    private TimerService timerService;
+    private SessionContext sessionContext;
+    private TimerService timerService;	// When the sessionContext is injected, the timerService should be looked up.
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private ServiceDataSessionLocal serviceDataSession;
-    @EJB
     private LogSessionLocal logSession;
+    @EJB
+    private ServiceDataSessionLocal serviceDataSession;
+    private ServiceSessionLocal serviceSession;
     
-    /**
-     * The administrator that the services should be run as.
-     */
-    private Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+    private Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);	// The administrator that the services should be run as.
 
-  
-
+    @PostConstruct
+    public void ejbCreate() {
+    	timerService = sessionContext.getTimerService();
+    	serviceSession = sessionContext.getBusinessObject(ServiceSessionLocal.class);
+    }
+        			
     /**
      * Adds a Service to the database.
      * 
@@ -206,7 +212,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             if (isAuthorizedToEditService(admin, serviceConfiguration)) {
                 IWorker worker = getWorker(serviceConfiguration, name, htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
                 if (worker != null) {
-                    cancelTimer(htp.getId());
+                    serviceSession.cancelTimer(htp.getId());
                 }
                 serviceDataSession.removeServiceData(htp);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
@@ -346,7 +352,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             if (isAuthorizedToEditService(admin, serviceConfiguration)) {
                 IWorker worker = getWorker(serviceConfiguration, name, htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
                 if (worker != null) {
-                    cancelTimer(htp.getId());
+                    serviceSession.cancelTimer(htp.getId());
                     if (serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
                         addTimer(worker.getNextInterval() * 1000, htp.getId());
                     }
@@ -397,14 +403,11 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         return returnval;
     }
     
-    
-
     /**
      * Method implemented from the TimerObject and is the main method of this
      * session bean. It calls the work object for each object.
      * 
-     * @param timer
-     *            timer whose expiration caused this notification.
+     * @param timer timer whose expiration caused this notification.
      */
     @Timeout
     // Glassfish 2.1.1: "Timeout method ....timeoutHandler(javax.ejb.Timer)must have TX attribute of TX_REQUIRES_NEW or TX_REQUIRED or TX_NOT_SUPPORTED"
@@ -414,6 +417,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">ejbTimeout");
         }
+        final long startOfTimeOut = new Date().getTime();
+    	long serviceInterval = IInterval.DONT_EXECUTE;
         Integer timerInfo = (Integer) timer.getInfo();
         if (timerInfo.equals(SERVICELOADER_ID)) {
             if (log.isDebugEnabled()) {
@@ -421,127 +426,98 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             }
             load();
         } else {
-            ServiceConfiguration serviceConfiguration = null;
-            IWorker worker = null;
-            String serviceName = null;
-            boolean run = false;
-            try {
-                ServiceData htp = serviceDataSession.findById(timerInfo);
-                if (htp != null) {
-                    serviceConfiguration = htp.getServiceConfiguration();
-                    serviceName = htp.getName();
-                    worker = getWorker(serviceConfiguration, serviceName, htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
-                    run = checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, htp);
-					if (log.isDebugEnabled()) {
-						log.debug("Service "+serviceName+" will run: "+run);
-					}
-                } else {
-                    log.debug("Service was null and will not run, neither will it be rescheduled, so it will never run. Id: " + timerInfo.intValue());
-                }
-            } catch (Throwable e) {
-                // We need to catch wide here in order to continue even if there
-                // is some error
-				log.info("Error getting and running service ("+timerInfo+"), we must see if we need to re-schedule: "+ e.getMessage());
+        	String serviceName = null;
+        	try {
+        		serviceName = serviceDataSession.findNameById(timerInfo);
+        	} catch (Throwable t) {
                 if (log.isDebugEnabled()) {
-                    // Don't spam log with stacktraces in normal production cases
-                    log.debug("Exception: ", e);
+                    log.debug("Exception: ", t);	// Don't spam log with stacktraces in normal production cases
                 }
-
-                // Check if we have scheduled this timer to run again, or if this
-                // exception would stop the service from running for ever.
-                // If we can't find any current timer we will try to create a
-                // new one.
-                boolean isScheduledToRun = false;
-                Collection<Timer> timers = timerService.getTimers(); 
-                for (Iterator<Timer> iterator = timers.iterator(); iterator.hasNext();) {
-                    Timer t = iterator.next();
-                    Integer tInfo = (Integer) t.getInfo();
-                    if (tInfo.intValue() == timerInfo.intValue()) {
-                        Date nextTimeOut = t.getNextTimeout();
-                        Date now = new Date();
-                        if (log.isDebugEnabled()) {
-                            log.debug("Next timeout for existing timer is '" + nextTimeOut + "' now is '" + now + "'");
-                        }
-                        if (nextTimeOut.after(now)) {
-                            // Yes we found a timer that is scheduled for this
-                            // service
-                            isScheduledToRun = true;
-                        }
-                    }
-                }
-                if (!isScheduledToRun) {
-                    long nextInterval = 60; // Default try to run again in 60
-                    // seconds in case of error
-                    if (worker != null) {
-                        nextInterval = worker.getNextInterval();
-                    }
-                    long intervalMillis = getNextIntervalMillis(nextInterval);
-                    addTimer(intervalMillis, timerInfo); 
-                    String msg = intres.getLocalizedMessage("services.servicefailedrescheduled", intervalMillis);
-                    log.info(msg);
-                }
-            }
-            if (run) {
-                if (serviceConfiguration != null) {
-                    try {
-                        if (serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
-                            worker.work();
-                            logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                                    LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
-                        }
-                    } catch (ServiceExecutionFailedException e) {
-                        logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                                LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
-                    }
-                } else {
-                    logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                            LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
-                }
-            } else {
-                Object o = timerInfo;
-                if (serviceName != null) {
-                    o = serviceName;
-                }
+                // Unexpected error (probably database related). We need to reschedule the service w a default interval..
+                addTimer(30 * 1000, timerInfo);
+        	}
+        	if (serviceName == null) {
                 logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", o));
-            }
+                        LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
+        	} else {
+            	// Get interval of worker
+            	try {
+            		serviceInterval = serviceSession.getServiceInterval(timerInfo);
+            	} catch (Throwable t) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Exception: ", t);	// Don't spam log with stacktraces in normal production cases
+                    }
+                    // Unexpected error (probably database related). We need to reschedule the service w a default interval..
+                    addTimer(30 * 1000, timerInfo);
+            	}
+            	// Reschedule timer
+                IWorker worker = null;
+            	if (serviceInterval != IInterval.DONT_EXECUTE) {
+                	Timer nextTrigger = addTimer(serviceInterval * 1000, timerInfo);
+                	try {
+                    	// Try to acquire lock / see if this node should run
+                    	worker = serviceSession.getWorkerIfItShouldRun(timerInfo, nextTrigger.getNextTimeout().getTime());
+                	} catch (Throwable t) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Exception: ", t);	// Don't spam log with stacktraces in normal production cases
+                        }
+                	}
+                    if (worker != null) {
+                    	serviceSession.executeServiceInTransaction(worker, serviceName);
+                    } else {
+                    	Object o = timerInfo;
+                    	if (serviceName != null) {
+                    		o = serviceName;
+                    	}
+                    	logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
+                    			LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", o));
+                    }
+                    if (new Date().getTime() - startOfTimeOut > serviceInterval * 1000) {
+                    	log.warn("Service '" + serviceName + "' took longer than it's configured service interval."
+                    			+ " This can trigger simultanious service execution on several nodes in a cluster."
+                    			+ " Increase interval or lower each invocations work load.");
+                    }
+            	}
+        	}
         }
         log.trace("<ejbTimeout");
     }
-
+    
     /**
-     * Internal method should not be called from external classes, method is
-     * public to get automatic transaction handling.
+     * Reads the current timeStamp values and tries to update them in a single transaction.
+     * If the database commit is successful the method returns the worker, otherwise an
+     * exception is thrown.
      * 
-     * @return true if the service should run, false if the service should not
-     *         run
+     * Should only be called from timeoutHandler
      */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceData serviceData) {
-		if (log.isTraceEnabled()) {
-			log.trace(">checkAndUpdateServiceTimeout");
-		}
-        boolean ret = false;
-        /*
-         * Add a random delay within 30 seconds to the interval, just to make
-         * sure nodes in a cluster are not scheduled to run on the exact same
-         * second. If the next scheduled run is less than 40 seconds away, we
-         * only randomize on 5 seconds.
-         */
-        long intervalMillis = getNextIntervalMillis(nextInterval);
-        addTimer(intervalMillis, timerInfo); 
-        // Calculate the nextRunTimeStamp, since we set a new timer
-		Date runDateCheck = new Date(serviceData.getNextRunTimeStamp()); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
-        /*
-         * nextRunDateCheck will typically be the same (or just a millisecond earlier) as now
-         * here
-         */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public IWorker getWorkerIfItShouldRun(Integer serviceId, long nextTimeout) {
+    	IWorker worker = null;
+        ServiceData serviceData = serviceDataSession.findById(serviceId);
+        ServiceConfiguration serviceConfiguration = serviceData.getServiceConfiguration();
+        if (!serviceConfiguration.isActive()) {
+            if (log.isDebugEnabled()) {
+            	log.debug("Service " + serviceId + " is inactive.");
+            }
+        	return null;	// Don't return an inactive worker to run
+        }
+        String serviceName = serviceData.getName();
+        long oldRunTimeStamp = serviceData.getRunTimeStamp();
+        long oldNextRunTimeStamp = serviceData.getNextRunTimeStamp();
+        worker = getWorker(serviceConfiguration, serviceName, oldRunTimeStamp, oldNextRunTimeStamp);
+        if (worker.getNextInterval() == IInterval.DONT_EXECUTE) {
+            if (log.isDebugEnabled()) {
+            	log.debug("Service has interval IInterval.DONT_EXECUTE.");
+            }
+        	return null;	// Don't return an inactive worker to run
+        }
+        Date runDateCheck = new Date(oldNextRunTimeStamp); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
         Date currentDate = new Date();
-        Date nextRunDate = new Date(currentDate.getTime() + intervalMillis);
         if (log.isDebugEnabled()) {
-            log.debug("nextRunDate is: " + nextRunDate);
-            log.debug("runDateCheck is: " + runDateCheck);
-            log.debug("currentDate is: " + currentDate);
+        	Date nextRunDate = new Date(nextTimeout);
+        	log.debug("nextRunDate is:  " + nextRunDate);
+        	log.debug("runDateCheck is: " + runDateCheck);
+        	log.debug("currentDate is:  " + currentDate);
         }
         /*
          * Check if the current date is after when the service should run. If a
@@ -555,18 +531,31 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
          */
         if (currentDate.after(runDateCheck)) {
             /*
-             * We only update the nextRunTimeStamp if the service will be
-             * running otherwise it will, in theory, be a race to exclude each
-             * other between the nodes.
+             * We only update the nextRunTimeStamp if the service is allowed to run on this node.
+             * 
+             * However, we need to make sure that no other node has already acquired the semaphore
+             * if our current database allows non-repeatable reads.
              */
-			serviceData.setRunTimeStamp(runDateCheck.getTime());
-			serviceData.setNextRunTimeStamp(nextRunDate.getTime());
-            ret = true;
+        	if (!serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), nextTimeout)) {
+        		log.debug("Another node had already updated the database at this point. This node will not run.");
+        		worker = null;	// Failed to update the database.
+        	}
+        } else {
+        	worker = null;	// Don't return a worker, since this node should not run
         }
-		if (log.isTraceEnabled()) {
-			log.trace("<checkAndUpdateServiceTimeout: "+ret);
-		}
-        return ret;
+        return worker;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void executeServiceInTransaction(IWorker worker, String serviceName) {
+        try {
+        	worker.work();
+        	logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
+        			LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
+        } catch (ServiceExecutionFailedException e) {
+            logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
+                    LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
+        }
     }
 
     /**
@@ -617,34 +606,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         log.trace("<changeService()");
     }
     
-    private long getNextIntervalMillis(long nextIntervalSecs) {
-        Date currentDate = new Date();
-        Date nextApproxTime = new Date(currentDate.getTime() + nextIntervalSecs * 1000);
-        Date fourtysec = new Date(currentDate.getTime() + 40100); // add 100
-        // milliseconds
-        Date threesec = new Date(currentDate.getTime() + 3100); // add 100
-        // milliseconds
-        int randInterval = 30000;
-        if (fourtysec.after(nextApproxTime)) {
-            // If we are running with less than 40 second intervale we only
-            // randomize 5 seconds
-            randInterval = 5000;
-            // And if we are running with a very short interval we only
-            // randomize on one second
-            if (threesec.after(nextApproxTime)) {
-                randInterval = 1000;
-            }
-        }
-        Random rand = new Random();
-        int randMillis = rand.nextInt(randInterval);
-        if (log.isDebugEnabled()) {
-            log.debug("Adding random delay: " + randMillis);
-        }
-
-        long intervalMillis = nextIntervalSecs * 1000 + randMillis;
-        return intervalMillis;
-    }
-
     /**
      * Loads and activates all the services from database that are active
      * 
@@ -670,6 +631,24 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             }
         }
 
+        // Get new services and add timeouts
+        Map<Integer,Long> newTimeouts = serviceSession.getNewServiceTimeouts(existingTimers);
+        for (Integer id : newTimeouts.keySet()) {
+        	addTimer(newTimeouts.get(id), id);
+        }
+
+        if (!existingTimers.contains(SERVICELOADER_ID)) {
+            // load the service timer
+            addTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID); 
+        }
+    }
+    
+    /**
+     * Internal method used from load() to separate timer access from database access transactions.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Map<Integer,Long> getNewServiceTimeouts(HashSet<Serializable> existingTimers) {
+    	Map<Integer,Long> ret = new HashMap<Integer,Long>();
         HashMap<Integer, String> idToNameMap = getServiceIdToNameMap(intAdmin);
         Collection<Integer> allServices = idToNameMap.keySet();
         Iterator<Integer> iter2 = allServices.iterator();
@@ -681,7 +660,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 	ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
                     IWorker worker = getWorker(serviceConfiguration, idToNameMap.get(id), htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
                     if (worker != null && serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE) {
-                       addTimer((worker.getNextInterval()) * 1000, id);
+                    	ret.put(id, Long.valueOf((worker.getNextInterval()) * 1000));
                     }
                 }            	
             } else {
@@ -689,11 +668,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     			log.debug("Can not find service with id "+id);
             }
         }
-
-        if (!existingTimers.contains(SERVICELOADER_ID)) {
-            // load the service timer
-            addTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID); 
-        }
+    	return ret;
     }
 
     /**
@@ -725,17 +700,19 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @param id
      *            the id of the timer
+     * @return 
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
-    private void addTimer(long interval, Integer id) {
-        timerService.createTimer(interval, id);
+    private Timer addTimer(long interval, Integer id) {
+        return timerService.createTimer(interval, id);
     }
 
     /**
      * cancels a timer with the given Id
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
-    private void cancelTimer(Integer id) {
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void cancelTimer(Integer id) {
         for (Timer next : (Collection<Timer>) timerService.getTimers()) {
             try {
                 if (id.equals(next.getInfo())) {
@@ -782,6 +759,29 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             }
         }
         return worker;
+    }
+    
+    /**
+     * Return the configured interval for the specified worker or IInterval.DONT_EXECUTE if it could not be found.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public long getServiceInterval(Integer serviceId) {
+    	long ret = IInterval.DONT_EXECUTE;
+        ServiceData htp = serviceDataSession.findById(serviceId);
+        if (htp != null) {
+        	ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
+            if (serviceConfiguration.isActive()) {
+                IWorker worker = getWorker(serviceConfiguration, "temp", 0, 0);	// A bit dirty, but it works..
+                if (worker!=null) {
+                    ret = worker.getNextInterval();
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                	log.debug("Service " + serviceId + " is inactive.");
+                }
+            }
+        }
+        return ret;
     }
     
     /**

@@ -33,7 +33,8 @@ public interface ServiceDataSessionLocal extends ServiceDataSession {
      */
     ServiceData findByName(String name);
 
-
+    /** @return the name of the service with the given id */
+    public String findNameById(Integer id);
 
     /** @return return the query results as a List. */
     List<ServiceData> findAll();
@@ -59,4 +60,11 @@ public interface ServiceDataSessionLocal extends ServiceDataSession {
      * @param serviceData
      */
      void removeServiceData(ServiceData serviceData);
+
+    /**
+     * Updates a database row with the matching values. This way we can ensure atomic operation for acquiring the semaphore for a service,
+     * independent of the underlying database isolation level.
+     * @return true if 1 row was updated
+     */
+     public boolean updateTimestamps(Integer serviceId, long oldRunTimeStamp, long oldNextRunTimeStamp, long newRunTimeStamp, long newNextRunTimeStamp);
 }

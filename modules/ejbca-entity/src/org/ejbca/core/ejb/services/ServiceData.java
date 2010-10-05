@@ -19,8 +19,10 @@ import java.util.HashMap;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
@@ -166,5 +168,17 @@ public class ServiceData implements Serializable {
             throw new RuntimeException(e);
         }
     }
-    
+
+	/** @return true if an service with the old timestamps existed and was updated */
+	public static boolean updateTimestamps(EntityManager entityManager, Integer id, long oldRunTimeStamp, long oldNextRunTimeStamp, long newRunTimeStamp, long newNextRunTimeStamp) {
+		Query query = entityManager.createQuery("UPDATE ServiceData a SET a.runTimeStamp=:newRunTimeStamp, a.nextRunTimeStamp=:newNextRunTimeStamp"
+				+ " WHERE a.id=:id AND a.runTimeStamp=:oldRunTimeStamp AND a.nextRunTimeStamp=:oldNextRunTimeStamp");
+		query.setParameter("newRunTimeStamp", newRunTimeStamp);
+		query.setParameter("newNextRunTimeStamp", newNextRunTimeStamp);
+		query.setParameter("id", id);
+		query.setParameter("oldRunTimeStamp", oldRunTimeStamp);
+		query.setParameter("oldNextRunTimeStamp", oldNextRunTimeStamp);
+		return query.executeUpdate() == 1;
+	}
+
 }
