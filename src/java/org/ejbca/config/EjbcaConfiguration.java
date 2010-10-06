@@ -134,11 +134,9 @@ public class EjbcaConfiguration {
 		return ConfigurationHolder.getExpandedString("approval.excludedClasses", "");
 	}
 
-	/**
-	 * Determines if log4j should be initialized explicitly, needed for glassfish
-	 */
+	@Deprecated
 	public static String getLoggingLog4jConfig() {
-		return ConfigurationHolder.getExpandedString("logging.log4j.config", "false");
+		return ConfigurationHolder.getExpandedString("logging.log4j.config", null);	// was false "false"
 	}
 
 	/**
