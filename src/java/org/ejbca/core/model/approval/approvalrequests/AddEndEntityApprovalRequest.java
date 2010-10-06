@@ -120,7 +120,8 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
-		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",userdata.getExtendedinformation().getSubjectDirectoryAttributes()));
+		String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
 		retval.add(new ApprovalDataText("CA",ApprovalRequestHelper.getCAName(admin, userdata.getCAId()),true,false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE",ApprovalRequestHelper.getEndEntityProfileName(admin,userdata.getEndEntityProfileId()),true,false));		

@@ -147,7 +147,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 eid = raAdminSession.getEndEntityProfileId(administrator, endEntityProfileName);
             }
             userdata.setEndEntityProfileId(eid);
-            ExtendedInformation extendedInformation = userdata.getExtendedinformation();
+            ExtendedInformation extendedInformation = new ExtendedInformation();
             extendedInformation.setCustomData(EndEntityProfile.ENDTIME, "0:0:10");
             userdata.setExtendedinformation(extendedInformation);
             userdata.setCertificateProfileId(cid);

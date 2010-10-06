@@ -67,7 +67,7 @@ public class SubjectDirectoryAttributes extends StandardCertificateExtension {
 	 */
 	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DEREncodable ret = null;
-		String dirAttrString = subject.getExtendedinformation().getSubjectDirectoryAttributes();
+		String dirAttrString  = subject.getExtendedinformation() != null ? subject.getExtendedinformation().getSubjectDirectoryAttributes() : null;
 		if (StringUtils.isNotEmpty(dirAttrString)) {
 			// Subject Directory Attributes is a sequence of Attribute
 			Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);

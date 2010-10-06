@@ -133,7 +133,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		user.setPassword("foo123");
-		ExtendedInformation ei = user.getExtendedinformation();
+		ExtendedInformation ei = new ExtendedInformation();
 		ei.setCertificateSerialNumber(serno);
 		user.setExtendedinformation(ei);
 		IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
@@ -202,7 +202,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		UserDataVO user = new UserDataVO("foo3", "C=SE,O=AnaTom,CN=foo3", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		user.setPassword("foo123");
-		ExtendedInformation ei = user.getExtendedinformation();
+		ExtendedInformation ei = new ExtendedInformation();
 		ei.setCertificateSerialNumber(serno);
 		user.setExtendedinformation(ei);
 
@@ -238,7 +238,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		user.setPassword("foo123");
-		ExtendedInformation ei = user.getExtendedinformation();
+		ExtendedInformation ei = new ExtendedInformation();
 		ei.setCertificateSerialNumber(serno);
 		user.setExtendedinformation(ei);
 		try {

@@ -129,7 +129,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",newuserdata.getSubjectAltName()));
-		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",newuserdata.getExtendedinformation().getSubjectDirectoryAttributes()));
+		String dirattrs = newuserdata.getExtendedinformation() != null ? newuserdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
 		retval.add(new ApprovalDataText("CA",ApprovalRequestHelper.getCAName(admin, newuserdata.getCAId()),true,false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE",ApprovalRequestHelper.getEndEntityProfileName(admin,newuserdata.getEndEntityProfileId()),true,false));		
@@ -156,7 +157,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("PASSWORD","NOTSHOWN",true,true));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(orguserdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",orguserdata.getSubjectAltName()));
-		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",orguserdata.getExtendedinformation().getSubjectDirectoryAttributes()));
+		String dirattrs = orguserdata.getExtendedinformation() != null ? orguserdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",orguserdata.getEmail()));
 		retval.add(new ApprovalDataText("CA",ApprovalRequestHelper.getCAName(admin, orguserdata.getCAId()),true,false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE",ApprovalRequestHelper.getEndEntityProfileName(admin,orguserdata.getEndEntityProfileId()),true,false));		

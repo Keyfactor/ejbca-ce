@@ -231,13 +231,9 @@ public class UserDataVO implements Serializable {
    }
 
 	/**
-	 * @return Returns the extendedinformation.
+	 * @return Returns the extendedinformation or null if no extended information exists.
 	 */
 	public ExtendedInformation getExtendedinformation() {
-		// If there is no extended information for this user, we return a new empty one
-		if (extendedinformation == null) {
-			return new ExtendedInformation();
-		}
 		return extendedinformation;
 	}
 	/**
