@@ -19,7 +19,6 @@
     	<path refid="lib.jpa.classpath"/>
     	<path refid="lib.bouncycastle.classpath"/>
     	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
-    	<path refid="lib.jaxws.classpath"/>
     	<path refid="lib.xmlsec.classpath"/>	<!-- To parse XML Exceptions -->
     	<pathelement location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
     	<pathelement location="${mod.ejbca-entity.lib}"/>
@@ -86,7 +85,6 @@
 		<mkdir dir="${build.dir}/conf"/>	<!-- Workaround for tests TestCertificateProfile -->
     	<copy todir="${build.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />	<!-- Workaround for tests TestCertificateProfile -->
 		<junit printsummary="yes" haltonfailure="no" >
-        	<jvmarg value="-Djava.endorsed.dirs=${lib.jaxws.dir}"/>	<!-- Use our bundled JAX-WS implementation instead of the one from the JDK -->
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
@@ -118,7 +116,6 @@
 			<socket server="127.0.0.1" port="5587"/>
 		</waitfor>
 		<junit printsummary="yes" haltonfailure="no">
-        	<jvmarg value="-Djava.endorsed.dirs=${lib.jaxws.dir}"/>	<!-- Use our bundled JAX-WS implementation instead of the one from the JDK -->
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
@@ -363,7 +360,6 @@
 		</condition>
 		<echo message="${runocsp.warning}"/>
 		<junit printsummary="yes" haltonfailure="no" >
-        	<jvmarg value="-Djava.endorsed.dirs=${lib.jaxws.dir}"/>	<!-- Use our bundled JAX-WS implementation instead of the one from the JDK -->
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />

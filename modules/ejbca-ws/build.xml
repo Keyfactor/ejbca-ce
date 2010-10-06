@@ -22,18 +22,14 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
-		<path refid="lib.jaxws.classpath" /> 
 	</path>
 
 	<path id="compile-library.classpath">
 		<pathelement location="${mod.ejbca-util.lib}" /> 
 		<path refid="lib.bouncycastle.classpath"/>
-		<path refid="lib.jaxws.classpath" /> 
 	</path>
 
 	<path id="generate.classpath">
-    	<pathelement location="${java.home}/../lib/tools.jar"/>
-		<path refid="lib.jaxws.classpath" /> 
 		<path refid="lib.cert-cvc.classpath" /> 
 		<path refid="lib.jee.classpath" /> 
 		<path refid="lib.bouncycastle.classpath" /> 
@@ -95,35 +91,15 @@
     </target>
 
 	<target name="generate-wsdl" depends="compile">
-		<available classname="com.sun.tools.ws.ant.WsGen" classpathref="lib.jaxws.classpath" property="tool.present"/>
-		<fail unless="tool.present" message="WSDL generation requires the tool com.sun.tools.ws.ant.WsGen to be present."/>
+		<pathconvert property="wsdl-generate.classpath-string" refid="wsdl-generate.classpath"/>
+		<mkdir dir="${this.dir}/temp" />
 		<!-- Generate a WSDL file that can be used for client stub generation -->
-        <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen" classpathref="lib.jaxws.classpath"/>
-		<mkdir dir="temp" />
+		<exec command="${java.home}/../bin/wsgen" failonerror="true">
+			<arg line="-classpath ${wsdl-generate.classpath-string} -r ${mod.dist.path} -d ${this.dir}/temp/ -wsdl org.ejbca.core.protocol.ws.EjbcaWS"/>
+		</exec>
 		<!-- This is maybe not the optimal way of doing this since it compiles the whole thing again.. but it still
 			 better than deploying the application server first. -->
-        <wsgen debug="true" keep="true" destdir="temp" resourcedestdir="${mod.dist.path}"
-        	classpathref="wsdl-generate.classpath" sei="org.ejbca.core.protocol.ws.EjbcaWS" genwsdl="true" >
-        </wsgen>
-		<delete dir="temp" includeemptydirs="true"/>
+		<delete dir="${this.dir}/temp" includeemptydirs="true"/>
     </target>
-
-	<!--
-    <target name="generate" depends="ejbca-util, ejbca-ejb, ejbca-ejb-interface" description="Generate WS server stubs from implementation">
-		<available classname="com.sun.tools.ws.ant.Apt" classpathref="lib.jaxws.classpath" property="tool.present"/>
-		<fail unless="tool.present" message="Generation of server side Web Services code requires the tool com.sun.tools.ws.ant.Apt to be present."/>
-		<delete><fileset dir="${src-gen.dir}" includes="**"></fileset></delete>
-    	<taskdef name="apt" classname="com.sun.tools.ws.ant.Apt" classpathref="lib.jaxws.classpath"/>
-		<apt fork="true" sourcedestdir="${src-gen.dir}" sourcepath="${src.dir}"
-			verbose="false" debug="true" deprecation="true" classpathref="generate.classpath" nocompile="true">
-			<!- - This is used for..?
-			<option key="r" value="dist" />
-			- ->
-			<source dir="${src.dir}">
-				<include name="org/ejbca/core/protocol/ws/EjbcaWS.java"/>
-			</source>
-		</apt>
-    </target>
-	-->
 
 </project>

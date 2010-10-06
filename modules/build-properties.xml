@@ -213,6 +213,7 @@
         </fileset>
 	</path>
 
+	<!-- Still used by XMKS -->
     <fileset id="lib.jaxws.fileset" dir="${ejbca.home}/lib/jaxws" includes="*.jar"/>
 	<path id="lib.jaxws.classpath"><fileset refid="lib.jaxws.fileset"/></path>
 
