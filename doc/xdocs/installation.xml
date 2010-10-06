@@ -346,7 +346,7 @@ Do 'ant clean' first if you have tried with different appservers, or database se
   > ./asadmin start-database
   > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/bin/ij   
   ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
-  ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';
+  (TODO: Not needed? ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';)
   ij> quit;
 </pre></li></ol></li>
 <li>Start the application server: asadmin start-domain<br/>
@@ -392,6 +392,19 @@ Do 'ant clean' first if you have tried with different appservers, or database se
     <li>keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file $EJBCA_HOME/ca.der</li>
     <li>password is 'changeit'</li>
     </ul>
+    Example commands for how to quickly setup SSL keystore and truststore in a test environment with default passwords:
+    <pre>
+$ cd $EJBCA_HOME
+$ cp p12/tomcat.jks p12/keystore.jks
+$ keytool -list -keystore p12/keystore.jks -storepass serverpwd
+	Read the alias for the "PrivateKeyEntry" e.g. 'localhost'.
+$ keytool -keypasswd -keystore p12/keystore.jks -alias localhost -storepass serverpwd -keypass serverpwd -new changeit
+$ keytool -storepasswd -keystore p12/keystore.jks -storepass serverpwd -new changeit
+$ keytool -changealias -keystore p12/keystore.jks -alias localhost -destalias s1as -keypass changeit -storepass changeit
+$ cp p12/keystore.jks $APPSRV_HOME/domains/domain1/config/keystore.jks
+$ bin/ejbca.sh ca getrootcert AdminCA1 p12/adminca1.der -der
+$ keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file p12/adminca1.der -storepass changeit -alias adminca1
+    </pre><br/>
     On Glassfish Enterprise:
     <ul>
     <li>cd $APPSRV_HOME/domains/domain1/config</li>
