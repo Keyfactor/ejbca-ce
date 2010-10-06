@@ -1126,7 +1126,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  }
       }
       
-      if(!isModifyable(MAXFAILEDLOGINS,0)) {
+      if ( getUse(MAXFAILEDLOGINS, 0) && !isModifyable(MAXFAILEDLOGINS,0)) {
     	  // If we MUST have MAXFAILEDLOGINS, ei can not be null
     	  if ( (ei == null) || !getValue(MAXFAILEDLOGINS,0).equals(Integer.toString(ei.getMaxLoginAttempts())) ) {
     		  throw new UserDoesntFullfillEndEntityProfile("Max failed logins is not modifyable.");
