@@ -333,8 +333,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             try {
-                profile.doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), dn, userdata.getSubjectAltName(), userdata
-                        .getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(), clearpwd,
+            	String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+                profile.doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), dn, userdata.getSubjectAltName(), dirattrs, 
+                		userdata.getEmail(), userdata.getCertificateProfileId(), clearpwd,
                         (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0, userdata.getTokenType(), userdata
                                 .getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
@@ -706,10 +707,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         // Check if user fulfills it's profile.
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             try {
-                profile.doesUserFullfillEndEntityProfileWithoutPassword(userdata.getUsername(), dn, altName, userdata.getExtendedinformation()
-                        .getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(), (type & SecConst.USER_KEYRECOVERABLE) != 0,
-                        (type & SecConst.USER_SENDNOTIFICATION) != 0, userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata
-                                .getExtendedinformation());
+            	String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+                profile.doesUserFullfillEndEntityProfileWithoutPassword(userdata.getUsername(), dn, altName, dirattrs, 
+                		userdata.getEmail(), userdata.getCertificateProfileId(), (type & SecConst.USER_KEYRECOVERABLE) != 0,
+                        (type & SecConst.USER_SENDNOTIFICATION) != 0, userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), 
+                        userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(userdata.getEndEntityProfileId()), dn, udfp.getMessage());
                 logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
@@ -767,25 +769,27 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             userData.setTokenType(userdata.getTokenType());
             userData.setHardTokenIssuerId(userdata.getHardTokenIssuerId());
             userData.setCardNumber(userdata.getCardNumber());
-            ExtendedInformation ei = userdata.getExtendedinformation();
-            userData.setExtendedInformation(ei);
             oldstatus = userData.getStatus();
             if (oldstatus == UserDataConstants.STATUS_KEYRECOVERY
                     && !(userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INPROCESS)) {
                 keyRecoverySession.unmarkUser(admin, userdata.getUsername());
             }
-            String requestCounter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
-            if (StringUtils.equals(requestCounter, "0") && (userdata.getStatus() == UserDataConstants.STATUS_NEW)
-                    && (oldstatus != UserDataConstants.STATUS_NEW)) {
-                // If status is set to new, we should re-set the allowed request
-                // counter to the default values
-                // But we only do this if no value is specified already, i.e. 0
-                // or null
-                resetRequestCounter(admin, userData, false);
-            } else {
-                // If status is not new, we will only remove the counter if the
-                // profile does not use it
-                resetRequestCounter(admin, userData, true);
+            ExtendedInformation ei = userdata.getExtendedinformation();
+            if (ei != null) {
+                userData.setExtendedInformation(ei);
+            	String requestCounter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+            	if (StringUtils.equals(requestCounter, "0") && (userdata.getStatus() == UserDataConstants.STATUS_NEW)
+            			&& (oldstatus != UserDataConstants.STATUS_NEW)) {
+            		// If status is set to new, we should re-set the allowed request
+            		// counter to the default values
+            		// But we only do this if no value is specified already, i.e. 0
+            		// or null
+            		resetRequestCounter(admin, userData, false);
+            	} else {
+            		// If status is not new, we will only remove the counter if the
+            		// profile does not use it
+            		resetRequestCounter(admin, userData, true);
+            	}
             }
             userData.setStatus(userdata.getStatus());
             if (newpassword != null) {
@@ -914,8 +918,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection", null) };
 
     /**
-     * Resets the remaining failed login attempts counter to the user's max
-     * login attempts value.
+	 * Resets the remaining failed login attempts counter to the user's max login attempts value.
+	 * This method does nothing if the counter value is set to UNLIMITED (-1 or not set at all).
      * 
      * @param admin
      *            the administrator performing the action
@@ -941,17 +945,16 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 throw new AuthorizationDeniedException(msg);
             }
             ExtendedInformation ei = data1.getExtendedInformation();
-            if (ei == null) {
-                ei = new ExtendedInformation();
-                data1.setExtendedInformation(ei);
-            }
-            resetValue = ei.getMaxLoginAttempts();
-            if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
-                ei.setRemainingLoginAttempts(resetValue);
-                data1.setExtendedInformation(ei);
-                data1.setTimeModified((new java.util.Date()).getTime());
-                String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
-                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            // Only do this is we have extended information available
+            if (ei != null) {
+                resetValue = ei.getMaxLoginAttempts();
+                if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
+                    ei.setRemainingLoginAttempts(resetValue);
+                    data1.setExtendedInformation(ei);
+                    data1.setTimeModified((new java.util.Date()).getTime());
+                    String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
+                    logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                }
             }
         } else {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
@@ -966,8 +969,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     /**
      * Decrements the remaining failed login attempts counter. If the counter
      * already was zero the status for the user is set to
-     * {@link UserDataConstants#STATUS_GENERATED} if it wasn't that already.
-     * This method does nothing if the counter value is set to UNLIMITED (-1).
+     * {@link UserDataConstants#STATUS_GENERATED} 
+	 * if it wasn't that already. This method does nothing if the counter value is set to UNLIMITED (-1 or not set at all). 
      * 
      * @param admin
      *            the administrator performing the action
@@ -982,8 +985,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (log.isTraceEnabled()) {
             log.trace(">decRemainingLoginAttempts(" + username + ")");
         }
-        int counter;
         int caid = LogConstants.INTERNALCAID;
+		int counter = Integer.MAX_VALUE;
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             caid = data1.getCaId();
@@ -993,34 +996,32 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 throw new AuthorizationDeniedException(msg);
             }
             ExtendedInformation ei = data1.getExtendedInformation();
-            if (ei == null) {
-                ei = new ExtendedInformation();
-                data1.setExtendedInformation(ei);
-            }
-            counter = ei.getRemainingLoginAttempts();
-            // If we get to 0 we must set status to generated
-            if (counter == 0) {
-                // if it isn't already
-                if (data1.getStatus() != UserDataConstants.STATUS_GENERATED) {
-                    data1.setStatus(UserDataConstants.STATUS_GENERATED);
-                    data1.setTimeModified((new java.util.Date()).getTime());
-                    String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
-                    logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-                    resetRemainingLoginAttempts(admin, username);
-                }
-            } else if (counter != -1) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Found a remaining login counter with value " + counter);
-                }
-                ei.setRemainingLoginAttempts(--counter);
-                data1.setExtendedInformation(ei);
-                String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
-                logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
-                }
-                counter = Integer.MAX_VALUE;
+            if (ei != null) {
+            	counter = ei.getRemainingLoginAttempts();
+            	// If we get to 0 we must set status to generated
+            	if (counter == 0) {
+            		// if it isn't already
+            		if (data1.getStatus() != UserDataConstants.STATUS_GENERATED) {
+            			data1.setStatus(UserDataConstants.STATUS_GENERATED);
+            			data1.setTimeModified((new java.util.Date()).getTime());
+            			String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
+            			logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            			resetRemainingLoginAttempts(admin, username);
+            		}
+            	} else if (counter != -1) {
+            		if (log.isDebugEnabled()) {
+            			log.debug("Found a remaining login counter with value " + counter);
+            		}
+            		ei.setRemainingLoginAttempts(--counter);
+            		data1.setExtendedInformation(ei);
+            		String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
+            		logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            	} else {
+            		if (log.isDebugEnabled()) {
+            			log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
+            		}
+            		counter = Integer.MAX_VALUE;
+            	}
             }
         } else {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
@@ -1219,10 +1220,10 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                     if (log.isDebugEnabled()) {
                         log.debug("No extended information exists for user: " + data1.getUsername());
                     }
-                    return;
+                } else {
+                    ei.setCertificateSerialNumber(null);
+                    data1.setExtendedInformation(ei);                	
                 }
-                ei.setCertificateSerialNumber(null);
-                data1.setExtendedInformation(ei);
             } else {
                 String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);

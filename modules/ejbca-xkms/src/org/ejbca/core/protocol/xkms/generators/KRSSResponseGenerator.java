@@ -65,6 +65,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -262,7 +263,12 @@ public class KRSSResponseGenerator extends
 				// Save the revocation code
 				if(revocationCode != null && !recover){
 					UserDataVO data = userAdminSession.findUser(pubAdmin, userDataVO.getUsername());
-					data.getExtendedinformation().setRevocationCodeIdentifier(revocationCode);
+					ExtendedInformation ei = data.getExtendedinformation();
+					if (ei == null) {
+						ei = new ExtendedInformation();
+					}
+					ei.setRevocationCodeIdentifier(revocationCode);
+					data.setExtendedinformation(ei);
 					userAdminSession.changeUser(raAdmin, data, true);
 
 				}

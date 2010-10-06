@@ -47,7 +47,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       this.caname = (String) caidtonamemap.get(new Integer(newuserdata.getCAId()));
       subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
-      subjectdirattrs = new DNFieldExtractor(userdata.getExtendedinformation().getSubjectDirectoryAttributes(), DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+      String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+      subjectdirattrs = new DNFieldExtractor(dirattrs, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
       setCommonName(); 
 
       cleartextpwd = userdata.getPassword() != null;
@@ -72,11 +73,14 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
 
     public void setSubjectDirAttributes( String subjectdirattr) {
     	ExtendedInformation ext = userdata.getExtendedinformation();
+    	if (ext == null) {
+    		ext = new ExtendedInformation();
+    	}
     	ext.setSubjectDirectoryAttributes(subjectdirattr);
         userdata.setExtendedinformation(ext);
         subjectdirattrs.setDN(subjectdirattr, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
       }
-      public String getSubjectDirAttributes() {return userdata.getExtendedinformation().getSubjectDirectoryAttributes();}
+    public String getSubjectDirAttributes() {return userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;}
 
     public void setEmail(String email) { userdata.setEmail(email);}
     public String getEmail() {return userdata.getEmail();}

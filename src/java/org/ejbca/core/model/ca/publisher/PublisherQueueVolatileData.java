@@ -110,9 +110,13 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
     	}
 	}
 
+	/**
+	 *  
+	 * @return ExtendedInformation or null if it does not exist
+	 */
     public ExtendedInformation getExtendedInformation() {
     	String str = (String)data.get(EXTENDEDINFORMATION);
-    	ExtendedInformation ret = new ExtendedInformation();
+    	ExtendedInformation ret = null;
     	if (str != null) {
     		ret = UserDataVO.getExtendedInformation(str);
     	}

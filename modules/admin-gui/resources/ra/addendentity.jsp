@@ -251,6 +251,9 @@
          if(value != null) {
         	 int maxFailedLogins = Integer.parseInt(value);
         	 ExtendedInformation ei = newuser.getExtendedInformation();
+        	 if (ei == null) {
+        		 ei = new ExtendedInformation();
+        	 }
         	 ei.setMaxLoginAttempts(maxFailedLogins);
         	 ei.setRemainingLoginAttempts(maxFailedLogins);
         	 newuser.setExtendedInformation(ei);
@@ -446,6 +449,9 @@
            value = request.getParameter(SELECT_ALLOWEDREQUESTS);
            if(value !=null){
           	 ExtendedInformation ei = newuser.getExtendedInformation();
+        	 if (ei == null) {
+        		 ei = new ExtendedInformation();
+        	 }
            	 ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
            	 newuser.setExtendedInformation(ei);
            }
@@ -573,6 +579,9 @@
 			}
 			if( oldprofile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) {
 				final ExtendedInformation ei = newuser.getExtendedInformation();
+	        	 if (ei == null) {
+	        		 ei = new ExtendedInformation();
+	        	 }
 				value = request.getParameter(TEXTFIELD_CERTSERIALNUMER);
 				if ( value!=null && value.length()>0 ) {
 					ei.setCertificateSerialNumber( new BigInteger(value.trim(), 16) );
