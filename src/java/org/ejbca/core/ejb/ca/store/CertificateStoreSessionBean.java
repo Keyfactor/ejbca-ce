@@ -203,15 +203,10 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     		}
     	} // finished with ECC key special handling
     	
-    	CertificateData data1 = new CertificateData(incert, pubk);
-    	String data1Fingerprint = data1.getFingerprint();
-        data1.setUsername(username);
-        data1.setCaFingerprint(cafp);
-        data1.setStatus(status);
-        data1.setType(type);
-        data1.setCertificateProfileId(certificateProfileId);
-        data1.setTag(tag);
-        data1.setUpdateTime(updateTime);
+    	// Create the certificate in one go with all parameters at once. This used to be important in EJB2.1 so the persistence layer only creates *one* single
+    	// insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
+    	// Probably not important in EJB3 anymore
+    	CertificateData data1 = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, tag, updateTime);
         try {
         	entityManager.persist(data1);
         } catch (Exception e) {
@@ -223,7 +218,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
         String msg = intres.getLocalizedMessage("store.storecert");            	
         logSession.log(admin, incert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
         if (protect) {
-        	CertificateInfo entry = new CertificateInfo(data1Fingerprint, cafp, data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), status, type, data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), username, tag, certificateProfileId, updateTime);
+        	CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), cafp, data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), status, type, data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), username, tag, certificateProfileId, updateTime);
         	tableProtectSession.protect(entry);
         }
         log.trace("<storeCertificate()");

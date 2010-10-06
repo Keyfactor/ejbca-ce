@@ -386,32 +386,14 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
 
         try {
-            UserData data1 = new UserData(userdata.getUsername(), newpassword, dn, userdata.getCAId(), userdata.getCardNumber());
-            if (userdata.getSubjectAltName() != null) {
-                data1.setSubjectAltName(userdata.getSubjectAltName());
-            }
-            if (userdata.getEmail() != null) {
-                data1.setSubjectEmail(userdata.getEmail());
-            }
-            data1.setType(type);
-            data1.setEndEntityProfileId(userdata.getEndEntityProfileId());
-            data1.setCertificateProfileId(userdata.getCertificateProfileId());
-            data1.setTokenType(userdata.getTokenType());
-            data1.setHardTokenIssuerId(userdata.getHardTokenIssuerId());
-            data1.setExtendedInformation(userdata.getExtendedinformation());
+        	// Create the user in one go with all parameters at once. This was important in EJB2.1 so the persistence layer only creates *one* single
+        	// insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
+        	// Probably not important in EJB3 anymore.
+        	UserData data1 = new UserData(userdata.getUsername(), newpassword, clearpwd, dn, userdata.getCAId(), userdata.getCardNumber(),
+            		userdata.getSubjectAltName(), userdata.getEmail(), type, userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
+            		userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getExtendedinformation());
 
-            if (clearpwd) {
-                try {
-                    if (newpassword == null) {
-                        data1.setClearPassword("");
-                    } else {
-                        data1.setOpenPassword(newpassword);
-                    }
-                } catch (java.security.NoSuchAlgorithmException nsae) {
-                    log.debug("NoSuchAlgorithmException while setting password for user " + userdata.getUsername());
-                    throw new EJBException(nsae);
-                }
-            }
+
             // Since persist will not commit and fail if the user already exists, we need to check for this
             // Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
             if (UserData.findByUsername(entityManager, data1.getUsername()) != null) {
