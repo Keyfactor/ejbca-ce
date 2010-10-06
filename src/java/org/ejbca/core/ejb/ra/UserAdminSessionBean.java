@@ -775,8 +775,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 keyRecoverySession.unmarkUser(admin, userdata.getUsername());
             }
             ExtendedInformation ei = userdata.getExtendedinformation();
+            userData.setExtendedInformation(ei);
             if (ei != null) {
-                userData.setExtendedInformation(ei);
             	String requestCounter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
             	if (StringUtils.equals(requestCounter, "0") && (userdata.getStatus() == UserDataConstants.STATUS_NEW)
             			&& (oldstatus != UserDataConstants.STATUS_NEW)) {
