@@ -13,10 +13,7 @@
  
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Date;
@@ -29,10 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -45,7 +39,7 @@ import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
@@ -55,7 +49,6 @@ import org.ejbca.util.CertTools;
 public class StartServicesServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final int MAX_SERVICE_WAIT = 30;
 	private static final Logger log = Logger.getLogger(StartServicesServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -124,33 +117,9 @@ public class StartServicesServlet extends HttpServlet {
         // i.e. those that does not depend on other running beans, components etc
         //
         
-        // Start with logging, so we are sure to know what is happening later on
-        log.trace(">init initializing log4j");
-        String configfile = EjbcaConfiguration.getLoggingLog4jConfig();
-        if (!StringUtils.equals(configfile, "false")) {
-            // Configure log4j
-            if (StringUtils.equals(configfile, "basic")) {
-                // Set up a simple configuration that logs on the console.
-                BasicConfigurator.configure();            	
-            } else {
-            	System.setProperty("log4j.configuration", "file://"+configfile);
-            	File f = new File(configfile);
-            	URL url;
-				try {
-					url = f.toURL();
-	            	if (StringUtils.contains(configfile, ".properties")) {
-	                	PropertyConfigurator.configure(url);     
-	                	log.debug("Configured log4j with PropertyConfigurator: "+url);
-	            	} else if (StringUtils.contains(configfile, ".xml")) {
-	            		DOMConfigurator.configure(url);
-	                	log.debug("Configured log4j with DOMConfigurator: "+url);
-	            	}
-				} catch (MalformedURLException e) {
-					log.error("Can not configure log4j: ", e);
-					e.printStackTrace();
-				}
-            }
-        }
+    	if (EjbcaConfiguration.getLoggingLog4jConfig() != null) {
+    		log.warn("Property 'logging.log4j.config' is no longer used, but was configured. The value will be ignored.");
+    	}
         
         // Log a startup message
 		String iMsg = intres.getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
@@ -158,8 +127,8 @@ public class StartServicesServlet extends HttpServlet {
 
         // Reinstall BC-provider to help re-deploys to work
         log.trace(">init re-installing BC-provider");
-        CertTools.removeBCProvider();
-        CertTools.installBCProvider();
+        CryptoProviderTools.removeBCProvider();
+        CryptoProviderTools.installBCProvider();
 
         // Run java seed collector, that can take a little time the first time it is run
         log.trace(">init initializing random seed");
