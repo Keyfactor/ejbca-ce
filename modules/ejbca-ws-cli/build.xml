@@ -27,7 +27,6 @@
 
 	<path id="compile-withws.classpath">
 		<path refid="compile.classpath"/>
-		<path refid="lib.jaxws.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile, setup">
@@ -81,16 +80,13 @@
 	</target>
 
     <target name="generate" depends="ejbca-ws-wsdl" description="Generate WS client stubs from implementation">
-		<available classname="com.sun.tools.ws.ant.WsImport" classpathref="lib.jaxws.classpath" property="tool.present"/>
-		<fail unless="tool.present" message="Generation of client side Web Services code requires the tool com.sun.tools.ws.ant.WsImport to be present."/>
 		<available file="${mod.ejbca-ws.wsdl}" property="wsdl.present"/>
 		<fail unless="wsdl.present" message="Generation of client side Web Services code requires ${mod.ejbca-ws.wsdl} to be present."/>
 		<delete><fileset dir="${src-gen.dir}" includes="**"></fileset></delete>
 		<mkdir dir="${build.dir}" />
-	    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport" classpathref="lib.jaxws.classpath"/>
-        <wsimport package="org.ejbca.core.protocol.ws.client.gen" keep="true" destdir="${build.dir}" 
-        	    sourcedestdir="${src-gen.dir}" wsdl="${mod.ejbca-ws.wsdl}">
-        </wsimport>
+		<exec command="${java.home}/../bin/wsimport" failonerror="true">
+			<arg line="-s ${src-gen.dir} -d ${build.dir} -p org.ejbca.core.protocol.ws.client.gen -keep ${mod.ejbca-ws.wsdl}"/>
+		</exec>
         <antcall target="overwritegenerated">
            <param name="class" value="Certificate"/>
     	</antcall>
@@ -142,6 +138,7 @@
     	<copy todir="${mod.ejbca-ws-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${compile.classpath.property}"/>
     	</copy>
+    	<!--
     	<pathconvert property="lib.jaxws-client.classpath.property" pathsep=" ">
     	    <path refid="lib.jaxws-client.classpath" />
     		<map from="${ejbca.home}/" to=""/>
@@ -149,6 +146,7 @@
     	<copy todir="${mod.ejbca-ws-cli.dist}/lib/endorsed" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${lib.jaxws-client.classpath.property}"/>
     	</copy>
+    	-->
     	<copy todir="${mod.ejbca-ws-cli.dist}" flatten="true">
     		<fileset dir="${this.dir}/resources" includes="**"/>
     	</copy>
