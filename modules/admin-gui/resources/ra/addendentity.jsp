@@ -578,10 +578,10 @@
 				}
 			}
 			if( oldprofile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) {
-				final ExtendedInformation ei = newuser.getExtendedInformation();
-	        	 if (ei == null) {
-	        		 ei = new ExtendedInformation();
-	        	 }
+				ExtendedInformation ei = newuser.getExtendedInformation();
+	        	if (ei == null) {
+	        		ei = new ExtendedInformation();
+	        	}
 				value = request.getParameter(TEXTFIELD_CERTSERIALNUMER);
 				if ( value!=null && value.length()>0 ) {
 					ei.setCertificateSerialNumber( new BigInteger(value.trim(), 16) );
