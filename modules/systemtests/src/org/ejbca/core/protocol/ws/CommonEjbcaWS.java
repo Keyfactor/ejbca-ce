@@ -918,7 +918,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         Enumeration<String> en = ks.aliases();
         String alias = en.nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertTrue(cert.getSubjectDN().toString().equals(getDN(CA1_WSTESTUSER1)));
+        assertEquals("Returned certificates SubjectDN '" + CertTools.getSubjectDN(cert) + "' is not requested '" + getDN(CA1_WSTESTUSER1) + "'", CertTools.getSubjectDN(cert), getDN(CA1_WSTESTUSER1));
 
         String issuerdn = cert.getIssuerDN().toString();
         String serno = cert.getSerialNumber().toString(16);
@@ -1356,7 +1356,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void keyRecover() throws Exception {
-
+    	log.trace(">keyRecover");
         GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(intAdmin);
         boolean krenabled = gc.getEnableKeyRecovery();
         if (krenabled == true) {
@@ -1400,6 +1400,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         profile.setReUseKeyRevoceredCertificate(true);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         raAdminSession.addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
+        assertTrue("Unable to kreate KEYRECOVERY end entity profile.", raAdminSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY") != 0);
 
         // Add a new user, set token to P12, status to new and end entity
         // profile to key recovery
@@ -1456,12 +1457,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         String key1 = new String(Hex.encode(privK.getEncoded()));
         String key2 = new String(Hex.encode(privK2.getEncoded()));
         assertEquals(key1, key2);
-
-    } // test20KeyRecover
+    	log.trace("<keyRecover");
+    }
 
     protected void getAvailableCAs() throws Exception {
-
-        Collection ids = caAdminSessionRemote.getAvailableCAs(intAdmin);
+    	log.trace(">getAvailableCAs");
+        Collection<Integer> ids = caAdminSessionRemote.getAvailableCAs(intAdmin);
         List<NameAndId> cas = ejbcaraws.getAvailableCAs();
         assertNotNull(cas);
         assertEquals(cas.size(), ids.size());
@@ -1472,10 +1473,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             }
         }
         assertTrue(found);
-    } // test21GetAvailableCAs
+    	log.trace("<getAvailableCAs");
+    }
 
     protected void getAuthorizedEndEntityProfiles() throws Exception {
-
+    	log.trace(">getAuthorizedEndEntityProfiles");
         Collection<Integer> ids = raAdminSession.getAuthorizedEndEntityProfileIds(intAdmin);
         List<NameAndId> profs = ejbcaraws.getAuthorizedEndEntityProfiles();
         assertNotNull(profs);
@@ -1493,10 +1495,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     found = true;
                 }
             }
-            assertTrue(found);
+            assertTrue("Unable to find profile '" + n.getName() + "' among authorized EEPs reported by Remote EJB call.", found);
         }
-        assertTrue(foundkeyrec);
-    } // test22GetAuthorizedEndEntityProfiles
+        assertTrue("Could not find KEYRECOVERY end entity profile among authorized profiles.", foundkeyrec);
+    	log.trace("<getAuthorizedEndEntityProfiles");
+    }
 
     protected void getAvailableCertificateProfiles() throws Exception {
 
@@ -2030,6 +2033,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         // Create the DVCA signed by our external CVCA
         String caname = createDVCCASignedByExternal(cvcacert, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
+        assertNotNull("Failed to create DVC CA " + dvcaName + "Signed By External.", caname);
         assertEquals(caname, dvcaName);
         // Now test our WS API to generate a request, setting status to
         // "WAITING_FOR_CERTIFICATE_RESPONSE"
@@ -2344,63 +2348,63 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         // Remove Key recovery end entity profile
         try {
             raAdminSession.removeEndEntityProfile(intAdmin, "KEYRECOVERY");
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             removeTestCA(CA1);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {
             removeTestCA(CA2);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("", e);
         }
         try {        	
         	raAdminSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
         } catch (Exception e) {
-        	e.printStackTrace();
+        	log.error("", e);
         }
     } // cleanUpAdmins
 
@@ -2540,61 +2544,30 @@ public abstract class CommonEjbcaWS extends CaTestCase {
      */
     protected void deleteCVCCA(String rootcadn, String subcadn) throws Exception {
         // Clean up by removing the CVC CA
-        try {
-            String dn = CertTools.stringToBCDNString(rootcadn);
-            caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
-        } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
-        try {
-            String dn = CertTools.stringToBCDNString(subcadn);
-            caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
-        } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
+        removeCAIfItExists(CertTools.stringToBCDNString(rootcadn));
+        removeCAIfItExists(CertTools.stringToBCDNString(subcadn));
     }
 
     private void deleteDVCAExt() throws Exception {
         // Clean up by removing the DVCA signed by external
-        try {
-            String dn = CertTools.stringToBCDNString("CN=WSDVEXT,C=SE");
-            caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
-        } catch (Exception e) {
-        	if(!(e.getCause() instanceof CADoesntExistsException)){
-        		e.printStackTrace();
-        		assertTrue(false);
-        	}
-        }
-
-        try {
-            String dn = CertTools.stringToBCDNString("CN=WSDVEXECR,C=SE");
-            caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
-        } catch (Exception e) {
-        	if(!(e.getCause() instanceof CADoesntExistsException)){
-        		e.printStackTrace();
-        		assertTrue(false);
-        	}
-        }
-
-        try {
-            String dn = CertTools.stringToBCDNString("CN=WSDVEXECE,C=SE");
-            caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
-        } catch (Exception e) {
-        	if(!(e.getCause() instanceof CADoesntExistsException)){
-        		e.printStackTrace();
-        		assertTrue(false);
-        	}
-        }
-
+        removeCAIfItExists(CertTools.stringToBCDNString("CN=WSDVEXT,C=SE"));
+        removeCAIfItExists(CertTools.stringToBCDNString("CN=WSDVEXECR,C=SE"));
+        removeCAIfItExists(CertTools.stringToBCDNString("CN=WSDVEXECE,C=SE"));
+        removeCAIfItExists(CertTools.stringToBCDNString("CN=CVCAEXEC,C=SE"));
+    }
+    
+    private void removeCAIfItExists(String dn) {
     	try {
-    		String dn = CertTools.stringToBCDNString("CN=CVCAEXEC,C=SE");
-    		caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
+            // Remove CA if it exists
+            if (caAdminSessionRemote.getCAInfo(intAdmin, dn.hashCode()) != null) {
+        		caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
+            } else {
+        		log.error("CA " + dn + " did not exist. Skipping removal.");
+            }
     	} catch (Exception e) {
         	if(!(e.getCause() instanceof CADoesntExistsException)){
-        		e.printStackTrace();
-        		assertTrue(false);
+        		log.error("", e);
+        		assertTrue("Failed to remove CA with SubjectDN '" + dn + "'", false);
         	}
     	}
     }
