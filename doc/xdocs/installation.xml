@@ -299,7 +299,7 @@ In the directory doc/howto in the distribution there are additional howtos for s
 </section>
 
 <section name="Application servers">
-<p>EJBCA can currently be run on JBoss (covered above), Glassfish (Sun AS), Weblogic, OC4J (Oracle AS) and Websphere.
+<p>EJBCA can currently be run on JBoss (covered above), Glassfish (Sun AS), Weblogic, and Websphere.
 <br/><i>(Websphere is not really supported, it's only one old version of EJBCA on one version of Websphere)</i>.
 </p>
 
@@ -311,9 +311,8 @@ Currently EJBCA works with Glassfish v2 with the Derby/JavaDB database. It can a
 <subsubsection name="Configure EJBCA">
 <p>
 <ol>
-<li>Set the environment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
-  The variable must be available when working with EJBCA.</li> 
-<li>Edit conf/ejbca.properties, you should at least set appserver.home and logging.log4j.config.</li>
+<li>Edit conf/ejbca.properties, you should at least set appserver.home</li>
+<li>Edit conf/log4j-glassfish.xml, to configure EJBCA logging.</li>
 <li>Edit conf/database.properties, you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database. Derby is supported for Glassfish, and default options for Derby should work.</li>
 <li>Edit conf/web.properties, you should set desired values and also the http/s ports (default 8080 and 8181) for your installation.</li>
 <li>Configuration of ejbcaws and xkms only have to be done in Glassfish v1.<br/>
@@ -335,9 +334,6 @@ Do 'ant clean' first if you have tried with different appservers, or database se
 <subsubsection name="Configure Glassfish">
 <p>
 <ol>
-<li>Do yourself a favor and configure this in the JVM settings of Glassfish v1 (default in v2):<br/>
-    <pre>-XX:MaxPermSize=192m</pre>
-    Restart Glassfish</li>
 <li>Derby:
 <ol>
 <li>Start the database and create the database.
@@ -346,7 +342,6 @@ Do 'ant clean' first if you have tried with different appservers, or database se
   > ./asadmin start-database
   > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/bin/ij   
   ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
-  (TODO: Not needed? ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';)
   ij> quit;
 </pre></li></ol></li>
 <li>Start the application server: asadmin start-domain<br/>
