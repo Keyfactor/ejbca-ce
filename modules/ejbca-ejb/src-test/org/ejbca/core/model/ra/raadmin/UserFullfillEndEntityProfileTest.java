@@ -970,6 +970,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         
         // Set so maxFailedLogins=non-modifyable required 
         profile.addField(EndEntityProfile.MAXFAILEDLOGINS);
+        profile.setUse(EndEntityProfile.MAXFAILEDLOGINS,0,true);
         profile.setRequired(EndEntityProfile.MAXFAILEDLOGINS,0,true);
         profile.setModifyable(EndEntityProfile.MAXFAILEDLOGINS,0,false);
         profile.setValue(EndEntityProfile.MAXFAILEDLOGINS,0,"7");
