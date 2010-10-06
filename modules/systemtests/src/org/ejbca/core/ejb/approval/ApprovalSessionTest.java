@@ -59,8 +59,7 @@ import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 
 /**
- * @version $Id: ApprovalSessionTest.java 9666 2010-08-18 11:22:12Z mikekushner
- *          $
+ * @version $Id: ApprovalSessionTest.java 9666 2010-08-18 11:22:12Z mikekushner$
  */
 public class ApprovalSessionTest extends CaTestCase {
 
