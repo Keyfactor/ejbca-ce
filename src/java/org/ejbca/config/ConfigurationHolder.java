@@ -201,8 +201,10 @@ public class ConfigurationHolder {
 	 */
 	public static String getExpandedString(String property, String defaultValue) {
 		String ret = getString(property, defaultValue);
-		while (ret.indexOf("${") != -1) {
-			ret = interpolate(ret);
+		if (ret != null) {
+			while (ret.indexOf("${") != -1) {
+				ret = interpolate(ret);
+			}
 		}
 		return ret;
 	}
