@@ -185,6 +185,19 @@
 	</p>
 	</subsection>
 	
+	<subsection name="Zurich University of Applied Sciences">
+	<p>
+	<ul>
+	<li>Organization: Zurich University of Applied Sciences (http://www.zhaw.ch/)</li>
+	<li>Location: Winterthur, Switzerland</li>
+    <li>Trade of Industry: University</li>
+    <li>Installed by: Marc Rennhard, Alexander Horvath</li>
+    <li>Solution: Operational since 2007. Used as a backend for the Institute's (http://init.zhaw.ch) certificate services,
+        specially for email encryption. Basically it is operated for research purposes.</li>
+    <li>Count of Users: around 50</li>
+    </ul>
+	</p>
+	</subsection>
   </section>
 
 </body>
