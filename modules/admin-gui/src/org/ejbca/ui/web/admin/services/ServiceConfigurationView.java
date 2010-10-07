@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin.services;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -57,6 +58,7 @@ public class ServiceConfigurationView implements Serializable{
 	private boolean active = false;
 	private boolean hidden = false;
 	private String description = "";
+	private String[] pinToNodes = new String[0];
 	
 	private ServiceConfiguration serviceConfiguration;
 	
@@ -92,8 +94,7 @@ public class ServiceConfigurationView implements Serializable{
 		setDescription(serviceConfiguration.getDescription());
 		setActive(serviceConfiguration.isActive());
 		setHidden(serviceConfiguration.isHidden());
-		
-		
+		setPinToNodes(serviceConfiguration.getPinToNodes());
 	}
 	
 	/**
@@ -111,6 +112,7 @@ public class ServiceConfigurationView implements Serializable{
 		retval.setIntervalProperties(getIntervalType().getProperties(errorMessages));
 		retval.setWorkerClassPath(getWorkerType().getClassPath());
 		retval.setWorkerProperties(getWorkerType().getProperties(errorMessages));
+		retval.setPinToNodes(getPinToNodes());
 		return retval;
 	}
 
@@ -322,9 +324,16 @@ public class ServiceConfigurationView implements Serializable{
 	public ServiceTypeManager getServiceTypeManager(){
 		return typeManager;
 	}
-	
-	
-	
 
+	public String[] getPinToNodes() {
+		return pinToNodes;
+	}
+
+	public void setPinToNodes(String[] pinToNodes) {
+		if (log.isDebugEnabled()) {
+			log.debug("view setPinToNodes: " + Arrays.toString(pinToNodes));
+		}
+		this.pinToNodes = pinToNodes;
+	}
 
 }

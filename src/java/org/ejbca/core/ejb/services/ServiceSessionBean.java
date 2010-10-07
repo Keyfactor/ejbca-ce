@@ -14,12 +14,16 @@
 package org.ejbca.core.ejb.services;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -502,46 +506,51 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         	return null;	// Don't return an inactive worker to run
         }
         String serviceName = serviceData.getName();
-        long oldRunTimeStamp = serviceData.getRunTimeStamp();
-        long oldNextRunTimeStamp = serviceData.getNextRunTimeStamp();
-        worker = getWorker(serviceConfiguration, serviceName, oldRunTimeStamp, oldNextRunTimeStamp);
-        if (worker.getNextInterval() == IInterval.DONT_EXECUTE) {
-            if (log.isDebugEnabled()) {
-            	log.debug("Service has interval IInterval.DONT_EXECUTE.");
-            }
-        	return null;	// Don't return an inactive worker to run
-        }
-        Date runDateCheck = new Date(oldNextRunTimeStamp); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
-        Date currentDate = new Date();
-        if (log.isDebugEnabled()) {
-        	Date nextRunDate = new Date(nextTimeout);
-        	log.debug("nextRunDate is:  " + nextRunDate);
-        	log.debug("runDateCheck is: " + runDateCheck);
-        	log.debug("currentDate is:  " + currentDate);
-        }
-        /*
-         * Check if the current date is after when the service should run. If a
-         * service on another cluster node has updated this timestamp already,
-         * then it will return false and this service will not run. This is a
-         * semaphore (not the best one admitted) so that services in a cluster
-         * only runs on one node and don't compete with each other. If a worker
-         * on one node for instance runs for a very long time, there is a chance
-         * that another worker on another node will break this semaphore and run
-         * as well.
-         */
-        if (currentDate.after(runDateCheck)) {
-            /*
-             * We only update the nextRunTimeStamp if the service is allowed to run on this node.
-             * 
-             * However, we need to make sure that no other node has already acquired the semaphore
-             * if our current database allows non-repeatable reads.
-             */
-        	if (!serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), nextTimeout)) {
-        		log.debug("Another node had already updated the database at this point. This node will not run.");
-        		worker = null;	// Failed to update the database.
-        	}
+        if (shouldRunOnThisNode(Arrays.asList(serviceConfiguration.getPinToNodes()))) {
+	        long oldRunTimeStamp = serviceData.getRunTimeStamp();
+	        long oldNextRunTimeStamp = serviceData.getNextRunTimeStamp();
+	        worker = getWorker(serviceConfiguration, serviceName, oldRunTimeStamp, oldNextRunTimeStamp);
+	        if (worker.getNextInterval() == IInterval.DONT_EXECUTE) {
+	            if (log.isDebugEnabled()) {
+	            	log.debug("Service has interval IInterval.DONT_EXECUTE.");
+	            }
+	        	return null;	// Don't return an inactive worker to run
+	        }
+	        Date runDateCheck = new Date(oldNextRunTimeStamp); // nextRunDateCheck will typically be the same (or just a millisecond earlier) as now here
+	        Date currentDate = new Date();
+	        if (log.isDebugEnabled()) {
+	        	Date nextRunDate = new Date(nextTimeout);
+	        	log.debug("nextRunDate is:  " + nextRunDate);
+	        	log.debug("runDateCheck is: " + runDateCheck);
+	        	log.debug("currentDate is:  " + currentDate);
+	        }
+	        /*
+	         * Check if the current date is after when the service should run. If a
+	         * service on another cluster node has updated this timestamp already,
+	         * then it will return false and this service will not run. This is a
+	         * semaphore (not the best one admitted) so that services in a cluster
+	         * only runs on one node and don't compete with each other. If a worker
+	         * on one node for instance runs for a very long time, there is a chance
+	         * that another worker on another node will break this semaphore and run
+	         * as well.
+	         */
+	        if (currentDate.after(runDateCheck)) {
+	            /*
+	             * We only update the nextRunTimeStamp if the service is allowed to run on this node.
+	             * 
+	             * However, we need to make sure that no other node has already acquired the semaphore
+	             * if our current database allows non-repeatable reads.
+	             */
+	        	if (!serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), nextTimeout)) {
+	        		log.debug("Another node had already updated the database at this point. This node will not run.");
+	        		worker = null;	// Failed to update the database.
+	        	}
+	        } else {
+	        	worker = null;	// Don't return a worker, since this node should not run
+	        }
         } else {
-        	worker = null;	// Don't return a worker, since this node should not run
+        	worker = null;
+			log.info("Service " + serviceName + " will not run on this node. Pinned to: " + Arrays.toString(serviceConfiguration.getPinToNodes()));
         }
         return worker;
     }
@@ -860,6 +869,40 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         } catch (AuthorizationDeniedException e) {
         }
         return false;
+    }
+    
+    /**
+     * Return true if the service should run on the node given the list of nodes it is pinned to. An empty list means that the service
+     * is not pinned to any particular node and should run on all.
+     * @param nodes list of nodes the service is pinned to
+     * @return true if the service should run on this node
+     */
+    private boolean shouldRunOnThisNode(final List/*String*/ nodes) {
+    	final boolean result;
+    	final String hostname = getHostName();
+    	if (nodes == null || nodes.isEmpty()) {
+    		result = true;
+    	} else if (hostname == null) {
+    		result = false;
+    	} else {
+    		result = nodes.contains(hostname);
+    	}
+		return result;
+	}
+    
+    /**
+     * @return The host's name or null if it could not be determined.
+     */
+    private String getHostName() {
+    	String hostname = null;
+    	try {
+	        InetAddress addr = InetAddress.getLocalHost();    
+	        // Get hostname
+	        hostname = addr.getHostName();
+	    } catch (UnknownHostException e) {
+	    	log.error("Hostname could not be determined", e);
+	    }
+	    return hostname;
     }
     
 }

@@ -3,7 +3,8 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.ui.web.admin.configuration.GlobalConfigurationDataHandler,
-                org.ejbca.ui.web.admin.configuration.WebLanguages, org.ejbca.core.model.authorization.AccessRulesConstants, org.ejbca.core.model.InternalResources"%>
+                org.ejbca.ui.web.admin.configuration.WebLanguages, org.ejbca.core.model.authorization.AccessRulesConstants, org.ejbca.core.model.InternalResources, 
+                java.util.Set, java.util.Arrays "%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 
@@ -19,6 +20,8 @@
   static final String BUTTON_PREVIOUS                        = "buttonprevious"; 
   static final String BUTTON_SAVE                            = "buttonsave";
   static final String BUTTON_CANCEL                          = "buttoncancel";
+  static final String BUTTON_NODES_ADD						 = "buttonnodesadd";
+  static final String BUTTON_NODES_REMOVE					 = "buttonnodesremove";
 
 // Textfields used in webconfiguration.jsp
   static final String TEXTFIELD_TITLE                        = "textfieldtitle";
@@ -33,6 +36,9 @@
   static final String TEXTFIELD_AUTOENROLL_BASEDN_USER       = "textfieldautoenrollbasednuser";
   static final String TEXTFIELD_AUTOENROLL_CONNECTIONDN      = "textfieldautoenrollconnectiondn";
   static final String TEXTFIELD_AUTOENROLL_CONNECTIONPWD     = "textfieldautoenrollconnectionpwd";
+  
+  static final String TEXTFIELD_NODES_ADD					 = "textfieldnodesadd";
+  static final String LIST_NODES							 = "listnodes";
 
   static final String CHECKBOX_ENABLEEEPROFILELIMITATIONS    = "checkboxendentityprofilelimitations"; 
   static final String CHECKBOX_ENABLEAUTHENTICATEDUSERSONLY  = "checkboxauthenticatedusersonly"; 
@@ -196,12 +202,31 @@
 
         ejbcawebbean.saveGlobalConfiguration();
         ejbcawebbean.saveDefaultAdminPreference(dup);
+     } else if (request.getParameter(BUTTON_NODES_ADD) != null) {
+     	final String newNode = request.getParameter(TEXTFIELD_NODES_ADD);
+     	if (newNode != null && newNode.length() > 0) {
+     		final Set/*String*/ nodes = gc.getNodesInCluster();
+     		nodes.add(newNode);
+     		gc.setNodesInCluster(nodes);
+     		ejbcawebbean.saveGlobalConfiguration();
+     	}
+     
+     } else if (request.getParameter(BUTTON_NODES_REMOVE) != null) {
+     	final String[] removeNodes = request.getParameterValues(LIST_NODES);
+     	if (removeNodes != null && removeNodes.length > 0) {
+     		final Set/*String*/ nodes = gc.getNodesInCluster();
+     		nodes.removeAll(Arrays.asList(removeNodes));
+     		gc.setNodesInCluster(nodes);
+     		ejbcawebbean.saveGlobalConfiguration();
+     	}
      }
 
      if(request.getParameter(BUTTON_SAVE) == null &&
         request.getParameter(BUTTON_NEXT) == null &&
         request.getParameter(BUTTON_CANCEL) == null &&
         request.getParameter(BUTTON_PREVIOUS) == null){
+ 
+ 		System.out.println("Reload config");
  
       // get current global configuration.
         ejbcawebbean.reloadGlobalConfiguration();
