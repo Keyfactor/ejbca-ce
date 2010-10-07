@@ -286,3 +286,26 @@ function checkuseautoenroll(){
         <input type="text" name="<%=TEXTFIELD_AUTOENROLL_BASEDN_USER %>" value='<c:out value="<%= gc.getAutoEnrollBaseDNUser() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="45">
       </td>
     </tr>          
+
+    <tr id="Row0"> 
+      <td width="49%" valign="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"NODESINCLUSTER\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"NODESINCLUSTERHELP\") %>"/></p>
+      </td>
+      <td width="51%" valign="top">
+        <select name="<%=LIST_NODES %>" multiple="multiple" style="width: 30em;" size="5">
+        	<% java.util.Iterator it = gc.getNodesInCluster().iterator();
+        	  while(it.hasNext()) { 
+        	  	Object o = it.next();
+        	  %>
+              <option value="<%=o%>"> 
+                  <%=o%>
+               </option>
+            <% } %>
+          </select><br/>
+          <input type="submit" name="<%=BUTTON_NODES_REMOVE %>" value="<c:out value="<%= ejbcawebbean.getText(\"REMOVENODESINCLUSTER\") %>"/>" %><br/>
+          <br/>
+          <c:out value="<%= ejbcawebbean.getText(\"ADDNODEINCLUSTER:\") %>"/> <input type="text" name="<%=TEXTFIELD_NODES_ADD %>"> <input type="submit" name="<%= BUTTON_NODES_ADD %>" value="<c:out value="<%= ejbcawebbean.getText(\"ADD\") %>"/>" %>
+        
+      </td>
+    </tr>

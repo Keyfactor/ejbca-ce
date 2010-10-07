@@ -103,7 +103,16 @@
 		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.ACTIVE}"/><f:verbatim></strong></f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>
+		<h:outputText value="#{web.text.ACTIVE}"/>
 		<h:selectBooleanCheckbox id="activeCheckbox" value="#{editService.serviceConfigurationView.active}"/>
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:outputText value="#{web.text.PINTONODES}"/>
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:selectManyListbox id="pinToNodesListbox" value="#{editService.serviceConfigurationView.pinToNodes}">
+			<f:selectItems value="#{editService.nodesInCluster}"/>
+		</h:selectManyListbox>
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:outputText value="#{web.text.DESCRIPTION}"/>

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.faces.application.Application;
@@ -320,6 +321,13 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return availablePublisherNames;		
 	}
 
+	public List<SelectItem> getNodesInCluster() {
+		final List<SelectItem> ret = new LinkedList<SelectItem>();
+		for (String item : EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getNodesInCluster()) {
+			ret.add(new SelectItem(item));
+		}
+		return ret; 
+	}
 
 }
 
