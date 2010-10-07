@@ -49,6 +49,7 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.EncryptionConstants;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.w3._2001._04.xmlenc_.EncryptedDataType;
 import org.w3._2002._03.xkms_.ObjectFactory;
 import org.w3._2002._03.xkms_.PrivateKeyType;
@@ -88,7 +89,7 @@ public class XKMSUtil {
 	
 	static{  
 		try {
-			CertTools.installBCProvider();
+			CryptoProviderTools.installBCProvider();
 			org.apache.xml.security.Init.init();
 
 			jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
