@@ -35,6 +35,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
@@ -139,6 +140,7 @@ public class XKMSKRSSTest extends TestCase {
     private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -210,11 +212,11 @@ public class XKMSKRSSTest extends TestCase {
         final EndUserCertificateProfile profile2 = new EndUserCertificateProfile();
         profile2.setKeyUsage(CertificateProfile.DATAENCIPHERMENT, true);
 
-        certificateStoreSession.addCertificateProfile(administrator, certprofilename1, profile1);
-        certificateStoreSession.addCertificateProfile(administrator, certprofilename2, profile2);
+        certificateProfileSession.addCertificateProfile(administrator, certprofilename1, profile1);
+        certificateProfileSession.addCertificateProfile(administrator, certprofilename2, profile2);
 
-        final int profile1Id = certificateStoreSession.getCertificateProfileId(administrator, certprofilename1);
-        final int profile2Id = certificateStoreSession.getCertificateProfileId(administrator, certprofilename2);
+        final int profile1Id = certificateProfileSession.getCertificateProfileId(administrator, certprofilename1);
+        final int profile2Id = certificateProfileSession.getCertificateProfileId(administrator, certprofilename2);
 
         final EndEntityProfile endentityprofile = new EndEntityProfile(true);
 
@@ -1134,8 +1136,8 @@ public class XKMSKRSSTest extends TestCase {
 
         raAdminSession.removeEndEntityProfile(administrator, endentityprofilename);
 
-        certificateStoreSession.removeCertificateProfile(administrator, certprofilename1);
-        certificateStoreSession.removeCertificateProfile(administrator, certprofilename2);
+        certificateProfileSession.removeCertificateProfile(administrator, certprofilename1);
+        certificateProfileSession.removeCertificateProfile(administrator, certprofilename2);
 
         raAdminSession.saveGlobalConfiguration(administrator, orgGlobalConfig);
     }

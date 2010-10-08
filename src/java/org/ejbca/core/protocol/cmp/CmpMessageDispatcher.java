@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.cmp;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
@@ -73,14 +74,16 @@ public class CmpMessageDispatcher {
 	private final RaAdminSession raAdminSession;
 	private final CertificateStoreSession certificateStoreSession;
 	private final CertificateRequestSession certificateRequestSession;
+	private final CertificateProfileSession certificateProfileSession;
 	
-	public CmpMessageDispatcher(Admin adm, CAAdminSession caAdminSession, CertificateStoreSession certificateStoreSession, CertificateRequestSession certificateRequestSession,
+	public CmpMessageDispatcher(Admin adm, CAAdminSession caAdminSession, CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, CertificateRequestSession certificateRequestSession,
 			RaAdminSession raAdminSession, SignSession signSession, UserAdminSession userAdminSession) {
 		this.admin = adm;
 		this.signSession = signSession;
 		this.userAdminSession = userAdminSession;
 		this.caAdminSession = caAdminSession;
 		this.raAdminSession = raAdminSession;
+		this.certificateProfileSession = certificateProfileSession;
 		this.certificateStoreSession = certificateStoreSession;
 		this.certificateRequestSession = certificateRequestSession;
 		// Install BouncyCastle provider
@@ -127,11 +130,11 @@ public class CmpMessageDispatcher {
 			switch (tagno) {
 			case 0:
 				// 0 and 2 are both certificate requests
-				handler = new CrmfMessageHandler(admin, caAdminSession, certificateStoreSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
+				handler = new CrmfMessageHandler(admin, caAdminSession,  certificateProfileSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
 				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, caAdminSession, certificateStoreSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
+				handler = new CrmfMessageHandler(admin, caAdminSession, certificateProfileSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
 				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
 				break;
 			case 19:

@@ -51,11 +51,11 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
@@ -101,6 +101,8 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     private static final Logger log = Logger.getLogger(RSASignSessionBean.class);
     
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -1187,14 +1189,14 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 			final CertificateProfile certProfile;
 			{
 				final int tmpCertProfileId = data.getCertificateProfileId();
-				final CertificateProfile tmpCertProfile = certificateStoreSession.getCertificateProfile(admin, tmpCertProfileId);
+				final CertificateProfile tmpCertProfile = certificateProfileSession.getCertificateProfile(admin, tmpCertProfileId);
 				// What if certProfile == null?
 				if (tmpCertProfile != null) {
 					certProfileId = tmpCertProfileId;
 					certProfile = tmpCertProfile;
 				} else {
 					certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
-					certProfile = certificateStoreSession.getCertificateProfile(admin, certProfileId);
+					certProfile = certificateProfileSession.getCertificateProfile(admin, certProfileId);
 				}
 			}
         	if (log.isDebugEnabled()) {

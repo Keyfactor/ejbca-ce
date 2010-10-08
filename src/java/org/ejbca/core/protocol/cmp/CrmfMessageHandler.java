@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -97,14 +98,14 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private UserAdminSession userAdminSession;
 	private CAAdminSession caAdminSession;
 	private RaAdminSession raAdminSession;
-	private CertificateStoreSession certificateStoreSession;
+	private CertificateProfileSession certificateProfileSession;
 	private CertificateRequestSession certificateRequestSession;
 	
 	public CrmfMessageHandler () {
 	    
 	}
 	
-	public CrmfMessageHandler(final Admin admin, CAAdminSession caAdminSession, CertificateStoreSession certificateStoreSession, CertificateRequestSession certificateRequestSession,
+	public CrmfMessageHandler(final Admin admin, CAAdminSession caAdminSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
 			RaAdminSession raAdminSession, SignSession signSession, UserAdminSession userAdminSession) {
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the TCP listener does not work with that
@@ -112,7 +113,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		this.userAdminSession = userAdminSession;
 		this.caAdminSession = caAdminSession;
 		this.raAdminSession = raAdminSession;
-		this.certificateStoreSession = certificateStoreSession;
+		this.certificateProfileSession = certificateProfileSession;
 		this.certificateRequestSession = certificateRequestSession;
 
 		if (CmpConfiguration.getRAOperationMode()) {
@@ -142,7 +143,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				}
 				certProfileId = -1;
 			} else {
-				certProfileId = certificateStoreSession.getCertificateProfileId(admin, certificateProfile);					
+				certProfileId = certificateProfileSession.getCertificateProfileId(admin, certificateProfile);					
 			}
 			final String caName = CmpConfiguration.getRACAName();
 			if (StringUtils.equals(caName, "ProfileDefault")) {
@@ -355,7 +356,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							if (LOG.isDebugEnabled()) {
 								LOG.debug("Using certificate profile with name: "+keyId);
 							}
-							certProfileId = certificateStoreSession.getCertificateProfileId(admin, keyId);
+							certProfileId = certificateProfileSession.getCertificateProfileId(admin, keyId);
 							if (certProfileId == 0) {
 								LOG.info("No certificate profile found matching keyId: "+keyId);
 								throw new NotFoundException("Certificate profile with name '"+keyId+"' not found.");

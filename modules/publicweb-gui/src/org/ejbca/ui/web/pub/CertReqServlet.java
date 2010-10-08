@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -69,7 +70,7 @@ public class CertReqServlet extends HttpServlet {
 	@EJB
 	private CAAdminSessionLocal caAdminSession;
 	@EJB
-	private CertificateStoreSessionLocal certificateStoreSession;
+	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
 	private KeyRecoverySessionLocal keyRecoverySession;
 	@EJB
@@ -108,7 +109,7 @@ public class CertReqServlet extends HttpServlet {
      *             on error
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        new RequestInstance(getServletContext(), authenticationSession, caAdminSession, certificateStoreSession, keyRecoverySession,
+        new RequestInstance(getServletContext(), authenticationSession, caAdminSession, certificateProfileSession, keyRecoverySession,
         		raAdminSession, signSession, userAdminSession).doPost(request, response);
     }
 

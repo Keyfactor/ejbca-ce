@@ -40,6 +40,7 @@ import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -121,6 +122,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private RaAdminSessionLocal raAdminSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -1697,7 +1700,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         // Finally find the publishers for the certificate profileId that we
         // found
         Collection<Integer> publishers = new ArrayList<Integer>();
-        CertificateProfile prof = certificateStoreSession.getCertificateProfile(admin, certificateProfileId);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, certificateProfileId);
         if (prof != null) {
             publishers = prof.getPublisherList();
         }

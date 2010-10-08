@@ -33,13 +33,13 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
@@ -157,7 +157,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -1107,13 +1107,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
         raAdminSession.saveGlobalConfiguration(intAdmin, gc);
-        if (certificateStoreSession.getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0) {
-            certificateStoreSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+        if (certificateProfileSession.getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0) {
+            certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         }
 
         CertificateProfile profile = new EndUserCertificateProfile();
         profile.setAllowValidityOverride(true);
-        certificateStoreSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
+        certificateProfileSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
 
         // first a simple test
         UserDataVOWS tokenUser1 = new UserDataVOWS();
@@ -1178,7 +1178,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             }
         }
 
-        certificateStoreSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+        certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
         raAdminSession.saveGlobalConfiguration(intAdmin, gc);
 

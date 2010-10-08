@@ -137,7 +137,7 @@ public class ApplyBean implements java.io.Serializable {
             int certprofile = useradmindata.getCertificateProfileId();
 
             if (certprofile != SecConst.PROFILE_NO_PROFILE) {
-                CertificateProfile p = ejb.getCertStoreSession().getCertificateProfile(administrator, certprofile);
+                CertificateProfile p = ejb.getCertificateProfileSession().getCertificateProfile(administrator, certprofile);
                 returnval = p.getAvailableBitLengths();
             }
         }
@@ -182,7 +182,7 @@ public class ApplyBean implements java.io.Serializable {
             	ArrayList names = new ArrayList();
                 for (Iterator i = c.iterator(); i.hasNext(); ) {
                 	int id = Integer.valueOf((String)i.next());
-                    String name = ejb.getCertStoreSession().getCertificateProfileName(administrator, id);
+                    String name = ejb.getCertificateProfileSession().getCertificateProfileName(administrator, id);
                 	names.add(name);
                 }
                 returnval = (String[])names.toArray(new String[0]);            	
@@ -223,7 +223,7 @@ public class ApplyBean implements java.io.Serializable {
         }  
 
         if (useradmindata != null) {
-            returnval = ejb.getCertStoreSession().getCertificateProfileName(administrator, useradmindata.getCertificateProfileId());
+            returnval = ejb.getCertificateProfileSession().getCertificateProfileName(administrator, useradmindata.getCertificateProfileId());
         }
         this.username = username;
 

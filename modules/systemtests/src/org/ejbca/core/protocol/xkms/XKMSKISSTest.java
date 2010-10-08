@@ -33,6 +33,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -111,6 +112,7 @@ public class XKMSKISSTest extends TestCase {
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
     public void setUp() throws Exception {
         log.trace(">setUp()");
@@ -138,18 +140,18 @@ public class XKMSKISSTest extends TestCase {
         profile2.setKeyUsage(CertificateProfile.DATAENCIPHERMENT, true);
 
         try {
-            certificateStoreSession.addCertificateProfile(administrator, "XKMSTESTSIGN", profile1);
+            certificateProfileSession.addCertificateProfile(administrator, "XKMSTESTSIGN", profile1);
         } catch (CertificateProfileExistsException e) {
             log.info("Certificateprofile XKMSTESTSIGN already exists.");
         }
         try {
-            certificateStoreSession.addCertificateProfile(administrator, "XKMSTESTEXCHANDENC", profile2);
+            certificateProfileSession.addCertificateProfile(administrator, "XKMSTESTEXCHANDENC", profile2);
         } catch (CertificateProfileExistsException e) {
             log.info("Certificateprofile XKMSTESTSIGN already exists.");
         }
 
-        int profile1Id = certificateStoreSession.getCertificateProfileId(administrator, "XKMSTESTSIGN");
-        int profile2Id = certificateStoreSession.getCertificateProfileId(administrator, "XKMSTESTEXCHANDENC");
+        int profile1Id = certificateProfileSession.getCertificateProfileId(administrator, "XKMSTESTSIGN");
+        int profile2Id = certificateProfileSession.getCertificateProfileId(administrator, "XKMSTESTEXCHANDENC");
 
         EndEntityProfile endentityprofile = new EndEntityProfile(true);
         endentityprofile.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
@@ -1135,8 +1137,8 @@ public class XKMSKISSTest extends TestCase {
 
         raAdminSession.removeEndEntityProfile(administrator, "XKMSTESTPROFILE");
 
-        certificateStoreSession.removeCertificateProfile(administrator, "XKMSTESTSIGN");
-        certificateStoreSession.removeCertificateProfile(administrator, "XKMSTESTEXCHANDENC");
+        certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTSIGN");
+        certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTEXCHANDENC");
     }
 
     private String genUserName() throws Exception {

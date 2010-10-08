@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
@@ -179,6 +180,7 @@ public class SignSessionTest extends CaTestCase {
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
     private CAInfo inforsa;
 
@@ -282,11 +284,11 @@ public class SignSessionTest extends CaTestCase {
             WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, RemoteException, FinderException {
         log.trace(">test01CreateNewUser()");
 
-        certificateStoreSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
+        certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
         final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setAllowKeyUsageOverride(true);
-        certificateStoreSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
-        final int fooCertProfile = certificateStoreSession.getCertificateProfileId(admin, "FOOCERTPROFILE");
+        certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
+        final int fooCertProfile = certificateProfileSession.getCertificateProfileId(admin, "FOOCERTPROFILE");
 
         raAdminSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
         final EndEntityProfile profile = new EndEntityProfile(true);
@@ -697,7 +699,7 @@ public class SignSessionTest extends CaTestCase {
         log.trace(">test10TestQcCert()");
 
         // Create a good certificate profile (good enough), using QC statement
-        certificateStoreSession.removeCertificateProfile(admin, "TESTQC");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTQC");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setUseQCStatement(true);
         certprof.setQCStatementRAName("rfc822Name=qc@primekey.se");
@@ -706,8 +708,8 @@ public class SignSessionTest extends CaTestCase {
         certprof.setUseQCEtsiValueLimit(true);
         certprof.setQCEtsiValueLimit(50000);
         certprof.setQCEtsiValueLimitCurrency("SEK");
-        certificateStoreSession.addCertificateProfile(admin, "TESTQC", certprof);
-        int cprofile = certificateStoreSession.getCertificateProfileId(admin, "TESTQC");
+        certificateProfileSession.addCertificateProfile(admin, "TESTQC", certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTQC");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -743,7 +745,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Clean up
         raAdminSession.removeEndEntityProfile(admin, "TESTQC");
-        certificateStoreSession.removeCertificateProfile(admin, "TESTQC");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTQC");
 
         log.trace("<test10TestQcCert()");
     }
@@ -756,13 +758,13 @@ public class SignSessionTest extends CaTestCase {
         log.trace(">test11TestValidityOverrideAndCardNumber()");
 
         // Create a good certificate profile (good enough), using QC statement
-        certificateStoreSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setAllowValidityOverride(false);
         certprof.setValidity(298);
         certprof.setUseCardNumber(true);
-        certificateStoreSession.addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
-        int cprofile = certificateStoreSession.getCertificateProfileId(admin, "TESTVALOVERRIDE");
+        certificateProfileSession.addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTVALOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -814,11 +816,11 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("123456789", cardNumber);
 
         // Change so that we allow override of validity time
-        CertificateProfile prof = certificateStoreSession.getCertificateProfile(admin, cprofile);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
         prof.setAllowValidityOverride(true);
         prof.setValidity(3065);
         prof.setUseCardNumber(false);
-        certificateStoreSession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
         cal = Calendar.getInstance();
         Calendar notBefore = Calendar.getInstance();
         notBefore.add(Calendar.DAY_OF_MONTH, 2);
@@ -850,9 +852,9 @@ public class SignSessionTest extends CaTestCase {
         // current time
         // and that we can not get a certificate valid longer than the
         // certificate profile allows.
-        prof = certificateStoreSession.getCertificateProfile(admin, cprofile);
+        prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
         prof.setValidity(50);
-        certificateStoreSession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
         notBefore = Calendar.getInstance();
         notBefore.add(Calendar.DAY_OF_MONTH, -2);
         cal = Calendar.getInstance();
@@ -886,7 +888,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Clean up
         raAdminSession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
-        certificateStoreSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
 
         log.trace("<test11TestValidityOverride()");
     }
@@ -1441,10 +1443,10 @@ public class SignSessionTest extends CaTestCase {
         log.trace(">test22DnOrder()");
 
         // Create a good certificate profile (good enough), using QC statement
-        certificateStoreSession.removeCertificateProfile(admin, "TESTDNORDER");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTDNORDER");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
-        certificateStoreSession.addCertificateProfile(admin, "TESTDNORDER", certprof);
-        int cprofile = certificateStoreSession.getCertificateProfileId(admin, "TESTDNORDER");
+        certificateProfileSession.addCertificateProfile(admin, "TESTDNORDER", certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTDNORDER");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -1472,7 +1474,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Change to X509 DN order
         certprof.setUseLdapDnOrder(false);
-        certificateStoreSession.changeCertificateProfile(admin, "TESTDNORDER", certprof);
+        certificateProfileSession.changeCertificateProfile(admin, "TESTDNORDER", certprof);
         userAdminSession.changeUser(admin, user, false);
         cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
@@ -1482,7 +1484,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Clean up
         raAdminSession.removeEndEntityProfile(admin, "TESTDNORDER");
-        certificateStoreSession.removeCertificateProfile(admin, "TESTDNORDER");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTDNORDER");
 
         log.trace("<test22DnOrder()");
     }
@@ -1705,12 +1707,12 @@ public class SignSessionTest extends CaTestCase {
 
     public void test28TestDNOverride() throws Exception {
         // Create a good certificate profile (good enough), using QC statement
-        certificateStoreSession.removeCertificateProfile(admin, "TESTDNOVERRIDE");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         // Default profile does not allow DN override
         certprof.setValidity(298);
-        certificateStoreSession.addCertificateProfile(admin, "TESTDNOVERRIDE", certprof);
-        int cprofile = certificateStoreSession.getCertificateProfileId(admin, "TESTDNOVERRIDE");
+        certificateProfileSession.addCertificateProfile(admin, "TESTDNOVERRIDE", certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTDNOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -1754,9 +1756,9 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
 
         // Change so that we allow override of validity time
-        CertificateProfile prof = certificateStoreSession.getCertificateProfile(admin, cprofile);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
         prof.setAllowDNOverride(true);
-        certificateStoreSession.changeCertificateProfile(admin, "TESTDNOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(admin, "TESTDNOVERRIDE", prof);
 
         userAdminSession.changeUser(admin, user, false);
         resp = signSession.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
@@ -1769,12 +1771,12 @@ public class SignSessionTest extends CaTestCase {
     public void test29TestExtensionOverride() throws Exception {
         final String altnames = "dNSName=foo1.bar.com,dNSName=foo2.bar.com,dNSName=foo3.bar.com,dNSName=foo4.bar.com,dNSName=foo5.bar.com,dNSName=foo6.bar.com,dNSName=foo7.bar.com,dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com";
         // Create a good certificate profile (good enough), using QC statement
-        certificateStoreSession.removeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         // Default profile does not allow Extension override
         certprof.setValidity(298);
-        certificateStoreSession.addCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", certprof);
-        int cprofile = certificateStoreSession.getCertificateProfileId(admin, "TESTEXTENSIONOVERRIDE");
+        certificateProfileSession.addCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTEXTENSIONOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -1849,9 +1851,9 @@ public class SignSessionTest extends CaTestCase {
         assertNull(c);
 
         // Change so that we allow override of validity time
-        CertificateProfile prof = certificateStoreSession.getCertificateProfile(admin, cprofile);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
         prof.setAllowExtensionOverride(true);
-        certificateStoreSession.changeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", prof);
 
         userAdminSession.changeUser(admin, user, false);
         resp = signSession.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
@@ -1893,11 +1895,11 @@ public class SignSessionTest extends CaTestCase {
 
     public void test31TestProfileSignatureAlgorithm() throws Exception {
         // Create a good certificate profile (good enough), using QC statement
-        certificateStoreSession.removeCertificateProfile(admin, "TESTSIGALG");
+        certificateProfileSession.removeCertificateProfile(admin, "TESTSIGALG");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         // Default profile uses "inherit from CA"
-        certificateStoreSession.addCertificateProfile(admin, "TESTSIGALG", certprof);
-        int cprofile = certificateStoreSession.getCertificateProfileId(admin, "TESTSIGALG");
+        certificateProfileSession.addCertificateProfile(admin, "TESTSIGALG", certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTSIGALG");
 
         // Create a good end entity profile (good enough)
         raAdminSession.removeEndEntityProfile(admin, "TESTSIGALG");
@@ -1935,9 +1937,9 @@ public class SignSessionTest extends CaTestCase {
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
 
         // Change so that we can override signature algorithm
-        CertificateProfile prof = certificateStoreSession.getCertificateProfile(admin, cprofile);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
         prof.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        certificateStoreSession.changeCertificateProfile(admin, "TESTSIGALG", prof);
+        certificateProfileSession.changeCertificateProfile(admin, "TESTSIGALG", prof);
 
         userAdminSession.changeUser(admin, user, false);
         resp = signSession.createCertificate(admin, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
@@ -2006,11 +2008,11 @@ public class SignSessionTest extends CaTestCase {
         } catch (Exception e) { /* ignore */
         }
         try {
-            certificateStoreSession.removeCertificateProfile(admin, "TESTDNOVERRIDE ");
+            certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE ");
         } catch (Exception e) { /* ignore */
         }
         raAdminSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
-        certificateStoreSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
+        certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
         // delete users that we know...
         try {
             userAdminSession.deleteUser(admin, "foo");

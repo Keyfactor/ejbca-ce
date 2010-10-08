@@ -19,6 +19,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -162,15 +163,15 @@ public class MSCertTools {
 		return false;
 	}
 
-	public static int getOrCreateCertificateProfile(Admin admin, int templateIndex, CertificateStoreSession certificateStoreSession) {
+	public static int getOrCreateCertificateProfile(Admin admin, int templateIndex, CertificateProfileSession certificateProfileSession) {
 		String certProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
 		// Create certificate profile if neccesary
 		boolean newCertificateProfile = false;
-		CertificateProfile certProfile = certificateStoreSession.getCertificateProfile(admin, certProfileName);
+		CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(admin, certProfileName);
 		if (certProfile == null) {
 			certProfile = new CertificateProfile();
 			try {
-				certificateStoreSession.addCertificateProfile(admin, certProfileName, certProfile);
+			    certificateProfileSession.addCertificateProfile(admin, certProfileName, certProfile);
 				newCertificateProfile = true;
 			} catch (CertificateProfileExistsException e) {
 				throw new EJBException(e);	// We just checked for this so this cannot happen
@@ -202,8 +203,8 @@ public class MSCertTools {
 				certProfile.setMicrosoftTemplate(MS_TEMPLATE_VALUE[templateIndex]);
 			}
 		}
-		certificateStoreSession.changeCertificateProfile(admin, certProfileName, certProfile);
-		return certificateStoreSession.getCertificateProfileId(admin, certProfileName);
+		certificateProfileSession.changeCertificateProfile(admin, certProfileName, certProfile);
+		return certificateProfileSession.getCertificateProfileId(admin, certProfileName);
 	}
 
 	public static int getOrCreateEndEndtityProfile(Admin admin, int templateIndex, int certProfileId, int caid, String usernameShort, String fetchedSubjectDN, RaAdminSession raAdminSession) {

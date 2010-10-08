@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.log.Admin;
@@ -29,7 +30,7 @@ public class RemoveCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     
     /**
      * Creates a new TestCAs object.
@@ -178,7 +179,7 @@ public class RemoveCATest extends CaTestCase {
         assertTrue("Removing CVC CA failed", ret);
 
         try {
-        	certificateStoreSession.removeCertificateProfile(admin, "TESTCVCDV");
+        	certificateProfileSession.removeCertificateProfile(admin, "TESTCVCDV");
         } catch (Exception e) {
         	log.info("Remove profile failed: ", e);
         }

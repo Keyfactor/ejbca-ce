@@ -22,9 +22,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -44,7 +44,7 @@ import org.ejbca.util.FileTools;
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
     private PublisherSessionRemote publisherSession = ejb.getPublisherSession();
     private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     
@@ -116,11 +116,11 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         profileid = newprofileid;
                                     }
                                 } else {
-                                    if (certificateStoreSession.getCertificateProfileId(getAdmin(),profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (certificateProfileSession.getCertificateProfileId(getAdmin(),profilename) != SecConst.PROFILE_NO_PROFILE) {
                                     	getLogger().error("Error: Certificate profile '"+profilename+"' already exist in database.");
                                         error = true;
-                                    } else if (certificateStoreSession.getCertificateProfile(getAdmin(),profileid) != null) {
-                                    	int newprofileid  = certificateStoreSession.findFreeCertificateProfileId();
+                                    } else if (certificateProfileSession.getCertificateProfile(getAdmin(),profileid) != null) {
+                                    	int newprofileid  = certificateProfileSession.findFreeCertificateProfileId();
                                     	getLogger().warn("Certificate profile id '"+profileid+"' already exist in database. Using " + newprofileid + " instead.");
                                         certificateProfileIdMapping.put(profileid, newprofileid);
                                         profileid = newprofileid;
@@ -150,7 +150,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         			defaultCertProfile = ""+replacementCertProfileId;
                                         		}
                                         	} else {
-                                        		if (certificateStoreSession.getCertificateProfile(getAdmin(), currentCertProfileId) != null ||
+                                        		if (certificateProfileSession.getCertificateProfile(getAdmin(), currentCertProfileId) != null ||
                                         				SecConst.isFixedCertificateProfile(currentCertProfileId)) {
                                             		availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";" ) + currentCertProfile;
                                        			} else {
@@ -261,8 +261,8 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         cprofile.setPublisherList(publishers);
                                         // Add profile
                                         try{
-                                            certificateStoreSession.addCertificateProfile(getAdmin(),profileid,profilename,cprofile);
-                                            certificateProfileIdMapping.put(profileid, certificateStoreSession.getCertificateProfileId(getAdmin(),profilename));
+                                            certificateProfileSession.addCertificateProfile(getAdmin(),profileid,profilename,cprofile);
+                                            certificateProfileIdMapping.put(profileid, certificateProfileSession.getCertificateProfileId(getAdmin(),profilename));
                                             getLogger().info("Added certificate profile '"+profilename+"' to database.");
                                         }catch(CertificateProfileExistsException cpee){
                                         	getLogger().error("Error adding certificate profile '"+profilename+"' to database.");

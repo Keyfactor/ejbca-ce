@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.util;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
@@ -45,6 +47,7 @@ public class EjbRemoteHelper {
     private AuthenticationSessionRemote authenticationSession = null;
     private AuthorizationSessionRemote authorizationSession = null;
     private CAAdminSessionRemote caAdminSession = null;
+    private CertificateProfileSessionRemote certificateProfileSession = null;
     private CertificateRequestSessionRemote certificateRequestSession = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private ConfigurationSessionRemote configurationSession = null;
@@ -77,6 +80,13 @@ public class EjbRemoteHelper {
         return caAdminSession;
     }
 
+    public CertificateProfileSessionRemote getCertificateProfileSession() {
+        if(certificateProfileSession == null) {
+            certificateProfileSession = JndiHelper.getRemoteSession(CertificateProfileSessionRemote.class);
+        }
+        return certificateProfileSession;
+    }
+    
     public RaAdminSessionRemote getRAAdminSession() {
         if (raAdminSession == null) {
             raAdminSession = JndiHelper.getRemoteSession(RaAdminSessionRemote.class);

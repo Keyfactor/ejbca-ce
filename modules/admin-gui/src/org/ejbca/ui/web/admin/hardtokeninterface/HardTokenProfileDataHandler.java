@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
@@ -41,18 +42,18 @@ public class HardTokenProfileDataHandler implements Serializable {
 
     private HardTokenSession hardtokensession; 
     private AuthorizationSession authorizationsession;
-    private CertificateStoreSession certificatesession;
+    private CertificateProfileSession certificateProfileSession;
     private UserAdminSession useradminsession;
     private CAAdminSession caadminsession; 
     private Admin administrator;
     private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
-    public HardTokenProfileDataHandler(Admin administrator, HardTokenSession hardtokensession, CertificateStoreSession certificatesession, AuthorizationSession authorizationsession, 
+    public HardTokenProfileDataHandler(Admin administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AuthorizationSession authorizationsession, 
                                        UserAdminSession useradminsession, CAAdminSession caadminsession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
-       this.certificatesession = certificatesession;
+       this.certificateProfileSession = certificatesession;
        this.useradminsession = useradminsession;
        this.caadminsession = caadminsession;
        this.administrator = administrator;          
@@ -196,7 +197,7 @@ public class HardTokenProfileDataHandler implements Serializable {
     		  authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
     	  }
     	  HashSet authorizedcaids = new HashSet(caadminsession.getAvailableCAs(administrator));
-    	  HashSet authorizedcertprofiles = new HashSet(certificatesession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
+    	  HashSet authorizedcertprofiles = new HashSet(certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
     	  if(profile instanceof EIDProfile){		  	
     		  if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds()) &&
     				  authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())){

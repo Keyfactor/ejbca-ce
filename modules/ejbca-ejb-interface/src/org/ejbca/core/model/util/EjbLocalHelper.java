@@ -14,6 +14,8 @@ package org.ejbca.core.model.util;
 
 import javax.ejb.CreateException;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSession;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
@@ -65,6 +67,8 @@ public class EjbLocalHelper {
 	// TODO: Find out how to do appserver agnostic local EJB lookup in JEE5
 	// For now we will return the remote stub instead, just to get things working..
 
+    private CertificateProfileSession certificateProfileSession;
+    
     private SignSession signsession = null;
     public SignSession getSignSession() throws CreateException {
     	if(signsession == null){
@@ -103,6 +107,13 @@ public class EjbLocalHelper {
     		keyrecoverysession = JndiHelper.getRemoteSession(KeyRecoverySessionRemote.class);
     	}
     	return keyrecoverysession;
+    }
+    
+    public CertificateProfileSession getCertificateProfileSession() {
+        if(certificateProfileSession == null) {
+            certificateProfileSession = JndiHelper.getRemoteSession(CertificateProfileSessionRemote.class);
+        }
+        return certificateProfileSession;
     }
 
 	private CertificateStoreSession certificatestoresession = null;

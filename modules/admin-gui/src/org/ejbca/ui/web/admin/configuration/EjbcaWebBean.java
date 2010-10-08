@@ -32,6 +32,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -95,6 +96,7 @@ public class EjbcaWebBean implements Serializable {
     private HardTokenSession hardTokenSession = ejb.getHardTokenSession();
     private PublisherSession publisherSession = ejb.getPublisherSession();
     private UserDataSourceSession userDataSourceSession = ejb.getUserDataSourceSession();
+    private CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
 
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;
@@ -133,7 +135,7 @@ public class EjbcaWebBean implements Serializable {
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
     		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, authorizationSession, certificateStoreSession, hardTokenSession,
-    				publisherSession, userDataSourceSession, globalconfiguration);
+    				publisherSession, userDataSourceSession, certificateProfileSession, globalconfiguration);
     	}
     	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationSession, caAdminSession);
     	

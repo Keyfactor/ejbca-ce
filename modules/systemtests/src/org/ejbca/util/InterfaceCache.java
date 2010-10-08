@@ -13,6 +13,7 @@
 
 package org.ejbca.util;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
@@ -55,6 +56,10 @@ public class InterfaceCache {
 		return getEjb().getCAAdminSession();
 	}
 
+	public static CertificateProfileSessionRemote getCertificateProfileSession() {
+	    return getEjb().getCertificateProfileSession();
+	}
+	
 	public static RaAdminSessionRemote getRAAdminSession() {
 		return getEjb().getRAAdminSession();
 	}

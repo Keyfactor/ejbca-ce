@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -57,8 +58,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private List<CAWrapper> caInfoList;
 	private Admin administrator;
 	private CertificateStoreSession certificatesession;
+	private CertificateProfileSession certificateProfileSession;
 	private CAAdminSession caadminsession;
-    private CreateCRLSession createCrlSession;
+        private CreateCRLSession createCrlSession;
 	private AuthorizationSession authorizationsession;
 	private UserAdminSession adminsession;
 	private RaAdminSession raadminsession;
@@ -85,11 +87,12 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			createCrlSession = ejb.getCreateCrlSession();
 			authorizationsession = ejb.getAuthorizationSession();
 			adminsession = ejb.getUserAdminSession();
-			raadminsession = ejb.getRAAdminSession();               
+			raadminsession = ejb.getRAAdminSession();             
+			certificateProfileSession = ejb.getCertificateProfileSession();
 			this.informationmemory = webBean.getInformationMemory();
 
-			new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);
-			cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, createCrlSession, webBean);
+			new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, certificateProfileSession, informationmemory);
+			cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, createCrlSession, webBean);
 			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();
 		} catch (Exception e){

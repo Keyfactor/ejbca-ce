@@ -26,8 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -93,7 +94,7 @@ public class DemoCertReqServlet extends HttpServlet {
 	@EJB
 	private SignSessionLocal signSession;
 	@EJB
-	private CertificateStoreSessionRemote storeSession;
+	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
 	private UserAdminSessionRemote userAdminSession;
 	@EJB
@@ -219,7 +220,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
     int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
     if ((tmp=request.getParameter("certificateprofile")) != null) {
-        cProfileId = storeSession.getCertificateProfileId(admin, request.getParameter("certificateprofile"));
+        cProfileId = certificateProfileSession.getCertificateProfileId(admin, request.getParameter("certificateprofile"));
         if (cProfileId == 0) {
             throw new ServletException("No such certificate profile: " + tmp);
         }

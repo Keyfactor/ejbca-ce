@@ -20,8 +20,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -54,7 +54,7 @@ import org.ejbca.util.keystore.KeyTools;
 public class CaInitCommand extends BaseCaAdminCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "init"; }
@@ -162,13 +162,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     profileId = SecConst.CERTPROFILE_FIXED_SUBCA;
             	}
             } else {                
-                profileId = certificateStoreSession.getCertificateProfileId(getAdmin(), profileName);
+                profileId = certificateProfileSession.getCertificateProfileId(getAdmin(), profileName);
             	if (profileId == 0) {
             		getLogger().info("Error: Certificate profile with name '"+profileName+"' does not exist.");
             		return;
             	}
             	
-                CertificateProfile certificateProfile  = certificateStoreSession.getCertificateProfile(getAdmin(), profileName);
+                CertificateProfile certificateProfile  = certificateProfileSession.getCertificateProfile(getAdmin(), profileName);
                 if(certificateProfile.getType() != CertificateProfile.TYPE_ROOTCA && certificateProfile.getType() != CertificateProfile.TYPE_SUBCA) {
                     getLogger().info("Error: Certificate profile " + profileName + " is not of type ROOTCA or SUBCA.");
                     return;

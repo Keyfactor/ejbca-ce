@@ -86,7 +86,9 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		}
 		// We must use an administrator with rights to create users
 		final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
-		final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, getEjb().getCAAdminSession(), getEjb().getCertStoreSession(), getEjb().getCertficateRequestSession(), getEjb().getRAAdminSession(), getEjb().getSignSession(), getEjb().getUserAdminSession());
+        final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, getEjb().getCAAdminSession(), getEjb()
+                .getCertificateProfileSession(), getEjb().getCertStoreSession(), getEjb().getCertficateRequestSession(),
+                getEjb().getRAAdminSession(), getEjb().getSignSession(), getEjb().getUserAdminSession());
 		final IResponseMessage resp = dispatcher.dispatch(cmpTcpMessage.message);
 		log.debug("Sending back CMP response to client.");
 		// Send back reply
