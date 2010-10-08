@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -37,6 +38,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "exportprofiles"; }
@@ -54,7 +56,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	getLogger().error("Error: '"+outpath+"' is not a directory.");
                 return;
             }
-            Collection certprofids = certificateStoreSession.getAuthorizedCertificateProfileIds(getAdmin(),0, caAdminSession.getAvailableCAs(getAdmin()));                                               
+            Collection certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),0, caAdminSession.getAvailableCAs(getAdmin()));                                               
 			Collection endentityprofids = raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin());
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");
@@ -66,8 +68,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 } else if (SecConst.isFixedCertificateProfile(profileid)) {
                     //getLogger().debug("Skipping export fixed certificate profile with id '"+profileid+"'.");
                 } else {
-					String profilename = certificateStoreSession.getCertificateProfileName(getAdmin(), profileid);									
-                    CertificateProfile profile = certificateStoreSession.getCertificateProfile(getAdmin(),profileid);
+					String profilename = certificateProfileSession.getCertificateProfileName(getAdmin(), profileid);									
+                    CertificateProfile profile = certificateProfileSession.getCertificateProfile(getAdmin(),profileid);
                     if (profile == null) {
                     	getLogger().error("Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
                     } else {

@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.util.HashMap;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.log.Admin;
 
@@ -27,12 +28,12 @@ import org.ejbca.core.model.log.Admin;
 public class CertificateProfileNameProxy implements java.io.Serializable {
     
     private HashMap certificateprofilenamestore;
-    private CertificateStoreSession certificatestoresession;
+    private CertificateProfileSession certificateProfileSession;
     private Admin admin;
 
     /** Creates a new instance of ProfileNameProxy */
-    public CertificateProfileNameProxy(Admin administrator, CertificateStoreSession certificatestoresession){
-      this.certificatestoresession = certificatestoresession;
+    public CertificateProfileNameProxy(Admin administrator, CertificateProfileSession certificateProfileSession){
+      this.certificateProfileSession = certificateProfileSession;
       certificateprofilenamestore = new HashMap(); 
       this.admin = administrator;
     }
@@ -50,7 +51,7 @@ public class CertificateProfileNameProxy implements java.io.Serializable {
       
       if(returnval==null){
         // Retreive profilename 
-        returnval = certificatestoresession.getCertificateProfileName(admin, certificateprofileid);
+        returnval = certificateProfileSession.getCertificateProfileName(admin, certificateprofileid);
         if(returnval != null) {
           certificateprofilenamestore.put(new Integer(certificateprofileid),returnval);
         }

@@ -63,6 +63,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -203,6 +204,8 @@ public class EjbcaWS implements IEjbcaWS {
 	@EJB
     private CertificateStoreSessionLocal certificateStoreSession;
 	@EJB
+	private CertificateProfileSessionLocal certificateProfileSession;
+	@EJB
     private CreateCRLSessionLocal crlSession;
 	@EJB
     private HardTokenSessionLocal hardTokenSession;
@@ -248,7 +251,7 @@ public class EjbcaWS implements IEjbcaWS {
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
-        	EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+        	EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		  Admin admin = ejbhelper.getAdmin();
           logAdminName(admin,logger);
 		  UserDataVO userdatavo = ejbhelper.convertUserDataVOWS(admin, userdata);
@@ -299,7 +302,7 @@ public class EjbcaWS implements IEjbcaWS {
         log.debug("Find user with match '"+usermatch.getMatchvalue()+"'.");
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try{
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		  Admin admin = ejbhelper.getAdmin();
           logAdminName(admin,logger);
           Query query = ejbhelper.convertUserMatch(admin, usermatch);		  		  
@@ -342,7 +345,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		List<Certificate> retval = new ArrayList<Certificate>();
 		try{
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 			Admin admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
 			if (userAdminSession.findUser(admin,username) != null) {  // checks authorization on CA and profiles and view_end_entity
@@ -379,7 +382,7 @@ public class EjbcaWS implements IEjbcaWS {
 			log.trace(">getLastCertChain: "+username);
 		}
 		final List<Certificate> retval = new ArrayList<Certificate>();
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
@@ -601,7 +604,7 @@ public class EjbcaWS implements IEjbcaWS {
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
 			EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException, CertificateExpiredException {
 		log.trace(">cvcRequest");
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
 
 		// If password is empty we can generate a big random one to use instead
@@ -847,7 +850,7 @@ public class EjbcaWS implements IEjbcaWS {
 			log.trace(">caRenewCertRequest");			
 		}
 		log.debug("Create certificate request for CA "+caname+", regeneratekeys="+regenerateKeys+", usenextkey="+usenextkey+", activatekey="+activatekey+", keystorepwd: "+(keystorepwd==null?"null":"hidden"));
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
 		byte[] ret = null;
 		try {
@@ -871,7 +874,7 @@ public class EjbcaWS implements IEjbcaWS {
 	public void caCertResponse(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException {
 		log.trace(">caCertResponse");
 		log.info("Import certificate response for CA "+caname+", keystorepwd: "+(keystorepwd==null?"null":"hidden"));
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
 		try {
 			ejbhelper.caCertResponse(ejbhelper, admin, caname, cert, cachain, keystorepwd);			
@@ -919,7 +922,7 @@ public class EjbcaWS implements IEjbcaWS {
 		byte[] retval = null;
 
 		try{
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 			Admin admin = ejbhelper.getAdmin();			  
             logAdminName(admin,logger);
 
@@ -1083,7 +1086,7 @@ public class EjbcaWS implements IEjbcaWS {
 		
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
-			  EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			  EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 			  Admin admin = ejbhelper.getAdmin();
               logAdminName(admin,logger);
 
@@ -1171,7 +1174,7 @@ public class EjbcaWS implements IEjbcaWS {
         log.debug("Revoke cert with serial number '"+certificateSN+"' from issuer '"+issuerDN+"' with reason '"+reason+"'.");
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 			Admin admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
 
@@ -1212,7 +1215,7 @@ public class EjbcaWS implements IEjbcaWS {
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 			Admin admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
 
@@ -1259,7 +1262,7 @@ public class EjbcaWS implements IEjbcaWS {
 		log.trace(">keyRecoverNewest");
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 			Admin admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
 
@@ -1303,7 +1306,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public void revokeToken(String hardTokenSN, int reason)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
             revokeToken(ejbhelper.getAdmin(), hardTokenSN, reason, logger);
@@ -1395,7 +1398,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 
 		try{
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		  Admin admin = ejbhelper.getAdmin();		  
           logAdminName(admin,logger);
 
@@ -1434,7 +1437,7 @@ public class EjbcaWS implements IEjbcaWS {
 	public boolean isAuthorized(String resource) throws EjbcaException{
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try{
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
             final Admin admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
 			return authorizationSession.isAuthorized(admin, resource);	
@@ -1461,7 +1464,7 @@ public class EjbcaWS implements IEjbcaWS {
 	public List<UserDataSourceVOWS> fetchUserData(List<String> userDataSourceNames, String searchString) throws UserDataSourceException, EjbcaException, AuthorizationDeniedException{
 	    
 		final Admin admin;
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 
 		if(WebServiceConfiguration.getNoAuthorizationOnFetchUserData()){
 			final Admin tmp = ejbhelper.getAdmin(true);
@@ -1519,7 +1522,7 @@ public class EjbcaWS implements IEjbcaWS {
 		final ArrayList<TokenCertificateResponseWS> retval = new ArrayList<TokenCertificateResponseWS>();
 
 		final Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-		final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin(true);
 		int endEntityProfileId = 0;
 		boolean hardTokenExists = false;
@@ -1691,7 +1694,7 @@ public class EjbcaWS implements IEjbcaWS {
 			while(iter.hasNext()){
 				TokenCertificateRequestWS next = iter.next();
 
-				int certificateProfileId = certificateStoreSession.getCertificateProfileId(admin, next.getCertificateProfileName());
+				int certificateProfileId = certificateProfileSession.getCertificateProfileId(admin, next.getCertificateProfileName());
 				if(certificateProfileId == 0){
                     EjbcaWSHelper.getEjbcaException("Error the given Certificate Profile : " + next.getCertificateProfileName() + " couldn't be found.",
                                       logger, ErrorCode.CERT_PROFILE_NOT_EXISTS, null);
@@ -1852,7 +1855,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#existsHardToken(java.lang.String)
 	 */
 	public boolean existsHardToken(String hardTokenSN) throws EjbcaException{
-		final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
@@ -1880,7 +1883,7 @@ public class EjbcaWS implements IEjbcaWS {
 	public HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
 		throws CADoesntExistsException, AuthorizationDeniedException, HardTokenDoesntExistsException, NotFoundException, ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException, EjbcaException {
 		HardTokenDataWS retval = null;
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin(true);
 		ApprovalRequest ar = null;
 		boolean isApprovedStep0 = false;
@@ -2000,7 +2003,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates)
 		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         final Admin admin = ejbhelper.getAdmin();
         logAdminName(admin,logger);
@@ -2027,7 +2030,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private List<HardTokenDataWS> getHardTokenDatas(Admin admin, String username, boolean viewPUKData, boolean onlyValidCertificates, IPatternLogger logger)
 		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
 		List<HardTokenDataWS> retval = new  ArrayList<HardTokenDataWS>();
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 
 		try {
 			ejbhelper.isAuthorizedToHardTokenData(admin, username, viewPUKData);
@@ -2064,7 +2067,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#republishCertificate(java.lang.String, java.lang.String)
 	 */
 	public void republishCertificate(String serialNumberInHex,String issuerDN) throws CADoesntExistsException, AuthorizationDeniedException, PublisherException, EjbcaException{
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -2080,7 +2083,7 @@ public class EjbcaWS implements IEjbcaWS {
 			ejbhelper.isAuthorizedToRepublish(admin, certreqhist.getUsername(),bcIssuerDN.hashCode());
 
 			if(certreqhist != null){
-				CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin,certreqhist.getUserDataVO().getCertificateProfileId());
+				CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin,certreqhist.getUserDataVO().getCertificateProfileId());
 				java.security.cert.Certificate cert = certificateStoreSession.findCertificateByFingerprint(admin, certreqhist.getFingerprint());
 				if(certprofile != null){
 					CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(admin, certreqhist.getFingerprint());
@@ -2118,7 +2121,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg)
 		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -2174,7 +2177,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public boolean deleteUserDataFromSource(List<String> userDataSourceNames, String searchString, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException, EjbcaException {
 		boolean ret = false;
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
@@ -2211,7 +2214,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#isApproved(int)
 	 */
 	public int isApproved(int approvalId) throws ApprovalException, EjbcaException, ApprovalRequestExpiredException{
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
@@ -2239,7 +2242,7 @@ public class EjbcaWS implements IEjbcaWS {
 	public Certificate getCertificate(String certSNinHex, String issuerDN) throws CADoesntExistsException,
 		AuthorizationDeniedException, EjbcaException {
 		Certificate retval = null;
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin(true);
 		String bcString = CertTools.stringToBCDNString(issuerDN);
 		int caid = bcString.hashCode();
@@ -2275,7 +2278,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public NameAndId[] getAvailableCAs() throws EjbcaException, AuthorizationDeniedException {
 		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin(true);
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
@@ -2307,7 +2310,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public NameAndId[] getAuthorizedEndEntityProfiles()
 			throws AuthorizationDeniedException, EjbcaException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
 		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -2337,7 +2340,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAvailableCertificateProfiles()
 	 */
 	public NameAndId[] getAvailableCertificateProfiles(int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
 		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -2349,7 +2352,7 @@ public class EjbcaWS implements IEjbcaWS {
 				String[] availablecertprofilesId = value.split(EndEntityProfile.SPLITCHAR);				
 				for (String id : availablecertprofilesId) {
 					int i = Integer.parseInt(id);
-					ret.put(certificateStoreSession.getCertificateProfileName(admin,i), i);
+					ret.put(certificateProfileSession.getCertificateProfileName(admin,i), i);
 				}
 			}
 		} catch (EJBException e) {
@@ -2370,7 +2373,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAvailableCAsInProfile()
 	 */
 	public NameAndId[] getAvailableCAsInProfile(int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin();
 		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
@@ -2406,7 +2409,7 @@ public class EjbcaWS implements IEjbcaWS {
 	public void createCRL(String caname) throws CADoesntExistsException, ApprovalException, EjbcaException, ApprovalRequestExpiredException{
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
-			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 			Admin admin = ejbhelper.getAdmin(true);
             logAdminName(admin,logger);
 			CAInfo info = caAdminSession.getCAInfoOrThrowException(admin, caname);
@@ -2439,7 +2442,7 @@ public class EjbcaWS implements IEjbcaWS {
     public int getPublisherQueueLength(String name) throws EjbcaException{
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
-            final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+            final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
             final Admin admin = ejbhelper.getAdmin(true);
             logAdminName(admin,logger);
             final int id = publisherSession.getPublisherId(admin, name);
@@ -2482,7 +2485,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    try {
 	        log.debug("CertReq for user '" + userdata.getUsername() + "'.");
 	        setUserDataVOWS (userdata);
-	    	EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+	    	EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 	    	Admin admin = ejbcawshelper.getAdmin(false);
 	        UserDataVO userdatavo = ejbcawshelper.convertUserDataVOWS(admin, userdata);
 	        int responseTypeInt = SecConst.CERT_RES_TYPE_CERTIFICATE;
@@ -2557,7 +2560,7 @@ public class EjbcaWS implements IEjbcaWS {
 	        log.debug("Soft token req for user '" + userdata.getUsername() + "'.");
 	        userdata.setStatus(UserDataVOWS.STATUS_NEW);
 	        userdata.setClearPwd(true);
-	    	EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
+	    	EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, hardTokenSession, raAdminSession, userAdminSession);
 	    	Admin admin = ejbcawshelper.getAdmin(false);
 	        UserDataVO userdatavo = ejbcawshelper.convertUserDataVOWS(admin, userdata);
 	        boolean createJKS = userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);

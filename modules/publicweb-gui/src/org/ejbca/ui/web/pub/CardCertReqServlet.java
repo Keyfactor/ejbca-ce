@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
@@ -102,6 +103,8 @@ public class CardCertReqServlet extends HttpServlet {
 	private CAAdminSessionLocal caAdminSession;
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
+	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
 	private HardTokenSessionLocal hardTokenSession;
 	@EJB
@@ -351,7 +354,7 @@ public class CardCertReqServlet extends HttpServlet {
             certificatestoresession = c;
         }
         protected int getFromName(String name) throws RemoteException {
-            return certificatestoresession.getCertificateProfileId(administrator, name);
+            return certificateProfileSession.getCertificateProfileId(administrator, name);
         }
         protected int getFromOldData() {
             return data.getCertificateProfileId();

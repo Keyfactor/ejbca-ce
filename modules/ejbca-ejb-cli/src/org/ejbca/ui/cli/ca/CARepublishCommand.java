@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
@@ -44,6 +45,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     private PublisherSessionRemote publisherSession = ejb.getPublisherSession();
     private CreateCRLSessionRemote createCrlSession = ejb.getCrlSession();
     private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
+    private CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
     
     public String getMainCommand() {
         return MAINCOMMAND;
@@ -119,7 +121,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
 
                 if (data.getCertificateProfileId() > 0) { // only if we find a
                     // certificate profile
-                    CertificateProfile certProfile = certificateStoreSession.getCertificateProfile(getAdmin(), data.getCertificateProfileId());
+                    CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(getAdmin(), data.getCertificateProfileId());
                     if (certProfile == null) {
                         getLogger().error("Can not get certificate profile with id: " + data.getCertificateProfileId());
                         continue;

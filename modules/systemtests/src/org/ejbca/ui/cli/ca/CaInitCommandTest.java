@@ -4,8 +4,8 @@ import java.rmi.RemoteException;
 
 import junit.framework.TestCase;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -34,7 +34,7 @@ public class CaInitCommandTest extends TestCase {
     private Admin admin;
     
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSessionRemote = InterfaceCache.getCertificateProfileSession();
 
     /**
      * Test trivial happy path for execute, i.e, create an ordinary CA.
@@ -61,17 +61,17 @@ public class CaInitCommandTest extends TestCase {
     }
 
     public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException, RemoteException, ErrorAdminCommandException {
-        if (certificateStoreSession.getCertificateProfile(admin, CERTIFICATE_PROFILE_NAME) == null) {
+        if (certificateProfileSessionRemote.getCertificateProfile(admin, CERTIFICATE_PROFILE_NAME) == null) {
             CertificateProfile certificateProfile = new CertificateProfile();
-            certificateStoreSession.addCertificateProfile(admin, CERTIFICATE_PROFILE_NAME, certificateProfile);
+            certificateProfileSessionRemote.addCertificateProfile(admin, CERTIFICATE_PROFILE_NAME, certificateProfile);
         }
         try {
-            CertificateProfile apa = certificateStoreSession.getCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
+            CertificateProfile apa = certificateProfileSessionRemote.getCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
             assertNotNull(apa);
             caInitCommand.execute(CUSTOM_PROFILE_ARGS);
             assertNull("CA was created using created using non ROOTCA or SUBCA certificate profile.", caAdminSession.getCAInfo(admin, CA_NAME));
         } finally {
-            certificateStoreSession.removeCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
+            certificateProfileSessionRemote.removeCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
         }
     }
 

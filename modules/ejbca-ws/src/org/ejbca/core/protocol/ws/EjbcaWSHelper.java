@@ -42,6 +42,7 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -99,15 +100,18 @@ public class EjbcaWSHelper {
     private AuthorizationSession authorizationSession;
     private CAAdminSession caAdminSession;
     private CertificateStoreSession certificateStoreSession;
+    private CertificateProfileSession certificateProfileSession;
     private HardTokenSession hardTokenSession;
     private RaAdminSession raAdminSession;
     private UserAdminSession userAdminSession;
 
-    protected EjbcaWSHelper(WebServiceContext wsContext, AuthorizationSession authorizationSession, CAAdminSession caAdminSession, CertificateStoreSession certificateStoreSession, HardTokenSession hardTokenSession,
-    		RaAdminSession raAdminSession, UserAdminSession userAdminSession) {
+    protected EjbcaWSHelper(WebServiceContext wsContext, AuthorizationSession authorizationSession, CAAdminSession caAdminSession,
+            CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, HardTokenSession hardTokenSession,
+            RaAdminSession raAdminSession, UserAdminSession userAdminSession) {
     	this.wsContext = wsContext;
 		this.authorizationSession = authorizationSession;
 		this.caAdminSession = caAdminSession;
+		this.certificateProfileSession = certificateProfileSession;
 		this.certificateStoreSession = certificateStoreSession;
 		this.hardTokenSession = hardTokenSession;
 		this.raAdminSession = raAdminSession;
@@ -273,7 +277,7 @@ public class EjbcaWSHelper {
                 "Error End Entity profile " + userdata.getEndEntityProfileName() + " doesn't exists.");
 		}
 
-		final int certificateprofileid = certificateStoreSession.getCertificateProfileId(admin,userdata.getCertificateProfileName());
+		final int certificateprofileid = certificateProfileSession.getCertificateProfileId(admin,userdata.getCertificateProfileName());
 		if(certificateprofileid == 0){
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
                 "Error Certificate profile " + userdata.getCertificateProfileName() + " doesn't exists.");
@@ -376,7 +380,7 @@ public class EjbcaWSHelper {
 		}
         dataWS.setEndEntityProfileName(endentityprofilename);
 
-		String certificateprofilename = certificateStoreSession.getCertificateProfileName(admin,userdata.getCertificateProfileId());
+		String certificateprofilename = certificateProfileSession.getCertificateProfileName(admin,userdata.getCertificateProfileId());
 		if(certificateprofilename == null){
 			String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " doesn't exists. User: "+username;
 			log.error(message);
@@ -524,7 +528,7 @@ public class EjbcaWSHelper {
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),endentityprofilename);
 			  break;
 		  case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
-			  String certificateprofilename = Integer.toString(certificateStoreSession.getCertificateProfileId(admin,usermatch.getMatchvalue()));
+			  String certificateprofilename = Integer.toString(certificateProfileSession.getCertificateProfileId(admin,usermatch.getMatchvalue()));
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),certificateprofilename);
 			  break;			  
 		  case UserMatch.MATCH_WITH_CA:

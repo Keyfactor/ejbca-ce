@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -74,7 +75,8 @@ public class CADataHandler implements Serializable {
     private InformationMemory info;
     private UserAdminSession adminsession;
     private RaAdminSession raadminsession; 
-    private CertificateStoreSession certificatesession;                          
+    private CertificateStoreSession certificatesession;  
+    private CertificateProfileSession certificateProfileSession;
     private EjbcaWebBean ejbcawebbean;
     private CreateCRLSession crlSession;
     
@@ -84,6 +86,7 @@ public class CADataHandler implements Serializable {
                          UserAdminSession adminsession, 
                          RaAdminSession raadminsession, 
                          CertificateStoreSession certificatesession,
+                         CertificateProfileSession certificateProfileSession,
                          AuthorizationSession authorizationsession,
                          CreateCRLSession crlSession,
                          EjbcaWebBean ejbcawebbean) {
@@ -92,6 +95,7 @@ public class CADataHandler implements Serializable {
        this.authorizationsession = authorizationsession;
        this.adminsession = adminsession;
        this.certificatesession = certificatesession;
+       this.certificateProfileSession = certificateProfileSession;
        this.raadminsession = raadminsession;
        this.administrator = administrator;          
        this.crlSession = crlSession;
@@ -149,7 +153,7 @@ public class CADataHandler implements Serializable {
   public boolean removeCA(int caid) throws AuthorizationDeniedException{
       
     boolean caidexits = this.adminsession.checkForCAId(administrator, caid) ||
-                        this.certificatesession.existsCAInCertificateProfiles(administrator, caid) ||
+                        this.certificateProfileSession.existsCAInCertificateProfiles(administrator, caid) ||
                         this.raadminsession.existsCAInEndEntityProfiles(administrator, caid) ||
                         this.authorizationsession.existsCAInRules(administrator, caid);
      
@@ -317,7 +321,7 @@ public class CADataHandler implements Serializable {
 			}
 		}
 	}  
-    CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator, cainfo.getCertificateProfileId());
+    CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(administrator, cainfo.getCertificateProfileId());
     // A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
     // (which there is probably not) 
     publishers.addAll(certprofile.getPublisherList());

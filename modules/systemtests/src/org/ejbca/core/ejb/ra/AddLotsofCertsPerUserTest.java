@@ -20,6 +20,7 @@ import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -51,8 +52,8 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CreateCRLSessionRemote createCrlSession = InterfaceCache.getCrlSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
     private int userNo = 0;
     private KeyPair keys;
@@ -100,7 +101,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             CertificateProfile certificateProfile = new EndUserCertificateProfile();
             certificateProfile.setAllowValidityOverride(true);
             try {
-                certificateStoreSession.addCertificateProfile(administrator, certificateProfileName, certificateProfile);
+                certificateProfileSession.addCertificateProfile(administrator, certificateProfileName, certificateProfile);
             } catch (CertificateProfileExistsException e) {
             }
 
@@ -135,7 +136,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                         RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
             }
 
-            int cid = certificateStoreSession.getCertificateProfileId(administrator, certificateProfileName);
+            int cid = certificateProfileSession.getCertificateProfileId(administrator, certificateProfileName);
             int eid = raAdminSession.getEndEntityProfileId(administrator, endEntityProfileName);
             if (eid == 0) {
                 EndEntityProfile endEntityProfile = new EndEntityProfile(true);
@@ -170,7 +171,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 createCrlSession.setArchivedStatus(CertTools.getFingerprintAsString(certificate));
             }
             raAdminSession.removeEndEntityProfile(administrator, endEntityProfileName);
-            certificateStoreSession.removeCertificateProfile(administrator, certificateProfileName);
+            certificateProfileSession.removeCertificateProfile(administrator, certificateProfileName);
             if (i % 10 == 0) {
                 log.debug("Created " + i + " users...");
             }

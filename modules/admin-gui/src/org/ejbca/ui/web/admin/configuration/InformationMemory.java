@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
@@ -64,6 +65,7 @@ public class InformationMemory implements Serializable {
     private PublisherSession publishersession;
     private CertificateStoreSession certificatestoresession;
     private UserDataSourceSession userdatasourcesession = null;
+    private CertificateProfileSession certificateProfileSession;
     
     // Memory variables.
     LogAuthorization logauthorization = null;
@@ -95,7 +97,8 @@ public class InformationMemory implements Serializable {
                              CertificateStoreSession certificatestoresession,
                              HardTokenSession hardtokensession,
 							 PublisherSession publishersession,
-							 UserDataSourceSession userdatasourcesession,
+							 UserDataSourceSession userdatasourcesession, 
+							 CertificateProfileSession certificateProfileSession,
                              GlobalConfiguration globalconfiguration){
       this.caadminsession = caadminsession;                           
       this.administrator = administrator;
@@ -105,9 +108,9 @@ public class InformationMemory implements Serializable {
       this.publishersession = publishersession;
       this.userdatasourcesession = userdatasourcesession;
       this.globalconfiguration = globalconfiguration;
-      
+      this.certificateProfileSession = certificateProfileSession;
       this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession, caadminsession);
-      this.caauthorization = new CAAuthorization(administrator, caadminsession, certificatestoresession, authorizationsession);
+      this.caauthorization = new CAAuthorization(administrator, caadminsession, certificatestoresession, authorizationsession, certificateProfileSession);
       this.logauthorization = new LogAuthorization(administrator, authorizationsession, caadminsession);
       this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, caadminsession);
     }
@@ -130,7 +133,7 @@ public class InformationMemory implements Serializable {
      */
     public HashMap getCertificateProfileIdToNameMap(){
       if(certificateprofileidtonamemap == null){
-        certificateprofileidtonamemap = this.certificatestoresession.getCertificateProfileIdToNameMap(administrator); 
+        certificateprofileidtonamemap = this.certificateProfileSession.getCertificateProfileIdToNameMap(administrator); 
       }
       
       return certificateprofileidtonamemap;
@@ -292,7 +295,7 @@ public class InformationMemory implements Serializable {
      */      
     public CertificateProfileNameProxy getCertificateProfileNameProxy(){
       if(certificateprofilenameproxy == null) {
-        certificateprofilenameproxy = new CertificateProfileNameProxy(administrator, certificatestoresession);  
+        certificateprofilenameproxy = new CertificateProfileNameProxy(administrator, certificateProfileSession);  
       }
       return certificateprofilenameproxy;
     }
@@ -365,7 +368,7 @@ public class InformationMemory implements Serializable {
              Integer nextcertprofileid = new Integer(values[i]);
              CertificateProfile certprofile = (CertificateProfile) certproftemp.get(nextcertprofileid);
              if(certprofile == null){
-               certprofile = certificatestoresession.getCertificateProfile(administrator,nextcertprofileid.intValue());   
+               certprofile = certificateProfileSession.getCertificateProfile(administrator,nextcertprofileid.intValue());   
                certproftemp.put(nextcertprofileid,certprofile);
              }
              

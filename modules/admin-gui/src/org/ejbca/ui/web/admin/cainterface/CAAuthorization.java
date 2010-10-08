@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
@@ -46,16 +47,18 @@ public class CAAuthorization implements Serializable {
     private CAAdminSession caadminsession;
     private AuthorizationSession authorizationsession;
     private CertificateStoreSession certificatestoresession;
-
+    private CertificateProfileSession certificateProfileSession;
+    
     /** Creates a new instance of CAAuthorization. */
     public CAAuthorization(Admin admin,  
                            CAAdminSession caadminsession,
                            CertificateStoreSession certificatestoresession, 
-                           AuthorizationSession authorizationsession) {
+                           AuthorizationSession authorizationsession, CertificateProfileSession certificateProfileSession) {
       this.admin=admin;
       this.caadminsession=caadminsession;      
       this.certificatestoresession=certificatestoresession;
       this.authorizationsession=authorizationsession;
+        this.certificateProfileSession = certificateProfileSession;
     }
 
     /**
@@ -76,11 +79,11 @@ public class CAAuthorization implements Serializable {
         profilenamesendentity = new TreeMap();  
         Iterator iter = null;
         if(usehardtokenprofiles) {         
-          iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN, getAuthorizedCAIds()).iterator();
+          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN, getAuthorizedCAIds()).iterator();
         } else {         
-		  iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()).iterator();
+		  iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()).iterator();
         }
-        HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
+        HashMap idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamesendentity.put(idtonamemap.get(id),id);
@@ -92,8 +95,8 @@ public class CAAuthorization implements Serializable {
     public TreeMap getAuthorizedSubCACertificateProfileNames(){
       if(profilenamessubca==null){
         profilenamessubca = new TreeMap();  
-        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()).iterator();      
-        HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
+        Iterator iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()).iterator();      
+        HashMap idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamessubca.put(idtonamemap.get(id),id);
@@ -106,8 +109,8 @@ public class CAAuthorization implements Serializable {
     public TreeMap getAuthorizedRootCACertificateProfileNames(){
       if(profilenamesrootca==null){
         profilenamesrootca = new TreeMap();  
-        Iterator iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()).iterator();      
-        HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
+        Iterator iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()).iterator();      
+        HashMap idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamesrootca.put(idtonamemap.get(id),id);
@@ -127,19 +130,19 @@ public class CAAuthorization implements Serializable {
         allprofilenames = new TreeMap();
         Iterator iter= null;  
         if(includefixedhardtokenprofiles){
-          iter = certificatestoresession.getAuthorizedCertificateProfileIds(admin, 0, getAuthorizedCAIds()).iterator();
+          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, 0, getAuthorizedCAIds()).iterator();
         }else{
           ArrayList certprofiles = new ArrayList();
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()));
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()));
-		  certprofiles.addAll(certificatestoresession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()));
 		  iter = certprofiles.iterator();
         }
-        HashMap idtonamemap = certificatestoresession.getCertificateProfileIdToNameMap(admin);
+        HashMap idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
         
           Integer id = (Integer) iter.next();
-          CertificateProfile certprofile = certificatestoresession.getCertificateProfile(admin,id.intValue());
+          CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin,id.intValue());
  
           // If not superadministrator, then should only end entity profiles be added.
           if(superadministrator || certprofile.getType() == CertificateProfile.TYPE_ENDENTITY){                      

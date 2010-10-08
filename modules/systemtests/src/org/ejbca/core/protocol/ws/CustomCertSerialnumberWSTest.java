@@ -16,6 +16,7 @@ import javax.naming.NamingException;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -43,7 +44,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
 	private static final Logger log = Logger.getLogger(CustomCertSerialnumberWSTest.class);
 
-	private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+	private CertificateProfileSession certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
 	public void test00SetupAccessRights() {
 		try {
@@ -77,13 +78,13 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 		BigInteger serno = SernoGenerator.instance().getSerno();
 		log.debug("serno: " + serno);
 
-		if (certificateStoreSession.getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0) {
-			certificateStoreSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+		if (certificateProfileSession.getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0) {
+			certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
 		}
 
 		CertificateProfile profile = new EndUserCertificateProfile();
 		profile.setAllowCertSerialNumberOverride(true);
-		certificateStoreSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
+		certificateProfileSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
 
 		//Creating certificate for user: wsfoo
 		UserDataVOWS user = new UserDataVOWS("wsfoo", "foo123", true, "C=SE, CN=wsfoo",

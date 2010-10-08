@@ -36,10 +36,6 @@ public class ApprovalRequestHelper {
 		String caname;
 			    
 		try {
-			/*ServiceLocator locator = ServiceLocator.getInstance();
-			ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-			ICAAdminSessionLocal session = home.create();
-			caname = session.getCAInfo(admin, caid).getName();*/
 			caname = new EjbLocalHelper().getCAAdminSession().getCAInfo(admin, caid).getName();
 		} catch (javax.ejb.CreateException e) {
 			throw new javax.ejb.EJBException(e);
@@ -52,10 +48,6 @@ public class ApprovalRequestHelper {
 		String name;
 	    
 		try {
-			/*ServiceLocator locator = ServiceLocator.getInstance();
-			IRaAdminSessionLocalHome home = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-			IRaAdminSessionLocal session = home.create();
-			name = session.getEndEntityProfileName(admin, profileid);*/
 			name = new EjbLocalHelper().getRAAdminSession().getEndEntityProfileName(admin, profileid);
 		} catch (javax.ejb.CreateException e) {
 			throw new javax.ejb.EJBException(e);
@@ -65,21 +57,11 @@ public class ApprovalRequestHelper {
 		
 	}
 	
-	public static String getCertificateProfileName(Admin admin,int profileid){
-		String name;
-	    
-		try {
-			/*ServiceLocator locator = ServiceLocator.getInstance();
-			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-			ICertificateStoreSessionLocal session = home.create();
-			name = session.getCertificateProfileName(admin, profileid);*/
-			name = new EjbLocalHelper().getCertStoreSession().getCertificateProfileName(admin, profileid);
-		} catch (javax.ejb.CreateException e) {
-			throw new javax.ejb.EJBException(e);
-		}
-		
-		return name;		
-	}
+    public static String getCertificateProfileName(Admin admin, int profileid) {
+        String name;
+        name = new EjbLocalHelper().getCertificateProfileSession().getCertificateProfileName(admin, profileid);
+        return name;
+    }
 		
 	public static ApprovalDataText getTokenName(Admin admin,int tokenid){
 		ApprovalDataText retval;
@@ -95,10 +77,6 @@ public class ApprovalRequestHelper {
 				retval = new ApprovalDataText("TOKEN" ,SecConst.TOKENTEXTS[tokenindex],true,true);
 				
 			}else{			
-			  /*ServiceLocator locator = ServiceLocator.getInstance();
-			  IHardTokenSessionLocalHome home = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-			  IHardTokenSessionLocal session = home.create();
-			  String name = session.getHardTokenProfileName(admin, tokenid);*/
 			  String name = new EjbLocalHelper().getHardTokenSession().getHardTokenProfileName(admin, tokenid);
 			  retval = new ApprovalDataText("TOKEN" ,name,true,false);
 			}
@@ -112,11 +90,7 @@ public class ApprovalRequestHelper {
 	public static String getHardTokenIssuerName(Admin admin,int issuerid){
 		String name;
 	    
-		try {
-			/*ServiceLocator locator = ServiceLocator.getInstance();
-			IHardTokenSessionLocalHome home = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-			IHardTokenSessionLocal session = home.create();
-			name = session.getHardTokenIssuerAlias(admin, issuerid);*/		
+		try {		
 			name = new EjbLocalHelper().getHardTokenSession().getHardTokenIssuerAlias(admin, issuerid);
 		} catch (javax.ejb.CreateException e) {
 			throw new javax.ejb.EJBException(e);

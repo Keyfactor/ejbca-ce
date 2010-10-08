@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -83,6 +84,28 @@ public class RAInterfaceBean implements java.io.Serializable {
     
     private EjbLocalHelper ejb = new EjbLocalHelper();
     
+    private EndEntityProfileDataHandler    profiles;
+
+    private UserAdminSession adminsession;
+    private CertificateStoreSession certificatesession;
+    private RaAdminSession raadminsession;
+    private AuthorizationSession authorizationsession;
+    private HardTokenSession hardtokensession;
+    private KeyRecoverySession keyrecoverysession;
+    private UserDataSourceSession userdatasourcesession;
+    private CertificateProfileSession certificateProfileSession;
+    
+    private UsersView                           users;
+    private CertificateView[]                  certificates;
+    private AddedUserMemory              addedusermemory;
+    private Admin                                 administrator;   
+    private InformationMemory             informationmemory;
+    private boolean initialized=false;
+    
+    private String[] printerNames = null;
+    
+    private EndEntityProfile temporateendentityprofile = null; 
+    
     /** Creates new RaInterfaceBean */
     public RAInterfaceBean()  {
         users = new UsersView();
@@ -111,7 +134,8 @@ public class RAInterfaceBean implements java.io.Serializable {
         
         hardtokensession = ejb.getHardTokenSession();
         keyrecoverysession = ejb.getKeyRecoverySession();
-        userdatasourcesession = ejb.getUserDataSourceSession();        
+        userdatasourcesession = ejb.getUserDataSourceSession(); 
+        certificateProfileSession = ejb.getCertificateProfileSession();
 
         initialized =true;
       } else {
@@ -776,7 +800,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
 
     public int getCertificateProfileId(String certificateprofilename) throws RemoteException{
-      return certificatesession.getCertificateProfileId(administrator, certificateprofilename);
+      return certificateProfileSession.getCertificateProfileId(administrator, certificateprofilename);
     }
     public String getCertificateProfileName(int certificateprofileid) throws RemoteException{
       return this.informationmemory.getCertificateProfileNameProxy().getCertificateProfileName(certificateprofileid);
@@ -837,27 +861,5 @@ public class RAInterfaceBean implements java.io.Serializable {
     	return printerNames;
     }
 
-    //
-    // Private fields.
-    //
-    private EndEntityProfileDataHandler    profiles;
-
-    private UserAdminSession adminsession;
-    private CertificateStoreSession certificatesession;
-    private RaAdminSession raadminsession;
-    private AuthorizationSession authorizationsession;
-    private HardTokenSession hardtokensession;
-    private KeyRecoverySession keyrecoverysession;
-    private UserDataSourceSession userdatasourcesession;
-
-    private UsersView                           users;
-    private CertificateView[]                  certificates;
-    private AddedUserMemory              addedusermemory;
-    private Admin                                 administrator;   
-    private InformationMemory             informationmemory;
-    private boolean initialized=false;
-    
-    private String[] printerNames = null;
-    
-    private EndEntityProfile temporateendentityprofile = null;  
+ 
 }

@@ -59,6 +59,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -164,6 +165,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private PublisherSessionLocal publisherSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -285,7 +288,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Create CA
         CA ca = null;
         // The certificate profile used for the CAs certificate
-        CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, cainfo.getCertificateProfileId());
+        CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin, cainfo.getCertificateProfileId());
         // AltName is not implemented for all CA types
         String caAltName = null;
         // X509 CA is the normal type of CA
@@ -1706,7 +1709,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         extInfo.setCustomData(ExtendedInformation.CUSTOM_PKCS10, new String(Base64.encode(pkcs10.getEncoded())));
                         cadata.setExtendedinformation(extInfo);
                     }
-                    CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, cainfo.getCertificateProfileId());
+                    CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin, cainfo.getCertificateProfileId());
                     String sequence = null;
                     byte[] ki = requestmessage.getRequestKeyInfo();
                     if ((ki != null) && (ki.length > 0)) {
@@ -1839,7 +1842,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Process certificate policies.
             ArrayList policies = new ArrayList();
-            CertificateProfile certprof = certificateStoreSession.getCertificateProfile(admin, certprofileid);
+            CertificateProfile certprof = certificateProfileSession.getCertificateProfile(admin, certprofileid);
             if (certprof.getCertificatePolicies() != null && certprof.getCertificatePolicies().size() > 0) {
                 policies.addAll(certprof.getCertificatePolicies());
             }
@@ -2033,7 +2036,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null, 0, 0, 0, ca
                             .getCertificateProfileId(), null, null, 0, 0, null);
 
-                    CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, ca.getCertificateProfileId());
+                    CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin, ca.getCertificateProfileId());
                     String sequence = caToken.getCATokenInfo().getKeySequence(); // get
                     // from
                     // CAtoken
@@ -2067,7 +2070,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), subjectAltName, null, 0, 0, 0, ca
                                 .getCertificateProfileId(), null, null, 0, 0, null);
 
-                        CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, ca.getCertificateProfileId());
+                        CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin, ca.getCertificateProfileId());
                         String sequence = caToken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
                         cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, ca
                                 .getValidity(), certprofile, sequence);
@@ -3194,7 +3197,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (cainfo.isApprovalRequired(action)) {
                 retval = cainfo.getNumOfReqApprovals();
             }
-            CertificateProfile certprofile = certificateStoreSession.getCertificateProfile(admin, certProfileId);
+            CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin, certProfileId);
             if (certprofile != null && certprofile.isApprovalRequired(action)) {
                 retval = Math.max(retval, certprofile.getNumOfReqApprovals());
             }

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -58,6 +59,8 @@ public class StartServicesServlet extends HttpServlet {
     
     @EJB
     private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -185,7 +188,7 @@ public class StartServicesServlet extends HttpServlet {
         log.trace(">init loading CertificateProfile to check for upgrades");
         try {
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	certificateStoreSession.initializeAndUpgradeProfiles(admin);
+        	certificateProfileSession.initializeAndUpgradeProfiles(admin);
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }

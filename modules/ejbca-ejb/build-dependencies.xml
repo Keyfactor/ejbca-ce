@@ -368,9 +368,11 @@
     	<copy todir="${src-temp.dir}/certstore">
     		<fileset dir="${src-ejbca-ejb-interface.dir}">
     			<include name="org/ejbca/core/ejb/ca/store/*.java"/>
+    			<include name="org/cesecore/core/ejb/ca/store/*.java"/>
     		</fileset>
     		<fileset dir="${src-ejbca-entity.dir}">
     			<include name="org/ejbca/core/ejb/ca/store/*.java"/>
+    			<include name="org/cesecore/core/ejb/ca/store/*.java"/>
     			<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistory*.java"/>
     		</fileset>
     		<fileset dir="${src.dir}">

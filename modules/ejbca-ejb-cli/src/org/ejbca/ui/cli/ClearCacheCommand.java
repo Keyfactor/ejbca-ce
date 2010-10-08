@@ -64,7 +64,7 @@ public class ClearCacheCommand extends BaseCommand {
 			if (certprofile) {
 				getLogger().info("Flushing certificate profile cache.");
 				// Flush Certificate profiles
-				ejb.getCertStoreSession().flushProfileCache();
+				ejb.getCertificateProfileSession().flushProfileCache();
 			}
 			if (authorization) {
 				getLogger().info("Flushing authorization cache.");

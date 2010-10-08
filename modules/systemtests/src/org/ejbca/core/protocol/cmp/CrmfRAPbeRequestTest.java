@@ -26,11 +26,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.security.cert.Certificate;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -106,6 +105,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -151,16 +151,16 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         configurationSession.updateProperty(CmpConfiguration.CONFIG_RACANAME, cainfo.getName());
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
-        if (certificateStoreSession.getCertificateProfile(admin, CPNAME) == null) {
+        if (certificateProfileSession.getCertificateProfile(admin, CPNAME) == null) {
             CertificateProfile cp = new EndUserCertificateProfile();
             cp.setAllowValidityOverride(true);
             try { // TODO: Fix this better
-                certificateStoreSession.addCertificateProfile(admin, CPNAME, cp);
+                certificateProfileSession.addCertificateProfile(admin, CPNAME, cp);
             } catch (CertificateProfileExistsException e) {
                 e.printStackTrace();
             }
         }
-        int cpId = certificateStoreSession.getCertificateProfileId(admin, CPNAME);
+        int cpId = certificateProfileSession.getCertificateProfileId(admin, CPNAME);
         if (raAdminSession.getEndEntityProfile(admin, EEPNAME) == null) {
             // Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN
             // and rfc822Name (uncheck 'Use entity e-mail field' and check
@@ -411,7 +411,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // A test probably failed before creating the entity
         }
         raAdminSession.removeEndEntityProfile(admin, EEPNAME);
-        certificateStoreSession.removeCertificateProfile(admin, CPNAME);
+        certificateProfileSession.removeCertificateProfile(admin, CPNAME);
         configurationSession.restoreConfiguration();
     }
 

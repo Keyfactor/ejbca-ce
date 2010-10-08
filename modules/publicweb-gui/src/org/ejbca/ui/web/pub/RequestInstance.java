@@ -31,11 +31,11 @@ import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -69,19 +69,19 @@ public class RequestInstance {
 	private ServletContext servletContext;
 	private AuthenticationSessionLocal authenticationSession;
 	private CAAdminSessionLocal caAdminSession;
-	private CertificateStoreSessionLocal certificateStoreSession;
+    private CertificateProfileSessionLocal certificateProfileSession;
 	private KeyRecoverySessionLocal keyRecoverySession;
 	private RaAdminSessionLocal raAdminSession;            
 	private SignSessionLocal signSession;
 	private UserAdminSessionLocal userAdminSession;
 	
 	protected RequestInstance(ServletContext servletContext, AuthenticationSessionLocal authenticationSession, CAAdminSessionLocal caAdminSession,
-			CertificateStoreSessionLocal certificateStoreSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
+	        CertificateProfileSessionLocal certificateProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
 			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession) {
 		this.servletContext = servletContext;
 		this.authenticationSession = authenticationSession;
 		this.caAdminSession = caAdminSession;
-		this.certificateStoreSession = certificateStoreSession;
+		this.certificateProfileSession = certificateProfileSession;
 		this.keyRecoverySession = keyRecoverySession;
 		this.raAdminSession = raAdminSession;
 		this.signSession = signSession;
@@ -154,7 +154,7 @@ public class RequestInstance {
 			// Set a new certificate profile, if we have requested one specific
 			if (StringUtils.isNotEmpty(certprofile)) {
 				boolean clearpwd = StringUtils.isNotEmpty(data.getPassword());
-				int id = certificateStoreSession.getCertificateProfileId(administrator, certprofile);
+				int id = certificateProfileSession.getCertificateProfileId(administrator, certprofile);
 				// Change the value if there exists a certprofile with the requested name, and it is not the same as 
 				// the one already registered to be used by default
 				if ( (id > 0) ) {
@@ -168,12 +168,12 @@ public class RequestInstance {
 							Admin tempadmin = new Admin(Admin.TYPE_INTERNALUSER);
 							userAdminSession.changeUser(tempadmin, data, clearpwd);            		            			
 						} else {
-							String defaultCertificateProfileName = certificateStoreSession.getCertificateProfileName(administrator, certificateProfileId);
+							String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(administrator, certificateProfileId);
 							log.info(intres.getLocalizedMessage("certreq.badcertprofile", certprofile, defaultCertificateProfileName));
 						}
 					}
 				} else {
-					String defaultCertificateProfileName = certificateStoreSession.getCertificateProfileName(administrator, certificateProfileId);
+					String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(administrator, certificateProfileId);
 					log.info(intres.getLocalizedMessage("certreq.nosuchcertprofile", certprofile, defaultCertificateProfileName));
 				}
 			}

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -79,7 +80,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -124,16 +125,16 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
         configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override".
-        if (certificateStoreSession.getCertificateProfile(admin, CPNAME) == null) {
+        if (certificateProfileSession.getCertificateProfile(admin, CPNAME) == null) {
             CertificateProfile cp = new EndUserCertificateProfile();
             cp.setAllowValidityOverride(true);
             try {	// TODO: Fix this better
-				certificateStoreSession.addCertificateProfile(admin, CPNAME, cp);
+				certificateProfileSession.addCertificateProfile(admin, CPNAME, cp);
 			} catch (CertificateProfileExistsException e) {
 				e.printStackTrace();
 			}
         }
-        int cpId = certificateStoreSession.getCertificateProfileId(admin, CPNAME);
+        int cpId = certificateProfileSession.getCertificateProfileId(admin, CPNAME);
         if (raAdminSession.getEndEntityProfile(admin, EEPNAME) == null) {
             // Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN and rfc822Name (uncheck 'Use entity e-mail field' and check 'Modifyable'), MS UPN in altNames in the end entity profile.
             EndEntityProfile eep = new EndEntityProfile(true);
@@ -224,7 +225,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 			// A test probably failed before creating the entity
 		}
 		raAdminSession.removeEndEntityProfile(admin, EEPNAME);
-		certificateStoreSession.removeCertificateProfile(admin, CPNAME);
+		certificateProfileSession.removeCertificateProfile(admin, CPNAME);
 		configurationSessionRemote.restoreConfiguration();
 	}
 	

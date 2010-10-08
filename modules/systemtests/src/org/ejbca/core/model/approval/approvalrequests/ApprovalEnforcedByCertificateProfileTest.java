@@ -29,10 +29,10 @@ import javax.ejb.DuplicateKeyException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -97,7 +97,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private static Collection<String> createdUsers = new LinkedList<String>();
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -359,8 +359,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     private void removeCertificateProfile(String certProfileName) {
-
-        certificateStoreSession.removeCertificateProfile(admin1, certProfileName);
+        certificateProfileSession.removeCertificateProfile(admin1, certProfileName);
     }
 
     private String genRandomUserName(String usernameBase) {
@@ -368,17 +367,17 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     private int createCertificateProfile(Admin admin, String certProfileName, Integer[] reqApprovals, int type) throws Exception {
-        certificateStoreSession.removeCertificateProfile(admin, certProfileName);
+        certificateProfileSession.removeCertificateProfile(admin, certProfileName);
 
         CertificateProfile certProfile = new CertificateProfile();
         certProfile.setType(type);
         certProfile.setApprovalSettings(Arrays.asList(reqApprovals));
 
-        certificateStoreSession.addCertificateProfile(admin, certProfileName, certProfile);
-        int certProfileId = certificateStoreSession.getCertificateProfileId(admin1, certProfileName);
+        certificateProfileSession.addCertificateProfile(admin, certProfileName, certProfile);
+        int certProfileId = certificateProfileSession.getCertificateProfileId(admin1, certProfileName);
         assertTrue(certProfileId != 0);
 
-        CertificateProfile profile2 = certificateStoreSession.getCertificateProfile(admin, certProfileId);
+        CertificateProfile profile2 = certificateProfileSession.getCertificateProfile(admin, certProfileId);
         assertNotNull(profile2.getApprovalSettings());
         assertEquals(reqApprovals.length, profile2.getApprovalSettings().size());
 

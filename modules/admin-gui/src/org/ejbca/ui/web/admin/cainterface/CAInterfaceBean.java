@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -66,11 +68,36 @@ import org.ejbca.util.CertTools;
  * @author  Philip Vendil
  * @version $Id$
  */
-public class CAInterfaceBean implements java.io.Serializable {
+public class CAInterfaceBean implements Serializable {
 
 	private static final long serialVersionUID = 2L;
 	
 	private EjbLocalHelper ejb = new EjbLocalHelper();
+
+    // Private fields
+    private CertificateStoreSession certificatesession;
+    private CAAdminSession caadminsession;
+    private CreateCRLSession createCrlSession;
+    private AuthorizationSession authorizationsession;
+    private UserAdminSession adminsession;
+    private RaAdminSession raadminsession;
+    private SignSession signsession;
+    private HardTokenSession hardtokensession;
+    private PublisherSession publishersession;
+    private PublisherQueueSession publisherqueuesession;
+    private CertificateProfileDataHandler certificateprofiles;
+    private CADataHandler cadatahandler;
+    private PublisherDataHandler publisherdatahandler;
+    private CertificateProfileSession certificateProfileSession;
+    private boolean initialized;
+    private Admin administrator;
+    private InformationMemory informationmemory;
+    private CAInfo cainfo;
+    /** The certification request in binary format */
+    transient private byte[] request;
+    private Certificate processedcert;
+    private CertificateProfile tempCertProfile = null;
+    private boolean isUniqueIndex;
 	
 	/** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() {
@@ -91,12 +118,13 @@ public class CAInterfaceBean implements java.io.Serializable {
           hardtokensession = ejb.getHardTokenSession();               
           publishersession = ejb.getPublisherSession();               
           publisherqueuesession = ejb.getPublisherQueueSession();
+          certificateProfileSession = ejb.getCertificateProfileSession();
   	      	    
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
             
-          certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, caadminsession, informationmemory);
-          cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, createCrlSession, ejbcawebbean);
+          certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, certificateProfileSession, informationmemory);;
+          cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, createCrlSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificatesession,  informationmemory);
           isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
@@ -190,8 +218,8 @@ public class CAInterfaceBean implements java.io.Serializable {
     public boolean removeCertificateProfile(String name) throws Exception{
 
         boolean certificateprofileused = false;
-        int certificateprofileid = certificatesession.getCertificateProfileId(administrator, name);        
-        CertificateProfile certprofile = this.certificatesession.getCertificateProfile(administrator, name);
+        int certificateprofileid = certificateProfileSession.getCertificateProfileId(administrator, name);        
+        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(administrator, name);
         
         if(certprofile.getType() == CertificateProfile.TYPE_ENDENTITY){
           // Check if any users or profiles use the certificate id.
@@ -343,7 +371,7 @@ public class CAInterfaceBean implements java.io.Serializable {
 	
 	CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator,certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN());
 	if(certreqhist != null){
-	  CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator,certreqhist.getUserDataVO().getCertificateProfileId());
+	  CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(administrator,certreqhist.getUserDataVO().getCertificateProfileId());
 	  if(certprofile != null){
 	    CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificatedata.getCertificate()));
 	    if(certprofile.getPublisherList().size() > 0){
@@ -406,27 +434,5 @@ public class CAInterfaceBean implements java.io.Serializable {
    
    // Private methods
 
-    // Private fields
-    private CertificateStoreSession      certificatesession;
-    private CAAdminSession               caadminsession;
-    private CreateCRLSession             createCrlSession;
-    private AuthorizationSession         authorizationsession;
-    private UserAdminSession             adminsession;
-    private RaAdminSession               raadminsession;
-    private SignSession                  signsession;
-    private HardTokenSession             hardtokensession;
-    private PublisherSession             publishersession;
-    private PublisherQueueSession        publisherqueuesession;
-    private CertificateProfileDataHandler      certificateprofiles;
-    private CADataHandler                      cadatahandler;
-    private PublisherDataHandler               publisherdatahandler;
-    private boolean                            initialized;
-    private Admin                              administrator;
-    private InformationMemory                  informationmemory;
-    private CAInfo                                      cainfo;
-    /** The certification request in binary format */
-    transient private byte[]       request;
-    private Certificate	                             processedcert;
-    private CertificateProfile                 tempCertProfile = null;
-	private boolean isUniqueIndex;
+
 }

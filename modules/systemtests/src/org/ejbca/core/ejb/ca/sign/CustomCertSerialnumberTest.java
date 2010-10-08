@@ -17,6 +17,7 @@ import javax.persistence.PersistenceException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -62,6 +63,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 	private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
 	private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 	private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
+	private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 	private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
 	private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -78,14 +80,14 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 	public void setUp() throws Exception {
 
-		certificateStoreSession.removeCertificateProfile(admin,"FOOCERTPROFILE");
+		certificateProfileSession.removeCertificateProfile(admin,"FOOCERTPROFILE");
 		raAdminSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
 
 		final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
 		certprof.setAllowKeyUsageOverride(true);
 		certprof.setAllowCertSerialNumberOverride(true);
-		certificateStoreSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
-		fooCertProfileId = certificateStoreSession.getCertificateProfileId(admin,"FOOCERTPROFILE");
+		certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
+		fooCertProfileId = certificateProfileSession.getCertificateProfileId(admin,"FOOCERTPROFILE");
 
 		final EndEntityProfile profile = new EndEntityProfile(true);
 		profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, Integer.toString(fooCertProfileId));
@@ -231,9 +233,9 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		p10.setUsername("foo");
 		p10.setPassword("foo123");
 
-		CertificateProfile fooCertProfile = certificateStoreSession.getCertificateProfile(admin, "FOOCERTPROFILE");
+		CertificateProfile fooCertProfile = certificateProfileSession.getCertificateProfile(admin, "FOOCERTPROFILE");
 		fooCertProfile.setAllowCertSerialNumberOverride(false);
-		certificateStoreSession.changeCertificateProfile(admin, "FOOCERTPROFILE", fooCertProfile);
+		certificateProfileSession.changeCertificateProfile(admin, "FOOCERTPROFILE", fooCertProfile);
 
 		UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);

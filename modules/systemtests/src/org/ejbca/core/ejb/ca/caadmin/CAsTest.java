@@ -27,6 +27,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -77,6 +78,7 @@ public class CAsTest extends CaTestCase {
 
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     
     /**
      * Creates a new CAsTest object.
@@ -753,8 +755,8 @@ public class CAsTest extends CaTestCase {
             // Create a Certificate profile
             CertificateProfile profile = new CACertificateProfile();
             profile.setType(CertificateProfile.TYPE_SUBCA);
-            certificateStoreSession.addCertificateProfile(admin, "TESTCVCDV", profile);
-            int profileid = certificateStoreSession.getCertificateProfileId(admin, "TESTCVCDV");
+            certificateProfileSession.addCertificateProfile(admin, "TESTCVCDV", profile);
+            int profileid = certificateProfileSession.getCertificateProfileId(admin, "TESTCVCDV");
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(), profileid, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -864,9 +866,9 @@ public class CAsTest extends CaTestCase {
         assertTrue("Creating CVC CAs failed", ret);
 
         // Test to renew a CVC CA using a different access right
-        CertificateProfile profile = certificateStoreSession.getCertificateProfile(admin, "TESTCVCDV");
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(admin, "TESTCVCDV");
         profile.setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3);
-        certificateStoreSession.changeCertificateProfile(admin, "TESTCVCDV", profile);
+        certificateProfileSession.changeCertificateProfile(admin, "TESTCVCDV", profile);
 
         int caid = dvdcainfo.getCAId();
         caAdminSessionRemote.renewCA(admin, caid, null, false);
