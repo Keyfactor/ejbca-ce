@@ -450,8 +450,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
      * @param certs collection of RevokedCertInfo object.
-     * @param basecrlnumber the CRL number of the Case CRL to generate a deltaCRL, -1 to generate a full CRL
-     * @param nextCrlNumber The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
+     * @param basecrlnumber the CRL number of the Base CRL to generate a deltaCRL, -1 to generate a full CRL
      * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
      * @throws CATokenOfflineException 
      */
@@ -468,6 +467,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
             final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
             int fullnumber = getLastCRLNumber(admin, certSubjectDN, false);
             int deltanumber = getLastCRLNumber(admin, certSubjectDN, true);
+            // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             int nextCrlNumber = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
             boolean deltaCRL = (basecrlnumber > -1);
             if (deltaCRL) {
