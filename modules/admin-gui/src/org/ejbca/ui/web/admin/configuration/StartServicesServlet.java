@@ -14,9 +14,12 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Date;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
@@ -188,16 +191,44 @@ public class StartServicesServlet extends HttpServlet {
         }
         
         // Load EndEntity profiles at startup to upgrade them if needed
+        // And add this node to list of nodes
         log.trace(">init loading EndEntityProfile to check for upgrades");
         try {
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
         	raAdminSession.initializeAndUpgradeProfiles(admin);
+        	
+        	// Add this node's hostname to list of nodes
+            log.trace(">init checking if this node is in the list of nodes");
+            final GlobalConfiguration config = raAdminSession.getCachedGlobalConfiguration(admin);
+            final Set<String> nodes = config.getNodesInCluster();
+            final String hostname = getHostName();
+            if (hostname != null && !nodes.contains(hostname)) {
+            	log.debug("Adding this node the list of nodes");
+            	nodes.add(hostname);
+            	config.setNodesInCluster(nodes);
+            	raAdminSession.saveGlobalConfiguration(admin, config);
+            }
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
         
         log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
         signSession.isUniqueCertificateSerialNumberIndex();
+    }
+    
+    /**
+     * @return The host's name or null if it could not be determined.
+     */
+    private String getHostName() {
+    	String hostname = null;
+    	try {
+	        InetAddress addr = InetAddress.getLocalHost();    
+	        // Get hostname
+	        hostname = addr.getHostName();
+	    } catch (UnknownHostException e) {
+	    	log.error("Hostname could not be determined", e);
+	    }
+	    return hostname;
     }
     
 }
