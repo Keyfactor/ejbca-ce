@@ -118,8 +118,8 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	}
 
 
-	public List getNewRequestDataAsText(Admin admin) {
-		ArrayList retval = new ArrayList();
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
 		retval.add(new ApprovalDataText("CERTSERIALNUMBER",CertTools.getSerialNumberAsString(cert),true,false));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.getSubjectDN(cert).toString(),true,false));
@@ -127,7 +127,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		return retval;
 	}
 	
-	public List getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
 

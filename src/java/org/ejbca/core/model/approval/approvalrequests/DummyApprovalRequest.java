@@ -119,8 +119,8 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	}
 	
 
-	public List getNewRequestDataAsText(Admin admin){
-		ArrayList newText = new ArrayList();
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin){
+		ArrayList<ApprovalDataText> newText = new ArrayList<ApprovalDataText>();
 		newText.add(new ApprovalDataText("DUMMYDATAROW1: ", "YES" , false, false));
 		newText.add(new ApprovalDataText("DUMMYDATAROW2: ", "YES" , false, false));
 		return newText;
@@ -128,7 +128,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	}
 	
 
-	public List getOldRequestDataAsText(Admin admin){
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin){
 		return null;
 	}
 
