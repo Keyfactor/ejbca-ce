@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 
-public abstract class ApprovalRequest implements  Externalizable { 
+public abstract class ApprovalRequest implements Externalizable { 
 	
 	private static final long serialVersionUID = -1L;
 	
@@ -166,7 +166,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
-	public abstract List getNewRequestDataAsText(Admin admin);
+	public abstract List<ApprovalDataText> getNewRequestDataAsText(Admin admin);
 	
 	/**
 	 * This method should return the original request data in text representation.
@@ -176,9 +176,9 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * This text is presented for the approving administrator for him to
 	 * compare of what will be done.
 	 * 
-	 * Should return a Collection of ApprovalDataText, one for each row
+	 * Should return a List of ApprovalDataText, one for each row
 	 */
-	public abstract List getOldRequestDataAsText(Admin admin);
+	public abstract List<ApprovalDataText> getOldRequestDataAsText(Admin admin);
 		
 	/**
 	 * This method is used to check if this is an allowed transition between

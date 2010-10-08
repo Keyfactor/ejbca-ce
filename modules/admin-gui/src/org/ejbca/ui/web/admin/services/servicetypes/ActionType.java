@@ -23,6 +23,8 @@ package org.ejbca.ui.web.admin.services.servicetypes;
  */
 public abstract class ActionType extends ServiceType {
 
+	private static final long serialVersionUID = -7411725269781465619L;
+
 	public ActionType(String subViewPage, String name, boolean translatable) {
 		super(subViewPage, name, translatable);
 	}

@@ -21,6 +21,8 @@ package org.ejbca.core.model.services;
  */
 public class ActionException extends Exception {
 
+	private static final long serialVersionUID = -2160550096301309104L;
+
 	/**
 	 * Exception generated if a IAction.performAction calls failed
 	 * @param message
