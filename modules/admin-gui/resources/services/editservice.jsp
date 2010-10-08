@@ -111,7 +111,7 @@
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:selectManyListbox id="pinToNodesListbox" value="#{editService.serviceConfigurationView.pinToNodes}">
-			<f:selectItems value="#{editService.nodesInCluster}"/>
+			<f:selectItems value="#{editService.serviceConfigurationView.nodesInCluster}"/>
 		</h:selectManyListbox>
 	</h:panelGroup>
 	<h:panelGroup>

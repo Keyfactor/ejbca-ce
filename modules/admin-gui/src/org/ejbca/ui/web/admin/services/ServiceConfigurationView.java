@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.faces.model.SelectItem;
 
@@ -334,6 +336,21 @@ public class ServiceConfigurationView implements Serializable{
 			log.debug("view setPinToNodes: " + Arrays.toString(pinToNodes));
 		}
 		this.pinToNodes = pinToNodes;
+	}
+	
+	public List<SelectItem> getNodesInCluster() {
+		final List<SelectItem> ret = new LinkedList<SelectItem>();
+		final Set<String> nodes = EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getNodesInCluster();  
+		for (String node : nodes) {
+			ret.add(new SelectItem(node));
+		}
+		// Also add unknown nodes, that is nodes that has been removed but this service still is pinned to
+		for (String node : getPinToNodes()) {
+			if (!nodes.contains(node)) {
+				ret.add(new SelectItem(node, node + " " + EjbcaJSFHelper.getBean().getText().get("PINTONODESUNKNOWNNODE")));
+			}
+		}
+		return ret; 
 	}
 
 }

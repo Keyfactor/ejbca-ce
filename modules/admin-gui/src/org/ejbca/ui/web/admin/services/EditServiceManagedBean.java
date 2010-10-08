@@ -321,13 +321,5 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return availablePublisherNames;		
 	}
 
-	public List<SelectItem> getNodesInCluster() {
-		final List<SelectItem> ret = new LinkedList<SelectItem>();
-		for (String item : EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getNodesInCluster()) {
-			ret.add(new SelectItem(item));
-		}
-		return ret; 
-	}
-
 }
 
