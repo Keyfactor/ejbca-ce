@@ -143,8 +143,8 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
-	public List getNewRequestDataAsText(Admin admin) {
-		ArrayList retval = new ArrayList();
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		if ( cAName != null ) {
 			retval.add(new ApprovalDataText("CANAME",cAName,true,false));
 		}
@@ -160,9 +160,9 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * This text is presented for the approving administrator for him to
 	 * compare of what will be done.
 	 * 
-	 * Should return a Collection of ApprovalDataText, one for each row
+	 * Should return a List of ApprovalDataText, one for each row
 	 */
-	public List getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
 

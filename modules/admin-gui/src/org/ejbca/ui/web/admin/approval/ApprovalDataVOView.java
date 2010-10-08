@@ -233,7 +233,7 @@ public class ApprovalDataVOView  implements Serializable{
 	    if ( !initialized ) {
 	    	return false;
 	    }
-		List newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+		List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
 		int size = newTextRows.size();
 		for ( int i=0; i<size; i++) {
   		  if ( ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER) ||
@@ -255,7 +255,7 @@ public class ApprovalDataVOView  implements Serializable{
 		ArrayList certificateSerialNumbers = new ArrayList();
 		ArrayList certificateIssuerDN = new ArrayList();
 		ArrayList usernames = new ArrayList();
-		List newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+		List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
 		
 		for (int i=0; i<newTextRows.size(); i++) {
 			if ( ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)) {
@@ -299,7 +299,7 @@ public class ApprovalDataVOView  implements Serializable{
 	    if(!initialized){
 			  return textComparisonList;
 	    }
-		List newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+		List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
 		int size = newTextRows.size();
 		for ( int i=0; i<size; i++) {
   		  if ( ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER) ||
@@ -325,8 +325,8 @@ public class ApprovalDataVOView  implements Serializable{
 	    }
     	
     	if(data.getApprovalRequest().getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_COMPARING){
-    	  List newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
-    	  List orgTextRows = data.getApprovalRequest().getOldRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+    	  List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+    	  List<ApprovalDataText> orgTextRows = data.getApprovalRequest().getOldRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
     	  int size = newTextRows.size();
     	  if(orgTextRows.size() > size){
     	  	size = orgTextRows.size(); 
@@ -349,7 +349,7 @@ public class ApprovalDataVOView  implements Serializable{
     	  }
     		    		
     	}else{
-    		List newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+    		List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
     		int size = newTextRows.size();
     		for(int i=0;i<size;i++){
     		  textComparisonList.add(new TextComparisonView(null, translateApprovalDataText((ApprovalDataText) newTextRows.get(i)))); 	
