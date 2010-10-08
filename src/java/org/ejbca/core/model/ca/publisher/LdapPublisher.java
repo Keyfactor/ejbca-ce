@@ -218,7 +218,7 @@ public class LdapPublisher extends BasePublisher {
 
     		// PART 2: Create LDAP entry
     		LDAPEntry newEntry = null;
-    		ArrayList modSet = new ArrayList();
+    		ArrayList<LDAPModification> modSet = new ArrayList<LDAPModification>();
     		LDAPAttributeSet attributeSet = null;
     		String attribute = null;
     		String objectclass = null;
@@ -1136,8 +1136,8 @@ public class LdapPublisher extends BasePublisher {
 	 * 
 	 * @return Collection of (Integer) containing DNFieldExtractor constants.
 	 */
-	public Collection getUseFieldInLdapDN(){
-		return (Collection) data.get(USEFIELDINLDAPDN);
+	public Collection<Integer> getUseFieldInLdapDN(){
+		return (Collection<Integer>) data.get(USEFIELDINLDAPDN);
 	}
 
 	/**
@@ -1267,8 +1267,8 @@ public class LdapPublisher extends BasePublisher {
 	 * @param attributes Strings to search for in the DN
 	 * @return An LDAPAttributeSet containing all attributes found int the DN
 	 */
-	protected Collection getAttributesFromDN(String dn, String[] attributes) {
-		Collection attributeList= new LinkedList();
+	protected Collection<LDAPAttribute> getAttributesFromDN(String dn, String[] attributes) {
+		Collection<LDAPAttribute> attributeList= new LinkedList<LDAPAttribute>();
 		for (int i =0; i<attributes.length;i++){
 			String attribute = CertTools.getPartFromDN(dn, attributes[i]);
 			if (attribute != null) {
@@ -1285,10 +1285,10 @@ public class LdapPublisher extends BasePublisher {
 	 * @param dn The DN to search
 	 * @param oldDn the old DN
 	 * @param attributes Strings to search for in the DN
-	 * @return An ArrayList containing all attributes found int the DN
+	 * @return An ArrayList containing LDAPModification for DN
 	 */
-	protected ArrayList getModificationSetFromDN(String dn, LDAPEntry oldEntry, String[] attributes){
-		ArrayList modset = new ArrayList();
+	protected ArrayList<LDAPModification> getModificationSetFromDN(String dn, LDAPEntry oldEntry, String[] attributes){
+		ArrayList<LDAPModification> modset = new ArrayList<LDAPModification>();
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
 		for (int i =0; i<attributes.length;i++){
@@ -1409,8 +1409,8 @@ public class LdapPublisher extends BasePublisher {
 				// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
 				// This is not present in the normal objectClass (inetOrgPerson)
 				// Modifying the schema is as simple as adding serialNumber as MAY in the inetOrgPerson object class in inetorgperson.schema.
-				Collection usefields = getUseFieldInLdapDN();
-				if (usefields.contains(new Integer(DNFieldExtractor.SN))) {
+				Collection<Integer> usefields = getUseFieldInLdapDN();
+				if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
 					String serno = CertTools.getPartFromDN(dn, "SN");
 					if (serno != null) {
 						attributeSet.add(new LDAPAttribute("serialNumber", serno));
@@ -1446,15 +1446,15 @@ public class LdapPublisher extends BasePublisher {
 	 * @param password, users password, to be added into SecurityObjects, and AD
 	 * @param overwrite if true then old attributes in LDAP will be overwritten, otherwise not.
 	 *
-	 * @return LDAPModificationSet created...
+	 * @return List of LDAPModification created...
 	 */
-	protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
+	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getModificationSet(dn="+dn+", email="+email+")");			
 		}
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
-		ArrayList modSet = new ArrayList();
+		ArrayList<LDAPModification> modSet = new ArrayList<LDAPModification>();
 		// We get this, because we can not modify attributes that are present in the original DN
 		// i.e. if the ldap entry have a DN, we are not allowed to modify that
 		if (extra) {
@@ -1527,8 +1527,8 @@ public class LdapPublisher extends BasePublisher {
 				modSet.addAll(getModificationSetFromDN(dn, oldEntry, MATCHINGPERSONALATTRIBUTES));
 				// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
 				// This is not present in the normal objectClass (inetOrgPerson)
-				Collection usefields = getUseFieldInLdapDN();
-				if (usefields.contains(new Integer(DNFieldExtractor.SN))) {
+				Collection<Integer> usefields = getUseFieldInLdapDN();
+				if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
 					String serno = CertTools.getPartFromDN(dn, "SN");
 					LDAPAttribute oldserno = oldEntry.getAttribute("SN");
 					if (((serno != null) && (oldserno == null) && addNonExisting) || ( (serno != null) && (oldserno != null ) && modifyExisting)) {
@@ -1571,13 +1571,13 @@ public class LdapPublisher extends BasePublisher {
 		final DNFieldExtractor certExtractor = new DNFieldExtractor(certDN, DNFieldExtractor.TYPE_SUBJECTDN);
 		final DNFieldExtractor userDataExtractor = userDataDN!=null ? new DNFieldExtractor(userDataDN, DNFieldExtractor.TYPE_SUBJECTDN) : null;
 
-		Collection usefields = getUseFieldInLdapDN();
-		if(usefields instanceof List){
-			Collections.sort((List) usefields);
+		Collection<Integer> usefields = getUseFieldInLdapDN();
+		if(usefields instanceof List<?>){
+			Collections.sort((List<Integer>) usefields);
 		}
-		Iterator iter = usefields.iterator(); 
+		Iterator<Integer> iter = usefields.iterator(); 
 		while(iter.hasNext()){
-			Integer next = (Integer) iter.next();
+			Integer next = iter.next();
 			String dnField = certExtractor.getFieldString(next.intValue());
 			if ( StringUtils.isEmpty(dnField) && userDataExtractor!=null ) {
 				dnField = userDataExtractor.getFieldString(next.intValue());
