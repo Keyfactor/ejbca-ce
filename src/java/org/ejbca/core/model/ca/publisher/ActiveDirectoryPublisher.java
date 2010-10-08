@@ -30,6 +30,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPEntry;
+import com.novell.ldap.LDAPModification;
 
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
@@ -233,10 +234,11 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *        modificationset.
      * @param pserson true if this is a person-entry, false if it is a CA.
      *
-     * @return LDAPModificationSet created...
+     * @return List of LDAPModification created...
+     * @Override
      */
-    protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
-    	ArrayList modSet = super.getModificationSet(oldEntry, dn, email, false, person, null);
+    protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
+    	ArrayList<LDAPModification> modSet = super.getModificationSet(oldEntry, dn, email, false, person, null);
 
 		// Modify AD specific attributes
 		
