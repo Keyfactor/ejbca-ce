@@ -113,8 +113,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 
 
 
-	public List getNewRequestDataAsText(Admin admin) {
-		ArrayList retval = new ArrayList();
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
 		String passwordtext = "NOTSHOWN";
 		if((newuserdata.getPassword() == null && !StringUtils.isEmpty(orguserdata.getPassword())) ||
@@ -151,8 +151,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		return new ApprovalDataText(header,data,true,false);
 	}
 
-	public List getOldRequestDataAsText(Admin admin) {
-		ArrayList retval = new ArrayList();
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
+		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",orguserdata.getUsername(),true,false));
 		retval.add(new ApprovalDataText("PASSWORD","NOTSHOWN",true,true));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(orguserdata.getDN()),true,false));

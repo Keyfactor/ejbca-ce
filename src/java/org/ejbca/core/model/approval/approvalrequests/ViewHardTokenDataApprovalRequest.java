@@ -82,8 +82,8 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 	}
 
 
-	public List getNewRequestDataAsText(Admin admin) {
-		ArrayList retval = new ArrayList();
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));		
 		retval.add(new ApprovalDataText("SUBJECTDN",dn,true,false));
 		retval.add(new ApprovalDataText("HARDTOKENSN",tokensn,true,false));
@@ -95,7 +95,7 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 		return retval;
 	}
 	
-	public List getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
 

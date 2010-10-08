@@ -85,8 +85,8 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	}
 
 
-	public List getNewRequestDataAsText(Admin admin) {
-		ArrayList retval = new ArrayList();
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));		
 		retval.add(new ApprovalDataText("SUBJECTDN",dn,true,false));
 		retval.add(new ApprovalDataText("LABEL",tokenTypeLabel,true,true));
@@ -94,7 +94,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 		return retval;
 	}
 	
-	public List getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
 

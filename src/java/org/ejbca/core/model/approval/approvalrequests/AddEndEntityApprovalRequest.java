@@ -115,8 +115,8 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 
 
 
-	public List getNewRequestDataAsText(Admin admin) {
-		ArrayList retval = new ArrayList();
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
@@ -141,7 +141,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		return new ApprovalDataText(header,data,true,false);
 	}
 
-	public List getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
 
