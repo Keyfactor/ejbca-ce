@@ -173,8 +173,8 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
-	public List getNewRequestDataAsText(Admin admin) {
-		ArrayList retval = new ArrayList();
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		if ( username != null ) {
 			retval.add(new ApprovalDataText("USERNAME",username,true,false));
 		}
@@ -200,7 +200,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * 
 	 * Should return a Collection of ApprovalDataText, one for each row
 	 */
-	public List getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
 
