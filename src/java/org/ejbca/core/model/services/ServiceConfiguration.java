@@ -13,6 +13,7 @@
 package org.ejbca.core.model.services;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
@@ -36,7 +37,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-	private static final float LATEST_VERSION = 4;
+	private static final float LATEST_VERSION = 5;
 	
 	private static final String INTERVALCLASSPATH = "INTERVALCLASSPATH";
 	private static final String INTERVALPROPERTIES = "INTERVALPROPERTIES";
@@ -47,6 +48,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	private static final String DESCRIPTION = "DESCRIPTION";
 	private static final String ACTIVE = "ACTIVE";
 	private static final String HIDDEN = "HIDDEN";
+	private static final String PINTONODES = "PINTONODES";
 	
 	/**
 	 * Constructor used to create a new service configuration.
@@ -184,6 +186,28 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		data.put(WORKERPROPERTIES, workerProperties);
 	}
 
+	/**
+	 * @return the list of nodes to pin this service to
+	 */
+	public String[] getPinToNodes() {
+		String[] ret = (String[]) data.get(PINTONODES);
+		if (ret == null) {
+			ret = new String[0];
+		}
+		return ret;
+	}
+
+	/**
+	 * @param nodes the list of nodes to pin this service (empty if no nodes)
+	 */
+	public void setPinToNodes(String[] nodes) {
+		log.debug("setPinToNodes: " + Arrays.toString(nodes));
+		if (nodes == null) {
+			nodes = new String[0];
+		}
+		data.put(PINTONODES, nodes);
+	}
+
 	public float getLatestVersion() {
 		return LATEST_VERSION;
 	}
@@ -261,6 +285,13 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		            // This is handled in ServiceData.getServiceConfiguration when we check if the service is upgraded
 				}
 			}
+
+            if (Float.compare(Float.valueOf(5), getVersion()) > 0) { // v5
+	            log.debug("Upgrading to version 5");
+	            // The PINTONODES field was added
+            	setPinToNodes(null);
+            }
+
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}		
 	}
