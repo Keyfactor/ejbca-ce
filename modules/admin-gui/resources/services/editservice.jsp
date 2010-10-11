@@ -44,7 +44,7 @@
 
 <h:panelGrid width="100%" columns="2" rowClasses="jsfrow2,jsfrow1" columnClasses="label,field">
 	<h:panelGroup>
-		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Currently%20Available%20Workers") %></h:outputText>
+		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Services%20Framework") %></h:outputText>
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}" valueChangeListener="#{editService.changeWorker}"
