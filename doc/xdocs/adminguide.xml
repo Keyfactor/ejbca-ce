@@ -1852,6 +1852,10 @@ isn't specified by the worker.
 </ul>
 </p>
 </subsubsection>
+<subsubsection name="Pin to Specific Node(s)">
+<p>With this option it is possible to choose on which nodes the service is allowed to execute. By not choosing any nodes in the list the service can be executed on any of the nodes.</p>
+<p>On startup of EJBCA each node adds its hostname to the list of nodes. The list can also be manually edited on the System Configuration page.</p>
+</subsubsection>
 </subsection>
 
 <subsection name="Currently Available Services">
