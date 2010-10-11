@@ -66,22 +66,21 @@ If you want to deploy on these application servers, read the section for your ap
 other appservers than JBoss, which is the most well supported.
 </note>
 <p>
-Needed to build and run are:
+Needed to build and run are:</p>
 <ul>
-<li>JDK 1.6.x (support for 1.5.x was dropped in EJBCA 3.9).</li>
+<li>JDK 1.6.x (support for 1.5.x was dropped in EJBCA 4.0).</li>
 <li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
-<li>JBOSS >=5.1.x (support for JBoss 4.2.x was dropped in EJBCA 3.9).</li>
+<li>JBOSS >=5.1.x (support for JBoss 4.2.x was dropped in EJBCA 4.0).</li>
 <li>Ant >= 1.7.1 to build (http://jakarta.apache.org/ant/)</li>
 </ul>
-<p>Note that JBoss 5 contains bugs not present in JBoss 4. EJBCA works on some version of JBoss 5 but not others.
-Therefore we recommend the latest version of JBoss 4 for running EJBCA.</p>
-</p><p>
+<p>
 Set the environment variable APPSRV_HOME to the directory where
 the appservers root is
  (/jboss-version). This is done so the compile process will find JEE jar files, and the deploy script will
  know where files are to be copied on JBoss. On JBoss they are by default copied to the
  directory $APPSRV_HOME/server/default/deploy.
- </p><p>
+ </p>
+ <p>
  Windows/Unix: 
  When we describe command line commands below we use
  unix notation, e.g. 'ejbca.sh' for the executable command files.
@@ -145,18 +144,18 @@ For production use you should use a real database instead of the embedded one.</
 Edit
 </p> 
 <source>
-    APPSRVR_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
- </source>
+ APPSRVR_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
+</source>
 <p> 
-and comment out
+and comment out the line:
 </p> 
 <source>
-    &lt;property name="webServiceHost"&gt;${jboss.bind.address}&lt;/property&gt;
- </source> 
+&lt;property name="webServiceHost"&gt;${jboss.bind.address}&lt;/property&gt;
+</source> 
 <p>
 to force the location to be generated with info from the WSDL request. 
 </p>
-
+</subsubsection>
 <subsubsection name="Memory configuration">
 <p>
 The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
@@ -213,7 +212,7 @@ Note that the installation must be done with a user with privileges to write to 
 example:
 </p> 
 <source>
-APPSRV_HOME=/opt/jboss-4.2.3
+APPSRV_HOME=/opt/jboss-5.1.0
 </source>
 <p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
 <br/>Due to Javas memory handling you mey need to assign more memory to ant in order to build the system without OutOfMemory errors. 
@@ -298,7 +297,7 @@ You must stop and start JBoss after doing this.
 <p>Instead of the regular Tomcat SSL connector you can configure to use the native connector, which is supposed to 
 improve performance.
 </p><p>
-See documentation in src/appserver/jboss/tomcat60 (if using JBoss 4.2.3) or src/appserver/tomcat60jboss5 (if using JBoss 5).
+See documentation in src/appserver/tomcat60jboss5.
 </p> 
 </subsection>
 
