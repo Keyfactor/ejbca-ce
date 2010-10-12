@@ -34,7 +34,7 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.util.InterfaceCache;
 
 /** 
- * Tests parts of the ServiceTimerSessionBean. The tests depends on the 
+ * Tests parts of the ServiceSession. The tests depends on the 
  * UserPasswordExpire functionality to have something to run with.
  *
  * @version $Id$
@@ -118,7 +118,7 @@ public class ServiceServiceTest extends CaTestCase {
         usernames.add(username);
         final ServiceConfiguration config = createAServiceConfig(username, TESTCA2);
         
-        // Pin this service to some nodes including this node
+        // Pin this service to some nodes NOT including this node
 		config.setPinToNodes(new String[] { NOT_THIS_HOST1, NOT_THIS_HOST2 });
         
         addAndActivateService(TEST02_SERVICE, config, TESTCA2);
