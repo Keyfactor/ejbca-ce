@@ -21,7 +21,7 @@ import org.ejbca.core.model.InternalResources;
 
 
 /**
- * Class managing available Hard CA Tokens and instansiated CA Tokens. 
+ * Class managing available Hard CA Tokens and instantiated CA Tokens. 
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
@@ -35,7 +35,7 @@ public class CATokenManager {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    /** Registry of available hard ca token classes that can be instsiated. */
+    /** Registry of available hard ca token classes that can be instantiated. */
     private Hashtable availablehardcatokens = new Hashtable();
     /** Registry of CATokens associated with a specific CA, kept so CATokens will not
      * be destroyed when a bean is passivated for example. */
@@ -80,7 +80,7 @@ public class CATokenManager {
      * @return The previously added CAToken or null if the token does not exist in the registry.
      */
     public CATokenContainer getCAToken(int caid) {
-        return (CATokenContainer)caTokenRegistry.get(new Integer(caid));
+        return (CATokenContainer)caTokenRegistry.get(caid);
     }
     
     /** Adds a CA token to the token registry. If a token already exists for the given CAid, 
@@ -90,12 +90,12 @@ public class CATokenManager {
      * @param token the token to be added
      */
     public synchronized void addCAToken(int caid, CATokenContainer token) {
-        if (caTokenRegistry.containsKey(new Integer(caid))) {
-            caTokenRegistry.remove(new Integer(caid));
+        if (caTokenRegistry.containsKey(caid)) {
+            caTokenRegistry.remove(caid);
             log.debug("Removed old CA token for CA: "+caid);
         }
         if (token != null) {
-            caTokenRegistry.put(new Integer(caid), token);            
+            caTokenRegistry.put(caid, token);            
             log.debug("Added CA token for CA: "+caid);
         }
     }
@@ -104,8 +104,8 @@ public class CATokenManager {
      * 
      */
     public synchronized void removeCAToken(int caid) {
-        if (caTokenRegistry.containsKey(new Integer(caid))) {
-        	caTokenRegistry.remove(new Integer(caid));
+        if (caTokenRegistry.containsKey(caid)) {
+        	caTokenRegistry.remove(caid);
             log.debug("Removed old CA token from registry: "+caid);
         }
     }
