@@ -130,6 +130,7 @@ public class XKMSKRSSTest extends TestCase {
     private final static String endentityprofilename;
 
     private final GlobalConfiguration orgGlobalConfig;
+	private static CAInfo orgCaInfo;
 
     private final static JAXBContext jAXBContext;
     private final static Marshaller marshaller;
@@ -188,6 +189,7 @@ public class XKMSKRSSTest extends TestCase {
 
     public XKMSKRSSTest() {
         orgGlobalConfig = raAdminSession.getCachedGlobalConfiguration(administrator);
+        orgCaInfo = caAdminSession.getCAInfo(administrator, "AdminCA1");
     }
     
     public void test00SetupDatabase() throws Exception {
@@ -1140,6 +1142,7 @@ public class XKMSKRSSTest extends TestCase {
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename2);
 
         raAdminSession.saveGlobalConfiguration(administrator, orgGlobalConfig);
+        caAdminSession.editCA(administrator, orgCaInfo);
     }
 
     private static KeyPair genKeys() throws Exception {
