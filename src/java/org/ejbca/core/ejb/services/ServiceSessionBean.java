@@ -506,7 +506,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         	return null;	// Don't return an inactive worker to run
         }
         String serviceName = serviceData.getName();
-        if (shouldRunOnThisNode(Arrays.asList(serviceConfiguration.getPinToNodes()))) {
+        final String hostname = getHostName();
+        if (shouldRunOnThisNode(hostname, Arrays.asList(serviceConfiguration.getPinToNodes()))) {
 	        long oldRunTimeStamp = serviceData.getRunTimeStamp();
 	        long oldNextRunTimeStamp = serviceData.getNextRunTimeStamp();
 	        worker = getWorker(serviceConfiguration, serviceName, oldRunTimeStamp, oldNextRunTimeStamp);
@@ -550,7 +551,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 	        }
         } else {
         	worker = null;
-			log.info("Service " + serviceName + " will not run on this node. Pinned to: " + Arrays.toString(serviceConfiguration.getPinToNodes()));
+        	log.info("Service " + serviceName + " will not run on this node: \"" + hostname + "\", Pinned to: " + Arrays.toString(serviceConfiguration.getPinToNodes()));
         }
         return worker;
     }
@@ -877,9 +878,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * @param nodes list of nodes the service is pinned to
      * @return true if the service should run on this node
      */
-    private boolean shouldRunOnThisNode(final List/*String*/ nodes) {
+    private boolean shouldRunOnThisNode(final String hostname, final List<String> nodes) {
     	final boolean result;
-    	final String hostname = getHostName();
     	if (nodes == null || nodes.isEmpty()) {
     		result = true;
     	} else if (hostname == null) {
