@@ -2782,8 +2782,8 @@ slotListIndex 1
 
 <subsection name="AEP Keyper">
 <p>
-The documement xxxxxxKeyperP11.pdf (xxxxxx is six digits) describes how the HSM is installed.
-As default there is only one slot - 0.
+The document xxxxxxKeyperInstallation.pdf (xxxxxx is six digits) in the KeyPer UserGuides describes how the HSM is installed, the details start in section 3.5 (Configuring the Keyper HSM for the first time).
+As default there is only one slot - 0. The document xxxxxxKeyperP11.pdf describes the PKCS#11 interface in details.
 </p>
 </subsection>
 
