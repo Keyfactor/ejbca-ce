@@ -20,6 +20,7 @@ import javax.ejb.EJBException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -207,13 +208,14 @@ public class MSCertTools {
 		return certificateProfileSession.getCertificateProfileId(admin, certProfileName);
 	}
 
-	public static int getOrCreateEndEndtityProfile(Admin admin, int templateIndex, int certProfileId, int caid, String usernameShort, String fetchedSubjectDN, RaAdminSession raAdminSession) {
+    public static int getOrCreateEndEndtityProfile(Admin admin, int templateIndex, int certProfileId, int caid, String usernameShort,
+            String fetchedSubjectDN, RaAdminSession raAdminSession, EndEntityProfileSession endEntityProfileSession) {
 		// Create end endity profile if neccesary
 		String endEntityProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
 
 		boolean newEndEntityProfile = false;
-		raAdminSession.removeEndEntityProfile(admin, endEntityProfileName);	// TODO: This for debug and really innefficient..
-		EndEntityProfile endEntityProfile = raAdminSession.getEndEntityProfile(admin, endEntityProfileName);
+		endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);	// TODO: This for debug and really inefficient..
+		EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(admin, endEntityProfileName);
 
 		if (endEntityProfile == null) {
 			endEntityProfile = new EndEntityProfile(false);
@@ -225,7 +227,7 @@ public class MSCertTools {
 				endEntityProfile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0,true);
 				endEntityProfile.setValue(EndEntityProfile.CLEARTEXTPASSWORD,0,EndEntityProfile.TRUE);
 				endEntityProfile.removeField(DnComponents.COMMONNAME, 0);	// We will add the right number of CNs later
-				raAdminSession.addEndEntityProfile(admin, endEntityProfileName, endEntityProfile);
+				endEntityProfileSession.addEndEntityProfile(admin, endEntityProfileName, endEntityProfile);
 				newEndEntityProfile = true;
 			} catch (EndEntityProfileExistsException e) {
 				throw new EJBException(e);	// We just checked for this so this cannot happen
@@ -269,8 +271,8 @@ public class MSCertTools {
 				}
 			}
 		}
-		raAdminSession.changeEndEntityProfile(admin, endEntityProfileName, endEntityProfile);
-		return raAdminSession.getEndEntityProfileId(admin, endEntityProfileName);
+		endEntityProfileSession.changeEndEntityProfile(admin, endEntityProfileName, endEntityProfile);
+		return endEntityProfileSession.getEndEntityProfileId(admin, endEntityProfileName);
 	}
 
 	

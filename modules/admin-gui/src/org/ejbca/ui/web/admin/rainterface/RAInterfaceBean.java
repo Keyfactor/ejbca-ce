@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -90,6 +91,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     private CertificateStoreSession certificatesession;
     private RaAdminSession raadminsession;
     private AuthorizationSession authorizationsession;
+    private EndEntityProfileSession endEntityProfileSession;
     private HardTokenSession hardtokensession;
     private KeyRecoverySession keyrecoverysession;
     private UserDataSourceSession userdatasourcesession;
@@ -129,8 +131,9 @@ public class RAInterfaceBean implements java.io.Serializable {
         certificatesession = ejb.getCertStoreSession();
         CAAdminSession caadminsession = ejb.getCAAdminSession();
         authorizationsession = ejb.getAuthorizationSession();
+        endEntityProfileSession = ejb.getEndEntityProfileSession();
 
-        this.profiles = new EndEntityProfileDataHandler(administrator,raadminsession,authorizationsession,caadminsession,informationmemory);
+        this.profiles = new EndEntityProfileDataHandler(administrator,authorizationsession,caadminsession, endEntityProfileSession, informationmemory);
         
         hardtokensession = ejb.getHardTokenSession();
         keyrecoverysession = ejb.getKeyRecoverySession();
@@ -551,7 +554,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     /* Returns false if profile is used by any user or in authorization rules. */
     public boolean removeEndEntityProfile(String name)throws Exception{
         boolean profileused = false;
-        int profileid = raadminsession.getEndEntityProfileId(administrator, name);
+        int profileid = endEntityProfileSession.getEndEntityProfileId(administrator, name);
         // Check if any users or authorization rule use the profile.
 
         profileused = adminsession.checkForEndEntityProfileId(administrator, profileid)

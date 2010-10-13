@@ -44,18 +44,9 @@ public class ApprovalRequestHelper {
 		return caname;
 	}
 	
-	public static String getEndEntityProfileName(Admin admin,int profileid){
-		String name;
-	    
-		try {
-			name = new EjbLocalHelper().getRAAdminSession().getEndEntityProfileName(admin, profileid);
-		} catch (javax.ejb.CreateException e) {
-			throw new javax.ejb.EJBException(e);
-		}
-		
-		return name;
-		
-	}
+    public static String getEndEntityProfileName(Admin admin, int profileid) {
+        return new EjbLocalHelper().getEndEntityProfileSession().getEndEntityProfileName(admin, profileid);
+    }
 	
     public static String getCertificateProfileName(Admin admin, int profileid) {
         String name;

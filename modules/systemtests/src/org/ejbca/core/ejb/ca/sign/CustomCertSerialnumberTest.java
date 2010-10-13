@@ -18,13 +18,13 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -64,7 +64,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 	private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 	private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
 	private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-	private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+	private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
 	private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
 	public CustomCertSerialnumberTest(String name) throws Exception {
@@ -81,7 +81,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 	public void setUp() throws Exception {
 
 		certificateProfileSession.removeCertificateProfile(admin,"FOOCERTPROFILE");
-		raAdminSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
+		endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
 
 		final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
 		certprof.setAllowKeyUsageOverride(true);
@@ -94,8 +94,8 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(fooCertProfileId));
 		profile.setValue(EndEntityProfile.AVAILKEYSTORE, 0, Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN));
 		assertTrue(profile.getUse(EndEntityProfile.CERTSERIALNR, 0));
-		raAdminSession.addEndEntityProfile(admin, "FOOEEPROFILE", profile);
-		fooEEProfileId = raAdminSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
+		endEntityProfileSession.addEndEntityProfile(admin, "FOOEEPROFILE", profile);
+		fooEEProfileId = endEntityProfileSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
 	}    
 
 	public void tearDown() throws Exception {

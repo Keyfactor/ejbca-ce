@@ -30,6 +30,7 @@ import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -98,6 +99,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -339,7 +341,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
         // Remove end entity profile
     
-            raAdminSession.removeEndEntityProfile(admin1, ENDENTITYPROFILE);
+            endEntityProfileSession.removeEndEntityProfile(admin1, ENDENTITYPROFILE);
         
 
         // Remove certificate profiles
@@ -460,7 +462,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private int createEndEntityProfile(Admin admin, String endEntityProfileName, int[] certProfiles) throws RemoteException, EndEntityProfileExistsException {
         EndEntityProfile profile;
 
-        raAdminSession.removeEndEntityProfile(admin, endEntityProfileName);
+        endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);
 
         StringBuilder availableCertProfiles = new StringBuilder();
         for (int id : certProfiles) {
@@ -477,9 +479,9 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles.toString());
         profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, new Integer(certProfiles[0]).toString());
         profile.setValue(EndEntityProfile.DEFAULTCA, 0, new Integer(approvalCAID).toString());
-        raAdminSession.addEndEntityProfile(admin, endEntityProfileName, profile);
+        endEntityProfileSession.addEndEntityProfile(admin, endEntityProfileName, profile);
 
-        int endEntityProfileId = raAdminSession.getEndEntityProfileId(admin1, endEntityProfileName);
+        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(admin1, endEntityProfileName);
         assertTrue(endEntityProfileId != 0);
 
         return endEntityProfileId;

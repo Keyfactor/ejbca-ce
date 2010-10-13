@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -77,12 +78,14 @@ public class CADataHandler implements Serializable {
     private RaAdminSession raadminsession; 
     private CertificateStoreSession certificatesession;  
     private CertificateProfileSession certificateProfileSession;
+    private EndEntityProfileSession endEntityProfileSession;
     private EjbcaWebBean ejbcawebbean;
     private CreateCRLSession crlSession;
     
     /** Creates a new instance of CertificateProfileDataHandler */
     public CADataHandler(Admin administrator, 
                          CAAdminSession caadminsession, 
+                         EndEntityProfileSession endEntityProfileSession,
                          UserAdminSession adminsession, 
                          RaAdminSession raadminsession, 
                          CertificateStoreSession certificatesession,
@@ -96,6 +99,7 @@ public class CADataHandler implements Serializable {
        this.adminsession = adminsession;
        this.certificatesession = certificatesession;
        this.certificateProfileSession = certificateProfileSession;
+       this.endEntityProfileSession = endEntityProfileSession;
        this.raadminsession = raadminsession;
        this.administrator = administrator;          
        this.crlSession = crlSession;
@@ -154,7 +158,7 @@ public class CADataHandler implements Serializable {
       
     boolean caidexits = this.adminsession.checkForCAId(administrator, caid) ||
                         this.certificateProfileSession.existsCAInCertificateProfiles(administrator, caid) ||
-                        this.raadminsession.existsCAInEndEntityProfiles(administrator, caid) ||
+                        this.endEntityProfileSession.existsCAInEndEntityProfiles(administrator, caid) ||
                         this.authorizationsession.existsCAInRules(administrator, caid);
      
     if(!caidexits){

@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -68,6 +69,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private HardTokenSessionRemote hardTokenSession = ejb.getHardTokenSession();
     private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
@@ -211,7 +213,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         profile.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, "" + hardtokenissuerid);
 
         // Save Profile
-        this.raAdminSession.addEndEntityProfile(getAdmin(), ADMINTOKENENDENTITYPROFILE, profile);
+        this.endEntityProfileSession.addEndEntityProfile(getAdmin(), ADMINTOKENENDENTITYPROFILE, profile);
     }
 
     /**
@@ -221,7 +223,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void createSuperAdminTokenUser(int caid) throws Exception {
-        int endentityprofileid = raAdminSession.getEndEntityProfileId(getAdmin(), ADMINTOKENENDENTITYPROFILE);
+        int endentityprofileid = endEntityProfileSession.getEndEntityProfileId(getAdmin(), ADMINTOKENENDENTITYPROFILE);
         int certificateprofileid = SecConst.CERTPROFILE_FIXED_ENDUSER;
         int tokenid = hardTokenSession.getHardTokenProfileId(getAdmin(), ADMINTOKENPROFILENAME);
         int hardtokenissuerid = hardTokenSession.getHardTokenIssuerId(getAdmin(), ISSUERALIAS);

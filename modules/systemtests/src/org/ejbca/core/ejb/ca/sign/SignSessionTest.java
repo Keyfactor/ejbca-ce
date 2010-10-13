@@ -57,12 +57,12 @@ import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -177,7 +177,7 @@ public class SignSessionTest extends CaTestCase {
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
@@ -290,11 +290,11 @@ public class SignSessionTest extends CaTestCase {
         certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
         final int fooCertProfile = certificateProfileSession.getCertificateProfileId(admin, "FOOCERTPROFILE");
 
-        raAdminSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
-        raAdminSession.addEndEntityProfile(admin, "FOOEEPROFILE", profile);
-        final int fooEEProfile = raAdminSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
+        endEntityProfileSession.addEndEntityProfile(admin, "FOOEEPROFILE", profile);
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
 
         // Make user that we know...
         boolean userExists = false;
@@ -616,7 +616,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        raAdminSession.removeEndEntityProfile(admin, "TESTMULALTNAME");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTMULALTNAME");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COUNTRY);
@@ -629,8 +629,8 @@ public class SignSessionTest extends CaTestCase {
         profile.addField(DnComponents.UPN);
         profile.addField(DnComponents.UPN);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        raAdminSession.addEndEntityProfile(admin, "TESTMULALTNAME", profile);
-        int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTMULALTNAME");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTMULALTNAME", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTMULALTNAME");
 
         // Change a user that we know...
         userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
@@ -686,7 +686,7 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("10.1.1.1", name);
 
         // Clean up
-        raAdminSession.removeEndEntityProfile(admin, "TESTMULALTNAME");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTMULALTNAME");
 
         log.trace("<test09TestMultipleAltNames()");
     }
@@ -713,14 +713,14 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        raAdminSession.removeEndEntityProfile(admin, "TESTQC");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTQC");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        raAdminSession.addEndEntityProfile(admin, "TESTQC", profile);
-        int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTQC");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTQC", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTQC");
 
         // Change a user that we know...
         userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,CN=qc", null, "foo@anatom.nu", false, eeprofile, cprofile, SecConst.USER_ENDUSER,
@@ -744,7 +744,7 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("50000 SEK", limit);
 
         // Clean up
-        raAdminSession.removeEndEntityProfile(admin, "TESTQC");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTQC");
         certificateProfileSession.removeCertificateProfile(admin, "TESTQC");
 
         log.trace("<test10TestQcCert()");
@@ -768,15 +768,15 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        raAdminSession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         profile.setUse(EndEntityProfile.CARDNUMBER, 0, true);
-        raAdminSession.addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
-        int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTVALOVERRIDE");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTVALOVERRIDE");
         // Change a user that we know...
         UserDataVO user = new UserDataVO("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -887,7 +887,7 @@ public class SignSessionTest extends CaTestCase {
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
 
         // Clean up
-        raAdminSession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
         certificateProfileSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
 
         log.trace("<test11TestValidityOverride()");
@@ -1279,8 +1279,8 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
         profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         profile.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
-        raAdminSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
-        pid = raAdminSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
+        pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
 
         // Change already existing user
         UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
@@ -1450,15 +1450,15 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        raAdminSession.removeEndEntityProfile(admin, "TESTDNORDER");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNORDER");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        raAdminSession.addEndEntityProfile(admin, "TESTDNORDER", profile);
-        int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTDNORDER");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTDNORDER", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTDNORDER");
 
         UserDataVO user = new UserDataVO("foo", "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1483,7 +1483,7 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("CN=dnorder, O=PrimeKey, C=SE", dn);
 
         // Clean up
-        raAdminSession.removeEndEntityProfile(admin, "TESTDNORDER");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNORDER");
         certificateProfileSession.removeCertificateProfile(admin, "TESTDNORDER");
 
         log.trace("<test22DnOrder()");
@@ -1673,8 +1673,8 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
         profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
         profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
-        raAdminSession.addEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
-        pid = raAdminSession.getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
+        pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
 
         // Change already existing user
         UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
@@ -1716,14 +1716,14 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        raAdminSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        raAdminSession.addEndEntityProfile(admin, "TESTDNOVERRIDE", profile);
-        int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTDNOVERRIDE");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTDNOVERRIDE", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTDNOVERRIDE");
         UserDataVO user = new UserDataVO("foo", "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
@@ -1780,14 +1780,14 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        raAdminSession.removeEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        raAdminSession.addEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE", profile);
-        int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTEXTENSIONOVERRIDE");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEXTENSIONOVERRIDE");
         UserDataVO user = new UserDataVO("foo", "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
@@ -1902,14 +1902,14 @@ public class SignSessionTest extends CaTestCase {
         int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTSIGALG");
 
         // Create a good end entity profile (good enough)
-        raAdminSession.removeEndEntityProfile(admin, "TESTSIGALG");
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTSIGALG");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        raAdminSession.addEndEntityProfile(admin, "TESTSIGALG", profile);
-        int eeprofile = raAdminSession.getEndEntityProfileId(admin, "TESTSIGALG");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTSIGALG", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTSIGALG");
         UserDataVO user = new UserDataVO("foo", "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
@@ -1996,22 +1996,22 @@ public class SignSessionTest extends CaTestCase {
 
         // Delete test end entity profile
         try {
-            raAdminSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
         } catch (Exception e) { /* ignore */
         }
         try {
-            raAdminSession.removeEndEntityProfile(admin, "TESTISSUANCEREVREASON");
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTISSUANCEREVREASON");
         } catch (Exception e) { /* ignore */
         }
         try {
-            raAdminSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
         } catch (Exception e) { /* ignore */
         }
         try {
             certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE ");
         } catch (Exception e) { /* ignore */
         }
-        raAdminSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
         certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
         // delete users that we know...
         try {

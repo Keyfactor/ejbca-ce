@@ -176,7 +176,7 @@ public class ApplyBean implements java.io.Serializable {
         }  
 
         if (useradmindata != null) {
-            EndEntityProfile eprof = ejb.getRAAdminSession().getEndEntityProfile(administrator, useradmindata.getEndEntityProfileId());
+            EndEntityProfile eprof = ejb.getEndEntityProfileSession().getEndEntityProfile(administrator, useradmindata.getEndEntityProfileId());
             Collection c = eprof.getAvailableCertificateProfileIds();
             if (!c.isEmpty()) {
             	ArrayList names = new ArrayList();

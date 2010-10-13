@@ -31,6 +31,8 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -49,7 +51,7 @@ public class AutoEnrollServletTest extends TestCase {
 
 	private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();    
 	private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-	private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+	private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
 
 	private static final String CERTREQ_MACHINE_TEMPLATE =
 		"-----BEGIN NEW CERTIFICATE REQUEST-----" +
@@ -285,7 +287,7 @@ public class AutoEnrollServletTest extends TestCase {
 		} catch (Exception e) {
 			log.debug(e);
 		}
-		raAdminSession.removeEndEntityProfile(admin, profileName);
+		endEntityProfileSession.removeEndEntityProfile(admin, profileName);
 		certificateProfileSession.removeCertificateProfile(admin, profileName);
 	}
 }

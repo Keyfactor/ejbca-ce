@@ -336,7 +336,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 			if (currentProfile == BasicAccessRuleSet.ENDENTITYPROFILE_ALL) {
 				list.add(new SelectItem(currentProfile, getEjbcaWebBean().getText("ALL")));
 			} else {
-				list.add(new SelectItem(currentProfile, EjbcaJSFHelper.getBean().getRaAdminSession().getEndEntityProfileName(getAdmin(), currentProfile)));
+				list.add(new SelectItem(currentProfile, EjbcaJSFHelper.getBean().getEndEntityProfileSession().getEndEntityProfileName(getAdmin(), currentProfile)));
 			}
 		}
 		return list;
@@ -414,11 +414,11 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		// Check if it is a profile rule, then replace profile id with profile name.
 		if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
 			if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
-				return AccessRulesConstants.ENDENTITYPROFILEPREFIX + EjbcaJSFHelper.getBean().getRaAdminSession().getEndEntityProfileName(
+				return AccessRulesConstants.ENDENTITYPROFILEPREFIX + EjbcaJSFHelper.getBean().getEndEntityProfileSession().getEndEntityProfileName(
 						getAdmin(), Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length())));
 			} else {
 				String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
-				return AccessRulesConstants.ENDENTITYPROFILEPREFIX + EjbcaJSFHelper.getBean().getRaAdminSession().getEndEntityProfileName(
+				return AccessRulesConstants.ENDENTITYPROFILEPREFIX + EjbcaJSFHelper.getBean().getEndEntityProfileSession().getEndEntityProfileName(
 						getAdmin(), Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/')))) + tmpString.substring(tmpString.indexOf('/'));
 			}
 		}

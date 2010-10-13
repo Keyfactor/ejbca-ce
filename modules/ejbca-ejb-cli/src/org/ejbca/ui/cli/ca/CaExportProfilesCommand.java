@@ -20,9 +20,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -36,8 +35,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
@@ -57,7 +55,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 return;
             }
             Collection certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),0, caAdminSession.getAvailableCAs(getAdmin()));                                               
-			Collection endentityprofids = raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin());
+			Collection endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin());
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");
             Iterator iter = certprofids.iterator();
@@ -90,8 +88,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
                     //getLogger().debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
                 } else {
-                	String profilename = raAdminSession.getEndEntityProfileName(getAdmin(), profileid);
-                    EndEntityProfile profile = raAdminSession.getEndEntityProfile(getAdmin(), profileid);
+                	String profilename = endEntityProfileSession.getEndEntityProfileName(getAdmin(), profileid);
+                    EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(getAdmin(), profileid);
                     if (profile == null) {
                     	getLogger().error("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
                     } else {

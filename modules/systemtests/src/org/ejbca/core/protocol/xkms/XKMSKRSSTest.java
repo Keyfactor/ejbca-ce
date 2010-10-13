@@ -36,6 +36,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
@@ -142,6 +143,7 @@ public class XKMSKRSSTest extends TestCase {
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -227,8 +229,8 @@ public class XKMSKRSSTest extends TestCase {
 
         endentityprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
 
-        raAdminSession.addEndEntityProfile(administrator, endentityprofilename, endentityprofile);
-        final int endEntityProfileId = raAdminSession.getEndEntityProfileId(administrator, endentityprofilename);
+        endEntityProfileSession.addEndEntityProfile(administrator, endentityprofilename, endentityprofile);
+        final int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename);
 
         final String pwd = "foo123";
         final int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
@@ -277,7 +279,7 @@ public class XKMSKRSSTest extends TestCase {
                 log.info("User already exists in the database.");
             } else {
                 userAdminSession.addUser(administrator, userName, pwd, CertTools.stringToBCDNString(dn), subjectaltname1, email1, false,
-                        raAdminSession.getEndEntityProfileId(administrator, endentityprofilename), certificatetypeid, type, token,
+                        endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename), certificatetypeid, type, token,
                         hardtokenissuerid, caid);
             }
             userAdminSession.setClearTextPassword(administrator, userName, pwd);
@@ -718,7 +720,7 @@ public class XKMSKRSSTest extends TestCase {
     }
 
     public void test12SimpleRecover() throws Exception {
-        userAdminSession.prepareForKeyRecovery(administrator, username2, raAdminSession.getEndEntityProfileId(administrator, endentityprofilename), cert2);
+        userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename), cert2);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("700");
@@ -777,7 +779,7 @@ public class XKMSKRSSTest extends TestCase {
     }
 
     public void test13RecoverWrongPassword() throws Exception {
-        userAdminSession.prepareForKeyRecovery(administrator, username2, raAdminSession.getEndEntityProfileId(administrator, endentityprofilename), cert2);
+        userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename), cert2);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("701");
@@ -1136,7 +1138,7 @@ public class XKMSKRSSTest extends TestCase {
         userAdminSession.deleteUser(administrator, username2);
         userAdminSession.deleteUser(administrator, username3);
 
-        raAdminSession.removeEndEntityProfile(administrator, endentityprofilename);
+        endEntityProfileSession.removeEndEntityProfile(administrator, endentityprofilename);
 
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename1);
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename2);

@@ -27,10 +27,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -98,7 +97,7 @@ public class DemoCertReqServlet extends HttpServlet {
 	@EJB
 	private UserAdminSessionRemote userAdminSession;
 	@EJB
-	private RaAdminSessionRemote raAdminSession;
+	private EndEntityProfileSessionLocal endEntityProfileSession;
 
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -211,7 +210,7 @@ public class DemoCertReqServlet extends HttpServlet {
     String tmp = null;
     int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
     if ((tmp=request.getParameter("entityprofile")) != null) {
-        eProfileId = raAdminSession.getEndEntityProfileId(admin, request.getParameter("entityprofile"));
+        eProfileId = endEntityProfileSession.getEndEntityProfileId(admin, request.getParameter("entityprofile"));
         if (eProfileId == 0) {
             throw new ServletException("No such end entity profile: " + tmp);
         }

@@ -21,11 +21,10 @@ import java.security.cert.Certificate;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -51,9 +50,9 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
 
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private CreateCRLSessionRemote createCrlSession = InterfaceCache.getCrlSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
 
     private int userNo = 0;
     private KeyPair keys;
@@ -137,15 +136,15 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             }
 
             int cid = certificateProfileSession.getCertificateProfileId(administrator, certificateProfileName);
-            int eid = raAdminSession.getEndEntityProfileId(administrator, endEntityProfileName);
+            int eid = endEntityProfileSession.getEndEntityProfileId(administrator, endEntityProfileName);
             if (eid == 0) {
                 EndEntityProfile endEntityProfile = new EndEntityProfile(true);
                 endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cid);
                 endEntityProfile.setUse(EndEntityProfile.ENDTIME, 0, true);
                 // endEntityProfile.setValue(EndEntityProfile.ENDTIME, 0,
                 // "0:0:10");
-                raAdminSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
-                eid = raAdminSession.getEndEntityProfileId(administrator, endEntityProfileName);
+                endEntityProfileSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
+                eid = endEntityProfileSession.getEndEntityProfileId(administrator, endEntityProfileName);
             }
             userdata.setEndEntityProfileId(eid);
             ExtendedInformation extendedInformation = new ExtendedInformation();
@@ -170,7 +169,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                         RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
                 createCrlSession.setArchivedStatus(CertTools.getFingerprintAsString(certificate));
             }
-            raAdminSession.removeEndEntityProfile(administrator, endEntityProfileName);
+            endEntityProfileSession.removeEndEntityProfile(administrator, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(administrator, certificateProfileName);
             if (i % 10 == 0) {
                 log.debug("Created " + i + " users...");

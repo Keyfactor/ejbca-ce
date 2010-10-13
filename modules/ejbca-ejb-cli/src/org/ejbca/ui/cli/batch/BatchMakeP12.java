@@ -30,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -73,6 +74,7 @@ public class BatchMakeP12 extends BaseCommand {
 
     private AuthenticationSessionRemote authenticationSession = ejb.getAuthenticationSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = ejb.getKeyRecoverySession();
     private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     private SignSessionRemote signSession = ejb.getSignSession();
@@ -367,7 +369,7 @@ public class BatchMakeP12 extends BaseCommand {
         KeyPair rsaKeys = null;
         X509Certificate orgCert = null;
         if (getUseKeyRecovery() && keyrecoverflag) {
-            boolean reusecertificate = raAdminSession.getEndEntityProfile(getAdmin(), data.getEndEntityProfileId()).getReUseKeyRevoceredCertificate();
+            boolean reusecertificate = endEntityProfileSession.getEndEntityProfile(getAdmin(), data.getEndEntityProfileId()).getReUseKeyRevoceredCertificate();
             // Recover Keys
 
             KeyRecoveryData recoveryData = keyRecoverySession.keyRecovery(getAdmin(), data.getUsername(), data.getEndEntityProfileId());
