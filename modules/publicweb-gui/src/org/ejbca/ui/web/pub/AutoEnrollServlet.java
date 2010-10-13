@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
@@ -68,6 +69,8 @@ public class AutoEnrollServlet extends HttpServlet {
 
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
+	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
 	private RaAdminSessionLocal raAdminSession;
 	@EJB
@@ -171,7 +174,8 @@ public class AutoEnrollServlet extends HttpServlet {
 			fetchedSubjectDN = ActiveDirectoryTools.getUserDNFromActiveDirectory(globalConfiguration, usernameShort);
 		}
 		int certProfileId = MSCertTools.getOrCreateCertificateProfile(admin, templateIndex, certificateProfileSession);
-		int endEntityProfileId = MSCertTools.getOrCreateEndEndtityProfile(admin, templateIndex, certProfileId, caid, usernameShort, fetchedSubjectDN, raAdminSession);
+        int endEntityProfileId = MSCertTools.getOrCreateEndEndtityProfile(admin, templateIndex, certProfileId, caid, usernameShort, fetchedSubjectDN,
+                raAdminSession, endEntityProfileSession);
 		if (endEntityProfileId == -1) {
 			String msg = "Could not retrieve required information from AD.";
 			log.error(msg);

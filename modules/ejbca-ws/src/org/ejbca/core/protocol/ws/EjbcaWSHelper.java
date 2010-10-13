@@ -43,6 +43,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -52,7 +53,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -102,19 +102,19 @@ public class EjbcaWSHelper {
     private CertificateStoreSession certificateStoreSession;
     private CertificateProfileSession certificateProfileSession;
     private HardTokenSession hardTokenSession;
-    private RaAdminSession raAdminSession;
+    private EndEntityProfileSession endEntityProfileSession;
     private UserAdminSession userAdminSession;
 
     protected EjbcaWSHelper(WebServiceContext wsContext, AuthorizationSession authorizationSession, CAAdminSession caAdminSession,
-            CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, HardTokenSession hardTokenSession,
-            RaAdminSession raAdminSession, UserAdminSession userAdminSession) {
+            CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession,
+            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, UserAdminSession userAdminSession) {
     	this.wsContext = wsContext;
 		this.authorizationSession = authorizationSession;
 		this.caAdminSession = caAdminSession;
 		this.certificateProfileSession = certificateProfileSession;
 		this.certificateStoreSession = certificateStoreSession;
 		this.hardTokenSession = hardTokenSession;
-		this.raAdminSession = raAdminSession;
+		this.endEntityProfileSession = endEntityProfileSession;
 		this.userAdminSession = userAdminSession;
 	}
 	
@@ -271,7 +271,7 @@ public class EjbcaWSHelper {
 			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
 		}
 		
-		final int endentityprofileid = raAdminSession.getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
+		final int endentityprofileid = endEntityProfileSession.getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
 		if(endentityprofileid == 0){
 			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, 
                 "Error End Entity profile " + userdata.getEndEntityProfileName() + " doesn't exists.");
@@ -372,7 +372,7 @@ public class EjbcaWSHelper {
 		}
 		dataWS.setCaName(caname);
 		
-		String endentityprofilename = raAdminSession.getEndEntityProfileName(admin,userdata.getEndEntityProfileId());
+		String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(admin,userdata.getEndEntityProfileId());
 		if(endentityprofilename == null){
 			String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " doesn't exists. User: "+username;
 			log.error(message);
@@ -524,7 +524,7 @@ public class EjbcaWSHelper {
 		Query retval = new Query(Query.TYPE_USERQUERY);		  		
 		switch(usermatch.getMatchwith()){
 		  case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
-			  String endentityprofilename = Integer.toString(raAdminSession.getEndEntityProfileId(admin,usermatch.getMatchvalue()));
+			  String endentityprofilename = Integer.toString(endEntityProfileSession.getEndEntityProfileId(admin,usermatch.getMatchvalue()));
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),endentityprofilename);
 			  break;
 		  case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:

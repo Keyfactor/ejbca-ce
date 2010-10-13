@@ -109,7 +109,7 @@ public class ApprovalDataVOView  implements Serializable{
 	    if(data.getEndEntityProfileiId() == ApprovalDataVO.ANY_ENDENTITYPROFILE){
 	    	return helpBean.getEjbcaWebBean().getText("ANYENDENTITYPROFILE", true);
 	    }
-		return helpBean.getRaAdminSession().getEndEntityProfileName(helpBean.getAdmin(), data.getEndEntityProfileiId());		
+		return helpBean.getBean().getEndEntityProfileSession().getEndEntityProfileName(helpBean.getAdmin(), data.getEndEntityProfileiId());		
 	}
 	
 	public String getRemainingApprovals(){

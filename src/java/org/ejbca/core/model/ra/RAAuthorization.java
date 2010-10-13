@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -45,13 +46,15 @@ public class RAAuthorization implements Serializable {
     private AuthorizationSession authorizationsession;
     private RaAdminSession raadminsession;
     private CAAdminSession caAdminSession;
+    private EndEntityProfileSession endEntityProfileSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(Admin admin, RaAdminSession raadminsession, AuthorizationSession authorizationsession, CAAdminSession caAdminSession) {
+    public RAAuthorization(Admin admin, RaAdminSession raadminsession, AuthorizationSession authorizationsession, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession) {
     	this.admin = admin;
     	this.raadminsession = raadminsession;
     	this.authorizationsession = authorizationsession;
     	this.caAdminSession = caAdminSession;
+    	this.endEntityProfileSession = endEntityProfileSession;
     }
 
     /**
@@ -125,9 +128,9 @@ public class RAAuthorization implements Serializable {
      */
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
-    	Collection<Integer> profileIds = new ArrayList<Integer>(raadminsession.getEndEntityProfileIdToNameMap(admin).keySet());
+    	Collection<Integer> profileIds = new ArrayList<Integer>(endEntityProfileSession.getEndEntityProfileIdToNameMap(admin).keySet());
       	Collection<Integer> result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, profileIds);     	
-      	result.retainAll(this.raadminsession.getAuthorizedEndEntityProfileIds(admin));
+      	result.retainAll(this.endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin));
       	Iterator<Integer> iter = result.iterator();
       	                    
         while(iter.hasNext()){
@@ -149,8 +152,8 @@ public class RAAuthorization implements Serializable {
     public TreeMap getAuthorizedEndEntityProfileNames(){
       if(authprofilenames==null){
         authprofilenames = new TreeMap();  
-        Iterator<Integer> iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();      
-        HashMap idtonamemap = raadminsession.getEndEntityProfileIdToNameMap(admin);
+        Iterator<Integer> iter = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin).iterator();      
+        HashMap idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = iter.next();
           authprofilenames.put(idtonamemap.get(id),id);
@@ -184,8 +187,8 @@ public class RAAuthorization implements Serializable {
     
 	public TreeMap authEndEntityProfileNames(String rights) {
 	  TreeMap returnval = new TreeMap();	
-	  HashMap profilemap = this.raadminsession.getEndEntityProfileIdToNameMap(admin);
-	  Iterator<Integer> iter = raadminsession.getAuthorizedEndEntityProfileIds(admin).iterator();
+	  HashMap profilemap = this.endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);
+	  Iterator<Integer> iter = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin).iterator();
 	  while(iter.hasNext()){
 		Integer next = iter.next();  
 		if(this.endEntityAuthorization(admin, next.intValue(), rights)) { 

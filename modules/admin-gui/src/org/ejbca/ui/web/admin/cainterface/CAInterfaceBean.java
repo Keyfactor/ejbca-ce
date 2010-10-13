@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -89,6 +90,7 @@ public class CAInterfaceBean implements Serializable {
     private CADataHandler cadatahandler;
     private PublisherDataHandler publisherdatahandler;
     private CertificateProfileSession certificateProfileSession;
+    private EndEntityProfileSession endEntityProfileSession;
     private boolean initialized;
     private Admin administrator;
     private InformationMemory informationmemory;
@@ -119,12 +121,12 @@ public class CAInterfaceBean implements Serializable {
           publishersession = ejb.getPublisherSession();               
           publisherqueuesession = ejb.getPublisherQueueSession();
           certificateProfileSession = ejb.getCertificateProfileSession();
-  	      	    
+          endEntityProfileSession = ejb.getEndEntityProfileSession();    	    
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, certificateProfileSession, informationmemory);;
-          cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, createCrlSession, ejbcawebbean);
+          cadatahandler = new CADataHandler(administrator, caadminsession, endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, createCrlSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificatesession,  informationmemory);
           isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
@@ -224,7 +226,7 @@ public class CAInterfaceBean implements Serializable {
         if(certprofile.getType() == CertificateProfile.TYPE_ENDENTITY){
           // Check if any users or profiles use the certificate id.
           certificateprofileused = adminsession.checkForCertificateProfileId(administrator, certificateprofileid)
-                                || raadminsession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid)
+                                || endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid)
 								|| hardtokensession.existsCertificateProfileInHardTokenProfiles(administrator, certificateprofileid);
         }else{
            certificateprofileused = caadminsession.exitsCertificateProfileInCAs(administrator, certificateprofileid);

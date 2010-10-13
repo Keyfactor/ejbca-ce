@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.TreeMap;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
@@ -60,10 +61,9 @@ public class InformationMemory implements Serializable {
     private Admin administrator;
     // Session Bean interfaces (was *Local originally)
     private CAAdminSession caadminsession;
-    private RaAdminSession raadminsession;
     private AuthorizationSession authorizationsession;
+    private EndEntityProfileSession endEntityProfileSession;
     private PublisherSession publishersession;
-    private CertificateStoreSession certificatestoresession;
     private UserDataSourceSession userdatasourcesession = null;
     private CertificateProfileSession certificateProfileSession;
     
@@ -95,21 +95,21 @@ public class InformationMemory implements Serializable {
                              RaAdminSession raadminsession, 
                              AuthorizationSession authorizationsession,
                              CertificateStoreSession certificatestoresession,
+                             EndEntityProfileSession endEntityProfileSession,
                              HardTokenSession hardtokensession,
-							 PublisherSession publishersession,
-							 UserDataSourceSession userdatasourcesession, 
-							 CertificateProfileSession certificateProfileSession,
+                             PublisherSession publishersession,
+                             UserDataSourceSession userdatasourcesession, 
+                             CertificateProfileSession certificateProfileSession,
                              GlobalConfiguration globalconfiguration){
       this.caadminsession = caadminsession;                           
       this.administrator = administrator;
-      this.raadminsession = raadminsession;
       this.authorizationsession = authorizationsession;
-      this.certificatestoresession = certificatestoresession;
+      this.endEntityProfileSession = endEntityProfileSession;
       this.publishersession = publishersession;
       this.userdatasourcesession = userdatasourcesession;
       this.globalconfiguration = globalconfiguration;
       this.certificateProfileSession = certificateProfileSession;
-      this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession, caadminsession);
+      this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession, caadminsession, endEntityProfileSession);
       this.caauthorization = new CAAuthorization(administrator, caadminsession, certificatestoresession, authorizationsession, certificateProfileSession);
       this.logauthorization = new LogAuthorization(administrator, authorizationsession, caadminsession);
       this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, caadminsession);
@@ -121,7 +121,7 @@ public class InformationMemory implements Serializable {
      */
     public HashMap getEndEntityProfileIdToNameMap(){
       if(endentityprofileidtonamemap == null){
-        endentityprofileidtonamemap = raadminsession.getEndEntityProfileIdToNameMap(administrator);  
+        endentityprofileidtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(administrator);  
       }
       
       return endentityprofileidtonamemap;
@@ -285,7 +285,7 @@ public class InformationMemory implements Serializable {
      */      
     public EndEntityProfileNameProxy getEndEntityProfileNameProxy(){
       if(endentityprofilenameproxy == null) {
-        endentityprofilenameproxy = new EndEntityProfileNameProxy(administrator, raadminsession);  
+        endentityprofilenameproxy = new EndEntityProfileNameProxy(administrator, endEntityProfileSession);  
       }
       return endentityprofilenameproxy;
     }
@@ -347,10 +347,10 @@ public class InformationMemory implements Serializable {
         HashMap certproftemp = new HashMap();
           
         endentityavailablecas = new HashMap();
-        Iterator endentityprofileiter = raadminsession.getAuthorizedEndEntityProfileIds(administrator).iterator();
+        Iterator endentityprofileiter = endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator).iterator();
         while(endentityprofileiter.hasNext()){
            Integer nextendentityprofileid = (Integer) endentityprofileiter.next();
-           EndEntityProfile endentityprofile = raadminsession.getEndEntityProfile(administrator,nextendentityprofileid.intValue());
+           EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(administrator,nextendentityprofileid.intValue());
            String[] values   = endentityprofile.getValue(EndEntityProfile.AVAILCAS,0).split(EndEntityProfile.SPLITCHAR); 
            ArrayList endentityprofileavailcas = new ArrayList();
            for(int i=0;i < values.length;i++){
@@ -405,7 +405,7 @@ public class InformationMemory implements Serializable {
       if(authorizedaccessrules == null) {
 	    authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator, caadminsession.getAvailableCAs(administrator),
 	    		globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(), globalconfiguration.getEnableKeyRecovery(),
-	    		raadminsession.getAuthorizedEndEntityProfileIds(administrator), userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true)));
+	    		endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator), userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true)));
       }
 	   return authorizedaccessrules;
     }

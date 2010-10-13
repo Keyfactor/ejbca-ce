@@ -21,7 +21,7 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.util.HashMap;
 
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -33,13 +33,13 @@ import org.ejbca.core.model.log.Admin;
 public class EndEntityProfileNameProxy implements java.io.Serializable {
     
     private HashMap profilenamestore;
-    private RaAdminSession raadminsession;
+    private EndEntityProfileSession endEntityProfileSession;
     private Admin   administrator;
 
     /** Creates a new instance of ProfileNameProxy */
-    public EndEntityProfileNameProxy(Admin administrator, RaAdminSession raadminsession){
+    public EndEntityProfileNameProxy(Admin administrator, EndEntityProfileSession endEntityProfileSession){
               // Get the RaAdminSession instance.
-      this.raadminsession = raadminsession;  
+      this.endEntityProfileSession = endEntityProfileSession;
       
       profilenamestore = new HashMap(); 
       this.administrator = administrator;  
@@ -58,7 +58,7 @@ public class EndEntityProfileNameProxy implements java.io.Serializable {
       
       if(returnval==null){
         // Retreive profilename
-        returnval = raadminsession.getEndEntityProfileName(administrator, profileid);
+        returnval = endEntityProfileSession.getEndEntityProfileName(administrator, profileid);
         if(returnval != null) {
           profilenamestore.put(new Integer(profileid),returnval);
         }

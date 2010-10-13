@@ -34,6 +34,7 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -158,6 +159,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -377,8 +379,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             profile.setValue(EndEntityProfile.AVAILCAS,0,Integer.toString(SecConst.ALLCAS));
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
             profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON,0,""+RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
-            raAdminSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
-            raAdminSession.getEndEntityProfileId(intAdmin, WS_EEPROF_EI);
+            endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
+            endEntityProfileSession.getEndEntityProfileId(intAdmin, WS_EEPROF_EI);
         } catch (EndEntityProfileExistsException pee) {
         	assertTrue("Can not create end entity profile", false);
         }
@@ -1399,8 +1401,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         profile.setReUseKeyRevoceredCertificate(true);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        raAdminSession.addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
-        assertTrue("Unable to kreate KEYRECOVERY end entity profile.", raAdminSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY") != 0);
+        endEntityProfileSession.addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
+        assertTrue("Unable to kreate KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY") != 0);
 
         // Add a new user, set token to P12, status to new and end entity
         // profile to key recovery
@@ -1478,7 +1480,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getAuthorizedEndEntityProfiles() throws Exception {
     	log.trace(">getAuthorizedEndEntityProfiles");
-        Collection<Integer> ids = raAdminSession.getAuthorizedEndEntityProfileIds(intAdmin);
+        Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(intAdmin);
         List<NameAndId> profs = ejbcaraws.getAuthorizedEndEntityProfiles();
         assertNotNull(profs);
         assertEquals(profs.size(), ids.size());
@@ -1503,7 +1505,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getAvailableCertificateProfiles() throws Exception {
 
-        int id = raAdminSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY");
+        int id = endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY");
         List<NameAndId> profs = ejbcaraws.getAvailableCertificateProfiles(id);
         assertNotNull(profs);
         for (NameAndId n : profs) {
@@ -1518,7 +1520,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getAvailableCAsInProfile() throws Exception {
 
-        int id = raAdminSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY");
+        int id = endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY");
         log.info("id: " + id);
         List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(id);
         assertNotNull(cas);
@@ -2387,7 +2389,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
         // Remove Key recovery end entity profile
         try {
-            raAdminSession.removeEndEntityProfile(intAdmin, "KEYRECOVERY");
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, "KEYRECOVERY");
         } catch (Exception e) {
         	log.error("", e);
         }
@@ -2402,7 +2404,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         	log.error("", e);
         }
         try {        	
-        	raAdminSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
+        	endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
         } catch (Exception e) {
         	log.error("", e);
         }

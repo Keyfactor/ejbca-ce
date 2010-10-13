@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -81,7 +82,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /** This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
@@ -135,7 +136,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 			}
         }
         int cpId = certificateProfileSession.getCertificateProfileId(admin, CPNAME);
-        if (raAdminSession.getEndEntityProfile(admin, EEPNAME) == null) {
+        if (endEntityProfileSession.getEndEntityProfile(admin, EEPNAME) == null) {
             // Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN and rfc822Name (uncheck 'Use entity e-mail field' and check 'Modifyable'), MS UPN in altNames in the end entity profile.
             EndEntityProfile eep = new EndEntityProfile(true);
             eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE,0, "" + cpId);
@@ -143,7 +144,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
             eep.setModifyable(DnComponents.RFC822NAME, 0, true);
             eep.setUse(DnComponents.RFC822NAME, 0, false);	// Don't use field from "email" data
             try {
-    			raAdminSession.addEndEntityProfile(admin, EEPNAME, eep);
+    			endEntityProfileSession.addEndEntityProfile(admin, EEPNAME, eep);
     		} catch (EndEntityProfileExistsException e) {
     			log.error("Could not create end entity profile.", e);
     		}
@@ -224,7 +225,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 		} catch (NotFoundException e) {
 			// A test probably failed before creating the entity
 		}
-		raAdminSession.removeEndEntityProfile(admin, EEPNAME);
+		endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
 		certificateProfileSession.removeCertificateProfile(admin, CPNAME);
 		configurationSessionRemote.restoreConfiguration();
 	}

@@ -180,7 +180,9 @@ public void updateApprovalRequestData(int id){
 	
 	List result;
 	try {
-        RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), EjbcaJSFHelper.getBean().getRaAdminSession(), EjbcaJSFHelper.getBean().getAuthorizationSession(), EjbcaJSFHelper.getBean().getCAAdminSession());
+            RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), EjbcaJSFHelper.getBean().getRaAdminSession(),
+                    EjbcaJSFHelper.getBean().getAuthorizationSession(), EjbcaJSFHelper.getBean().getCAAdminSession(), EjbcaJSFHelper.getBean()
+                            .getEndEntityProfileSession());
 		result = EjbcaJSFHelper.getBean().getApprovalSession().query( EjbcaJSFHelper.getBean().getAdmin(), query, 0, 1, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
 		if(result.size() > 0){
 			this.approveRequestData = new ApprovalDataVOView((ApprovalDataVO) result.get(0));

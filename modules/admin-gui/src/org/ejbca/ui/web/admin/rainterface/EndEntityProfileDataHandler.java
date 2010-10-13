@@ -19,9 +19,9 @@ import java.util.Iterator;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionBean;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -37,18 +37,20 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  */
 public class EndEntityProfileDataHandler implements java.io.Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = Logger.getLogger(EndEntityProfileDataHandler.class);    
 
-    private RaAdminSession raadminsession;
+    private EndEntityProfileSession endEntityProfileSession;
     private Admin administrator;
     private AuthorizationSession authorizationsession;
     private CAAdminSession caadminsession;
     private InformationMemory info;
 
-    public static final String EMPTY_PROFILE        = RaAdminSessionBean.EMPTY_ENDENTITYPROFILE;    
+    public static final String EMPTY_PROFILE        = EndEntityProfileSession.EMPTY_ENDENTITYPROFILE;    
     /** Creates a new instance of EndEntityProfileDataHandler */
-    public EndEntityProfileDataHandler(Admin administrator, RaAdminSession raadminsession, AuthorizationSession authorizationsession, CAAdminSession caadminsession, InformationMemory info) {
-       this.raadminsession = raadminsession;        
+    public EndEntityProfileDataHandler(Admin administrator, AuthorizationSession authorizationsession, CAAdminSession caadminsession, EndEntityProfileSession endEntityProfileSession, InformationMemory info) {
+       this.endEntityProfileSession = endEntityProfileSession;        
        this.authorizationsession = authorizationsession;
        this.caadminsession = caadminsession;
        this.administrator = administrator;          
@@ -58,7 +60,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
        /** Method to add a end entity profile. Throws EndEntityProfileExitsException if profile already exists  */
     public void addEndEntityProfile(String name, EndEntityProfile profile) throws EndEntityProfileExistsException, AuthorizationDeniedException {
       if(authorizedToProfile(profile, true)){
-        raadminsession.addEndEntityProfile(administrator, name, profile);
+          endEntityProfileSession.addEndEntityProfile(administrator, name, profile);
         this.info.endEntityProfilesEdited();
       }else {
         throw new AuthorizationDeniedException("Not authorized to add end entity profile");
@@ -68,7 +70,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
        /** Method to change a end entity profile. */     
     public void changeEndEntityProfile(String name, EndEntityProfile profile) throws AuthorizationDeniedException{
       if(authorizedToProfile(profile, true)){ 
-        raadminsession.changeEndEntityProfile(administrator, name,profile);   
+          endEntityProfileSession.changeEndEntityProfile(administrator, name,profile);   
         this.info.endEntityProfilesEdited();
       }else {
         throw new AuthorizationDeniedException("Not authorized to edit end entity profile");
@@ -78,7 +80,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     /** Method to remove a end entity profile.*/ 
     public void removeEndEntityProfile(String name) throws AuthorizationDeniedException{
      if(authorizedToProfileName(name, true)){    
-        raadminsession.removeEndEntityProfile(administrator, name);
+         endEntityProfileSession.removeEndEntityProfile(administrator, name);
         this.info.endEntityProfilesEdited();
      }else {
         throw new AuthorizationDeniedException("Not authorized to remove end entity profile");
@@ -88,7 +90,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     /** Metod to rename a end entity profile */
     public void renameEndEntityProfile(String oldname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException{
      if(authorizedToProfileName(oldname, true)){    
-       raadminsession.renameEndEntityProfile(administrator, oldname,newname);
+         endEntityProfileSession.renameEndEntityProfile(administrator, oldname,newname);
        this.info.endEntityProfilesEdited();
      }else {
        throw new AuthorizationDeniedException("Not authorized to rename end entity profile");
@@ -98,7 +100,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
 
     public void cloneEndEntityProfile(String originalname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException{         
       if(authorizedToProfileName(originalname, true)){
-        raadminsession.cloneEndEntityProfile(administrator, originalname,newname);
+          endEntityProfileSession.cloneEndEntityProfile(administrator, originalname,newname);
         this.info.endEntityProfilesEdited();
       }else {
          throw new AuthorizationDeniedException("Not authorized to clone end entity profile");
@@ -110,19 +112,19 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
       if(!authorizedToProfileId(id, false)) {
         throw new AuthorizationDeniedException("Not authorized to end entity profile: "+id);             
       }
-      return raadminsession.getEndEntityProfile(administrator, id); 
+      return endEntityProfileSession.getEndEntityProfile(administrator, id); 
     }      
           
     public EndEntityProfile getEndEntityProfile(String profilename) throws AuthorizationDeniedException{
      if(!authorizedToProfileName(profilename, false)) {
         throw new AuthorizationDeniedException("Not authorized to end entity profile: "+profilename);            
      }
-      return raadminsession.getEndEntityProfile(administrator, profilename);
+      return endEntityProfileSession.getEndEntityProfile(administrator, profilename);
     }
    
       
     public int getEndEntityProfileId(String profilename){
-      return raadminsession.getEndEntityProfileId(administrator, profilename);  
+      return endEntityProfileSession.getEndEntityProfileId(administrator, profilename);  
     }
        
 
@@ -132,10 +134,10 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
      */
     private boolean authorizedToProfileName(String profilename, boolean editcheck){
        EndEntityProfile profile = null;	
-		if(profilename.equals(RaAdminSessionBean.EMPTY_ENDENTITYPROFILE)) {
+		if(profilename.equals(EndEntityProfileSession.EMPTY_ENDENTITYPROFILE)) {
 		  profile = null;
 		} else {    	
-          profile = raadminsession.getEndEntityProfile(administrator, profilename);
+          profile = endEntityProfileSession.getEndEntityProfile(administrator, profilename);
 		}
       return authorizedToProfile(profile, editcheck);
     }
@@ -146,10 +148,10 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
      */
     private boolean authorizedToProfileId(int profileid, boolean editcheck){      	    	
       EndEntityProfile profile = null;	
-      if(profileid == RaAdminSessionBean.EMPTY_ENDENTITYPROFILEID) {
+      if(profileid == EndEntityProfileSession.EMPTY_ENDENTITYPROFILEID) {
         profile = null;
       } else {  
-       profile = raadminsession.getEndEntityProfile(administrator, profileid);
+       profile = endEntityProfileSession.getEndEntityProfile(administrator, profileid);
       }
       return authorizedToProfile(profile, editcheck);
     }

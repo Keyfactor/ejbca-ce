@@ -20,10 +20,10 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -44,7 +44,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
-    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
@@ -114,7 +114,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			int endentityprofileid = SecConst.EMPTY_ENDENTITYPROFILE;
 			if (eeprofile != null) {
 				getLogger().debug("Searching for End Entity Profile " + eeprofile);
-				endentityprofileid = raAdminSession.getEndEntityProfileId(getAdmin(), eeprofile);
+				endentityprofileid = endEntityProfileSession.getEndEntityProfileId(getAdmin(), eeprofile);
 				if (endentityprofileid == 0) {
 					getLogger().error("End Entity Profile " + eeprofile + " doesn't exists.");
 					throw new Exception("End Entity Profile '" + eeprofile + "' doesn't exists.");
@@ -141,7 +141,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			getLogger().info("CA Name: " + caname);
 			getLogger().info("Certificate Profile: " + certificateProfileSession.getCertificateProfileName(getAdmin(), certificateprofileid));
 			getLogger().info("End Entity Profile: " +
-					raAdminSession.getEndEntityProfileName(getAdmin(), endentityprofileid));
+			        endEntityProfileSession.getEndEntityProfileName(getAdmin(), endentityprofileid));
 			
 			String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
 			if (subjectAltName != null) {
@@ -225,11 +225,11 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getLogger().info(" Certificate: must be PEM encoded");
 		String endEntityProfiles = "";
 		try {
-			Collection eps = raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin());
+			Collection eps = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin());
 			Iterator iter = eps.iterator();
 			while (iter.hasNext()) {
 				int epid = ((Integer)iter.next()).intValue();
-				endEntityProfiles += (endEntityProfiles.length()==0?"":", ") + "\"" + raAdminSession.getEndEntityProfileName(getAdmin(), epid) + "\"";
+				endEntityProfiles += (endEntityProfiles.length()==0?"":", ") + "\"" + endEntityProfileSession.getEndEntityProfileName(getAdmin(), epid) + "\"";
 			}
 		}
 		catch (Exception e) {

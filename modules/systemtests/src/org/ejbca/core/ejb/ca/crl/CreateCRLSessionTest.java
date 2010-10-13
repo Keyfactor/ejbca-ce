@@ -40,6 +40,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -87,6 +88,7 @@ public class CreateCRLSessionTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private CreateCRLSessionRemote createCrlSession = InterfaceCache.getCrlSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -344,7 +346,7 @@ public class CreateCRLSessionTest extends CaTestCase {
                 // add End Entity Profile with validity limitations
                 EndEntityProfile profile;
                 try {
-                    raAdminSession.removeEndEntityProfile(admin, TESTPROFILE);
+                    endEntityProfileSession.removeEndEntityProfile(admin, TESTPROFILE);
                     profile = new EndEntityProfile();
                     profile.setUse(EndEntityProfile.ENDTIME, 0, true);
                     profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, false);
@@ -353,7 +355,7 @@ public class CreateCRLSessionTest extends CaTestCase {
                     profile.setUse(EndEntityProfile.STARTTIME, 0, true);
                     profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, new Integer(certprofileid).toString());
                     profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, new Integer(certprofileid).toString());
-                    raAdminSession.addEndEntityProfile(admin, TESTPROFILE, profile);
+                    endEntityProfileSession.addEndEntityProfile(admin, TESTPROFILE, profile);
                 } catch (EndEntityProfileExistsException pee) {
                 }
                 // Create a new user
@@ -361,7 +363,7 @@ public class CreateCRLSessionTest extends CaTestCase {
                 ei.setCustomData(EndEntityProfile.STARTTIME, "0:00:00");
                 ei.setCustomData(EndEntityProfile.ENDTIME, "0:00:50");
                 UserDataVO userdata = new UserDataVO(TESTUSERNAME, userDN, caid, "", "foo@bar.se", UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER,
-                        raAdminSession.getEndEntityProfileId(admin, TESTPROFILE), certprofileid, new Date(), new Date(), SecConst.TOKEN_SOFT_PEM, 0, ei);
+                        endEntityProfileSession.getEndEntityProfileId(admin, TESTPROFILE), certprofileid, new Date(), new Date(), SecConst.TOKEN_SOFT_PEM, 0, ei);
                 userdata.setPassword("foo123");
                 try {
                     userAdminSession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
@@ -408,7 +410,7 @@ public class CreateCRLSessionTest extends CaTestCase {
 
             // Delete certificate profile
             try {
-                raAdminSession.removeEndEntityProfile(admin, TESTPROFILE);
+                endEntityProfileSession.removeEndEntityProfile(admin, TESTPROFILE);
             } catch (Exception e) {
                 log.error("Could not remove End Entity Profile");
             }

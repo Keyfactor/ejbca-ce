@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -61,6 +62,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private CertificateProfileSession certificateProfileSession;
 	private CAAdminSession caadminsession;
         private CreateCRLSession createCrlSession;
+        private EndEntityProfileSession endEntityProfileSession;
 	private AuthorizationSession authorizationsession;
 	private UserAdminSession adminsession;
 	private RaAdminSession raadminsession;
@@ -89,10 +91,11 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			adminsession = ejb.getUserAdminSession();
 			raadminsession = ejb.getRAAdminSession();             
 			certificateProfileSession = ejb.getCertificateProfileSession();
+			endEntityProfileSession = ejb.getEndEntityProfileSession();
 			this.informationmemory = webBean.getInformationMemory();
 
 			new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, certificateProfileSession, informationmemory);
-			cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, createCrlSession, webBean);
+			cadatahandler = new CADataHandler(administrator, caadminsession, endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, createCrlSession, webBean);
 			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();
 		} catch (Exception e){

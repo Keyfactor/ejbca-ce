@@ -27,6 +27,8 @@ import javax.persistence.PersistenceException;
 import javax.transaction.TransactionRolledbackException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -70,7 +72,7 @@ public class UserAdminSessionTest extends CaTestCase {
     private static ArrayList<String> usernames = new ArrayList<String>();
     private static String serialnumber;
 
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -416,8 +418,8 @@ public class UserAdminSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setAllowMergeDnWebServices(true);
 
-        raAdminSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
-        int profileId = raAdminSession.getEndEntityProfileId(admin, "TESTMERGEWITHWS");
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+        int profileId = endEntityProfileSession.getEndEntityProfileId(admin, "TESTMERGEWITHWS");
 
         UserDataVO addUser = new UserDataVO(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER,
                 profileId, SecConst.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
@@ -427,7 +429,7 @@ public class UserAdminSessionTest extends CaTestCase {
         assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
 
         addUser.setDN("EMAIL=foo@bar.com, OU=hoho");
-        raAdminSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
         userAdminSession.changeUser(admin, addUser, false, true);
         data = userAdminSession.findUser(admin, username);
         // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
@@ -443,7 +445,7 @@ public class UserAdminSessionTest extends CaTestCase {
               // one of them does not exist.
         }
         try {
-            raAdminSession.removeEndEntityProfile(admin, "TESTMERGEWITHWS");
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTMERGEWITHWS");
         } catch (Exception e) {
         } // NOPMD, ignore errors so we don't stop deleting users because one of
           // them does not exist.

@@ -47,6 +47,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
@@ -101,6 +102,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private HardTokenSessionLocal hardTokenSession;
     @EJB
@@ -373,7 +376,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 				log.debug("loadkeys: "+loadkeys);
 			}
 			int endEntityProfileId = userdata.getEndEntityProfileId();
-			EndEntityProfile endEntityProfile = raAdminSession.getEndEntityProfile(admin, endEntityProfileId);
+			EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(admin, endEntityProfileId);
 			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 			if (log.isDebugEnabled()) {
 				log.debug("reusecertificate: "+reusecertificate);

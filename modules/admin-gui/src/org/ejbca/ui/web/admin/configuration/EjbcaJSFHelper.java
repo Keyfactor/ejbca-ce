@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
@@ -21,6 +22,8 @@ import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
+
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 /**
  * Class used to integrate the old jsp framework with the new JSF one.
@@ -42,6 +45,8 @@ public class EjbcaJSFHelper {
 	private RaAdminSessionLocal raAdminSession;
 	@EJB
 	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
 	private ApprovalSessionLocal approvalSession;
 	@EJB
@@ -206,5 +211,9 @@ public class EjbcaJSFHelper {
 
     public AuthorizationSessionLocal getAuthorizationSession(){
     	return authorizationSession;
+    }
+    
+    public EndEntityProfileSessionLocal getEndEntityProfileSession() {
+        return endEntityProfileSession;
     }
 }

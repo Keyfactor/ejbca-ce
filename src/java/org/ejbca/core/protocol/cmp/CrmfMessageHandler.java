@@ -28,14 +28,13 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -97,7 +96,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private SignSession signSession;
 	private UserAdminSession userAdminSession;
 	private CAAdminSession caAdminSession;
-	private RaAdminSession raAdminSession;
+	private EndEntityProfileSession endEntityProfileSession;
 	private CertificateProfileSession certificateProfileSession;
 	private CertificateRequestSession certificateRequestSession;
 	
@@ -106,13 +105,13 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	}
 	
 	public CrmfMessageHandler(final Admin admin, CAAdminSession caAdminSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
-			RaAdminSession raAdminSession, SignSession signSession, UserAdminSession userAdminSession) {
+			EndEntityProfileSession endEntityProfileSession, SignSession signSession, UserAdminSession userAdminSession) {
 		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the TCP listener does not work with that
 		this.signSession = signSession;
 		this.userAdminSession = userAdminSession;
 		this.caAdminSession = caAdminSession;
-		this.raAdminSession = raAdminSession;
+		this.endEntityProfileSession = endEntityProfileSession;
 		this.certificateProfileSession = certificateProfileSession;
 		this.certificateRequestSession = certificateRequestSession;
 
@@ -134,7 +133,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				}
 				eeProfileId = -1;
 			} else {
-				eeProfileId = raAdminSession.getEndEntityProfileId(admin, endEntityProfile);
+				eeProfileId = endEntityProfileSession.getEndEntityProfileId(admin, endEntityProfile);
 			}
 			final String certificateProfile = CmpConfiguration.getRACertificateProfile();
 			if (StringUtils.equals(certificateProfile, "KeyId")) {
@@ -346,7 +345,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							if (LOG.isDebugEnabled()) {
 								LOG.debug("Using end entity profile with name: "+keyId);
 							}
-							eeProfileId = raAdminSession.getEndEntityProfileId(admin, keyId);
+							eeProfileId = endEntityProfileSession.getEndEntityProfileId(admin, keyId);
 							if (eeProfileId == 0) {
 								LOG.info("No end entity profile found matching keyId: "+keyId);
 								throw new NotFoundException("End entity profile with name '"+keyId+"' not found.");
@@ -364,7 +363,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						}
 						if (caId == -1) {
 							// get default CA id from end entity profile
-							final EndEntityProfile eeProfile = raAdminSession.getEndEntityProfile(admin, eeProfileId);
+							final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfile(admin, eeProfileId);
 							caId = eeProfile.getDefaultCA();
 							if (caId == -1) {
 								LOG.error("No default CA id for end entity profile: "+eeProfileId);

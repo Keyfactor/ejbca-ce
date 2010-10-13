@@ -16,6 +16,7 @@ package org.ejbca.core.model.ra.raadmin;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
@@ -32,6 +33,7 @@ public class EndEntityProfileTest extends TestCase {
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();    
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     
     /**
      * Creates a new TestEndEntityProfile object.
@@ -61,7 +63,7 @@ public class EndEntityProfileTest extends TestCase {
             EndEntityProfile profile = new EndEntityProfile();
             profile.addField(DnComponents.ORGANIZATIONUNIT);
 
-            raAdminSession.addEndEntityProfile(admin, "TEST", profile);
+            endEntityProfileSession.addEndEntityProfile(admin, "TEST", profile);
 
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
@@ -82,7 +84,7 @@ public class EndEntityProfileTest extends TestCase {
 
         boolean ret = false;
         try {
-            raAdminSession.renameEndEntityProfile(admin, "TEST", "TEST2");
+            endEntityProfileSession.renameEndEntityProfile(admin, "TEST", "TEST2");
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
         }
@@ -102,7 +104,7 @@ public class EndEntityProfileTest extends TestCase {
 
         boolean ret = false;
         try {
-            raAdminSession.cloneEndEntityProfile(admin, "TEST2", "TEST");
+            endEntityProfileSession.cloneEndEntityProfile(admin, "TEST2", "TEST");
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
         }
@@ -120,14 +122,14 @@ public class EndEntityProfileTest extends TestCase {
     public void test04EditEndEntityProfile() throws Exception {
         log.trace(">test04EditEndEntityProfile()");
 
-        EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin, "TEST");
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, "TEST");
         assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT) == 1);
 
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         assertEquals(profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT), 2);
 
         // Change the profile, if save fails it should throw an exception
-        raAdminSession.changeEndEntityProfile(admin, "TEST", profile);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TEST", profile);
 
         log.trace("<test04EditEndEntityProfile()");
     }
@@ -142,8 +144,8 @@ public class EndEntityProfileTest extends TestCase {
         log.trace(">test05removeEndEntityProfiles()");
         boolean ret = false;
         try {
-            raAdminSession.removeEndEntityProfile(admin, "TEST");
-            raAdminSession.removeEndEntityProfile(admin, "TEST2");
+            endEntityProfileSession.removeEndEntityProfile(admin, "TEST");
+            endEntityProfileSession.removeEndEntityProfile(admin, "TEST2");
             ret = true;
         } catch (Exception pee) {
         }
@@ -166,9 +168,9 @@ public class EndEntityProfileTest extends TestCase {
         boolean returnValue = true;
         // Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
-        raAdminSession.addEndEntityProfile(admin, testProfileName, profile);
+        endEntityProfileSession.addEndEntityProfile(admin, testProfileName, profile);
         // Add two dynamic fields
-        profile = raAdminSession.getEndEntityProfile(admin, testProfileName);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, testProfileName);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.setValue(DnComponents.ORGANIZATIONUNIT, 0, testString1);
@@ -177,19 +179,19 @@ public class EndEntityProfileTest extends TestCase {
         profile.addField(DnComponents.DNSNAME);
         profile.setValue(DnComponents.DNSNAME, 0, testString1);
         profile.setValue(DnComponents.DNSNAME, 1, testString2);
-        raAdminSession.changeEndEntityProfile(admin, testProfileName, profile);
+        endEntityProfileSession.changeEndEntityProfile(admin, testProfileName, profile);
         // Remove first field
-        profile = raAdminSession.getEndEntityProfile(admin, testProfileName);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, testProfileName);
         profile.removeField(DnComponents.ORGANIZATIONUNIT, 0);
         profile.removeField(DnComponents.DNSNAME, 0);
-        raAdminSession.changeEndEntityProfile(admin, testProfileName, profile);
+        endEntityProfileSession.changeEndEntityProfile(admin, testProfileName, profile);
         // Test if changes are what we expected
-        profile = raAdminSession.getEndEntityProfile(admin, testProfileName);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, testProfileName);
         returnValue &= testString2.equals(profile.getValue(DnComponents.ORGANIZATIONUNIT, 0));
         returnValue &= testString2.equals(profile.getValue(DnComponents.DNSNAME, 0));
         assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
         // Remove profile
-        raAdminSession.removeEndEntityProfile(admin, testProfileName);
+        endEntityProfileSession.removeEndEntityProfile(admin, testProfileName);
         log.trace("<test06testEndEntityProfilesDynamicFields()");
     } // test06testEndEntityProfilesDynamicFields
 

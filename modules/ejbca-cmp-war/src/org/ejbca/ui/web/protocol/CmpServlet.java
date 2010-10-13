@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -58,6 +60,8 @@ public class CmpServlet extends HttpServlet {
 	private UserAdminSessionLocal userAdminSession;
 	@EJB
 	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
 	private RaAdminSessionLocal raAdminSession;
 	@EJB
@@ -131,7 +135,7 @@ public class CmpServlet extends HttpServlet {
 			// We must use an administrator with rights to create users
 			final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
 			log.info( intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr) );
-			final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, caAdminSession, certificateProfileSession, certificateStoreSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
+			final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, caAdminSession, certificateProfileSession, certificateStoreSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
 			final IResponseMessage resp = dispatcher.dispatch(message);
 			if ( resp==null ) { // If resp is null, it means that the dispatcher failed to process the message.
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, intres.getLocalizedMessage("cmp.errornullresp"));

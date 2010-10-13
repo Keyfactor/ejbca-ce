@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -50,6 +51,7 @@ public class UserDataTest extends CaTestCase {
     /** variable used to hold a flag value so we can reset it after we have done the tests */
     private static boolean gcEELimitations;
     
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
@@ -229,8 +231,8 @@ public class UserDataTest extends CaTestCase {
             profile.addField(DnComponents.COMMONNAME);
             profile.setValue(EndEntityProfile.AVAILCAS,0,""+caid);
             profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
-            raAdminSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
-            pid = raAdminSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
+            endEntityProfileSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
+            pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
         } catch (EndEntityProfileExistsException pee) {
         	assertTrue("Can not create end entity profile", false);
         }
@@ -254,10 +256,10 @@ public class UserDataTest extends CaTestCase {
         assertEquals(0, counter);
 
         // Now allow the counter
-        EndEntityProfile ep = raAdminSession.getEndEntityProfile(admin, pid);
+        EndEntityProfile ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
-        raAdminSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         // This time changeUser will be ok
         userAdminSession.changeUser(admin, user, false);
         // decrease the value        
@@ -274,9 +276,9 @@ public class UserDataTest extends CaTestCase {
         assertEquals(-1, counter);  
         
         // Now disallow the counter, it will be deleted from the user
-        ep = raAdminSession.getEndEntityProfile(admin, pid);
+        ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
-        raAdminSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         ei = user.getExtendedinformation();
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, null);
         user.setExtendedinformation(ei);
@@ -286,10 +288,10 @@ public class UserDataTest extends CaTestCase {
         assertEquals(0, counter);
 
         // allow the counter 
-        ep = raAdminSession.getEndEntityProfile(admin, pid);
+        ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
-        raAdminSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         ei = user.getExtendedinformation();
         ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");
         user.setExtendedinformation(ei);
@@ -307,10 +309,10 @@ public class UserDataTest extends CaTestCase {
 
         // test setuserstatus it will re-set the counter
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
-        ep = raAdminSession.getEndEntityProfile(admin, pid);
+        ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
-        raAdminSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         // decrease the value        
         counter = userAdminSession.decRequestCounter(admin, username);
@@ -329,10 +331,10 @@ public class UserDataTest extends CaTestCase {
         assertEquals(-1, counter);
         
         // test setuserstatus again it will re-set the counter since status is generated
-        ep = raAdminSession.getEndEntityProfile(admin, pid);
+        ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"3");
-        raAdminSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         // decrease the value        
         counter = userAdminSession.decRequestCounter(admin, username);
@@ -440,66 +442,66 @@ public class UserDataTest extends CaTestCase {
     	// Add a couple of profiles and verify that the mappings and get functions work
         EndEntityProfile profile1 = new EndEntityProfile();
         profile1.setPrinterName("foo");
-        raAdminSession.addEndEntityProfile(admin, "TESTEEPROFCACHE1", profile1);
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTEEPROFCACHE1", profile1);
         EndEntityProfile profile2 = new EndEntityProfile();
         profile2.setPrinterName("bar");
-        raAdminSession.addEndEntityProfile(admin, "TESTEEPROFCACHE2", profile2);
-        int pid = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
-        String name = raAdminSession.getEndEntityProfileName(admin, pid);
-        int pid1 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
-        String name1 = raAdminSession.getEndEntityProfileName(admin, pid1);
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTEEPROFCACHE2", profile2);
+        int pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
+        String name = endEntityProfileSession.getEndEntityProfileName(admin, pid);
+        int pid1 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
+        String name1 = endEntityProfileSession.getEndEntityProfileName(admin, pid1);
         assertEquals(pid, pid1);
         assertEquals(name, name1);
-        EndEntityProfile profile = raAdminSession.getEndEntityProfile(admin, pid);
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, pid);
         assertEquals("foo", profile.getPrinterName());
-        profile = raAdminSession.getEndEntityProfile(admin, name);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, name);
         assertEquals("foo", profile.getPrinterName());
 
-        int pid2 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
-        String name2 = raAdminSession.getEndEntityProfileName(admin, pid2);
-        profile = raAdminSession.getEndEntityProfile(admin, pid2);
+        int pid2 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
+        String name2 = endEntityProfileSession.getEndEntityProfileName(admin, pid2);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, pid2);
         assertEquals("bar", profile.getPrinterName());
-        profile = raAdminSession.getEndEntityProfile(admin, name2);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, name2);
         assertEquals("bar", profile.getPrinterName());
 
         // flush caches and make sure it is read correctly again
-        raAdminSession.flushProfileCache();
+        endEntityProfileSession.flushProfileCache();
 
-        int pid3 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
-        String name3 = raAdminSession.getEndEntityProfileName(admin, pid3);
+        int pid3 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1"); 
+        String name3 = endEntityProfileSession.getEndEntityProfileName(admin, pid3);
         assertEquals(pid1, pid3);
         assertEquals(name1, name3);
-        profile = raAdminSession.getEndEntityProfile(admin, pid3);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, pid3);
         assertEquals("foo", profile.getPrinterName());
-        profile = raAdminSession.getEndEntityProfile(admin, name3);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, name3);
         assertEquals("foo", profile.getPrinterName());
 
-        int pid4 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
-        String name4 = raAdminSession.getEndEntityProfileName(admin, pid4);
+        int pid4 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
+        String name4 = endEntityProfileSession.getEndEntityProfileName(admin, pid4);
         assertEquals(pid2, pid4);
         assertEquals(name2, name4);
-        profile = raAdminSession.getEndEntityProfile(admin, pid4);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, pid4);
         assertEquals("bar", profile.getPrinterName());
-        profile = raAdminSession.getEndEntityProfile(admin, name4);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, name4);
         assertEquals("bar", profile.getPrinterName());
 
         // Remove a profile and make sure it is not cached still
-        raAdminSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE1");
-        profile = raAdminSession.getEndEntityProfile(admin, pid1);
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE1");
+        profile = endEntityProfileSession.getEndEntityProfile(admin, pid1);
         assertNull(profile);
-        int pid5 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1");
+        int pid5 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1");
         assertEquals(0, pid5);
-        String name5 = raAdminSession.getEndEntityProfileName(admin, pid5);
+        String name5 = endEntityProfileSession.getEndEntityProfileName(admin, pid5);
         assertNull(name5);
 
         // But the other, non-removed profile should still be there
-        int pid6 = raAdminSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
-        String name6 = raAdminSession.getEndEntityProfileName(admin, pid6);
+        int pid6 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2"); 
+        String name6 = endEntityProfileSession.getEndEntityProfileName(admin, pid6);
         assertEquals(pid2, pid6);
         assertEquals(name2, name6);
-        profile = raAdminSession.getEndEntityProfile(admin, pid6);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, pid6);
         assertEquals("bar", profile.getPrinterName());
-        profile = raAdminSession.getEndEntityProfile(admin, name6);
+        profile = endEntityProfileSession.getEndEntityProfile(admin, name6);
         assertEquals("bar", profile.getPrinterName());        
     } // test07EndEntityProfileMappings
 
@@ -512,30 +514,30 @@ public class UserDataTest extends CaTestCase {
     	long cachetime = EjbcaConfiguration.getCacheEndEntityProfileTime();
     	assertEquals(1000, cachetime);
     	// Make sure profile has the right value from the beginning
-        EndEntityProfile eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
         eep.setAllowMergeDnWebServices(false);
-        raAdminSession.changeEndEntityProfile(admin, "TESTEEPROFCACHE2", eep);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTEEPROFCACHE2", eep);
     	// Read profile
-        eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        eep = endEntityProfileSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
         boolean value = eep.getAllowMergeDnWebServices();
         assertFalse(value);
 
         // Flush caches to reset cache timeout
-        raAdminSession.flushProfileCache();
+        endEntityProfileSession.flushProfileCache();
     	// Change profile, not flushing cache
     	eep.setAllowMergeDnWebServices(true);
-    	raAdminSession.internalChangeEndEntityProfileNoFlushCache(admin, "TESTEEPROFCACHE2", eep);
+    	endEntityProfileSession.internalChangeEndEntityProfileNoFlushCache(admin, "TESTEEPROFCACHE2", eep);
 
     	// Wait 2 seconds and try again, now the cache should have been updated
     	Thread.sleep(2000);
-        eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        eep = endEntityProfileSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
         value = eep.getAllowMergeDnWebServices();
         assertTrue(value);
 
         // Changing using the regular method however should immediately flush the cache
     	eep.setAllowMergeDnWebServices(false);
-    	raAdminSession.changeEndEntityProfile(admin, "TESTEEPROFCACHE2", eep);
-        eep = raAdminSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+    	endEntityProfileSession.changeEndEntityProfile(admin, "TESTEEPROFCACHE2", eep);
+        eep = endEntityProfileSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
         value = eep.getAllowMergeDnWebServices();
         assertFalse(value);
     }
@@ -561,13 +563,13 @@ public class UserDataTest extends CaTestCase {
             userAdminSession.deleteUser(admin,username1);
         } catch (Exception e) { /* ignore */ }
         try {        	
-            raAdminSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
         } catch (Exception e) { /* ignore */ }
         try {        	
-        	raAdminSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE1");
+        	endEntityProfileSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE1");
         } catch (Exception e) { /* ignore */ }
         try {        	
-        	raAdminSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        	endEntityProfileSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE2");
         } catch (Exception e) { /* ignore */ }
 
         // Delete any Test CA we created

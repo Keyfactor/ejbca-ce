@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -35,6 +36,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 
     private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     private UserDataSourceSessionRemote userDataSourceSession = ejb.getUserDataSourceSession();
     
@@ -58,7 +60,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 				GlobalConfiguration globalConfiguration = raAdminSession.getCachedGlobalConfiguration(getAdmin());
 				for (String current : (Collection<String>) authorizationSession.getAuthorizedAvailableAccessRules(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()),
 						globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
-						raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin()), userDataSourceSession.getAuthorizedUserDataSourceIds(getAdmin(), true))) {
+						endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin()), userDataSourceSession.getAuthorizedUserDataSourceIds(getAdmin(), true))) {
 					getLogger().info(" " + getParsedAccessRule(current));
 				}
 				String availableRules = "";
@@ -78,7 +80,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 			GlobalConfiguration globalConfiguration = raAdminSession.getCachedGlobalConfiguration(getAdmin());
 			if (!((Collection<String>) authorizationSession.getAuthorizedAvailableAccessRules(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()),
 					globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
-					raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin()), userDataSourceSession.getAuthorizedUserDataSourceIds(getAdmin(), true))).contains(accessRule)) {
+					endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin()), userDataSourceSession.getAuthorizedUserDataSourceIds(getAdmin(), true))).contains(accessRule)) {
 				getLogger().error("Accessrule \"" + accessRule + "\" is not available.");
 				return;
 			}

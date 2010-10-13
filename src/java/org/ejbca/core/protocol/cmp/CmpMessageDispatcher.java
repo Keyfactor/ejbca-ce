@@ -16,13 +16,13 @@ package org.ejbca.core.protocol.cmp;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.FailInfo;
@@ -71,18 +71,18 @@ public class CmpMessageDispatcher {
 	private final SignSession signSession;
 	private final UserAdminSession userAdminSession;
 	private final CAAdminSession caAdminSession;
-	private final RaAdminSession raAdminSession;
 	private final CertificateStoreSession certificateStoreSession;
 	private final CertificateRequestSession certificateRequestSession;
 	private final CertificateProfileSession certificateProfileSession;
+	private final EndEntityProfileSession endEntityProfileSession;
 	
 	public CmpMessageDispatcher(Admin adm, CAAdminSession caAdminSession, CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, CertificateRequestSession certificateRequestSession,
-			RaAdminSession raAdminSession, SignSession signSession, UserAdminSession userAdminSession) {
+		EndEntityProfileSession endEntityProfileSession, SignSession signSession, UserAdminSession userAdminSession) {
 		this.admin = adm;
 		this.signSession = signSession;
 		this.userAdminSession = userAdminSession;
 		this.caAdminSession = caAdminSession;
-		this.raAdminSession = raAdminSession;
+		this.endEntityProfileSession = endEntityProfileSession;
 		this.certificateProfileSession = certificateProfileSession;
 		this.certificateStoreSession = certificateStoreSession;
 		this.certificateRequestSession = certificateRequestSession;
@@ -130,11 +130,11 @@ public class CmpMessageDispatcher {
 			switch (tagno) {
 			case 0:
 				// 0 and 2 are both certificate requests
-				handler = new CrmfMessageHandler(admin, caAdminSession,  certificateProfileSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
+				handler = new CrmfMessageHandler(admin, caAdminSession,  certificateProfileSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
 				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, caAdminSession, certificateProfileSession, certificateRequestSession, raAdminSession, signSession, userAdminSession);
+				handler = new CrmfMessageHandler(admin, caAdminSession, certificateProfileSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
 				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
 				break;
 			case 19:

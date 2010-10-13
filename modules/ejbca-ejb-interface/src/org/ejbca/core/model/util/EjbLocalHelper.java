@@ -16,6 +16,8 @@ import javax.ejb.CreateException;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSession;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
@@ -68,6 +70,7 @@ public class EjbLocalHelper {
 	// For now we will return the remote stub instead, just to get things working..
 
     private CertificateProfileSession certificateProfileSession;
+    private EndEntityProfileSession endEntityProfileSession;
     
     private SignSession signsession = null;
     public SignSession getSignSession() throws CreateException {
@@ -130,6 +133,13 @@ public class EjbLocalHelper {
 			certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreOnlyDataSessionRemote.class);
 		}
 		return certificateStoreOnlyDataSession;
+	}
+	
+	public EndEntityProfileSession getEndEntityProfileSession() {
+	    if(endEntityProfileSession == null) {
+	        endEntityProfileSession = JndiHelper.getRemoteSession(EndEntityProfileSessionRemote.class);
+	    }
+	    return endEntityProfileSession;
 	}
 	
 	private UserAdminSession usersession = null;

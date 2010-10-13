@@ -59,7 +59,7 @@ public class ClearCacheCommand extends BaseCommand {
 			if (eeprofile) {
 				getLogger().info("Flushing end entity profile cache.");
 				// Flush End Entity profiles
-				ejb.getRAAdminSession().flushProfileCache();
+				ejb.getEndEntityProfileSession().flushProfileCache();
 			}
 			if (certprofile) {
 				getLogger().info("Flushing certificate profile cache.");

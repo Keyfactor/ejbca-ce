@@ -17,10 +17,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -49,6 +48,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM };
 
     private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private HardTokenSessionRemote hardTokenSession = ejb.getHardTokenSession();
     private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
@@ -95,8 +95,8 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 Collection certprofileids = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, caids);
                 HashMap certificateprofileidtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(getAdmin());
 
-                Collection endentityprofileids = raAdminSession.getAuthorizedEndEntityProfileIds(getAdmin());
-                HashMap endentityprofileidtonamemap = raAdminSession.getEndEntityProfileIdToNameMap(getAdmin());
+                Collection endentityprofileids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin());
+                HashMap endentityprofileidtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(getAdmin());
 
                 if (usehardtokens) {
                     getLogger().info(
@@ -193,7 +193,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if (args.length > 10) {
                 // Use certificate type and end entity profile.
-                profileid = raAdminSession.getEndEntityProfileId(getAdmin(), args[10]);
+                profileid = endEntityProfileSession.getEndEntityProfileId(getAdmin(), args[10]);
                 getLogger().info("Using entity profile: " + args[10] + ", with id: " + profileid);
             }
 

@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -45,8 +45,8 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private PublisherSessionRemote publisherSession = ejb.getPublisherSession();
-    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importprofiles"; }
@@ -107,11 +107,11 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                 // Check if the profiles already exist, and change the name and id if already taken
                                 boolean error = false;
                                 if (entityprofile) {
-                                    if (raAdminSession.getEndEntityProfileId(getAdmin(), profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (endEntityProfileSession.getEndEntityProfileId(getAdmin(), profilename) != SecConst.PROFILE_NO_PROFILE) {
                                     	getLogger().error("Entity profile '"+profilename+"' already exist in database.");
                                         error = true;
-                                    } else if (raAdminSession.getEndEntityProfile(getAdmin(), profileid) != null) {
-                                        int newprofileid = raAdminSession.findFreeEndEntityProfileId();
+                                    } else if (endEntityProfileSession.getEndEntityProfile(getAdmin(), profileid) != null) {
+                                        int newprofileid = endEntityProfileSession.findFreeEndEntityProfileId();
                                         getLogger().warn("Entity profileid '"+profileid+"' already exist in database. Using " + newprofileid + " instead.");
                                         profileid = newprofileid;
                                     }
@@ -205,7 +205,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
                                         eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
                                         try{                                        
-                                            raAdminSession.addEndEntityProfile(getAdmin(),profileid,profilename,eprofile);
+                                            endEntityProfileSession.addEndEntityProfile(getAdmin(),profileid,profilename,eprofile);
                                             getLogger().info("Added entity profile '"+profilename+"' to database.");
                                         }catch(EndEntityProfileExistsException eepee){  
                                         	getLogger().error("Error adding entity profile '"+profilename+"' to database.");

@@ -32,6 +32,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -70,18 +71,20 @@ public class RequestInstance {
 	private AuthenticationSessionLocal authenticationSession;
 	private CAAdminSessionLocal caAdminSession;
     private CertificateProfileSessionLocal certificateProfileSession;
+    private EndEntityProfileSessionLocal endEntityProfileSession;
 	private KeyRecoverySessionLocal keyRecoverySession;
 	private RaAdminSessionLocal raAdminSession;            
 	private SignSessionLocal signSession;
 	private UserAdminSessionLocal userAdminSession;
 	
 	protected RequestInstance(ServletContext servletContext, AuthenticationSessionLocal authenticationSession, CAAdminSessionLocal caAdminSession,
-	        CertificateProfileSessionLocal certificateProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
+	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
 			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession) {
 		this.servletContext = servletContext;
 		this.authenticationSession = authenticationSession;
 		this.caAdminSession = caAdminSession;
 		this.certificateProfileSession = certificateProfileSession;
+		this.endEntityProfileSession = endEntityProfileSession;
 		this.keyRecoverySession = keyRecoverySession;
 		this.raAdminSession = raAdminSession;
 		this.signSession = signSession;
@@ -149,7 +152,7 @@ public class RequestInstance {
 
 			int endEntityProfileId = data.getEndEntityProfileId();
 			int certificateProfileId = data.getCertificateProfileId();
-			EndEntityProfile endEntityProfile = raAdminSession.getEndEntityProfile(administrator, endEntityProfileId);
+			EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(administrator, endEntityProfileId);
 			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 			// Set a new certificate profile, if we have requested one specific
 			if (StringUtils.isNotEmpty(certprofile)) {

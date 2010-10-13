@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -90,6 +91,7 @@ public class EjbcaWebBean implements Serializable {
     private LogSession logSession = ejb.getLogSession();
     private CertificateStoreSession certificateStoreSession = ejb.getCertStoreSession();
     private CAAdminSession caAdminSession = ejb.getCAAdminSession();
+    private EndEntityProfileSession endEntityProfileSession = ejb.getEndEntityProfileSession();
     private UserAdminSession userAdminSession = ejb.getUserAdminSession();
     private RaAdminSession raAdminSession = ejb.getRAAdminSession();
     private AuthorizationSession authorizationSession = ejb.getAuthorizationSession();
@@ -134,7 +136,7 @@ public class EjbcaWebBean implements Serializable {
     	globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, raAdminSession, authorizationSession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
-    		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, authorizationSession, certificateStoreSession, hardTokenSession,
+    		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, authorizationSession, certificateStoreSession, endEntityProfileSession, hardTokenSession,
     				publisherSession, userDataSourceSession, certificateProfileSession, globalconfiguration);
     	}
     	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationSession, caAdminSession);

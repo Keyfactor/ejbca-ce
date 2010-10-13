@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -63,6 +64,8 @@ public class StartServicesServlet extends HttpServlet {
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private LogSessionLocal logSession;
     @EJB
@@ -198,7 +201,7 @@ public class StartServicesServlet extends HttpServlet {
         log.trace(">init loading EndEntityProfile to check for upgrades");
         try {
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	raAdminSession.initializeAndUpgradeProfiles(admin);
+        	endEntityProfileSession.initializeAndUpgradeProfiles(admin);
         	
         	// Add this node's hostname to list of nodes
             log.trace(">init checking if this node is in the list of nodes");

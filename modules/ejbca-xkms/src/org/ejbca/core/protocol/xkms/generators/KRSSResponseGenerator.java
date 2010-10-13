@@ -53,6 +53,7 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
@@ -106,6 +107,7 @@ public class KRSSResponseGenerator extends
 	 private CAAdminSession caadminsession;
 	 private AuthenticationSession authenticationSession;
 	 private CertificateStoreSession certificateStoreSession;
+	 private EndEntityProfileSession endEntityProfileSession;
 	 private KeyRecoverySession keyRecoverySession;
 	 private RaAdminSession raAdminSessionLocal;
 	 private SignSession signSession;
@@ -119,6 +121,7 @@ public class KRSSResponseGenerator extends
 			caadminsession = ejb.getCAAdminSession();
 			authenticationSession = ejb.getAuthenticationSession();
 			certificateStoreSession = ejb.getCertStoreSession();
+			endEntityProfileSession = ejb.getEndEntityProfileSession();
 			keyRecoverySession = ejb.getKeyRecoverySession();
 			raAdminSessionLocal = ejb.getRAAdminSession();
 			signSession = ejb.getSignSession();
@@ -218,7 +221,7 @@ public class KRSSResponseGenerator extends
 				KeyRecoveryData keyData = null;
 				boolean reusecertificate = false;
 				if(loadkeys){
-					EndEntityProfile endEntityProfile = raAdminSessionLocal.getEndEntityProfile(pubAdmin, userDataVO.getEndEntityProfileId());
+					EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(pubAdmin, userDataVO.getEndEntityProfileId());
 					reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
 
 					// used saved keys.

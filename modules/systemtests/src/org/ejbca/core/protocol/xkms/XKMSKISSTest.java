@@ -34,10 +34,10 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -109,7 +109,7 @@ public class XKMSKISSTest extends TestCase {
     private static String dn3;
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
@@ -158,11 +158,11 @@ public class XKMSKISSTest extends TestCase {
         endentityprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + profile1Id + ";" + profile2Id);
 
         try {
-            raAdminSession.addEndEntityProfile(administrator, "XKMSTESTPROFILE", endentityprofile);
+            endEntityProfileSession.addEndEntityProfile(administrator, "XKMSTESTPROFILE", endentityprofile);
         } catch (EndEntityProfileExistsException e) {
             log.info("Endentityprofile XKMSTESTPROFILE already exists.");
         }
-        int endEntityProfileId = raAdminSession.getEndEntityProfileId(administrator, "XKMSTESTPROFILE");
+        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(administrator, "XKMSTESTPROFILE");
 
         username1 = genUserName();
         String pwd = "foo123";
@@ -1135,7 +1135,7 @@ public class XKMSKISSTest extends TestCase {
         userAdminSession.deleteUser(administrator, username2);
         userAdminSession.deleteUser(administrator, username3);
 
-        raAdminSession.removeEndEntityProfile(administrator, "XKMSTESTPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(administrator, "XKMSTESTPROFILE");
 
         certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTSIGN");
         certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTEXCHANDENC");
