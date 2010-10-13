@@ -50,7 +50,7 @@ earlier version of EJBCA.
 </p></section>
 
 <section name="Quick start guide">
-
+<p>If you want to get started really quick, and is using Ubuntu Linux, you can follow the <a href="#Ubuntu%20quick%20start">Ubuntu quick start</a> guide below.</p>
 <subsection name="Prerequisites">
 <note>
 EJBCA makes use of strong crypto and keystore passwords longer than 7 characters.
@@ -307,6 +307,76 @@ In the directory doc/howto in the distribution there are additional howtos for s
 </p>
 </subsection>
 
+</section>
+
+<section name="Ubuntu quick start">
+<p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
+To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Quick start guide</strong> above.
+</p><p>
+This quick start guide assumes EJBCA 3.11.0 and JBoss 4.2.3, but other version should also be possible to use by just replacing the versions.
+We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
+</p>
+<ol>
+<li>Install Ubuntu 10.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).</li>
+<li>Open a new terminal "ejbca".</li>
+<li>Copy jboss-4.2.3.GA-jdk6.zip and ejbca_3_11_0.zip to machine user account.</li>
+<li>Install needed software from Ubuntu repositories.
+<br/>
+<code>sudo apt-get install openjdk-6-jdk ant ant-optional unzip
+</code>
+</li>
+<li>Install software not in Ubuntu repositories.
+<br/>
+<code>
+unzip jboss-4.2.3.GA-jdk6.zip
+<br/>unzip ejbca_3_11_0.zip
+</code>
+</li>
+<li>Set APPSRV_HOME environment variable so EJBCA can find the application server (JBoss).
+<br/>
+<code>
+vim .bashrc
+</code>
+<br/>In the end of the file add:
+<br/>
+<code>
+export APPSRV_HOME=/home/user/jboss-4.2.3.GA
+</code>
+</li>
+<li>Log out and in again, terminal "ejbca".</li>
+<li>Build and deploy EJBCA to JBoss.
+<br/>
+<code>
+cd ejbca_3_11_0
+<br/>ant bootstrap
+</code>
+</li>
+<li>Open new terminal "jboss" and start JBoss.
+<br/>
+<code>
+cd jboss-4.2.3.GA/bin
+<br/>./run.sh
+</code>
+</li>
+<li>Go back to terminal "ejbca" and run install to create initial administrator CA.
+<br/>
+<code>
+ant install
+<br/>(choose all default values)
+<br/>ant deploy
+</code>
+</li>    
+<li>Go back to terminal "jboss" and restart JBoss.
+<br/>
+<code>
+ctrl-c
+<br/>./run.sh
+</code>
+</li>
+<li>Import /home/user/ejbca_3_11_0/p12/superadmin.p12 in web browser.</li>
+<li>Go to http://localhost:8443/ejbca</li>
+</ol>
+<p>Done!</p>
 </section>
 
 <section name="Application servers">
