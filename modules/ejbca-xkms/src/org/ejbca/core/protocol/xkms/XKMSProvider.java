@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.xkms;
 
+import java.io.ByteArrayOutputStream;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
@@ -30,13 +31,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,17 +59,16 @@ import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
+import org.apache.xml.security.utils.XMLUtils;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
-import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.generators.LocateResponseGenerator;
 import org.ejbca.core.protocol.xkms.generators.RecoverResponseGenerator;
 import org.ejbca.core.protocol.xkms.generators.RegisterResponseGenerator;
@@ -105,9 +107,9 @@ import org.w3c.dom.NodeList;
  *
  * @version $Id$
  */
-
+@Stateless
 @ServiceMode(value=Service.Mode.PAYLOAD)
-@WebServiceProvider(serviceName="XKMSService", targetNamespace = "http://www.w3.org/2002/03/xkms#wsdl", portName="XKMSPort")
+@WebServiceProvider(serviceName="XKMSService", targetNamespace = "http://www.w3.org/2002/03/xkms#wsdl", portName="XKMSPort", wsdlLocation="META-INF/wsdl/xkms.wsdl")
 public class XKMSProvider implements Provider<Source> {
 	@Resource
 	private WebServiceContext wsContext;
@@ -120,34 +122,28 @@ public class XKMSProvider implements Provider<Source> {
 	
 	private ObjectFactory xKMSObjectFactory = new ObjectFactory();
 	
-    private static JAXBContext jAXBContext = null;
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    private static DocumentBuilderFactory dbf = null;
+    private JAXBContext jAXBContext = null;
+    private Marshaller marshaller = null;
+    private Unmarshaller unmarshaller = null;
+    private DocumentBuilderFactory dbf = null;
     
-	// TODO: Is more than one instance created of this class? If so, we should probably cache the helper..
-	private EjbRemoteHelper ejb = new EjbRemoteHelper();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
 
-    static{    	
+	@PostConstruct
+	public void postConstruct() {
     	try {
     		org.apache.xml.security.Init.init();
     		jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
 			marshaller = jAXBContext.createMarshaller();
-	        try {
-	            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",new XKMSNamespacePrefixMapper());
-	        } catch( PropertyException e ) {
-	           log.error(intres.getLocalizedMessage("xkms.errorregisteringnamespace"),e);
-	        }
 	    	dbf = DocumentBuilderFactory.newInstance();
 	    	dbf.setNamespaceAware(true);
 	    	unmarshaller = jAXBContext.createUnmarshaller();
-
 		} catch (JAXBException e) {
 			log.error(intres.getLocalizedMessage("xkms.errorinitializinggenerator"),e);
 		}
-	
     }
 	
 	/**
@@ -394,12 +390,27 @@ public class XKMSProvider implements Provider<Source> {
 
 		if(XKMSConfig.alwaysSignResponses() || (XKMSConfig.acceptSignRequests() && respMecSign)){
 			try {
+				if (log.isDebugEnabled()) {
+			        // Output what we are trying to process..
+			        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			        XMLUtils.outputDOMc14nWithComments(result, baos);
+			        log.debug("(Unsigned) signResponseIfNeeded XMLUtils.outputDOMc14nWithComments: " + baos.toString());
+			        //javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
+			        //result = db.parse(baos.toString());
+
+				}
 
 				XKMSCAServiceRequest cAReq = new XKMSCAServiceRequest(result, id,true,false);
 
 				XKMSCAServiceResponse resp = (XKMSCAServiceResponse) caAdminSession.extendedService(admin, XKMSConfig.cAIdUsedForSigning(admin, caAdminSession), cAReq);
 
 				retval = resp.getSignedDocument();
+				if (log.isDebugEnabled()) {
+			        // Output what we just processed..
+			        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			        XMLUtils.outputDOMc14nWithComments(retval, baos);
+			        log.debug("(Signed) signResponseIfNeeded XMLUtils.outputDOMc14nWithComments: " + baos.toString());
+				}
 			} catch (Exception e) {
 				log.error(intres.getLocalizedMessage("xkms.errorgenrespsig"), e);				
 				retval = null;

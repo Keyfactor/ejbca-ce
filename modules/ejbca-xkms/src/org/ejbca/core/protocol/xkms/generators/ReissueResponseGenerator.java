@@ -15,13 +15,12 @@ package org.ejbca.core.protocol.xkms.generators;
 
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -46,11 +45,11 @@ public class ReissueResponseGenerator extends
 
 	private static final InternalResources intres = InternalResources.getInstance();
 	
-	@EJB
-	private UserAdminSessionLocal userAdminSession;
+	private UserAdminSession userAdminSession;
 	
 	public ReissueResponseGenerator(String remoteIP, ReissueRequestType req, Document requestDoc) {
 		super(remoteIP, req,requestDoc);
+		userAdminSession = new EjbRemoteHelper().getUserAdminSession();
 	}
 	
 	/**
@@ -129,11 +128,6 @@ public class ReissueResponseGenerator extends
 		} catch (Exception e) {
 			log.error(intres.getLocalizedMessage("xkms.errorsettinguserstatus", userdata.getUsername()),e);			
 		}
-		
 		return retval;
 	}
-
-
-
-
 }

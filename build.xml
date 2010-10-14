@@ -271,10 +271,10 @@
 			<istrue value="${ejbcaws.enabled}"/>
 		</condition>
     	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-ws-ejb.jar@-->" value="${ejbcaws.enabled.replace-string}"/>
-		<condition property="xkms.enabled.replace-string" else="!--@xkms.war@-->" value="module>&lt;web>&lt;web-uri>xkms.war&lt;/web-uri>&lt;context-root>/${app.name}/xkms&lt;/context-root>&lt;/web>&lt;/module>">
+		<condition property="xkms.enabled.replace-string" else="!--@ejbca-xkms-ejb.jar@-->" value="module>&lt;ejb>ejbca-xkms-ejb.jar&lt;/ejb>&lt;/module>">
 			<istrue value="${xkms.enabled}"/>
 		</condition>
-    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@xkms.war@-->" value="${xkms.enabled.replace-string}"/>
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-xkms-ejb.jar@-->" value="${xkms.enabled.replace-string}"/>
 		<condition property="renew.enabled.replace-string" else="!--@renew.war@-->" value="module>&lt;web>&lt;web-uri>renew.war&lt;/web-uri>&lt;context-root>/${app.name}/renew&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${web.renewalenabled}"/>
 		</condition>
@@ -293,7 +293,7 @@
 			<isset property="bundle-hibernate-jpa"/>
 		</condition>
 		<!-- Build the EAR -->
-        <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
+        <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml">
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
             </fileset>
@@ -305,9 +305,10 @@
                 <include name="log4j.jar" />
                 <include name="ldap.jar" />
                 <include name="commons-*.jar" />
+                <include name="libidn.jar" />	<!-- XKMS -->
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar"/>
-            <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="xmlsec-1.3.0.jar"/>
+            <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="xmlsec-1.4.3.jar xalan-2.7.1.jar serializer-2.7.1.jar"/>	<!-- XKMS -->
             <zipfileset prefix="lib" dir="${lib}/reports">
 			    <include name="jasperreports-1.3.3.jar" />
 			    <include name="jfreechart-1.0.0.jar" />
@@ -320,7 +321,7 @@
             <fileset dir="modules/dist">
                 <include name="ejbca-ejb.jar" />
                 <include name="ejbca-ws-ejb.jar" />
-                <include name="xkms.war" />
+                <include name="ejbca-xkms-ejb.jar" />
                 <include name="adminweb.war" />
                 <include name="cmp.war" />
                 <include name="publicweb.war" />

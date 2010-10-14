@@ -290,7 +290,7 @@ public class XKMSKISSTest extends TestCase {
         locateRequestType.setQueryKeyBinding(queryKeyBindingType);
 
         LocateResultType locateResultType = xKMSInvoker.locate(locateRequestType, null, null);
-        assertTrue(locateResultType.getUnverifiedKeyBinding().size() == 1);
+        assertEquals("Wrong number of UnverifiedKeyBinding.", 1, locateResultType.getUnverifiedKeyBinding().size());
 
         // Locate by DNS Name
         locateRequestType = xKMSObjectFactory.createLocateRequestType();
@@ -436,7 +436,7 @@ public class XKMSKISSTest extends TestCase {
         locateRequestType.setQueryKeyBinding(queryKeyBindingType);
 
         LocateResultType locateResultType = xKMSInvoker.locate(locateRequestType, null, null);
-        assertTrue(locateResultType.getUnverifiedKeyBinding().size() == 1);
+        assertEquals("Wrong number of UnverifiedKeyBinding.", 1, locateResultType.getUnverifiedKeyBinding().size());
         List<UnverifiedKeyBindingType> numberOfUnverifiedKeyBindings = locateResultType.getUnverifiedKeyBinding();
         Iterator<UnverifiedKeyBindingType> iter = numberOfUnverifiedKeyBindings.iterator();
         KeyInfoType keyInfoType;
@@ -813,7 +813,7 @@ public class XKMSKISSTest extends TestCase {
         locateRequestType.setQueryKeyBinding(queryKeyBindingType);
 
         LocateResultType locateResultType = xKMSInvoker.locate(locateRequestType, null, null);
-        assertTrue(locateResultType.getUnverifiedKeyBinding().size() == 1);
+        assertEquals("Wrong number of UnverifiedKeyBinding.", 1, locateResultType.getUnverifiedKeyBinding().size());
         List<UnverifiedKeyBindingType> numberOfUnverifiedKeyBindings = locateResultType.getUnverifiedKeyBinding();
         Iterator<UnverifiedKeyBindingType> iter = numberOfUnverifiedKeyBindings.iterator();
         while (iter.hasNext()) {
@@ -993,7 +993,7 @@ public class XKMSKISSTest extends TestCase {
         locateRequestType.setQueryKeyBinding(queryKeyBindingType);
 
         LocateResultType locateResultType = xKMSInvoker.locate(locateRequestType, null, null);
-        assertTrue(locateResultType.getUnverifiedKeyBinding().size() == 3);
+        assertEquals("Wrong number of UnverifiedKeyBinding.", 3, locateResultType.getUnverifiedKeyBinding().size());
 
         // request with 2 and expect 2
         locateRequestType = xKMSObjectFactory.createLocateRequestType();

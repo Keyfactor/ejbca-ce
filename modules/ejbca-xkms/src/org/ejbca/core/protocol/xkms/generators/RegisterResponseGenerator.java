@@ -33,8 +33,7 @@ import org.w3c.dom.Document;
  * @version $Id$
  */
 
-public class RegisterResponseGenerator extends
-		KRSSResponseGenerator {
+public class RegisterResponseGenerator extends KRSSResponseGenerator {
 	//private static Logger log = Logger.getLogger(RegisterResponseGenerator.class);
 
 	public RegisterResponseGenerator(String remoteIP, RegisterRequestType req, Document requestDoc) {
@@ -48,18 +47,14 @@ public class RegisterResponseGenerator extends
 		RegisterResultType result = xkmsFactory.createRegisterResultType();		
 		super.populateResponse(result, requestVerifies);		
 		RegisterRequestType req = (RegisterRequestType) this.req;
-		
 
 		if(resultMajor == null){ 		
 			if(!checkValidRespondWithRequest(req.getRespondWith(),false)){
 				resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 				resultMinor = XKMSConstants.RESULTMINOR_MESSAGENOTSUPPORTED;
 			}
-
 			if(resultMajor == null){ 
-				
-
-				if(resultMajor == null){ 
+				if(resultMajor == null){ 	// TODO: Bug??
 					PublicKey publicKey = getPublicKey(req);					
 					if(confirmPOP(publicKey)){
 						String subjectDN = getSubjectDN(req);
@@ -85,13 +80,10 @@ public class RegisterResponseGenerator extends
 				}
 			}
 		}
-		
 		if(resultMajor == null){ 
 			resultMajor = XKMSConstants.RESULTMAJOR_SUCCESS;
 		}
-		  		   
 		setResult(result);		
-		
 		return result;
 	}
 
@@ -105,14 +97,6 @@ public class RegisterResponseGenerator extends
 		if(retval instanceof X509Certificate){
 			retval = ((X509Certificate) retval).getPublicKey();
 		}
-
-		
 		return (PublicKey) retval;
 	}
-	
-
-
-
-
-	
 }

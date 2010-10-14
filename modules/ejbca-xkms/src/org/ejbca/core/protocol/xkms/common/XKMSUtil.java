@@ -48,7 +48,6 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.EncryptionConstants;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.w3._2001._04.xmlenc_.EncryptedDataType;
 import org.w3._2002._03.xkms_.ObjectFactory;
@@ -91,14 +90,9 @@ public class XKMSUtil {
 		try {
 			CryptoProviderTools.installBCProvider();
 			org.apache.xml.security.Init.init();
-
-			jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
-			marshaller = jAXBContext.createMarshaller();
-			try {
-				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",new XKMSNamespacePrefixMapper());
-			} catch( PropertyException e ) {
-				log.error("Error registering namespace mapper property",e);
-			}
+			
+			jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
+			marshaller = getNamespacePrefixMappedMarshaller(jAXBContext); 
 			dbf = DocumentBuilderFactory.newInstance();
 			dbf.setNamespaceAware(true);
 			unmarshaller = jAXBContext.createUnmarshaller();
@@ -106,6 +100,28 @@ public class XKMSUtil {
 		} catch (JAXBException e) {
 			log.error("Error initializing RequestAbstractTypeResponseGenerator",e);
 		}
+	}
+	
+	public static Marshaller getNamespacePrefixMappedMarshaller(JAXBContext jAXBContext) throws JAXBException {
+		Marshaller marshaller = jAXBContext.createMarshaller();
+		try {
+			// JBoss 5.1.0.GA and EAP still uses an old implementation, so this wont work on the server side..
+			Object o = Class.forName("org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper").newInstance();
+			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", o);
+			//marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper",new XKMSNamespacePrefixMapper());
+			//marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",new com.sun.xml.bind.marshaller.NamespacePrefixMapper());
+		} catch( PropertyException e ) {
+			log.error("Error registering new namespace mapper property.",e);
+		} catch (InstantiationException e) {
+			log.error("Error instantiating new namespace mapper object.",e);
+		} catch (IllegalAccessException e) {
+			log.error("Error instantiating new namespace mapper object.",e);
+		} catch (ClassNotFoundException e) {
+			log.error("Error instantiating new namespace mapper object.",e);
+		} catch (NoClassDefFoundError e) {
+			log.error("Error instantiating old namespace mapper object.",e);
+		}
+		return marshaller;
 	}
 
 	/**

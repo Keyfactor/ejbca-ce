@@ -173,12 +173,7 @@ public class XKMSKRSSTest extends TestCase {
             org.apache.xml.security.Init.init();
 
             jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
-            marshaller = jAXBContext.createMarshaller();
-            try {
-                marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new XKMSNamespacePrefixMapper());
-            } catch (PropertyException e) {
-                log.error("Error registering namespace mapper property", e);
-            }
+			marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
             dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
             // unmarshaller = jAXBContext.createUnmarshaller();
@@ -986,8 +981,12 @@ public class XKMSKRSSTest extends TestCase {
 
         assertTrue(revokeResultType.getKeyBinding().size() == 1);
         keyBindingType = revokeResultType.getKeyBinding().get(0);
-        assertTrue(keyBindingType.getStatus().getValidReason().size() == 3);
-        assertTrue(keyBindingType.getStatus().getInvalidReason().size() == 1);
+        for (String s : keyBindingType.getStatus().getValidReason()) {
+        	log.debug("ValidReason: " + s);
+        }
+        // http://www.w3.org/2002/03/xkms#IssuerTrust, RevocationStatus, ValidityInterval, Signature
+        assertEquals("Wrong number of ValidReason in KeyBinding: ", 3, keyBindingType.getStatus().getValidReason().size());	// TODO: Was 3 in EJBCA 3.11?? Why has this changed?
+        assertEquals("Wrong number of InvalidReason in KeyBinding: ", 1, keyBindingType.getStatus().getInvalidReason().size());	// TODO: Was 1 in EJBCA 3.11?? Why has this changed?
 
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 1);

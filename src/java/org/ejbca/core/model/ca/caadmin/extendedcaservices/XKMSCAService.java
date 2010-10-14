@@ -108,6 +108,13 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
             // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
             this.xKMScertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
             status = getStatus();
+			try {
+				if (!keystore.getCertificate(PRIVATESIGNKEYALIAS).getPublicKey().equals(((Certificate)this.xKMScertificatechain.get(0)).getPublicKey())) {
+					m_log.error("Keystore does not hold the same public key as XKMS service certificate.");
+				}
+			} catch (Exception e2) {
+	        	m_log.error("Could not compare public keys. " + e2.getMessage());
+			}
         } catch (Exception e) {
         	m_log.error("Could not load keystore or certificate for CA XKMS service. Perhaps the password was changed? " + e.getMessage());
 		} finally {
@@ -225,8 +232,8 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 				xmlSig.addDocument("#" + xKMSServiceReq.getId(), transforms, org.apache.xml.security.utils.Constants.ALGO_ID_DIGEST_SHA1);        			
 				xmlSig.addKeyInfo(signerCert);
 				doc.getDocumentElement().insertBefore( xmlSig.getElement() ,doc.getDocumentElement().getFirstChild());
-				xmlSig.sign(xKMSkey);               		
-        		
+				xmlSig.sign(xKMSkey);
+				
         		returnval = new XKMSCAServiceResponse(doc);
         	}catch (XMLSignatureException e) {
         		throw new ExtendedCAServiceRequestException(e);

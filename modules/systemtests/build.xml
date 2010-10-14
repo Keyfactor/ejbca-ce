@@ -19,7 +19,9 @@
     	<path refid="lib.jpa.classpath"/>
     	<path refid="lib.bouncycastle.classpath"/>
     	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
-    	<path refid="lib.xmlsec.classpath"/>	<!-- To parse XML Exceptions -->
+    	<path refid="lib.xmlsec.classpath"/>	<!-- To parse XML Exceptions and for XKMS (includes XML libs)-->
+    	<path refid="lib.idn.classpath"/>	<!-- Use by XKMS -->
+		<path refid="lib.commons-logging.classpath"/>
     	<pathelement location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
     	<pathelement location="${mod.ejbca-entity.lib}"/>
     	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
@@ -29,7 +31,14 @@
     	<pathelement location="${mod.ejbca-util.lib}"/>
     	<pathelement location="${mod.ejbca-ejb.lib}"/>
 	</path>
-	
+
+	<!--
+	<path id="systemtests-jaxws.classpath">
+    	<path refid="systemtests.classpath"/>
+		<path refid="lib.jaxws-client.classpath"/>	<!- - Used by XKMS.. move these tests! - ->
+	</path>
+	-->
+
     <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, ejbca-ejb, compile"/>
 
     <target name="clean" description="Clean up this module">
@@ -41,7 +50,12 @@
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
-        	<exclude name="org/ejbca/core/protocol/xkms/**" unless="xkms.enabled.true"/>
+        	<exclude name="org/ejbca/core/protocol/xkms/**"/>
+    	</javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
+        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}" bootclasspathref="lib.javart.classpath">
+        	<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
+        	<classpath path="${build.dir}"/>
     	</javac>
         <copy file="${log4j.test.file}" tofile="${build.dir}/log4j.xml" failonerror="true"/>
         <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
@@ -84,10 +98,11 @@
 		<mkdir dir="${this.dir}/p12"/>	<!-- Workaround for tests using BatchMakeP12 -->
 		<mkdir dir="${build.dir}/conf"/>	<!-- Workaround for tests TestCertificateProfile -->
     	<copy todir="${build.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />	<!-- Workaround for tests TestCertificateProfile -->
+		<property name="runone-internal.classpath" value="systemtests.classpath"/>	<!-- set a default -->
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
 				<path location="${build.dir}" />
-				<path refid="systemtests.classpath" />
+				<path refid="${runone-internal.classpath}" />
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -159,8 +174,9 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$1.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
-					<exclude name="org/ejbca/core/protocol/xkms/XKMSSigTest.class" />
                     <exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
+					<!-- Exclude semi-broken tests -->
+					<exclude name="org/ejbca/core/protocol/xkms/XKMSSigTest.class" />
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspSignedHttpTest.class" />
 					<exclude name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class"/>
@@ -269,6 +285,7 @@
 	<target name="runxkms" description="Run XKMS system tests">
     	<property name="test.runone" value="XKMS*Test"/>
     	<property name="reports.dir" location="${reports.base.dir}/runxkms"/>
+		<property name="runone-internal.classpath" value="systemtests.classpath"/>
 		<antcall target="runone-internal"/>
 	</target>
 

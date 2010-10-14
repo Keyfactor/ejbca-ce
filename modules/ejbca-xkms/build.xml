@@ -10,6 +10,7 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-lib.dir" location="${this.dir}/build-lib"/>
 	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">
 		<path refid="compile-library.classpath"/>
@@ -26,19 +27,16 @@
 		<pathelement location="${mod.ejbca-util.lib}" /> 
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.xmlsec.classpath"/>
-		<path refid="lib.jaxws.classpath" /> 
+		<path refid="lib.javart.classpath" />
+		<path refid="lib.idn.classpath" /> 
 	</path>
 
-	<path id="wsdl-generate.classpath">
-		<path refid="generate.classpath" /> 
-		<pathelement location="${build.dir}" /> 
-	</path>
+    <target name="build" description="Build this module" depends="build-ejb-jar, build-jar"/>
 
-    <target name="build" description="Build this module" depends="build-war, build-jar"/>
-
-    <target name="build-war" description="Build the WAR that handles XKMS in EJBCA" depends="compile">
-    	<dirname file="${mod.ejbca-xkms.war}" property="mod.ejbca-xkms.war.dir"/>
-    	<mkdir dir="${mod.ejbca-xkms.war.dir}" />
+    <target name="build-ejb-jar" description="Build the EJB JAR that handles XKMS in EJBCA" depends="compile">
+    	<dirname file="${mod.ejbca-xkms-ejb.jar}" property="mod.ejbca-xkms-ejb.jar.dir"/>
+    	<mkdir dir="${mod.ejbca-xkms-ejb.jar.dir}" />
+    	<!-- soap:address is automatically rewritten by JBoss
     	<mkdir dir="${this.dir}/temp" />
         <copy file="${this.dir}/xkms.wsdl" tofile="${this.dir}/temp/xkms.wsdl" overwrite="true" failonerror="true" >
 			<filterchain>
@@ -48,27 +46,18 @@
 				</tokenfilter>
 			</filterchain>
         </copy>
-        <war warfile="${mod.ejbca-xkms.war}" webxml="${this.dir}/WEB-INF/web.xml">
-            <webinf dir="${this.dir}/WEB-INF" includes="sun-jaxws.xml, weblogic.xml, ibm-web-bnd.xmi"/>
-            <classes dir="${build.dir}"/>
-        	<fileset file="${this.dir}/temp/xkms.wsdl"/>
-         	<lib refid="lib.jaxws.fileset"/>
-        </war>
+        -->
+    	<jar destfile="${mod.ejbca-xkms-ejb.jar}" basedir="${build.dir}">
+        	<zipfileset dir="${resources.dir}" prefix="META-INF/wsdl" includes="xkms.wsdl"/>
+        	<zipfileset dir="${resources.dir}" prefix="META-INF" includes="jboss.xml"/>
+    	</jar>
     	<delete dir="${this.dir}/temp"/>
     </target>
 
     <target name="build-jar" description="Build EJBCA XKMS common library" depends="compile-library">
     	<dirname file="${mod.ejbca-xkms.lib}" property="mod.ejbca-xkms.lib.dir"/>
     	<mkdir dir="${mod.ejbca-xkms.lib.dir}" />
-    	<jar destfile="${mod.ejbca-xkms.lib}">
-        	<fileset dir="${build-lib.dir}"/><!--
-        	    <include name="org/ejbca/core/protocol/xkms/XKMSService.class"/>
-        	    <include name="org/ejbca/core/protocol/xkms/common/*.class"/>
-        	    <include name="org/w3/_2000/_09/xmldsig_/*.class"/>
-        	    <include name="org/w3/_2001/_04/xmlenc_/*.class"/>
-           	    <include name="org/w3/_2002/_03/xkms_/*.class"/>
-        	</fileset>-->
-    	</jar>
+    	<jar destfile="${mod.ejbca-xkms.lib}" basedir="${build-lib.dir}"/>
     </target>
 
     <target name="clean" description="Clean up this module">
@@ -80,16 +69,16 @@
 	
     <target name="compile" depends="ejbca-util, ejbca-ejb, ejbca-ejb-interface">
     	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath" bootclasspathref="lib.javart.classpath">
         	<src path="${src.dir}"/>
     	</javac>
     </target>
 	
     <target name="compile-library" depends="ejbca-util">
     	<mkdir dir="${build-lib.dir}" />
-        <javac destdir="${build-lib.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-library.classpath">
+        <javac destdir="${build-lib.dir}" debug="on" includeantruntime="false" includejavaruntime="true"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-library.classpath" bootclasspathref="lib.javart.classpath">
         	<src path="${src.dir}"/>
     	    <include name="org/ejbca/core/protocol/xkms/XKMSService.java"/>
     	    <include name="org/ejbca/core/protocol/xkms/common/*.java"/>

@@ -22,11 +22,7 @@
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.xmlsec.classpath"/>
-	</path>
-
-	<path id="compile-withws.classpath">
-		<path refid="compile.classpath"/>
-		<path refid="lib.jaxws.classpath"/>
+		<path refid="lib.idn.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile, setup">
@@ -53,8 +49,7 @@
 	
     <target name="compile" depends="ejbca-util, ejbca-xkms-common">
     	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-withws.classpath">
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
         	<src path="${src.dir}"/>
     	</javac>
     </target>
@@ -68,6 +63,7 @@
     	<copy todir="${mod.ejbca-xkms-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${compile.classpath.property}"/>
     	</copy>
+    	<!--
     	<pathconvert property="lib.jaxws-client.classpath.property" pathsep=" ">
     	    <path refid="lib.jaxws-client.classpath" />
     		<map from="${ejbca.home}/" to=""/>
@@ -75,6 +71,7 @@
     	<copy todir="${mod.ejbca-xkms-cli.dist}/lib/endorsed" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${lib.jaxws-client.classpath.property}"/>
     	</copy>
+    	-->
     	<copy todir="${mod.ejbca-xkms-cli.dist}" flatten="true">
     		<fileset dir="${this.dir}/resources" includes="**"/>
     	</copy>

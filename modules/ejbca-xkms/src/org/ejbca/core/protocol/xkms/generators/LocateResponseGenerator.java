@@ -17,6 +17,7 @@ import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2002._03.xkms_.LocateRequestType;
 import org.w3._2002._03.xkms_.LocateResultType;
@@ -31,9 +32,9 @@ import org.w3._2002._03.xkms_.UnverifiedKeyBindingType;
  * @version $Id$
  */
 
-public class LocateResponseGenerator extends
-		KISSResponseGenerator {
+public class LocateResponseGenerator extends KISSResponseGenerator {
 	
+	private static final Logger log = Logger.getLogger(LocateResponseGenerator.class);
 
 	public LocateResponseGenerator(String remoteIP, LocateRequestType req) {
 		super(remoteIP, req);
@@ -46,43 +47,29 @@ public class LocateResponseGenerator extends
 		LocateResultType result = xkmsFactory.createLocateResultType();		
 		super.populateResponse(result, requestVerifies);		
 		LocateRequestType req = (LocateRequestType) this.req;
-		
-
 		if(resultMajor == null){ 		
 			if(!checkValidRespondWithRequest(req.getRespondWith())){
 				resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 				resultMinor = XKMSConstants.RESULTMINOR_MESSAGENOTSUPPORTED;
 			}
-
 			if(resultMajor == null){ 
 				List<X509Certificate> queryResult = processRequest(req.getQueryKeyBinding());
-
+				if (log.isDebugEnabled()) {
+					log.debug("processRequest returned " + queryResult.size() + " results.");
+				}
 				if(resultMajor == null){ 		
 					Iterator<X509Certificate> iter = queryResult.iterator();
 					while(iter.hasNext()){
 						X509Certificate nextCert = iter.next();
 						result.getUnverifiedKeyBinding().add((UnverifiedKeyBindingType) getResponseValues(req.getQueryKeyBinding(),nextCert,false,false));
-
 					}		  
 				}
 			}
 		}
-		
 		if(resultMajor == null){ 
 			resultMajor = XKMSConstants.RESULTMAJOR_SUCCESS;
 		}
-		  		   
 		setResult(result);
-		
-
-		
-		
 		return result;
 	}
-	
-
-    
-    
-
-
 }

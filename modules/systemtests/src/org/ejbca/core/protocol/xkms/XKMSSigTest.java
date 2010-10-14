@@ -31,7 +31,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import junit.framework.TestCase;
@@ -44,7 +44,6 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
-import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
@@ -80,6 +79,8 @@ public class XKMSSigTest extends TestCase {
     private ObjectFactory xKMSObjectFactory = new ObjectFactory();
     private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 
+    private static final String SERVICE_URL = "http://localhost:8080/ejbca/xkms/xkms";	//http://localhost:8080/ejbca/xkms/xkms
+    
     private static String baseUsername;
 
     private static String username;
@@ -88,7 +89,7 @@ public class XKMSSigTest extends TestCase {
 
     private static JAXBContext jAXBContext = null;
     private static Marshaller marshaller = null;
-    // private static Unmarshaller unmarshaller = null;
+    private static Unmarshaller unmarshaller = null;
     private static DocumentBuilderFactory dbf = null;
 
     private static int caid;
@@ -101,15 +102,11 @@ public class XKMSSigTest extends TestCase {
             org.apache.xml.security.Init.init();
 
             jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
-            marshaller = jAXBContext.createMarshaller();
-            try {
-                marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new XKMSNamespacePrefixMapper());
-            } catch (PropertyException e) {
-                log.error("Error registering namespace mapper property", e);
-            }
+			marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
             dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
-            // unmarshaller = jAXBContext.createUnmarshaller();
+            //dbf.setExpandEntityReferences(true);	// Default: true
+            unmarshaller = jAXBContext.createUnmarshaller();
 
         } catch (JAXBException e) {
             log.error("Error initializing RequestAbstractTypeResponseGenerator", e);
@@ -131,6 +128,7 @@ public class XKMSSigTest extends TestCase {
     }
 
     public void test00SetupAccessRights() throws Exception {
+    	log.trace(">test00SetupAccessRights");
         Admin administrator = new Admin(Admin.TYPE_RA_USER);
         Object o = null;
         username = baseUsername + "1";
@@ -149,10 +147,11 @@ public class XKMSSigTest extends TestCase {
         // log.debug("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getAbsolutePath());
         makep12.createAllNew();
-
+    	log.trace("<test00SetupAccessRights");
     }
 
     public void test01ClientSignature() throws Exception {
+    	log.trace(">test01ClientSignature");
         KeyStore clientKeyStore = Constants.getUserKeyStore();
 
         // Test simple validate
@@ -210,18 +209,20 @@ public class XKMSSigTest extends TestCase {
         java.security.cert.X509Certificate verCert = keyInfo.getX509Certificate();
 
         assertTrue(xmlVerifySig.checkSignatureValue(verCert));
-
+    	log.trace("<test01ClientSignature");
     }
 
     public void test02SendSignedRequest() throws Exception {
-
+    	log.trace(">test02SendSignedRequest");
         KeyStore clientKeyStore = KeyStore.getInstance("JKS");
         keystorefile = new File(tmpfile.getAbsolutePath() + "/" + username + ".jks");
         clientKeyStore.load(new FileInputStream(keystorefile), "foo123".toCharArray());
 
         String alias = "superadmin";
         java.security.cert.X509Certificate pkCert = (java.security.cert.X509Certificate) clientKeyStore.getCertificate(alias);
+        assertNotNull("Unable to get certificate for admin.", pkCert);
         Key key = clientKeyStore.getKey(alias, "foo123".toCharArray());
+        assertNotNull("Unable to get key for admin.", pkCert);
         Certificate[] trustedcerts = clientKeyStore.getCertificateChain(alias);
         ArrayList<Certificate> trustcol = new ArrayList<Certificate>();
         for (int i = 0; i < trustedcerts.length; i++) {
@@ -230,7 +231,7 @@ public class XKMSSigTest extends TestCase {
             }
         }
 
-        XKMSInvoker xKMSInvoker = new XKMSInvoker("http://localhost:8080/ejbca/xkms/xkms", trustcol);
+        XKMSInvoker xKMSInvoker = new XKMSInvoker(SERVICE_URL, trustcol);
 
         // Test simple validate
         ValidateRequestType validateRequestType = xKMSObjectFactory.createValidateRequestType();
@@ -258,9 +259,11 @@ public class XKMSSigTest extends TestCase {
             log.debug("", e);
             assertTrue("There was a server error. (" + e.getMessage() + ") Did you enable the XKMS CA service?", false);
         }
+    	log.trace("<test02SendSignedRequest");
     }
 
     public void test03SendUntrustedRequest() throws Exception {
+    	log.trace(">test03SendUntrustedRequest");
         KeyStore clientKeyStore = Constants.getUserKeyStore();
         KeyStore trustKeyStore = KeyStore.getInstance("JKS");
         keystorefile = new File(tmpfile.getAbsolutePath() + "/" + username + ".jks");
@@ -277,7 +280,7 @@ public class XKMSSigTest extends TestCase {
             }
         }
 
-        XKMSInvoker xKMSInvoker = new XKMSInvoker("http://localhost:8080/ejbca/xkms/xkms", trustcol);
+        XKMSInvoker xKMSInvoker = new XKMSInvoker(SERVICE_URL, trustcol);
 
         // Test simple validate
         ValidateRequestType validateRequestType = xKMSObjectFactory.createValidateRequestType();
@@ -307,10 +310,11 @@ public class XKMSSigTest extends TestCase {
             log.debug("", e);
             assertTrue("There was a server error. (" + e.getMessage() + ") Did you enable the XKMS CA service?", false);
         }
+    	log.trace("<test03SendUntrustedRequest");
     }
 
     public void test04SendRevokedRequest() throws Exception {
-
+    	log.trace(">test04SendRevokedRequest");
         userAdminSession.revokeUser(new Admin(Admin.TYPE_RA_USER), username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
 
         KeyStore clientKeyStore = KeyStore.getInstance("JKS");
@@ -328,7 +332,7 @@ public class XKMSSigTest extends TestCase {
             }
         }
 
-        XKMSInvoker xKMSInvoker = new XKMSInvoker("http://localhost:8080/ejbca/xkms/xkms", trustcol);
+        XKMSInvoker xKMSInvoker = new XKMSInvoker(SERVICE_URL, trustcol);
 
         // Test simple validate
         ValidateRequestType validateRequestType = xKMSObjectFactory.createValidateRequestType();
@@ -358,10 +362,11 @@ public class XKMSSigTest extends TestCase {
             log.debug("", e);
             assertTrue("There was a server error. (" + e.getMessage() + ") Did you enable the XKMS CA service?", false);
         }
+    	log.trace("<test04SendRevokedRequest");
     }
 
     public void test05POPSignature() throws Exception {
-
+    	log.trace(">test05POPSignature");
         KeyStore clientKeyStore = Constants.getUserKeyStore();
 
         String alias = "TEST";
@@ -433,9 +438,11 @@ public class XKMSSigTest extends TestCase {
 
         KeyPair keyPair = KeyTools.genKeys("1024", "RSA");
         assertFalse(xmlVerifySig.checkSignatureValue(keyPair.getPublic()));
+    	log.trace("<test05POPSignature");
     }
 
     public void test06AuthenticationKeyBindingSignature() throws Exception {
+    	log.trace(">test06AuthenticationKeyBindingSignature");
         KeyStore clientKeyStore = Constants.getUserKeyStore();
         KeyPair keyPair = KeyTools.genKeys("1024", "RSA");
 
@@ -516,7 +523,7 @@ public class XKMSSigTest extends TestCase {
 
         // Verify the authentication
         org.w3c.dom.NodeList authenticationElements = doc2.getElementsByTagNameNS("http://www.w3.org/2002/03/xkms#", "Authentication");
-        assertTrue(authenticationElements.getLength() == 1);
+        assertTrue("Missing \"Authentication\" element in doc.", authenticationElements.getLength() == 1);
         Element ae = (Element) authenticationElements.item(0);
 
         org.w3c.dom.NodeList xmlSigs = ae.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
@@ -524,7 +531,7 @@ public class XKMSSigTest extends TestCase {
         org.w3c.dom.Element xmlSigElement = (org.w3c.dom.Element) xmlSigs.item(0);
         org.apache.xml.security.signature.XMLSignature xmlVerifySig = new org.apache.xml.security.signature.XMLSignature(xmlSigElement, null);
 
-        assertTrue(xmlVerifySig.checkSignatureValue(sk));
+        assertTrue("Signature verificate failed.", xmlVerifySig.checkSignatureValue(sk));
 
         // Verify the pop
         org.w3c.dom.NodeList pOPElements = doc2.getElementsByTagNameNS("http://www.w3.org/2002/03/xkms#", "ProofOfPossession");
@@ -536,6 +543,7 @@ public class XKMSSigTest extends TestCase {
         org.apache.xml.security.signature.XMLSignature popVerXmlSig = new org.apache.xml.security.signature.XMLSignature(popVerXmlSigElement, null);
         assertTrue(popVerXmlSig.checkSignatureValue(keyPair.getPublic()));
         assertFalse(popVerXmlSig.checkSignatureValue(pkCert.getPublicKey()));
+    	log.trace("<test06AuthenticationKeyBindingSignature");
     }
 
     public void test99RemoveUser() throws Exception {

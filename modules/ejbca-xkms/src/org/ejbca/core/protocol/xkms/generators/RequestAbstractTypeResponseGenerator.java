@@ -141,8 +141,9 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 		return "_" + id;
 	}
 
+	// Should probably start with a protocol. See http://www.w3.org/TR/xkms2/#XKMS_2_0_Section_2_1 .
 	private String genServiceValue() {
-		return WebConfiguration.getHostName() + ":" + WebConfiguration.getPublicHttpPort() + "/ejbca/xkms/xkms";
+		return "http://" + WebConfiguration.getHostName() + ":" + WebConfiguration.getPublicHttpPort() + "/ejbca/xkms/xkms";
 	}
 	
     /**
@@ -437,8 +438,6 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
         		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
         	} 
-
-
         	if(allValid){
         		retval.setStatusValue(XKMSConstants.STATUSVALUE_VALID);
         	}else{
@@ -448,10 +447,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         			retval.setStatusValue(XKMSConstants.STATUSVALUE_INDETERMINATE);
         		}
         	}
-
         }
 		return retval;
 	}
-	
-	
 }
