@@ -2159,10 +2159,10 @@ The tool "$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool" is u
 Keys may be generated in two ways. Examples:
 </p>
 <source>
-$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 1
+$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 1
 </source>
 <source>
-$EJBCA/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.conf 2048 defaultKey
+$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.conf 2048 defaultKey
 </source>
 <p>
 The first example is using built in default and are then using specified slot and PKCS#11 library.
@@ -2527,18 +2527,18 @@ An ECC key could not be used with preload (at least not the curve secp160r1). Su
 Now 3 keys protected by the key set 'ejbca' are created like this:
 </p>
 <source>
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
-Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
+Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry default.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-d165e440baa8dc9963780c682836ba17513e8cbf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
+Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry crypt.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
+jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-27cfdae84bf4298f2dde83cd00980a81bcf095bf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
+Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry test.
 jboss@donny:~/work/test/keygen$ 
@@ -2822,7 +2822,7 @@ dr-xr-xr-x 2 lars lars   4096 28 nov 14.28 include
 lars@maud:~/work/test/ca$ LD_LIBRARY_PATH=../../bullInstall/linux ../../java/jboss/bin/run.sh
 </source>
 <source>
-lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ../../bullInstall/linux/libgpkcs11cc2000.so 2048 defaultkey i0
+lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ../../bullInstall/linux/libgpkcs11cc2000.so 2048 defaultkey i0
 </source>
 </subsection>
 
@@ -2883,11 +2883,11 @@ The password is from the configuration step 4. See above.
 </subsubsection>
 <subsubsection name="Generate keys on a slot">
 <source>
-lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so 2048 rsa2048_1 1
+lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so 2048 rsa2048_1 1
 0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
 PKCS11 Token [SunPKCS11-Luna] Password: 
 Created certificate with entry rsa2048_1.
-lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so secp160r1 secp160r1_1 1
+lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so secp160r1 secp160r1_1 1
 0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
 PKCS11 Token [SunPKCS11-Luna] Password: 
 Created certificate with entry secp160r1_1.
@@ -2963,9 +2963,9 @@ LD_LIBRARY_PATH=/opt/PTK/lib /opt/PTK/bin/ctkmu t -s5 -lroot
 </subsubsection>
 <subsubsection name="Generate keys on slot 5">
 <source>
-$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 defaultSign 5
-$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 default 5
-$EJBCA_HOME/clientToolBox-dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 512 test 5
+$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 defaultSign 5
+$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 default 5
+$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 512 test 5
 </source>
 <p>If JBoss was started you have to restart JBoss before the keys becomes available in EJBCA.</p>
 </subsubsection>
