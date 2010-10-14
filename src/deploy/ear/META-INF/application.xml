@@ -55,7 +55,7 @@
         </web>
     </module> 
        <!--@ejbca-ws-ejb.jar@-->
-       <!--@xkms.war@-->
+       <!--@ejbca-xkms-ejb.jar@-->
        <!--@doc.war@-->
        <!--@renew.war@-->
        <!--@ejbca-cmp-tcp.war@-->

@@ -56,8 +56,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * @version $Id$
  */
 
-public class KISSResponseGenerator extends
-		RequestAbstractTypeResponseGenerator {
+public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator {
 	
 	 private static Logger log = Logger.getLogger(KISSResponseGenerator.class);
 	
@@ -147,18 +146,23 @@ public class KISSResponseGenerator extends
 				Query query = genQueryFromUseKeyWith(queryKeyBindingType.getUseKeyWith());
                 
 				try {            		
-					Collection userDatas = userAdminSession.query(pubAdmin, query, null, null, resSize);
-
+					Collection<UserDataVO> userDatas = userAdminSession.query(pubAdmin, query, null, null, resSize);
+					if (log.isDebugEnabled()) {
+						log.debug("userAdminSession.query returned " + userDatas.size() + " results for query \"" + query.getQueryString() + "\"");
+					}
 					Iterator<UserDataVO> userIter = userDatas.iterator();
 					while(userIter.hasNext() && retval.size() <= resSize){
 						UserDataVO nextUser = userIter.next();
 						// Find all the certificates of the matching users
 						try {
-							Collection userCerts = certificateStoreSession.findCertificatesByUsername(pubAdmin, nextUser.getUsername());
+							Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(pubAdmin, nextUser.getUsername());
+							if (log.isDebugEnabled()) {
+								log.debug("certificateStoreSession.findCertificatesByUsername " + userCerts.size() + " results for user \"" + nextUser.getUsername() + "\"");
+							}
 							// For all the certificates
-							Iterator<X509Certificate> userCertIter = userCerts.iterator();
+							Iterator<Certificate> userCertIter = userCerts.iterator();
 							while(userCertIter.hasNext() &&  retval.size() <= resSize){
-								X509Certificate nextCert = userCertIter.next();            		        
+								X509Certificate nextCert = (X509Certificate) userCertIter.next();            		        
 								try {
 									// Check that the certificate is valid 
 									nextCert.checkValidity(new Date());								
@@ -168,6 +172,9 @@ public class KISSResponseGenerator extends
 										if(fulfillsKeyUsageAndUseKeyWith(queryKeyBindingType,nextCert)){
 											retval.add(nextCert);											
 										}
+									}
+									if (log.isDebugEnabled()) {
+										log.debug("certificateStoreSession.getCertificateInfo " + certInfo.getRevocationReason() + " results for fingerprint \"" + CertTools.getFingerprintAsString(nextCert) + "\"");
 									}
 								} catch (CertificateExpiredException e) {
 								} catch (CertificateNotYetValidException e) {

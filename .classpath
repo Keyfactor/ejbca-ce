@@ -61,24 +61,8 @@
 	<classpathentry kind="lib" path="lib/bcmail-jdk16-145.jar"/>
 	<classpathentry kind="lib" path="lib/bctsp-jdk16-145.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc.jar"/>
-	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/activation.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/FastInfoset.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/http.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/jaxb-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/jaxb-impl.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/jaxb-xjc.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/jaxws-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/jaxws-rt.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/jsr173_api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/jsr181-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/jsr250-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/resolver.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/saaj-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/saaj-impl.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/sjsxp.jar"/>
+	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/jaxws/libidn.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws/xalan.jar"/>
 	<classpathentry kind="lib" path="lib/reports/jfreechart-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/reports/jcommon-1.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/reports/jasperreports-1.3.3.jar"/>

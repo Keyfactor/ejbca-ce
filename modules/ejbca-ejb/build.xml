@@ -94,11 +94,6 @@
             	<!-- Include files that are not already present in ejbca-util.jar -->
             	<present present="srconly" targetdir="${build-util.dir}"/>
         	</fileset>
-        	<!--
-            <manifest>
-                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
-            </manifest>
-            -->
             <fileset dir="${ejbca.home}">
 				<include name="conf/**/*.properties"/>
 			</fileset>	
@@ -123,11 +118,6 @@
 		</copy>
     	<mkdir dir="${ocsp.hardToken.classes}"/>	<!-- If it doesn't exist.. -->
         <jar destfile="${mod.ocsp-ejb.lib}">
-        	<!--
-            <manifest>
-                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
-            </manifest>
-            -->
         	<fileset dir="${build-ocsp.dir}">
             	<!-- Include files that are not already present in ejbca-util.jar -->
             	<present present="srconly" targetdir="${build-util.dir}"/>

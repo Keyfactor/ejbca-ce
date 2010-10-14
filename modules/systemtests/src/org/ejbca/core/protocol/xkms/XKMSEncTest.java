@@ -84,12 +84,7 @@ public class XKMSEncTest extends TestCase {
 			org.apache.xml.security.Init.init();
 
 			jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
-			marshaller = jAXBContext.createMarshaller();
-			try {
-				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",new XKMSNamespacePrefixMapper());
-			} catch( PropertyException e ) {
-				log.error("Error registering namespace mapper property",e);
-			}
+			marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
 			dbf = DocumentBuilderFactory.newInstance();
 			dbf.setNamespaceAware(true);
 			unmarshaller = jAXBContext.createUnmarshaller();

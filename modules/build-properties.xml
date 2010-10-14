@@ -103,7 +103,7 @@
     <property name="mod.ejbca-xkms-cli.dist" location="${ejbca.dist.path}/ejbca-xkms-cli" />
     <property name="mod.ejbca-xkms-cli.path" location="${mod.path}/ejbca-xkms-cli" />
     <property name="mod.ejbca-xkms.path" location="${mod.path}/ejbca-xkms" />
-    <property name="mod.ejbca-xkms.war" location="${mod.dist.path}/xkms.war" />
+    <property name="mod.ejbca-xkms-ejb.jar" location="${mod.dist.path}/ejbca-xkms-ejb.jar" />
     <property name="mod.ejbca-xkms.lib" location="${mod.dist.path}/ejbca-xkms.jar" />
     <property name="mod.admin-gui.path" location="${mod.path}/admin-gui" />
     <property name="mod.admin-gui.war" location="${mod.dist.path}/adminweb.war" />
@@ -144,7 +144,7 @@
     <property name="mod.batchenrollment-gui.path" location="${mod.path}/batchenrollment-gui" />
 	
     <!-- Variables of global interest -->
-    <property name="java.target.version" value="1.5"/>	<!-- This should probably be defined in internal.properties -->
+    <property name="java.target.version" value="1.6"/>	<!-- This should probably be defined in internal.properties -->
 	<property name="externalra.enabled" value="false"/>
 	<property name="ejbcaws.enabled" value="true" />
 	<condition property="ejbcaws.enabled.true"><istrue value="${ejbcaws.enabled}"/></condition>
@@ -187,9 +187,14 @@
 	<path id="lib.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/></path>
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
-	<path id="lib.xmlsec.classpath"><fileset dir="${ejbca.home}/lib/xmlsign/" includes="xmlsec-*.jar"/></path>
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
 	<path id="lib.clover.classpath"><pathelement location="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/></path>
+	<path id="lib.idn.classpath"><fileset dir="${ejbca.home}/lib" includes="libidn.jar"/></path>
+	<path id="lib.xml.classpath"><fileset dir="${ejbca.home}/lib/xmlsign" includes="xalan-2.7.1.jar serializer-2.7.1.jar"/></path>
+	<path id="lib.xmlsec.classpath">
+		<fileset dir="${ejbca.home}/lib/xmlsign" includes="xmlsec-1.4.3.jar"/>
+		<path refid="lib.xml.classpath"/>
+	</path>
 
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
@@ -198,36 +203,17 @@
 		</fileset>
 	</path>
 
-	<property name="lib.jaxws.dir" location="${ejbca.home}/lib/jaxws"/>
-	<path id="lib.jaxws-client.classpath">
-        <fileset dir="${ejbca.home}/lib/jaxws">
-            <include name="jaxb*.jar"/>
-            <include name="saaj-*.jar"/>
-            <include name="jaxws-api.jar"/>
-            <include name="jaxws-rt.jar"/>
-            <include name="sjsxp.jar"/>
-            <include name="jsr181-api.jar"/>
-            <include name="jsr173_api.jar"/>
-            <include name="activation.jar"/>
-            <include name="libidn.jar"/>
-        </fileset>
+	<path id="lib.javart.classpath">
+		<fileset dir="${java.home}/lib" includes="*.jar"/>
 	</path>
-
-	<!-- Still used by XMKS -->
-    <fileset id="lib.jaxws.fileset" dir="${ejbca.home}/lib/jaxws" includes="*.jar"/>
-	<path id="lib.jaxws.classpath"><fileset refid="lib.jaxws.fileset"/></path>
 
 	<dirname file="${appserver.home}" property="appserver.home.parent"/>
 
 	<path id="lib.jee.classpath">
 		<fileset dir="${appserver.home}">
-			<!-- JBoss 4.2.x -->
-			<include name="client/jbossall-client.jar" />
-			<!--
-			<include name="client/jboss-j2ee.jar" />
-			--> 	 
-			<include name="client/jnp-client.jar" />			
 			<!-- JBoss 5.0.0 -->
+			<include name="client/jbossall-client.jar" />
+			<include name="client/jnp-client.jar" />			
 			<include name="client/jboss-javaee.jar" />
 			<include name="client/jboss-logging-spi.jar" />
 			<include name="client/jboss-client.jar" />
@@ -238,7 +224,9 @@
 			<include name="client/concurrent.jar" />
 			<include name="client/jbosssx-client.jar" />
 			<include name="client/jboss-integration.jar" />
+			<!--
 			<include name="client/xmlsec.jar" />
+			-->
 			
 			<!-- JBoss 5.1.0 for Remote EJB-->
 	    	<include name="client/jboss-ejb3-*.jar"/>

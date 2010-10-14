@@ -24,10 +24,7 @@
             <include name="commons-logging.jar"/>
         </fileset>
 		<path refid="lib.jpa.classpath"/>
-	</path>
-
-	<path id="clientToolBox.endorsed.classpath">
-		<path refid="lib.jaxws-client.classpath"/>
+		<path refid="lib.xml.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile">
@@ -65,7 +62,9 @@
             <classpath>
             	<path refid="lib.bouncycastle.classpath"/>
             	<path refid="clientToolBox.lib.classpath"/>
+            	<!--
                	<path refid="clientToolBox.endorsed.classpath"/>
+               	-->
             </classpath>
         	<src path="${src.dir}"/>
             <src path="${ejbca.home}/src/java" />
@@ -94,14 +93,6 @@
     	</pathconvert>
     	<copy todir="${mod.clientToolBox.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${lib.clientToolBox.classpath.property}"/>
-    	</copy>
-    	<!-- Copy all the files in the clientToolBox.endorsed.classpath to mod.clientToolBox.dist/endorsed -->
-    	<pathconvert property="endorsed.clientToolBox.classpath.property" pathsep=" ">
-    	    <path refid="clientToolBox.endorsed.classpath" />
-    		<map from="${ejbca.home}/" to=""/>
-    	</pathconvert>
-    	<copy todir="${mod.clientToolBox.dist}/endorsed" flatten="true">
-    		<fileset dir="${ejbca.home}" includes="${endorsed.clientToolBox.classpath.property}"/>
     	</copy>
     	<!-- Copy scripts etc to mod.clientToolBox.dist -->
         <copy todir="${mod.clientToolBox.dist}">
