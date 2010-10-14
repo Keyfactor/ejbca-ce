@@ -12,7 +12,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.log;
+package org.cesecore.core.ejb.log;
 
 import java.lang.reflect.Method;
 import java.security.cert.Certificate;
@@ -35,8 +35,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.cesecore.core.ejb.log.LogSessionRemote;
+import org.cesecore.core.ejb.log.OldLogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.log.LogConfigurationData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;

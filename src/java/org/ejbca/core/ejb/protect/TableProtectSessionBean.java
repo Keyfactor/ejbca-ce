@@ -114,36 +114,6 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
     			tableProtectData = new TableProtectData(GUIDGenerator.generateGUID(this), hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyType);
     			entityManager.persist(tableProtectData);
     		}
-    		/*
-    		String id = null;
-    		try {
-    			SelectProtectPreparer prep = new SelectProtectPreparer(dbType, dbKey);
-        		id = JDBCUtil.executeSelectString("SELECT id FROM TableProtectData where dbType=? and dbKey=?",
-        				prep, dataSource );    			
-    		} catch (Exception e) {
-    			
-    		}
-    		if (id != null) {
-                String msg = intres.getLocalizedMessage("protect.rowexistsupdate", dbType, dbKey);            	
-				log.info(msg);
-				ProtectPreparer uprep = new ProtectPreparer(id, TableProtectData.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyType);
-    			try {
-    				JDBCUtil.execute( "UPDATE TableProtectData SET version=?,hashVersion=?,protectionAlg=?,hash=?,signature=?,time=?,dbKey=?,dbType=?,keyType=? WHERE id=?",
-    						uprep, dataSource );
-    			} catch (Exception ue) {
-    				log.error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, ue);
-    			}
-			} else {
-	    		id = GUIDGenerator.generateGUID(this);
-	        	try {
-	        		ProtectPreparer prep = new ProtectPreparer(id, TableProtectData.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyType);
-	        		JDBCUtil.execute( "INSERT INTO TableProtectData (version,hashVersion,protectionAlg,hash,signature,time,dbKey,dbType,keyType,id) VALUES (?,?,?,?,?,?,?,?,?,?)",
-	        				prep, dataSource );
-	        	} catch (Exception e) {
-	                String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
-					log.error(msg, e);
-	        	}
-			} */
     	} catch (Exception e) {
             String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
     		log.error(msg, e);
@@ -271,63 +241,4 @@ public class TableProtectSessionBean implements TableProtectSessionLocal, TableP
         byte[] out = mac.doFinal();
     	return new String(Hex.encode(out));
     }
-
-    /*protected class SelectProtectPreparer implements JDBCUtil.Preparer {
-    	private final String dbType;
-    	private final String dbKey;
-		public SelectProtectPreparer(final String dbType, final String dbKey) {
-			super();
-			this.dbType = dbType;
-			this.dbKey = dbKey;
-		}
-		public void prepare(PreparedStatement ps) throws Exception {
-            ps.setString(1, dbType);
-            ps.setString(2, dbKey);
-		}
-        public String getInfoString() {
-        	return "Select:, dbKey:"+dbKey+", dbType: "+dbType;
-        }
-    }
-
-    protected class ProtectPreparer implements JDBCUtil.Preparer {
-        private final String id;
-        private final int version;
-        private final int hashVersion;
-        private final String alg;
-        private final String hash;
-        private final String signature;
-        private final long time;
-        private final String dbKey; 
-        private final String dbType; 
-        private final String keyType; 
-        
-        public ProtectPreparer(final String id, final int version, final int hashVersion, final String alg, final String hash, final String signature, final long time, final String dbKey, final String dbType, final String keyType) {
-			super();
-			this.id = id;
-			this.version = version;
-			this.hashVersion = hashVersion;
-			this.alg = alg;
-			this.hash = hash;
-			this.signature = signature;
-			this.time = time;
-			this.dbKey = dbKey;
-			this.dbType = dbType;
-			this.keyType = keyType;
-		}
-		public void prepare(PreparedStatement ps) throws Exception {
-            ps.setInt(1, version);
-            ps.setInt(2, hashVersion);
-            ps.setString(3, alg);
-            ps.setString(4, hash);
-            ps.setString(5, signature);
-            ps.setLong(6, time);
-            ps.setString(7, dbKey);
-            ps.setString(8, dbType);
-            ps.setString(9, keyType);
-            ps.setString(10,id);
-        }
-        public String getInfoString() {
-        	return "Store:, id: "+id+", dbKey:"+dbKey+", dbType: "+dbType;
-        }
-    }*/
 }

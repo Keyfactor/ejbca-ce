@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.log;
+package org.cesecore.core.ejb.log;
 
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.IllegalQueryException;

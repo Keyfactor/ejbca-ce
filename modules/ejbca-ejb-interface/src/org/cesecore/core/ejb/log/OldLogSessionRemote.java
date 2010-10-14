@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.log;
+package org.cesecore.core.ejb.log;
 
 import javax.ejb.Remote;
 

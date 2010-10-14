@@ -60,6 +60,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -69,7 +70,6 @@ import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -158,6 +158,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CreateCRLSessionLocal crlSession;
@@ -165,8 +167,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private PublisherSessionLocal publisherSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
-    @EJB
-    private CertificateProfileSessionLocal certificateProfileSession;
+
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
