@@ -21,9 +21,9 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cesecore.core.ejb.log.LogSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.core.ejb.log.LogSession;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;

@@ -24,8 +24,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;

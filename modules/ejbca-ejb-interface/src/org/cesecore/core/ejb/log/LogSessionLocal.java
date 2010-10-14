@@ -10,24 +10,22 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+package org.cesecore.core.ejb.log;
 
-package org.ejbca.core.ejb.log;
+import javax.ejb.Local;
 
-import java.security.cert.Certificate;
-import java.util.Collection;
-import java.util.Date;
-
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.util.query.IllegalQueryException;
-import org.ejbca.util.query.Query;
+import org.ejbca.core.model.log.LogConfiguration;
 
 /**
- * @version $Id$
+ * Local interface for LogSession.
  */
-public interface OldLogSession {
-
-	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
+@Local
+public interface LogSessionLocal extends LogSession {
 	
-	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException ;
+    /**
+     * Saves the log configuration to the database without logging.
+     * Should only be used from loadLogConfiguration(..)
+     * @param logConfiguration the logconfiguration to save.
+     */
+	public void saveNewLogConfiguration(int caid, LogConfiguration logConfiguration);
 }

@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.log;
+package org.cesecore.core.ejb.log;
 
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -28,9 +28,13 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.log.OldLogSessionLocal;
+import org.cesecore.core.ejb.log.OldLogSessionRemote;
 import org.ejbca.config.OldLogConfiguration;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.log.LogConfigurationData;
+import org.ejbca.core.ejb.log.LogEntryData;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConfiguration;

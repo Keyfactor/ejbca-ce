@@ -10,18 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.log;
 
-import javax.ejb.Remote;
+package org.cesecore.core.ejb.log;
+
+import javax.ejb.Local;
 
 /**
- * Remote interface for LogSession.
+ * @version $Id$
  */
-@Remote
-public interface LogSessionRemote extends LogSession {
+@Local
+public interface OldLogSessionLocal extends OldLogSession {
 
-	/**
-     * Methods for testing that a log-row is never rolled back if the rest of the transaction is.
-     */
-    public void testRollback(long rollbackTestTime);
 }

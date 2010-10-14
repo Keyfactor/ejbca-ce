@@ -16,11 +16,11 @@ package org.ejbca.core.model.services;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
+import org.cesecore.core.ejb.log.LogSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.core.ejb.log.LogSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
