@@ -40,9 +40,39 @@ The values of "customAvailableAccessRules" and "RNGAlgorithm" (Random Number Gen
 from conf/ejbca.properties instead of being read through the ENC.
 
 From EJBCA 3.10.x to EJBCA 3.11.x
--------------------------------
-TODO:
-Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
+--------------------------------
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+
+If you are upgrading a cluster, you should run the upgrade process with only one node running,
+and then simply update the software on the other nodes.
+
+1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+
+2. Copy the directory 'p12' from the earlier installation. 
+
+3. Shut down JBoss and do 'ant bootstrap' with the new version.
+
+4. Start up JBoss. You might see some errors during startup due to that the database is not upgraded yet.
+
+5. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the necessary database updates. 
+   Note: On some application server you may have to upgrade the database manually, see below.
+
+6. Do 'ant post-upgrade' to make sure the new database columns in table ServiceData are populated, 
+   and potentially add new database column to PublisherQueueData.
+
+6. Restart JBoss again to flush all caches.
+
+7. Go into the Admin GUI and verify you settings.
+
+The database upgrade is normally done automatically for you when you run 'ant upgrade'. 
+Some application servers will not let you deploy unless the database is in sync though, so you may have
+to run the SQL commands manually. Check src/upgrade/310_311 to find the correct sql file for your database.
+
+You should be able to upgrade from EJBCA 3.2.x directly to 3.11.x, by following the same instructions
+as above (this upgrade is not thoroughly tested though). 
+Also see instructions below for additional issues when upgrading all the way from a much older version. 
+*This is very important, depending on your database version you may have to do some additional steps for some of the upgrades.*
 
 From EJBCA 3.10.x to EJBCA 3.10.x
 -------------------------------
