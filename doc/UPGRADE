@@ -59,7 +59,7 @@ and then simply update the software on the other nodes.
    Note: On some application server you may have to upgrade the database manually, see below.
 
 6. Do 'ant post-upgrade' to make sure the new database columns in table ServiceData are populated, 
-   and potentially add new database column to PublisherQueueData.
+   and add new database column to PublisherQueueData.
 
 6. Restart JBoss again to flush all caches.
 
