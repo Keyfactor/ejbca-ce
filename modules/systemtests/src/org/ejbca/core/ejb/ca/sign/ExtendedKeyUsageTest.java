@@ -17,7 +17,6 @@ import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -54,7 +53,6 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     
     private static KeyPair rsakeys=null;
     private static int rsacaid = 0;    
-    X509Certificate rsacacert = null;
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
@@ -82,19 +80,15 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         CAInfo inforsa = caAdminSessionRemote.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
-        Collection coll = inforsa.getCertificateChain();
-        Object[] objs = coll.toArray();
-        rsacacert = (X509Certificate)objs[0]; 
     }
 
     public void tearDown() throws Exception {
     }
 
     /**
-     * @throws Exception if en error occurs...
+     * @throws Exception if an error occurs...
      */
     public void test01CodeSigning() throws Exception {
-
         certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGECERTPROFILE");
         final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         ArrayList<String> list = new ArrayList<String>();
@@ -121,7 +115,59 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         assertTrue(ku.contains("1.3.6.1.4.1.311.2.1.22"));
     }
 
-	private void createOrEditUser(final int fooCertProfile,
+    /**
+     * @throws Exception if an error occurs...
+     */
+    public void test02SSH() throws Exception {
+        certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGECERTPROFILE");
+        final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        ArrayList list = new ArrayList();
+        certprof.setExtendedKeyUsage(list);
+        certificateProfileSession.addCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
+        final int fooCertProfile = certificateProfileSession.getCertificateProfileId(admin,"EXTKEYUSAGECERTPROFILE");
+
+        endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE");
+        final EndEntityProfile profile = new EndEntityProfile(true);
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(fooCertProfile));
+        endEntityProfileSession.addEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE", profile);
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(admin, "EXTKEYUSAGEEEPROFILE");
+
+        createOrEditUser(fooCertProfile, fooEEProfile);
+
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic(), -1);
+        assertNotNull("Failed to create certificate", cert);
+        //log.debug("Cert=" + cert.toString());
+        List ku = cert.getExtendedKeyUsage();
+        assertNull(ku);
+
+        // Now add the SSH extended key usages
+        list.add("1.3.6.1.5.5.7.3.21"); // SSH client
+        list.add("1.3.6.1.5.5.7.3.22"); // SSH server
+        certprof.setExtendedKeyUsage(list);
+        certificateProfileSession.changeCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
+        createOrEditUser(fooCertProfile, fooEEProfile);
+        cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic(), -1);
+        assertNotNull("Failed to create certificate", cert);
+        //log.debug("Cert=" + cert.toString());
+        ku = cert.getExtendedKeyUsage();
+        assertEquals(2, ku.size());
+        assertTrue(ku.contains("1.3.6.1.5.5.7.3.21")); 
+        assertTrue(ku.contains("1.3.6.1.5.5.7.3.22"));     
+    }
+
+    public void test99CleanUp() throws Exception {
+        // Delete test end entity profile
+        endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGECERTPROFILE");
+        certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGEEEPROFILE");
+        // delete users that we know...
+        try {        	
+        	userAdminSession.deleteUser(admin, "extkeyusagefoo");
+        	log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
+        } catch (Exception e) { /* ignore */ }
+		removeTestCA();
+    }
+
+    private void createOrEditUser(final int fooCertProfile,
 			final int fooEEProfile) throws AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
 			CADoesntExistsException, EjbcaException, RemoteException {
@@ -142,22 +188,4 @@ public class ExtendedKeyUsageTest extends CaTestCase {
             log.debug("Reset status to NEW");
         }
 	}
-
-
-    public void test99CleanUp() throws Exception {
-        log.trace(">test99CleanUp()");
-
-        // Delete test end entity profile
-        endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGECERTPROFILE");
-        certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGEEEPROFILE");
-        // delete users that we know...
-        try {        	
-        	userAdminSession.deleteUser(admin, "extkeyusagefoo");
-        	log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
-        } catch (Exception e) { /* ignore */ }
-		removeTestCA();
-        log.trace("<test99CleanUp()");
-    }
-
-    
 }
