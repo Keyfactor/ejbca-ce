@@ -681,6 +681,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     /**
      * Extended Key Usage is an arraylist of oid Strings.
+     * Usually oids comes from KeyPurposeId in BC.
      */
     public void setExtendedKeyUsage(ArrayList extendedkeyusage) {
         data.put(EXTENDEDKEYUSAGE, extendedkeyusage);

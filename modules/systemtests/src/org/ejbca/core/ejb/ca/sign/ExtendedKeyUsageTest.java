@@ -1,0 +1,163 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+package org.ejbca.core.ejb.ca.sign;
+
+import java.rmi.RemoteException;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.model.AlgorithmConstants;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.InterfaceCache;
+import org.ejbca.util.keystore.KeyTools;
+
+
+/**
+ * Tests creating certificate with extended key usage.
+ * 
+ * Works similar to TestSignSession.
+ *
+ * @version $Id$
+ */
+public class ExtendedKeyUsageTest extends CaTestCase {
+    private static final Logger log = Logger.getLogger(ExtendedKeyUsageTest.class);
+    
+    private static KeyPair rsakeys=null;
+    private static int rsacaid = 0;    
+    X509Certificate rsacacert = null;
+    private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+
+    /**
+     * @param name name
+     */
+    public ExtendedKeyUsageTest(String name) throws Exception {
+        super(name);
+
+    }
+
+    public void setUp() throws Exception {
+    	super.setUp();
+        // Install BouncyCastle provider
+        CryptoProviderTools.installBCProvider();
+        if (rsakeys == null) {
+            rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        }
+        // Add this again since it will be removed by the other tests in the batch..
+        assertTrue("Could not create TestCA.", createTestCA());
+        CAInfo inforsa = caAdminSessionRemote.getCAInfo(admin, "TEST");
+        assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
+        rsacaid = inforsa.getCAId();
+        Collection coll = inforsa.getCertificateChain();
+        Object[] objs = coll.toArray();
+        rsacacert = (X509Certificate)objs[0]; 
+    }
+
+    public void tearDown() throws Exception {
+    }
+
+    /**
+     * @throws Exception if en error occurs...
+     */
+    public void test01CodeSigning() throws Exception {
+
+        certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGECERTPROFILE");
+        final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("1.3.6.1.4.1.311.2.1.21"); // MS individual code signing
+        list.add("1.3.6.1.4.1.311.2.1.22"); // MS commercial code signing
+        certprof.setExtendedKeyUsage(list);
+        certificateProfileSession.addCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
+        final int fooCertProfile = certificateProfileSession.getCertificateProfileId(admin,"EXTKEYUSAGECERTPROFILE");
+
+        endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE");
+        final EndEntityProfile profile = new EndEntityProfile(true);
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(fooCertProfile));
+        endEntityProfileSession.addEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE", profile);
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(admin, "EXTKEYUSAGEEEPROFILE");
+
+        createOrEditUser(fooCertProfile, fooEEProfile);
+
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic(), -1);
+        assertNotNull("Failed to create certificate", cert);
+        //log.debug("Cert=" + cert.toString());
+        List<String> ku = cert.getExtendedKeyUsage();
+        assertEquals(2, ku.size());
+        assertTrue(ku.contains("1.3.6.1.4.1.311.2.1.21"));
+        assertTrue(ku.contains("1.3.6.1.4.1.311.2.1.22"));
+    }
+
+	private void createOrEditUser(final int fooCertProfile,
+			final int fooEEProfile) throws AuthorizationDeniedException,
+			UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+			CADoesntExistsException, EjbcaException, RemoteException {
+		// Make user that we know...
+        boolean userExists = false;
+        UserDataVO user = new UserDataVO("extkeyusagefoo","C=SE,O=AnaTom,CN=extkeyusagefoo",rsacaid,null,"foo@anatom.se",SecConst.USER_ENDUSER,fooEEProfile,fooCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+        user.setStatus(SecConst.TOKEN_SOFT_PEM);
+        user.setPassword("foo123");
+        try {
+            userAdminSession.addUser(admin, user, false);
+            log.debug("created user: extkeyusagefoo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
+        } catch (Exception re) {
+        	userExists = true;
+        }
+        if (userExists) {
+            log.info("User extkeyusagefoo already exists, resetting status.");
+            userAdminSession.changeUser(admin, user, false);
+            log.debug("Reset status to NEW");
+        }
+	}
+
+
+    public void test99CleanUp() throws Exception {
+        log.trace(">test99CleanUp()");
+
+        // Delete test end entity profile
+        endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGECERTPROFILE");
+        certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGEEEPROFILE");
+        // delete users that we know...
+        try {        	
+        	userAdminSession.deleteUser(admin, "extkeyusagefoo");
+        	log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
+        } catch (Exception e) { /* ignore */ }
+		removeTestCA();
+        log.trace("<test99CleanUp()");
+    }
+
+    
+}
