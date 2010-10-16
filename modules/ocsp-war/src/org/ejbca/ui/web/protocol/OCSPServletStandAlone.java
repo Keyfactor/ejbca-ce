@@ -32,6 +32,8 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ocsp.CertificateCache;
 import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
+import org.ejbca.ui.web.protocol.ocsp.StandAloneSessionFactory;
+import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -40,7 +42,7 @@ import org.ejbca.core.protocol.ocsp.CertificateCacheStandalone;
  * @author Lars Silven PrimeKey
  * @version  $Id$
  */
-public class OCSPServletStandAlone extends OCSPServletBase {
+public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
     private static final long serialVersionUID = -7093480682721604160L;
 
@@ -49,12 +51,38 @@ public class OCSPServletStandAlone extends OCSPServletBase {
      */
 	private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
 
-	@EJB
-    private CertificateStoreOnlyDataSessionLocal m_certStore;
-    private OCSPServletStandAloneSession session;
+    private IStandAloneSession session;
 
+    /**
+     * An instance needs to exist that provides signing functionality to the OCSP responder. This session must implement this interface.
+     *
+     */
+    public interface IStandAloneSession{
+        /**
+         * Fixes the answer for the call to {@link OCSPServletStandAlone#healthCheck()}
+         * @return The answer to be returned by the health-check servlet.
+         */
+        String healthCheck(boolean doSignTest, boolean doValidityTest);
+        /**
+         * Adds {@link SigningEntity} to the {@link SigningEntityContainer} object for all OCSP signing keys that could be found.
+         * @param adm Adminstrator to be used when getting the certificate chain from the DB.
+         * @param password Password for activation. If null then ust key loading.
+         * @throws Exception
+         */
+        void loadPrivateKeys(Admin adm, String password) throws Exception;
+        /**
+         * Answers the OCSP request. The answer is assembled in a separate thread by an object of the class {@link SignerThread}.
+         * @param caid EJBCA id for the CA.
+         * @param request Object with for the request.
+         * @return the response.
+         * @throws ExtendedCAServiceRequestException
+         * @throws ExtendedCAServiceNotActiveException
+         * @throws IllegalExtendedCAServiceRequestException
+         */
+        OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException;
+    }
     public OCSPServletStandAlone() {
-        super();
+        super(new LocalOCSPData());
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#init(javax.servlet.ServletConfig)
@@ -65,8 +93,9 @@ public class OCSPServletStandAlone extends OCSPServletBase {
         // Log with warn priority so it will be visible in strict production configurations  
 	    m_versionLog.warn("Init, "+GlobalConfiguration.EJBCA_VERSION+" OCSP startup");
 
-        this.session = new OCSPServletStandAloneSession(this);
+        this.session = StandAloneSessionFactory.getInstance(this.data);
         // session must be created before health check could be done
+        ExtOCSPHealthCheck.setHealtChecker(this);
     }
     
     /**
@@ -80,40 +109,45 @@ public class OCSPServletStandAlone extends OCSPServletBase {
 	}
 
     /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#healthCheck()
+     * @see org.ejbca.ui.web.protocol.IHealtChecker#healthCheck()
      */
     public String healthCheck(boolean doSignTest, boolean doValidityTest) {
         return this.session.healthCheck(doSignTest, doValidityTest);
     }
     /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(java.lang.String)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
      */
-    void loadPrivateKeys(String password) throws Exception {
-        this.session.loadPrivateKeys(password);
-    }
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#findCertificateByIssuerAndSerno(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
-     */
-    Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
-        return m_certStore.findCertificateByIssuerAndSerno(adm, issuer, serno);
+    protected void loadPrivateKeys(Admin adm, String password) throws Exception {
+        this.session.loadPrivateKeys(adm, password);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#extendedService(org.ejbca.core.model.log.Admin, int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)
      */
-    OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
+    protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
                                                                                                     ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         return this.session.extendedService(caid, request);
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#getStatus(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
-     */
-    CertificateStatus getStatus(String name, BigInteger serialNumber) {
-        return m_certStore.getStatus(name, serialNumber);
+    static private class LocalOCSPData extends OCSPData {
+        @EJB
+        private CertificateStoreOnlyDataSessionLocal m_certStore;
+
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPData#findCertificateByIssuerAndSerno(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
+         */
+        protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
+            return m_certStore.findCertificateByIssuerAndSerno(adm, issuer, serno);
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPData#getStatus(java.lang.String, java.math.BigInteger)
+         */
+        public CertificateStatus getStatus(String name, BigInteger serialNumber) {
+            return m_certStore.getStatus(name, serialNumber);
+        }
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#createCertificateCache()
      */
-    CertificateCache createCertificateCache() {
+    protected CertificateCache createCertificateCache() {
 		return CertificateCacheStandalone.getInstance();
 	}
 }
