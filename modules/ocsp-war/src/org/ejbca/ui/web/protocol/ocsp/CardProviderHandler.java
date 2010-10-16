@@ -10,32 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.protocol;
 
-import java.security.PrivateKey;
-import java.security.interfaces.RSAPublicKey;
+package org.ejbca.ui.web.protocol.ocsp;
 
 /**
- * @author lars
- * @version $Id$
+ * Card implementation. No reload needed.
+ * 
+ * @author primelars
+ * @version  $Id$
  */
-public interface CardKeys {
-
-	/**
-	 * @param publicKey
-	 * @return
-	 * @throws Exception
-	 */
-	PrivateKey getPrivateKey(RSAPublicKey publicKey) throws Exception;
-    /**
-     * @param authCode
-     * @throws InterruptedException
+class CardProviderHandler implements ProviderHandler {
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.ProviderHandler#getProviderName()
      */
-    void autenticate( String authCode) throws InterruptedException;
-	/**
-	 * Check if key is OK (verifies PIN).
-	 * @param publicKey 
-	 * @return
-	 */
-	boolean isOK(RSAPublicKey publicKey);
+    public String getProviderName() {
+        return "PrimeKey";
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.ProviderHandler#reload()
+     */
+    public void reload() {
+        // not needed to reload.
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.ProviderHandler#addKeyContainer(org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer)
+     */
+    public void addKeyContainer(PrivateKeyContainer keyContainer) {
+        // do nothing
+    }
 }

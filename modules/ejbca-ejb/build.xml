@@ -162,7 +162,7 @@
             <exclude name="org/ejbca/appserver/**" />
 			<!-- Only for External OCSP responder.. -->
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
-            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
+            <exclude name="org/ejbca/ui/web/protocol/ocsp/**" />
             <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
             <exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
 			<!-- Samples should never be included.. -->

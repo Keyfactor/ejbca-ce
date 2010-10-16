@@ -16,7 +16,6 @@ package org.ejbca.ui.web.protocol;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 
-import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
@@ -43,25 +42,33 @@ import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;
 public class OCSPServlet extends OCSPServletBase {
 
     @EJB
-    private CertificateStoreSessionLocal certificateStoreSessionLocal;
-    
-    @EJB
     private CAAdminSessionLocal caAdminSessionLocal;
+
+    private ISignSessionLocal m_signsession = null;
     
-    public void init(ServletConfig config)
-            throws ServletException {
-        super.init(config);
+    public OCSPServlet() {
+        super(new LocalOCSPData());
     }
 
-    protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
-        return certificateStoreSessionLocal.findCertificateByIssuerAndSerno(adm, issuer, serno);
-    }
     protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
         return (OCSPCAServiceResponse)caAdminSessionLocal.extendedService(adm, caid, request);
     }
-
-    protected CertificateStatus getStatus(String name, BigInteger serialNumber) {
-        return certificateStoreSessionLocal.getStatus(name, serialNumber);
+    static private class LocalOCSPData extends OCSPData {
+        @EJB
+        private CertificateStoreSessionLocal certificateStoreSessionLocal;
+    
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPData#findCertificateByIssuerAndSerno(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
+         */
+        protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
+            return certificateStoreSessionLocal.findCertificateByIssuerAndSerno(adm, issuer, serno);
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.ui.web.protocol.OCSPData#getStatus(java.lang.String, java.math.BigInteger)
+         */
+        public CertificateStatus getStatus(String name, BigInteger serialNumber) {
+            return certificateStoreSessionLocal.getStatus(name, serialNumber);
+        }
     }
 
     protected CertificateCache createCertificateCache() {
@@ -69,16 +76,9 @@ public class OCSPServlet extends OCSPServletBase {
 	}
 
     /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(java.lang.String)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
      */
-    protected void loadPrivateKeys(String password) {
+    protected void loadPrivateKeys(Admin adm, String password) {
         // not used by this servlet
-    }
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#healthCheck()
-     */
-    public String healthCheck(boolean doSignTest, boolean doValidityTest) {
-        // not used by this servlet
-    	return null;
     }
 } // OCSPServlet
