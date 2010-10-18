@@ -108,7 +108,7 @@ function checkuseaiafield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>.checked){    
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = true;
-    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
     document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = false;
