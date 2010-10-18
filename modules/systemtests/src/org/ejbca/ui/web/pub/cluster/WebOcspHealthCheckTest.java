@@ -1,12 +1,8 @@
 package org.ejbca.ui.web.pub.cluster;
 
-import java.net.URL;
-
 import org.apache.log4j.Logger;
 
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
@@ -39,13 +35,10 @@ public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
      */
     public void testEjbcaHealthHttp() throws Exception {
         log.trace(">testEjbcaHealthHttp()");
-
-        // Make a quick test first that it works at all before starting all
-        // threads
+        // Make a quick test first that it works at all before starting all threads
         final WebClient webClient = new WebClient();
-        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath));
-        WebConnection con = webClient.getWebConnection();
-        WebResponse resp = con.getResponse(settings);
+		webClient.setTimeout(10*1000);	// 10 seconds timeout
+        WebResponse resp = webClient.getPage(httpReqPath).getWebResponse();
         assertEquals("Response code", 200, resp.getStatusCode());
         assertEquals("ALLOK", resp.getContentAsString());
         long before = System.currentTimeMillis();
