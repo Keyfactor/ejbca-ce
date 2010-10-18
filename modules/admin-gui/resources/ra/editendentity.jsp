@@ -1093,7 +1093,11 @@ function checkUseInBatch(){
 		<td align="right"><%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %></td>
        	<td>
        		<%
-       			int maxLoginAttempts = userdata.getExtendedInformation().getMaxLoginAttempts();
+	   			int maxLoginAttempts = ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS; // Default value in ExtendedInformation
+   				ExtendedInformation maxei = userdata.getExtendedInformation();
+   				if (maxei != null) {
+   					maxLoginAttempts = maxei.getMaxLoginAttempts();
+   				}
        		%>   
              <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
              <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
