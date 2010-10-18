@@ -56,7 +56,7 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
 
         // Make a quick test first that it works at all before starting all threads
         final WebClient webClient = new WebClient();
-		webClient.setTimeout(10*1000);	// 10 seconds timeout
+		webClient.setTimeout(31*1000);
         WebResponse resp = webClient.getPage(httpReqPath).getWebResponse();
         assertEquals("Response code", 200, resp.getStatusCode());
         assertEquals("ALLOK", resp.getContentAsString());
@@ -65,6 +65,7 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
         long after = System.currentTimeMillis();
         long diff = after - before;
         log.info("All threads finished. Total time: " + diff + " ms");
+        assertTrue("Healt check test(s) timed out!", diff < 30L*1000L);
         log.trace("<testEjbcaHealthHttp()");
     }
 

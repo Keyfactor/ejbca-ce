@@ -33,7 +33,7 @@ public class WebEjbcaHealthRunner implements Runnable {
 		try {
 			long before = System.currentTimeMillis();
 			final WebClient webClient = new WebClient();
-			webClient.setTimeout(10*1000);	// 10 seconds timeout
+			webClient.setTimeout(31*1000);
 			for (int i = 0; i<NO_TESTS;i++) {
 				WebResponse resp = webClient.getPage(httpReqPath).getWebResponse();
 				int ret = resp.getStatusCode();
