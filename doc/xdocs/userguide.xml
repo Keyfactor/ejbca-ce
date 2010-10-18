@@ -704,7 +704,29 @@ You should previously have created the certificate profile for SSL servers.
 <li>Press "Save".</li> 
 </ul>
 </subsection>
+
 <subsection name="End Entity Profile fields">
+<subsubsection name="Subject DN Fields">
+<p>Subject DN fields define which DN components should be present for an end entity. If "Enable End Entity Profile Limitations" in the "System Configuration" is enabled
+this restricts the values that can be used when adding or editing an end entity using all interfaces, be it web GUI, web service, cmp or something else.
+If you define values as required and non-modifyable you can specify one or more values. If you specify multiple values separated by ';', the admin in the web GUI will get a drop-down list to select from.
+</p>
+<p>
+When having several fields of a certain type with mixed required and not required fields some special handling might be needed when adding users using web sevrice API.
+If you have for example:
+</p>
+<ul>
+<li>The first OU field is required (Bar1) and not modifiable.</li>
+<li>The next 3 OU fields are modifiable only (not required).</li>
+<li>The last OU is required (Bar1) and not modifiable.</li> 
+</ul>
+<p>Then when adding an end entity with DN "CN=Foo,OU=Bar1,OU=Bar2" will result in an error:</p>
+<source>
+org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile: Subject DN field 'ORGANIZATIONUNIT' must exist. 
+</source>
+<p>This is because EJBCA can not keep track of which fields you mean to set, if it is one of the required or non-required. To help EJBCA determine this you can specify the non-required OU fields with empty values, "CN=Foo,OU=Bar1,OU=,OU=,OU=,OU=Bar2".
+</p>
+</subsubsection>
 <subsubsection name="Subject Alternative Names">
 <p>Subject alternative names (altNames) are extra naming items that are not fit to have in the Distinguished Name, such as email, dns, ip address etc.
 There are a number of standard ones, and the possibility to define special ones, which many companies have done for altNames
