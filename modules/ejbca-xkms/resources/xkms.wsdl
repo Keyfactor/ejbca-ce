@@ -11,7 +11,7 @@
 
 <types>
   <xsd:schema>
-    <xsd:import namespace="http://www.w3.org/2002/03/xkms#" schemaLocation="http://www.w3.org/TR/xkms2/Schemas/xkms.xsd"/>
+    <xsd:import namespace="http://www.w3.org/2002/03/xkms#" schemaLocation="xkms.xsd"/>	<!-- http://www.w3.org/TR/xkms2/Schemas/xkms.xsd -->
   </xsd:schema>
 </types>
 
