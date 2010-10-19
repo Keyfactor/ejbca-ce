@@ -46,7 +46,6 @@ import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -106,8 +105,6 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private RaAdminSessionLocal raAdminSession;
-    @EJB
-    private SignSessionLocal signSession;
     @EJB
     private LogSessionLocal logSession;
 
@@ -789,7 +786,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         if (data == null) {
             try {
                 entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(admin, tokensn, username, new java.util.Date(), new java.util.Date(),
-                        tokentype, bcdn, setHardToken(admin, signSession, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                        tokentype, bcdn, setHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                                 hardtokendata)));
                 if (certificates != null) {
                     Iterator<Certificate> i = certificates.iterator();
@@ -843,7 +840,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
                 throw new FinderException();
             }
             htd.setTokenType(tokentype);
-            htd.setData(setHardToken(admin, signSession, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(), hardtokendata));
+            htd.setData(setHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(), hardtokendata));
             htd.setModifyTime(new java.util.Date());
             caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);
@@ -965,7 +962,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
             }
             if (htd != null) {
                 returnval = new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
-                        .getSignificantIssuerDN(), getHardToken(admin, signSession, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                        .getSignificantIssuerDN(), getHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                         includePUK, htd.getData()), copyof, copies);
                 String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);
                 logSession.log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(), null,
@@ -1020,7 +1017,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
                 }
             }
             returnval.add(new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
-                    .getSignificantIssuerDN(), getHardToken(admin, signSession, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                    .getSignificantIssuerDN(), getHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                     includePUK, htd.getData()), copyof, copies));
             String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());
             logSession.log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(), null,
@@ -1335,10 +1332,9 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     }
 
     /**
-     * Method that returns the hard token data from a hashmap and updates it if
-     * nessesary.
+     * Method that returns the hard token data from a hashmap and updates it if necessary.
      */
-    private HardToken getHardToken(Admin admin, SignSessionLocal signsession, int encryptcaid, boolean includePUK, HashMap data) {
+    private HardToken getHardToken(Admin admin, int encryptcaid, boolean includePUK, HashMap data) {
         HardToken returnval = null;
 
         if (data.get(ENCRYPTEDDATA) != null) {
@@ -1383,7 +1379,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Method that saves the hard token issuer data to a HashMap that can be
      * saved to database.
      */
-	private HashMap setHardToken(Admin admin, SignSessionLocal signsession, int encryptcaid, HardToken tokendata) {
+	private HashMap setHardToken(Admin admin, int encryptcaid, HardToken tokendata) {
         HashMap retval = null;
         if (encryptcaid != 0) {
             try {

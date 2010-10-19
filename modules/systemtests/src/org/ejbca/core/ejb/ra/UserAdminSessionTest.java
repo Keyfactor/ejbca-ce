@@ -24,10 +24,8 @@ import java.util.Random;
 
 import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
-import javax.transaction.TransactionRolledbackException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -35,7 +33,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -295,7 +292,7 @@ public class UserAdminSessionTest extends CaTestCase {
         query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
         String caauthstring = null;
         String eeprofilestr = null;
-        Collection col = userAdminSession.query(admin, query, caauthstring, eeprofilestr,0);
+        Collection<UserDataVO> col = userAdminSession.query(admin, query, caauthstring, eeprofilestr,0);
         assertNotNull(col);
         assertEquals(1, col.size());
         log.trace("<test03_1QueryUser()");

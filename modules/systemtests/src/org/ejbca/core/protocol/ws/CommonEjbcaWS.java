@@ -2034,7 +2034,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         CardVerifiableCertificate cvcacert = new CardVerifiableCertificate(cvcert);
 
         // Create the DVCA signed by our external CVCA
-        String caname = createDVCCASignedByExternal(cvcacert, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
+        String caname = createDVCCASignedByExternal(dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
         assertNotNull("Failed to create DVC CA " + dvcaName + "Signed By External.", caname);
         assertEquals(caname, dvcaName);
         // Now test our WS API to generate a request, setting status to
@@ -2290,7 +2290,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         CVCObject obj = CertificateParser.parseCVCObject(request);
         //System.out.println(obj.getAsText());
         // We should have created an authenticated request signed by the old certificate
-        CardVerifiableCertificate dvcertactive = (CardVerifiableCertificate)dvinfo.getCertificateChain().iterator().next();
 		CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)obj;
 		CVCertificate cert = authreq.getRequest();
 		// The request should be targeted for the CVCA, i.e. ca_ref in request should be the same as the CVCAs ref
@@ -2496,7 +2495,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
      * Create a DVCA, signed by an external CVCA
      * 
      */
-    private String createDVCCASignedByExternal(final CardVerifiableCertificate cvcacert, final String dvcaname, final String dvcaMnemonic,
+    private String createDVCCASignedByExternal(final String dvcaname, final String dvcaMnemonic,
             final String keyspec, final String keyalg, final String signalg) throws Exception {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec(keyspec);

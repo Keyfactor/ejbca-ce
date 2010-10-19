@@ -58,7 +58,7 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
            
             if(args.length != 3){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, this is not a JEE app
             }
             
             String issuerdn = CertTools.stringToBCDNString(args[ARG_ISSUERDN]);            
@@ -96,7 +96,7 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
 		}catch(NumberFormatException e){
 			getPrintStream().println("Error in Certificate SN");
 			usage();
-			System.exit(-1);
+			System.exit(-1); // NOPMD, this is not a JEE app
 		}
 		return certsn;
 	}

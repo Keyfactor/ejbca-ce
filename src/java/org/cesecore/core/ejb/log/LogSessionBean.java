@@ -35,9 +35,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.log.LogSessionLocal;
-import org.cesecore.core.ejb.log.LogSessionRemote;
-import org.cesecore.core.ejb.log.OldLogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.log.LogConfigurationData;

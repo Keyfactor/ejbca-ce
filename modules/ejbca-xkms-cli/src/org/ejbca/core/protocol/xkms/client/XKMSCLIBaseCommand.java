@@ -217,7 +217,7 @@ public abstract class XKMSCLIBaseCommand {
 		}		
 		getPrintStream().println("Error : Unsupported reason " + reason);
 		usage();
-		System.exit(-1);
+		System.exit(-1); // NOPMD, this is not a JEE app
 		return 0;
 	}
 	
@@ -266,7 +266,7 @@ public abstract class XKMSCLIBaseCommand {
     	
 		getPrintStream().println("Illegal response with " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, this is not a JEE app
 		return null;
 	}
 	
@@ -285,11 +285,11 @@ public abstract class XKMSCLIBaseCommand {
 		} catch (FileNotFoundException e) {
 			getPrintStream().println("Couldn't find file with name " + arg);
 	        usage();
-	    	System.exit(-1);
+	    	System.exit(-1); // NOPMD, this is not a JEE app
 		} catch (IOException e) {
 			getPrintStream().println("Couldn't read file with name " + arg);
 	        usage();
-	    	System.exit(-1);
+	    	System.exit(-1); // NOPMD, this is not a JEE app
 		}
 		return null;
 	}
@@ -302,7 +302,7 @@ public abstract class XKMSCLIBaseCommand {
 			}		
 		getPrintStream().println("Error : Unsupported reason " + reason);
 		usage();
-		System.exit(-1);
+		System.exit(-1); // NOPMD, this is not a JEE app
 		return null;		
 	}
 	

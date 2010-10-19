@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
-import javax.ejb.EJBException;
+import javax.ejb.EJBException; // NOPMD imported from javadoc
 
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.services.ServiceConfiguration;
@@ -24,11 +24,9 @@ public interface ServiceSession {
      * 
      * @throws ServiceExistsException
      *             if service already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public void addService(org.ejbca.core.model.log.Admin admin, java.lang.String name, org.ejbca.core.model.services.ServiceConfiguration serviceConfiguration)
-            throws org.ejbca.core.model.services.ServiceExistsException;
+            throws ServiceExistsException;
 
     /**
      * Adds a service to the database. Used for importing and exporting profiles
@@ -36,11 +34,9 @@ public interface ServiceSession {
      * 
      * @throws ServiceExistsException
      *             if service already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public void addService(org.ejbca.core.model.log.Admin admin, int id, java.lang.String name,
-            org.ejbca.core.model.services.ServiceConfiguration serviceConfiguration) throws org.ejbca.core.model.services.ServiceExistsException;
+            org.ejbca.core.model.services.ServiceConfiguration serviceConfiguration) throws ServiceExistsException;
 
 
 
@@ -53,13 +49,11 @@ public interface ServiceSession {
      *             if a communication or other error occurs.
      */
     public void cloneService(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname)
-            throws org.ejbca.core.model.services.ServiceExistsException;
+            throws ServiceExistsException;
 
     /**
      * Removes a service from the database.
      * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public boolean removeService(org.ejbca.core.model.log.Admin admin, java.lang.String name);
 
@@ -68,11 +62,9 @@ public interface ServiceSession {
      * 
      * @throws ServiceExistsException
      *             if service already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public void renameService(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname)
-            throws org.ejbca.core.model.services.ServiceExistsException;
+            throws ServiceExistsException;
 
     /**
      * Retrieves a Collection of id:s (Integer) to visible authorized services.
@@ -106,8 +98,6 @@ public interface ServiceSession {
      *            The administrator performing the action
      * @param name
      *            the name of the service for which to activate the timer
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public void activateServiceTimer(org.ejbca.core.model.log.Admin admin, java.lang.String name);
     
@@ -116,8 +106,6 @@ public interface ServiceSession {
      * Returns a Service name given its id.
      * 
      * @return the name or null if id doesnt exists
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public String getServiceName(Admin admin, int id);
 
@@ -125,16 +113,12 @@ public interface ServiceSession {
     /**
      * Loads and activates all the services from database that are active
      * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public void load();
 
     /**
      * Cancels all existing timers a unload
      * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public void unload();
     
@@ -143,8 +127,6 @@ public interface ServiceSession {
      * 
      * @param noLogging
      *            if true no logging (to the database will be done
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging);
     
@@ -152,6 +134,7 @@ public interface ServiceSession {
      * Finds a service configuration by id.
      * 
      * @returns the service configuration or null if it doesn't exist.
+     * @throws EJBException if a communication or other error occurs.
      */
     public ServiceConfiguration getServiceConfiguration(Admin admin, int id);
 

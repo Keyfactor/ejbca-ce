@@ -54,7 +54,7 @@ public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCo
            
             if(args.length != 3){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, this is not a JEE app
             }
             
             String hardtokensn = args[ARG_HARDTOKENSN];            
@@ -63,7 +63,7 @@ public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCo
             if(reason == RevokedCertInfo.NOT_REVOKED){
         		getPrintStream().println("Error : Unsupported reason " + reason);
         		usage();
-        		System.exit(-1);
+        		System.exit(-1); // NOPMD, this is not a JEE app
             }
                         
             try{

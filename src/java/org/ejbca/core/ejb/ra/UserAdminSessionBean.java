@@ -463,10 +463,12 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             user = itr.next();
             sn = getSerialnumber(user.getDN());
             if ((sn != null) && sn.equals(serialnumber)) {
-                if (username == null)
+                if (username == null) {
                     return false;
-                if (!username.equals(user.getUsername()))
+                }
+                if (!username.equals(user.getUsername())) {
                     return false;
+                }
             }
         }
         return true;

@@ -62,13 +62,13 @@ class CommandLine {
 		if ( this.command==null ) {
 			System.err.println("No command given.");
 			listAvailableCommands(properties);
-			System.exit(-1);
+			System.exit(-1); // NOPMD, this is not a JEE app
 		}
 		this.commandLine=properties.getProperty(this.command+COMMAND_SUFFIX);
 		if ( this.commandLine==null ) {
 			System.err.println("Command '"+this.command+"' not available.");
 			listAvailableCommands(properties);
-			System.exit(-1);
+			System.exit(-1); // NOPMD, this is not a JEE app
 		}
 		this.gzipInput = (String)properties.get(this.command+INPUT_GZIP_SUFFIX);
 		this.gzipOutput = (String)properties.get(this.command+OUTPUT_GZIP_SUFFIX);

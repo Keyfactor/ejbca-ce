@@ -136,7 +136,7 @@ public class EjbcaWebBean implements Serializable {
     	globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, raAdminSession, authorizationSession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
-    		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, authorizationSession, certificateStoreSession, endEntityProfileSession, hardTokenSession,
+    		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, authorizationSession, endEntityProfileSession, hardTokenSession,
     				publisherSession, userDataSourceSession, certificateProfileSession, globalconfiguration);
     	}
     	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationSession, caAdminSession);
@@ -720,7 +720,9 @@ public class EjbcaWebBean implements Serializable {
 
     public String getCleanOption(String parameter, String[] validOptions) throws Exception {
         for(int i=0; i<validOptions.length; i++){
-            if(parameter.equals(validOptions[i]))   return parameter;
+            if(parameter.equals(validOptions[i])) {
+            	return parameter;
+            }
         }
         throw new Exception("Trying to set an invalid option.");
     }

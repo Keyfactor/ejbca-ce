@@ -40,8 +40,12 @@ public class KeyRecoveryDataPK implements Serializable {
 
 	public int hashCode() {
 		int hashCode = 0;
-		if (certSN != null) hashCode += certSN.hashCode();
-		if (issuerDN != null) hashCode += issuerDN.hashCode();
+		if (certSN != null) {
+			hashCode += certSN.hashCode();
+		}
+		if (issuerDN != null) {
+			hashCode += issuerDN.hashCode();
+		}
 		return hashCode;
 	}
 

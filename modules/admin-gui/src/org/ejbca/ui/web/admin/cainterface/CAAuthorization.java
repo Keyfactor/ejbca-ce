@@ -46,17 +46,14 @@ public class CAAuthorization implements Serializable {
     private Admin admin;
     private CAAdminSession caadminsession;
     private AuthorizationSession authorizationsession;
-    private CertificateStoreSession certificatestoresession;
     private CertificateProfileSession certificateProfileSession;
     
     /** Creates a new instance of CAAuthorization. */
     public CAAuthorization(Admin admin,  
                            CAAdminSession caadminsession,
-                           CertificateStoreSession certificatestoresession, 
                            AuthorizationSession authorizationsession, CertificateProfileSession certificateProfileSession) {
       this.admin=admin;
       this.caadminsession=caadminsession;      
-      this.certificatestoresession=certificatestoresession;
       this.authorizationsession=authorizationsession;
         this.certificateProfileSession = certificateProfileSession;
     }

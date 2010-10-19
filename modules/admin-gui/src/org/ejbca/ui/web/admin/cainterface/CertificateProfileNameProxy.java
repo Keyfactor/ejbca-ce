@@ -17,7 +17,6 @@ package org.ejbca.ui.web.admin.cainterface;
 import java.util.HashMap;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.log.Admin;
 
 /**

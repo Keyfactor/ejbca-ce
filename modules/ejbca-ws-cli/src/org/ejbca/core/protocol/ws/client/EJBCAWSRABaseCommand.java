@@ -230,7 +230,7 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
         }        
         getPrintStream().println("Error : Unsupported reason " + reason);
         usage();
-        System.exit(-1);
+        System.exit(-1); // NOPMD, this is not a JEE app
         return 0;
     }
     
@@ -242,7 +242,7 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
             }        
         getPrintStream().println("Error : Unsupported reason " + reason);
         usage();
-        System.exit(-1);
+        System.exit(-1); // NOPMD, this is not a JEE app
         return null;        
     }
     
