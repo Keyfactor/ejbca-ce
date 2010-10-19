@@ -72,7 +72,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
            
             if(args.length < 13 || args.length > 16){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, this is not a JEE app
             }
             
 
@@ -183,7 +183,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		
 		getPrintStream().println("Error in status string : " + status );
 		usage();
-		System.exit(-1);
+		System.exit(-1); // NOPMD, this is not a JEE app
 		return 0;
 	}
 

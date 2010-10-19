@@ -28,8 +28,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.log.OldLogSessionLocal;
-import org.cesecore.core.ejb.log.OldLogSessionRemote;
 import org.ejbca.config.OldLogConfiguration;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JndiHelper;

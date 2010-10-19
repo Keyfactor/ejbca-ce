@@ -26,10 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import junit.framework.TestCase;
@@ -60,7 +57,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
-import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -133,9 +129,6 @@ public class XKMSKRSSTest extends TestCase {
     private final GlobalConfiguration orgGlobalConfig;
 	private static CAInfo orgCaInfo;
 
-    private final static JAXBContext jAXBContext;
-    private final static Marshaller marshaller;
-    // private static Unmarshaller unmarshaller = null;
     private final static DocumentBuilderFactory dbf;
     private final static Random ran;
 
@@ -172,11 +165,11 @@ public class XKMSKRSSTest extends TestCase {
             keys3 = genKeys();
             org.apache.xml.security.Init.init();
 
-            jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
-			marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
+            // JAXBContext jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
+            // Marshaller marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
             dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
-            // unmarshaller = jAXBContext.createUnmarshaller();
+            // Unmarshaller unmarshaller = jAXBContext.createUnmarshaller();
 
         } catch (Exception e) {
             log.error("Error initializing RequestAbstractTypeResponseGenerator", e);
@@ -329,7 +322,7 @@ public class XKMSKRSSTest extends TestCase {
 
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
-        Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+        Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
         while (iter2.hasNext()) {
             JAXBElement next = (JAXBElement) iter2.next();
             assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
@@ -377,7 +370,7 @@ public class XKMSKRSSTest extends TestCase {
 
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 1);
-        Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+        Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 
         while (iter2.hasNext()) {
             JAXBElement next = (JAXBElement) iter2.next();
@@ -603,7 +596,7 @@ public class XKMSKRSSTest extends TestCase {
 
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
-        Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+        Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
         while (iter2.hasNext()) {
             JAXBElement next = (JAXBElement) iter2.next();
             assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
@@ -751,7 +744,7 @@ public class XKMSKRSSTest extends TestCase {
 
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
-        Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+        Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 
         while (iter2.hasNext()) {
             JAXBElement next = (JAXBElement) iter2.next();
@@ -990,7 +983,7 @@ public class XKMSKRSSTest extends TestCase {
 
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 1);
-        Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+        Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 
         while (iter2.hasNext()) {
             JAXBElement next = (JAXBElement) iter2.next();
@@ -1064,9 +1057,9 @@ public class XKMSKRSSTest extends TestCase {
                 RegisterResultType registerResultType = xKMSInvoker.register(registerRequestType, null, null, "foo123", null, prototypeKeyBindingType.getId());
                 assertTrue(registerResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
                 // Get user's certificate
-                Collection userCerts = certificateStoreSession.findCertificatesByUsername(administrator, username);
+                Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(administrator, username);
                 assertTrue(userCerts.size() == 1);
-                X509Certificate cert = (X509Certificate) userCerts.iterator().next();
+                Certificate cert = userCerts.iterator().next();
                 // Revoke via XKMS and verify response
                 RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
                 revokeRequestType.setId("808");

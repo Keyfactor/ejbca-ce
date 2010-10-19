@@ -26,7 +26,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
+import javax.persistence.NonUniqueResultException; // NOPMD imported from javadoc
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -325,9 +325,9 @@ public class UserData implements Serializable {
      * Creates the hashed password
      */
     private String makePasswordHash(String password) throws NoSuchAlgorithmException {
-        if (password == null)
+        if (password == null) {
             return null;
-
+        }
         String ret = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");

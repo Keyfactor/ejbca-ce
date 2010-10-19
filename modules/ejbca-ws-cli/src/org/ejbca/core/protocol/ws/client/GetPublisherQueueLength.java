@@ -49,7 +49,7 @@ public class GetPublisherQueueLength extends EJBCAWSRABaseCommand implements IAd
            
             if(this.args.length < 2){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, this is not a JEE app
             }
             final String name = this.args[ARG_PUBLISHER_NAME];
             final int length = getEjbcaRAWS().getPublisherQueueLength(name);
@@ -58,7 +58,7 @@ public class GetPublisherQueueLength extends EJBCAWSRABaseCommand implements IAd
             } else {
                 getPrintStream().println("The length of the queue for the publisher '"+name+"' is "+length+" items.");
             }
-            System.exit(length); // return the length so that scripts may use it.
+            System.exit(length); // return the length so that scripts may use it. // NOPMD, this is not a JEE app
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

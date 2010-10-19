@@ -100,7 +100,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
            
             if(args.length < 7 || args.length > 8){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, this is not a JEE app
             }
             
             boolean isCertQuery = args[ARG_QUERYTYPE].equalsIgnoreCase(QUERYTYPE_CERT);
@@ -281,7 +281,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		
 		getPrintStream().println("Illegal validation flag " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, this is not a JEE app
 		return false;
 	}
 
@@ -321,7 +321,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         
 		getPrintStream().println("Illegal query type " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, this is not a JEE app
 		return null;
 	}
 
@@ -346,7 +346,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 			
 		getPrintStream().println("Illegal key usage " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, this is not a JEE app
 		return null;
 	}
 	
@@ -366,7 +366,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		
 		getPrintStream().println("Illegal encoding (should be pem or der) : " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, this is not a JEE app
     	return false;
 	}
 

@@ -32,7 +32,6 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
@@ -94,7 +93,6 @@ public class InformationMemory implements Serializable {
                              CAAdminSession caadminsession,
                              RaAdminSession raadminsession, 
                              AuthorizationSession authorizationsession,
-                             CertificateStoreSession certificatestoresession,
                              EndEntityProfileSession endEntityProfileSession,
                              HardTokenSession hardtokensession,
                              PublisherSession publishersession,
@@ -110,7 +108,7 @@ public class InformationMemory implements Serializable {
       this.globalconfiguration = globalconfiguration;
       this.certificateProfileSession = certificateProfileSession;
       this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession, caadminsession, endEntityProfileSession);
-      this.caauthorization = new CAAuthorization(administrator, caadminsession, certificatestoresession, authorizationsession, certificateProfileSession);
+      this.caauthorization = new CAAuthorization(administrator, caadminsession, authorizationsession, certificateProfileSession);
       this.logauthorization = new LogAuthorization(administrator, authorizationsession, caadminsession);
       this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, caadminsession);
     }

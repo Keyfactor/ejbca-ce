@@ -565,7 +565,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @throws NoSuchProviderException
 	 * @throws InvalidKeySpecException
 	 */
-	private PublicKey getCVPublicKey(EjbcaWSHelper ejbhelper, Admin admin, java.security.cert.Certificate cert) throws CADoesntExistsException, RemoteException {
+	private PublicKey getCVPublicKey(Admin admin, java.security.cert.Certificate cert) throws CADoesntExistsException, RemoteException {
 		PublicKey pk = cert.getPublicKey();
 		if (pk instanceof PublicKeyEC) {
 			// The public key of IS and DV certificate do not have any EC parameters so we have to do some magic to get a complete EC public key
@@ -651,7 +651,7 @@ public class EjbcaWS implements IEjbcaWS {
 						Iterator<java.security.cert.Certificate> iterator = oldcerts.iterator(); 
 						while (iterator.hasNext()) {
 							java.security.cert.Certificate cert = iterator.next();
-							PublicKey pk = getCVPublicKey(ejbhelper, admin, cert);
+							PublicKey pk = getCVPublicKey(admin, cert);
 							CVCertificate innerreq = authreq.getRequest();
 							checkInnerCollision(pk, innerreq, holderRef.getConcatenated()); // Throws AuthorizationDeniedException
 						}
@@ -672,7 +672,7 @@ public class EjbcaWS implements IEjbcaWS {
 								java.security.cert.Certificate cert = iterator.next();
 								try {
 									// Only allow renewal if the old certificate is valid
-									PublicKey pk = getCVPublicKey(ejbhelper, admin, cert);
+									PublicKey pk = getCVPublicKey(admin, cert);
 									if (log.isDebugEnabled()) {
 										log.debug("Trying to verify the outer signature with an old certificate, fp: "+CertTools.getFingerprintAsString(cert));										
 									}
@@ -1016,7 +1016,7 @@ public class EjbcaWS implements IEjbcaWS {
 				imsg = reqmsg;
 			}
 			if (imsg != null) {
-				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType, ejbhelper);
+				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
 			}
 		}catch(AuthorizationDeniedException ade){
 			throw ade;
@@ -1060,7 +1060,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 
 	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg,
-			String hardTokenSN, String responseType, EjbcaWSHelper ejbhelper) throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
+			String hardTokenSN, String responseType) throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
 		byte[] retval = null;
 		IResponseMessage resp =  signSession.createCertificate(admin, msg, org.ejbca.core.protocol.X509ResponseMessage.class);
 		java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());

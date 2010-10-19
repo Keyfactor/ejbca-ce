@@ -105,8 +105,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @throws ServiceExistsException
      *             if service already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     public void addService(Admin admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
@@ -621,8 +619,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     /**
      * Loads and activates all the services from database that are active
      * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -686,8 +682,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     /**
      * Cancels all existing timers a unload
      * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -800,6 +794,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * Finds a service configuration by id.
      * 
      * @returns the service configuration or null if it doesn't exist.
+     * @throws EJBException if a communication or other error occurs.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ServiceConfiguration getServiceConfiguration(Admin admin, int id) {

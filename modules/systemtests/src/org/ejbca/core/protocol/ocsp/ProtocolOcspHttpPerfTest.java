@@ -191,7 +191,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     
     public void test03MakeLotsOfReqs() throws Exception {
 		long before = System.currentTimeMillis();
-        Thread no1 = new Thread(new OcspTester(),"no1");
+        Thread no1 = new Thread(new OcspTester(),"no1"); // NOPMD, this is not a JEE app
 //        Thread no2 = new Thread(new OcspTester(),"no2");
 //        Thread no3 = new Thread(new OcspTester(),"no3");
 //        Thread no4 = new Thread(new OcspTester(),"no4");
@@ -240,7 +240,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     // 
     // Private helper methods
     //
-    private class OcspTester implements Runnable {
+    private class OcspTester implements Runnable { // NOPMD, this is not a JEE app
     	public void run() {
             try {
 				long before = System.currentTimeMillis();

@@ -26,14 +26,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -62,8 +60,6 @@ public class CmpServlet extends HttpServlet {
 	private CAAdminSessionLocal caAdminSession;
 	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
-	@EJB
-	private RaAdminSessionLocal raAdminSession;
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB

@@ -80,7 +80,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
            
             if(args.length < 5 || args.length > 6){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, this is not a JEE app
             }  
   
             String certEncoding = getCertEncoding(args[ARG_CERTENCODING]);            
@@ -133,7 +133,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
                 		createKeyStore(userCert, certs, serverKey,password,encoding,outputPath);
                 	}else{
             			getPrintStream().println("Error: Response didn't contain any private key");            	        
-            	    	System.exit(-1);
+            	    	System.exit(-1); // NOPMD, this is not a JEE app
                 	}
 
                 }
@@ -170,7 +170,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		if(retval == null){
 			getPrintStream().println("Error couldn't decode certificate " + filename);
 	        usage();
-	    	System.exit(-1);
+	    	System.exit(-1); // NOPMD, this is not a JEE app
 		}
 		
 		return retval;
@@ -187,7 +187,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		
 		getPrintStream().println("Illegal cert encoding(should be pem, der) : " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, this is not a JEE app
     	return null;
 	}
 
@@ -277,7 +277,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		
 		getPrintStream().println("Illegal encoding (should be pem, p12 or jks) : " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, this is not a JEE app
     	return null;
 	}
 

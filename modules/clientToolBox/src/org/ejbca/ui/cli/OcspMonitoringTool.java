@@ -84,10 +84,10 @@ public class OcspMonitoringTool extends ClientToolBox {
     @Override
     public void execute(String[] args) {
         try {
-        	System.exit(executeInternal(args));
+        	System.exit(executeInternal(args)); // NOPMD, this is not a JEE app
         } catch (Exception e) {
         	log.error("Error: ", e);
-            System.exit(-1);
+            System.exit(-1); // NOPMD, this is not a JEE app
         }
     }
 
