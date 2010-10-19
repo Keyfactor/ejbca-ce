@@ -175,6 +175,7 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$1.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
                     <exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
+                    <exclude name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
 					<!-- (Do not) Exclude semi-broken tests
 					<exclude name="org/ejbca/core/protocol/xkms/XKMSSigTest.class" />
 					-->
@@ -393,7 +394,6 @@
 		<antcall target="createreport"/>
 	</target>
 
-	
     <target name="runctb" depends="build, clientToolBox" description="run JUnit ClientToolBox tests">
 		<echo message="Use ejbca-custom/dist/clientToolBox/lib for your JDBC driver and ejbca-custom/dist/clientToolBox/properties/META-INF/persistence.xml for your modified database config."/>
     	<property name="reports.dir" location="${reports.base.dir}/ctb"/>
@@ -413,5 +413,53 @@
 		</junit>
     	<antcall target="createreport"/>
    	</target>
+
+	<target name="rungfver" depends="build">
+		<condition property="isglassfish"><matches pattern="glassfish" string="${appserver.type}"/></condition>
+    	<property name="reports.dir" location="${reports.base.dir}/gfver"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<exec command="${appserver.home}/bin/verifier" failifexecutionfails="false">
+			<arg line="-p -d ${reports.dir} ${ejbca.home}/dist/ejbca.ear"/>
+		</exec>
+		<junit printsummary="yes" haltonfailure="no">
+			<classpath>
+				<path location="${build.dir}" />
+                <path refid="systemtests.classpath" />
+			</classpath>
+			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedErrors=1 -Dvertest.expectedFailures=14 -Dvertest.expectedWarnings=8"/>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
+				<fileset dir="${build.dir}">
+                    <include name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+    	<antcall target="createreport"/>
+	</target>
+
+	<target name="rungfver-ocsp" depends="build">
+		<condition property="isglassfish"><matches pattern="glassfish" string="${appserver.type}"/></condition>
+    	<property name="reports.dir" location="${reports.base.dir}/gfver-ocsp"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<exec command="${appserver.home}/bin/verifier" failifexecutionfails="false">
+			<arg line="-p -d ${reports.dir} ${ejbca.home}/ocsp-dist/ejbca.ear"/>
+		</exec>
+		<junit printsummary="yes" haltonfailure="no">
+			<classpath>
+				<path location="${build.dir}" />
+                <path refid="systemtests.classpath" />
+			</classpath>
+			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedFailures=1"/>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
+				<fileset dir="${build.dir}">
+                    <include name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+    	<antcall target="createreport"/>
+	</target>
 
 </project>
