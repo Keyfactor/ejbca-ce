@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.sign;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -160,16 +159,16 @@ public class SignLotsOfCertsTest extends CaTestCase {
         log.trace(">test03SignLotsOfCerts()");
 
         long before = System.currentTimeMillis();
-        Thread no1 = new Thread(new SignTester(), "no1");
-        Thread no2 = new Thread(new SignTester(), "no2");
-        Thread no3 = new Thread(new SignTester(), "no3");
-        Thread no4 = new Thread(new SignTester(), "no4");
-        Thread no5 = new Thread(new SignTester(), "no5");
-        Thread no6 = new Thread(new SignTester(), "no6");
-        Thread no7 = new Thread(new SignTester(), "no7");
-        Thread no8 = new Thread(new SignTester(), "no8");
-        Thread no9 = new Thread(new SignTester(), "no9");
-        Thread no10 = new Thread(new SignTester(), "no10");
+        Thread no1 = new Thread(new SignTester(), "no1"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no2 = new Thread(new SignTester(), "no2"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no3 = new Thread(new SignTester(), "no3"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no4 = new Thread(new SignTester(), "no4"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no5 = new Thread(new SignTester(), "no5"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no6 = new Thread(new SignTester(), "no6"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no7 = new Thread(new SignTester(), "no7"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no8 = new Thread(new SignTester(), "no8"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no9 = new Thread(new SignTester(), "no9"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no10 = new Thread(new SignTester(), "no10"); // NOPMD we want to use thread here, it's not a JEE app
         no1.start();
         log.info("Started no1");
         no2.start();
@@ -228,7 +227,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         deleteUser("no10");
     }
 
-    private class SignTester implements Runnable {
+    private class SignTester implements Runnable { // NOPMD we want to use thread here, it's not a JEE app
 
         public static final int NO_CERTS = 1000;
 

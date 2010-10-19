@@ -61,7 +61,7 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
            
             if(args.length != 4){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }
             
             String username = args[ARG_USERNAME];            
@@ -71,7 +71,7 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
             if(reason == RevokedCertInfo.NOT_REVOKED){
         		getPrintStream().println("Error : Unsupported reason " + reason);
         		usage();
-        		System.exit(-1);
+        		System.exit(-1); // NOPMD, it's not a JEE app
             }
                         
             try{
@@ -83,13 +83,13 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
             	List<UserDataVOWS> result = getEjbcaRAWS().findUser(match);
             	if(result == null || result.size() != 1){
             		getPrintStream().println("Error : User doesn't exist.");
-            		System.exit(-1);
+            		System.exit(-1); // NOPMD, it's not a JEE app
             	}
             	
             	UserDataVOWS user = result.iterator().next();
             	if(user.getStatus() == UserDataConstants.STATUS_REVOKED){
               		getPrintStream().println("Error : User already revoked.");
-            		System.exit(-1);          		
+            		System.exit(-1); // NOPMD, it's not a JEE app         		
             	}
             	
             	getEjbcaRAWS().revokeUser(username,reason,delete);            	         
@@ -117,7 +117,7 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			return false;
 		}
 		usage();
-		System.exit(-1);				
+		System.exit(-1); // NOPMD, it's not a JEE app				
 		return false; // Should never happen
 	}
 

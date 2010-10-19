@@ -46,7 +46,7 @@ public class ValidateCertUseCRL {
 	    if (args.length == 0 || args.length > 2) {
 		System.out.println(
 		    "Usage: java ValidateCertUseCRL <cert-file> [<CRL-location>]");
-		System.exit(-1);
+		System.exit(-1); // NOPMD, it's not a JEE app
 	    }
 
 	    // load the cert to be checked
@@ -112,14 +112,14 @@ public class ValidateCertUseCRL {
 	    
 	} catch (CertPathValidatorException e) {
 	    e.printStackTrace();
-	    System.exit(1);
+	    System.exit(1); // NOPMD, it's not a JEE app
 
 	} catch(Exception e) {
 	    e.printStackTrace();
-	    System.exit(-1);
+	    System.exit(-1); // NOPMD, it's not a JEE app
 	}
 	System.out.println("CERTIFICATE VALIDATION SUCCEEDED");
-	System.exit(0);
+	System.exit(0); // NOPMD, it's not a JEE app
     }
 
     /*

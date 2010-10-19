@@ -64,7 +64,7 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
            
             if(args.length <  6 || args.length > 7){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }
             
             String username = args[ARG_USERNAME];            
@@ -139,10 +139,10 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 			retval = new String(contents);
 		} catch (FileNotFoundException e) {
 			getPrintStream().println("Error : PKCS10 file couln't be found.");
-			System.exit(-1);		
+			System.exit(-1); // NOPMD, it's not a JEE app		
 		} catch (IOException e) {
 			getPrintStream().println("Error reading content of PKCS10 file.");
-			System.exit(-1);	
+			System.exit(-1); // NOPMD, it's not a JEE app	
 		}
 		
 		
@@ -153,15 +153,15 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 		File dir = new File(outputpath);
 		if(!dir.exists()){
 			getPrintStream().println("Error : Output directory doesn't seem to exist.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if(!dir.isDirectory()){
 			getPrintStream().println("Error : Output directory doesn't seem to be a directory.");
-			System.exit(-1);			
+			System.exit(-1); // NOPMD, it's not a JEE app			
 		}
 		if(!dir.canWrite()){
 			getPrintStream().println("Error : Output directory isn't writeable.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 
 		}
 		return outputpath;
@@ -170,7 +170,7 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 	private String getEncoding(String encoding) {
 		if(!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER")){
 			usage();
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		
 		return encoding.toUpperCase();
