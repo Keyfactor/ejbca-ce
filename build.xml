@@ -357,6 +357,7 @@
     </target>
 
 	<target name="create-log4config-bundle">
+		<mkdir dir="tmp"/>
 		<!-- For appservers that don't come with Log4J we need to bundle a configuration file in the classpath (in the EARs lib/ directory in a JAR) -->
 		<copy file="conf/log4j-${appserver.type}.xml" tofile="tmp/log4j.xml" failonerror="false"/>
 		<jar destfile="modules/dist/log4jconfig.jar" whenempty="skip" basedir="tmp" includes="log4j.xml"/>
