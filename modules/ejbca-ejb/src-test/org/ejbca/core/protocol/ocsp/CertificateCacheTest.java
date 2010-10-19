@@ -134,17 +134,17 @@ public class CertificateCacheTest extends TestCase {
 		certs.add(testscepcert);
 		CertificateCache cache = new CertificateCache(certs);
 		
-		Thread no1 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1");
-		Thread no2 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2");
-		Thread no3 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootnewcert)),"no3");
+		Thread no1 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1"); // NOPMD we want to use thread here, it's not a JEE app
+		Thread no2 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2"); // NOPMD we want to use thread here, it's not a JEE app
+		Thread no3 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootnewcert)),"no3"); // NOPMD we want to use thread here, it's not a JEE app
 		// No4 uses CV Certificates, and it will never return anything from the cache because this cache (OCSP) only handles X.509 certificates
-		Thread no4 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testcvccert)),"no4");
-		Thread no5 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no5");
-		Thread no11 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1");
-		Thread no22 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2");
-		Thread no33 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootnewcert)),"no3");
-		Thread no44 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testcvccert)),"no4");
-		Thread no55 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no5");
+		Thread no4 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testcvccert)),"no4"); // NOPMD we want to use thread here, it's not a JEE app
+		Thread no5 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no5"); // NOPMD we want to use thread here, it's not a JEE app
+		Thread no11 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1"); // NOPMD we want to use thread here, it's not a JEE app
+		Thread no22 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2"); // NOPMD we want to use thread here, it's not a JEE app
+		Thread no33 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootnewcert)),"no3"); // NOPMD we want to use thread here, it's not a JEE app
+		Thread no44 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testcvccert)),"no4"); // NOPMD we want to use thread here, it's not a JEE app
+		Thread no55 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no5"); // NOPMD we want to use thread here, it's not a JEE app
 		CacheExceptionHandler handler = new CacheExceptionHandler();
 		no1.setUncaughtExceptionHandler(handler);
 		no2.setUncaughtExceptionHandler(handler);

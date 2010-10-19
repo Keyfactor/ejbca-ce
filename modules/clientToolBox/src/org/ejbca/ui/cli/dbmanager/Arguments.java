@@ -48,21 +48,21 @@ class Arguments {
 		if ( this.commandLine.hasInput() && this.commandLine.hasOutput() ) {
 			if ( args.length<5 ) {
 				System.err.println("You got to give both input and output file for the command:"+this.commandLine.showCommand());
-				System.exit(-1);
+				System.exit(-1); // NOPMD, it's not a JEE app
 			}
 			this.inputFile = new File(args[3]).getCanonicalFile();
 			this.outputFile = new File(args[4]).getCanonicalFile();
 		} else if ( this.commandLine.hasInput() ) {
 			if ( args.length<4 ) {
 				System.err.println("You got to give input file for the command:"+this.commandLine.showCommand());
-				System.exit(-1);
+				System.exit(-1); // NOPMD, it's not a JEE app
 			}
 			this.inputFile = new File(args[3]).getCanonicalFile();
 			this.outputFile = null;
 		} else if ( this.commandLine.hasOutput() ) {
 			if ( args.length<4 ) {
 				System.err.println("You got to give output file for the command:"+this.commandLine.showCommand());
-				System.exit(-1);
+				System.exit(-1); // NOPMD, it's not a JEE app
 			}
 			this.inputFile = null;
 			this.outputFile = new File(args[3]).getCanonicalFile();
@@ -72,24 +72,24 @@ class Arguments {
 		}
 		if ( this.inputFile!=null && !this.inputFile.isFile() ) {
 			System.err.println("Input file '"+this.inputFile.getPath()+"' does not exist.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if ( this.inputFile!=null && !this.inputFile.canRead() ) {
 			System.err.println("Input file '"+this.inputFile.getPath()+"' is not readable.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if ( this.outputFile!=null && this.outputFile.exists() ) {
 			System.err.println("Output file '"+this.outputFile.getPath()+"' does already exist.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		final File outputDir = this.outputFile!=null ? this.outputFile.getParentFile() : null;
 		if ( this.outputFile!=null && !outputDir.isDirectory()  ) {
 			System.err.println("Output directory '"+outputDir.getPath()+"' is not existing.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if ( this.outputFile!=null && !outputDir.canWrite() ) {
 			System.err.println("Output directory '"+outputDir.getPath()+"' is not writable.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if ( this.commandLine.passwordPrompt!=null ) {
 			System.err.print(this.commandLine.passwordPrompt);

@@ -33,11 +33,11 @@ public abstract class WebHealthTestAbstract extends TestCase {
 
     public void createThreads() throws InterruptedException {
    
-        Thread no1 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no1");
-        Thread no2 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no2");
-        Thread no3 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no3");
-        Thread no4 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no4");
-        Thread no5 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no5");
+        Thread no1 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no1"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no2 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no2"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no3 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no3"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no4 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no4"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no5 = new Thread(new WebEjbcaHealthRunner(httpReqPath), "no5"); // NOPMD we want to use thread here, it's not a JEE app
         no1.start();
         log.info("Started no1");
         no2.start();

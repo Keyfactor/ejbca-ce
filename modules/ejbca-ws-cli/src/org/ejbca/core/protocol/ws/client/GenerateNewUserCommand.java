@@ -83,7 +83,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
            
             if(args.length < 17 || args.length > 18){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }
             
             UserDataVOWS userdata = new UserDataVOWS();
@@ -205,7 +205,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 		
 		getPrintStream().println("Error in status string : " + status );
 		usage();
-		System.exit(-1);
+		System.exit(-1); // NOPMD, it's not a JEE app
 		return 0;
 	}
 	
@@ -227,10 +227,10 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 			retval = new String(contents);
 		} catch (FileNotFoundException e) {
 			getPrintStream().println("Error : PKCS10 file couln't be found.");
-			System.exit(-1);		
+			System.exit(-1); // NOPMD, it's not a JEE app		
 		} catch (IOException e) {
 			getPrintStream().println("Error reading content of PKCS10 file.");
-			System.exit(-1);	
+			System.exit(-1); // NOPMD, it's not a JEE app	
 		}
 		
 		
@@ -241,15 +241,15 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 		File dir = new File(outputpath);
 		if(!dir.exists()){
 			getPrintStream().println("Error : Output directory doesn't seem to exist.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if(!dir.isDirectory()){
 			getPrintStream().println("Error : Output directory doesn't seem to be a directory.");
-			System.exit(-1);			
+			System.exit(-1); // NOPMD, it's not a JEE app			
 		}
 		if(!dir.canWrite()){
 			getPrintStream().println("Error : Output directory isn't writeable.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 
 		}
 		return outputpath;
@@ -258,7 +258,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 	private String getEncoding(String encoding) {
 		if(!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER")){
 			usage();
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		
 		return encoding.toUpperCase();

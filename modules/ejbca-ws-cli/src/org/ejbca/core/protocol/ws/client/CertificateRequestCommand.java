@@ -69,7 +69,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
            
             if(args.length <  10 || args.length > 11){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }
             
             UserDataVOWS userdata = new UserDataVOWS();
@@ -154,10 +154,10 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 			retval = new String(contents);
 		} catch (FileNotFoundException e) {
 			getPrintStream().println("Error : request data file couln't be found.");
-			System.exit(-1);		
+			System.exit(-1); // NOPMD, it's not a JEE app		
 		} catch (IOException e) {
 			getPrintStream().println("Error reading content of request data file.");
-			System.exit(-1);	
+			System.exit(-1); // NOPMD, it's not a JEE app	
 		}
 		
 		
@@ -168,15 +168,15 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 		File dir = new File(outputpath);
 		if(!dir.exists()){
 			getPrintStream().println("Error : Output directory doesn't seem to exist.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if(!dir.isDirectory()){
 			getPrintStream().println("Error : Output directory doesn't seem to be a directory.");
-			System.exit(-1);			
+			System.exit(-1); // NOPMD, it's not a JEE app			
 		}
 		if(!dir.canWrite()){
 			getPrintStream().println("Error : Output directory isn't writeable.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 
 		}
 		return outputpath;
@@ -185,7 +185,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	private String getEncoding(String encoding) {
 		if(!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER")){
 			usage();
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		
 		return encoding.toUpperCase();
@@ -202,7 +202,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 			return CertificateHelper.CERT_REQ_TYPE_SPKAC;
 		}
 		usage();
-		System.exit(-1);
+		System.exit(-1); // NOPMD, it's not a JEE app
 		return 0;
 	}
 
