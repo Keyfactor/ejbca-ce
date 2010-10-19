@@ -12,13 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.util.Collection;
-import java.util.HashMap;
-
 import javax.ejb.EJBException;
 
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 public interface RaAdminSession {

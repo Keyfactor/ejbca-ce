@@ -63,7 +63,7 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
            
             if(args.length !=  5){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }
             
             String username = args[ARG_USERNAME];            
@@ -114,15 +114,15 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
 		File dir = new File(outputpath);
 		if(!dir.exists()){
 			getPrintStream().println("Error : Output directory doesn't seem to exist.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		if(!dir.isDirectory()){
 			getPrintStream().println("Error : Output directory doesn't seem to be a directory.");
-			System.exit(-1);			
+			System.exit(-1); // NOPMD, it's not a JEE app			
 		}
 		if(!dir.canWrite()){
 			getPrintStream().println("Error : Output directory isn't writeable.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 
 		}
 		return outputpath;
@@ -131,7 +131,7 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
 	private String getEncoding(String encoding) {
 		if(!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER")){
 			usage();
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		
 		return encoding.toUpperCase();
@@ -145,7 +145,7 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
 			return false;
 		}
 		usage();
-		System.exit(-1);				
+		System.exit(-1); // NOPMD, it's not a JEE app				
 		return false; // Should never happen
 	}
 

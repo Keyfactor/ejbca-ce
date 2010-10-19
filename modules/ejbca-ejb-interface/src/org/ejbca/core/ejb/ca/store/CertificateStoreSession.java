@@ -19,7 +19,6 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;

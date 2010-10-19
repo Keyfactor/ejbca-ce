@@ -79,7 +79,7 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
            
             if(args.length < 6 || args.length > 7){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }  
             
             String keyPass = args[ARG_KEYSTOREPASSWORD];
@@ -155,7 +155,7 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         } catch (Exception e) {
     		getPrintStream().println("Error reading keystore " + keystorefilename + " from file : " + e.getMessage());
             usage();
-        	System.exit(-1);
+        	System.exit(-1); // NOPMD, it's not a JEE app
 		}
     	
     	
@@ -234,7 +234,7 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		
 		getPrintStream().println("Illegal encoding (should be p12 or jks) : " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, it's not a JEE app
     	return null;
 	}
 

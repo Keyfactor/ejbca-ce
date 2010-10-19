@@ -38,19 +38,19 @@ public class LoggingStressTest extends TestCase {
     }
 
     public void test01LogALot() throws Exception {
-		ArrayList<Thread> threads = new ArrayList<Thread>();
+		ArrayList<Thread> threads = new ArrayList<Thread>(); // NOPMD, it's not a JEE app
 		for (int i=0; i<NUMBER_OF_THREADS; i++) {
-	        Thread thread = new Thread(new LogTester(i, TIME_TO_RUN), "LogTester-"+i);
+	        Thread thread = new Thread(new LogTester(i, TIME_TO_RUN), "LogTester-"+i); // NOPMD, it's not a JEE app
 	        thread.start();
 	        log.info("Started LogTester-"+i);
 	        threads.add(thread);
 		}
-		for (Thread thread : threads) {
+		for (Thread thread : threads) { // NOPMD, it's not a JEE app
 			thread.join();
 		}
     }
     
-    private class LogTester implements Runnable {
+    private class LogTester implements Runnable { // NOPMD, it's not a JEE app
     	
     	private long runTime = 0;
     	private long startTime = 0;

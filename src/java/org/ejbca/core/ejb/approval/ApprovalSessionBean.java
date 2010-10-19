@@ -310,9 +310,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             boolean sameAsRequester = false;
             String requsername = adl.getRequestAdminUsername();
             if(username != null) {
-            	if(username.equals(requsername))	sameAsRequester=true;
+            	if(username.equals(requsername)) {
+            		sameAsRequester=true;
+            	}
             } else {
-            	if(admin.getAdminData().equals(adl.getApprovalRequest().getRequestAdmin().getAdminData()))	sameAsRequester=true;
+            	if(admin.getAdminData().equals(adl.getApprovalRequest().getRequestAdmin().getAdminData())) {
+            		sameAsRequester=true;
+            	}
             }
             if (sameAsRequester) {
                 logSession.log(admin, adl.getCaid(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_ERROR_APPROVALREJECTED,

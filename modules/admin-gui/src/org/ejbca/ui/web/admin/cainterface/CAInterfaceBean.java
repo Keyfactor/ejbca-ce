@@ -25,14 +25,12 @@ import java.util.List;
 import java.util.TreeMap;
 
 import javax.ejb.CreateException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
@@ -109,7 +107,6 @@ public class CAInterfaceBean implements Serializable {
     public void initialize(EjbcaWebBean ejbcawebbean) throws  Exception{
 
         if(!initialized){
-          ServiceLocator locator = ServiceLocator.getInstance();
           certificatesession = ejb.getCertStoreSession();
           createCrlSession = ejb.getCreateCrlSession();
           caadminsession = ejb.getCAAdminSession();
@@ -249,7 +246,6 @@ public class CAInterfaceBean implements Serializable {
     }    
       
     public void createCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException  {      
-      InitialContext jndicontext = new InitialContext();
       CA ca;
 		try {
 			ca = caadminsession.getCA(administrator, issuerdn.hashCode());
@@ -259,7 +255,6 @@ public class CAInterfaceBean implements Serializable {
       createCrlSession.run(administrator, ca);
     }
     public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
-    	InitialContext jndicontext = new InitialContext();
         CA ca;
 		try {
 			ca = caadminsession.getCA(administrator, issuerdn.hashCode());

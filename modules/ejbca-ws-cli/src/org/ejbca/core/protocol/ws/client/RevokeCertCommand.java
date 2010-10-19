@@ -61,7 +61,7 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
            
             if(args.length != 4){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }
             
             String issuerdn = CertTools.stringToBCDNString(args[ARG_ISSUERDN]);            
@@ -97,7 +97,7 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		}catch(NumberFormatException e){
 			getPrintStream().println("Error in Certificate SN");
 			usage();
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		return certsn;
 	}

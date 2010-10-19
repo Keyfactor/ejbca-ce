@@ -1,18 +1,13 @@
 package org.ejbca.core.ejb;
 
 import java.net.URL;
-import java.util.Map;
-import java.util.Collections;
-import java.util.HashMap;
+
+import javax.mail.Session;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-import javax.naming.Context;
-import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.mail.Session;
 
 import org.apache.log4j.Logger;
 
@@ -27,9 +22,6 @@ public class ServiceLocator {
 
     private static final Logger log = Logger.getLogger(ServiceLocator.class);
     		
-    /** ejb home cache */
-    private transient Map ejbHomes = Collections.synchronizedMap(new HashMap());
-
     /** the jndi context */
     private transient Context ctx;
 

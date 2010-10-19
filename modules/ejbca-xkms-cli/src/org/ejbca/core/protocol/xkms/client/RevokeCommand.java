@@ -71,7 +71,7 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
            
             if(args.length != 4 ){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }  
   
             String certEncoding = getCertEncoding(args[ARG_CERTENCODING]);            
@@ -138,7 +138,7 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		if(retval == null){
 			getPrintStream().println("Error couldn't decode certificate " + filename);
 	        usage();
-	    	System.exit(-1);
+	    	System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		
 		return retval;
@@ -155,7 +155,7 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		
 		getPrintStream().println("Illegal cert encoding(should be pem, der) : " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, it's not a JEE app
     	return null;
 	}
 
