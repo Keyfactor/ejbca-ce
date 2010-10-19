@@ -366,7 +366,7 @@
     <!-- =================================================================== -->
     <!-- Build OCSP-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war">
+    <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war, create-log4config-bundle">
         <mkdir dir="${ocsp-dist.dir}"/>
         <ear destfile="${ocspear}" appxml="src/deploy/ocsp-ear/META-INF/application.xml"> 
             <fileset dir=".">
@@ -379,12 +379,14 @@
                 <include name="${lib}/commons-collections-3.2.jar" />
                 <include name="${lib}/commons-fileupload-1.0.jar" />
                 <include name="${lib}/commons-configuration-1.5.jar" />
+                <include name="${lib}/commons-logging.jar" />
             </fileset>
         	<zipfileset prefix="lib" dir="lib/hibernate" excludes="${bundle-hibernate-exclude}"/>
             <fileset dir="modules/dist">
                 <include name="healthcheck.war" />
                 <include name="ocsp.war" />
                 <include name="ocsp-ejb.jar" />
+                <include name="log4jconfig.jar" />
             </fileset>
         	<zipfileset prefix="lib" dir="modules/dist">
                 <include name="ocsp-ejb3-interface.jar" />
