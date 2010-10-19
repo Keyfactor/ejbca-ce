@@ -100,7 +100,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
            
             if(args.length !=  4){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }
             
             int matchwith = getMatchWith(args[ARG_MATCHWITH]);
@@ -163,7 +163,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 			if(matchwith >= org.ejbca.util.query.UserMatch.MATCH_WITH_UID){
 				getPrintStream().println("Error: Matchtype 'EQUALS' cannot be used with DN fields, only 'BEGINSWITH' can be used.");
 				usage();				
-				System.exit(-1);
+				System.exit(-1); // NOPMD, it's not a JEE app
 			}else{
 				return org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS;
 			}		
@@ -175,7 +175,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 			}else{
 				getPrintStream().println("Error: Matchtype 'BEGINSWITH' can only be used with DN fields, full DN and EMAIL, use EQUALS");
 				usage();				
-				System.exit(-1);
+				System.exit(-1); // NOPMD, it's not a JEE app
 			}
 		}		
 		if(matchtype.equalsIgnoreCase("CONTAINS")){
@@ -184,11 +184,11 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 			}else{
 			  getPrintStream().println("Error: Matchtype 'CONTAINS' can only be used with matchwith 'DN' or 'USERNAME'.");
 			  usage();				
-			  System.exit(-1);
+			  System.exit(-1); // NOPMD, it's not a JEE app
 			}
 	}		
 		usage();				
-		System.exit(-1);				
+		System.exit(-1); // NOPMD, it's not a JEE app				
 		return 0; // will never happen
 	}
 
@@ -200,7 +200,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		}
 		usage();
 		
-		System.exit(-1);
+		System.exit(-1); // NOPMD, it's not a JEE app
 		return 0; // Will never happen
 	}
 

@@ -163,7 +163,7 @@ public class Ocsp extends ClientToolBox {
                 System.out.println("The name of all these system properties starts with javax.net.ssl and are described in http://java.sun.com/javase/6/docs/technotes/guides/security/jsse/JSSERefGuide.html .");
                 System.out.println("https is mandatory for the FNR option. An example:");
                 System.out.println("JAVA_OPT=\"-Djavax.net.ssl.keyStore=My-Lookup.p12 -Djavax.net.ssl.keyStorePassword=foo123 -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.trustStore=root.jks\" ${EJBCA_HOME}/dist/clientToolBox/ejbcaClientToolBox.sh ocsp stress https://ocsp.mysite.nu certs.txt cacert.pem 40 100 fnr");
-                System.exit(1);
+                System.exit(1); // NOPMD, it's not a JEE app
             }
             this.ocspurl = args[2];
             this.serialNrs = new SerialNrs(args[3]);
@@ -251,7 +251,7 @@ public class Ocsp extends ClientToolBox {
             	// It is a certificate serial number instead if a certificate filename
             	if (ocspUrlFromCLI == null) {
             		System.out.println("OCSP URL is reqired if a serial number is used.");
-                    System.exit(-1);
+                    System.exit(-1); // NOPMD, it's not a JEE app
             	}
                 final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrlFromCLI, signRequest, ksfilename!=null);
                 response = client.lookup(new BigInteger(certfilename, 16), getCertFromPemFile(cacertfilename), useGet);
@@ -263,7 +263,7 @@ public class Ocsp extends ClientToolBox {
             		ocspUrl = CertTools.getAuthorityInformationAccessOcspUrl(userCert);
             		if (ocspUrl == null) {
                 		System.out.println("OCSP URL is required since none was found in the certificate.");
-                        System.exit(-1);
+                        System.exit(-1); // NOPMD, it's not a JEE app
             		}
             	}
                 final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrl, signRequest, true);
@@ -300,7 +300,7 @@ public class Ocsp extends ClientToolBox {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
-            System.exit(-1);
+            System.exit(-1); // NOPMD, it's not a JEE app
         }
     }
     /**

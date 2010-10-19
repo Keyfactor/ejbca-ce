@@ -43,7 +43,7 @@ class DataBaseConfig {
 			this.dbProps.load(new FileInputStream(this.propertiesFile));
 		} catch (FileNotFoundException e1) {
 			System.out.println("File '"+this.propertiesFile+"' is not existing.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		this.uri = getURI();
 	}
@@ -51,7 +51,7 @@ class DataBaseConfig {
 		final String value = this.dbProps.getProperty(key);
 		if ( value==null ) {
 			System.out.println("no key ("+key+") in properties file "+this.propertiesFile);
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 		}
 		return value;
 	}
@@ -85,7 +85,7 @@ class DataBaseConfig {
 			return new URI(sUrl);
 		} catch (URISyntaxException e) {
 			System.err.println("URL '"+sUrl+"' not valid.");
-			System.exit(-1);
+			System.exit(-1); // NOPMD, it's not a JEE app
 			return null;
 		}
 	}

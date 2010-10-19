@@ -110,7 +110,7 @@ public class HSMKeyTool extends ClientToolBox {
     }
     private void tooFewArguments(String[] args) {
         log.error("Too few arguments in command: '"+commandString(args)+'\'');
-        System.exit(3);
+        System.exit(3); // NOPMD, it's not a JEE app
     }
     private boolean doIt(String[] args) throws Exception {
         final String commandStringNoSharedLib = args[0]+" "+args[1]+" ";
@@ -233,11 +233,11 @@ public class HSMKeyTool extends ClientToolBox {
             }
             if ( verifyResult==null ) {
                 System.out.println("Not possible to parse signed file.");
-                System.exit(4); // Not verifying
+                System.exit(4); // Not verifying // NOPMD, it's not a JEE app
             }
             System.out.println("The signature of the input " +(verifyResult.isVerifying?"has been":"could not be")+" verified. The file was signed on '"+verifyResult.signDate+"'. The public part of the signing key is in a certificate with serial number "+verifyResult.signerId.getSerialNumber()+" issued by '"+verifyResult.signerId.getIssuer()+"'.");
             if ( !verifyResult.isVerifying ) {
-                System.exit(4); // Not verifying
+                System.exit(4); // Not verifying // NOPMD, it's not a JEE app
             }
             return true;
         }
@@ -315,11 +315,11 @@ public class HSMKeyTool extends ClientToolBox {
             pw.println("  "+args[0]+" "+MOVE_SWITCH);
             pw.flush();
             log.error("Command '"+commandString(args)+"' not found.");
-            System.exit(1); // Command not found.
+            System.exit(1); // Command not found.  // NOPMD, it's not a JEE app
         } catch (Throwable e) {
             System.err.println("Command could not be executed. See log for stack trace.");
             log.error("Command '"+commandString(args)+"' could not be executed.", e);
-            System.exit(2); // Command did not execute OK!
+            System.exit(2); // Command did not execute OK! // NOPMD, it's not a JEE app
         }
     }
     /* (non-Javadoc)

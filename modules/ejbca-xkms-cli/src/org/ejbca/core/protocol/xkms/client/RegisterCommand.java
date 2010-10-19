@@ -86,7 +86,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
            
             if(args.length < 6 || args.length > 7){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1); // NOPMD, it's not a JEE app
             }  
             
             String subjectDN = args[ARG_DN];
@@ -253,7 +253,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
              if(retval != 512 && retval != 1024 && retval != 2048 && retval != 4096){
      			getPrintStream().println("Illegal keysize : should be a number of 512, 1024, 2048, 4096 or 'NOGEN': " + keySize);
     			usage();
-    			System.exit(-1);   
+    			System.exit(-1); // NOPMD, it's not a JEE app   
              }
 		   }
 		   
@@ -261,7 +261,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
 		}catch(NumberFormatException e){
 			getPrintStream().println("Illegal keysize : should be a number or 'NOGEN': " + keySize);
 			usage();
-			System.exit(-1);    	
+			System.exit(-1); // NOPMD, it's not a JEE app    	
 		}
 		return retval;
 	}
@@ -286,7 +286,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
 		
 		getPrintStream().println("Illegal encoding (should be pem, p12 or jks) : " + arg);
         usage();
-    	System.exit(-1);
+    	System.exit(-1); // NOPMD, it's not a JEE app
     	return null;
 	}
 
