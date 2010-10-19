@@ -33,6 +33,7 @@ import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -174,7 +175,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 		// Make user that we know...
         boolean userExists = false;
         UserDataVO user = new UserDataVO("extkeyusagefoo","C=SE,O=AnaTom,CN=extkeyusagefoo",rsacaid,null,"foo@anatom.se",SecConst.USER_ENDUSER,fooEEProfile,fooCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
-        user.setStatus(SecConst.TOKEN_SOFT_PEM);
+        user.setStatus(UserDataConstants.STATUS_NEW);
         user.setPassword("foo123");
         try {
             userAdminSession.addUser(admin, user, false);
