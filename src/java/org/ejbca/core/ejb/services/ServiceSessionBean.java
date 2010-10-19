@@ -551,7 +551,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 	        }
         } else {
         	worker = null;
-        	log.info("Service " + serviceName + " will not run on this node: \"" + hostname + "\", Pinned to: " + Arrays.toString(serviceConfiguration.getPinToNodes()));
+			if (log.isDebugEnabled()) {
+				log.debug("Service " + serviceName + " will not run on this node: \"" + hostname + "\", Pinned to: " + Arrays.toString(serviceConfiguration.getPinToNodes()));
+			}
         }
         return worker;
     }
