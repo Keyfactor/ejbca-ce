@@ -35,7 +35,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
 import org.quickserver.net.server.ClientBinaryHandler;
 import org.quickserver.net.server.ClientEventHandler;
 import org.quickserver.net.server.ClientHandler;
@@ -86,10 +85,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		}
 		// We must use an administrator with rights to create users
 		final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
-        final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, getEjb().getCAAdminSession(), getEjb()
-                .getCertificateProfileSession(), getEjb().getCertStoreSession(), getEjb().getCertficateRequestSession(),
-                getEjb().getEndEntityProfileSession(), getEjb().getSignSession(), getEjb().getUserAdminSession());
-		final IResponseMessage resp = dispatcher.dispatch(cmpTcpMessage.message);
+		final IResponseMessage resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message.getEncoded());
 		log.debug("Sending back CMP response to client.");
 		// Send back reply
 		final TcpReturnMessage sendBack;

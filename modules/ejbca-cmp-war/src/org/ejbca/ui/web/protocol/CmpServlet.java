@@ -25,17 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
+import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -53,19 +46,7 @@ public class CmpServlet extends HttpServlet {
     private static final InternalResources intres = InternalResources.getInstance();	// Internal localization of logs and errors
 
     @EJB
-	private SignSessionLocal signSession;
-	@EJB
-	private UserAdminSessionLocal userAdminSession;
-	@EJB
-	private CAAdminSessionLocal caAdminSession;
-	@EJB
-	private EndEntityProfileSessionLocal endEntityProfileSession;
-	@EJB
-	private CertificateProfileSessionLocal certificateProfileSession;
-	@EJB
-	private CertificateStoreSessionLocal certificateStoreSession;
-	@EJB
-	private CertificateRequestSessionLocal certificateRequestSession;
+	private CmpMessageDispatcherSessionLocal cmpMessageDispatcherLocal; 
 
 	/**
 	 * Inits the CMP servlet
@@ -87,8 +68,7 @@ public class CmpServlet extends HttpServlet {
 	 * @throws IOException input/output error
 	 * @throws ServletException if the post could not be handled
 	 */
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
-	throws IOException, ServletException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		log.trace(">doPost()");
 		/* 
 		 POST
@@ -105,7 +85,7 @@ public class CmpServlet extends HttpServlet {
 		}
 		service(message, request.getRemoteAddr(), response);
 		log.trace("<doPost()");
-	} //doPost
+	}
 	
 	/**
 	 * Handles HTTP get
@@ -116,23 +96,19 @@ public class CmpServlet extends HttpServlet {
 	 * @throws IOException input/output error
 	 * @throws ServletException if the post could not be handled
 	 */
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-	throws java.io.IOException, ServletException {
+	public void doGet(HttpServletRequest request, HttpServletResponse response)	throws java.io.IOException, ServletException {
 		log.trace(">doGet()");
-		
 		log.info("Received un-allowed method GET in CMP servlet: query string=" + request.getQueryString());
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "You can only use POST!");
-		
 		log.trace("<doGet()");
-	} // doGet
+	}
 
 	private void service(DERObject message, String remoteAddr, HttpServletResponse response) throws IOException {
 		try {
 			// We must use an administrator with rights to create users
 			final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
 			log.info( intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr) );
-			final CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, caAdminSession, certificateProfileSession, certificateStoreSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
-			final IResponseMessage resp = dispatcher.dispatch(message);
+			final IResponseMessage resp = cmpMessageDispatcherLocal.dispatch(administrator, message.getEncoded());
 			if ( resp==null ) { // If resp is null, it means that the dispatcher failed to process the message.
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, intres.getLocalizedMessage("cmp.errornullresp"));
 				return;

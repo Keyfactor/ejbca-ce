@@ -36,6 +36,8 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
+import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSession;
+import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionRemote;
 
 /**
  * Helper methods to get EJB session interfaces.
@@ -51,6 +53,7 @@ public class EjbRemoteHelper {
     private CertificateProfileSessionRemote certificateProfileSession = null;
     private CertificateRequestSessionRemote certificateRequestSession = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
+    private CmpMessageDispatcherSessionRemote cmpMessageDispatcherSession = null;
     private ConfigurationSessionRemote configurationSession = null;
     private CreateCRLSessionRemote crlSession = null;
     private EndEntityProfileSessionRemote endEntityProfileSession = null;
@@ -89,7 +92,14 @@ public class EjbRemoteHelper {
         return certificateProfileSession;
     }
     
-    public EndEntityProfileSessionRemote getEndEntityProfileSession() {
+	public CmpMessageDispatcherSessionRemote getCmpMessageDispatcherSession() {
+        if (cmpMessageDispatcherSession == null) {
+        	cmpMessageDispatcherSession = JndiHelper.getRemoteSession(CmpMessageDispatcherSessionRemote.class);
+        }
+        return cmpMessageDispatcherSession;
+	}
+
+	public EndEntityProfileSessionRemote getEndEntityProfileSession() {
         if(endEntityProfileSession == null) {
             endEntityProfileSession = JndiHelper.getRemoteSession(EndEntityProfileSessionRemote.class);
         }

@@ -13,16 +13,24 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.IOException;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERObject;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.core.ejb.ra.CertificateRequestSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.FailInfo;
@@ -54,53 +62,63 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * @author tomas
  * @version $Id$
  */
-public class CmpMessageDispatcher {
-	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CmpMessageDispatcherSessionRemote")
+public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSessionLocal, CmpMessageDispatcherSessionRemote {
+
+	private static final Logger log = Logger.getLogger(CmpMessageDispatcherSessionBean.class);
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 	
 	/** This defines if we allows messages that has a POPO setting of raVerify. 
 	 * If this variable is true, and raVerify is the POPO defined in the message, no POPO check will be done.
 	 */
-	private boolean allowRaVerifyPopo = false;
+	private boolean allowRaVerifyPopo = CmpConfiguration.getAllowRAVerifyPOPO();
 	/** The default CA used for signing requests, if it is not given in the request itself. */
-	private String defaultCA = null;
+	private String defaultCA = CmpConfiguration.getDefaultCA();
 	/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
-	private String extractUsernameComponent = null;
-	private Admin admin;
-	private final SignSession signSession;
-	private final UserAdminSession userAdminSession;
-	private final CAAdminSession caAdminSession;
-	private final CertificateStoreSession certificateStoreSession;
-	private final CertificateRequestSession certificateRequestSession;
-	private final CertificateProfileSession certificateProfileSession;
-	private final EndEntityProfileSession endEntityProfileSession;
+	private String extractUsernameComponent = CmpConfiguration.getExtractUsernameComponent();
 	
-	public CmpMessageDispatcher(Admin adm, CAAdminSession caAdminSession, CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, CertificateRequestSession certificateRequestSession,
-		EndEntityProfileSession endEntityProfileSession, SignSession signSession, UserAdminSession userAdminSession) {
-		this.admin = adm;
-		this.signSession = signSession;
-		this.userAdminSession = userAdminSession;
-		this.caAdminSession = caAdminSession;
-		this.endEntityProfileSession = endEntityProfileSession;
-		this.certificateProfileSession = certificateProfileSession;
-		this.certificateStoreSession = certificateStoreSession;
-		this.certificateRequestSession = certificateRequestSession;
-		// Install BouncyCastle provider
-		CryptoProviderTools.installBCProvider();
-		
-		// Read parameters 
-		this.allowRaVerifyPopo = CmpConfiguration.getAllowRAVerifyPOPO();
-		this.defaultCA = CmpConfiguration.getDefaultCA();
-		this.extractUsernameComponent = CmpConfiguration.getExtractUsernameComponent();
+    @EJB
+	private SignSessionLocal signSession;
+	@EJB
+	private UserAdminSessionLocal userAdminSession;
+	@EJB
+	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private EndEntityProfileSessionLocal endEntityProfileSession;
+	@EJB
+	private CertificateProfileSessionLocal certificateProfileSession;
+	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
+	private CertificateRequestSessionLocal certificateRequestSession;
+	
+	@PostConstruct
+	public void postConstruct() {
+		CryptoProviderTools.installBCProviderIfNotAvailable();	// Install BouncyCastle provider, if not already available
 	}
-	
-	/** The message may have been received by any transport protocol, and is passed here in it's binary asn.1 form.
+
+	/** The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
+	 * 
+	 * @param message der encoded CMP message as a byte array
+	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
+	 */
+	public IResponseMessage dispatch(Admin admin, byte[] derObject) {
+		DERObject arg = null;
+		try {
+			arg = ASN1Sequence.fromByteArray(derObject);
+		} catch (IOException e) {
+			log.error("Could not parse byte array as ASN1Sequence.", e);
+		}
+		return dispatch(admin, arg);
+	}
+
+	/** The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
 	 * 
 	 * @param message der encoded CMP message
-	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occured
+	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
 	 */
-	public IResponseMessage dispatch(DERObject derObject) {
+	private IResponseMessage dispatch(Admin admin, DERObject derObject) {
 		final PKIMessage req;
 		try {
 			req = PKIMessage.getInstance(derObject);
@@ -131,11 +149,11 @@ public class CmpMessageDispatcher {
 			case 0:
 				// 0 and 2 are both certificate requests
 				handler = new CrmfMessageHandler(admin, caAdminSession,  certificateProfileSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
-				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
+				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
 				break;
 			case 2:
 				handler = new CrmfMessageHandler(admin, caAdminSession, certificateProfileSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
-				cmpMessage = new CrmfRequestMessage(req, this.defaultCA, this.allowRaVerifyPopo, this.extractUsernameComponent);
+				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
 				break;
 			case 19:
 				// PKI confirm
