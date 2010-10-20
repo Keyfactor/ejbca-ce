@@ -1637,6 +1637,10 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          <input type="submit" name="<%= BUTTON_UPLOADTEMPLATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>">
       </td>
     </tr>  
+
+
+    <!-- ---------- Form buttons -------------------- -->
+
     <tr  id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
