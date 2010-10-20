@@ -385,6 +385,9 @@
            	<include name="org/ejbca/core/model/approval/ApprovalDataUtil.java"/>
            	<include name="org/ejbca/core/model/log/LogEntry.java"/>
            	<include name="org/ejbca/core/model/ca/caadmin/CACacheManager.java"/>
+        	<!-- Dependencies from CMP TCP WAR -->
+           	<include name="org/ejbca/ui/web/LimitLengthASN1Reader.java"/>
+           	<include name="org/ejbca/config/CmpConfiguration.java"/>
     	</javac>
     </target>
 
