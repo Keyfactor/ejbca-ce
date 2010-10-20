@@ -360,13 +360,16 @@ div#code input[type="submit"] {
 }
 
 /* Page: RA > Add End-Entity */
-table#addendentity td {
+table#addendentity.edit tr td {
 	padding: .15em .3em;
 	vertical-align: middle;
 	white-space: nowrap;
 	font-size: 1.1em;
 }
-table#addendentity td:last-child {
+table#addendentity.edit tr td.title {
+	font-size: 1.2em;
+}
+table#addendentity.edit tr td:last-child {
 	text-align: center;
 }
 

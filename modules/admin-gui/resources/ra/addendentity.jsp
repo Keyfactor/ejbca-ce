@@ -32,7 +32,7 @@
   static final String TEXTFIELD_RFC822NAME        = "textfieldrfc822name";
   static final String TEXTFIELD_STARTTIME         = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
-  static final String TEXTFIELD_CERTSERIALNUMER   = "textfieldcertsn";
+  static final String TEXTFIELD_CERTSERIALNUMBER  = "textfieldcertsn";
   static final String TEXTFIELD_CARDNUMBER        = "textfieldcardnumber";
   static final String TEXTFIELD_MAXFAILEDLOGINS	  = "textfieldmaxfailedlogins";
 
@@ -72,7 +72,7 @@
   static final String CHECKBOX_REQUIRED_STARTTIME         = "checkboxrequiredstarttime";
   static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrequiredendtime";
   static final String CHECKBOX_REQUIRED_MAXFAILEDLOGINS	  = "checkboxrequiredmaxfailedlogins";
-  static final String CHECKBOX_REQUIRED_CERTSERIALNUMER	  = "checkboxrequiredcertserialnumber";
+  static final String CHECKBOX_REQUIRED_CERTSERIALNUMBER  = "checkboxrequiredcertserialnumber";
 
   static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
   static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
@@ -582,7 +582,7 @@
 	        	if (ei == null) {
 	        		ei = new ExtendedInformation();
 	        	}
-				value = request.getParameter(TEXTFIELD_CERTSERIALNUMER);
+				value = request.getParameter(TEXTFIELD_CERTSERIALNUMBER);
 				if ( value!=null && value.length()>0 ) {
 					ei.setCertificateSerialNumber( new BigInteger(value.trim(), 16) );
 				} else {
@@ -1014,10 +1014,10 @@ function checkallfields(){
                         }
             <%      }
                 } else { %>
-                    if(!checkfieldforhexadecimalnumbers("document.adduser.<%= TEXTFIELD_CERTSERIALNUMER %>", "<%= ejbcawebbean.getText("ONLYHEXINCERTSN") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype)) %>"))
+                    if(!checkfieldforhexadecimalnumbers("document.adduser.<%= TEXTFIELD_CERTSERIALNUMBER %>", "<%= ejbcawebbean.getText("ONLYHEXINCERTSN") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype)) %>"))
                         illegalfields++;
                 <%  if(profile.isRequired(fieldtype, fielddata[EndEntityProfile.NUMBER])) { %>
-                        if(document.adduser.<%= TEXTFIELD_CERTSERIALNUMER %>.value=="") {
+                        if(document.adduser.<%= TEXTFIELD_CERTSERIALNUMBER %>.value=="") {
                             alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fieldtype), true) %>");
                             illegalfields++;
                         }
@@ -1172,11 +1172,12 @@ function checkallfields(){
   <% } %>
 
 
-     <table id="addendentity" border="0" cellpadding="0" cellspacing="2" width="792">
+     <table class="edit" id="addendentity" border="0" cellpadding="0" cellspacing="2" width="792">
        <form name="changeprofile" action="<%= THIS_FILENAME %>" method="post">
        <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHANGEPROFILE %>'>
+
        <tr>
-         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+         <td>&nbsp;</td>
 	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"ENDENTITYPROFILE\") %>"/></td>
 	 <td><select name="<%=SELECT_ENDENTITYPROFILE %>" size="1" tabindex="<%=tabindex++%>" onchange="document.changeprofile.submit()"'>
                 <% for(int i = 0; i < profilenames.length;i++){
@@ -1192,19 +1193,25 @@ function checkallfields(){
          </td>
 	<td><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>"/></td>
       </tr>
-      <tr>
-	<td></td>
-	<td></td>
-	<td></td>
-	<td></td>
+
+      <tr id="Row<%=(row++)%2%>">
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
       </tr>
       </form>
+
        <form name="adduser" action="<%= THIS_FILENAME %>" method="post">   
          <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_ADDUSER %>'>   
          <input type="hidden" name='<%= HIDDEN_PROFILE %>' value='<c:out value="<%=profileid %>"/>'>    
+
+
+    <!-- ---------- Main -------------------- -->
+
           <% if(profile.getUse(EndEntityProfile.USERNAME,0)){ %>
       <tr id="Row<%=(row++)%2%>">
-	<td></td>
+	<td>&nbsp;</td>
 	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>"/></td> 
 	<td>
             <% if(!profile.isModifyable(EndEntityProfile.USERNAME,0)){ 
@@ -1228,9 +1235,10 @@ function checkallfields(){
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.USERNAME,0)) out.write(" CHECKED "); %>></td>
       </tr>
          <% }%>
+
           <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
       <tr id="Row<%=(row++)%2%>">
-        <td></td>
+        <td>&nbsp;</td>
 		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"PASSWORD\") %>"/></td>
         <td>   
              <%
@@ -1251,10 +1259,10 @@ function checkallfields(){
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
       </tr>
-       <% } 
-          if(profile.getUse(EndEntityProfile.PASSWORD,0)){%>
+       <% } %>
+       <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){%>
       <tr id="Row<%=(row++)%2%>">
-	<td></td>
+	<td>&nbsp;</td>
 	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"CONFIRMPASSWORD\") %>"/></td>
         <td>
           <%   if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){ 
@@ -1272,46 +1280,14 @@ function checkallfields(){
              <input type="password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
            <% } %>
         </td>
-		<td></td> 
-      </tr>
-      <% }
-          if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%>
-      <tr id="Row<%=(row++)%2%>">
-	<td></td>
-	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"USEINBATCH\") %>"/></td>
-	<td><input type="checkbox" name="<%= CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE))
-                                                                                                                 out.write(" CHECKED "); 
-                                                                                                               if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0))
-                                                                                                                 out.write(" disabled='true' "); 
-                                                                                                             %>> 
-        </td>
-	<td></td> 
-      </tr>
-      
-      <% } if(profile.getUse(EndEntityProfile.MAXFAILEDLOGINS,0)) { %>
-      <tr id="Row<%=(row++)%2%>">
-		<td></td>
-		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"MAXFAILEDLOGINATTEMPTS\") %>"/></td>
-        <td>
-        	<%
-       			int maxLoginAttempts = -1;
-        		try {
-        			maxLoginAttempts = Integer.parseInt(profile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0));
-        		} catch(NumberFormatException ignored) {}
-       		%>   
-       		<input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
-             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
-             
-             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>> <%= ejbcawebbean.getText("UNLIMITED") %>
-        </td>
-		<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_MAXFAILEDLOGINS %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.MAXFAILEDLOGINS,0)) out.write(" CHECKED "); %>></td> 
+		<td>&nbsp;</td> 
       </tr>
       <% } %>
-          
+
       <%
          if(profile.getUse(EndEntityProfile.EMAIL,0)){ %>
        <tr id="Row<%=(row++)%2%>">
-	 <td></td>
+	 <td>&nbsp;</td>
 	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"EMAIL\") %>"/></td>
 	 <td>      
            <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldemail%>"/>'> @
@@ -1336,28 +1312,57 @@ function checkallfields(){
        </tr>
        <% }%>
 
-         <% if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
-       <tr id="Row<%=(row++)%2%>">
-	 <td></td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"CARDNUMBER\") %>"/></td>
-	 <td>      
-           <input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>'>
-        </td>
-     <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
-       </tr>
-       <% }%>
-
+      <% if(profile.getUse(EndEntityProfile.MAXFAILEDLOGINS,0)) { %>
       <tr id="Row<%=(row++)%2%>">
-	<td></td>
-	<td align="right"><b><c:out value="<%= ejbcawebbean.getText(\"SUBJECTDNFIELDS\") %>"/></b></td>
+		<td>&nbsp;</td>
+		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"MAXFAILEDLOGINATTEMPTS\") %>"/></td>
+        <td>
+        	<%
+       			int maxLoginAttempts = -1;
+        		try {
+        			maxLoginAttempts = Integer.parseInt(profile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0));
+        		} catch(NumberFormatException ignored) {}
+       		%>   
+       		<input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
+             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
+             
+             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>> <%= ejbcawebbean.getText("UNLIMITED") %>
+        </td>
+		<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_MAXFAILEDLOGINS %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.MAXFAILEDLOGINS,0)) out.write(" CHECKED "); %>></td> 
+      </tr>
+      <% } %>
+
+      <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%>
+      <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
-	<td></td>
-       </tr>
+	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"USEINBATCH\") %>"/></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE))
+                                                                                                                 out.write(" CHECKED "); 
+                                                                                                               if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0))
+                                                                                                                 out.write(" disabled='true' "); 
+                                                                                                             %>> 
+        </td>
+	<td>&nbsp;</td> 
+      </tr>
+      <% } %>
+
+
+    <!-- ---------- Subject DN Fields -------------------- -->
+
+    <tr id="Row<%=(row++)%2%>">
+	<td>&nbsp;</td>
+	<td align="right" class="title">
+	  <strong><c:out value="<%= ejbcawebbean.getText(\"SUBJECTDNFIELDS\") %>"/></strong>
+	</td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+    </tr>
+
        <% int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
           for(int i=0; i < numberofsubjectdnfields; i++){
             fielddata = profile.getSubjectDNFieldsInOrder(i);  %>
        <tr id="Row<%=(row++)%2%>">
-	 <td></td>
+	 <td>&nbsp;</td>
 	 <td align="right"><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"/></td>
 	 <td>      
           <% 
@@ -1391,23 +1396,40 @@ function checkallfields(){
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
-     <% } 
+     <% } %>
+
+
+    <!-- ---------- Other subject attributes -------------------- -->
+
+    <tr id="Row<%=(row++)%2%>">
+	<td>&nbsp;</td>
+	<td align="right" class="title">
+	  <strong><c:out value="<%= ejbcawebbean.getText(\"OTHERSUBJECTATTR\") %>"/></strong>
+	</td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+    </tr>
+
+     <%  
         int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
         if(numberofsubjectaltnamefields > 0){
-%> 
-      <tr id="Row<%=(row++)%2%>">
-	<td></td>
-	<td align="right"><b><c:out value="<%= ejbcawebbean.getText(\"SUBJECTALTNAMEFIELDS\") %>"/></b></td>
+     %> 
+    <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
-	<td></td>
-       </tr>
-       <% }
-          for(int i=0; i < numberofsubjectaltnamefields; i++){
+	<td align="right">
+      <c:out value="<%= ejbcawebbean.getText(\"SUBJECTALTNAMEFIELDS\") %>"/>
+    </td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+    </tr>
+       <% } %>
+
+       <% for(int i=0; i < numberofsubjectaltnamefields; i++){
             fielddata = profile.getSubjectAltNameFieldsInOrder(i);  
             int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
             if(EndEntityProfile.isFieldImplemented(fieldtype)) { %>
        <tr id="Row<%=(row++)%2%>">
-	 <td></td>
+	 <td>&nbsp;</td>
 	 <td align="right"><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"/></td>
 	 <td>      
 		<%	if( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME ) ) {
@@ -1480,31 +1502,33 @@ function checkallfields(){
 	               	if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) { %>
 						<input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" > @
 				<%	} %>
-					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
+					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
 			<%	} %>
 		<%	} %>
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
-     <%  } 
-       } 
+     <%  } %>
+   <%  } %>
 
-        int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
+    <%  int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
         if(numberofsubjectdirattrfields > 0){
-%> 
-      <tr id="Row<%=(row++)%2%>">
-	<td></td>
-	<td align="right"><b><c:out value="<%= ejbcawebbean.getText(\"SUBJECTDIRATTRFIELDS\") %>"/></b></td>
+    %> 
+    <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
-	<td></td>
-       </tr>
-       <% }
-          for(int i=0; i < numberofsubjectdirattrfields; i++){
+	<td align="right">
+	  <c:out value="<%= ejbcawebbean.getText(\"SUBJECTDIRATTRFIELDS\") %>"/>
+	</td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+    </tr>
+       <% } %>
+       <% for(int i=0; i < numberofsubjectdirattrfields; i++){
             fielddata = profile.getSubjectDirAttrFieldsInOrder(i);  
             int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
 			{ %>
        <tr id="Row<%=(row++)%2%>">
-	 <td></td>
+	 <td>&nbsp;</td>
 	 <td align="right"><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"/></td>
 	 <td>      
           <%
@@ -1523,25 +1547,138 @@ function checkallfields(){
                 %>
            </select>
            <% } else { %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTDIRATTR + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
+             <input type="text" name="<%= TEXTFIELD_SUBJECTDIRATTR + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
            <% } %>
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
      <%  } %>
-	<%	} 
-        if( profile.getUse(EndEntityProfile.STARTTIME, 0) || profile.getUse(EndEntityProfile.ENDTIME, 0) || profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
-		<tr id="Row<%=(row++)%2%>"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-	<%	} 
-        if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
+	<%	} %>
+
+
+    <!-- ---------- Main certificate data -------------------- -->
+
+    <tr id="Row<%=(row++)%2%>">
+	<td>&nbsp;</td>
+	<td align="right" class="title">
+	  <strong><c:out value="<%= ejbcawebbean.getText(\"MAINCERTIFICATEDATA\") %>"/></strong>
+	</td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+    </tr>
+
+     <tr id="Row<%=(row++)%2%>">
+	 <td>&nbsp;</td>
+	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"CERTIFICATEPROFILE\") %>"/></td>
+	 <td>
+         <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" tabindex="<%=tabindex++%>" onchange='fillCAField()'>
+         <%
+           String[] availablecertprofiles = profile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
+           if(lastselectedcertificateprofile.equals(""))
+             lastselectedcertificateprofile= profile.getValue(EndEntityProfile.DEFAULTCERTPROFILE,0);
+
+           if( availablecertprofiles != null){
+             for(int i =0; i< availablecertprofiles.length;i++){
+         %>
+         <option value='<c:out value="<%=availablecertprofiles[i]%>"/>' <% if(lastselectedcertificateprofile.equals(availablecertprofiles[i])) out.write(" selected "); %> >
+            <c:out value="<%= rabean.getCertificateProfileName(Integer.parseInt(availablecertprofiles[i])) %>"/>
+         </option>
+         <%
+             }
+           }
+         %>
+         </select>
+         </td>
+	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
+       </tr>
+
+       <tr id="Row<%=(row++)%2%>">
+	 <td>&nbsp;</td>
+	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/></td>
+	 <td>
+         <select name="<%= SELECT_CA %>" size="1" tabindex="<%=tabindex++%>">
+         </select>
+         </td>
+	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
+       </tr>
+
+       <tr id="Row<%=(row++)%2%>">
+	 <td>&nbsp;</td>
+	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"TOKEN\") %>"/></td>
+	 <td>
+         <select name="<%= SELECT_TOKEN %>" size="1" tabindex="<%=tabindex++%>" onchange='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
+                                                                                             if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>'>
+         <%
+           if(lastselectedtoken.equals(""))
+             lastselectedtoken= profile.getValue(EndEntityProfile.DEFKEYSTORE,0);
+
+           if( availabletokens != null){
+             for(int i =0; i < availabletokens.length;i++){
+         %>
+         <option value='<c:out value="<%=availabletokens[i]%>"/>' <% if(lastselectedtoken.equals(availabletokens[i])) out.write(" selected "); %> >
+            <% for(int j=0; j < tokentexts.length; j++){
+                 if( tokenids[j] == Integer.parseInt(availabletokens[i])) {
+                   if( tokenids[j] > SecConst.TOKEN_SOFT)
+                     out.write(tokentexts[j]);
+                   else
+                     out.write(ejbcawebbean.getText(tokentexts[j]));
+                 }
+               }%>
+         </option>
+         <%
+             }
+           }
+         %>
+         </select>
+         </td>
+	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
+       </tr>
+
+
+    <!-- ---------- Other certificate data -------------------- -->
+
+	<%	if ( profile.getUse(EndEntityProfile.CERTSERIALNR, 0)
+		  || profile.getUse(EndEntityProfile.STARTTIME, 0)
+		  || profile.getUse(EndEntityProfile.ENDTIME, 0)
+		  || profile.getUse(EndEntityProfile.CARDNUMBER, 0)
+		  || usehardtokenissuers
+		   ) { %>
+	    <tr id="Row<%=(row++)%2%>">
+		<td>&nbsp;</td>
+		<td align="right" class="title">
+		  <strong><c:out value="<%= ejbcawebbean.getText(\"OTHERCERTIFICATEDATA\") %>"/></strong>
+		</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	    </tr>
+	<%	} %>
+
+	<%	if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
-			<td></td><td align="right"> 
+			<td>&nbsp;</td><td align="right"> 
+				<c:out value="<%= ejbcawebbean.getText(\"CERTSERIALNUMBERHEXA\") %>"/> <br />
+				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> 1234567890abcdef)
+			</td><td> 
+				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value="" />
+			</td>
+			<td>
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMBER %>" value="<%= CHECKBOX_VALUE %>" disabled="true" />
+				<%	if ( profile.isRequired(EndEntityProfile.CERTSERIALNR, 0) ) {
+						out.write(" CHECKED ");
+					} %>
+			</td>
+		</tr>
+	<%	} %> 
+
+    <%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td>&nbsp;</td><td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"TIMEOFSTART\") %>"/> <br />
 				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> <c:out value="<%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
 				ejbcawebbean.getLocale()).format(new Date()) %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
 				%>"/>:<c:out value="<%= ejbcawebbean.getText(\"HOURS\").toLowerCase() %>"/>:<c:out value="<%= ejbcawebbean.getText(\"MINUTES\").toLowerCase() %>"/>)
 			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
+				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	String startTime = profile.getValue(EndEntityProfile.STARTTIME, 0); %>
 					value='<c:out value="<%= startTime %>"/>'
 					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
@@ -1557,16 +1694,17 @@ function checkallfields(){
 				/>
 			</td>
 		</tr>
-	<%	} 
-        if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+	<%	} %>
+
+    <%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
-			<td></td><td align="right"> 
+			<td>&nbsp;</td><td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"TIMEOFEND\") %>"/> <br />
 				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> <c:out value="<%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
 				ejbcawebbean.getLocale()).format(new Date()) %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
 				%>"/>:<c:out value="<%= ejbcawebbean.getText(\"HOURS\").toLowerCase() %>"/>:<c:out value="<%= ejbcawebbean.getText(\"MINUTES\").toLowerCase() %>"/>)
 			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
+				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					value='<c:out value="<%= profile.getValue(EndEntityProfile.ENDTIME, 0) %>"/>'
 					<%	if ( !profile.isModifyable(EndEntityProfile.ENDTIME, 0) ) { %>
 					readonly="true"
@@ -1581,42 +1719,107 @@ function checkallfields(){
 				/>
 			</td>
 		</tr>
-	<% }
-	   if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
-		<tr  id="Row<%=(row++)%2%>"> 
-			<td></td><td align="right"> 
-				<c:out value="<%= ejbcawebbean.getText(\"CERTSERIALNUMER\") %>"/> <br />
-				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> 1234567890abcdef)
-			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMER %>" size="40" maxlength="40" tabindex="<%=tabindex++%>" value="" />
-			</td>
-			<td>
-				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMER %>" value="<%= CHECKBOX_VALUE %>" disabled="true" />
-				<%	if ( profile.isRequired(EndEntityProfile.CERTSERIALNR, 0) ) {
-						out.write(" CHECKED ");
-					} %>
-			</td>
-		</tr>
-	<% } %> 
-     
+	<%	} %>
+
+         <% if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
+       <tr id="Row<%=(row++)%2%>">
+	 <td>&nbsp;</td>
+	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"CARDNUMBER\") %>"/></td>
+	 <td>      
+           <input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>'>
+        </td>
+     <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
+       </tr>
+       <% }%>
+
+       <% if(usehardtokenissuers){ %>
+       <tr id="Row<%=(row++)%2%>">
+	 <td>&nbsp;</td>
+	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"HARDTOKENISSUER\") %>"/></td>
+	 <td>
+         <select name="<%= SELECT_HARDTOKENISSUER %>" size="1" tabindex="<%=tabindex++%>">
+         </select>
+         </td>
+	 <td>&nbsp;</td>
+       </tr>
+       <% } %>
+
+
+    <!-- ---------- Other data -------------------- -->
+
+	<%	if ( profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)
+		  || usekeyrecovery
+		  || profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0)
+		  || profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
+		  || profile.getUsePrinting()
+		   ) { %>
+	    <tr id="Row<%=(row++)%2%>">
+	 	<td>&nbsp;</td>
+	 	<td align="right" class="title">
+		   <strong><c:out value="<%= ejbcawebbean.getText(\"OTHERDATA\") %>"/></strong>
+		 </td>
+		 <td>&nbsp;</td>
+		 <td>&nbsp;</td>
+	    </tr>
+	<%	} %>
+       
+       <!--  Max number of allowed requests for a password -->
+       <% if(profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)){ %>
+       <% 
+           String defaultnrofrequests = profile.getValue(EndEntityProfile.ALLOWEDREQUESTS,0);
+           if (defaultnrofrequests == null) {
+        	   defaultnrofrequests = "1";
+           }
+       %>
+       <tr id="Row<%=(row++)%2%>">
+       <td>&nbsp;</td>
+  	   <td align="right"><c:out value="<%= ejbcawebbean.getText(\"ALLOWEDREQUESTS\") %>"/></td>
+	   <td>
+            <select name="<%=SELECT_ALLOWEDREQUESTS %>" size="1" >
+	            <% for(int j=0;j< 6;j++){
+	            %>
+	            <option
+	            <%     if(defaultnrofrequests.equals(Integer.toString(j)))
+	                       out.write(" selected "); 
+	            %>
+	            value='<%=j%>'><%=j%></option>
+	            <% }%>
+            </select>
+       </td>
+       <td>&nbsp;</td>
+       </tr>
+     <% } %>
+
+     <% if(usekeyrecovery){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td>&nbsp;</td>
+      <td  align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>"/> 
+      </td>
+      <td> 
+        <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>"<% if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE))
+                                                                                                                 out.write(" CHECKED "); 
+                                                                                                               if(profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0))
+                                                                                                                 out.write(" disabled='true' "); 
+                                                                                                             %>>  
+      </td>
+      <td>&nbsp;</td>
+    </tr>
+     <% } %>
+
         <% int revstatus = RevokedCertInfo.NOT_REVOKED;
            String value = profile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON ,0);
            if((value != null) && (((String) value).length() > 0)) {
                revstatus = (Integer.valueOf(value).intValue());
            }
         %>
-     
 	<% if( profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) { %>
-		<tr id="Row<%=(row++)%2%>">
-		<td>&nbsp;</td>
-		<td>&nbsp;</td>
-		<td>&nbsp;</td>
-		<td>&nbsp;</td>
-		</tr>
 		<tr  id="Row<%=(row++)%2%>"> 
-			<td></td><td align="right"> 
+			<td>&nbsp;</td>
+			<td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"ISSUANCEREVOCATIONREASON\") %>"/>
-			</td><td> 
+			</td>
+			<td> 
         <select name="<%= SELECT_ISSUANCEREVOCATIONREASON %>" size="1" 
         	<%	if ( !profile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) { %>
 			  disabled
@@ -1664,145 +1867,15 @@ function checkallfields(){
 					
         </select>
 			</td>
+			<td>&nbsp;</td>
 		</tr>
 	<% } %> 
-     
-     <tr id="Row<%=(row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-     </tr>
-     <tr id="Row<%=(row++)%2%>">
-	 <td></td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"CERTIFICATEPROFILE\") %>"/></td>
-	 <td>
-         <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" tabindex="<%=tabindex++%>" onchange='fillCAField()'>
-         <%
-           String[] availablecertprofiles = profile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
-           if(lastselectedcertificateprofile.equals(""))
-             lastselectedcertificateprofile= profile.getValue(EndEntityProfile.DEFAULTCERTPROFILE,0);
 
-           if( availablecertprofiles != null){
-             for(int i =0; i< availablecertprofiles.length;i++){
-         %>
-         <option value='<c:out value="<%=availablecertprofiles[i]%>"/>' <% if(lastselectedcertificateprofile.equals(availablecertprofiles[i])) out.write(" selected "); %> >
-            <c:out value="<%= rabean.getCertificateProfileName(Integer.parseInt(availablecertprofiles[i])) %>"/>
-         </option>
-         <%
-             }
-           }
-         %>
-         </select>
-         </td>
-	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
-       </tr>
-       <tr id="Row<%=(row++)%2%>">
-	 <td></td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/></td>
-	 <td>
-         <select name="<%= SELECT_CA %>" size="1" tabindex="<%=tabindex++%>">
-         </select>
-         </td>
-	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
-       </tr>
-       <tr id="Row<%=(row++)%2%>">
-	 <td></td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"TOKEN\") %>"/></td>
-	 <td>
-         <select name="<%= SELECT_TOKEN %>" size="1" tabindex="<%=tabindex++%>" onchange='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
-                                                                                             if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>'>
-         <%
-           if(lastselectedtoken.equals(""))
-             lastselectedtoken= profile.getValue(EndEntityProfile.DEFKEYSTORE,0);
-
-           if( availabletokens != null){
-             for(int i =0; i < availabletokens.length;i++){
-         %>
-         <option value='<c:out value="<%=availabletokens[i]%>"/>' <% if(lastselectedtoken.equals(availabletokens[i])) out.write(" selected "); %> >
-            <% for(int j=0; j < tokentexts.length; j++){
-                 if( tokenids[j] == Integer.parseInt(availabletokens[i])) {
-                   if( tokenids[j] > SecConst.TOKEN_SOFT)
-                     out.write(tokentexts[j]);
-                   else
-                     out.write(ejbcawebbean.getText(tokentexts[j]));
-                 }
-               }%>
-         </option>
-         <%
-             }
-           }
-         %>
-         </select>
-         </td>
-	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
-       </tr>
-       <% if(usehardtokenissuers){ %>
-       <tr id="Row<%=(row++)%2%>">
-	 <td></td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"HARDTOKENISSUER\") %>"/></td>
-	 <td>
-         <select name="<%= SELECT_HARDTOKENISSUER %>" size="1" tabindex="<%=tabindex++%>">
-         </select>
-         </td>
-	 <td></td>
-       </tr>
-       <% } %>
-       <% if(usekeyrecovery){ %>
-       <tr id="Row<%=(row++)%2%>">
-	 <td></td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"OTHERDATA\") %>"/></td>
-	 <td>
-         </td>
-	 <td></td>
-       </tr>
-       <% } %>
-       
-       <!--  Max number of allowed requests for a password -->
-       <% if(profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)){ %>
-       <% 
-           String defaultnrofrequests = profile.getValue(EndEntityProfile.ALLOWEDREQUESTS,0);
-           if (defaultnrofrequests == null) {
-        	   defaultnrofrequests = "1";
-           }
-       %>
-       <tr id="Row<%=(row++)%2%>">
-       <td></td>
-  	   <td align="right"><c:out value="<%= ejbcawebbean.getText(\"ALLOWEDREQUESTS\") %>"/></td>
-	   <td>
-            <select name="<%=SELECT_ALLOWEDREQUESTS %>" size="1" >
-	            <% for(int j=0;j< 6;j++){
-	            %>
-	            <option
-	            <%     if(defaultnrofrequests.equals(Integer.toString(j)))
-	                       out.write(" selected "); 
-	            %>
-	            value='<%=j%>'><%=j%></option>
-	            <% }%>
-            </select>
-         </td>
-       </tr>
-      <%} if(usekeyrecovery){ %>
+     <% if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
-      <td></td>
+      <td>&nbsp;</td>
       <td  align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>"/> 
-      </td>
-      <td> 
-        <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>"<% if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE))
-                                                                                                                 out.write(" CHECKED "); 
-                                                                                                               if(profile.isRequired(EndEntityProfile.KEYRECOVERABLE,0))
-                                                                                                                 out.write(" disabled='true' "); 
-                                                                                                             %>>  
-      </td>
-      <td></td>
-    </tr>
-
-     <% }if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
-    <tr  id="Row<%=(row++)%2%>"> 
-      <td></td>
-      <td  align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"SENDNOTIFICATION\") %>"/> <br>
+        <c:out value="<%= ejbcawebbean.getText(\"SENDNOTIFICATION\") %>"/>
       </td>
       <td > 
         <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE))
@@ -1811,12 +1884,13 @@ function checkallfields(){
                                                                                                                  out.write(" disabled='true' "); 
                                                                                                              %>> 
       </td>
-      <td></td>
+      <td>&nbsp;</td>
     </tr>
-        </tr>
-     <% }if(profile.getUsePrinting()){ %>
+     <% } %>
+
+     <% if(profile.getUsePrinting()){ %>
     <tr  id="Row<%=(row++)%2%>"> 
-      <td></td>
+      <td>&nbsp;</td>
       <td  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"PRINTUSERDATA\") %>"/> <br>
       </td>
@@ -1827,18 +1901,18 @@ function checkallfields(){
                                                                                                                  out.write(" disabled='true' "); 
                                                                                                              %>> 
       </td>
-      <td></td>
+      <td>&nbsp;</td>
     </tr>
 	<%	} %>
 
 
        <tr id="Row<%=(row++)%2%>">
-	 <td></td>
-	 <td></td>
+	 <td>&nbsp;</td>
+	 <td>&nbsp;</td>
 	 <td><input type="submit" name="<%= BUTTON_ADDUSER %>" value='<c:out value="<%= ejbcawebbean.getText(\"ADDENDENTITY\") %>"/>' tabindex="<%=tabindex++%>"
                     onClick='return checkallfields()'> 
              <input type="reset" name="<%= BUTTON_RESET %>" value='<c:out value="<%= ejbcawebbean.getText(\"RESET\") %>"/>' tabindex="<%=tabindex++%>"></td>
-         <td></td>
+         <td>&nbsp;</td>
        </tr> 
      </table> 
    
