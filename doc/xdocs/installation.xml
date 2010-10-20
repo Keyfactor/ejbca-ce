@@ -479,7 +479,9 @@ $ keytool -storepasswd -keystore p12/keystore.jks -storepass serverpwd -new chan
 $ keytool -changealias -keystore p12/keystore.jks -alias localhost -destalias s1as -keypass changeit -storepass changeit
 $ cp p12/keystore.jks $APPSRV_HOME/domains/domain1/config/keystore.jks
 $ bin/ejbca.sh ca getrootcert AdminCA1 p12/adminca1.der -der
-$ keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file p12/adminca1.der -storepass changeit -alias adminca1
+$ keytool -exportcert -keystore p12/truststore.jks -file p12/adminca1.der -storepass changeit -alias adminca1
+$ keytool -delete -keystore  $APPSRV_HOME/domains/domain1/config/cacerts.jks -alias adminca1
+$ keytool -importcert -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file p12/adminca1.der -storepass changeit -alias adminca1 -noprompt
     </pre><br/>
     On Glassfish Enterprise:
     <ul>
