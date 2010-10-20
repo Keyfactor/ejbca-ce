@@ -24,14 +24,23 @@ public class CmpConfiguration {
 	public static final String CONFIG_RESPONSEPROTECTION      = "cmp.responseprotection";
 	public static final String CONFIG_RACANAME				  = "cmp.ra.caname";
 
+	/**
+	 * This defines if we allows messages that has a POPO setting of raVerify. 
+	 * If this variable is true, and raVerify is the POPO defined in the message, no POPO check will be done.
+	 */
 	public static boolean getAllowRAVerifyPOPO() {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getExpandedString(CONFIG_ALLOWRAVERIFYPOPO, "false"));
 	}
 	
+	/** The default CA used for signing requests, if it is not given in the request itself. */
 	public static String getDefaultCA() {
 		return ConfigurationHolder.getString(CONFIG_DEFAULTCA, null);
 	}
 	
+	/**
+	 * Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing.
+	 * Nothing means that the DN will be used to look up the user.
+	 */
 	public static String getExtractUsernameComponent() {
 		return ConfigurationHolder.getString("cmp.extractusernamecomponent", null);
 	}

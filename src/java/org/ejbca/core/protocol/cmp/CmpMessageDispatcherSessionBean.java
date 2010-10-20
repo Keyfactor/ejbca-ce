@@ -13,14 +13,16 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERObject;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -36,6 +38,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
+import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.CryptoProviderTools;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
@@ -69,15 +72,6 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 	
-	/** This defines if we allows messages that has a POPO setting of raVerify. 
-	 * If this variable is true, and raVerify is the POPO defined in the message, no POPO check will be done.
-	 */
-	private boolean allowRaVerifyPopo = CmpConfiguration.getAllowRAVerifyPOPO();
-	/** The default CA used for signing requests, if it is not given in the request itself. */
-	private String defaultCA = CmpConfiguration.getDefaultCA();
-	/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
-	private String extractUsernameComponent = CmpConfiguration.getExtractUsernameComponent();
-	
     @EJB
 	private SignSessionLocal signSession;
 	@EJB
@@ -102,15 +96,12 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 * 
 	 * @param message der encoded CMP message as a byte array
 	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
+	 * @throws IOException 
 	 */
-	public IResponseMessage dispatch(Admin admin, byte[] derObject) {
-		DERObject arg = null;
-		try {
-			arg = ASN1Sequence.fromByteArray(derObject).getDERObject();
-		} catch (IOException e) {
-			log.error("Could not parse byte array as ASN1Sequence.", e);
-		}
-		return dispatch(admin, arg);
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	public IResponseMessage dispatch(Admin admin, byte[] ba) throws IOException {
+		DERObject derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
+		return dispatch(admin, derObject);
 	}
 
 	/** The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
@@ -149,11 +140,11 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			case 0:
 				// 0 and 2 are both certificate requests
 				handler = new CrmfMessageHandler(admin, caAdminSession,  certificateProfileSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
-				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
+				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 				break;
 			case 2:
 				handler = new CrmfMessageHandler(admin, caAdminSession, certificateProfileSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
-				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
+				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 				break;
 			case 19:
 				// PKI confirm

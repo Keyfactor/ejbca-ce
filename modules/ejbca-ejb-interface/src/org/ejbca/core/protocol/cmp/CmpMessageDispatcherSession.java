@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.IOException;
+
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 
@@ -20,5 +22,5 @@ import org.ejbca.core.protocol.IResponseMessage;
  * @version $Id$
  */
 public interface CmpMessageDispatcherSession {
-	public IResponseMessage dispatch(Admin admin, byte[] derObject);
+	public IResponseMessage dispatch(Admin admin, byte[] derObject) throws IOException;
 }

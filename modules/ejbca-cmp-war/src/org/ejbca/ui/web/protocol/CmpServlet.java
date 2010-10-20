@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERObject;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -74,16 +73,16 @@ public class CmpServlet extends HttpServlet {
 		 POST
 		 <binary CMP message>
 		 */
-		final ServletInputStream sin = request.getInputStream();
-		final DERObject message;
+		byte[] ba = new byte[Math.min(LimitLengthASN1Reader.MAX_REQUEST_SIZE, request.getContentLength())];
 		try {
-			message = new LimitLengthASN1Reader(sin, request.getContentLength()).readObject();
-		} catch ( Exception e ) {
+			final ServletInputStream sin = request.getInputStream();
+			sin.read(ba);
+		} catch (Exception e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 			log.error( intres.getLocalizedMessage("cmp.errornoasn1"), e );
 			return;
 		}
-		service(message, request.getRemoteAddr(), response);
+		service(ba, request.getRemoteAddr(), response);
 		log.trace("<doPost()");
 	}
 	
@@ -103,12 +102,19 @@ public class CmpServlet extends HttpServlet {
 		log.trace("<doGet()");
 	}
 
-	private void service(DERObject message, String remoteAddr, HttpServletResponse response) throws IOException {
+	private void service(byte[] ba, String remoteAddr, HttpServletResponse response) throws IOException {
 		try {
 			// We must use an administrator with rights to create users
 			final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
 			log.info( intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr) );
-			final IResponseMessage resp = cmpMessageDispatcherLocal.dispatch(administrator, message.getDEREncoded());
+			final IResponseMessage resp;
+			try {
+				resp = cmpMessageDispatcherLocal.dispatch(administrator, ba);
+			} catch (IOException e) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+				log.error( intres.getLocalizedMessage("cmp.errornoasn1"), e );
+				return;
+			} 
 			if ( resp==null ) { // If resp is null, it means that the dispatcher failed to process the message.
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, intres.getLocalizedMessage("cmp.errornullresp"));
 				return;

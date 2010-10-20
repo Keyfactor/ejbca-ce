@@ -60,16 +60,25 @@ public class CrmfRARequestTest extends CmpTestCase {
     final private X509Certificate cacert;
 
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
-    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     public CrmfRARequestTest(String arg0) throws CertificateEncodingException, CertificateException, RemoteException {
         super(arg0);
         // Configure CMP for this test
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
+        log.info("Current server configuration:");
+        log.info("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, null));
+        log.info("    " + CmpConfiguration.CONFIG_DEFAULTCA + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_DEFAULTCA, null));
+        log.info("    " + CmpConfiguration.CONFIG_OPERATIONMODE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_OPERATIONMODE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RACANAME + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RACANAME, null));
+        log.info("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, null));
 
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         CryptoProviderTools.installBCProvider();
@@ -211,7 +220,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                 "signsession.subjectdn_exists_for_another_user", "'AdminCA1'", "'SYSTEMCA'"));
         String hostname;
 
-        hostname = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
+        hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
 
         crmfHttpUserTest("CN=" + hostname + ",O=EJBCA Sample,C=SE", key4, InternalResources.getInstance().getLocalizedMessage(
                 "signsession.subjectdn_exists_for_another_user", "'" + hostname + "'", "'tomcat'"));
@@ -229,6 +238,8 @@ public class CrmfRARequestTest extends CmpTestCase {
     }
 
     public void testZZZCleanUp() throws Exception {
-        configurationSessionRemote.restoreConfiguration();
+    	log.trace(">testZZZCleanUp");
+        assertTrue("Unable to restore server configuration.", configurationSession.restoreConfiguration());
+    	log.trace("<testZZZCleanUp");
     }
 }

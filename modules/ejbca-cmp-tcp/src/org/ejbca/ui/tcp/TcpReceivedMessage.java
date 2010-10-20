@@ -18,9 +18,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERObject;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.Base64;
 
 /**
@@ -41,13 +39,13 @@ public class TcpReceivedMessage {
 	/**
 	 * the message from the client decoded from ASN1
 	 */
-	public final DERObject message;
+	public final byte[] message;
 
 	private TcpReceivedMessage() { // this notifies an error
 		this.doClose = true;
 		this.message = null;
 	}
-	private TcpReceivedMessage( boolean close, DERObject message) { // message OK
+	private TcpReceivedMessage( boolean close, byte[] message) { // message OK
 		this.doClose = close;
 		this.message = message;
 	}
@@ -100,7 +98,9 @@ public class TcpReceivedMessage {
 		}
 		// The CMP message is the rest of the stream that has not been read yet.
 		try {
-			return new TcpReceivedMessage( (flags&0x01)>0, new LimitLengthASN1Reader(dis, command.length-cmpMessageStartOffset).readObject() );
+			byte[] ba = new byte[command.length-cmpMessageStartOffset];
+			dis.read(ba);
+			return new TcpReceivedMessage( (flags&0x01)>0, ba);
 		} catch( Throwable e ) {
 			log.error( intres.getLocalizedMessage("cmp.errornoasn1"), e );
 			return new TcpReceivedMessage();

@@ -151,6 +151,15 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
         configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
         configurationSession.updateProperty(CmpConfiguration.CONFIG_RACANAME, cainfo.getName());
+        log.info("Current server configuration:");
+        log.info("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, null));
+        log.info("    " + CmpConfiguration.CONFIG_DEFAULTCA + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_DEFAULTCA, null));
+        log.info("    " + CmpConfiguration.CONFIG_OPERATIONMODE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_OPERATIONMODE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RACANAME + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RACANAME, null));
+        log.info("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, null));
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
         if (certificateProfileSession.getCertificateProfile(admin, CPNAME) == null) {
@@ -407,14 +416,22 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     } // test04RevocationApprovals
 
     public void testZZZCleanUp() throws Exception {
-        try {
-            userAdminSession.deleteUser(admin, "cmptest");
-        } catch (NotFoundException e) {
-            // A test probably failed before creating the entity
-        }
-        endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
-        certificateProfileSession.removeCertificateProfile(admin, CPNAME);
-        configurationSession.restoreConfiguration();
+    	log.trace(">testZZZCleanUp");
+    	boolean cleanUpOk = true;
+		try {
+			userAdminSession.deleteUser(admin, "cmptest");
+		} catch (NotFoundException e) {
+			// A test probably failed before creating the entity
+        	log.error("Failed to delete user \"cmptest\".");
+        	cleanUpOk = false;
+		}
+		endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
+		certificateProfileSession.removeCertificateProfile(admin, CPNAME);
+		if (!configurationSession.restoreConfiguration()) {
+			cleanUpOk = false;
+		}
+        assertTrue("Unable to clean up properly.", cleanUpOk);
+    	log.trace("<testZZZCleanUp");
     }
 
     /**
