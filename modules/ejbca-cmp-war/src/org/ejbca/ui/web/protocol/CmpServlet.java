@@ -108,7 +108,7 @@ public class CmpServlet extends HttpServlet {
 			// We must use an administrator with rights to create users
 			final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
 			log.info( intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr) );
-			final IResponseMessage resp = cmpMessageDispatcherLocal.dispatch(administrator, message.getEncoded());
+			final IResponseMessage resp = cmpMessageDispatcherLocal.dispatch(administrator, message.getDEREncoded());
 			if ( resp==null ) { // If resp is null, it means that the dispatcher failed to process the message.
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, intres.getLocalizedMessage("cmp.errornullresp"));
 				return;

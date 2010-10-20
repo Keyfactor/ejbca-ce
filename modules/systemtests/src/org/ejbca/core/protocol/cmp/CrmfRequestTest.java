@@ -146,14 +146,7 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotNull(resp);
         assertTrue(resp.length > 0);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
-        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects
-        // a
-        // CertificateResponse
-        // (reject)
-        // message
-        // with
-        // error
-        // FailInfo.INCORRECT_DATA
+        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
     }
 
     public void test02CrmfHttpOkUser() throws Exception {
@@ -213,9 +206,7 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test03BlueXCrmf() throws Exception {
         byte[] resp = sendCmpHttp(bluexir, 200);
         assertNotNull(resp);
-        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4
-        // is
-        // BAD_REQUEST
+        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4=BAD_REQUEST, 512=BAD_POP, 64=WRONG_AUTHORITY
     }
 
     public void test04BadBytes() throws Exception {

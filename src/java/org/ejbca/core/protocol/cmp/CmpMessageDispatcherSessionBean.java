@@ -106,7 +106,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	public IResponseMessage dispatch(Admin admin, byte[] derObject) {
 		DERObject arg = null;
 		try {
-			arg = ASN1Sequence.fromByteArray(derObject);
+			arg = ASN1Sequence.fromByteArray(derObject).getDERObject();
 		} catch (IOException e) {
 			log.error("Could not parse byte array as ASN1Sequence.", e);
 		}
