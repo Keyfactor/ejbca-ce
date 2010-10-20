@@ -1906,6 +1906,8 @@ function checkallfields(){
 	<%	} %>
 
 
+    <!-- ---------- Form buttons -------------------- -->
+
        <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
