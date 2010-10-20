@@ -41,6 +41,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -108,9 +109,20 @@ public class CrmfRequestTest extends CmpTestCase {
             log.error("NO CACERT for caid " + caid);
         }
         issuerDN = cacert.getIssuerDN().getName();
+        log.debug("issuerDN: " + issuerDN);
+        log.debug("caid: " + caid);
         configurationSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         configurationSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
         configurationSession.updateProperty(CmpConfiguration.CONFIG_DEFAULTCA, issuerDN);
+        log.info("Current server configuration:");
+        log.info("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, null));
+        log.info("    " + CmpConfiguration.CONFIG_DEFAULTCA + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_DEFAULTCA, null));
+        log.info("    " + CmpConfiguration.CONFIG_OPERATIONMODE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_OPERATIONMODE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RACANAME + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RACANAME, null));
+        log.info("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, null));
     }
 
     public void setUp() throws Exception {
@@ -125,6 +137,7 @@ public class CrmfRequestTest extends CmpTestCase {
     }
 
     public void test01CrmfHttpUnknowUser() throws Exception {
+    	log.trace(">test01CrmfHttpUnknowUser");
         // A name that does not exist
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -147,10 +160,11 @@ public class CrmfRequestTest extends CmpTestCase {
         assertTrue(resp.length > 0);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
+    	log.trace("<test01CrmfHttpUnknowUser");
     }
 
     public void test02CrmfHttpOkUser() throws Exception {
-
+    	log.trace(">test02CrmfHttpOkUser");
         // Create a new good user
         createCmpUser();
 
@@ -201,15 +215,19 @@ public class CrmfRequestTest extends CmpTestCase {
         assertTrue(resp.length > 0);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
         checkCmpFailMessage(resp, "No PKI protection to verify.", 23, reqId, 1);
+    	log.trace("<test02CrmfHttpOkUser");
     }
 
     public void test03BlueXCrmf() throws Exception {
+    	log.trace(">test03BlueXCrmf");
         byte[] resp = sendCmpHttp(bluexir, 200);
         assertNotNull(resp);
         checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4=BAD_REQUEST, 512=BAD_POP, 64=WRONG_AUTHORITY
+    	log.trace("<test03BlueXCrmf");
     }
 
     public void test04BadBytes() throws Exception {
+    	log.trace(">test04BadBytes");
         byte[] msg = bluexir;
         // Change some bytes to make the message bad
         msg[10] = 0;
@@ -220,10 +238,24 @@ public class CrmfRequestTest extends CmpTestCase {
         // Bad request will return HTTP 400 (bad request)
         byte[] resp = sendCmpHttp(msg, 400);
         assertNull(resp);
+    	log.trace("<test04BadBytes");
     }
 
     public void testZZZCleanUp() throws Exception {
-        configurationSession.restoreConfiguration();
+    	log.trace(">testZZZCleanUp");
+    	boolean cleanUpOk = true;
+		try {
+			userAdminSession.deleteUser(admin, "cmptest");
+		} catch (NotFoundException e) {
+			// A test probably failed before creating the entity
+        	log.error("Failed to delete user \"cmptest\".");
+        	cleanUpOk = false;
+		}
+		if (!configurationSession.restoreConfiguration()) {
+			cleanUpOk = false;
+		}
+        assertTrue("Unable to clean up properly.", cleanUpOk);
+    	log.trace("<testZZZCleanUp");
     }
 
     //

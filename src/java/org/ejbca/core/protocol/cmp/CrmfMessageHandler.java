@@ -214,7 +214,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						}
 						crmfreq.setUsername(data.getUsername());
 					} else {
-						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn");
+						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
 						LOG.info(errMsg);
 					}
 				}

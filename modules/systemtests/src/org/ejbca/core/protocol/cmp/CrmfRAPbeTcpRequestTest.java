@@ -78,7 +78,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private static X509Certificate cacert = null;
     
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
-    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -117,12 +117,21 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         }
         issuerDN = cacert.getIssuerDN().getName();
         // Configure CMP for this test
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
-        configurationSessionRemote.updateProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
+        configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
+        log.info("Current server configuration:");
+        log.info("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, null));
+        log.info("    " + CmpConfiguration.CONFIG_DEFAULTCA + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_DEFAULTCA, null));
+        log.info("    " + CmpConfiguration.CONFIG_OPERATIONMODE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_OPERATIONMODE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RACANAME + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RACANAME, null));
+        log.info("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, null));
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override".
         if (certificateProfileSession.getCertificateProfile(admin, CPNAME) == null) {
             CertificateProfile cp = new EndUserCertificateProfile();
@@ -218,14 +227,22 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 	}
 
 	public void testZZZCleanUp() throws Exception {
+    	log.trace(">testZZZCleanUp");
+    	boolean cleanUpOk = true;
 		try {
 			userAdminSession.deleteUser(admin, "cmptest");
 		} catch (NotFoundException e) {
 			// A test probably failed before creating the entity
+        	log.error("Failed to delete user \"cmptest\".");
+        	cleanUpOk = false;
 		}
 		endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
 		certificateProfileSession.removeCertificateProfile(admin, CPNAME);
-		configurationSessionRemote.restoreConfiguration();
+		if (!configurationSession.restoreConfiguration()) {
+			cleanUpOk = false;
+		}
+        assertTrue("Unable to clean up properly.", cleanUpOk);
+    	log.trace("<testZZZCleanUp");
 	}
 	
 

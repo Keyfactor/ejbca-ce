@@ -45,6 +45,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.Base64;
@@ -118,6 +119,15 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         configurationSession.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
         configurationSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
         configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
+        log.info("Current server configuration:");
+        log.info("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, null));
+        log.info("    " + CmpConfiguration.CONFIG_DEFAULTCA + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_DEFAULTCA, null));
+        log.info("    " + CmpConfiguration.CONFIG_OPERATIONMODE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_OPERATIONMODE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, null));
+        log.info("    " + CmpConfiguration.CONFIG_RACANAME + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RACANAME, null));
+        log.info("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, null));
     }
 
     public void setUp() throws Exception {
@@ -294,7 +304,27 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     }
 
     public void testZZZCleanUp() throws Exception {
-        configurationSession.restoreConfiguration();
+    	log.trace(">testZZZCleanUp");
+    	boolean cleanUpOk = true;
+		try {
+			userAdminSession.deleteUser(admin, "cmptest");
+		} catch (NotFoundException e) {
+			// A test probably failed before creating the entity
+        	log.error("Failed to delete user \"cmptest\".");
+        	cleanUpOk = false;
+		}
+		try {
+			userAdminSession.deleteUser(admin, "Some Common Name");
+		} catch (NotFoundException e) {
+			// A test probably failed before creating the entity
+        	log.error("Failed to delete user \"Some Common Name\".");
+        	cleanUpOk = false;
+		}
+		if (!configurationSession.restoreConfiguration()) {
+			cleanUpOk = false;
+		}
+        assertTrue("Unable to clean up properly.", cleanUpOk);
+    	log.trace("<testZZZCleanUp");
     }
 
     //
