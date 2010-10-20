@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.util;
 
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -36,7 +35,6 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
-import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSession;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionRemote;
 
 /**
