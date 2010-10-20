@@ -647,7 +647,7 @@ by the responder, since it's unclear if they do conflict as defined in RFC 2395 
   </p><p>
 Not all web-product handles the encoded '/' (%2F) nicely. JBoss/Tomcat has to be started with
 <code>-Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true</code> added to JAVA_OPT in
-JBOSS_HOME/bin/run.conf.
+JBOSS_HOME/bin/run.conf. On Glassfish this JVM option is configured under Application Server Settings.
   </p>
   </section>
 
