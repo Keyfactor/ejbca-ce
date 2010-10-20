@@ -497,6 +497,7 @@ $ keytool -importcert -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks 
     Import $EJBCA_HOME/p12/superadmin.p12 in your browser and go to url:<br/>
       https://127.0.0.1:8181/ejbca/<br/>
     You can now click "Administration" to get to the admin-GUI.</li>
+<li>(Optional) Change how often EJBCA Service can run: Configuration -> EJB Container -> EJB Timer Service -> Minimum Delivery Interval: 1000. Restart application server. (This can also be changed using the "minimum-delivery-interval-in-millis" attribute in the domain.xml-file.)</li>
 </ol>
 </p>    
 </subsubsection>
