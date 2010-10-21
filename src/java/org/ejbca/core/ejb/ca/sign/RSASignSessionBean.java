@@ -135,7 +135,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // Set up the serial number generator for Certificate Serial numbers
             // The serial number generator is a Singleton, so it can be initialized here and 
             // used by X509CA
-        	String randomAlgorithm = EjbcaConfiguration.getRNGAlgorithm();
+            SernoGenerator.instance().setAlgorithm(EjbcaConfiguration.getRNGAlgorithm());
             SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());            	
             if ( isUniqueCertificateSerialNumberIndex==null ) {
             	isUniqueCertificateSerialNumberIndex = new Boolean( testUniqueCertificateSerialNumberIndex() );
