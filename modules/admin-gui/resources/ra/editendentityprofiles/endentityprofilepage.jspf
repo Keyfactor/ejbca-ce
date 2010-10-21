@@ -653,7 +653,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%=CHECKBOX_VALUE %>" onclick='checkemailfield("<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>")'
            <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
                  out.write("CHECKED");
-           %>>&nbsp;<%=ejbcawebbean.getText("SEEEMAILCONFIGURATION") %>
+           %>> &nbsp; <%=ejbcawebbean.getText("SEEEMAILCONFIGURATION") %>
         <% }%>
       </td>
     </tr>
