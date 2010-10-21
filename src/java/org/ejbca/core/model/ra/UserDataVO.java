@@ -22,6 +22,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.dn.DNFieldsUtil;
 
 
 /**
@@ -146,7 +147,9 @@ public class UserDataVO implements Serializable {
     
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.strip(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
-    public void setDN(String dn) {this.subjectDN=StringTools.putBase64String(dn);}
+    public void setDN(String dn) {
+        this.subjectDN=StringTools.putBase64String(DNFieldsUtil.removeTrailingEmpties(dn));
+    }
     public String getDN() {return StringTools.getBase64String(subjectDN);}
     public int getCAId(){return this.caid;}
     public void setCAId(int caid){this.caid=caid;}
@@ -290,10 +293,9 @@ public class UserDataVO implements Serializable {
      * Removes all emtpty fields of the DN.
      * 'CN=Hej Svejs,OU=,OU=abra,OU=' will be just 'CN=Hej Svejs,OU=abra'
      * @return the DN to be used when creating a certificate.
+     * @throws Exception 
      */
-    public String getCertificateDN() {
-        final String userDN = getDN();
-        final String tmp = userDN.replaceAll("[a-zA-Z]*=[,$]","");
-        return tmp.replaceAll(",$", "");
+    public String getCertificateDN() throws Exception {
+        return DNFieldsUtil.removeAllEmpties(getDN());
     }
 }

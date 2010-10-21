@@ -260,6 +260,8 @@
 					<!-- Key Recovery approval requests.. org.ejbca.core.model.keyrecovery.approvalrequests would be a better location for this -->
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/KeyRecoveryApprovalRequest.java"/>
 				</fileset>
+    			<include name="org/ejbca/util/dn/DNFieldsUtil.java"/>
+    			<include name="org/ejbca/util/dn/DNFields.java"/>
 			</copy>
 			<javac srcdir="${src-temp.dir}/approval" destdir="${build-temp.dir}/approval" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
@@ -294,6 +296,8 @@
 					<include name="org/ejbca/util/TCPTool.java"/>
 					<!-- Use by the OCSP Publisher -->
 					<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
+    			<include name="org/ejbca/util/dn/DNFieldsUtil.java"/>
+    			<include name="org/ejbca/util/dn/DNFields.java"/>
 					<!-- RA classes that maybe shouldn't be here.. -->
 					<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
 					<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
@@ -431,6 +435,8 @@
 			<!-- CA and Certificate Extensions component -->
 			<echo message=" ** Validating component: CA and Certificate Extensions **"/>
 			<mkdir dir="${src-temp.dir}/ca"/>
+    			<include name="org/ejbca/util/dn/DNFieldsUtil.java"/>
+    			<include name="org/ejbca/util/dn/DNFields.java"/>
 			<mkdir dir="${build-temp.dir}/ca"/>
 			<copy todir="${src-temp.dir}/ca">
 				<fileset dir="${src.dir}">
