@@ -105,8 +105,8 @@ public class ServiceServiceTest extends CaTestCase {
         
         addAndActivateService(TEST01_SERVICE, config, TESTCA1);
         
-        // The service will run...since there is a random delay of 30 seconds we have to wait a long time
-        Thread.sleep(35000);
+        // The service will run...
+        Thread.sleep(7*1000);
         
         assertTrue("Service should have run", hasServiceRun(username));
         
@@ -130,8 +130,8 @@ public class ServiceServiceTest extends CaTestCase {
         
         addAndActivateService(TEST02_SERVICE, config, TESTCA2);
         
-        // The service will run...since there is a random delay of 30 seconds we have to wait a long time
-        Thread.sleep(35000);
+        // The service will run...
+        Thread.sleep(7*1000);
         
         assertFalse("Service should not have run", hasServiceRun(username));
         
@@ -156,8 +156,8 @@ public class ServiceServiceTest extends CaTestCase {
         
         addAndActivateService(TEST03_SERVICE, config, TESTCA3);
         
-        // The service will run...since there is a random delay of 30 seconds we have to wait a long time
-        Thread.sleep(35000);
+        // The service will run...
+        Thread.sleep(7*1000);
         
         assertTrue("Service should have run", hasServiceRun(username));
         
