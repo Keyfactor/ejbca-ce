@@ -1386,7 +1386,7 @@ function checkallfields(){
            <% }
             }
             else{ %>
-              <c:out value="<%= ejbcawebbean.getText(\"USESEMAILFIELDDATA\")+ \" :\"%>"/>&nbsp;
+              <c:out value="<%= ejbcawebbean.getText(\"USESEMAILFIELDDATA\") %>"/>
         <input type="checkbox" name="<%=CHECKBOX_SUBJECTDN + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
                                                                                                                  out.write(" CHECKED "); 
                                                                                                                if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
@@ -1401,19 +1401,26 @@ function checkallfields(){
 
     <!-- ---------- Other subject attributes -------------------- -->
 
-    <tr id="Row<%=(row++)%2%>">
-	<td>&nbsp;</td>
-	<td align="right" class="title">
-	  <strong><c:out value="<%= ejbcawebbean.getText(\"OTHERSUBJECTATTR\") %>"/></strong>
-	</td>
-	<td>&nbsp;</td>
-	<td>&nbsp;</td>
-    </tr>
-
-     <%  
+    <%  
         int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
+		int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
+    %> 
+	<%	if ( numberofsubjectaltnamefields > 0
+		  || numberofsubjectdirattrfields > 0
+		   ) { %>
+	    <tr id="Row<%=(row++)%2%>">
+		<td>&nbsp;</td>
+		<td align="right" class="title">
+		  <strong><c:out value="<%= ejbcawebbean.getText(\"OTHERSUBJECTATTR\") %>"/></strong>
+		</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	    </tr>
+	<%	} %>
+
+    <%  
         if(numberofsubjectaltnamefields > 0){
-     %> 
+    %> 
     <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
 	<td align="right">
@@ -1435,7 +1442,7 @@ function checkallfields(){
 		<%	if( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME ) ) {
 				// Handle RFC822NAME separately
             	if ( profile.getUse(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) { %>
-					<c:out value="<%= ejbcawebbean.getText(\"USESEMAILFIELDDATA\") + \" :\"%>"/>&nbsp;
+					<c:out value="<%= ejbcawebbean.getText(\"USESEMAILFIELDDATA\") %>"/>
 					<input type="checkbox" name="<%=CHECKBOX_SUBJECTALTNAME + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>"
 					<%	if ( profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) { %>
 							CHECKED disabled="true"
@@ -1456,7 +1463,7 @@ function checkallfields(){
 						value='<c:out value="<%= rfc822NameArray[0] %>"/>' /> @
 				<%	}
             		if ( modifyable ) { %>
-					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>"
+					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"
 						value='<c:out value="<%= rfc822NameArray[1] %>"/>' />
 				<%	} else {
 						String[] options = rfc822NameString.split(EndEntityProfile.SPLITCHAR);
@@ -1511,7 +1518,7 @@ function checkallfields(){
      <%  } %>
    <%  } %>
 
-    <%  int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
+    <%  
         if(numberofsubjectdirattrfields > 0){
     %> 
     <tr id="Row<%=(row++)%2%>">
