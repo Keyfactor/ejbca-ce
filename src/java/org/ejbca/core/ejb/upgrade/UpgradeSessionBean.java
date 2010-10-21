@@ -476,7 +476,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 		boolean exists = false;
 		try {
 			final PreparedStatement stmt = connection.prepareStatement("select rowVersion from PublisherQueueData where pk='foo'");
-			final ResultSet rs = stmt.executeQuery();
+			stmt.executeQuery();
 			// If it did not throw an exception the column exists and we do not want to run the post upgrade sql
 			exists = true; 
 			log.info("rowVersion column already exists in PublisherQueueData");
