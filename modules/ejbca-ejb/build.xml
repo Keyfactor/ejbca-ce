@@ -425,7 +425,7 @@
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 			<antcall target="test-subprocess">
-				<param name="test-subprocess.include-pattern" value="org/ejbca/core/util/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/ejbca/util/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 			<antcall target="test-subprocess">
