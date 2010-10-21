@@ -121,6 +121,10 @@ public class HttpMethodsTest extends TestCase {
             log.info("OPTIONS response contains: " + nextLine);
             if (nextLine.startsWith("Allow:")) {
                 allowsHttpOptions = true;
+        		break;
+        	} else if (nextLine.equals("")) {
+        		log.debug("Got a pure newline.. we only care about the hearders to skipping the rest..");
+        		break;
             }
         }
         socket.close();
