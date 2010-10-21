@@ -412,6 +412,32 @@
     	<property name="reports.dir" location="${reports.base.dir}/test"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
+		<!-- Sequential run of standalone tests.. The old and slow way of doing this.. =)
+		<antcall target="test-subprocess">
+			<param name="test-subprocess.include-pattern" value="**/*Test.class" />
+			<param name="test-subprocess.exclude-pattern" value="" />
+		</antcall>
+		-->
+		<echo message=" ** Running stand-alone tests in two parallel chunks. Console output will be a bit scrambled.. **"/>
+		<parallel>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="" />
+			</antcall>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/ejbca/core/util/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="" />
+			</antcall>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/*Test.class" />
+			</antcall>
+		</parallel>
+		<antcall target="createreport"/>
+    	<antcall target="showtime"/>
+    </target>
+
+	<target name="test-subprocess">
 		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
@@ -419,12 +445,10 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*Test.class" />
+				<fileset dir="${build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
-    	<antcall target="showtime"/>
-    </target>
+	</target>
 	
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
