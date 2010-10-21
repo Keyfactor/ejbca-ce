@@ -19,7 +19,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -79,7 +78,7 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
     }
     
     /**
-     * @throws NonUniqueResultException
+     * @throws javax.persistence.NonUniqueResultException
      *             if more than one entity with the name exists
      * @return the found entity instance or null if the entity does not exist
      */
