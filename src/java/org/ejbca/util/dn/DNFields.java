@@ -109,7 +109,7 @@ class DNFields {
                 sReturn +=',';
             }
             final Field next = i.next();
-            sReturn += next.key+'='+next.value;
+            sReturn += next.key+'='+(next.value!=null ? next.value : "");
         }
         return sReturn;
     }
