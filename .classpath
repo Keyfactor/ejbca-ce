@@ -52,7 +52,6 @@
 	<classpathentry kind="lib" path="lib/batik/xml-apis-ext.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-3.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/htmlunit-1.14.jar"/>
-	<classpathentry kind="lib" path="lib/ext/servlet-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/mail.jar"/>
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
@@ -74,6 +73,7 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-j2se.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-kernel.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-javaee.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/common/lib/servlet-api.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.5.jar"/>
