@@ -23,20 +23,16 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
@@ -68,28 +64,26 @@ import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Tests the ca data entity bean.
- * 
+ *
  * @version $Id$
  */
 public class CAsTest extends CaTestCase {
-
+    
     private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
-
+    
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-
+    
     private static Collection rootcacertchain = null;
 
-    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
-    private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
+    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-
+    
     /**
      * Creates a new CAsTest object.
-     * 
-     * @param name
-     *            name
+     *
+     * @param name name
      */
     public CAsTest(String name) {
         super(name);
@@ -117,9 +111,8 @@ public class CAsTest extends CaTestCase {
         boolean ret = false;
         try {
             removeTestCA(); // We cant be sure this CA was not left over from
-            // some other failed test
-            adminEntitySession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+                            // some other failed test
+            authorizationSession.initialize(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
@@ -178,8 +171,8 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not EC", false);
             }
-            assertTrue("CA is not valid for the specified duration.", cert.getNotAfter().after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+            assertTrue("CA is not valid for the specified duration.", cert.getNotAfter()
+                    .after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
                     && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             ret = true;
 
@@ -244,15 +237,10 @@ public class CAsTest extends CaTestCase {
      *             error
      */
     public void test04AddECDSACA() throws Exception {
-   
-        
-        
-        
-        
+        log.trace(">test04AddECDSACA()");
         boolean ret = false;
         try {
-            adminEntitySession.init(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("prime192v1");
@@ -270,8 +258,7 @@ public class CAsTest extends CaTestCase {
             ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA", "TESTECDSA", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA,
-                    365, null, // Expiretime
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA", "TESTECDSA", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -299,9 +286,6 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true // useCertReqHistory
             );
-            
-            removeOldCa("TESTECDSA");
-            
 
             caAdminSessionRemote.createCA(admin, cainfo);
 
@@ -325,10 +309,10 @@ public class CAsTest extends CaTestCase {
             ret = true;
         } catch (CAExistsException pee) {
             log.info("CA exists.");
-            fail("Creating ECDSA CA failed because CA exists.");
         }
 
         assertTrue("Creating ECDSA CA failed", ret);
+        log.trace("<test04AddECDSACA()");
     }
 
     /**
@@ -342,12 +326,8 @@ public class CAsTest extends CaTestCase {
     public void test05AddECDSAImplicitlyCACA() throws Exception {
         log.trace(">test05AddECDSAImplicitlyCACA()");
         boolean ret = false;
-       
-        removeOldCa("TESTECDSAImplicitlyCA");
-        
         try {
-            adminEntitySession.init(admin, "CN=TESTECDSAImplicitlyCA".hashCode(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, "CN=TESTECDSAImplicitlyCA".hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, "CN=TESTECDSAImplicitlyCA".hashCode(), DEFAULT_SUPERADMIN_CN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("implicitlyCA");
@@ -360,8 +340,8 @@ public class CAsTest extends CaTestCase {
             ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
-            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTECDSAImplicitlyCA",
-                    "", "prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA));
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTECDSAImplicitlyCA", "",
+                    "prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA));
 
             ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
@@ -433,14 +413,11 @@ public class CAsTest extends CaTestCase {
      */
     public void test06AddRSASha256WithMGF1CA() throws Exception {
         log.trace(">test06AddRSASha256WithMGF1CA()");
-        
-        removeOldCa("TESTSha256WithMGF1");
-        
         boolean ret = false;
         try {
             String cadn = "CN=TESTSha256WithMGF1";
-            adminEntitySession.init(admin, cadn.hashCode(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, cadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+
+            authorizationSession.initialize(admin, cadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
@@ -455,8 +432,7 @@ public class CAsTest extends CaTestCase {
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + cadn, "", "1024",
                     AlgorithmConstants.KEYALGORITHM_RSA));
 
-            X509CAInfo cainfo = new X509CAInfo(cadn, "TESTSha256WithMGF1", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA,
-                    365, null, // Expiretime
+            X509CAInfo cainfo = new X509CAInfo(cadn, "TESTSha256WithMGF1", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -512,15 +488,11 @@ public class CAsTest extends CaTestCase {
 
     public void test07AddRSACA4096() throws Exception {
         log.trace(">test07AddRSACA4096()");
-        
-        removeOldCa("TESTRSA4096");
-        
         boolean ret = false;
         try {
             String dn = CertTools
                     .stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
-            adminEntitySession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("4096");
@@ -608,16 +580,12 @@ public class CAsTest extends CaTestCase {
     }
 
     public void test08AddRSACAReverseDN() throws Exception {
-        
-        removeOldCa("TESTRSAREVERSE");
-        
         log.trace(">test08AddRSACAReverseDN()");
         boolean ret = false;
         try {
             String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
             String name = "TESTRSAREVERSE";
-            adminEntitySession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
@@ -703,11 +671,6 @@ public class CAsTest extends CaTestCase {
     }
 
     public void test09AddCVCCARSA() throws Exception {
-        removeOldCa("TESTDV-D");
-        removeOldCa("TESTCVCA");
-        removeOldCa("TESTDV-F");
-        certificateProfileSession.removeCertificateProfile(admin, "TESTCVCDV");
-        
         boolean ret = false;
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec("1024");
@@ -731,8 +694,7 @@ public class CAsTest extends CaTestCase {
 
         // Create a root CVCA
         try {
-            adminEntitySession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -789,7 +751,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
             // Create a Certificate profile
             CertificateProfile profile = new CACertificateProfile();
             profile.setType(CertificateProfile.TYPE_SUBCA);
@@ -840,8 +802,7 @@ public class CAsTest extends CaTestCase {
             assertEquals("SETESTDV-D00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
             assertEquals("DV_D", role);
-            String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight()
-                    .name();
+            String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
             assertEquals("READ_ACCESS_DG3_AND_DG4", accessRights);
             ret = true;
         } catch (CAExistsException pee) {
@@ -852,7 +813,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -900,8 +861,7 @@ public class CAsTest extends CaTestCase {
             assertEquals("DV_F", role);
             ret = true;
         } catch (CAExistsException pee) {
-            log.info("CVC CA exists.");
-            fail("CVC CA exists");
+            log.info("CA exists.");
         }
         assertTrue("Creating CVC CAs failed", ret);
 
@@ -926,8 +886,7 @@ public class CAsTest extends CaTestCase {
         CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
         String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
         assertEquals("DV_D", role);
-        String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight()
-                .name();
+        String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
         assertEquals("READ_ACCESS_DG3", accessRights);
 
         // Make a certificate request from a CVCA
@@ -1009,10 +968,6 @@ public class CAsTest extends CaTestCase {
      * @throws Exception
      */
     public void test10AddCVCCAECC() throws Exception {
-        removeOldCa("TESTCVCAECC");
-        removeOldCa("TESTDVECC-D");
-        removeOldCa("TESTDVECC-F");
-        
         boolean ret = false;
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignKeySpec("secp256r1");
@@ -1036,8 +991,7 @@ public class CAsTest extends CaTestCase {
 
         // Create a root CVCA
         try {
-            adminEntitySession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -1093,7 +1047,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
             CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1126,8 +1080,8 @@ public class CAsTest extends CaTestCase {
                 assertEquals(epk.getAlgorithm(), "ECDSA");
                 int len = KeyTools.getKeyLength(epk);
                 assertEquals(0, len); // the DVCA does not include all EC
-                // parameters in the public key, so we
-                // don't know the key length
+                                      // parameters in the public key, so we
+                                      // don't know the key length
             } else {
                 assertTrue("Public key is not ECC", false);
             }
@@ -1139,8 +1093,7 @@ public class CAsTest extends CaTestCase {
             assertEquals("SETDVEC-D00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
             assertEquals("DV_D", role);
-            String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight()
-                    .name();
+            String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
             assertEquals("READ_ACCESS_DG3_AND_DG4", accessRights);
             ret = true;
         } catch (CAExistsException pee) {
@@ -1150,7 +1103,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -1184,8 +1137,8 @@ public class CAsTest extends CaTestCase {
                 assertEquals(epk.getAlgorithm(), "ECDSA");
                 int len = KeyTools.getKeyLength(epk);
                 assertEquals(0, len); // the DVCA does not include all EC
-                // parameters in the public key, so we
-                // don't know the key length
+                                      // parameters in the public key, so we
+                                      // don't know the key length
             } else {
                 assertTrue("Public key is not ECC", false);
             }
@@ -1228,8 +1181,7 @@ public class CAsTest extends CaTestCase {
         CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
         String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
         assertEquals("DV_D", role);
-        String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight()
-                .name();
+        String accessRights = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight().name();
         assertEquals("READ_ACCESS_DG3_AND_DG4", accessRights);
 
         // Make a certificate request from a DV, regenerating keys
@@ -1330,13 +1282,10 @@ public class CAsTest extends CaTestCase {
      * @throws Exception
      */
     public void test11RSASignedByExternal() throws Exception {
-        removeOldCa("TESTSIGNEDBYEXTERNAL");
-        
         boolean ret = false;
         CAInfo info = null;
         try {
-            adminEntitySession.init(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode(), DEFAULT_SUPERADMIN_CN);
+            authorizationSession.initialize(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode(), DEFAULT_SUPERADMIN_CN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
@@ -1348,17 +1297,17 @@ public class CAsTest extends CaTestCase {
             // Create and active OSCP CA Service.
             ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL",
-                    "", "1024", AlgorithmConstants.KEYALGORITHM_RSA));
-            extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL", "",
-                    "1024", AlgorithmConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL", "", "1024",
+                    AlgorithmConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL", "", "1024",
+                    AlgorithmConstants.KEYALGORITHM_RSA));
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", SecConst.CA_ACTIVE, new Date(), "",
                     SecConst.CERTPROFILE_FIXED_SUBCA, 1000, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by
-                    // the first
-                    // TEST CA we
-                    // created
+                                                                   // the first
+                                                                   // TEST CA we
+                                                                   // created
                     (Collection) null, catokeninfo, "JUnit RSA CA Signed by external", -1, null, null, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1440,8 +1389,8 @@ public class CAsTest extends CaTestCase {
         byte[] request = caAdminSessionRemote.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
         info = caAdminSessionRemote.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
         assertEquals(SecConst.CA_ACTIVE, info.getStatus()); // No new keys
-        // generated, still
-        // active
+                                                            // generated, still
+                                                            // active
         PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
         assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
@@ -1460,9 +1409,8 @@ public class CAsTest extends CaTestCase {
         boolean ret = false;
         try {
             removeTestCA("TESTDSA"); // We cant be sure this CA was not left
-            // over from some other failed test
-            adminEntitySession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
-            adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+                                     // over from some other failed test
+            authorizationSession.initialize(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec("1024");
             catokeninfo.setEncKeySpec("1024");
@@ -1476,8 +1424,7 @@ public class CAsTest extends CaTestCase {
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTDSA", "", "1024",
                     AlgorithmConstants.KEYALGORITHM_DSA));
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 3650,
-                    null, // Expiretime
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit DSA CA", -1, null, null, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1522,8 +1469,8 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not DSA", false);
             }
-            assertTrue("CA is not valid for the specified duration.", cert.getNotAfter().after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+            assertTrue("CA is not valid for the specified duration.", cert.getNotAfter()
+                    .after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
                     && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             ret = true;
 
@@ -1609,13 +1556,12 @@ public class CAsTest extends CaTestCase {
         // active certificate, we should simply renew the CA
         info.setStatus(SecConst.CA_ACTIVE);
         caAdminSessionRemote.editCA(admin, info); // need active status in order
-        // to do renew
+                                                  // to do renew
         caAdminSessionRemote.renewCA(admin, getTestCAId(), "foo123", false);
     } // test13RenewCA
 
     public void test14RevokeCA() throws Exception {
         final String caname = "TestRevokeCA";
-        removeTestCA(caname);
         createTestCA(caname);
         CAInfo info = caAdminSessionRemote.getCAInfo(admin, caname);
         assertEquals(SecConst.CA_ACTIVE, info.getStatus());
@@ -1629,21 +1575,4 @@ public class CAsTest extends CaTestCase {
         assertEquals(RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, info.getRevokationReason());
         assertTrue(info.getRevokationDate().getTime() > 0);
     } // test14RevokeCA
-    
-    /**
-     * Preemtively remove CA in case it was created by a previous run:
-     * @throws AuthorizationDeniedException 
-     */
-    private void removeOldCa(String caName) throws AuthorizationDeniedException {     
-        HashMap<Integer, String> nameMap = caAdminSessionRemote.getCAIdToNameMap(admin);
-        if(nameMap.containsValue(caName)){
-            for(Entry<Integer, String> entry: nameMap.entrySet()) {
-                if(entry.getValue().equals(caName)) {
-                    caAdminSessionRemote.removeCA(admin, entry.getKey());
-                    break;
-                }
-            }
-            
-        }
-    }
 }
