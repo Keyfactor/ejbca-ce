@@ -27,7 +27,7 @@
 # Default: hsqldb
 #database.name=mysql
 #database.name=postgres
-#database.name=mssql2000
+#database.name=mssql
 #database.name=oracle
 #database.name=sybase
 #database.name=informix
