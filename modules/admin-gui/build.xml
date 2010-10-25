@@ -56,7 +56,7 @@
         	classpathref="compile.classpath"/>
     </target>
 	
-    <target name="validate" depends="compile">
+    <target name="validate" depends="compile" if="validatejsp">
         <!--
             Since Jasper might not be compatible with all application servers, we discard the compiled JSP when we are done.
             This is just a compile-time validation that should be possible to disable if we are running in prod.
