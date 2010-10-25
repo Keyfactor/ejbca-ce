@@ -14,10 +14,24 @@ package org.ejbca.core.ejb.ra;
 
 import java.util.List;
 
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.persistence.PersistenceException;
 
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.util.query.IllegalQueryException;
 
 public interface UserAdminSession {
     /**
@@ -26,7 +40,7 @@ public interface UserAdminSession {
      * user addUser(..UserDataVO...) instead.
      * 
      * @param admin
-     *            the administrator pwrforming the action
+     *            the administrator performing the action
      * @param username
      *            the unique username.
      * @param password
@@ -66,9 +80,9 @@ public interface UserAdminSession {
      */
     public void addUser(org.ejbca.core.model.log.Admin admin, java.lang.String username, java.lang.String password, java.lang.String subjectdn,
             java.lang.String subjectaltname, java.lang.String email, boolean clearpwd, int endentityprofileid, int certificateprofileid, int type,
-            int tokentype, int hardwaretokenissuerid, int caid) throws javax.persistence.PersistenceException,
-            org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
+            int tokentype, int hardwaretokenissuerid, int caid) throws PersistenceException,
+            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
      * addUserFromWS is called from EjbcaWS if profile specifies merge data from
@@ -99,9 +113,9 @@ public interface UserAdminSession {
      *             the CA that it should be unique.
      */
     public void addUserFromWS(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            javax.persistence.PersistenceException, org.ejbca.core.model.approval.WaitingForApprovalException,
-            org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            PersistenceException, WaitingForApprovalException,
+            CADoesntExistsException, org.ejbca.core.EjbcaException;
 
     /**
      * Implements IUserAdminSession::addUser. Implements a mechanism that uses
@@ -132,9 +146,9 @@ public interface UserAdminSession {
      *             the CA that it should be unique.
      */
     public void addUser(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            javax.persistence.PersistenceException, org.ejbca.core.model.approval.WaitingForApprovalException,
-            org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            PersistenceException, WaitingForApprovalException,
+            CADoesntExistsException, EjbcaException;
 
     /**
      * Changes data for a user in the database speciefied by username.
@@ -191,9 +205,9 @@ public interface UserAdminSession {
      */
     public void changeUser(org.ejbca.core.model.log.Admin admin, java.lang.String username, java.lang.String password, java.lang.String subjectdn,
             java.lang.String subjectaltname, java.lang.String email, boolean clearpwd, int endentityprofileid, int certificateprofileid, int type,
-            int tokentype, int hardwaretokenissuerid, int status, int caid) throws org.ejbca.core.model.authorization.AuthorizationDeniedException,
-            org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile, org.ejbca.core.model.approval.WaitingForApprovalException,
-            org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
+            int tokentype, int hardwaretokenissuerid, int status, int caid) throws AuthorizationDeniedException,
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+            CADoesntExistsException, EjbcaException;
 
     /**
      * Implements IUserAdminSession::changeUser..
@@ -223,8 +237,8 @@ public interface UserAdminSession {
      *             the CA that it should be unique.
      */
     public void changeUser(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
      * Implements IUserAdminSession::changeUser..
@@ -256,8 +270,8 @@ public interface UserAdminSession {
      *             if the user does not exist
      */
     public void changeUser(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd, boolean fromWebService)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile,
-            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.EjbcaException;
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
      * Deletes a user from the database. The users certificates must be revoked
@@ -271,7 +285,7 @@ public interface UserAdminSession {
      *             if the user could not be removed
      */
     public void deleteUser(org.ejbca.core.model.log.Admin admin, java.lang.String username)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.NotFoundException, javax.ejb.RemoveException;
+            throws AuthorizationDeniedException, NotFoundException, RemoveException;
 
     /**
      * Resets the remaining failed login attempts counter to the user's max
@@ -287,7 +301,7 @@ public interface UserAdminSession {
      *             if the entity does not exist
      */
     public void resetRemainingLoginAttempts(org.ejbca.core.model.log.Admin admin, java.lang.String username)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException;
+            throws AuthorizationDeniedException, FinderException;
 
     /**
      * Decrements the remaining failed login attempts counter. If the counter
@@ -305,7 +319,7 @@ public interface UserAdminSession {
      *             if the entity does not exist
      */
     public void decRemainingLoginAttempts(org.ejbca.core.model.log.Admin admin, java.lang.String username)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException;
+            throws AuthorizationDeniedException, FinderException;
 
     /**
      * Decreases (the optional) request counter by 1, until it reaches 0.
@@ -323,8 +337,8 @@ public interface UserAdminSession {
      *             if user does not exist
      */
     public int decRequestCounter(org.ejbca.core.model.log.Admin admin, java.lang.String username)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException, org.ejbca.core.model.approval.ApprovalException,
-            org.ejbca.core.model.approval.WaitingForApprovalException;
+            throws AuthorizationDeniedException, FinderException, ApprovalException,
+            WaitingForApprovalException;
 
     /**
      * Cleans the certificate serial number from the user data. Should be called
@@ -348,8 +362,8 @@ public interface UserAdminSession {
      * @throws WaitingForApprovalException
      */
     public void cleanUserCertDataSN(org.ejbca.core.model.log.Admin admin, java.lang.String username)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException, org.ejbca.core.model.approval.ApprovalException,
-            org.ejbca.core.model.approval.WaitingForApprovalException;
+            throws AuthorizationDeniedException, FinderException, ApprovalException,
+            WaitingForApprovalException;
 
     /**
      * Changes status of a user.
@@ -365,8 +379,8 @@ public interface UserAdminSession {
      *             approval queue.
      */
     public void setUserStatus(org.ejbca.core.model.log.Admin admin, java.lang.String username, int status)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException, org.ejbca.core.model.approval.ApprovalException,
-            org.ejbca.core.model.approval.WaitingForApprovalException;
+            throws AuthorizationDeniedException, FinderException, ApprovalException,
+            WaitingForApprovalException;
 
     /**
      * Sets a new password for a user.
@@ -379,8 +393,8 @@ public interface UserAdminSession {
      *            the new password for the user, NOT null.
      */
     public void setPassword(org.ejbca.core.model.log.Admin admin, java.lang.String username, java.lang.String password)
-            throws org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-            javax.ejb.FinderException;
+            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
+            FinderException;
 
     /**
      * Sets a clear text password for a user.
@@ -395,26 +409,26 @@ public interface UserAdminSession {
      *            password.
      */
     public void setClearTextPassword(org.ejbca.core.model.log.Admin admin, java.lang.String username, java.lang.String password)
-            throws org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-            javax.ejb.FinderException;
+            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
+            FinderException;
 
     /**
      * Verifies a password for a user.
      * 
      * @param admin
-     *            the administrator pwrforming the action
+     *            the administrator performing the action
      * @param username
      *            the unique username.
      * @param password
      *            the password to be verified.
      */
     public boolean verifyPassword(org.ejbca.core.model.log.Admin admin, java.lang.String username, java.lang.String password)
-            throws org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-            javax.ejb.FinderException;
+            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
+            FinderException;
 
     public void revokeAndDeleteUser(org.ejbca.core.model.log.Admin admin, java.lang.String username, int reason)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.approval.ApprovalException,
-            org.ejbca.core.model.approval.WaitingForApprovalException, javax.ejb.RemoveException, org.ejbca.core.model.ra.NotFoundException;
+            throws AuthorizationDeniedException, ApprovalException,
+            WaitingForApprovalException, RemoveException, NotFoundException;
 
     /**
      * Method that revokes a user.
@@ -424,8 +438,8 @@ public interface UserAdminSession {
      * @throws AlreadyRevokedException
      */
     public void revokeUser(org.ejbca.core.model.log.Admin admin, java.lang.String username, int reason)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException, org.ejbca.core.model.approval.ApprovalException,
-            org.ejbca.core.model.approval.WaitingForApprovalException, org.ejbca.core.model.ra.AlreadyRevokedException;
+            throws AuthorizationDeniedException, FinderException, ApprovalException,
+            WaitingForApprovalException, AlreadyRevokedException;
 
     /**
      * Method that revokes a certificate for a user.
@@ -444,9 +458,9 @@ public interface UserAdminSession {
      *             if the certificate was already revoked
      */
     public void revokeCert(org.ejbca.core.model.log.Admin admin, java.math.BigInteger certserno, java.lang.String issuerdn, java.lang.String username,
-            int reason) throws org.ejbca.core.model.authorization.AuthorizationDeniedException, javax.ejb.FinderException,
-            org.ejbca.core.model.approval.ApprovalException, org.ejbca.core.model.approval.WaitingForApprovalException,
-            org.ejbca.core.model.ra.AlreadyRevokedException;
+            int reason) throws AuthorizationDeniedException, FinderException,
+            ApprovalException, WaitingForApprovalException,
+            AlreadyRevokedException;
 
     /**
      * Method that looks up the username and email address for a administrator
@@ -467,7 +481,7 @@ public interface UserAdminSession {
      * @return UserDataVO or null if the user is not found.
      */
     public org.ejbca.core.model.ra.UserDataVO findUser(org.ejbca.core.model.log.Admin admin, java.lang.String username)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+            throws AuthorizationDeniedException;
 
     /**
      * Finds a user by its subject and issuer DN.
@@ -478,7 +492,7 @@ public interface UserAdminSession {
      * @return UserDataVO or null if the user is not found.
      */
     public org.ejbca.core.model.ra.UserDataVO findUserBySubjectAndIssuerDN(org.ejbca.core.model.log.Admin admin, java.lang.String subjectdn,
-            java.lang.String issuerdn) throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+            java.lang.String issuerdn) throws AuthorizationDeniedException;
 
     /**
      * Finds a user by its subject DN.
@@ -488,7 +502,7 @@ public interface UserAdminSession {
      * @return UserDataVO or null if the user is not found.
      */
     public org.ejbca.core.model.ra.UserDataVO findUserBySubjectDN(org.ejbca.core.model.log.Admin admin, java.lang.String subjectdn)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+            throws AuthorizationDeniedException;
 
     /**
      * Finds a user by its Email.
@@ -497,7 +511,7 @@ public interface UserAdminSession {
      * @return UserDataVO or null if the user is not found.
      */
     public java.util.Collection<UserDataVO> findUserByEmail(org.ejbca.core.model.log.Admin admin, java.lang.String email)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+            throws AuthorizationDeniedException;
 
     /**
      * Method that checks if user with specified users certificate exists in
@@ -510,7 +524,7 @@ public interface UserAdminSession {
      *             if user doesn't exist
      */
     public void checkIfCertificateBelongToAdmin(org.ejbca.core.model.log.Admin admin, java.math.BigInteger certificatesnr, java.lang.String issuerdn)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+            throws AuthorizationDeniedException;
 
     /**
      * Method that checks if user with specified users certificate exists in
@@ -521,7 +535,7 @@ public interface UserAdminSession {
      *             if user doesn't exist
      */
     public void checkIfCertificateBelongToUser(org.ejbca.core.model.log.Admin admin, java.math.BigInteger certificatesnr, java.lang.String issuerdn)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+            throws AuthorizationDeniedException;
 
     /**
      * Finds all users with a specified status.
@@ -530,7 +544,7 @@ public interface UserAdminSession {
      *            the status to look for, from 'UserData'.
      * @return Collection of UserDataVO
      */
-    public java.util.Collection<UserDataVO> findAllUsersByStatus(org.ejbca.core.model.log.Admin admin, int status) throws javax.ejb.FinderException;
+    public java.util.Collection<UserDataVO> findAllUsersByStatus(org.ejbca.core.model.log.Admin admin, int status) throws FinderException;
 
     /**
      * Finds all users registered to a specified ca.
@@ -550,7 +564,7 @@ public interface UserAdminSession {
      *            the new status, from 'UserData'.
      */
     public java.util.Collection<UserDataVO> findAllUsersByStatusWithLimit(org.ejbca.core.model.log.Admin admin, int status, boolean onlybatchusers)
-            throws javax.ejb.FinderException;
+            throws FinderException;
 
     /**
      * Method to execute a customized query on the ra user data. The parameter
@@ -576,7 +590,7 @@ public interface UserAdminSession {
      * @see se.anatom.ejbca.util.query.Query
      */
     public java.util.Collection<UserDataVO> query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, java.lang.String caauthorizationstring,
-            java.lang.String endentityprofilestring, int numberofrows) throws org.ejbca.util.query.IllegalQueryException;
+            java.lang.String endentityprofilestring, int numberofrows) throws IllegalQueryException;
 
     /**
      * Methods that checks if a user exists in the database having the given
@@ -648,8 +662,8 @@ public interface UserAdminSession {
      * @throws AuthorizationDeniedException
      */
     public boolean prepareForKeyRecovery(org.ejbca.core.model.log.Admin admin, java.lang.String username, int endEntityProfileId,
-            java.security.cert.Certificate certificate) throws org.ejbca.core.model.authorization.AuthorizationDeniedException,
-            org.ejbca.core.model.approval.ApprovalException, org.ejbca.core.model.approval.WaitingForApprovalException;
+            java.security.cert.Certificate certificate) throws AuthorizationDeniedException,
+            ApprovalException, WaitingForApprovalException;
     
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
@@ -658,7 +672,7 @@ public interface UserAdminSession {
      * 
      * TODO: Moved here from Local interface. Move back.
      */
-    public java.util.Collection<UserDataVO> findAllUsersWithLimit(org.ejbca.core.model.log.Admin admin) throws javax.ejb.FinderException;
+    public java.util.Collection<UserDataVO> findAllUsersWithLimit(org.ejbca.core.model.log.Admin admin) throws FinderException;
     
     /**
      * Selects a list of specific list of UserData entities, as filtered by the below parameters. 

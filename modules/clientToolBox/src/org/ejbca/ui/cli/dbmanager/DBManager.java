@@ -47,7 +47,7 @@ public class DBManager extends ClientToolBox {
 			doIt(arguments.commandLine.getIt(arguments.password), arguments.inputFile, arguments.outputFile, arguments.commandLine.getInputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.exit(-1);
+			System.exit(-1); // NOPMD, this is not a JEE component
 		}
 	}
 	private void doIt(String commandLine, File inputFile, File outputFile, InputStream is) throws IOException {

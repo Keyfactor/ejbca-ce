@@ -598,7 +598,9 @@ public class StringTools {
 	 * @return a String array with two elements, the first is the certificate serialnumber and the second one is the certificate issuerDN
 	 */
 	public static String[] parseCertData(String certdata){
-		if(certdata == null)	return null;
+		if(certdata == null) {
+			return null;
+		}
 		
     	String dnStrings = "(unstructuredName|dnQualifier|postalAddress|name|emailAddress|UID|OU|NIF|CIF|ST|businessCategory|streetAddress|CN|postalCode|O|pseudonym|DC|surname|C|initials|serialNumber|L|givenName|telephoneNumber|title|DC)";
     	String formats[] = {"(^[0-9A-Fa-f]+),((" + dnStrings + "=[^,]+,)*(" + dnStrings + "=[^,]+)*)",

@@ -17,9 +17,15 @@ import java.util.Collection;
 import javax.ejb.EJBException;
 
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ra.ExtendedInformation;
 
+/**
+ * Interface for publisher operations
+ *
+ * @version $Id$
+ */
 public interface PublisherSession {
     /**
      * Stores the certificate to the given collection of publishers. See
@@ -64,9 +70,10 @@ public interface PublisherSession {
      * 
      * @param publisherid
      *            the id of the publisher to test.
+     * @throws PublisherConnectionException if connection test with publisher fails.
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public void testConnection(org.ejbca.core.model.log.Admin admin, int publisherid) throws org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+    public void testConnection(org.ejbca.core.model.log.Admin admin, int publisherid) throws PublisherConnectionException;
 
     /**
      * Adds a publisher to the database.
@@ -77,7 +84,7 @@ public interface PublisherSession {
      *             if a communication or other error occurs.
      */
     public void addPublisher(org.ejbca.core.model.log.Admin admin, java.lang.String name, org.ejbca.core.model.ca.publisher.BasePublisher publisher)
-            throws org.ejbca.core.model.ca.publisher.PublisherExistsException;
+            throws PublisherExistsException;
 
     /**
      * Adds a publisher to the database. Used for importing and exporting
@@ -89,7 +96,7 @@ public interface PublisherSession {
      *             if a communication or other error occurs.
      */
     public void addPublisher(org.ejbca.core.model.log.Admin admin, int id, java.lang.String name, org.ejbca.core.model.ca.publisher.BasePublisher publisher)
-            throws org.ejbca.core.model.ca.publisher.PublisherExistsException;
+            throws PublisherExistsException;
 
     /**
      * Updates publisher data
@@ -126,7 +133,7 @@ public interface PublisherSession {
      *             if a communication or other error occurs.
      */
     public void renamePublisher(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname)
-            throws org.ejbca.core.model.ca.publisher.PublisherExistsException;
+            throws PublisherExistsException;
 
     /**
      * Retrives a Collection of id:s (Integer) for all authorized publishers if
@@ -134,13 +141,11 @@ public interface PublisherSession {
      * CAAdminSession.getAuthorizedPublisherIds to get the list for any
      * administrator.
      * 
-     * @param admin
-     *            Should be an Admin with superadmin credentials
+     * @param admin Should be an Admin with superadmin credentials
      * @return Collection of id:s (Integer)
-     * @throws AuthorizationDeniedException
-     *             if the admin does not have superadmin credentials
+     * @throws AuthorizationDeniedException if the admin does not have superadmin credentials
      */
-    public java.util.Collection<Integer> getAllPublisherIds(org.ejbca.core.model.log.Admin admin) throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+    public java.util.Collection<Integer> getAllPublisherIds(org.ejbca.core.model.log.Admin admin) throws AuthorizationDeniedException;
 
     /**
      * Method creating a hashmap mapping publisher id (Integer) to publisher

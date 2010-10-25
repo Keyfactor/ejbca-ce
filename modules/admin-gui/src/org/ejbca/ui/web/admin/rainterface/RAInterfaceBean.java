@@ -41,7 +41,6 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -89,7 +88,6 @@ public class RAInterfaceBean implements java.io.Serializable {
 
     private UserAdminSession adminsession;
     private CertificateStoreSession certificatesession;
-    private RaAdminSession raadminsession;
     private AuthorizationSession authorizationsession;
     private EndEntityProfileSession endEntityProfileSession;
     private HardTokenSession hardtokensession;
@@ -127,7 +125,6 @@ public class RAInterfaceBean implements java.io.Serializable {
         this.informationmemory = ejbcawebbean.getInformationMemory();
         
         adminsession = ejb.getUserAdminSession();
-        raadminsession = ejb.getRAAdminSession();
         certificatesession = ejb.getCertStoreSession();
         CAAdminSession caadminsession = ejb.getCAAdminSession();
         authorizationsession = ejb.getAuthorizationSession();
