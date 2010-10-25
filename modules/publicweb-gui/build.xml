@@ -13,7 +13,6 @@
 	<property name="jasper-temp.dir" location="${this.dir}/tmp-jasper"/>
 
 	<path id="compile.classpath">
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
@@ -51,7 +50,7 @@
         	classpathref="compile.classpath"/>
     </target>
 	
-    <target name="validate" depends="compile">
+    <target name="validate" depends="compile" if="validatejsp">
         <!--
             Since Jasper might not be compatible with all application servers, we discard the compiled JSP when we are done.
             This is just a compile-time validation that should be possible to disable if we are running in prod.
