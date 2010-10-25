@@ -45,6 +45,7 @@ public class TcpReceivedMessage {
 		this.doClose = true;
 		this.message = null;
 	}
+
 	private TcpReceivedMessage( boolean close, byte[] message) { // message OK
 		this.doClose = close;
 		this.message = message;
@@ -89,11 +90,11 @@ public class TcpReceivedMessage {
 		final int msgLen = command.length - 4;
 		// They should match
 		if ( len!=msgLen ) {
-			log.error( intres.getLocalizedMessage("cmp.errortcpwronglen", new Integer(msgLen), new Integer(len)) );
+			log.error( intres.getLocalizedMessage("cmp.errortcpwronglen", Integer.valueOf(msgLen), Integer.valueOf(len)) );
 			return new TcpReceivedMessage();// This is something malicious
 		}
 		if ( msgLen>=5000 ) {
-			log.error( intres.getLocalizedMessage("cmp.errortcptoolongmsg", new Integer(msgLen)) );
+			log.error( intres.getLocalizedMessage("cmp.errortcptoolongmsg", Integer.valueOf(msgLen)) );
 			return new TcpReceivedMessage();// This is something malicious
 		}
 		// The CMP message is the rest of the stream that has not been read yet.

@@ -48,69 +48,69 @@ import org.quickserver.net.server.DataType;
  * @version $Id$
  */
 public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHandler  {
-	private static final Logger log = Logger.getLogger(CmpTcpCommandHandler.class.getName());
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+
+	private static final Logger LOG = Logger.getLogger(CmpTcpCommandHandler.class.getName());
+    private static final InternalResources INTRES = InternalResources.getInstance();
 	private static EjbRemoteHelper ejb = null;
 	
-	private static EjbRemoteHelper getEjb() {
+	private static synchronized EjbRemoteHelper getEjb() {
 		if (ejb == null) {
 			ejb = new EjbRemoteHelper();
 		}
 		return ejb;
 	}
-    
-	public void gotConnected(ClientHandler handler)
-	throws SocketTimeoutException, IOException {
-		log.debug("CMP connection opened: "+handler.getHostAddress());
+	
+	public void gotConnected(final ClientHandler handler) throws SocketTimeoutException, IOException {
+		LOG.debug("CMP connection opened: "+handler.getHostAddress());
 		handler.setDataMode(DataMode.BINARY, DataType.IN);
 		handler.setDataMode(DataMode.BINARY, DataType.OUT);
 	}
-	public void lostConnection(ClientHandler handler) 
-	throws IOException {
-		log.debug("Connection lost: "+handler.getHostAddress());
-	}
-	public void closingConnection(ClientHandler handler) 
-	throws IOException {
-		log.debug("Connection closed: "+handler.getHostAddress());
+
+	public void lostConnection(final ClientHandler handler) throws IOException {
+		LOG.debug("Connection lost: "+handler.getHostAddress());
 	}
 
-	public void handleBinary(ClientHandler handler, byte command[])
-	throws SocketTimeoutException, IOException {
-		log.info(intres.getLocalizedMessage("cmp.receivedmsg", handler.getHostAddress()));
+	public void closingConnection(final ClientHandler handler) throws IOException {
+		LOG.debug("Connection closed: "+handler.getHostAddress());
+	}
+
+	public void handleBinary(final ClientHandler handler, final byte command[])	throws SocketTimeoutException, IOException {
+		LOG.info(INTRES.getLocalizedMessage("cmp.receivedmsg", handler.getHostAddress()));
 		final TcpReceivedMessage cmpTcpMessage = TcpReceivedMessage.getTcpMessage(command);
 		if ( cmpTcpMessage.message==null )  {
 			handler.closeConnection();
-			return;
-		}
-		// We must use an administrator with rights to create users
-		final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
-		final IResponseMessage resp;
-		try {
-			 resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message);
-		} catch (IOException e) {
-			log.error( intres.getLocalizedMessage("cmp.errornoasn1"), e );
-			handler.closeConnection();
-			return;
-		}
-		log.debug("Sending back CMP response to client.");
-		// Send back reply
-		final TcpReturnMessage sendBack;
-		{
-			byte tmp[];
+		} else {
+			// We must use an administrator with rights to create users
+			final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
+			final IResponseMessage resp;
 			try {
-				tmp = resp!=null ? resp.getResponseMessage() : null;
-			} catch (CertificateEncodingException e) {
-				tmp = null;
+				 resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message);
+			} catch (IOException e) {
+				LOG.error( INTRES.getLocalizedMessage("cmp.errornoasn1"), e );
+				handler.closeConnection();
+				return;
 			}
-			sendBack = TcpReturnMessage.createMessage(tmp, cmpTcpMessage.doClose);
-		}
-		log.debug("Sending "+sendBack.message.length+" bytes to client");
-		handler.sendClientBinary(sendBack.message);			
-		final String iMsg = intres.getLocalizedMessage("cmp.sentresponsemsg", handler.getHostAddress());
-		log.info(iMsg);
-		if ( cmpTcpMessage.doClose || sendBack.doClose ) {
-			handler.closeConnection(); // It's time to say good bye			
+			LOG.debug("Sending back CMP response to client.");
+			// Send back reply
+			final TcpReturnMessage sendBack;
+			{
+				byte tmp[] = null;
+				try {
+					if (resp!=null) {
+						tmp = resp.getResponseMessage();
+					}
+				} catch (CertificateEncodingException e) {
+					LOG.debug("CertificateEncodingException: " + e.getMessage());
+				}
+				sendBack = TcpReturnMessage.createMessage(tmp, cmpTcpMessage.doClose);
+			}
+			LOG.debug("Sending "+sendBack.message.length+" bytes to client");
+			handler.sendClientBinary(sendBack.message);			
+			final String iMsg = INTRES.getLocalizedMessage("cmp.sentresponsemsg", handler.getHostAddress());
+			LOG.info(iMsg);
+			if ( cmpTcpMessage.doClose || sendBack.doClose ) {
+				handler.closeConnection(); // It's time to say good bye			
+			}
 		}
 	}
 }
