@@ -686,6 +686,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void unload() {
+    	log.debug("Unloading all timers.");
         // Get all services
         for (Timer timer : (Collection<Timer>) timerService.getTimers()) {
             try {

@@ -75,10 +75,12 @@ public class StartServicesServlet extends HttpServlet {
     @EJB
     private SignSessionLocal signSession;
     
-    /**
+    // Since timers are reloaded at server startup, we can leave them in the database. This was a workaround for WebLogic.
+    // By skipping this we don't need application server (read JBoss) specific config for what this module depends on.
+    /* *
      * Method used to remove all active timers and stop system services.
 	 * @see javax.servlet.GenericServlet#destroy()
-	 */
+	 * /
 	public void destroy() {
 		String iMsg = intres.getLocalizedMessage("startservice.shutdown");
         log.info(iMsg);
@@ -91,13 +93,10 @@ public class StartServicesServlet extends HttpServlet {
 		}
         log.trace(">destroy waiting for system services to finish");
 		super.destroy();
-	}
+	}*/
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-    	if (caAdminSession==null || certificateStoreSession==null || logSession==null || raAdminSession==null || serviceSession==null) {
-    		log.error("Local EJB injection failed.");
-    	}
         ejbcaInit();
     }
 
