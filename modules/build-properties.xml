@@ -184,7 +184,6 @@
 		<fileset dir="${ejbca.home}/lib/ext" includes="mail.jar"/>
 		<fileset dir="${ejbca.home}/lib/jaxws" includes="activation.jar"/> <!-- Apparently a dependency from JavaMail under Java 5 -->
 	</path>
-	<path id="lib.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/></path>
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
@@ -267,7 +266,19 @@
 			<include name="modules/com.bea.core.utils.wrapper_1.3.0.0.jar"/>
 		</fileset>
 	</path>
-	
+
+	<path id="lib.servlet.classpath">
+		<fileset dir="${appserver.home}">
+			<!-- JBoss -->
+			<include name="common/lib/servlet-api.jar" /> <!-- 5.1.0 -->
+			<!-- Glassfish -->
+			<include name="lib/javaee.jar" /> <!-- 2.1.1 -->
+			<!-- WebLogic ? -->
+			<!-- WebSphere ? -->
+		</fileset>
+		<!--fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/-->
+	</path>
+
 	<path id="lib.jsf.classpath">
 		<fileset dir="${appserver.home}">
 			<!-- jboss -->
