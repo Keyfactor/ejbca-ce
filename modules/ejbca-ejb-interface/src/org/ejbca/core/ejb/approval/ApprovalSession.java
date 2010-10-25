@@ -29,8 +29,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.query.IllegalQueryException;
 
 /**
- * @author mikek
- * 
+ * @version $Id$
  */
 public interface ApprovalSession {
 

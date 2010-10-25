@@ -105,7 +105,7 @@ public interface CreateCRLSession {
      * @throws FinderException
      *             is thrown when no such certificate exists
      */
-    public void setArchivedStatus(java.lang.String certificateFingerprint) throws javax.ejb.FinderException;
+    public void setArchivedStatus(java.lang.String certificateFingerprint) throws FinderException;
 
     /**
      * Generates a new Delta CRL by looking in the database for revoked

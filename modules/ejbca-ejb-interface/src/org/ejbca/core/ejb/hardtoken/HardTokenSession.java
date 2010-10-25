@@ -13,10 +13,16 @@
 package org.ejbca.core.ejb.hardtoken;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 
+import javax.ejb.EJBException;
+
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
+import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
+import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
+import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 
 public interface HardTokenSession {
     /**
@@ -28,7 +34,7 @@ public interface HardTokenSession {
      *             if a communication or other error occurs.
      */
     public void addHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String name,
-            org.ejbca.core.model.hardtoken.profiles.HardTokenProfile profile) throws org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
+            org.ejbca.core.model.hardtoken.profiles.HardTokenProfile profile) throws HardTokenProfileExistsException;
 
     /**
      * Adds a hard token profile to the database. Used for importing and
@@ -40,7 +46,7 @@ public interface HardTokenSession {
      *             if a communication or other error occurs.
      */
     public void addHardTokenProfile(org.ejbca.core.model.log.Admin admin, int profileid, java.lang.String name,
-            org.ejbca.core.model.hardtoken.profiles.HardTokenProfile profile) throws org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
+            org.ejbca.core.model.hardtoken.profiles.HardTokenProfile profile) throws HardTokenProfileExistsException;
 
     /**
      * Updates hard token profile data
@@ -60,7 +66,7 @@ public interface HardTokenSession {
      *             if a communication or other error occurs.
      */
     public void cloneHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname)
-            throws org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
+            throws HardTokenProfileExistsException;
 
     /**
      * Removes a hard token profile from the database.
@@ -79,7 +85,7 @@ public interface HardTokenSession {
      *             if a communication or other error occurs.
      */
     public void renameHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname)
-            throws org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
+            throws HardTokenProfileExistsException;
 
     /**
      * Retrives a Collection of id:s (Integer) to authorized profiles.
@@ -278,7 +284,7 @@ public interface HardTokenSession {
      *             if a communication or other error occurs.
      */
     public void getIsHardTokenProfileAvailableToIssuer(org.ejbca.core.model.log.Admin admin, int issuerid, org.ejbca.core.model.ra.UserDataVO userdata)
-            throws org.ejbca.core.model.hardtoken.UnavailableTokenException;
+            throws UnavailableTokenException;
 
     /**
      * Adds a hard token to the database
@@ -305,7 +311,7 @@ public interface HardTokenSession {
      */
     public void addHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, java.lang.String username, java.lang.String significantissuerdn,
             int tokentype, org.ejbca.core.model.hardtoken.types.HardToken hardtokendata, java.util.Collection<Certificate> certificates, java.lang.String copyof)
-            throws org.ejbca.core.model.hardtoken.HardTokenExistsException;
+            throws HardTokenExistsException;
 
     /**
      * changes a hard token data in the database
@@ -322,7 +328,7 @@ public interface HardTokenSession {
      *             if tokensn doesn't exists in databas.
      */
     public void changeHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, int tokentype,
-            org.ejbca.core.model.hardtoken.types.HardToken hardtokendata) throws org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
+            org.ejbca.core.model.hardtoken.types.HardToken hardtokendata) throws HardTokenDoesntExistsException;
 
     /**
      * removes a hard token data from the database
@@ -337,7 +343,7 @@ public interface HardTokenSession {
      *             if tokensn doesn't exists in databas.
      */
     public void removeHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn)
-            throws org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
+            throws HardTokenDoesntExistsException;
 
     /**
      * Checks if a hard token serialnumber exists in the database
@@ -364,7 +370,7 @@ public interface HardTokenSession {
      *             if a communication or other error occurs.
      */
     public org.ejbca.core.model.hardtoken.HardTokenData getHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, boolean includePUK)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+            throws AuthorizationDeniedException;
 
     /**
      * returns hard token data for the specified user

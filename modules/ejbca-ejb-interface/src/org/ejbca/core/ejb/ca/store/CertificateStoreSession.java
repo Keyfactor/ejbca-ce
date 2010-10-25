@@ -20,9 +20,15 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 
+/**
+ * Interface for certificate store operations
+ *
+ * @version $Id$
+ */
 public interface CertificateStoreSession {
 
     /**
@@ -48,7 +54,7 @@ public interface CertificateStoreSession {
      *             if the certificate can not be stored in the database
      */
     public boolean storeCertificate(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate incert, java.lang.String username,
-            java.lang.String cafp, int status, int type, int certificateProfileId, java.lang.String tag, long updateTime) throws javax.ejb.CreateException;
+            java.lang.String cafp, int status, int type, int certificateProfileId, java.lang.String tag, long updateTime) throws CreateException;
 
     /**
      * Lists fingerprint (primary key) of ALL certificates in the database.
@@ -276,7 +282,7 @@ public interface CertificateStoreSession {
      * certificates that are revoked must be present on at least one CRL).
      */
     public void setArchivedStatus(org.ejbca.core.model.log.Admin admin, java.lang.String fingerprint)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException;
+            throws AuthorizationDeniedException;
 
     /**
      * Set the status of certificate with given serno to revoked.
@@ -371,7 +377,7 @@ public interface CertificateStoreSession {
      *             if authentication failed.
      */
     public void authenticate(java.security.cert.X509Certificate certificate, boolean requireAdminCertificateInDatabase)
-            throws org.ejbca.core.model.authorization.AuthenticationFailedException;
+            throws AuthenticationFailedException;
 
     /**
      * Checks the table protection information for a certificate data row

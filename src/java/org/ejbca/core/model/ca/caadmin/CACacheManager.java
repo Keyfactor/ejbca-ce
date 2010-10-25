@@ -154,7 +154,6 @@ public class CACacheManager {
             // Remove all possible mappings from caname to this id, we may have changed CAName
             if (this.caNameToCaId.containsValue(Integer.valueOf(caid))) {
             	Set entrySet = this.caNameToCaId.entrySet();
-            	Iterator i = entrySet.iterator();
             	for (Iterator iterator = entrySet.iterator(); iterator.hasNext();) {
             		Map.Entry e = (Map.Entry) iterator.next();
             		if (e.getValue().equals(caid)) {

@@ -20,11 +20,10 @@ import java.util.Set;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Changes the certificate profile of a CA.
@@ -35,7 +34,6 @@ import org.ejbca.util.CertTools;
 public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
@@ -44,7 +42,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
-		CertTools.installBCProvider(); // need this for CVC certificate
+		CryptoProviderTools.installBCProvider(); // need this for CVC certificate
 		if ( args.length<3 ) {
 			usage();
 			return;

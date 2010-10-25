@@ -15,6 +15,12 @@ package org.cesecore.core.ejb.log;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.IllegalQueryException;
 
+/**
+ * Interface for log session bean
+ *
+ *
+ * @version $Id$
+ */
 public interface LogSession {
 
 	public java.util.Collection<String> getAvailableLogDevices();
@@ -87,7 +93,7 @@ public interface LogSession {
      */
     public byte[] export(java.lang.String deviceName, org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query,
             java.lang.String viewlogprivileges, java.lang.String capriviledges, org.ejbca.core.model.log.ILogExporter logexporter, int maxResults)
-            throws org.ejbca.util.query.IllegalQueryException, java.lang.Exception;
+            throws IllegalQueryException, Exception;
 
     /**
      * Method to execute a customized query on the log db data. The parameter
@@ -105,7 +111,7 @@ public interface LogSession {
      * @see org.ejbca.util.query.Query
      */
     public java.util.Collection<LogEntry> query(java.lang.String deviceName, org.ejbca.util.query.Query query, java.lang.String viewlogprivileges,
-            java.lang.String capriviledges, int maxResults) throws org.ejbca.util.query.IllegalQueryException;
+            java.lang.String capriviledges, int maxResults) throws IllegalQueryException;
 
     /**
      * Loads the log configuration from the database.
