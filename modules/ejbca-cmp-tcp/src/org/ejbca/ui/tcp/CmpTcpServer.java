@@ -44,22 +44,21 @@ import org.quickserver.net.server.QuickServer;
  */
 public class CmpTcpServer {
 
-	private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(CmpTcpServer.class);
+	private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(CmpTcpServer.class);
+	private static final String VER = "1.0";
 
-	public static String VER = "1.0";
-	public static QuickServer myServer = null;
+	private transient QuickServer myServer = null;
 	
-	public static void start() throws UnknownHostException	{
-		String cmdHandle = org.ejbca.ui.tcp.CmpTcpCommandHandler.class.getName();
-		String auth = null;
+	public void start() throws UnknownHostException	{
+		final String cmdHandle = org.ejbca.ui.tcp.CmpTcpCommandHandler.class.getName();
 
 		myServer = new QuickServer();
-		myServer.setClientAuthenticationHandler(auth);
+		myServer.setClientAuthenticationHandler(null);
 		myServer.setBindAddr(CmpConfiguration.getTCPBindAdress());
 		myServer.setPort(CmpConfiguration.getTCPPortNumber());
 		myServer.setName("CMP TCP Server v " + VER);
-		if(getQuickServerVersion() >= 1.2) {
-			log.info("Using 1.2 feature");
+		if(QuickServer.getVersionNo() >= 1.2) {
+			LOG.info("Using 1.2 feature");
 			myServer.setClientBinaryHandler(cmdHandle);
 			myServer.setClientEventHandler(cmdHandle);
 
@@ -70,8 +69,8 @@ public class CmpTcpServer {
 		//setup logger to log to file
 		Logger logger = null;
 		FileHandler txtLog = null;
-		String logDir = CmpConfiguration.getTCPLogDir();
-		File logFile = new File(logDir + "/");
+		final String logDir = CmpConfiguration.getTCPLogDir();
+		final File logFile = new File(logDir + "/");
 		if(!logFile.canRead()) {
 			logFile.mkdir();
 		}
@@ -92,39 +91,35 @@ public class CmpTcpServer {
 			myServer.setConsoleLoggingFormatter("org.quickserver.util.logging.SimpleTextFormatter");
 			myServer.setConsoleLoggingLevel(Level.INFO);
 		} catch(Exception e){
-			log.error("Could not create xmlLog FileHandler : ", e);
+			LOG.error("Could not create xmlLog FileHandler : ", e);
 		}
-		//end of logger code
-
 		try	{
-			String confFile = CmpConfiguration.getTCPConfigFile();
+			final String confFile = CmpConfiguration.getTCPConfigFile();
 			if (!StringUtils.isEmpty(confFile)) {
-				Object config[] = new Object[] {confFile};
-				if (myServer.initService(config) == false) {
-					log.error("Configuration from config file "+confFile+" failed!");
+				final Object config[] = new Object[] {confFile};
+				if (!myServer.initService(config)) {
+					LOG.error("Configuration from config file "+confFile+" failed!");
 				}
 			}
-
 			myServer.startServer();	
 			//myServer.getQSAdminServer().setShellEnable(true);
 			//myServer.startQSAdminServer();			
 		} catch(AppException e){
-			log.error("Error in server : ", e);
+			LOG.error("Error in server : ", e);
 		}
 	}
 
-	public static void stop() {
+	public void stop() {
 		if (myServer != null) {
 			try {
-				myServer.stopServer();
+				myServer.stopService();
+				myServer.closeAllPools();
 			} catch (AppException e) {
-				log.error("Error in server : ", e);
-				e.printStackTrace();
-			}			
+				LOG.error("Error in server : ", e);
+			} catch (Exception e) {
+				LOG.error("Error in server : ", e);
+			}
 		}
-	}
-	public static float getQuickServerVersion() {
-		return QuickServer.getVersionNo();
 	}
 }
 

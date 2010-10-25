@@ -30,15 +30,28 @@ import org.ejbca.ui.tcp.CmpTcpServer;
 public class CmpTcpInitServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(CmpTcpInitServlet.class);
+	private static final Logger LOG = Logger.getLogger(CmpTcpInitServlet.class);
+	
+	private transient CmpTcpServer cmpTcpServer;	// HttpServlet implements Serializable
 
-	public void init(ServletConfig config) throws ServletException {
+	public void init(final ServletConfig config) throws ServletException {
 		super.init(config);
-		log.info("Starting CMP TCP Service..");
+		LOG.info("Starting CMP TCP Service..");
+		cmpTcpServer = new CmpTcpServer();
 		try {
-			CmpTcpServer.start();
+			cmpTcpServer.start();
 		} catch (UnknownHostException e) {
 			throw new ServletException(e);
 		}
+	}
+	
+	public void destroy() {
+		LOG.info("Stopping CMP TCP Service..");
+		try {
+			cmpTcpServer.stop();
+		} catch (Throwable t) {
+			LOG.error("", t);
+		}
+		super.destroy();
 	}
 }
