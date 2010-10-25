@@ -126,13 +126,17 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
      * @param extractUsernameComponent Defines which component from the DN should be used as username in EJBCA. Can be CN, UID or nothing. Null means that the username should have been pre-set, or that here it is the same as CN.
      */
 	public CrmfRequestMessage(PKIMessage msg, String defaultCA, boolean allowRaVerifyPopo, String extractUsernameComponent) {
-        log.trace(">CrmfRequestMessage");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">CrmfRequestMessage");
+    	}
 		setPKIMessage(msg);
 		this.defaultCA = defaultCA;
 		this.allowRaVerifyPopo = allowRaVerifyPopo;
 		this.extractUsernameComponent = extractUsernameComponent;
         init();
-        log.trace("<CrmfRequestMessage");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<CrmfRequestMessage");
+    	}
 	}
 
 	public PKIMessage getPKIMessage() {
