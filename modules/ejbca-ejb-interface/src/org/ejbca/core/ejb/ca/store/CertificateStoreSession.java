@@ -17,7 +17,6 @@ import java.security.cert.Certificate;
 import java.util.List;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -102,7 +101,7 @@ public interface CertificateStoreSession {
      *            the dn of the certificates issuer.
      * @return Collection of Certificates (java.security.cert.Certificate) in no
      *         specified order or an empty Collection.
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     public java.util.Collection<Certificate> findCertificatesBySubjectAndIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String subjectDN, java.lang.String issuerDN);

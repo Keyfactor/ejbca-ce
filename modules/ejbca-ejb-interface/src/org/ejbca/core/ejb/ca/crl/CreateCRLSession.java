@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ca.crl;
 
 import java.util.Collection;
 
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
@@ -45,7 +44,7 @@ public interface CreateCRLSession {
      *            used CRL overlap time will be (crloverlaptime +
      *            addtocrloverlaptime)
      * @return true if a CRL was created
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if communication or system error occurrs
      */
     public boolean runNewTransactionConditioned(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, long addtocrloverlaptime)
@@ -74,7 +73,7 @@ public interface CreateCRLSession {
      *            A new delta CRL is created if the current one expires within
      *            the crloverlaptime given in milliseconds
      * @return true if a Delta CRL was created
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if communication or system error occurrs
      */
     public boolean runDeltaCRLnewTransactionConditioned(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, long crloverlaptime);
@@ -90,7 +89,7 @@ public interface CreateCRLSession {
      *            the CA this operation regards
      * @return fingerprint (primarey key) of the generated CRL or null if
      *         generation failed
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communications- or system error occurs
      */
     public java.lang.String run(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca) throws CATokenOfflineException;
@@ -128,7 +127,7 @@ public interface CreateCRLSession {
      *            CRL.
      * @return the bytes of the Delta CRL generated or null of no delta CRL was
      *         generated.
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communications- or system error occurs
      */
     public byte[] runDeltaCRL(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, int baseCrlNumber, long baseCrlCreateTime);

@@ -15,19 +15,18 @@ package org.ejbca.core.ejb.services;
 import java.util.List;
 
 import javax.ejb.Local;
-import javax.persistence.NonUniqueResultException;
 
 import org.ejbca.core.model.services.ServiceConfiguration;
 
 /**
  * @author mikek
- * 
+ * @version $Id$
  */
 @Local
 public interface ServiceDataSessionLocal extends ServiceDataSession {
 
     /**
-     * @throws NonUniqueResultException
+     * @throws javax.persistence.NonUniqueResultException
      *             if more than one entity with the name exists
      * @return the found entity instance or null if the entity does not exist
      */
