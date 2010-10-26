@@ -29,8 +29,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.naming.NamingException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionRemote;
@@ -81,9 +79,6 @@ public class RemoteAuthenticationSessionBean {
     /** URL to remote authentication server */
     private String remoteurl = null;
 
-    @PersistenceContext(unitName="ejbca")
-    private EntityManager entityManager;
-    
     /** The remote interface of the log session bean */
     @EJB
     private LogSessionRemote logsession;

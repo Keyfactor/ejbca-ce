@@ -52,9 +52,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    /** Columns in the database used in select */
-    private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearPassword, timeCreated, timeModified, endEntityProfileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
-
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 

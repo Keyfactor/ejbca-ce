@@ -348,7 +348,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         try {
             if(this.args.length <  2){
                 usage();
-                System.exit(-1);
+                System.exit(-1); // NOPMD, this is not a JEE app
             }
             final int numberOfThreads = this.args.length>2 ? Integer.parseInt(this.args[2]) : 1;
             final int waitTime = this.args.length>3 ? Integer.parseInt(this.args[3]) : -1;

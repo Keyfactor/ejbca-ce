@@ -785,7 +785,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         org.ejbca.core.ejb.hardtoken.HardTokenData data = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
         if (data == null) {
             try {
-                entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(admin, tokensn, username, new java.util.Date(), new java.util.Date(),
+                entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(tokensn, username, new java.util.Date(), new java.util.Date(),
                         tokentype, bcdn, setHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                                 hardtokendata)));
                 if (certificates != null) {

@@ -36,7 +36,6 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -62,8 +61,6 @@ public class StartServicesServlet extends HttpServlet {
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB

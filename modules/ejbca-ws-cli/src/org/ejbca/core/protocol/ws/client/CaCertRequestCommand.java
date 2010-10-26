@@ -67,7 +67,7 @@ public class CaCertRequestCommand extends EJBCAWSRABaseCommand implements IAdmin
 			if (args.length < 7 || args.length > 8) {
 				getPrintStream().println("Number of arguments: "+args.length);
 				usage();
-				System.exit(-1);
+				System.exit(-1); // NOPMD, this is not a JEE app
 			}
 
 			CertTools.installBCProvider();

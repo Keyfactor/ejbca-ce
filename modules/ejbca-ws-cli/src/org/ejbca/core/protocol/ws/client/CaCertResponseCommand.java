@@ -62,7 +62,7 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			if(args.length < 4 || args.length > 5){
 				getPrintStream().println("Number of arguments: "+args.length);
 				usage();
-				System.exit(-1);
+				System.exit(-1); // NOPMD, this is not a JEE app
 			}
 
 			String caname = args[ARG_CANAME];

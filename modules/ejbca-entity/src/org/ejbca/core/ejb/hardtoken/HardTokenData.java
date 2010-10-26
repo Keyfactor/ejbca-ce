@@ -57,7 +57,7 @@ public class HardTokenData implements Serializable {
 	/**
 	 * Entity holding data of a hard token issuer.
 	 */
-	public HardTokenData(Admin admin, String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HashMap data) {
+	public HardTokenData(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HashMap data) {
 		setTokenSN(tokensn);
 		setUsername(username);
 		setCtime(createtime.getTime());

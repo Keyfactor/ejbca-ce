@@ -41,7 +41,7 @@ public class xkmscli  {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
-            System.exit(-1);
+            System.exit(-1); // NOPMD, this is not a JEE app
         }
     }
 }

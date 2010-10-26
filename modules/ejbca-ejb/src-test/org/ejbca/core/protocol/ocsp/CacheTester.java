@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
  * @author tomas
  * @version $Id$
  */
-public class CacheTester implements Runnable {
+public class CacheTester implements Runnable { // NOPMD, this is not a JEE app, only a test
 	private CertificateCache cache = null;
 	private String dn;
 	public CacheTester(CertificateCache cache, String lookfor) {

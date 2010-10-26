@@ -134,6 +134,9 @@ public class EjbcaConfiguration {
 		return ConfigurationHolder.getExpandedString("approval.excludedClasses", "");
 	}
 
+	/**
+	 * This method is deprecated in 4.0 and will be removed in 4.1. In 4.1, all references to this method can simply de beleted. 
+	 */
 	@Deprecated
 	public static String getLoggingLog4jConfig() {
 		return ConfigurationHolder.getExpandedString("logging.log4j.config", null);	// was false "false"

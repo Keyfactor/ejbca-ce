@@ -29,6 +29,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.RequestMessageUtils;
 import org.ejbca.util.keystore.KeyTools;
@@ -60,9 +61,9 @@ public class CvcPrintCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		try {   
 			if(args.length < 2 || args.length > 4){
 				usage();
-				System.exit(-1);
+				System.exit(-1); // NOPMD, this is not a JEE app
 			}
-			CertTools.installBCProvider();
+			CryptoProviderTools.installBCProvider();
 			String filename = args[1];
 			getPrintStream().println("Printing CV Certificate: "+filename);
 			// Read file to a buffer and use the toString functions in the cvc-lib
