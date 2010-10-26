@@ -332,9 +332,6 @@
                 <include name="renew.war" />
                 <include name="ejbca-cmp-tcp.war" />
             </fileset>
-            <fileset dir="${jsf.dir}">
-                <include name="lib/*.jar" />
-            </fileset>
         	<zipfileset prefix="lib" dir="modules/dist">
                 <include name="externalra-service.jar" />
                 <include name="ejbca-ejb3-interface.jar" />
