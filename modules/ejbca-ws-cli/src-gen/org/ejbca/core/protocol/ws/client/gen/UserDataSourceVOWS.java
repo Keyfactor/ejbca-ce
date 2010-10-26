@@ -23,7 +23,7 @@ import java.util.Set;
  * because of profilenames is used instead of id's.
  * 
  * @author Philip Vendil
- * @version $Id: UserDataSourceVOWS.java 8282 2009-11-09 14:57:21Z jeklund $
+ * @version $Id$
  */
 public class UserDataSourceVOWS implements Serializable{
 

@@ -23,7 +23,7 @@ import org.ejbca.util.Base64;
 /**
  * Wrapper class for holding WS keystore data
  * 
- * @version $Id: KeyStore.java 8282 2009-11-09 14:57:21Z jeklund $
+ * @version $Id$
  */
 public class KeyStore extends TokenCertificateResponseWS {
 	

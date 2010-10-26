@@ -23,7 +23,7 @@ import org.ejbca.core.model.hardtoken.HardTokenConstants;
  * 
  * @author Philip Vendil 2007 feb 8
  *
- * @version $Id: TokenCertificateRequestWS.java 8373 2009-11-30 14:07:00Z jeklund $
+ * @version $Id$
  */
 public class TokenCertificateRequestWS {
 	

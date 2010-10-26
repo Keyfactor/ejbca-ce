@@ -26,7 +26,6 @@ import org.ejbca.core.model.hardtoken.UnavailableTokenException;
  * A hard token is a smart card, usb token and similar. A generic thing actually.
  * 
  * @version $Id$
- *
  */
 public interface HardTokenSession {
     /**

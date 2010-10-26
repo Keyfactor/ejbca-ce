@@ -84,7 +84,7 @@ import org.ejbca.util.query.BasicMatch;
 /** 
  * This instance is created when the OCSP Servlet session is initiated with {@link OCSPServletStandAlone#init()}. It will be only one instance of this class.
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAloneSession.java 9880 2010-09-15 15:21:04Z mikekushner $
+ * @version  $Id$
  */
 class OCSPServletStandAloneSession implements P11SlotUser {
 
