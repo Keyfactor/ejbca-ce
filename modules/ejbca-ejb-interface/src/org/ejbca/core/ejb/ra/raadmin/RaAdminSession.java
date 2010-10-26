@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
-import javax.ejb.EJBException;
-
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
@@ -54,7 +52,7 @@ public interface RaAdminSession {
     /**
      * Function that returns the default admin preference.
      * 
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     org.ejbca.core.model.ra.raadmin.AdminPreference getDefaultAdminPreference(Admin admin);
@@ -62,7 +60,7 @@ public interface RaAdminSession {
     /**
      * Function that saves the default admin preference.
      * 
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     void saveDefaultAdminPreference(Admin admin, org.ejbca.core.model.ra.raadmin.AdminPreference defaultadminpreference);
@@ -79,7 +77,7 @@ public interface RaAdminSession {
     /**
      * Loads the global configuration from the database.
      * 
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     org.ejbca.core.model.ra.raadmin.GlobalConfiguration getCachedGlobalConfiguration(Admin admin);
@@ -87,7 +85,7 @@ public interface RaAdminSession {
     /**
      * Saves the globalconfiguration
      * 
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     void saveGlobalConfiguration(Admin admin, org.ejbca.core.model.ra.raadmin.GlobalConfiguration globconf);

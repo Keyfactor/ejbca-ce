@@ -15,15 +15,15 @@ package org.cesecore.core.ejb.ra.raadmin;
 import java.util.Collection;
 import java.util.HashMap;
 
-import javax.ejb.EJBException;
-
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
-/**
- * @author mikek
+/** Session bean for managing End Entity Profiles.
+ * 
+ * @author Mike Kushner
+ * @version $Id$
  * 
  */
 public interface EndEntityProfileSession {
@@ -73,7 +73,7 @@ public interface EndEntityProfileSession {
     /**
      * Removes an end entity profile from the database.
      * 
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     void removeEndEntityProfile(Admin admin, String profilename);

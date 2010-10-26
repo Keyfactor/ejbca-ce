@@ -14,8 +14,6 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Collection;
 
-import javax.ejb.EJBException;
-
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
@@ -80,7 +78,7 @@ public interface PublisherSession {
      * 
      * @throws PublisherExistsException
      *             if hard token already exists.
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     public void addPublisher(org.ejbca.core.model.log.Admin admin, java.lang.String name, org.ejbca.core.model.ca.publisher.BasePublisher publisher)
@@ -92,7 +90,7 @@ public interface PublisherSession {
      * 
      * @throws PublisherExistsException
      *             if publisher already exists.
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     public void addPublisher(org.ejbca.core.model.log.Admin admin, int id, java.lang.String name, org.ejbca.core.model.ca.publisher.BasePublisher publisher)
@@ -101,7 +99,7 @@ public interface PublisherSession {
     /**
      * Updates publisher data
      * 
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     public void changePublisher(org.ejbca.core.model.log.Admin admin, java.lang.String name, org.ejbca.core.model.ca.publisher.BasePublisher publisher);
@@ -111,7 +109,7 @@ public interface PublisherSession {
      * 
      * @throws PublisherExistsException
      *             if publisher already exists.
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     public void clonePublisher(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname);
@@ -119,7 +117,7 @@ public interface PublisherSession {
     /**
      * Removes a publisher from the database.
      * 
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     public void removePublisher(org.ejbca.core.model.log.Admin admin, java.lang.String name);
@@ -129,7 +127,7 @@ public interface PublisherSession {
      * 
      * @throws PublisherExistsException
      *             if publisher already exists.
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     public void renamePublisher(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname)
@@ -186,7 +184,7 @@ public interface PublisherSession {
      * Returns a publishers name given its id.
      * 
      * @return the name or null if id doesnt exists
-     * @throws EJBException
+     * @throws javax.ejb.EJBException
      *             if a communication or other error occurs.
      */
     public String getPublisherName(org.ejbca.core.model.log.Admin admin, int id);

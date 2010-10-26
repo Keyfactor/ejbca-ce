@@ -12,9 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
-/**
+/** Session bean to manage services, these are services that runs periodically.
+ * 
  * @author mikek
- *
+ * @version $Id$
  */
 public interface ServiceDataSession {
 

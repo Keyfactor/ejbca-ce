@@ -16,7 +16,7 @@ import javax.ejb.Remote;
 
 /**
  * @author mikek
- *
+ * @version $Id$
  */
 @Remote
 public interface ServiceDataSessionRemote extends ServiceDataSession {

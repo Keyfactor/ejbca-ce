@@ -28,7 +28,8 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.query.IllegalQueryException;
 
-/**
+/** Session bean to manage approval requests, i.e. add and find.
+ * 
  * @version $Id$
  */
 public interface ApprovalSession {
@@ -205,7 +206,7 @@ public interface ApprovalSession {
      */
     public List<ApprovalDataVO> query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, int index, int numberofrows,
             java.lang.String caAuthorizationString, java.lang.String endEntityProfileAuthorizationString)
-            throws org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.query.IllegalQueryException;
+            throws AuthorizationDeniedException, IllegalQueryException;
 
     /**
      * Get a list of all pending approvals ids. This was written for the upgrade
