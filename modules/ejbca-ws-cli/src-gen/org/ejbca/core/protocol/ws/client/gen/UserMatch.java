@@ -17,7 +17,7 @@ import org.ejbca.util.query.BasicMatch;
 /**
  * Holder of user match/search data.
  * 
- * @version $Id: UserMatch.java 8282 2009-11-09 14:57:21Z jeklund $
+ * @version $Id$
  */
 public class UserMatch {
 

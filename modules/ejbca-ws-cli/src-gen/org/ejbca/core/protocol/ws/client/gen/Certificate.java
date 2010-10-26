@@ -19,7 +19,7 @@ import org.ejbca.util.Base64;
 /**
  * Holds certificate WS elements
  * 
- * @version $Id: Certificate.java 8282 2009-11-09 14:57:21Z jeklund $
+ * @version $Id$
  */
 public class Certificate extends TokenCertificateResponseWS {
 	

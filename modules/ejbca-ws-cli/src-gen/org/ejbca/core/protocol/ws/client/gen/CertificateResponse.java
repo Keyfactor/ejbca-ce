@@ -20,7 +20,7 @@ import java.security.cert.X509Certificate;
 /**
  * Holds certificate WS response data 
  *
- * @version $Id: CertificateResponse.java 8282 2009-11-09 14:57:21Z jeklund $
+ * @version $Id$
  */
 public class CertificateResponse  {
 	

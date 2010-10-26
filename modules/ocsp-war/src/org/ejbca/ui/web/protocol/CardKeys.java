@@ -17,7 +17,7 @@ import java.security.interfaces.RSAPublicKey;
 
 /**
  * @author lars
- * @version $Id: CardKeys.java 9334 2010-07-01 11:49:03Z jeklund $
+ * @version $Id$
  */
 public interface CardKeys {
 

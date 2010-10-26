@@ -15,6 +15,10 @@ package org.ejbca.core.ejb.ra.raadmin;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
+/** Session bean to handle RA administration, which means admin preferences, global configuration and such.
+ * 
+ * @version $Id$
+ */
 public interface RaAdminSession {
     
     /**

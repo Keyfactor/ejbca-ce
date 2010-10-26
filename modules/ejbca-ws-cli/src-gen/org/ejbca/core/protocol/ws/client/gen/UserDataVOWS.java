@@ -38,7 +38,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  *</pre>
  * 
  * @author Philip Vendil
- * @version $Id: UserDataVOWS.java 9298 2010-06-28 09:46:44Z primelars $
+ * @version $Id$
  */
 public class UserDataVOWS implements Serializable{
 	

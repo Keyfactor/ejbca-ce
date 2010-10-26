@@ -30,7 +30,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * 
  * @author Philip Vendil
  *
- * $Id: HardTokenDataWS.java 8282 2009-11-09 14:57:21Z jeklund $
+ * $Id$
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "hardTokenDataWS", propOrder = {

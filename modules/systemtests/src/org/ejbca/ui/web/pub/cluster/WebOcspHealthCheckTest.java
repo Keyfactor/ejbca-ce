@@ -7,7 +7,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  *
- * @version $Id: WebOcspHealthCheckTest.java 9566 2010-07-29 23:12:16Z jeklund $
+ * @version $Id$
  */
 public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
     private static final Logger log = Logger.getLogger(WebOcspHealthCheckTest.class);
