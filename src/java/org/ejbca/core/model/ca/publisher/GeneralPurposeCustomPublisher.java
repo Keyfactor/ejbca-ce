@@ -38,8 +38,7 @@ import org.ejbca.util.CertTools;
 /**
  * This class is used for publishing to user defined script or command.
  * 
- * @version $Id: GeneralPurposeCustomPublisher.java 9099 2010-05-28 11:30:36Z
- *          mikekushner $
+ * @version $Id$
  */
 public class GeneralPurposeCustomPublisher implements ICustomPublisher {
     private static Logger log = Logger.getLogger(GeneralPurposeCustomPublisher.class);
@@ -82,7 +81,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
      */
     public void init(Properties properties) {
-        log.trace(">init");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">init");
+    	}
         // Extract system properties
         crlFailOnErrorCode = properties.getProperty(crlFailOnErrorCodePropertyName, "true").equalsIgnoreCase("true");
         crlFailOnStandardError = properties.getProperty(crlFailOnStandardErrorPropertyName, "true").equalsIgnoreCase("true");
@@ -97,7 +98,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
     } // init
 
     /**
-     * Writes crtificate to temporary file and executes an external command with
+     * Writes certificate to temporary file and executes an external command with
      * the full pathname of the temporary file as argument. The temporary file
      * is the encoded form of the certificate e.g. X.509 certificates would be
      * encoded as ASN.1 DER. All parameters but incert are ignored.
@@ -144,6 +145,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
                 throw new PublisherException(msg);
             }
         }
+        if (log.isTraceEnabled()) {
+            log.trace("<storeCertificate");
+        }
         return true;
     } // storeCertificate
 
@@ -157,7 +161,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      *      byte[], java.lang.String, int)
      */
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp) throws PublisherException {
-        log.trace(">storeCRL, Storing CRL");
+        if (log.isTraceEnabled()) {
+        	log.trace(">storeCRL, Storing CRL");
+        }
         // Verify initialization
         if (crlExternalCommandFileName == null) {
             String msg = intres.getLocalizedMessage("publisher.errormissingproperty", crlExternalCommandPropertyName);
@@ -180,6 +186,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
 
         // Run internal method to create tempfile and run the command
         runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError, additionalArguments);
+        if (log.isTraceEnabled()) {
+        	log.trace("<storeCRL");
+        }
         return true;
     }
 
@@ -194,7 +203,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      * 
      */
     public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException {
-        log.trace(">revokeCertificate, Rekoving Certificate");
+        if (log.isTraceEnabled()) {
+        	log.trace(">revokeCertificate, Rekoving Certificate");
+        }
         // Verify initialization
         if (revokeExternalCommandFileName == null) {
             String msg = intres.getLocalizedMessage("publisher.errormissingproperty", revokeExternalCommandPropertyName);
@@ -214,6 +225,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             log.error(msg);
             throw new PublisherException(msg);
         }
+        if (log.isTraceEnabled()) {
+        	log.trace("<revokeCertificate");
+        }
     } // revokeCertificate
 
     /**
@@ -225,7 +239,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection(org.ejbca.core.model.log.Admin)
      */
     public void testConnection(Admin admin) throws PublisherConnectionException {
-        log.trace("testConnection, Testing connection");
+        if (log.isTraceEnabled()) {
+        	log.trace("testConnection, Testing connection");
+        }
         // Test if specified commands exist
         if (crlExternalCommandFileName != null) {
             if (!(new File(crlExternalCommandFileName)).exists()) {
@@ -254,57 +270,11 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      * Does nothing.
      */
     protected void finalize() throws Throwable {
-        log.trace(">finalize, doing nothing");
+        if (log.isTraceEnabled()) {
+        	log.trace("finalize, doing nothing");
+        }
         super.finalize();
     } // finalize
-
-    /**
-     * Writes a byte-array to a temporary file and executes the given command
-     * with the file as argument. The function will, depending on its
-     * parameters, fail if output to standard error from the command was
-     * detected or the command returns with an non-zero exit code.
-     * 
-     * @param externalCommand
-     *            The command to run.
-     * @param bytes
-     *            The buffer with content to write to the file.
-     * @param failOnCode
-     *            Determines if the method should fail on a non-zero exit code.
-     * @param failOnOutput
-     *            Determines if the method should fail on output to standard
-     *            error.
-     * @throws PublisherException
-     */
-    private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput) throws PublisherException {
-        List additionalArguments = new ArrayList(); // <String>
-        runWithTempFile(externalCommand, bytes, failOnCode, failOnOutput, additionalArguments);
-    }
-
-    /**
-     * Writes a byte-array to a temporary file and executes the given command
-     * with the file as argument. The function will, depending on its
-     * parameters, fail if output to standard error from the command was
-     * detected or the command returns with an non-zero exit code.
-     * 
-     * @param externalCommand
-     *            The command to run.
-     * @param bytes
-     *            The buffer with content to write to the file.
-     * @param failOnCode
-     *            Determines if the method should fail on a non-zero exit code.
-     * @param failOnOutput
-     *            Determines if the method should fail on output to standard
-     *            error.
-     * @param additionalArgument
-     *            Added to the command after the tempfiles name
-     * @throws PublisherException
-     */
-    private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput, String additionalArgument)
-            throws PublisherException {
-        List additionalArguments = new ArrayList(); // <String>
-        additionalArguments.add(additionalArgument);
-        runWithTempFile(externalCommand, bytes, failOnCode, failOnOutput, additionalArguments);
-    }
 
     /**
      * Writes a byte-array to a temporary file and executes the given command

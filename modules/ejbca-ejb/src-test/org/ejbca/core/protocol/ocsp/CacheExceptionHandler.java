@@ -18,7 +18,7 @@ package org.ejbca.core.protocol.ocsp;
  * @version $Id$
  */
 public class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
-	public void uncaughtException(Thread t, Throwable e) {
+	public void uncaughtException(Thread t, Throwable e) { // NOPMD, this is not a JEE app, only a test
 		CertificateCacheTest.threadException = e;
 	}
 }

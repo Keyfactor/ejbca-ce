@@ -23,7 +23,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -163,7 +162,7 @@ public class CertificateProfileData implements Serializable {
 	}
 	
 	/**
-	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static CertificateProfileData findByProfileName(EntityManager entityManager, String certificateProfileName) {

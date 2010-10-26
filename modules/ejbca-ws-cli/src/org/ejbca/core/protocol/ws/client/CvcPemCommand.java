@@ -30,6 +30,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.RequestMessageUtils;
 
@@ -60,9 +61,9 @@ public class CvcPemCommand extends EJBCAWSRABaseCommand implements IAdminCommand
 		try {   
 			if(args.length < 4 || args.length > 6){
 				usage();
-				System.exit(-1);
+				System.exit(-1); // NOPMD, this is not a JEE app
 			}
-			CertTools.installBCProvider();
+			CryptoProviderTools.installBCProvider();
 			String inform = args[1];
 			String infile = args[2];
 			String outform = args[3];

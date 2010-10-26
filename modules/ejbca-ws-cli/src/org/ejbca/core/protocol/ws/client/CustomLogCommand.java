@@ -67,7 +67,7 @@ public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminComm
 			if(args.length < 6 || args.length > 7){
 				getPrintStream().println("Number of arguments: "+args.length);
 				usage();
-				System.exit(-1);
+				System.exit(-1); // NOPMD, this is not a JEE app
 			}
 
 			String level = args[ARG_LEVEL];

@@ -15,7 +15,6 @@ package org.ejbca.ui.web.pub;
 
 import javax.ejb.EJB;
 
-import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -39,7 +38,6 @@ import org.ejbca.ui.web.pub.cluster.TextResponse;
  */
 public class HealthCheckServlet extends AbstractHealthServlet {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(HealthCheckServlet.class);
 
     private EJBCAHealthCheck healthcheck = null;
     private TextResponse healthresponse = null;

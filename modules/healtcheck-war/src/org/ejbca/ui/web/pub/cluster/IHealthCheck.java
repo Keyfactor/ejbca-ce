@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 

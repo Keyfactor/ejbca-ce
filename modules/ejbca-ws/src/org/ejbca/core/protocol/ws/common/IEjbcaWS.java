@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.common;
 
-import java.rmi.RemoteException;
 import java.security.cert.CertificateExpiredException;
 import java.util.List;
 

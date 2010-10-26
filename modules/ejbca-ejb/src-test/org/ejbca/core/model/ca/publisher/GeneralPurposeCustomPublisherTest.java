@@ -18,11 +18,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import junit.framework.TestCase;
+
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
-
-import junit.framework.TestCase;
 
 /**
  * Was doing some unit testing when I realized that these run without a running
@@ -30,11 +29,10 @@ import junit.framework.TestCase;
  * 
  * 
  * @author mikek
+ * @version $Id$
  * 
  */
 public class GeneralPurposeCustomPublisherTest extends TestCase {
-
-    private static final Logger log = Logger.getLogger(GeneralPurposeCustomPublisherTest.class);
 
     private static final String EXTERNAL_COMMAND_UNIX = "ls";
     private static final String EXTERNAL_COMMAND_WINDOWS = "cmd.exe /c dir";

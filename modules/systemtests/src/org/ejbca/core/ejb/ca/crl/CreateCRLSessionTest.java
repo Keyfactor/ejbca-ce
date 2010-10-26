@@ -46,7 +46,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -89,7 +88,6 @@ public class CreateCRLSessionTest extends CaTestCase {
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private CreateCRLSessionRemote createCrlSession = InterfaceCache.getCrlSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -163,13 +161,13 @@ public class CreateCRLSessionTest extends CaTestCase {
         log.trace(">test03CheckNumberofRevokedCerts()");
 
         // Get number of last CRL
-        Collection revfp = certificateStoreSession.listRevokedCertInfo(admin, ca.getSubjectDN(), -1);
+        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(admin, ca.getSubjectDN(), -1);
         log.debug("Number of revoked certificates=" + revfp.size());
         byte[] crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
 
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-        Set revset = x509crl.getRevokedCertificates();
+        Set<? extends X509CRLEntry> revset = x509crl.getRevokedCertificates();
         int revsize = 0;
 
         if (revset != null) {

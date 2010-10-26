@@ -29,7 +29,6 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
 import javax.persistence.OneToMany;
 import javax.persistence.Query;
 import javax.persistence.Table;
@@ -341,7 +340,7 @@ public class AdminGroupData implements Serializable {
 	}
 	
 	/**
-	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static AdminGroupData findByGroupName(EntityManager entityManager, String adminGroupName) {

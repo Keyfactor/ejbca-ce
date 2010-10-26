@@ -17,7 +17,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
@@ -32,7 +31,6 @@ public class EndEntityProfileTest extends TestCase {
     private static final Logger log = Logger.getLogger(EndEntityProfileTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();    
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     
     /**

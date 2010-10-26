@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -191,7 +190,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      *
      * @return false if certificates keyrecovery data doesn't exists
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair) {
     	if (log.isTraceEnabled()) {
@@ -230,7 +229,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param admin the administrator calling the function
      * @param certificate the certificate used with the keys about to be removed.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public void removeKeyRecoveryData(Admin admin, Certificate certificate) {
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
@@ -263,7 +262,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param admin DOCUMENT ME!
      * @param username DOCUMENT ME!
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public void removeAllKeyRecoveryData(Admin admin, String username) {
     	if (log.isTraceEnabled()) {
@@ -297,7 +296,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @return the marked keyrecovery data  or null if no recoverydata can be found.
      * @throws AuthorizationDeniedException 
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public KeyRecoveryData keyRecovery(Admin admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
@@ -358,7 +357,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @throws WaitingForApprovalException 
      * @throws ApprovalException 
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public boolean markNewestAsRecoverable(Admin admin, String username, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
     	if (log.isTraceEnabled()) {
@@ -419,7 +418,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @throws WaitingForApprovalException 
      * @throws ApprovalException 
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
@@ -456,7 +455,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param admin DOCUMENT ME!
      * @param username DOCUMENT ME!
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public void unmarkUser(Admin admin, String username) {
     	if (log.isTraceEnabled()) {
@@ -480,7 +479,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      *
      * @return true if user is already marked for key recovery.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isUserMarked(Admin admin, String username) {
@@ -512,7 +511,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      *
      * @return true if user is already marked for key recovery.
      *
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsKeys(Admin admin, Certificate certificate) {

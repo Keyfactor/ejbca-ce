@@ -17,7 +17,12 @@ import org.apache.log4j.Logger;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 
-public class WebEjbcaHealthRunner implements Runnable {
+/**
+ * Tests the EjbcaHealthCheck (servlet) with load.
+ * 
+ * @version $Id$
+ */
+public class WebEjbcaHealthRunner implements Runnable { // NOPMD, this is not a JEE app, only a test
 	
 	private static Logger log = Logger.getLogger(WebEjbcaHealthRunner.class);
 

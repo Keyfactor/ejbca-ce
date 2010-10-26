@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.InterfaceCache;
@@ -25,11 +24,9 @@ import org.ejbca.util.InterfaceCache;
  * 
  * TODO: Remake this test into a mocked unit test, to allow testing of a multiple instance database.
  * 
- * @version $Id: GlobalConfigurationTest.java 9657 2010-08-17 11:17:20Z
- *          mikekushner $
+ * @version $Id$
  */
 public class RaAdminSessionBeanTest extends TestCase {
-    private static Logger log = Logger.getLogger(RaAdminSessionBeanTest.class);
 
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
 

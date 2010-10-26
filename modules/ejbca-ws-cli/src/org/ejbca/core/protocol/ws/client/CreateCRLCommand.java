@@ -44,7 +44,7 @@ public class CreateCRLCommand extends EJBCAWSRABaseCommand implements IAdminComm
            
             if(args.length != 2){
             	usage();
-            	System.exit(-1);
+            	System.exit(-1);// NOPMD, this is not a JEE app
             }
             
             String caname = args[1];            
