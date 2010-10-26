@@ -20,7 +20,7 @@
 	<property name="ejbca.productionmode" value="true"/>
 	<property name="ca.tokentype" value="soft"/>
 	<property name="ca.tokenproperties" value=""/>
-    <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
+    <property name="ocspHardTokenClasses" value="${ejbca.home}/ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
     <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
     <property name="ocsp.usecasigningcert" value="true"/>
