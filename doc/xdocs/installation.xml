@@ -471,7 +471,7 @@ or
 <pre>
 ant clean
 ant
-asadmin deploy EJBCA_HOME/dist/ejbca.ear
+asadmin deploy --precompilejsp EJBCA_HOME/dist/ejbca.ear
 </pre>
 You can check that everything was ok in APPSRV_HOME/domains/domain1/logs/server.log.</li><br/>
 <li>Install EJBCA
@@ -534,8 +534,9 @@ ant install
     Import $EJBCA_HOME/p12/superadmin.p12 in your browser and go to url:<br/>
       https://127.0.0.1:8181/ejbca/<br/>
     You can now click "Administration" to get to the admin-GUI.</li><br/>
-<li>(Optional) Change how often EJBCA Service can run: Configuration -> EJB Container -> EJB Timer Service -> Minimum Delivery Interval: 1000. Restart application server.<br/>
+<li>(Optional) Change how often an EJBCA Service can run: Configuration -> EJB Container -> EJB Timer Service -> Minimum Delivery Interval: 1000. Restart application server.<br/>
 This can also be changed using the "minimum-delivery-interval-in-millis" attribute in the domain.xml-file when the appserver isn't running.</li>
+<li>(Optional) Apply workaround to enable redeployment without application server restart: See <a href="https://jira.primekey.se/browse/ECA-1887">ECA-1887</a>.</li>
 </ol>
 </p>    
 </subsubsection>
