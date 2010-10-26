@@ -386,69 +386,99 @@ ctrl-c
 
 <subsection name="Glassfish">
 <p>
-Currently EJBCA works with Glassfish v2 with the Derby/JavaDB database. It can also work with PostgreSQL and MySQL, but your mileage may vary.
+Currently EJBCA has been tested with Glassfish v2.1.1.
 </p>
 <p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
+
+<subsubsection name="Derby">
+<p>
+<ol>
+<li>Start JavaDB and create the database instance.
+<pre>
+  cd $APPSRV_HOME
+  bin/asadmin start-database
+  export DERBY_HOME=$APPSRV_HOME/javadb
+  javadb/bin/ij   
+  ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
+  ij> quit;
+</pre>
+</li>
+<li>Start the application server:
+<pre>
+asadmin start-domain
+</pre>
+  The default user/password for the web console is admin/adminadmin.<br/>
+  Access the Glassfish admin console at http://127.0.0.1:4848/.</li><br/>
+<li>Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.<br/>
+    When adding a Derby Pool use values: Name=EjbcaPool, Type=javax.sql.DataSource, Vendor=JavaDB.<br/>
+    Properties: user=APP, password=APP, DatabaseName=ejbca<br/>
+    Save and use the Ping-button for the pool. If you get 'Parameter wrong for this method : off', go to Additional Properties and delete 'Ssl'.<br/>
+    Command line alternative:
+    <pre>
+    asadmin create-jdbc-connection-pool --datasourceclassname org.apache.derby.jdbc.ClientDataSource --property user=APP:password=APP:DatabaseName=ejbca:ServerName=localhost:port=1527 EjbcaPool
+    </pre>
+</li>    
+<li>Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources. Use the connection pool you just created.<br/>
+    Command line alternative:
+    <pre>
+    asadmin create-jdbc-resource --connectionpoolid EjbcaPool jdbc/EjbcaDS
+    </pre>
+</li>
+</ol>
+</p>
+</subsubsection>
+
+<subsubsection name="MySQL">
+<p>
+<ol>
+<li>Start the database and create the MySQL database "ejbca". Grant privileges to the "ejbca" user with password "ejbca_pwd" (don't use this password in production!)</li>
+<li>Copy the MySQL JDBC JAR to APPSRV_HOME/lib/</li>
+<li>Start the application server:
+<pre>
+asadmin start-domain
+</pre>
+</li>
+<li>Add the Connection Pool and DataSource from the Glassfish Admin Console (see "Derby") or use command line:
+<pre>
+asadmin create-jdbc-connection-pool --datasourceclassname com.mysql.jdbc.jdbc2.optional.MysqlDataSource --property user=ejbca:password=ejbca_pwd:DatabaseName=ejbca:ServerName=localhost:port=3306 EjbcaPool
+asadmin create-jdbc-resource --connectionpoolid EjbcaPool jdbc/EjbcaDS
+</pre>
+</li>
+</ol>
+</p>
+</subsubsection>
+
 <subsubsection name="Configure EJBCA">
 <p>
 <ol>
 <li>Edit conf/ejbca.properties, you should at least set appserver.home</li>
 <li>Edit conf/log4j-glassfish.xml, to configure EJBCA logging.</li>
-<li>Edit conf/database.properties, you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database. Derby is supported for Glassfish, and default options for Derby should work.</li>
+<li>Edit conf/database.properties, you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database. Derby and MySQL has been tested with Glassfish.</li>
 <li>Edit conf/web.properties, you should set desired values and also the http/s ports (default 8080 and 8181) for your installation.</li>
-<li>Configuration of ejbcaws and xkms only have to be done in Glassfish v1.<br/>
-     On Glassfish v2 it deploys nicely, even though the functionality does not work completely.<br/>
-     See https://jira.primekey.se/browse/ECA-607 for details.<br/>
-     (Tips how to solve these probles are welcome.)
-     <ul>
-     <li>Edit conf/jaxws.properties and set 'ejbcaws.enabled=false'.</li>
-     <li>Edit conf/xkms.properties and set 'xkms.enabled=false'. (Default from EJBCA 3.10.)</li>
-     </ul>
-</li>
 </ol>
-    
-Build ejbca with 'ant'.<br/>
-Do 'ant clean' first if you have tried with different appservers, or database settings.
 </p>
 </subsubsection>    
-
-<subsubsection name="Configure Glassfish">
-<p>
-<ol>
-<li>Derby:
-<ol>
-<li>Start the database and create the database.
-<pre>
-  > cd /home/sun/glassfish/bin
-  > ./asadmin start-database
-  > export DERBY_HOME=/home/sun/glassfish/javadb; ../javadb/bin/ij   
-  ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
-  ij> quit;
-</pre></li></ol></li>
-<li>Start the application server: asadmin start-domain<br/>
-  The default user/password for the web console is admin/adminadmin.<br/>
-  Access the Glassfish admin console at http://127.0.0.1:4848/.</li>
-<li>Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.<br/>
-    When adding a Derby Pool use values: Name=EjbcaPool, Type=javax.sql.DataSource, Vendor=JavaDB.<br/>
-    Properties: user=APP, password=APP, DatabaseName=ejbca<br/>
-    Save and use the Ping-button for the pool. If you get 'Parameter wrong for this method : off', go to Additional Properties and delete 'Ssl'.</li>    
-<li>Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.<br/>
-    Use the connection pool you just created.</li>
-</ol>
-</p>
-</subsubsection>
 
 <subsubsection name="Deploy and setup">
 <p>
 <ol>
-<li>Deploy ejbca.ear using:<br/> 
-    ./asadmin deploy ../../ejbca/dist/ejbca.ear<br/>
-    The relative path to ejbca.ear depends on where you installed ejbca and glassfish.
-    You can check that everything was ok in domains/domain1/logs/server.log.</li>
-    
-<li>Install ejbca:<br/>
-    ant install</li>
-    
+<li>Build and deploy EJBCA with<br/>
+<pre>
+ant clean
+ant bootstrap
+</pre>
+or
+<pre>
+ant clean
+ant
+asadmin deploy EJBCA_HOME/dist/ejbca.ear
+</pre>
+You can check that everything was ok in APPSRV_HOME/domains/domain1/logs/server.log.</li><br/>
+<li>Install EJBCA
+<pre>
+ant install
+</pre>
+</li>
 <li>Configure SSL in Glassfish<br/>
     Configuration->HTTP Service->HTTP Listeners->http-listener-2, SSL tab
     <ul>
@@ -459,45 +489,53 @@ Do 'ant clean' first if you have tried with different appservers, or database se
     </ul>
     Add CA certificate to cacerts file:
     <ul>
-       <li>cd $EJBCA_HOME</li>
-       <li>bin/ejbca.sh ca getrootcert AdminCA1 ca.der -der</li>
+       <pre>
+       cd $EJBCA_HOME
+       keytool -exportcert -keystore p12/truststore.jks -file p12/adminca1.der -storepass changeit -alias adminca1
+       </pre>
     </ul>
     Install the CA certificate in the application servers truststore.<br/>
     On Glassfish open source:
     <ul>
-    <li>keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file $EJBCA_HOME/ca.der</li>
-    <li>password is 'changeit'</li>
+       <pre>
+       keytool -delete -keystore  $APPSRV_HOME/domains/domain1/config/cacerts.jks -alias adminca1 -storepass changeit
+           (will fail if this hasn't been done before)
+       keytool -importcert -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file $EJBCA_HOME/p12/adminca1.der -storepass changeit
+       </pre>
     </ul>
-    Example commands for how to quickly setup SSL keystore and truststore in a test environment with default passwords:
-    <pre>
-$ cd $EJBCA_HOME
-$ cp p12/tomcat.jks p12/keystore.jks
-$ keytool -list -keystore p12/keystore.jks -storepass serverpwd
-	Read the alias for the "PrivateKeyEntry" e.g. 'localhost'.
-$ keytool -keypasswd -keystore p12/keystore.jks -alias localhost -storepass serverpwd -keypass serverpwd -new changeit
-$ keytool -storepasswd -keystore p12/keystore.jks -storepass serverpwd -new changeit
-$ keytool -changealias -keystore p12/keystore.jks -alias localhost -destalias s1as -keypass changeit -storepass changeit
-$ cp p12/keystore.jks $APPSRV_HOME/domains/domain1/config/keystore.jks
-$ keytool -exportcert -keystore p12/truststore.jks -file p12/adminca1.der -storepass changeit -alias adminca1
-$ keytool -delete -keystore  $APPSRV_HOME/domains/domain1/config/cacerts.jks -alias adminca1 -storepass changeit
-$ keytool -importcert -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file p12/adminca1.der -storepass changeit -alias adminca1 -noprompt
-    </pre><br/>
     On Glassfish Enterprise:
     <ul>
     <li>cd $APPSRV_HOME/domains/domain1/config</li>
-    <li>/usr/sfw/bin/certutil -A -n adminca1 -t "p,p,p" -i $EJBCA_HOME/ca.der -d .</li>
+    <li>/usr/sfw/bin/certutil -A -n adminca1 -t "p,p,p" -i $EJBCA_HOME/p12/adminca1.der -d .</li>
     <li>verify that adminca1 has been added to the store with '/usr/sfw/bin/certutil -L -d .'.</li>
-    </ul>
-    Restart server<br/>
-    (you would probably want to install your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
-     default Glassfish cert, to do this you must edit both the http-listener and the IIOP-listeners.
-     You can also generate a new $APPSRV_HOME/domains/domain1/config/keystore.jks with key alias s1as, or even easier change the alias in tomcat.jks with keytool -changealias)</li>
-    
+    </ul><br/>
+    <li>
+    (Optional) Replace the SSL keystore and truststore with default passwords.<br/>
+    In a production environment you probably want to change the keystore passwords, to do this you must edit both the http-listener and the IIOP-listeners.
+    <pre>
+    cd $EJBCA_HOME
+    cp p12/tomcat.jks p12/keystore.jks
+    keytool -list -keystore p12/keystore.jks -storepass serverpwd
+        Read the alias for the "PrivateKeyEntry" e.g. 'localhost'.
+    keytool -keypasswd -keystore p12/keystore.jks -alias localhost -storepass serverpwd -keypass serverpwd -new changeit
+    keytool -storepasswd -keystore p12/keystore.jks -storepass serverpwd -new changeit
+    keytool -changealias -keystore p12/keystore.jks -alias localhost -destalias s1as -keypass changeit -storepass changeit
+    cp p12/keystore.jks $APPSRV_HOME/domains/domain1/config/keystore.jks
+    </pre>
+    </li>
+    <li>Restart server
+    <pre>
+    asadmin stop-domain
+    asadmin start-domain
+    </pre>
+    </li>
+</li>
 <li>Access protected EJBCA pages<br/>
     Import $EJBCA_HOME/p12/superadmin.p12 in your browser and go to url:<br/>
       https://127.0.0.1:8181/ejbca/<br/>
-    You can now click "Administration" to get to the admin-GUI.</li>
-<li>(Optional) Change how often EJBCA Service can run: Configuration -> EJB Container -> EJB Timer Service -> Minimum Delivery Interval: 1000. Restart application server. (This can also be changed using the "minimum-delivery-interval-in-millis" attribute in the domain.xml-file.)</li>
+    You can now click "Administration" to get to the admin-GUI.</li><br/>
+<li>(Optional) Change how often EJBCA Service can run: Configuration -> EJB Container -> EJB Timer Service -> Minimum Delivery Interval: 1000. Restart application server.<br/>
+This can also be changed using the "minimum-delivery-interval-in-millis" attribute in the domain.xml-file when the appserver isn't running.</li>
 </ol>
 </p>    
 </subsubsection>
