@@ -647,7 +647,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public CAInfo getCAInfoOrThrowException(Admin admin, String name) throws CADoesntExistsException {
         CAInfo cainfo = null;
         try {
-            CA ca = getCAInternal(admin, -1, name);
+            CA ca = getCAInternal(-1, name);
             cainfo = ca.getCAInfo();
             if (!authorizedToCA(admin, cainfo.getCAId())) {
                 if (log.isDebugEnabled()) {
@@ -702,8 +702,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            numerical id of CA (subjectDN.hashCode()) that we search for
      * @return CAInfo value object, never null
      * @throws CADoesntExistsException
-     *             if CA with caid does not exist or admin is not authorized to
-     *             CA
+     *             if CA with caid does not exist or admin is not authorized to CA
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfoOrThrowException(Admin admin, int caid) throws CADoesntExistsException {
@@ -729,8 +728,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            to false.
      * @return CAInfo value object, never null
      * @throws CADoesntExistsException
-     *             if CA with caid does not exist or admin is not authorized to
-     *             CA
+     *             if CA with caid does not exist or admin is not authorized to CA
      */
     private CAInfo getCAInfoOrThrowException(Admin admin, int caid, boolean doSignTest) throws CADoesntExistsException {
         if (!authorizedToCA(admin, caid)) {
@@ -742,7 +740,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         CAInfo cainfo = null;
         try {
-            CA ca = getCAInternal(admin, caid, null);
+            CA ca = getCAInternal(caid, null);
             cainfo = ca.getCAInfo();
             int status = cainfo.getStatus();
             boolean includeInHealthCheck = cainfo.getIncludeInHealthCheck();
@@ -827,20 +825,24 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     } // getCAInfo
 
     /**
-     * Get the CA object. Does not perform any authorization check. Checks if
+     * Get the CA object performing the regular authorization check. Checks if
      * the CA has expired or the certificate isn't valid yet and in that case
      * sets the correct CA status.
      * 
-     * @param admin
-     *            is used for logging
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for
+     * @param admin the admin retrieving the CA
+     * @param caid numerical id of CA (subjectDN.hashCode()) that we search for
      * @return CA value object, never null
-     * @throws CADoesntExistsException
-     *             if no CA was found
+     * @throws CADoesntExistsException if CA with caid does not exist or admin is not authorized to CA
      */
     public CA getCA(Admin admin, int caid) throws CADoesntExistsException {
-        return getCAInternal(admin, caid, null);
+        if (!authorizedToCA(admin, caid)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Admin (" + admin.toString() + ") is not authorized to CA: " + caid);
+            }
+            String msg = intres.getLocalizedMessage("caadmin.canotexistsid", new Integer(caid));
+            throw new CADoesntExistsException(msg);
+        }
+        return getCAInternal(caid, null);
     }
 
     /**
@@ -860,7 +862,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * same as CA DN. Uses CACacheManager directly if configured to do so in
      * ejbca.properties.
      * 
-     * @param admin
+     * Note! No authorization checks performed in this internal method
+     * 
      * @param caid
      *            numerical id of CA (subjectDN.hashCode()) that we search for,
      *            or -1 of a name is to ge used instead
@@ -871,7 +874,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws CADoesntExistsException
      *             if no CA was found
      */
-    private CA getCAInternal(Admin admin, int caid, String name) throws CADoesntExistsException {
+    private CA getCAInternal(int caid, String name) throws CADoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">getCAInternal: " + caid + ", " + name);
         }
@@ -905,7 +908,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Check if CA has expired, cadata (CA in database) will only be updated
         // if aggressive caching is not enabled
-        checkCAExpireAndUpdateCA(admin, ca, cadata);
+        checkCAExpireAndUpdateCA(ca, cadata);
         if (log.isTraceEnabled()) {
             log.trace("<getCAInternal: " + caid + ", " + name);
         }
@@ -978,13 +981,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * CA status to expired if it has (and status is not already expired). Logs
      * an info message that the CA certificate has expired, or is not yet valid.
      * 
-     * @param admin
+     * Note! No authorization checks performed in this internal method
+     * 
      * @param ca
-     * @param cadata
-     *            can be null , inc wich case we will try to find it in the
-     *            database *if* the CA data needs to be updated
+     * @param cadata can be null, in which case we will try to find it in the 
+     * database *if* the CA data needs to be updated
      */
-    private void checkCAExpireAndUpdateCA(Admin admin, final CA ca, CAData cadata) {
+    private void checkCAExpireAndUpdateCA(final CA ca, CAData cadata) {
         // Check that CA hasn't expired.
         try {
             CertTools.checkValidity(ca.getCACertificate(), new Date());
@@ -1160,7 +1163,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             	log.debug("DV renewal missing CVCA cert, try finding CA for:"+ ca_ref);
 	        	Iterator<Integer> cas = getAvailableCAs(admin).iterator();
 	        	while (cas.hasNext()){
-	        		CA cvca = getCAInternal(admin, (Integer)cas.next(), null);
+	        		CA cvca = getCAInternal(cas.next(), null);
 	        		if (cvca.getCAType() == CAInfo.CATYPE_CVC && cvca.getSignedBy() == CAInfo.SELFSIGNED){
 	        			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cvca.getCACertificate();
 	        			if (ca_ref.equals (cvccert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated())){
