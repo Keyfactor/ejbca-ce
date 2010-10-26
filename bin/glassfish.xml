@@ -53,11 +53,11 @@
 	<target name="j2ee:deployBase" depends="j2ee:configure">
 		<echo>Undeploying any existing EJBCA application.</echo>
         <exec executable="${appserver.home}/bin/asadmin" failonerror="false">
-            <arg line="undeploy ejbca"/>
+            <arg line="undeploy --cascade=true ejbca"/>
         </exec>
 		<echo>Deploying EJBCA application.</echo>
         <exec executable="${appserver.home}/bin/asadmin" failonerror="true">
-            <arg line="deploy ${dist.dir}/ejbca.ear"/>
+            <arg line="deploy --precompilejsp ${dist.dir}/ejbca.ear"/>
         </exec>
 	</target>
 
