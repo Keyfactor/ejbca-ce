@@ -202,7 +202,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             throw e1;
         }
         
-        checkExecutionPossibility(admin, approval, adl);
+        checkExecutionPossibility(admin, adl);
 		approval.setApprovalAdmin(true, admin);
                 
         try {
@@ -278,7 +278,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             throw e1;
         }
 
-        checkExecutionPossibility(admin, approval, adl);
+        checkExecutionPossibility(admin, adl);
         approval.setApprovalAdmin(false, admin);
 
         try {
@@ -299,7 +299,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         log.trace("<reject");
     }
     
-    private void checkExecutionPossibility(Admin admin, Approval approval, ApprovalData adl) throws AdminAlreadyApprovedRequestException{
+    /** Verifies that an administrator can approve an action, i.e. that it is not the same admin approving the request as made the request originally.
+     * An admin is not allowed to approve his/her own actions.
+     * 
+     * @param admin the administrator that tries to approve the action
+     * @param adl the action that the administrator tries to approve
+     * @throws AdminAlreadyApprovedRequestException if the admin has already approved the action before
+     */
+    private void checkExecutionPossibility(Admin admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException{
         // Check that the approvers username doesn't exists among the existing
         // usernames.
         ApprovalDataVO data = adl.getApprovalDataVO();
