@@ -47,15 +47,13 @@
 		<copy file="p12/tomcat.jks" tofile="${glassfish.conf.dir}/${keystore.file}"/>
 		<chmod file="${glassfish.conf.dir}/${keystore.file}" perm="600"/>
 
-		
-        
+		<echo>You still should configure SSL manually for Glassfish</echo>
 	</target>
 
 	<target name="j2ee:deployBase" depends="j2ee:configure">
-		<!-- 
-		TODO 
-		-->
-		<echo>You have to deploy manuallt to Glassfish so far</echo>
+        <exec executable="${appserver.home}/bin/asadmin" failonerror="true">
+            <arg line="deploy ${dist.dir}/ejbca.ear"/>
+        </exec>
 	</target>
 
 	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" depends="j2ee:deployBase">
@@ -63,6 +61,7 @@
 		<!-- 
 		TODO 
 		-->
+		<echo>You still have to configure DataSources manually for Glassfish</echo>
 	</target>
 
 	<target name="j2ee:deployocsp" depends="j2ee:configure">
