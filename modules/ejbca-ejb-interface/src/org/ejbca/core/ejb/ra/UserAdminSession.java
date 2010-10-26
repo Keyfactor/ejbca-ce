@@ -32,6 +32,10 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.query.IllegalQueryException;
 
+/** Session bean handling end entity administration, i.e. adding and editing end entities. 
+ * 
+ * @version $Id$
+ */
 public interface UserAdminSession {
     /**
      * Implements IUserAdminSession::addUser. Implements a mechanism that uses

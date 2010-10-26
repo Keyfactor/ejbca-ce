@@ -19,6 +19,10 @@ import javax.ejb.FinderException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
+/** Session bean generating CRLs
+ * 
+ * @version $Id$
+ */
 public interface CreateCRLSession {
     /**
      * Same as generating a new CRL but this is in a new separate transaction.
