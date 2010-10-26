@@ -60,6 +60,9 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSession;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -197,6 +200,8 @@ public class ProtocolOcspHttpTest extends CaTestCase {
 
     private final String httpPort;
 
+    private AdminGroupSessionRemote adminGroupSession = null;
+    private AdminEntitySessionRemote adminEntitySession = null;
     private AuthorizationSessionRemote authorizationSession = null;
     private ConfigurationSessionRemote configurationSessionRemote = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
@@ -210,11 +215,13 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     public ProtocolOcspHttpTest(String name) throws CertificateException {
         super(name);
         // Setup remote interface access if we run EJBCA in CA-mode
+        adminEntitySession = InterfaceCache.getAdminEntitySession();
         authorizationSession = InterfaceCache.getAuthorizationSession();
         configurationSessionRemote = InterfaceCache.getConfigurationSession();
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();
         signSession = InterfaceCache.getSignSession();
         userAdminSession = InterfaceCache.getUserAdminSession();
+        adminGroupSession = InterfaceCache.getAdminGroupSession();
         
         httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
@@ -1209,7 +1216,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         boolean ret = false;
         X509Certificate cacert = null;
         try {
-            authorizationSession.initialize(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec(keySpec);
@@ -1301,7 +1308,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         boolean ret = false;
         X509Certificate cacert = null;
         try {
-            authorizationSession.initialize(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec(keySpec);

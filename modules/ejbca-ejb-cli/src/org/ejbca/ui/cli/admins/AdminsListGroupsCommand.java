@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -27,7 +28,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsListGroupsCommand extends BaseAdminsCommand {
 
-    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
 
     public String getMainCommand() {
@@ -44,10 +45,10 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-            Collection<AdminGroup> adminGroups = authorizationSession.getAuthorizedAdminGroupNames(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()));
+            Collection<AdminGroup> adminGroups = adminGroupSession.getAuthorizedAdminGroupNames(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()));
             Collections.sort((List<AdminGroup>) adminGroups);
             for (AdminGroup adminGroupRep : adminGroups) {
-                AdminGroup adminGroup = authorizationSession.getAdminGroup(getAdmin(), adminGroupRep.getAdminGroupName());
+                AdminGroup adminGroup = adminGroupSession.getAdminGroup(getAdmin(), adminGroupRep.getAdminGroupName());
                 int numberOfAdmins = adminGroup.getNumberAdminEntities();
                 getLogger().info(adminGroup.getAdminGroupName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
             }

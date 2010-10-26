@@ -25,13 +25,14 @@ import java.util.Iterator;
  */
 public class BasicAccessRuleSetDecoder implements java.io.Serializable {
 			    
-	private ArrayList currentruleset = new ArrayList();
+    private static final long serialVersionUID = 1L;
+    private ArrayList<AccessRule> currentruleset = new ArrayList<AccessRule>();
 	
     /**
      * Tries to encode a advanced ruleset into basic ones. 
      * Sets the forceadvanced flag if encoding isn't possible.
      */
-    public BasicAccessRuleSetDecoder(int currentrole, Collection currentcas, Collection currentendentityrules, Collection currentendentityprofiles, Collection currentotherrules){
+    public BasicAccessRuleSetDecoder(int currentrole, Collection<Integer> currentcas, Collection<Integer> currentendentityrules, Collection<Integer> currentendentityprofiles, Collection currentotherrules){
     	if(currentrole != BasicAccessRuleSet.ROLE_NONE){
           if(currentrole == BasicAccessRuleSet.ROLE_SUPERADMINISTRATOR){
          	currentruleset.add(new AccessRule(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));        	
@@ -75,15 +76,15 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
      * 
      * @return a Collection of AccessRule
      */    
-    public Collection getCurrentAdvancedRuleSet(){
+    public Collection<AccessRule> getCurrentAdvancedRuleSet(){
     	return currentruleset;
     }
 
-	private void addCARules(Collection currentcas){
+	private void addCARules(Collection<Integer> currentcas){
 		boolean allcafound = false;
 		
-		Iterator iter = currentcas.iterator();
-		ArrayList carules = new ArrayList();
+		Iterator<Integer> iter = currentcas.iterator();
+		ArrayList<AccessRule> carules = new ArrayList<AccessRule>();
 		while(iter.hasNext()){
 			Integer next = (Integer) iter.next();
 			
@@ -117,13 +118,10 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
 		}
 	}
 	
-	private void addEndEntityRules(Collection currentendentityprofiles, Collection currentendentityrules){
-		ArrayList endentityrules = new ArrayList();
+	private void addEndEntityRules(Collection<Integer> currentendentityprofiles, Collection<Integer> currentendentityrules){
+		ArrayList<String> endentityrules = new ArrayList<String>();
 				
-		Iterator iter = currentendentityrules.iterator();
-		while(iter.hasNext()){
-			int next = ((Integer) iter.next()).intValue();
-			
+		for(Integer next : currentendentityrules){		
 			if(next == BasicAccessRuleSet.ENDENTITY_VIEW){
 				currentruleset.add(new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRule.RULE_ACCEPT, false));
 				endentityrules.add(AccessRulesConstants.VIEW_RIGHTS);
@@ -169,11 +167,9 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
 		addEndEntityProfiles(currentendentityprofiles, endentityrules);
 	}
 	
-	private void addEndEntityProfiles(Collection currentendentityprofiles, Collection endentityrules){
+	private void addEndEntityProfiles(Collection<Integer> currentendentityprofiles, Collection<String> endentityrules){
 		boolean allexists = false;	   
-	  	Iterator iter =currentendentityprofiles.iterator();
-	  	
-	  	
+	  	Iterator iter =currentendentityprofiles.iterator(); 	
 	  	ArrayList profilerules = new ArrayList();
 	  	while(iter.hasNext() && !allexists){	  	  
 	  	   Integer next = (Integer) iter.next();

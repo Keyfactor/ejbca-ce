@@ -13,7 +13,7 @@
  
 package org.ejbca.ui.cli.admins;
 
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 
@@ -24,26 +24,34 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsAddGroupCommand extends BaseAdminsCommand {
 
-    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
-    
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "addgroup"; }
-	public String getDescription() { return "Adds an administartor"; }
+    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
 
-	/**
-	 * @see org.ejbca.ui.cli.IAdminCommand
-	 */
+    public String getMainCommand() {
+        return MAINCOMMAND;
+    }
+
+    public String getSubCommand() {
+        return "addgroup";
+    }
+
+    public String getDescription() {
+        return "Adds an administrative group.";
+    }
+
+    /**
+     * @see org.ejbca.ui.cli.IAdminCommand
+     */
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             if (args.length < 2) {
-    			getLogger().info("Description: " + getDescription());
+                getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group>");
                 return;
             }
             String groupName = args[1];
-            authorizationSession.addAdminGroup(getAdmin(), groupName);
+            adminGroupSession.addAdminGroup(getAdmin(), groupName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-		}
+        }
     }
 }

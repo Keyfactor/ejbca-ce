@@ -13,6 +13,8 @@
 
 package org.ejbca.util;
 
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -52,7 +54,15 @@ public class InterfaceCache {
 		}
 		return ejb;
 	}
+	
+	public static AdminEntitySessionRemote getAdminEntitySession() {
+	    return getEjb().getAdminEntitySession();
+	}
 
+	public static AdminGroupSessionRemote getAdminGroupSession() {
+	    return getEjb().getAdminGroupSession();
+	}
+	
 	public static CAAdminSessionRemote getCAAdminSession() {
 		return getEjb().getCAAdminSession();
 	}

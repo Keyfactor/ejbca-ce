@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -42,15 +44,19 @@ import org.ejbca.util.InterfaceCache;
  */
 public class AuthorizationSessionTest extends CaTestCase {
 
-    public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
+    private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
+    private static final String SUPER_ADMIN = "superadmin";
 
     //private static final Logger log = Logger.getLogger(AuthorizationSessionTest.class);
 
-    private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);;
+    private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
+    private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    
 
     /**
      * Creates a new TestAuthenticationSession object.
@@ -82,10 +88,10 @@ public class AuthorizationSessionTest extends CaTestCase {
         int caid = "CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
 
         // Initialize with a new CA
-        authorizationSession.initialize(admin, caid, DEFAULT_SUPERADMIN_CN);
+        adminGroupSession.init(admin, caid, DEFAULT_SUPERADMIN_CN);
 
         // Retrieve access rules and check that they were added
-        AdminGroup ag = authorizationSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
+        AdminGroup ag = adminGroupSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
         Collection<AccessRule> rules = ag.getAccessRules();
         assertEquals("Number of available access rules for AdminGroup.PUBLICWEBGROUPNAME was not the expected.", 8, rules.size());
@@ -98,7 +104,7 @@ public class AuthorizationSessionTest extends CaTestCase {
         authorizationSession.addAccessRules(admin, AdminGroup.PUBLICWEBGROUPNAME, accessrules);
 
         // Retrieve the access rules and check that they were added
-        ag = authorizationSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
+        ag = adminGroupSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
         rules = ag.getAccessRules();
         assertEquals(11, rules.size()); // We have added three rules
@@ -116,9 +122,9 @@ public class AuthorizationSessionTest extends CaTestCase {
         // rules and create new ones.
         // This had some troubles with glassfish before, hence the creation of
         // this test
-        authorizationSession.initialize(admin, caid, DEFAULT_SUPERADMIN_CN);
+        adminGroupSession.init(admin, caid, DEFAULT_SUPERADMIN_CN);
         // Retrieve access rules and check that we only have the default ones
-        ag = authorizationSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
+        ag = adminGroupSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
         assertNotNull(ag);
         rules = ag.getAccessRules();
         assertEquals(8, rules.size());
@@ -169,7 +175,7 @@ public class AuthorizationSessionTest extends CaTestCase {
         
         List<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
         adminEntities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername, caid));
-        authorizationSession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
+        adminEntitySession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
         authorizationSession.forceRuleUpdate(intadmin);
         
         X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername).iterator().next();
@@ -180,6 +186,22 @@ public class AuthorizationSessionTest extends CaTestCase {
         } catch (AuthorizationDeniedException e) {
             fail("Could not authorize certificate user with AccessRulesConstants.REGULAR_APPROVEENDENTITY");
         }
+    }
+    
+  
+    /**
+     * 
+     * This test reproduces an error where the superadmin user was invalid.
+     * 
+     * @throws AuthorizationDeniedException
+     */
+    public void testIsAuthorizedWithSuperAdminFromX509Certificate() throws AuthorizationDeniedException {
+
+       Admin superadmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, SUPER_ADMIN).iterator().next(),
+                SUPER_ADMIN, null);
+        assertTrue("Authorization for superadmin user failed. This probably means that your SuperAdmin user isn't feeling very well.", authorizationSession.isAuthorized(superadmin,
+                AccessRulesConstants.REGULAR_APPROVEENDENTITY));
+                
     }
 
 }

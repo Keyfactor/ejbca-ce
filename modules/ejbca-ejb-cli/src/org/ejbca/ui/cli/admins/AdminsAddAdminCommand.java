@@ -20,7 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -32,7 +33,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsAddAdminCommand extends BaseAdminsCommand {
 
-    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private AdminEntitySessionRemote adminEntitySession = ejb.getAdminEntitySession();
+    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     
     public String getMainCommand() {
@@ -44,7 +46,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
     }
 
     public String getDescription() {
-        return "Adds an administartor";
+        return "Adds an administrator";
     }
 
     /**
@@ -55,7 +57,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
             if (args.length < 6) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-                Collection<AdminGroup> adminGroups = authorizationSession.getAuthorizedAdminGroupNames(getAdmin(),
+                Collection<AdminGroup> adminGroups = adminGroupSession.getAuthorizedAdminGroupNames(getAdmin(),
                         caAdminSession.getAvailableCAs(getAdmin()));
                 Collections.sort((List<AdminGroup>) adminGroups);
                 String availableGroups = "";
@@ -83,7 +85,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            if (authorizationSession.getAdminGroup(getAdmin(), groupName) == null) {
+            if (adminGroupSession.getAdminGroup(getAdmin(), groupName) == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
@@ -108,7 +110,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
             AdminEntity adminEntity = new AdminEntity(matchWith, matchType, matchValue, caid);
             Collection<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
             adminEntities.add(adminEntity);
-            authorizationSession.addAdminEntities(getAdmin(), groupName, adminEntities);
+            adminEntitySession.addAdminEntities(getAdmin(), groupName, adminEntities);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

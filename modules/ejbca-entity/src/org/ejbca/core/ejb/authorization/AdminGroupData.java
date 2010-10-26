@@ -233,19 +233,16 @@ public class AdminGroupData implements Serializable {
 	}
 
 	/**
-	 * Adds a Collection of AdminEntity to the database. Changing their values if they already exists
+	 * Adds a Collection of AdminEntity to the database. Changing their values if they already exists. 
+	 * 
+	 * FIXME: Move this method to AdminEntitySessionBean perhaps?
 	 */
 	public void addAdminEntities(EntityManager entityManager, Collection<AdminEntity> adminentities) {
-		Iterator<AdminEntity> iter = adminentities.iterator();
-		while (iter.hasNext()) {
-			AdminEntity adminentity = iter.next();
-			try {
+		for(AdminEntity adminentity : adminentities) {	
 				AdminEntityData data = new AdminEntityData(getAdminGroupName(), adminentity.getCaId(), adminentity.getMatchWith(),adminentity.getMatchType(), adminentity.getMatchValue());
 				entityManager.persist(data);
 				AdminEntityDataPK datapk = new AdminEntityDataPK(getAdminGroupName(), adminentity.getCaId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
-				Iterator<AdminEntityData> i = getAdminEntities().iterator();
-				while (i.hasNext()) {
-					AdminEntityData aed = i.next();
+				for(AdminEntityData aed : getAdminEntities()) {
 					AdminEntityDataPK uepk = new AdminEntityDataPK(getAdminGroupName(), aed.getCaId(), aed.getMatchWith(), aed.getMatchType(), aed.getMatchValue());
 					if (uepk.equals(datapk)) {
 						getAdminEntities().remove(aed);
@@ -254,9 +251,6 @@ public class AdminGroupData implements Serializable {
 					}
 				}
 				getAdminEntities().add(data);
-			} catch (Exception e) {
-				log.error("Error adding AdminEntities: ", e);
-			}
 		}
 	}
 
@@ -275,6 +269,7 @@ public class AdminGroupData implements Serializable {
 				if (uepk.equals(dataAdminEntityDataPK)) {
 					getAdminEntities().remove(ue);
 					entityManager.remove(ue);
+					
 					break;
 				}
 			}

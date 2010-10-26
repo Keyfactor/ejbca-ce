@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.TreeMap;
 
+import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
@@ -35,23 +35,27 @@ import org.ejbca.core.model.log.Admin;
  * @version $Id$
  */
 public class HardTokenAuthorization implements Serializable {
-    
-    private TreeMap hardtokenissuers = null;
-	private TreeMap hardtokenprofiles = null;
-	private HashMap hardtokenprofilesnamemap=null;
-	private ArrayList authissueingadmgrps = null;
-	
+
+    private static final long serialVersionUID = 1L;
+
+    private TreeMap<String, HardTokenIssuerData> hardtokenissuers = null;
+    private TreeMap<String, Integer> hardtokenprofiles = null;
+    private HashMap<Integer, String>  hardtokenprofilesnamemap = null;
+    private ArrayList<AdminGroup> authissueingadmgrps = null;
+
     private Admin admin;
+    private AdminGroupSession adminGroupSession;
     private HardTokenSession hardtokensession;
     private AuthorizationSession authorizationsession;    
     private CAAdminSession caadminsession;
 
     /** Creates a new instance of CAAuthorization. */
-    public HardTokenAuthorization(Admin admin, HardTokenSession hardtokensession, 
+    public HardTokenAuthorization(Admin admin, AdminGroupSession adminGroupSession, HardTokenSession hardtokensession, 
     		AuthorizationSession authorizationsession, CAAdminSession caadminsession) {
       this.admin=admin;
+      this.adminGroupSession = adminGroupSession;
       this.hardtokensession=hardtokensession;            
-      this.authorizationsession=authorizationsession;
+      this.authorizationsession = authorizationsession;
       this.caadminsession = caadminsession;
     }
 
@@ -60,26 +64,21 @@ public class HardTokenAuthorization implements Serializable {
      * the administrator is authorized to view and edit
      * @return A TreeMap Hard Token Alias (String) -> HardTokenIssuerData
      */    
-    public TreeMap getHardTokenIssuers(){  
-      if(hardtokenissuers==null){            
-		hardtokenissuers = new TreeMap();            
-		Iterator iter = authorizationsession.getAuthorizedAdminGroupNames(admin, caadminsession.getAvailableCAs(admin)).iterator();
-		HashSet authadmingroupids = new HashSet(); 
-	    while(iter.hasNext()){
-		  AdminGroup next = (AdminGroup) iter.next();
-		  authadmingroupids.add(new Integer(next.getAdminGroupId()));
-	    }
-		TreeMap allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
-		iter = allhardtokenissuers.keySet().iterator();
-		while(iter.hasNext()){          
-	      String alias = (String) iter.next();
-		  if(authadmingroupids.contains(new Integer(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getAdminGroupId()))){                    
-			hardtokenissuers.put(alias,allhardtokenissuers.get(alias));
-		  }   
-		}    				        
-      }
-      
-      return hardtokenissuers;  
+    public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers() {
+        if (hardtokenissuers == null) {
+            hardtokenissuers = new TreeMap<String, HardTokenIssuerData>();
+            HashSet<Integer> authadmingroupids = new HashSet<Integer>();
+            for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caadminsession.getAvailableCAs(admin))) {
+                authadmingroupids.add(Integer.valueOf(next.getAdminGroupId()));
+            }
+            TreeMap<String, HardTokenIssuerData> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
+            for (String alias : allhardtokenissuers.keySet()) {
+                if (authadmingroupids.contains(new Integer(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getAdminGroupId()))) {
+                    hardtokenissuers.put(alias, allhardtokenissuers.get(alias));
+                }
+            }
+        }
+        return hardtokenissuers;
     }
     
 	/**
@@ -87,14 +86,10 @@ public class HardTokenAuthorization implements Serializable {
 	 * the administrator is authorized to view and edit
 	 * @return A TreeMap Hard Token Profile Name (String) -> Hard Token Profile Id
 	 */    
-	public TreeMap getHardTokenProfiles(){  
+	public TreeMap<String, Integer> getHardTokenProfiles(){  
 	  if(hardtokenprofiles==null){            
-		hardtokenprofiles = new TreeMap();                
-		Collection authorizedhardtokenprofiles = hardtokensession.getAuthorizedHardTokenProfileIds(admin);
-		
-		Iterator iter = authorizedhardtokenprofiles.iterator();
-		while(iter.hasNext()){
-		  Integer id = ((Integer) iter.next());	          
+		hardtokenprofiles = new TreeMap<String, Integer>();                	
+		for(Integer id :  hardtokensession.getAuthorizedHardTokenProfileIds(admin)){		       
 		  String name = hardtokensession.getHardTokenProfileName(admin,id.intValue());
 		  hardtokenprofiles.put(name, id);		    
 		}        
@@ -135,39 +130,37 @@ public class HardTokenAuthorization implements Serializable {
 		return returnval && this.getHardTokenProfiles().keySet().contains(name);    	
 	}
 
-    
-	/**
-	 * Returns a Map of hard token profile id (Integer) -> hard token profile name (String).
-	 */
-	public HashMap getHardTokenProfileIdToNameMap(){
-	  if(hardtokenprofilesnamemap == null){
-		hardtokenprofilesnamemap = this.hardtokensession.getHardTokenProfileIdToNameMap(admin); 
-	  }
-      
-	  return hardtokenprofilesnamemap;
-	}        
-    
+    /**
+     * Returns a Map of hard token profile id (Integer) -> hard token profile
+     * name (String).
+     */
+    public HashMap<Integer, String>  getHardTokenProfileIdToNameMap() {
+        if (hardtokenprofilesnamemap == null) {
+            hardtokenprofilesnamemap = this.hardtokensession.getHardTokenProfileIdToNameMap(admin);
+        }
+
+        return hardtokenprofilesnamemap;
+    }
+
     /**
      * Returns a Collection of AdminGroup names authorized to issue hard tokens,
      * it also only returns the admin groups the administrator is authorized to edit.
      */
-    public Collection getHardTokenIssuingAdminGroups(){
-      if(authissueingadmgrps == null){
-      	authissueingadmgrps = new ArrayList();
-        Iterator iter = authorizationsession.getAuthorizedAdminGroupNames(admin, caadminsession.getAvailableCAs(admin)).iterator();
-        while(iter.hasNext()){
-          AdminGroup next = (AdminGroup) iter.next();	
-          try {          	
-			if(authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId() ,"/hardtoken_functionality/issue_hardtokens")) {
-			  authissueingadmgrps.add(next);
-			}
-		  } catch (AuthorizationDeniedException e) {}	          
-        }      		
-      }
-    	
-      return authissueingadmgrps;	
+    public Collection<AdminGroup> getHardTokenIssuingAdminGroups() {
+        if (authissueingadmgrps == null) {
+            authissueingadmgrps = new ArrayList<AdminGroup>();
+            for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caadminsession.getAvailableCAs(admin))) {
+                try {
+                    if (authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId(), "/hardtoken_functionality/issue_hardtokens")) {
+                        authissueingadmgrps.add(next);
+                    }
+                } catch (AuthorizationDeniedException e) {
+                }
+            }
+        }
+        return authissueingadmgrps;
     }
-    
+
     public void clear(){      
 	  hardtokenissuers=null;
 	  hardtokenprofiles=null;

@@ -41,9 +41,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.authorization.AdminGroupData;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -95,6 +98,8 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
+    @EJB
+    private AdminGroupSessionLocal adminGroupSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -559,7 +564,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
             try {
                 int admingroupid = htih.getAdminGroupId();
                 returnval = authorizationSession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
-                returnval = returnval && authorizationSession.existsAdministratorInGroup(admin, admingroupid);
+                returnval = returnval && adminGroupSession.existsAdministratorInGroup(admin, admingroupid);
             } catch (AuthorizationDeniedException ade) {
             }
         }
@@ -1379,8 +1384,8 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
      * Method that saves the hard token issuer data to a HashMap that can be
      * saved to database.
      */
-	private HashMap setHardToken(Admin admin, int encryptcaid, HardToken tokendata) {
-        HashMap retval = null;
+	private HashMap<String,byte[]> setHardToken(Admin admin, int encryptcaid, HardToken tokendata) {
+        HashMap<String,byte[]> retval = null;
         if (encryptcaid != 0) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1397,7 +1402,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
             }
         } else {
             // Don't encrypt data
-            retval = (HashMap) tokendata.saveData();
+            retval = (HashMap<String,byte[]>) tokendata.saveData();
         }
         return retval;
     }

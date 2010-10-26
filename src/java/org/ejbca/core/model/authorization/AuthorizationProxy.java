@@ -27,17 +27,17 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class AuthorizationProxy implements Serializable {
-
+    private static final long serialVersionUID = 1L;
     // Private fields.
-    private HashMap                     authstore;
-    private HashMap                     groupstore;
-    private AccessTree                  accesstree;
+    private HashMap<Integer, Boolean> authstore;
+    private HashMap<Integer, Boolean> groupstore;
+    private AccessTree accesstree;
 
     
     /** Creates a new instance of AuthorizationProxy. */
     public AuthorizationProxy(AccessTree accesstree) {
-       authstore = new HashMap();
-       groupstore = new HashMap();
+       authstore = new HashMap<Integer, Boolean>();
+       groupstore = new HashMap<Integer, Boolean>();
        this.accesstree = accesstree;
     }
 
@@ -58,15 +58,15 @@ public class AuthorizationProxy implements Serializable {
       }
       int tmp = adm ^ resource.hashCode();
         // Check if name is in hashmap
-      returnval = (Boolean) authstore.get(new Integer(tmp));
+      returnval = authstore.get(tmp);
       
       if(returnval==null){          
         // Get authorization from access tree
-          returnval = new Boolean(accesstree.isAuthorized(admin, resource));
-          authstore.put(new Integer(tmp),returnval);      
+          returnval = accesstree.isAuthorized(admin, resource);
+          authstore.put(tmp,returnval);      
         }
 
-      return returnval.booleanValue();
+      return returnval;
     }
 
     /**
@@ -79,16 +79,16 @@ public class AuthorizationProxy implements Serializable {
     	Boolean returnval = null;
     	int hashMapKey = adminGroupId ^ resource.hashCode();
     	// Check if the AdminGroup is present in the HashMap
-    	Object o = groupstore.get(new Integer(hashMapKey));
+    	Boolean o = groupstore.get(hashMapKey);
     	if (returnval==null) {
     		// Get authorization from access tree
     		AdminInformation admgroup = AdminInformation.getAdminInformationByGroupId(adminGroupId);				
-    		returnval = new Boolean(accesstree.isAuthorized(admgroup, resource) || accesstree.isAuthorized(admgroup, "/super_administrator"));
-    		groupstore.put(new Integer(hashMapKey),returnval);
+    		returnval = accesstree.isAuthorized(admgroup, resource) || accesstree.isAuthorized(admgroup, "/super_administrator");
+    		groupstore.put(hashMapKey,returnval);
     	} else {
-    		returnval = (Boolean) o;
+    		returnval = o;
     	}
-    	return returnval.booleanValue();
+    	return returnval;
     }
 
     /**

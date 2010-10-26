@@ -16,7 +16,6 @@ package org.ejbca.core.model.authorization;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import org.ejbca.core.model.log.Admin;
 
@@ -33,11 +32,11 @@ public class AvailableAccessRules {
     private boolean enableendentityprofilelimitations;
     private boolean usehardtokenissuing;
     private boolean usekeyrecovery;
-    private HashSet authorizedcaids;
+    private HashSet<Integer> authorizedcaids;
     private String[] customaccessrules;
 
     /** Creates a new instance of AvailableAccessRules */
-    public AvailableAccessRules(Admin admin, Authorizer authorizer, String[] customaccessrules, Collection availableCaIds,
+    public AvailableAccessRules(Admin admin, Authorizer authorizer, String[] customaccessrules, Collection<Integer> availableCaIds,
     		boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery) {   
       // Initialize
       this.authorizer = authorizer;
@@ -53,7 +52,7 @@ public class AvailableAccessRules {
       }
       
       // Get CA:s
-      authorizedcaids = new HashSet();
+      authorizedcaids = new HashSet<Integer>();
       authorizedcaids.addAll(authorizer.getAuthorizedCAIds(admin, availableCaIds));
       
       this.customaccessrules= customaccessrules;
@@ -61,8 +60,8 @@ public class AvailableAccessRules {
     
     // Public methods 
     /** Returns all the accessrules and subaccessrules from the given subresource */
-    public Collection getAvailableAccessRules(Admin admin, Collection authorizedEndEntityProfileIds, Collection authorizedUserDataSourceIds){
-    	ArrayList accessrules = new ArrayList();
+    public Collection<String> getAvailableAccessRules(Admin admin, Collection<Integer> authorizedEndEntityProfileIds, Collection<Integer> authorizedUserDataSourceIds){
+    	ArrayList<String> accessrules = new ArrayList<String>();
     	insertAvailableRoleAccessRules(accessrules);
     	insertAvailableRegularAccessRules(admin, accessrules);
     	if (enableendentityprofilelimitations) { 
@@ -78,7 +77,7 @@ public class AvailableAccessRules {
     /**
      * Method that adds all authorized role based access rules.
      */    
-    private void insertAvailableRoleAccessRules(ArrayList accessrules){
+    private void insertAvailableRoleAccessRules(ArrayList<String> accessrules){
         
       accessrules.add(AccessRulesConstants.ROLEACCESSRULES[0]);
       accessrules.add(AccessRulesConstants.ROLEACCESSRULES[1]); 
@@ -92,7 +91,7 @@ public class AvailableAccessRules {
      * Method that adds all regular access rules.
      */    
     
-    private void insertAvailableRegularAccessRules(Admin admin, ArrayList accessrules) {
+    private void insertAvailableRegularAccessRules(Admin admin, ArrayList<String> accessrules) {
        
       // Insert Standard Access Rules.
       for(int i=0; i < AccessRulesConstants.STANDARDREGULARACCESSRULES.length; i++){
@@ -120,7 +119,7 @@ public class AvailableAccessRules {
     /**
      * Method that adds all authorized access rules concerning end entity profiles.
      */
-    private void insertAvailableEndEntityProfileAccessRules(Admin admin, ArrayList accessrules, Collection authorizedEndEntityProfileIds) {
+    private void insertAvailableEndEntityProfileAccessRules(Admin admin, ArrayList<String> accessrules, Collection<Integer> authorizedEndEntityProfileIds) {
     	// Add most basic rule if authorized to it.
     	try {
     		authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEBASE);  
@@ -131,10 +130,8 @@ public class AvailableAccessRules {
     			accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
     		}
     	}
-    	// Add all authorized End Entity Profiles                    
-    	Iterator iter = authorizedEndEntityProfileIds.iterator();
-    	while (iter.hasNext()) {
-    		int profileid = ((Integer) iter.next()).intValue();
+    	// Add all authorized End Entity Profiles                        	
+    	for(int profileid : authorizedEndEntityProfileIds) { 	
     		// Administrator is authorized to this End Entity Profile, add it.
     		try {
     			authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid);  
@@ -146,7 +143,7 @@ public class AvailableAccessRules {
     /** 
      * Help Method for insertAvailableEndEntityProfileAccessRules.
      */
-    private void addEndEntityProfile(int profileid, ArrayList accessrules){
+    private void addEndEntityProfile(int profileid, ArrayList<String> accessrules){
       accessrules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid);      
       for(int j=0;j < AccessRulesConstants.ENDENTITYPROFILE_ENDINGS.length; j++){     
         accessrules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid +AccessRulesConstants.ENDENTITYPROFILE_ENDINGS[j]);  
@@ -163,7 +160,7 @@ public class AvailableAccessRules {
     /**
      * Method that adds all authorized CA access rules.
      */
-    private void insertAvailableCAAccessRules(Admin admin, ArrayList accessrules){
+    private void insertAvailableCAAccessRules(Admin admin, ArrayList<String> accessrules){
     	// Add All Authorized CAs
     	try {
     		if (authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.CABASE)) {
@@ -171,16 +168,16 @@ public class AvailableAccessRules {
     		}
     	} catch (AuthorizationDeniedException e) {
     	}
-    	Iterator iter = authorizedcaids.iterator();
-    	while (iter.hasNext()) {
-    		accessrules.add(AccessRulesConstants.CAPREFIX + ((Integer) iter.next()).intValue());  
+    	
+    	for(int caId : authorizedcaids) {
+    		accessrules.add(AccessRulesConstants.CAPREFIX + caId);  
     	}
     }
     
     /**
      * Method that adds the custom available access rules.
      */
-    private void insertCustomAccessRules(Admin admin, ArrayList accessrules){
+    private void insertCustomAccessRules(Admin admin, ArrayList<String> accessrules){
       for(int i=0; i < customaccessrules.length; i++){
         if(!customaccessrules[i].trim().equals("")) {  
           addAuthorizedAccessRule(admin, customaccessrules[i].trim(), accessrules);
@@ -191,11 +188,10 @@ public class AvailableAccessRules {
     /**
      * Method that adds the user data source access rules
      */
-    private void insertUserDataSourceAccessRules(Admin admin, ArrayList accessrules, Collection authorizedUserDataSourceIds){
+    private void insertUserDataSourceAccessRules(Admin admin, ArrayList<String> accessrules, Collection<Integer> authorizedUserDataSourceIds){
     	addAuthorizedAccessRule(admin, AccessRulesConstants.USERDATASOURCEBASE, accessrules);
-    	Iterator iter = authorizedUserDataSourceIds.iterator();
-    	while (iter.hasNext()) {
-    		int id = ((Integer) iter.next()).intValue();
+
+    	for(int id : authorizedUserDataSourceIds) {
     		addAuthorizedAccessRule(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS,accessrules);
     		addAuthorizedAccessRule(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS,accessrules);    	   
     	}       
@@ -204,7 +200,7 @@ public class AvailableAccessRules {
     /**
      * Method that checks if administrator himself is authorized to access rule, and if so adds it to list.
      */    
-    private void addAuthorizedAccessRule(Admin admin, String accessrule, ArrayList accessrules){
+    private void addAuthorizedAccessRule(Admin admin, String accessrule, ArrayList<String> accessrules){
       try{    	
         authorizer.isAuthorizedNoLog(admin, accessrule);
         accessrules.add(accessrule);

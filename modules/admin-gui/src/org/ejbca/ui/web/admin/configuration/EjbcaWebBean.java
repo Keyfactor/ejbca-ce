@@ -32,6 +32,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.authorization.AdminEntitySession;
+import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.log.LogSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -65,6 +67,8 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class EjbcaWebBean implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);
 
     // Public Constants.
@@ -88,17 +92,21 @@ public class EjbcaWebBean implements Serializable {
     // TODO: Use local interfaces here
     //private EjbLocalHelper ejb = new EjbLocalHelper();
     private EjbRemoteHelper ejb = new EjbRemoteHelper();
-    private LogSession logSession = ejb.getLogSession();
-    private CertificateStoreSession certificateStoreSession = ejb.getCertStoreSession();
-    private CAAdminSession caAdminSession = ejb.getCAAdminSession();
-    private EndEntityProfileSession endEntityProfileSession = ejb.getEndEntityProfileSession();
-    private UserAdminSession userAdminSession = ejb.getUserAdminSession();
-    private RaAdminSession raAdminSession = ejb.getRAAdminSession();
+    
+    private AdminEntitySession adminEntitySession = ejb.getAdminEntitySession();
+    private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
     private AuthorizationSession authorizationSession = ejb.getAuthorizationSession();
-    private HardTokenSession hardTokenSession = ejb.getHardTokenSession();
-    private PublisherSession publisherSession = ejb.getPublisherSession();
-    private UserDataSourceSession userDataSourceSession = ejb.getUserDataSourceSession();
+    private CAAdminSession caAdminSession = ejb.getCAAdminSession();
     private CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
+    private CertificateStoreSession certificateStoreSession = ejb.getCertStoreSession();   
+    private EndEntityProfileSession endEntityProfileSession = ejb.getEndEntityProfileSession();
+    private HardTokenSession hardTokenSession = ejb.getHardTokenSession();
+    private LogSession logSession = ejb.getLogSession();
+    private PublisherSession publisherSession = ejb.getPublisherSession();
+    private RaAdminSession raAdminSession = ejb.getRAAdminSession();
+    private UserAdminSession userAdminSession = ejb.getUserAdminSession();  
+    private UserDataSourceSession userDataSourceSession = ejb.getUserDataSourceSession();
+    
 
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;
@@ -136,10 +144,10 @@ public class EjbcaWebBean implements Serializable {
     	globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, raAdminSession, authorizationSession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
-    		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, authorizationSession, endEntityProfileSession, hardTokenSession,
+    		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, adminGroupSession, authorizationSession, endEntityProfileSession, hardTokenSession,
     				publisherSession, userDataSourceSession, certificateProfileSession, globalconfiguration);
     	}
-    	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationSession, caAdminSession);
+    	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, adminEntitySession, adminGroupSession, authorizationSession, caAdminSession);
     	
     }
     /* Sets the current user and returns the global configuration */
@@ -624,7 +632,7 @@ public class EjbcaWebBean implements Serializable {
     /**
      * Method returning all CA ids with CMS service enabled
      */
-    public Collection getCAIdsWithCMSServiceActive(){
+    public Collection<Integer> getCAIdsWithCMSServiceActive(){
     	ArrayList<Integer> retval = new ArrayList<Integer>();
     	Collection<Integer> caids = caAdminSession.getAvailableCAs(administrator);
     	Iterator<Integer> iter = caids.iterator();

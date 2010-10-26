@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -55,6 +56,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private static Admin approvingAdmin = null;
     private static ArrayList<AdminEntity> adminentities;
     
+    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
@@ -89,7 +91,7 @@ public class RevocationApprovalTest extends CaTestCase {
         adminentities = new ArrayList<AdminEntity>();
         adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminUsername, caid));
         adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, requestingAdminUsername, caid));
-        authorizationSession.addAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
+        adminEntitySession.addAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
         authorizationSession.forceRuleUpdate(internalAdmin);
         X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, adminUsername).iterator().next();
         X509Certificate reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, requestingAdminUsername).iterator()
@@ -105,7 +107,7 @@ public class RevocationApprovalTest extends CaTestCase {
         super.tearDown();
         userAdminSession.deleteUser(internalAdmin, adminUsername);
         userAdminSession.deleteUser(internalAdmin, requestingAdminUsername);
-        authorizationSession.removeAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
+        adminEntitySession.removeAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
         caAdminSession.removeCA(internalAdmin, approvalCAID);
     }
 

@@ -33,6 +33,8 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.WebConfiguration;
@@ -156,6 +158,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private static final String CA2 = "CA2";
     private static final String WS_EEPROF_EI = "WS_EEPROF_EI";
 
+    private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
@@ -165,6 +168,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
 
     public CommonEjbcaWS() {
 
@@ -204,7 +208,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             userAdded = true;
 
             boolean adminExists = false;
-            AdminGroup admingroup = authorizationSession.getAdminGroup(intAdmin, AdminGroup.TEMPSUPERADMINGROUP);
+            AdminGroup admingroup = adminGroupSession.getAdminGroup(intAdmin, AdminGroup.TEMPSUPERADMINGROUP);
             Iterator<AdminEntity> iter = admingroup.getAdminEntities().iterator();
             while (iter.hasNext()) {
                 AdminEntity adminEntity = iter.next();
@@ -216,7 +220,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             if (!adminExists) {
                 List<AdminEntity> list = new ArrayList<AdminEntity>();
                 list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASE, TEST_ADMIN_USERNAME, cainfo.getCAId()));
-                authorizationSession.addAdminEntities(intAdmin, AdminGroup.TEMPSUPERADMINGROUP, list);
+                adminEntitySession.addAdminEntities(intAdmin, AdminGroup.TEMPSUPERADMINGROUP, list);
                 authorizationSession.forceRuleUpdate(intAdmin);
             }
 
@@ -2299,7 +2303,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertEquals(caref, caref);
         
         // Now we have to import the CVCA certificate as an external CA, and do it again, then it should find the CVCA certificate
-        Collection cvcacerts = new ArrayList();
+        Collection<java.security.cert.Certificate> cvcacerts = new ArrayList<java.security.cert.Certificate>();
         cvcacerts.add(cvcacert);
         caAdminSessionRemote.importCACertificate(intAdmin, "WSTESTCVCAIMPORTED", cvcacerts);
         request = ejbcaraws.caRenewCertRequest(caname, new ArrayList(), false, false, false, null);
@@ -2321,14 +2325,14 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
             // Remove from admin group
             CAInfo cainfo = caAdminSessionRemote.getCAInfo(intAdmin, getAdminCAName());
-            AdminGroup admingroup = authorizationSession.getAdminGroup(intAdmin, AdminGroup.TEMPSUPERADMINGROUP);
+            AdminGroup admingroup = adminGroupSession.getAdminGroup(intAdmin, AdminGroup.TEMPSUPERADMINGROUP);
             Iterator<AdminEntity> iter = admingroup.getAdminEntities().iterator();
             while (iter.hasNext()) {
                 AdminEntity adminEntity = iter.next();
                 if (adminEntity.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
                     ArrayList<AdminEntity> list = new ArrayList<AdminEntity>();
                     list.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASE, TEST_ADMIN_USERNAME, cainfo.getCAId()));
-                    authorizationSession.removeAdminEntities(intAdmin, AdminGroup.TEMPSUPERADMINGROUP, list);
+                    adminEntitySession.removeAdminEntities(intAdmin, AdminGroup.TEMPSUPERADMINGROUP, list);
                     authorizationSession.forceRuleUpdate(intAdmin);
                 }
             }
@@ -2428,7 +2432,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         java.security.cert.Certificate cvcacert = null;
         int cvcaid = rootcadn.hashCode();
         try {
-            authorizationSession.initialize(intAdmin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            adminGroupSession.init(intAdmin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);          
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit WS CVC CA", -1, null, 24, // CRLPeriod

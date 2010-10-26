@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -34,6 +35,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 
+    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
     private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
@@ -49,7 +51,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 			if (args.length < 5) {
     			getLogger().info("Description: " + getDescription());
 				getLogger().info("Usage: " + getCommand() + " <name of group> <access rule> <rule> <recursive>");
-				Collection<AdminGroup> adminGroups = authorizationSession.getAuthorizedAdminGroupNames(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()));
+				Collection<AdminGroup> adminGroups = adminGroupSession.getAuthorizedAdminGroupNames(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()));
 				Collections.sort((List<AdminGroup>) adminGroups);
 				String availableGroups = "";
 				for (AdminGroup adminGroup : adminGroups) {
@@ -72,7 +74,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 				return;
 			}
 			String groupName = args[1];
-            if (authorizationSession.getAdminGroup(getAdmin(), groupName) == null) {
+            if (adminGroupSession.getAdminGroup(getAdmin(), groupName) == null) {
             	getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }

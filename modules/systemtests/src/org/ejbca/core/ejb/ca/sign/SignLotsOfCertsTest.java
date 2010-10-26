@@ -25,6 +25,8 @@ import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -55,7 +57,8 @@ public class SignLotsOfCertsTest extends CaTestCase {
 
     public static KeyPair keys;
     
-    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
+    private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -111,7 +114,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
     }
 
     public void test00AddRSACA() throws Exception {
-        authorizationSession.initialize(admin, getTestCAId(CANAME), DEFAULT_SUPERADMIN_CN);
+        adminGroupSession.init(admin, getTestCAId(CANAME), DEFAULT_SUPERADMIN_CN);
         createTestCA(CANAME, 2048);
         CAInfo info = caAdminSessionRemote.getCAInfo(admin, CANAME);
         X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();

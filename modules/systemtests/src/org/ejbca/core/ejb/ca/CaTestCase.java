@@ -25,6 +25,8 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -63,7 +65,8 @@ public abstract class CaTestCase extends TestCase {
     
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    private AuthorizationSessionRemote authorizationSession = null;
+    private AdminGroupSessionRemote adminGroupSession = null;
+    private AdminEntitySessionRemote adminEntitySession = null;
     protected CAAdminSessionRemote caAdminSessionRemote = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private RaAdminSessionRemote raAdminSession = null;
@@ -87,7 +90,8 @@ public abstract class CaTestCase extends TestCase {
     }
 
     public void setupInterfaces() {
-        authorizationSession = InterfaceCache.getAuthorizationSession();
+        adminEntitySession = InterfaceCache.getAdminEntitySession();
+        adminGroupSession = InterfaceCache.getAdminGroupSession();
         caAdminSessionRemote = InterfaceCache.getCAAdminSession();
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();
         raAdminSession = InterfaceCache.getRAAdminSession();
@@ -136,8 +140,8 @@ public abstract class CaTestCase extends TestCase {
     public boolean createTestCA(String caName, int keyStrength) {
         log.trace(">createTestCA");
         Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-        try {
-            authorizationSession.initialize(admin, ("CN=" + caName).hashCode(), DEFAULT_SUPERADMIN_CN);
+        try {                       
+            adminGroupSession.init(admin, ("CN=" + caName).hashCode(), DEFAULT_SUPERADMIN_CN);
         } catch (AdminGroupExistsException e) {
             log.error("", e);
         }

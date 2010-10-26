@@ -36,7 +36,8 @@ import org.ejbca.util.dn.DNFieldExtractor;
  */
 public class AdminEntity implements Serializable, Comparable {
 
-	// Special Users. (Constants cannot have 0 value).
+    private static final long serialVersionUID = 1L;
+    // Special Users. (Constants cannot have 0 value).
     public static final int SPECIALADMIN_PUBLICWEBUSER             = 2000;
     public static final int SPECIALADMIN_CACOMMANDLINEADMIN        = 2001;
     public static final int SPECIALADMIN_RAADMIN                   = 2002;
