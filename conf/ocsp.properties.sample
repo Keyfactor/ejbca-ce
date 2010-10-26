@@ -140,8 +140,8 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # The used token is referred to as "card" since smart card was the first (and is the only) token a custom signer has been implemented for.
 
 # Directory of classes implementing hardware signing of the OCSP response
-# Default ./ocspHardTokenClasses
-#ocsp.hardToken.classes=../primeCard/ocspHardTokenClasses-1.6
+# Default ${ejbca.home}/ocspHardTokenClasses
+#ocsp.hardToken.classes=/full-path/primeCard/ocspHardTokenClasses-1.6
 
 # The class that implements card signing of the OCSP response
 # Default: se.primeKey.caToken.card.CardKeysImpl
