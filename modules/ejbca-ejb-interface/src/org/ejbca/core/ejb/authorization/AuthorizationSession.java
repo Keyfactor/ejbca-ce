@@ -15,19 +15,10 @@ package org.ejbca.core.ejb.authorization;
 import java.util.Collection;
 
 import org.ejbca.core.model.authorization.AccessRule;
-import org.ejbca.core.model.authorization.AdminEntity;
-import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 
 public interface AuthorizationSession {
-
-    /**
-     * Method to initialize authorization bean, must be called directly after
-     * creation of bean. Should only be called once.
-     */
-    public void initialize(Admin admin, int caid, String superAdminCN) throws AdminGroupExistsException;
 
     /**
      * Method to check if a user is authorized to a certain resource.
@@ -71,58 +62,7 @@ public interface AuthorizationSession {
      */
     public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) throws AuthorizationDeniedException;
 
-    /**
-     * Method to check if an administrator exists in the specified admingroup.
-     * 
-     * @return true if administrator exists in group
-     */
-    public boolean existsAdministratorInGroup(Admin admin, int admingrouppk);
 
-    /**
-     * Method to add an admingroup.
-     * 
-     * @param admingroupname
-     *            name of new admingroup, have to be unique.
-     * @throws AdminGroupExistsException
-     *             if admingroup already exists.
-     */
-    public void addAdminGroup(Admin admin, String admingroupname)
-            throws AdminGroupExistsException;
-
-    /**
-     * Method to remove a admingroup.
-     */
-    public void removeAdminGroup(Admin admin, String admingroupname);
-
-    /**
-     * Metod to rename a admingroup
-     * 
-     * @throws AdminGroupExistsException
-     *             if admingroup already exists.
-     */
-    public void renameAdminGroup(Admin admin, String oldname, String newname)
-            throws AdminGroupExistsException;
-
-    /**
-     * Method to get a reference to a admingroup.
-     */
-    public AdminGroup getAdminGroup(Admin admin, String admingroupname);
-
-    /**
-     * Returns a Collection of AdminGroup the administrator is authorized to.
-     * <p/>
-     * SuperAdmin is authorized to all groups Other admins are only authorized
-     * to the groups containing a subset of authorized CA that the admin himself
-     * is authorized to.
-     * <p/>
-     * The AdminGroup objects only contains only name and caid and no accessdata
-     * 
-     * @param admin
-     *            The current administrator
-     * @param availableCaIds
-     *            A Collection<Integer> of all CA Ids
-     */
-    public Collection<AdminGroup> getAuthorizedAdminGroupNames(Admin admin, Collection<Integer> availableCaIds);
 
     /**
      * Adds a Collection of AccessRule to an an admin group.
@@ -140,16 +80,7 @@ public interface AuthorizationSession {
      */
     public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
 
-    /**
-     * Adds a Collection of AdminEnity to the admingroup. Changes their values
-     * if they already exists.
-     */
-    public void addAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities);
-
-    /**
-     * Removes a Collection of AdminEntity from the administrator group.
-     */
-    public void removeAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities);
+   
 
     public void isAuthorizedToGroup(Admin administrator, String admingroupname)
             throws AuthorizationDeniedException;
@@ -214,6 +145,7 @@ public interface AuthorizationSession {
      * @return true if profile exists in any of the accessrules.
      */
     public boolean existsEndEntityProfileInRules(Admin admin, int profileid);
+    
 
     /**
      * Method to check if a ca exists in any ca specific rules. Used to avoid
@@ -234,5 +166,6 @@ public interface AuthorizationSession {
      * Clear and load authorization rules cache.
      */
     public void flushAuthorizationRuleCache();
+    
 
 }

@@ -16,7 +16,6 @@ package org.ejbca.core.protocol.cmp;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -112,7 +111,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    public CrmfRAPbeRequestTest(String arg0) throws RemoteException, CertificateException {
+    public CrmfRAPbeRequestTest(String arg0) throws CertificateException {
         super(arg0);
         CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists

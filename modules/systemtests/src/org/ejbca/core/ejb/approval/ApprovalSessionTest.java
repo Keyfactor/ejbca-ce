@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -90,6 +91,7 @@ public class ApprovalSessionTest extends CaTestCase {
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
 
     public ApprovalSessionTest(String name) {
         super(name);
@@ -139,7 +141,7 @@ public class ApprovalSessionTest extends CaTestCase {
             adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername2, caid));
             adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, reqadminusername, caid));
             adminentities.add(new AdminEntity(AdminEntity.WITH_SERIALNUMBER, AdminEntity.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(externalcert), "CN=externalCert,C=SE".hashCode()));
-            authorizationSession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
+            adminEntitySession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
             authorizationSession.forceRuleUpdate(intadmin);
 
             admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername1).iterator().next();
@@ -546,7 +548,7 @@ public class ApprovalSessionTest extends CaTestCase {
         userAdminSession.deleteUser(intadmin, adminusername1);
         userAdminSession.deleteUser(intadmin, adminusername2);
         userAdminSession.deleteUser(intadmin, reqadminusername);
-        authorizationSession.removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
+        adminEntitySession.removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
         removeTestCA();
     }
 }

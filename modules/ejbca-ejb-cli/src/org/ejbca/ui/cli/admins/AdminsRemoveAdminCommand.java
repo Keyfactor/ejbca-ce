@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
@@ -29,7 +31,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
 
-    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private AdminEntitySessionRemote adminEntitySession = ejb.getAdminEntitySession();
+    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
 
     public String getMainCommand() {
@@ -52,7 +55,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            AdminGroup adminGroup = authorizationSession.getAdminGroup(getAdmin(), groupName);
+            AdminGroup adminGroup = adminGroupSession.getAdminGroup(getAdmin(), groupName);
             if (adminGroup == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
@@ -83,7 +86,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                         && currentAdminEntity.getMatchType() == adminEntity.getMatchType() && currentAdminEntity.getCaId() == adminEntity.getCaId()) {
                     Collection<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
                     adminEntities.add(adminEntity);
-                    authorizationSession.removeAdminEntities(getAdmin(), groupName, adminEntities);
+                    adminEntitySession.removeAdminEntities(getAdmin(), groupName, adminEntities);
                     return;
                 }
             }

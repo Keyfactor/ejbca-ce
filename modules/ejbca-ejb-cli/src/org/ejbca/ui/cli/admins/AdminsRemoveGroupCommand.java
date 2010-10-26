@@ -13,7 +13,7 @@
  
 package org.ejbca.ui.cli.admins;
 
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -21,7 +21,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
 
-    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "removegroup"; }
@@ -35,11 +35,11 @@ public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            if (authorizationSession.getAdminGroup(getAdmin(), groupName) == null) {
+            if (adminGroupSession.getAdminGroup(getAdmin(), groupName) == null) {
             	getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
-            authorizationSession.removeAdminGroup(getAdmin(), groupName);
+            adminGroupSession.removeAdminGroup(getAdmin(), groupName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
 		}

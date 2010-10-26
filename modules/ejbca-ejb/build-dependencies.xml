@@ -187,6 +187,7 @@
 			<copy todir="${src-temp.dir}/authorization">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/authorization/*.java"/>
+					<include name="org/cesecore/core/ejb/authorization/*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/authorization/*.java"/>

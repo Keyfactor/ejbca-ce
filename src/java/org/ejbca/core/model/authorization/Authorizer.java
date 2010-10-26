@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.authorization;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -29,8 +30,10 @@ import org.ejbca.core.model.log.LogConstants;
  *
  * @version $Id$
  */
-public class Authorizer extends Object implements java.io.Serializable {
-    
+public class Authorizer implements Serializable {
+   
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = Logger.getLogger(Authorizer.class);    
 
     private AccessTree accesstree;
@@ -60,7 +63,7 @@ public class Authorizer extends Object implements java.io.Serializable {
             throw  new AuthorizationDeniedException("Administrator is null, and therefore not authorized to resource : " + resource);
         }
         AdminInformation admininformation = admin.getAdminInformation();
-        if(!authorizationProxy.isAuthorized(admininformation, resource)  && !authorizationProxy.isAuthorized(admininformation, "/super_administrator")){
+        if(!authorizationProxy.isAuthorized(admininformation, resource)  && !authorizationProxy.isAuthorized(admininformation, "/super_administrator")){            
         	try {
         		if(!admininformation.isSpecialUser()) {
         			logSession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);

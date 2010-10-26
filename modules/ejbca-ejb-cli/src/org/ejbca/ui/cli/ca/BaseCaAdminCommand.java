@@ -28,6 +28,8 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
@@ -54,8 +56,9 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     protected char[] privateKeyPass = null;
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
     private CreateCRLSessionRemote createCrlSession = ejb.getCrlSession();
+    private AdminEntitySessionRemote adminEntitySession = ejb.getAdminEntitySession();
     
     /**
      * Retrieves the complete certificate chain from the CA
@@ -87,7 +90,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
                 rsaKeys.getPrivate());
 
         /*
-         * We don't use these uneccesary attributes DERConstructedSequence kName
+         * We don't use these unnecessary attributes DERConstructedSequence kName
          * = new DERConstructedSequence(); DERConstructedSet kSeq = new
          * DERConstructedSet();
          * kName.addObject(PKCSObjectIdentifiers.pkcs_9_at_emailAddress);
@@ -163,8 +166,8 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         return result;
     }
 
-    protected void initAuthorizationModule(int caid, String superAdminCN) throws RemoteException, AdminGroupExistsException {
+    protected void initAuthorizationModule(int caid, String superAdminCN) throws AdminGroupExistsException {
         getLogger().info("Initalizing Temporary Authorization Module.");
-        authorizationSession.initialize(getAdmin(), caid, superAdminCN);
+        adminGroupSession.init(getAdmin(), caid, superAdminCN);     
     } // initAuthorizationModule
 }

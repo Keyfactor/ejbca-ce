@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.util;
 
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -44,6 +46,8 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionRemote;
  */
 public class EjbRemoteHelper {
 
+    private AdminEntitySessionRemote adminEntitySession = null;
+    private AdminGroupSessionRemote adminGroupSession = null;
     private ApprovalSessionRemote approvalSession = null;
     private AuthenticationSessionRemote authenticationSession = null;
     private AuthorizationSessionRemote authorizationSession = null;
@@ -76,6 +80,20 @@ public class EjbRemoteHelper {
      * getLocator() { return ServiceLocator.getInstance(); }
      */
 
+    public AdminEntitySessionRemote getAdminEntitySession() {
+        if(adminEntitySession == null) {
+            adminEntitySession = JndiHelper.getRemoteSession(AdminEntitySessionRemote.class);
+        }
+        return adminEntitySession;
+    }
+    
+    public AdminGroupSessionRemote getAdminGroupSession() {
+        if(adminGroupSession == null) {
+            adminGroupSession = JndiHelper.getRemoteSession(AdminGroupSessionRemote.class);
+        }
+        return adminGroupSession;
+    }
+    
     public CAAdminSessionRemote getCAAdminSession() {
         if (caAdminSession == null) {
             caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);

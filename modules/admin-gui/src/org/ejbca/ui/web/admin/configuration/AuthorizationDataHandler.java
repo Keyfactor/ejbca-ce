@@ -16,6 +16,8 @@ package org.ejbca.ui.web.admin.configuration;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.cesecore.core.ejb.authorization.AdminEntitySession;
+import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.authorization.AccessRule;
@@ -34,19 +36,26 @@ import org.ejbca.core.model.log.Admin;
  */
 public class AuthorizationDataHandler implements java.io.Serializable {
 	
-	private CAAdminSession caAdminSession;	// was *Local
-    private AuthorizationSession authorizationsession;	// was *Local
-    private Admin administrator;    
+    private static final long serialVersionUID = 1L;
+    
+    private CAAdminSession caAdminSession; 
+    private AuthorizationSession authorizationsession;
+    private AdminEntitySession adminEntitySession;
+    private AdminGroupSession adminGroupSession;
+    private Admin administrator;
     private Collection<AdminGroup> authorizedadmingroups;
     private InformationMemory informationmemory;
 
     /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, AuthorizationSession authorizationsession, CAAdminSession caAdminSession) {       
-       this.authorizationsession = authorizationsession;
-       this.caAdminSession = caAdminSession;
-       this.administrator = administrator;
-       this.informationmemory = informationmemory;
-   }
+    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, AdminEntitySession adminEntitySession,
+            AdminGroupSession adminGroupSession, AuthorizationSession authorizationsession, CAAdminSession caAdminSession) {
+        this.adminEntitySession = adminEntitySession;
+        this.adminGroupSession = adminGroupSession;
+        this.authorizationsession = authorizationsession;
+        this.caAdminSession = caAdminSession;
+        this.administrator = administrator;
+        this.informationmemory = informationmemory;
+    }
 
     /**
      * Method to check if a admin is authorized to a resource
@@ -77,7 +86,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     public void addAdminGroup(String name) throws AdminGroupExistsException, AuthorizationDeniedException{
 		// Authorized to edit administrative priviledges
 	  authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges");
-      authorizationsession.addAdminGroup(administrator, name);
+	  adminGroupSession.addAdminGroup(administrator, name);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
     }
@@ -85,7 +94,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     /** Method to remove a admingroup.*/
     public void removeAdminGroup(String name) throws AuthorizationDeniedException{
       authorizedToEditAdministratorPrivileges(name);
-      authorizationsession.removeAdminGroup(administrator, name);
+      adminGroupSession.removeAdminGroup(administrator, name);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
     }
@@ -93,7 +102,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     /** Method to rename a admingroup. */
     public void renameAdminGroup(String oldname, String newname) throws AdminGroupExistsException, AuthorizationDeniedException{
       authorizedToEditAdministratorPrivileges(oldname);
-      authorizationsession.renameAdminGroup(administrator, oldname, newname);
+      adminGroupSession.renameAdminGroup(administrator, oldname, newname);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
     }
@@ -104,7 +113,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      */
     public Collection<AdminGroup> getAdminGroupNames(){ 
       if (this.authorizedadmingroups==null) {
-        this.authorizedadmingroups = authorizationsession.getAuthorizedAdminGroupNames(administrator, caAdminSession.getAvailableCAs(administrator));    
+        this.authorizedadmingroups = adminGroupSession.getAuthorizedAdminGroupNames(administrator, caAdminSession.getAvailableCAs(administrator));    
       }
       return this.authorizedadmingroups;
     }
@@ -117,7 +126,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      */
     public AdminGroup getAdminGroup(String admingroupname) throws AuthorizationDeniedException {
       authorizedToEditAdministratorPrivileges(admingroupname);
-      return authorizationsession.getAdminGroup(administrator, admingroupname);
+      return adminGroupSession.getAdminGroup(administrator, admingroupname);
     }
 
     /** 
@@ -174,7 +183,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
        */
     public void addAdminEntities(String admingroupname, Collection adminentities) throws AuthorizationDeniedException{
       authorizedToEditAdministratorPrivileges(admingroupname);	  
-      authorizationsession.addAdminEntities(administrator, admingroupname, adminentities);    
+      adminEntitySession.addAdminEntities(administrator, admingroupname, adminentities);    
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -187,7 +196,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
        */
     public void removeAdminEntities(String admingroupname, Collection adminentities) throws AuthorizationDeniedException{
       authorizedToEditAdministratorPrivileges(admingroupname);
-      authorizationsession.removeAdminEntities(administrator, admingroupname, adminentities);     
+      adminEntitySession.removeAdminEntities(administrator, admingroupname, adminentities);     
       informationmemory.administrativePriviledgesEdited();
     }
 

@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.admins;
 
 import java.util.Collection;
 
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
@@ -26,7 +27,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsListAdminsCommand extends BaseAdminsCommand {
 
-    private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
+    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
 
     public String getMainCommand() {
@@ -49,7 +50,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            AdminGroup adminGroup = authorizationSession.getAdminGroup(getAdmin(), groupName);
+            AdminGroup adminGroup = adminGroupSession.getAdminGroup(getAdmin(), groupName);
             if (adminGroup == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
