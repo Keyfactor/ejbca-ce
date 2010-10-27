@@ -500,13 +500,13 @@ public interface SignSession {
      * Implements ISignSession::getCRL
      * 
      * @param admin
-     *            Information about the administrator or admin preforming the
+     *            Information about the administrator or admin performing the
      *            event.
      * @param req
      *            a CRL Request message
      * @param responseClass
      *            the implementation class of the desired response
-     * @return The newly created certificate or null.
+     * @return The CRL packaged in a response message or null.
      * @throws IllegalKeyException
      *             if the public key is of wrong type.
      * @throws CADoesntExistsException
@@ -520,25 +520,5 @@ public interface SignSession {
             java.lang.Class responseClass) throws org.ejbca.core.model.ca.AuthStatusException, org.ejbca.core.model.ca.AuthLoginException,
             org.ejbca.core.model.ca.IllegalKeyException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.SignRequestException,
             org.ejbca.core.model.ca.SignRequestSignatureException, java.io.UnsupportedEncodingException;
-
-    /**
-     * Sign an array of bytes with CA.
-     * 
-     * @param keyPupose
-     *            one of SecConst.CAKEYPURPOSE_...
-     */
-    public byte[] signData(byte[] data, int caId, int keyPurpose) throws java.security.NoSuchAlgorithmException,
-            org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException,
-            java.security.InvalidKeyException, java.security.SignatureException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-
-    /**
-     * Verify an array of bytes with a signature
-     * 
-     * @param keyPupose
-     *            one of SecConst.CAKEYPURPOSE_...
-     */
-    public boolean verifySignedData(byte[] data, int caId, int keyPurpose, byte[] signature) throws org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException,
-            org.ejbca.core.model.ca.catoken.CATokenOfflineException, java.security.NoSuchAlgorithmException, java.security.InvalidKeyException,
-            java.security.SignatureException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 
 }

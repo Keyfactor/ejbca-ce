@@ -1337,37 +1337,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     /**
-     * Sign an array of bytes with CA.
-     * 
-     * @param keyPupose one of SecConst.CAKEYPURPOSE_...
-     */
-    public byte[] signData(byte[] data, int caId, int keyPurpose) throws NoSuchAlgorithmException, CATokenOfflineException, IllegalKeyStoreException,
-    		InvalidKeyException, SignatureException, CADoesntExistsException {
-        CA ca = caAdminSession.getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
-        CATokenContainer caToken = ca.getCAToken(); 
-        PrivateKey pk = caToken.getPrivateKey(keyPurpose);
-    	Signature signer = Signature.getInstance(caToken.getCATokenInfo().getSignatureAlgorithm());
-        signer.initSign(pk);
-        signer.update(data);
-        return (signer.sign());
-    }
-    
-    /**
-     * Verify an array of bytes with a signature
-     * @param keyPupose one of SecConst.CAKEYPURPOSE_...
-     */
-    public boolean verifySignedData(byte[] data, int caId, int keyPurpose, byte[] signature) throws IllegalKeyStoreException, 
-    		CATokenOfflineException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CADoesntExistsException {
-        CA ca = caAdminSession.getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
-        CATokenContainer caToken = ca.getCAToken();
-        PublicKey pk = caToken.getPublicKey(keyPurpose);
-        Signature signer = Signature.getInstance(caToken.getCATokenInfo().getSignatureAlgorithm());
-        signer.initVerify(pk);
-        signer.update(data);
-        return (signer.verify(signature));    	
-    }
-    
-    /**
      * Returns the issuance revocation code configured on the end entity extended information.
      *
      * @param data user data
