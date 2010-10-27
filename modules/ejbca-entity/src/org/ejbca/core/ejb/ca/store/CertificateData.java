@@ -40,7 +40,6 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.X509KeyUsage;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -74,20 +73,6 @@ import org.ejbca.util.keystore.KeyTools;
 public class CertificateData implements Serializable {
 
 	private static final long serialVersionUID = -8493105317760641442L;
-
-    // Constants used to construct KeyUsage
-    /**
-     * @see org.ejbca.core.ejb.ca.sign.ISignSessionRemote
-     */
-    public static final int digitalSignature = X509KeyUsage.digitalSignature;
-    public static final int nonRepudiation = X509KeyUsage.nonRepudiation;
-    public static final int keyEncipherment = X509KeyUsage.keyEncipherment;
-    public static final int dataEncipherment = X509KeyUsage.dataEncipherment;
-    public static final int keyAgreement = X509KeyUsage.keyAgreement;
-    public static final int keyCertSign = X509KeyUsage.keyCertSign;
-    public static final int cRLSign = X509KeyUsage.cRLSign;
-    public static final int encipherOnly = X509KeyUsage.encipherOnly;
-    public static final int decipherOnly = X509KeyUsage.decipherOnly;
 
 	private static final Logger log = Logger.getLogger(CertificateData.class);
 
