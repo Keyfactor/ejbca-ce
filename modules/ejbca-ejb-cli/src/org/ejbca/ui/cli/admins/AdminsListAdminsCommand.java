@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.admins;
 import java.util.Collection;
 
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -24,6 +23,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Lists admins in a group
+ * @version $Id$
  */
 public class AdminsListAdminsCommand extends BaseAdminsCommand {
 

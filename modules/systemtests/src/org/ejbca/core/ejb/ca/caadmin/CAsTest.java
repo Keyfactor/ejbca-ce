@@ -29,7 +29,6 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -80,7 +79,6 @@ public class CAsTest extends CaTestCase {
 
     private static Collection rootcacertchain = null;
 
-    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
     private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();

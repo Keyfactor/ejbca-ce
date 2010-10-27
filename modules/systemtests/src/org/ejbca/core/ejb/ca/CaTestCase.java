@@ -25,10 +25,8 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -66,7 +64,6 @@ public abstract class CaTestCase extends TestCase {
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
     private AdminGroupSessionRemote adminGroupSession = null;
-    private AdminEntitySessionRemote adminEntitySession = null;
     protected CAAdminSessionRemote caAdminSessionRemote = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private RaAdminSessionRemote raAdminSession = null;
@@ -90,7 +87,6 @@ public abstract class CaTestCase extends TestCase {
     }
 
     public void setupInterfaces() {
-        adminEntitySession = InterfaceCache.getAdminEntitySession();
         adminGroupSession = InterfaceCache.getAdminGroupSession();
         caAdminSessionRemote = InterfaceCache.getCAAdminSession();
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();

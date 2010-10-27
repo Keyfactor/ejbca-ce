@@ -25,9 +25,7 @@ import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -57,7 +55,6 @@ public class SignLotsOfCertsTest extends CaTestCase {
 
     public static KeyPair keys;
     
-    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
     private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();

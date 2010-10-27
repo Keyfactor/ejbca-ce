@@ -60,11 +60,8 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
-import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -201,8 +198,6 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     private final String httpPort;
 
     private AdminGroupSessionRemote adminGroupSession = null;
-    private AdminEntitySessionRemote adminEntitySession = null;
-    private AuthorizationSessionRemote authorizationSession = null;
     private ConfigurationSessionRemote configurationSessionRemote = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private SignSessionRemote signSession = null;
@@ -215,8 +210,6 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     public ProtocolOcspHttpTest(String name) throws CertificateException {
         super(name);
         // Setup remote interface access if we run EJBCA in CA-mode
-        adminEntitySession = InterfaceCache.getAdminEntitySession();
-        authorizationSession = InterfaceCache.getAuthorizationSession();
         configurationSessionRemote = InterfaceCache.getConfigurationSession();
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();
         signSession = InterfaceCache.getSignSession();

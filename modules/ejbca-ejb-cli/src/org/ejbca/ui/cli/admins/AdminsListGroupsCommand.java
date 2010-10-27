@@ -18,13 +18,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Lists admin groups
+ * @version $Id$
  */
 public class AdminsListGroupsCommand extends BaseAdminsCommand {
 
