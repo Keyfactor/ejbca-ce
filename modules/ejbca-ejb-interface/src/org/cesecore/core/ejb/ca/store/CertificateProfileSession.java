@@ -19,9 +19,10 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.log.Admin;
 
-/**
- * @author mikek
+/** Session bean to manage certificate profiles, i.e. add, remove, find
  * 
+ * @author mikek
+ * @version $Id$
  */
 public interface CertificateProfileSession {
 
