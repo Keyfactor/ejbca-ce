@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -28,6 +27,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Removes an admin
+ * @version $Id$
  */
 public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
 

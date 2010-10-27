@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.ca;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -28,9 +27,7 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
@@ -58,7 +55,6 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
     private CreateCRLSessionRemote createCrlSession = ejb.getCrlSession();
-    private AdminEntitySessionRemote adminEntitySession = ejb.getAdminEntitySession();
     
     /**
      * Retrieves the complete certificate chain from the CA

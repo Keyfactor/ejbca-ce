@@ -42,11 +42,9 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.authorization.AdminGroupData;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -84,8 +82,7 @@ import org.ejbca.util.CertTools;
  * Stores data used by web server clients. Uses JNDI name for datasource as
  * defined in env 'Datasource' in ejb-jar.xml.
  * 
- * @version $Id: LocalHardTokenSessionBean.java 9666 2010-08-18 11:22:12Z
- *          mikekushner $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "HardTokenSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

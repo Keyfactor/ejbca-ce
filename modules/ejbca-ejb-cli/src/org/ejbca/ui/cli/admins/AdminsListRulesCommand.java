@@ -17,13 +17,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Lists access rules for a group
+ * @version $Id$
  */
 public class AdminsListRulesCommand extends BaseAdminsCommand {
 
