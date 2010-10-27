@@ -165,26 +165,8 @@ public class CrmfMessageHandlerTest extends TestCase {
             return null;
         }
 
-        public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws EjbcaException,
-                ObjectNotFoundException {
-
-            return null;
-        }
-
-        public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage)
-                throws ObjectNotFoundException, EjbcaException {
-
-            return null;
-        }
-
         public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter)
                 throws EjbcaException, ObjectNotFoundException {
-
-            return null;
-        }
-
-        public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws EjbcaException,
-                ObjectNotFoundException {
 
             return null;
         }
@@ -196,26 +178,20 @@ public class CrmfMessageHandlerTest extends TestCase {
         }
 
         /**
-         * This method has been stubbed to respond to
-         * testExtractUserNameComponent
-         */
-        public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws EjbcaException {
+		 * This method has been stubbed to respond to
+		 * testExtractUserNameComponent
+		 */
+		public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws EjbcaException {
+		
+		    return null;
+		}
 
-            return null;
+        public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) 
+        throws EjbcaException, ObjectNotFoundException {
+        	return null;
         }
-
-        public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid,
-                int caid) throws EjbcaException, ObjectNotFoundException {
-
-            return null;
-        }
-
-        public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws EjbcaException {
-            userName = req.getUsername();
-            return null;
-        }
-
-        public byte[] createPKCS7(Admin admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
+        
+		public byte[] createPKCS7(Admin admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
 
             return null;
         }
@@ -256,18 +232,6 @@ public class CrmfMessageHandlerTest extends TestCase {
         }
 
         public boolean isUniqueCertificateSerialNumberIndex() {
-
-            return false;
-        }
-
-        public byte[] signData(byte[] data, int caId, int keyPurpose) throws NoSuchAlgorithmException, CATokenOfflineException,
-                IllegalKeyStoreException, InvalidKeyException, SignatureException, CADoesntExistsException {
-
-            return null;
-        }
-
-        public boolean verifySignedData(byte[] data, int caId, int keyPurpose, byte[] signature) throws IllegalKeyStoreException,
-                CATokenOfflineException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CADoesntExistsException {
 
             return false;
         }

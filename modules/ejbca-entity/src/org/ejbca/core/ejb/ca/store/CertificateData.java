@@ -40,6 +40,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -78,15 +79,15 @@ public class CertificateData implements Serializable {
     /**
      * @see org.ejbca.core.ejb.ca.sign.ISignSessionRemote
      */
-    public static final int digitalSignature = (1 << 7);
-    public static final int nonRepudiation = (1 << 6);
-    public static final int keyEncipherment = (1 << 5);
-    public static final int dataEncipherment = (1 << 4);
-    public static final int keyAgreement = (1 << 3);
-    public static final int keyCertSign = (1 << 2);
-    public static final int cRLSign = (1 << 1);
-    public static final int encipherOnly = (1 << 0);
-    public static final int decipherOnly = (1 << 15);
+    public static final int digitalSignature = X509KeyUsage.digitalSignature;
+    public static final int nonRepudiation = X509KeyUsage.nonRepudiation;
+    public static final int keyEncipherment = X509KeyUsage.keyEncipherment;
+    public static final int dataEncipherment = X509KeyUsage.dataEncipherment;
+    public static final int keyAgreement = X509KeyUsage.keyAgreement;
+    public static final int keyCertSign = X509KeyUsage.keyCertSign;
+    public static final int cRLSign = X509KeyUsage.cRLSign;
+    public static final int encipherOnly = X509KeyUsage.encipherOnly;
+    public static final int decipherOnly = X509KeyUsage.decipherOnly;
 
 	private static final Logger log = Logger.getLogger(CertificateData.class);
 

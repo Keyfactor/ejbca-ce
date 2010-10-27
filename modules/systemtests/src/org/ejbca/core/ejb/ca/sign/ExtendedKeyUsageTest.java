@@ -107,7 +107,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic(), -1);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         //log.debug("Cert=" + cert.toString());
         List<String> ku = cert.getExtendedKeyUsage();
@@ -135,7 +135,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic(), -1);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         //log.debug("Cert=" + cert.toString());
         List ku = cert.getExtendedKeyUsage();
@@ -147,7 +147,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         certprof.setExtendedKeyUsage(list);
         certificateProfileSession.changeCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
         createOrEditUser(fooCertProfile, fooEEProfile);
-        cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic(), -1);
+        cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         //log.debug("Cert=" + cert.toString());
         ku = cert.getExtendedKeyUsage();
