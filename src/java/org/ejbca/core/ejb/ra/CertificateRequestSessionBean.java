@@ -252,7 +252,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 		addOrEditUser(admin, userdata, false, true);
 		IResponseMessage retval = null;
 		try {
-			retval = signSession.createCertificate(admin, req, -1, responseClass);				
+			retval = signSession.createCertificate(admin, req, responseClass);				
 		} catch (NotFoundException e) {
 			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;

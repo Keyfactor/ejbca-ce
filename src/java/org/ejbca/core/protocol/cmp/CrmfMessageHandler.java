@@ -225,7 +225,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			// This is a request message, so we want to enroll for a certificate, if we have not created an error already
 			if (resp == null) {
 				// Get the certificate
-				resp = signSession.createCertificate(admin, crmfreq, -1,
+				resp = signSession.createCertificate(admin, crmfreq,
 						Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()));				
 			}
 			if (resp == null) {

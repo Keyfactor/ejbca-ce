@@ -55,6 +55,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -475,8 +476,7 @@ public class SignSessionTest extends CaTestCase {
     /**
      * test to set specific key usage
      * 
-     * @throws Exception
-     *             if en error occurs...
+     * @throws Exception if an error occurs...
      */
     public void test06KeyUsage() throws Exception {
         log.trace(">test06KeyUsage()");
@@ -484,16 +484,9 @@ public class SignSessionTest extends CaTestCase {
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
-        // Create an array for KeyUsage acoording to
-        // X509Certificate.getKeyUsage()
-        boolean[] keyusage1 = new boolean[9];
-        Arrays.fill(keyusage1, false);
-        // digitalSignature
-        keyusage1[0] = true;
-        // keyEncipherment
-        keyusage1[2] = true;
+        int keyusage1 = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage1);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage1, null, null);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         boolean[] retKU = cert.getKeyUsage();
@@ -504,14 +497,10 @@ public class SignSessionTest extends CaTestCase {
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
-        boolean[] keyusage2 = new boolean[9];
-        Arrays.fill(keyusage2, false);
-        // keyCertSign
-        keyusage2[5] = true;
-        // cRLSign
-        keyusage2[6] = true;
-
-        X509Certificate cert1 = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage2);
+        int keyusage2 = X509KeyUsage.keyCertSign | X509KeyUsage.cRLSign;
+        
+        X509Certificate cert1 = (X509Certificate)signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage2, null, null);
+        
         assertNotNull("Misslyckades skapa cert", cert1);
         retKU = cert1.getKeyUsage();
         assertTrue("Fel KeyUsage, keyCertSign finns ej!", retKU[5]);

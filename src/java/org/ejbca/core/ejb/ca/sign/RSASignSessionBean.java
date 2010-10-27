@@ -20,15 +20,11 @@ import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -127,7 +123,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      */
 	@PostConstruct
     public void ejbCreate() {
-        log.trace(">ejbCreate()");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">ejbCreate()");
+    	}
         try {
             // Install BouncyCastle provider
         	CryptoProviderTools.installBCProvider();
@@ -144,7 +142,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
         }
-        log.trace("<ejbCreate()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<ejbCreate()");
+    	}
     }
 	/**
 	 * @return true if index could be generated
@@ -245,7 +245,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * Creates a signed PKCS7 message containing the whole certificate chain, including the
      * provided client certificate.
      *
-     * @param admin Information about the administrator or admin preforming the event.
+     * @param admin Information about the administrator or admin performing the event.
      * @param cert  client certificate which we want encapsulated in a PKCS7 together with
      *              certificate chain.
      * @return The DER-encoded PKCS7 message.
@@ -260,7 +260,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain of the specified CA.
      *
-     * @param admin Information about the administrator or admin preforming the event.
+     * @param admin Information about the administrator or admin performing the event.
      * @param caId  CA for which we want a PKCS7 certificate chain.
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
@@ -278,7 +278,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     /**
      * Internal helper method
      *
-     * @param admin Information about the administrator or admin preforming the event.
+     * @param admin Information about the administrator or admin performing the event.
      * @param caId  CA for which we want a PKCS7 certificate chain.
      * @param cert  client certificate which we want ancapsulated in a PKCS7 together with
      *              certificate chain, or null
@@ -291,7 +291,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     	}
         CA ca = caAdminSession.getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
         byte[] returnval = ca.createPKCS7(cert, includeChain);
-        log.trace("<createPKCS7()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<createPKCS7()");
+    	}
         return returnval;
     }
 
@@ -299,7 +301,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * Requests for a certificate to be created for the passed public key with default key usage
      * The method queries the user database for authorization of the user.
      *
-     * @param admin    Information about the administrator or admin preforming the event.
+     * @param admin    Information about the administrator or admin performing the event.
      * @param username unique username within the instance.
      * @param password password for the user.
      * @param pk       the public key to be put in the created certificate.
@@ -312,7 +314,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException {
         // Default key usage is defined in certificate profiles
-        return createCertificate(admin, username, password, pk, -1);
+        return createCertificate(admin, username, password, pk, -1, null, null, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
 
     /**
@@ -320,59 +322,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * usage. The method queries the user database for authorization of the user. CAs are only
      * allowed to have certificateSign and CRLSign set.
      *
-     * @param admin    Information about the administrator or admin preforming the event.
-     * @param username unique username within the instance.
-     * @param password password for the user.
-     * @param pk       the public key to be put in the created certificate.
-     * @param keyusage integer with mask describing desired key usage in format specified by
-     *                 X509Certificate.getKeyUsage(). id-ce-keyUsage OBJECT IDENTIFIER ::=  { id-ce 15 }
-     *                 KeyUsage ::= BIT STRING { digitalSignature        (0), nonRepudiation          (1),
-     *                 keyEncipherment         (2), dataEncipherment        (3), keyAgreement (4),
-     *                 keyCertSign             (5), cRLSign                 (6), encipherOnly (7),
-     *                 decipherOnly            (8) }
-     * @return The newly created certificate or null.
-     * @throws EjbcaException if EJBCA did not accept any of all input parameters
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
-     */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, boolean[] keyusage) throws EjbcaException, ObjectNotFoundException {
-        return createCertificate(admin, username, password, pk, CertTools.sunKeyUsageToBC(keyusage));
-    }
-
-    /**
-     * Requests for a certificate to be created for the passed public key with the passed key
-     * usage. The method queries the user database for authorization of the user. CAs are only
-     * allowed to have certificateSign and CRLSign set.
-     *
-     * @param admin    Information about the administrator or admin preforming the event.
-     * @param username unique username within the instance.
-     * @param password password for the user.
-     * @param pk       the public key to be put in the created certificate.
-     * @param keyusage integer with bit mask describing desired keys usage, overrides keyUsage from
-     *                 CertificateProfiles if allowed. Bit mask is packed in in integer using constants
-     *                 from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
-     *                 keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
-     *                 digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-     *                 | CertificateData.cRLSign; gives keyCertSign and cRLSign
-     * @return The newly created certificate or null.
-     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
-     */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, EjbcaException {
-        return createCertificate(admin, username, password, pk, keyusage, null, null, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
-    }
-
-    /**
-     * Requests for a certificate to be created for the passed public key with the passed key
-     * usage. The method queries the user database for authorization of the user. CAs are only
-     * allowed to have certificateSign and CRLSign set.
-     *
-     * @param admin    Information about the administrator or admin preforming the event.
+     * @param admin    Information about the administrator or admin performing the event.
      * @param username unique username within the instance.
      * @param password password for the user.
      * @param pk       the public key to be put in the created certificate.
@@ -395,67 +345,12 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     /**
-     * Requests for a certificate of the specified type to be created for the passed public key.
-     * The method queries the user database for authorization of the user.
-     *
-     * @param admin    Information about the administrator or admin preforming the event.
-     * @param username unique username within the instance.
-     * @param password password for the user.
-     * @param certType integer type of certificate taken from CertificateData.CERT_TYPE_XXX. the
-     *                 type CertificateData.CERT_TYPE_ENCRYPTION gives keyUsage keyEncipherment,
-     *                 dataEncipherment. the type CertificateData.CERT_TYPE_SIGNATURE gives keyUsage
-     *                 digitalSignature, non-repudiation. all other CERT_TYPES gives the default keyUsage
-     *                 digitalSignature, keyEncipherment
-     * @param pk       the public key to be put in the created certificate.
-     * @return The newly created certificate or null.
-     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
-     */
-    public Certificate createCertificate(Admin admin, String username, String password, int certType, PublicKey pk) throws EjbcaException, ObjectNotFoundException {
-        if (log.isTraceEnabled()) {
-        	log.trace(">createCertificate(pk, certType)");
-        }
-        // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
-        boolean[] keyusage = new boolean[9];
-        Arrays.fill(keyusage, false);
-        switch (certType) {
-            case SecConst.CERT_TYPE_ENCRYPTION:
-                // keyEncipherment
-                keyusage[2] = true;
-                // dataEncipherment
-                keyusage[3] = true;
-                break;
-            case SecConst.CERT_TYPE_SIGNATURE:
-                // digitalSignature
-                keyusage[0] = true;
-                // non-repudiation
-                keyusage[1] = true;
-                break;
-            default:
-                // digitalSignature
-                keyusage[0] = true;
-                // keyEncipherment
-                keyusage[2] = true;
-                break;
-        }
-
-        Certificate ret = createCertificate(admin, username, password, pk, keyusage);
-        if (log.isTraceEnabled()) {
-        	log.trace("<createCertificate(pk, certType)");
-        }
-        return ret;
-    }
-
-    /**
      * Requests for a certificate to be created for the passed public key wrapped in a self-signed
      * certificate. Verification of the signature (proof-of-possesion) on the request is
      * performed, and an exception thrown if verification fails. The method queries the user
      * database for authorization of the user.
      *
-     * @param admin    Information about the administrator or admin preforming the event.
+     * @param admin    Information about the administrator or admin performing the event.
      * @param username unique username within the instance.
      * @param password password for the user.
      * @param incert   a certificate containing the public key to be put in the created certificate.
@@ -483,7 +378,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
             throw new SignRequestSignatureException(msg);
         }
-        Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), cert.getKeyUsage());
+        Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), CertTools.sunKeyUsageToBC(cert.getKeyUsage()), null, null);
         if (log.isTraceEnabled()) {
         	log.trace("<createCertificate(cert)");
         }
@@ -492,71 +387,12 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
-     * certification request message (ex PKCS10). Verification of the signature
-     * (proof-of-possesion) on the request is performed, and an exception thrown if verification
-     * fails. The method queries the user database for authorization of the user.
-     *
-     * @param admin         Information about the administrator or admin preforming the event.
-     * @param req           a Certification Request message, containing the public key to be put in the
-     *                      created certificate. Currently no additional parameters in requests are considered!
-     *                      Currently no additional parameters in the PKCS10 request is considered!
-     * @param responseClass The implementation class that will be used as the response message.
-     * @return The newly created response message or null.
-     * @throws ObjectNotFoundException       if the user does not exist.
-     * @throws AuthStatusException           If the users status is incorrect.
-     * @throws AuthLoginException            If the password is incorrect.
-     * @throws IllegalKeyException           if the public key is of wrong type.
-     * @throws SignRequestException          if the provided request is invalid.
-     * @throws SignRequestSignatureException if the provided client certificate was not signed by
-     *                                       the CA.
-     */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws EjbcaException {
-        return createCertificate(admin, req, -1, responseClass);
-    }
-
-    /**
-     * Requests for a certificate to be created for the passed public key with the passed key
-     * usage and using the given certificate profile. This method is primarily intended to be used when
-     * issueing hardtokens having multiple certificates per user.
-     * The method queries the user database for authorization of the user. CAs are only
-     * allowed to have certificateSign and CRLSign set.
-     *
-     * @param admin                Information about the administrator or admin preforming the event.
-     * @param username             unique username within the instance.
-     * @param password             password for the user.
-     * @param pk                   the public key to be put in the created certificate.
-     * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
-     *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
-     *                             from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
-     *                             keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
-     *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-     *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
-     * @param certificateprofileid used to override the one set in userdata.
-     *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
-     * @param caid                 used to override the one set in userdata.�
-     *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
-     * 
-     * 
-     * @return The newly created certificate or null.
-     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
-     * 
-     */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
-    	return createCertificate(admin, username, password, pk, keyusage, null, null, certificateprofileid, caid);
-    }
-    
-    /**
-     * Requests for a certificate to be created for the passed public key wrapped in a
      * certification request message (ex PKCS10).  The username and password used to authorize is
      * taken from the request message. Verification of the signature (proof-of-possesion) on the
      * request is performed, and an exception thrown if verification fails. The method queries the
      * user database for authorization of the user.
      *
-     * @param admin         Information about the administrator or admin preforming the event.
+     * @param admin         Information about the administrator or admin performing the event.
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
      * @param keyUsage      integer with bit mask describing desired keys usage. Bit mask is packed in
@@ -580,7 +416,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @see org.ejbca.core.protocol.IResponseMessage
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws EjbcaException {
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws EjbcaException {
     	if (log.isTraceEnabled()) {
     		log.trace(">createCertificate(IRequestMessage)");
     	}
@@ -638,32 +474,30 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
                     	Date notBefore = req.getRequestValidityNotBefore(); // Optionally requested validity
                     	Date notAfter = req.getRequestValidityNotAfter(); // Optionally requested validity
                     	X509Extensions exts = req.getRequestExtensions(); // Optionally requested extensions
-                    	int ku = keyUsage;
-                    	if (ku < 0) {
+                    	int keyusage = -1;
+                    	if (exts != null) {
                         	if (log.isDebugEnabled()) {
-                        		log.debug("KeyUsage < 0, see if we can override KeyUsage");
+                        		log.debug("we have extensions, see if we can override KeyUsage by looking for a KeyUsage extension in request");
                         	}
-                        	if (exts != null) {
-                            	X509Extension ext = exts.getExtension(X509Extensions.KeyUsage);
-                            	if (ext != null) {
-                                    ASN1OctetString os = ext.getValue();
-                                    ByteArrayInputStream bIs = new ByteArrayInputStream(os.getOctets());
-                                    ASN1InputStream dIs = new ASN1InputStream(bIs);
-                                    DERObject dob = dIs.readObject();
-                                	DERBitString bs = DERBitString.getInstance(dob);
-                                	ku = bs.intValue();                        		                            		
-                                	if (log.isDebugEnabled()) {
-                                		log.debug("We have a key usage request extension: "+ku);
-                                	}
-                            	}
-                        	}
+                    		X509Extension ext = exts.getExtension(X509Extensions.KeyUsage);
+                    		if (ext != null) {
+                    			ASN1OctetString os = ext.getValue();
+                    			ByteArrayInputStream bIs = new ByteArrayInputStream(os.getOctets());
+                    			ASN1InputStream dIs = new ASN1InputStream(bIs);
+                    			DERObject dob = dIs.readObject();
+                    			DERBitString bs = DERBitString.getInstance(dob);
+                    			keyusage = bs.intValue();                        		                            		
+                    			if (log.isDebugEnabled()) {
+                    				log.debug("We have a key usage request extension: "+keyusage);
+                    			}
+                    		}
                     	}
     					String sequence = null;
     					byte[] ki = req.getRequestKeyInfo();
     					if ( (ki != null) && (ki.length > 0) ) {
         					sequence = new String(ki);    						
     					}
-                    	cert = createCertificate(admin, data, req.getRequestX509Name(), ca, reqpk, ku, notBefore, notAfter, exts, sequence);
+                    	cert = createCertificate(admin, data, req.getRequestX509Name(), ca, reqpk, keyusage, notBefore, notAfter, exts, sequence);
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
@@ -723,10 +557,90 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
     
 	/**
+	 * Requests for a certificate to be created for the passed public key with the passed key
+	 * usage and using the given certificate profile. This method is primarily intended to be used when
+	 * issuing hardtokens having multiple certificates per user.
+	 * The method queries the user database for authorization of the user. CAs are only
+	 * allowed to have certificateSign and CRLSign set.
+	 *
+	 * @param admin                Information about the administrator or admin performing the event.
+	 * @param username             unique username within the instance.
+	 * @param password             password for the user.
+	 * @param pk                   the public key to be put in the created certificate.
+	 * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
+	 *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
+	 *                             from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
+	 *                             keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+	 *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+	 *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
+	 * @param notBefore an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
+	 * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
+	 * @param certificateprofileid used to override the one set in userdata.
+	 *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
+	 * @param caid                 used to override the one set in userdata.
+	 *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
+	 * 
+	 * 
+	 * @return The newly created certificate or null.
+	 * @throws EjbcaException          if EJBCA did not accept any of all input parameters
+	 * @throws ObjectNotFoundException if the user does not exist.
+	 * @throws AuthStatusException     If the users status is incorrect.
+	 * @throws AuthLoginException      If the password is incorrect.
+	 * @throws IllegalKeyException     if the public key is of wrong type.
+	 * 
+	 */
+	public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
+		if (log.isTraceEnabled()) {
+			log.trace(">createCertificate(pk, ku, date)");
+		}
+	    // Authorize user and get DN
+		final UserDataVO data = authUser(admin, username, password);
+		if (log.isDebugEnabled()) {
+			log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
+		}
+	    if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
+	    	if (log.isDebugEnabled()) {
+	    		log.debug("Overriding user certificate profile with :" + certificateprofileid);
+	    	}
+	    	data.setCertificateProfileId(certificateprofileid);
+	    }
+	    // Check if we should override the CAId
+	    if (caid != SecConst.CAID_USEUSERDEFINED) {
+	    	if (log.isDebugEnabled()) {
+	        	log.debug("Overriding user caid with :" + caid);
+	    	}
+	    	data.setCAId(caid);
+	    }
+		if (log.isDebugEnabled()) {
+	        log.debug("User type=" + data.getType());
+		}
+	    // Get CA object and make sure it's active
+	    CA ca = caAdminSession.getCA(admin, data.getCAId());
+	    if (ca.getStatus() != SecConst.CA_ACTIVE) {
+	    	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+	    	logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+	    	throw new EJBException(msg);
+	    }
+	    Certificate cert;
+	    try {
+	    	// Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
+	    	cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
+	    	// Call authentication session and tell that we are finished with this user
+			finishUser(ca, data);
+	    } catch (NoUniqueCertSerialNumberIndexException e) {
+	    	cleanUserCertDataSN(data);
+	    	throw e.ejbcaException;
+	    }
+		if (log.isTraceEnabled()) {
+			log.trace("<createCertificate(pk, ku, date)");
+		}
+	    return cert;
+	}
+	/**
      * Method that generates a request failed response message. The request
      * should already have been decrypted and verified.
      *
-     * @param admin         Information about the administrator or admin preforming the event.
+     * @param admin         Information about the administrator or admin performing the event.
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
 
@@ -792,7 +706,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * Method that just decrypts and verifies a request and should be used in those cases
      * a when encrypted information needs to be extracted and presented to an RA for approval.
      *
-     * @param admin         Information about the administrator or admin preforming the event.
+     * @param admin         Information about the administrator or admin performing the event.
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
      * 
@@ -845,7 +759,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     /**
      * Implements ISignSession::getCRL
      *
-     * @param admin         Information about the administrator or admin preforming the event.
+     * @param admin         Information about the administrator or admin performing the event.
      * @param req           a CRL Request message
      * @param responseClass the implementation class of the desired response
      * @return The newly created certificate or null.
@@ -1033,85 +947,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 		}
 	}
 
-    /**
-     * Requests for a certificate to be created for the passed public key with the passed key
-     * usage and using the given certificate profile. This method is primarily intended to be used when
-     * issueing hardtokens having multiple certificates per user.
-     * The method queries the user database for authorization of the user. CAs are only
-     * allowed to have certificateSign and CRLSign set.
-     *
-     * @param admin                Information about the administrator or admin preforming the event.
-     * @param username             unique username within the instance.
-     * @param password             password for the user.
-     * @param pk                   the public key to be put in the created certificate.
-     * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
-     *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
-     *                             from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
-     *                             keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
-     *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-     *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
-     * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
-     * @param certificateprofileid used to override the one set in userdata.
-     *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
-     * @param caid                 used to override the one set in userdata.
-     *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
-     * 
-     * 
-     * @return The newly created certificate or null.
-     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException     If the users status is incorrect.
-     * @throws AuthLoginException      If the password is incorrect.
-     * @throws IllegalKeyException     if the public key is of wrong type.
-     * 
-     */
-    private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws EjbcaException, ObjectNotFoundException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">createCertificate(pk, ku, date)");
-    	}
-        // Authorize user and get DN
-		final UserDataVO data = authUser(admin, username, password);
-    	if (log.isDebugEnabled()) {
-    		log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
-    	}
-        if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
-        	if (log.isDebugEnabled()) {
-        		log.debug("Overriding user certificate profile with :" + certificateprofileid);
-        	}
-        	data.setCertificateProfileId(certificateprofileid);
-        }
-        // Check if we should override the CAId
-        if (caid != SecConst.CAID_USEUSERDEFINED) {
-        	if (log.isDebugEnabled()) {
-            	log.debug("Overriding user caid with :" + caid);
-        	}
-        	data.setCAId(caid);
-        }
-    	if (log.isDebugEnabled()) {
-            log.debug("User type=" + data.getType());
-    	}
-        // Get CA object and make sure it's active
-        CA ca = caAdminSession.getCA(admin, data.getCAId());
-        if (ca.getStatus() != SecConst.CA_ACTIVE) {
-        	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-        	logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-        	throw new EJBException(msg);
-        }
-        Certificate cert;
-        try {
-        	// Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-        	cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
-        	// Call authentication session and tell that we are finished with this user
-    		finishUser(ca, data);
-        } catch (NoUniqueCertSerialNumberIndexException e) {
-        	cleanUserCertDataSN(data);
-        	throw e.ejbcaException;
-        }
-    	if (log.isTraceEnabled()) {
-    		log.trace("<createCertificate(pk, ku, date)");
-    	}
-        return cert;
-    }
     private String listUsers(Set<String> users) {
         Iterator<String> i = users.iterator();
         String s = "";
@@ -1141,7 +976,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param admin    administrator performing this task
      * @param data     auth data for user to get the certificate
      * @param ca       the CA that will sign the certificate
-     * @param pk       ther users public key to be put in the certificate
+     * @param pk       the users public key to be put in the certificate
      * @param keyusage requested key usage for the certificate, may be ignored by the CA
      * @param notBefore an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
