@@ -177,7 +177,7 @@ public class CrmfMessageHandlerTest extends TestCase {
 		 * testExtractUserNameComponent
 		 */
 		public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws EjbcaException {
-		
+            userName = req.getUsername();		
 		    return null;
 		}
 
