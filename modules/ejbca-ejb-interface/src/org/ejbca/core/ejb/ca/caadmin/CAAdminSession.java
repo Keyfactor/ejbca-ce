@@ -70,7 +70,7 @@ public interface CAAdminSession {
     /**
      * Method used to edit the data of a CA. Not all of the CAs data can be
      * edited after the creation, therefore will only the values from CAInfo
-     * that is possible be uppdated.
+     * that is possible be updated.
      * 
      * @param cainfo
      *            CAInfo object containing values that will be updated For
