@@ -129,12 +129,12 @@ public interface SignSession {
      * @param keyusage
      *            integer with bit mask describing desired keys usage, overrides
      *            keyUsage from CertificateProfiles if allowed. Bit mask is
-     *            packed in in integer using constants from CertificateData. -1
+     *            packed in in integer using constants from org.bouncycastle.jce.X509KeyUsage. -1
      *            means use default keyUsage from CertificateProfile. ex. int
-     *            keyusage = CertificateData.digitalSignature |
-     *            CertificateData.nonRepudiation; gives digitalSignature and
-     *            nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-     *            | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     *            keyusage = X509KeyUsage.digitalSignature |
+     *            X509KeyUsage.nonRepudiation; gives digitalSignature and
+     *            nonRepudiation. ex. int keyusage = X509KeyUsage.keyCertSign
+     *            | X509KeyUsage.cRLSign; gives keyCertSign and cRLSign
      * @param notBefore
      *            an optional validity to set in the created certificate, if the
      *            profile allows validity override, null if the profiles default
@@ -154,6 +154,8 @@ public interface SignSession {
      *             If the password is incorrect.
      * @throws IllegalKeyException
      *             if the public key is of wrong type.
+     *             
+     * @see org.bouncycastle.jce.X509KeyUsage
      */
     public java.security.cert.Certificate createCertificate(org.ejbca.core.model.log.Admin admin, java.lang.String username, java.lang.String password,
             java.security.PublicKey pk, int keyusage, java.util.Date notBefore, java.util.Date notAfter) throws EjbcaException, ObjectNotFoundException;
@@ -245,10 +247,10 @@ public interface SignSession {
 	 * @param pk                   the public key to be put in the created certificate.
 	 * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
 	 *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
-	 *                             from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
-	 *                             keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
-	 *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-	 *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
+	 *                             from org.bouncycastle.jce.X509KeyUsage. -1 means use default keyUsage from CertificateProfile. ex. int
+	 *                             keyusage = X509KeyUsage.digitalSignature | X509KeyUsage.nonRepudiation; gives
+	 *                             digitalSignature and nonRepudiation. ex. int keyusage = X509KeyUsage.keyCertSign
+	 *                             | X509KeyUsage.cRLSign; gives keyCertSign and cRLSign
 	 * @param notBefore an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
 	 * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
 	 * @param certificateprofileid used to override the one set in userdata.
@@ -264,6 +266,7 @@ public interface SignSession {
 	 * @throws AuthLoginException      If the password is incorrect.
 	 * @throws IllegalKeyException     if the public key is of wrong type.
 	 * 
+     * @see org.bouncycastle.jce.X509KeyUsage
 	 */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) 
     	throws EjbcaException, ObjectNotFoundException;
