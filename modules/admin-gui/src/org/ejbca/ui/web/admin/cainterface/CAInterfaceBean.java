@@ -254,7 +254,7 @@ public class CAInterfaceBean implements Serializable {
 		}
       createCrlSession.run(administrator, ca);
     }
-    public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
+    public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException {      
         CA ca;
 		try {
 			ca = caadminsession.getCA(administrator, issuerdn.hashCode());

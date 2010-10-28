@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.crl;
 
-import java.util.Collection;
-
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 
 /** Session bean generating CRLs
@@ -62,12 +60,14 @@ public interface CreateCRLSession {
      * @throws javax.ejb.EJBException
      *             if communication or system error occurrs
      */
-    public boolean runDeltaCRLnewTransactionConditioned(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, long crloverlaptime);
+    public boolean runDeltaCRLnewTransactionConditioned(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, long crloverlaptime)
+    		throws CATokenOfflineException;
 
     /**
      * Generates a new CRL by looking in the database for revoked certificates
      * and generating a CRL. This method also "archives" certificates when after
      * they are no longer needed in the CRL.
+     * Generates the CRL and stores it in the database.
      * 
      * @param admin
      *            administrator performing the task
@@ -85,6 +85,7 @@ public interface CreateCRLSession {
      * certificates since the last complete CRL issued and generating a CRL with
      * the difference. If either of baseCrlNumber or baseCrlCreateTime is -1
      * this method will try to query the database for the last complete CRL.
+     * Generates the CRL and stores it in the database.
      * 
      * @param admin
      *            administrator performing the task
@@ -104,7 +105,8 @@ public interface CreateCRLSession {
      * @throws javax.ejb.EJBException
      *             if a communications- or system error occurs
      */
-    public byte[] runDeltaCRL(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, int baseCrlNumber, long baseCrlCreateTime);
+    public byte[] runDeltaCRL(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, int baseCrlNumber, long baseCrlCreateTime)
+    		throws CATokenOfflineException;
 
     /**
      * Retrieves the latest CRL issued by this CA.
@@ -161,24 +163,4 @@ public interface CreateCRLSession {
      */
     public int getLastCRLNumber(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
 
-    /**
-     * (Re-)Publish the last CRLs for a CA.
-     * 
-     * @param admin
-     *            Information about the administrator or admin preforming the
-     *            event.
-     * @param caCert
-     *            The certificate for the CA to publish CRLs for
-     * @param usedpublishers
-     *            a collection if publisher id's (Integer) indicating which
-     *            publisher that should be used.
-     * @param caDataDN
-     *            DN from CA data. If a the CA certificate does not have a DN
-     *            object to be used by the publisher this DN could be searched
-     *            for the object.
-     * @param doPublishDeltaCRL
-     *            should delta CRLs be published?
-     */
-    public void publishCRL(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate caCert, Collection<Integer> usedpublishers,
-            java.lang.String caDataDN, boolean doPublishDeltaCRL);
 }
