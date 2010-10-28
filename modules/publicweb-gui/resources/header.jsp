@@ -65,7 +65,10 @@
                 <a href="retrieve/check_status.jsp">Check Certificate Status</a>
               </li>
               <li>
-                <a href="adminweb/index.jsp">Administration</a>
+                <% java.net.URL adminURL = new java.net.URL("https",request.getServerName(),
+                		org.ejbca.config.WebConfiguration.getExternalPrivateHttpsPort(),
+                		"/"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"/adminweb/index.jsp");  %>
+                <a href="<%=adminURL.toString() %>">Administration</a>
               </li>
               <% if (!"disabled".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) {
                   if ("internal".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) { %>

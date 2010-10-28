@@ -61,8 +61,22 @@
                 <a href="../retrieve/check_status.jsp">Check Certificate Status</a>
               </li>
               <li>
-              <a href="../adminweb/index.jsp">Administration</a>
+                <% java.net.URL adminURL = new java.net.URL("https",request.getServerName(),
+                		org.ejbca.config.WebConfiguration.getExternalPrivateHttpsPort(),
+                		"/"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"/adminweb/index.jsp");  %>
+                <a href="<%=adminURL.toString() %>">Administration</a>
             </li>
+              <% if (!"disabled".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) {
+                  if ("internal".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) { %>
+              <li>
+                <a href="../doc/concepts.html" target="<%= org.ejbca.core.model.ra.raadmin.GlobalConfiguration.DOCWINDOW %>">Documentation</a>
+              </li>
+              <%  } else { %>
+              <li>
+                <a href="<%= org.ejbca.config.WebConfiguration.getDocBaseUri() %>/concepts.html" target="<%= org.ejbca.core.model.ra.raadmin.GlobalConfiguration.DOCWINDOW %>">Documentation</a>
+              </li>
+              <%  }
+                 } %>
             </ul>
           </li>  
         </ul>

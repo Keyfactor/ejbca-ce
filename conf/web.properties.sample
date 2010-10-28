@@ -57,6 +57,11 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default 8443
 #httpserver.privhttps=8443
 
+# The private port exposed externally, i.e. if you run an apache proxy in front of JBoss
+# the port may be 443 instead.
+# Default same as httpserver.privhttps
+#httpserver.external.privhttps=${httpserver.privhttps}
+ 
 # The interfaces JBoss will bind to. E.g. 127.0.0.1 will only allow connections from localhost.
 # Default 0.0.0.0
 #httpsserver.bindaddress.pubhttp=0.0.0.0
