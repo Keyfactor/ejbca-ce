@@ -92,9 +92,13 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     	CAInfo cainfo = ca.getCAInfo();
     	try {
     		if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
-    			log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
+				if (log.isDebugEnabled()) {
+					log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
+				}
     		} else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
-    			log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+				if (log.isDebugEnabled()) {
+					log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+				}
     		} else {
     			if (cainfo instanceof X509CAInfo) {
     				Collection<Certificate> certs = cainfo.getCertificateChain();
@@ -146,7 +150,9 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     										overlap = 0;
     									}
     								}                                   
-    								log.debug("Calculated nextUpdate to "+nextUpdate);
+        							if (log.isDebugEnabled()) {
+        								log.debug("Calculated nextUpdate to "+nextUpdate);
+        							}
     							} else {
     								String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());            	    			    	   
     								log.info(msg);
@@ -168,9 +174,13 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     						}
     					}
     				} else if (cacert != null) {
-    					log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
+    					if (log.isDebugEnabled()) {
+    						log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
+    					}
     				} else {
-    					log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());    			    	           			    	   
+    					if (log.isDebugEnabled()) {
+    						log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());
+    					}
     				}
     			}                           				   
     		}
@@ -203,9 +213,13 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
 		CAInfo cainfo = ca.getCAInfo();
 		try{
 			if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
-				log.debug("Not trying to generate delta CRL for external CA "+cainfo.getName());
+				if (log.isDebugEnabled()) {
+					log.debug("Not trying to generate delta CRL for external CA "+cainfo.getName());
+				}
 			} else if (cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
-				log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+				if (log.isDebugEnabled()) {
+					log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+				}
 			} else {
 				if (cainfo instanceof X509CAInfo) {
 					Collection<Certificate> certs = cainfo.getCertificateChain();
@@ -242,9 +256,13 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     						}
     					}
 					} else if (cacert != null) {
-						log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));    			    	   
+						if (log.isDebugEnabled()) {
+							log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
+						}
 					} else {
-						log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());    			    	           			    	   
+						if (log.isDebugEnabled()) {
+							log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());
+						}
 					}
 				}    					
 		   }
@@ -393,7 +411,9 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     			}
     			// Find all revoked certificates
     			Collection<RevokedCertInfo> revcertinfos = certificateStoreSession.listRevokedCertInfo(admin, caCertSubjectDN, baseCrlCreateTime);
-    			log.debug("Found "+revcertinfos.size()+" revoked certificates.");
+				if (log.isDebugEnabled()) {
+					log.debug("Found "+revcertinfos.size()+" revoked certificates.");
+				}
     			// Go through them and create a CRL, at the same time archive expired certificates
     			ArrayList<RevokedCertInfo> certs = new ArrayList<RevokedCertInfo>();
     			Iterator<RevokedCertInfo> iter = revcertinfos.iterator();
@@ -407,7 +427,9 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     			// create a delta CRL
     			crlBytes = createCRL(admin, ca, certs, baseCrlNumber);
     			X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
-    			log.debug("Created delta CRL with expire date: "+crl.getNextUpdate());
+				if (log.isDebugEnabled()) {
+					log.debug("Created delta CRL with expire date: "+crl.getNextUpdate());
+				}
     		}
         } catch (CATokenOfflineException e) {
             throw e;            
@@ -537,27 +559,30 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     	if (log.isTraceEnabled()) {
         	log.trace(">getLastCRL(" + issuerdn + ", "+deltaCRL+")");
     	}
-        try {
-            int maxnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
+    	int maxnumber = 0;
+    	try {
+            maxnumber = getLastCRLNumber(admin, issuerdn, deltaCRL);
             X509CRL crl = null;
         	CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, maxnumber);
         	if (data != null) {
                 crl = data.getCRL();
             }
-            log.trace("<getLastCRL()");
-            if (crl == null) {
-            	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, maxnumber);            	
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
-                return null;
+            if (crl != null) {
+            	String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, new Integer(maxnumber));            	
+                logSession.log(admin, crl.getIssuerDN().toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_GETLASTCRL, msg);
+                return crl.getEncoded();
             }
-        	String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, new Integer(maxnumber));            	
-            logSession.log(admin, crl.getIssuerDN().toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_GETLASTCRL, msg);
-            return crl.getEncoded();
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn);            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
             throw new EJBException(e);
         }
+    	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, maxnumber);            	
+        logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_GETLASTCRL, msg);
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getLastCRL()");
+    	}
+        return null;
     }
 
     /**
@@ -582,16 +607,22 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
                 crlinfo = new CRLInfo(data.getIssuerDN(), crlnumber, data.getThisUpdate(), data.getNextUpdate());
             } else {
             	if (deltaCRL && (crlnumber == 0)) {
-            		log.debug("No delta CRL exists for CA with dn '"+issuerdn+"'");
+                	if (log.isDebugEnabled()) {
+                		log.debug("No delta CRL exists for CA with dn '"+issuerdn+"'");
+                	}
             	} else if (crlnumber == 0) {
-            		log.debug("No CRL exists for CA with dn '"+issuerdn+"'");
+                	if (log.isDebugEnabled()) {
+                		log.debug("No CRL exists for CA with dn '"+issuerdn+"'");
+                	}
             	} else {
                 	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
                     log.error(msg);            		
             	}
                 crlinfo = null;
             }
-            log.trace("<getLastCRLInfo()");
+        	if (log.isTraceEnabled()) {
+        		log.trace("<getLastCRLInfo()");
+        	}
             return crlinfo;
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", issuerdn);            	
@@ -618,11 +649,15 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
             if (data != null) {
                 crlinfo = new CRLInfo(data.getIssuerDN(), data.getCrlNumber(), data.getThisUpdate(), data.getNextUpdate());
             } else {
-            	log.debug("No CRL exists with fingerprint '"+fingerprint+"'");
+            	if (log.isDebugEnabled()) {
+            		log.debug("No CRL exists with fingerprint '"+fingerprint+"'");
+            	}
             	String msg = intres.getLocalizedMessage("store.errorgetcrl", fingerprint, 0);            	
             	log.error(msg);            		
             }
-            log.trace("<getCRLInfo()");
+        	if (log.isTraceEnabled()) {
+        		log.trace("<getCRLInfo()");
+        	}
             return crlinfo;
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", fingerprint);            	
