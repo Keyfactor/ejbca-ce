@@ -75,13 +75,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     @EJB
     private LogSessionLocal logSession;
 
-	/** Same as generating a new CRL but this is in a new separate transaction.
-	 */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void runNewTransaction(Admin admin, CA ca) throws CATokenOfflineException {
-    	run(admin, ca);
-    }
-
     /**
      * Method that checks if the CRL is needed to be updated for the CA and creates the CRL, if necessary. A CRL is created:
      * 1. if the current CRL expires within the crloverlaptime (milliseconds)
@@ -196,15 +189,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     	return ret;
     }
 
-    /** Same as generating a new delta CRL but this is in a new separate transaction.
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public byte[] runDeltaCRLnewTransaction(Admin admin, CA ca)  {
-    	return runDeltaCRL(admin, ca, -1, -1);
-    }
-
     /**
      * Method that checks if the delta CRL needs to be updated and then creates it.
      *
@@ -290,7 +274,9 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
 	 * @throws EJBException if a communications- or system error occurs
 	 */
     public String run(Admin admin, CA ca) throws CATokenOfflineException {
-    	log.trace(">run()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">run()");
+        }
         if (ca == null) {
             throw new EJBException("No CA specified.");
         }
@@ -309,8 +295,9 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
             	long crlperiod = cainfo.getCRLPeriod();
             	// Find all revoked certificates for a complete CRL
             	Collection<RevokedCertInfo> revcerts = certificateStoreSession.listRevokedCertInfo(admin, caCertSubjectDN, -1);
-            	log.debug("Found "+revcerts.size()+" revoked certificates.");
-
+            	if (log.isDebugEnabled()) {
+            		log.debug("Found "+revcerts.size()+" revoked certificates.");
+            	}
             	// Go through them and create a CRL, at the same time archive expired certificates
             	Date now = new Date();
             	Date check = new Date(now.getTime() - crlperiod);
@@ -320,8 +307,8 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
             		// We want to include certificates that was revoked after the last CRL was issued, but before this one
             		// so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
             		if ( data.getExpireDate().before(check) ) {
-            			// Certificate has expired, set status to archived in the database 
-            			setArchivedStatus(data.getCertificateFingerprint());
+            			// Certificate has expired, set status to archived in the database
+            			certificateStoreSession.setArchivedStatus(admin, data.getCertificateFingerprint());
             		} else {
                 		Date revDate = data.getRevocationDate();
             			if (revDate == null) {
@@ -363,25 +350,12 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
             logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
             throw new EJBException(e);
         }
-        log.trace("<run()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<run()");
+        }
         return ret;
     }
 
-	/**
-	 * This method sets the "archived" certificates status. Normally this is done by the CRL-creation process.
-	 * This is also used from the createLotsOfCertsPerUser test.
-	 *
-	 * @param certificateFingerprint is the fingerprint of the certifiate
-	 * @throws FinderException is thrown when no such certificate exists
-	 */
-    public void setArchivedStatus(String certificateFingerprint) throws FinderException {
-    	CertificateData certdata = CertificateData.findByFingerprint(entityManager, certificateFingerprint);
-    	if (certdata == null) {
-    		throw new FinderException("No certificate w fingerprint " + certificateFingerprint);
-    	}
-		certdata.setStatus(SecConst.CERT_ARCHIVED);
-    }
-    
     /**
      * Generates a new Delta CRL by looking in the database for revoked certificates since the last complete CRL issued and generating a
      * CRL with the difference. If either of baseCrlNumber or baseCrlCreateTime is -1 this method will try to query the database for the last complete CRL.
@@ -454,8 +428,10 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
      * @throws CATokenOfflineException 
      */
-    public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException {
-        log.trace(">createCRL()");
+    private byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">createCRL(Collection)");
+    	}
         byte[] crlBytes = null; // return value
         try {
             if ( (ca.getStatus() != SecConst.CA_ACTIVE) && (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) ) {
@@ -501,7 +477,9 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
         	logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
             throw new EJBException(intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
         }
-        log.trace("<createCRL()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<createCRL(Collection)");
+    	}
         return crlBytes;
     }
 
@@ -517,7 +495,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
      * @return true if storage was successful.
      */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
+    private boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
     	if (log.isTraceEnabled()) {
         	log.trace(">storeCRL(" + cafp + ", " + number + ")");
     	}
@@ -537,7 +515,9 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
             logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);
             throw new EJBException(e);
         }
-        log.trace("<storeCRL()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<storeCRL()");
+    	}
         return true;
     }
 
