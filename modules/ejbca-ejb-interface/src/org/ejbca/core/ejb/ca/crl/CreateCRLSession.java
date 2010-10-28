@@ -14,20 +14,13 @@ package org.ejbca.core.ejb.ca.crl;
 
 import java.util.Collection;
 
-import javax.ejb.FinderException;
-
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /** Session bean generating CRLs
  * 
  * @version $Id$
  */
 public interface CreateCRLSession {
-    /**
-     * Same as generating a new CRL but this is in a new separate transaction.
-     */
-    public void runNewTransaction(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca) throws CATokenOfflineException;
 
     /**
      * Method that checks if the CRL is needed to be updated for the CA and
@@ -53,17 +46,6 @@ public interface CreateCRLSession {
      */
     public boolean runNewTransactionConditioned(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, long addtocrloverlaptime)
             throws CATokenOfflineException;
-
-    /**
-     * Same as generating a new delta CRL but this is in a new separate
-     * transaction.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param ca
-     *            the CA this operation regards
-     */
-    public byte[] runDeltaCRLnewTransaction(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca);
 
     /**
      * Method that checks if the delta CRL needs to be updated and then creates
@@ -99,18 +81,6 @@ public interface CreateCRLSession {
     public java.lang.String run(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca) throws CATokenOfflineException;
 
     /**
-     * This method sets the "archived" certificates status. Normally this is
-     * done by the CRL-creation process. This is also used from the
-     * createLotsOfCertsPerUser test.
-     * 
-     * @param certificateFingerprint
-     *            is the fingerprint of the certifiate
-     * @throws FinderException
-     *             is thrown when no such certificate exists
-     */
-    public void setArchivedStatus(java.lang.String certificateFingerprint) throws FinderException;
-
-    /**
      * Generates a new Delta CRL by looking in the database for revoked
      * certificates since the last complete CRL issued and generating a CRL with
      * the difference. If either of baseCrlNumber or baseCrlCreateTime is -1
@@ -135,51 +105,6 @@ public interface CreateCRLSession {
      *             if a communications- or system error occurs
      */
     public byte[] runDeltaCRL(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, int baseCrlNumber, long baseCrlCreateTime);
-
-    /**
-     * Requests for a CRL to be created with the passed (revoked) certificates.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param ca
-     *            the CA this operation regards
-     * @param certs
-     *            collection of RevokedCertInfo object.
-     * @param basecrlnumber
-     *            the CRL number of the Case CRL to generate a deltaCRL, -1 to
-     *            generate a full CRL
-     * @param nextCrlNumber
-     *            The highest number of last CRL (full or delta) and increased
-     *            by 1 (both full CRLs and deltaCRLs share the same series of
-     *            CRL Number)
-     * @return The newly created CRL in DER encoded byte form or null, use
-     *         CertTools.getCRLfromByteArray to convert to X509CRL.
-     * @throws CATokenOfflineException
-     */
-    public byte[] createCRL(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, java.util.Collection<RevokedCertInfo> certs, int basecrlnumber)
-            throws CATokenOfflineException;
-
-    /**
-     * Stores a CRL
-     * 
-     * @param incrl
-     *            The DER coded CRL to be stored.
-     * @param cafp
-     *            Fingerprint (hex) of the CAs certificate.
-     * @param number
-     *            CRL number.
-     * @param issuerDN
-     *            the issuer of the CRL
-     * @param thisUpdate
-     *            when this CRL was created
-     * @param nextUpdate
-     *            when this CRL expires
-     * @param deltaCRLIndicator
-     *            -1 for a normal CRL and 1 for a deltaCRL
-     * @return true if storage was successful.
-     */
-    public boolean storeCRL(org.ejbca.core.model.log.Admin admin, byte[] incrl, java.lang.String cafp, int number, java.lang.String issuerDN,
-            java.util.Date thisUpdate, java.util.Date nextUpdate, int deltaCRLIndicator);
 
     /**
      * Retrieves the latest CRL issued by this CA.

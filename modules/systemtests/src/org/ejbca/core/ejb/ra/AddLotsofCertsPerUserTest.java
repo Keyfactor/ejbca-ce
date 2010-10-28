@@ -23,8 +23,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -50,7 +50,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
 
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
-    private CreateCRLSessionRemote createCrlSession = InterfaceCache.getCrlSession();
+    private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
 
@@ -167,7 +167,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
                 userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
                         RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-                createCrlSession.setArchivedStatus(CertTools.getFingerprintAsString(certificate));
+                storeSession.setArchivedStatus(administrator, CertTools.getFingerprintAsString(certificate));
             }
             endEntityProfileSession.removeEndEntityProfile(administrator, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(administrator, certificateProfileName);
