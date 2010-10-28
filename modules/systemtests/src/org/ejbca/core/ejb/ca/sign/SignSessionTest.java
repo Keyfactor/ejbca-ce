@@ -225,7 +225,7 @@ public class SignSessionTest extends CaTestCase {
         CAInfo infodsa = caAdminSessionRemote.getCAInfo(admin, "TESTDSA");
         assertTrue("No active DSA CA! Must have at least one active CA to run tests!", infodsa != null);
         dsacaid = infodsa.getCAId();
-        Collection<X509Certificate> coll = inforsa.getCertificateChain();
+        Collection<Certificate> coll = inforsa.getCertificateChain();
         Object[] objs = coll.toArray();
         rsacacert = (X509Certificate) objs[0];
         coll = inforsareverse.getCertificateChain();

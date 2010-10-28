@@ -16,6 +16,7 @@ package org.ejbca.core.protocol.cmp;
 import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -108,10 +109,10 @@ public class CrmfRARequestTest extends CmpTestCase {
 
         cainfo = caAdminSessionRemote.getCAInfo(admin, caid);
 
-        Collection<X509Certificate> certs = cainfo.getCertificateChain();
+        Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator<X509Certificate> certiter = certs.iterator();
-            X509Certificate cert = certiter.next();
+            Iterator<Certificate> certiter = certs.iterator();
+            Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate

@@ -35,6 +35,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -127,11 +128,11 @@ public class CmpTestCase extends TestCase {
 		super(arg0);
 	}
 
-	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, X509Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
 		return genCertReq(issuerDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo, extensions, notBefore, notAfter);
 	}
 	
-	protected PKIMessage genCertReq(String issuerDN, String userDN, String altNames, KeyPair keys, X509Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+	protected PKIMessage genCertReq(String issuerDN, String userDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
 		org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
 		if (notBefore != null) {
@@ -239,7 +240,7 @@ public class CmpTestCase extends TestCase {
         // myCertReqMessages.addCertReqMsg(myCertReqMsg);
 
         // log.debug("CAcert subject name: "+cacert.getSubjectDN().getName());
-        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(cacert.getSubjectDN()
+        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                 .getName())));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
@@ -259,7 +260,7 @@ public class CmpTestCase extends TestCase {
         return myPKIMessage;
     }
 
-    protected PKIMessage genRevReq(String issuerDN, String userDN, BigInteger serNo, X509Certificate cacert, byte[] nonce, byte[] transid,
+    protected PKIMessage genRevReq(String issuerDN, String userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
             boolean crlEntryExtension) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
         CertTemplate myCertTemplate = new CertTemplate();
         myCertTemplate.setIssuer(new X509Name(issuerDN));
@@ -279,7 +280,7 @@ public class CmpTestCase extends TestCase {
 
         RevReqContent myRevReqContent = new RevReqContent(myRevDetails);
 
-        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(cacert.getSubjectDN()
+        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                 .getName())));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
@@ -293,10 +294,10 @@ public class CmpTestCase extends TestCase {
         return myPKIMessage;
     }
 
-    protected PKIMessage genCertConfirm(String userDN, X509Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId)
+    protected PKIMessage genCertConfirm(String userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 
-        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(cacert.getSubjectDN()
+        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                 .getName())));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
@@ -417,7 +418,7 @@ public class CmpTestCase extends TestCase {
         }
     }
 
-    protected void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, String userDN, X509Certificate cacert, byte[] senderNonce, byte[] transId,
+    protected void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, String userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
             boolean signed, boolean pbe) throws Exception {
         //
         // Parse response message
@@ -617,7 +618,7 @@ public class CmpTestCase extends TestCase {
         return null;
     }
 
-    protected X509Certificate checkCmpCertRepMessage(String userDN, X509Certificate cacert, byte[] retMsg, int requestId) throws IOException,
+    protected X509Certificate checkCmpCertRepMessage(String userDN, Certificate cacert, byte[] retMsg, int requestId) throws IOException,
             CertificateException {
         //
         // Parse response message
@@ -643,11 +644,11 @@ public class CmpTestCase extends TestCase {
         X509CertificateStructure struct = cc.getCertificate();
         assertNotNull(struct);
         assertEquals(CertTools.stringToBCDNString(struct.getSubject().toString()), CertTools.stringToBCDNString(userDN));
-        assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.stringToBCDNString(cacert.getSubjectDN().getName()));
+        assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.getSubjectDN(cacert));
         return (X509Certificate) CertTools.getCertfromByteArray(struct.getEncoded());
     }
 
-    protected void checkCmpPKIConfirmMessage(String userDN, X509Certificate cacert, byte[] retMsg) throws IOException {
+    protected void checkCmpPKIConfirmMessage(String userDN, Certificate cacert, byte[] retMsg) throws IOException {
         //
         // Parse response message
         //
@@ -656,7 +657,7 @@ public class CmpTestCase extends TestCase {
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
         X509Name name = X509Name.getInstance(header.getSender().getName());
-        assertEquals(name.toString(), cacert.getSubjectDN().getName());
+        assertEquals(name.toString(), ((X509Certificate)cacert).getSubjectDN().getName());
         name = X509Name.getInstance(header.getRecipient().getName());
         assertEquals(name.toString(), userDN);
 
@@ -667,7 +668,7 @@ public class CmpTestCase extends TestCase {
         assertNotNull(n);
     }
 
-    protected void checkCmpRevokeConfirmMessage(String issuerDN, String userDN, BigInteger serno, X509Certificate cacert, byte[] retMsg, boolean success)
+    protected void checkCmpRevokeConfirmMessage(String issuerDN, String userDN, BigInteger serno, Certificate cacert, byte[] retMsg, boolean success)
             throws IOException {
         //
         // Parse response message
@@ -677,7 +678,7 @@ public class CmpTestCase extends TestCase {
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
         X509Name name = X509Name.getInstance(header.getSender().getName());
-        assertEquals(name.toString(), cacert.getSubjectDN().getName());
+        assertEquals(name.toString(), ((X509Certificate)cacert).getSubjectDN().getName());
         name = X509Name.getInstance(header.getRecipient().getName());
         assertEquals(name.toString(), userDN);
 

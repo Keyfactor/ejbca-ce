@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
@@ -129,10 +130,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }
         CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
-        Collection<X509Certificate> certs = cainfo.getCertificateChain();
+        Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator<X509Certificate> certiter = certs.iterator();
-            X509Certificate cert = certiter.next();
+            Iterator<Certificate> certiter = certs.iterator();
+            Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate

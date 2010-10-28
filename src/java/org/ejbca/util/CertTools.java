@@ -1008,16 +1008,16 @@ public class CertTools {
      * the first certificate in the file is read.
      *
      * @param certFile the file containing the certificate in PEM-format
-     * @return Ordered Collection of X509Certificate, first certificate first, or empty Collection
+     * @return Ordered Collection of Certificate, first certificate first, or empty Collection
      * @exception IOException if the filen cannot be read.
      * @exception CertificateException if the filen does not contain a correct certificate.
      */
-    public static Collection getCertsFromPEM(String certFile) throws IOException, CertificateException {
+    public static Collection<Certificate> getCertsFromPEM(String certFile) throws IOException, CertificateException {
     	if (log.isTraceEnabled()) {
     		log.trace(">getCertfromPEM: certFile=" + certFile);
     	}
         InputStream inStrm = null;
-        Collection certs;
+        Collection<Certificate> certs;
 		try {
 			inStrm = new FileInputStream(certFile);
 			certs = getCertsFromPEM(inStrm);
@@ -1041,10 +1041,12 @@ public class CertTools {
      * @exception IOException if the stream cannot be read.
      * @exception CertificateException if the stream does not contain a correct certificate.
      */
-    public static Collection getCertsFromPEM(InputStream certstream)
+    public static Collection<Certificate> getCertsFromPEM(InputStream certstream)
     throws IOException, CertificateException {
-        log.trace(">getCertfromPEM");
-        ArrayList ret = new ArrayList();
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getCertfromPEM");
+    	}
+        ArrayList<Certificate> ret = new ArrayList<Certificate>();
         String beginKeyTrust = "-----BEGIN TRUSTED CERTIFICATE-----";
         String endKeyTrust = "-----END TRUSTED CERTIFICATE-----";
         BufferedReader bufRdr = null;
@@ -1108,11 +1110,11 @@ public class CertTools {
     * @throws NoSuchProviderException 
     * @throws CertificateException 
     */
-    public static ArrayList getCertCollectionFromArray(Certificate[] certs, String provider) throws CertificateException, NoSuchProviderException {
+    public static ArrayList<Certificate> getCertCollectionFromArray(Certificate[] certs, String provider) throws CertificateException, NoSuchProviderException {
     	if (log.isTraceEnabled()) {
     		log.trace(">getCertCollectionFromArray: "+provider);
     	}
-    	ArrayList ret = new ArrayList();
+    	ArrayList<Certificate> ret = new ArrayList<Certificate>();
     	String prov = provider;
     	if (prov == null) {
     		prov = "BC";
@@ -1135,7 +1137,7 @@ public class CertTools {
      * @return byte array containing PEM certificate
      * @exception CertificateException if the stream does not contain a correct certificate.
      */
-    public static byte[] getPEMFromCerts(Collection certs)
+    public static byte[] getPEMFromCerts(Collection<Certificate> certs)
     throws CertificateException {
         ByteArrayOutputStream ostr = new ByteArrayOutputStream();
         PrintStream opstr = new PrintStream(ostr);
