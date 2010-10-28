@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -107,8 +108,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     private static int caid1 = 0;
     private static int caid2 = 0;
     private static Admin admin;
-    private static X509Certificate cacert1 = null;
-    private static X509Certificate cacert2 = null;
+    private static Certificate cacert1 = null;
+    private static Certificate cacert2 = null;
     
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
@@ -127,14 +128,14 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             assertTrue("No active CA! Must have CmpCA1 and CmpCA2 to run tests!", false);
         }
         CAInfo cainfo = caAdminSession.getCAInfo(admin, caid1);
-        Collection<X509Certificate> certs = cainfo.getCertificateChain();
+        Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator<X509Certificate> certiter = certs.iterator();
-            X509Certificate cert = certiter.next();
+            Iterator<Certificate> certiter = certs.iterator();
+            Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                cacert1 = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
+                cacert1 = CertTools.getCertfromByteArray(cert.getEncoded());
             }
         } else {
             log.error("NO CACERT for CmpCA1: " + caid1);
@@ -142,8 +143,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         cainfo = caAdminSession.getCAInfo(admin, caid2);
         certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator<X509Certificate> certiter = certs.iterator();
-            X509Certificate cert = certiter.next();
+            Iterator<Certificate> certiter = certs.iterator();
+            Certificate cert = certiter.next();
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
@@ -152,8 +153,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         } else {
             log.error("NO CACERT for CmpCA2: " + caid2);
         }
-        issuerDN1 = cacert1.getSubjectDN().getName();
-        issuerDN2 = cacert2.getSubjectDN().getName();
+        issuerDN1 = CertTools.getSubjectDN(cacert1);
+        issuerDN2 = CertTools.getSubjectDN(cacert2);
     }
 
     public void setUp() throws Exception {

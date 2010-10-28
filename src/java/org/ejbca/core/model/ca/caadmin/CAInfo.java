@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.caadmin;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
@@ -84,7 +85,7 @@ public class CAInfo implements Serializable {
     protected int catype;
     /** A CAId or CAInfo.SELFSIGNED */
     protected int signedby;
-    protected Collection certificatechain;
+    protected Collection<Certificate> certificatechain;
     protected CATokenInfo catokeninfo;
     protected String description;
     protected int revokationreason;
@@ -131,8 +132,8 @@ public class CAInfo implements Serializable {
     /** Retrieves the certificate chain for the CA. The returned certificate chain MUST have the
 	 * RootCA certificate in the last position and the CAs certificate in the first.
      */
-    public Collection getCertificateChain(){ return certificatechain;}
-    public void setCertificateChain(Collection certificatechain) { this.certificatechain = certificatechain; }
+    public Collection<Certificate> getCertificateChain(){ return certificatechain;}
+    public void setCertificateChain(Collection<Certificate> certificatechain) { this.certificatechain = certificatechain; }
     public CATokenInfo getCATokenInfo() {return this.catokeninfo;}
     public void setCATokenInfo(CATokenInfo catokeninfo) {this.catokeninfo = catokeninfo;}
     
