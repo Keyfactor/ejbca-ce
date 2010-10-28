@@ -133,7 +133,9 @@ public abstract class BaseCAToken implements ICAToken {
         }
         for ( int i=0; i<keyAliases.length; i++ ) {
             KeyPair pair = mTmp.get(keyAliases[i]);
-            log.debug("Testing keys with alias "+keyAliases[i]);
+    		if (log.isDebugEnabled()) {
+    			log.debug("Testing keys with alias "+keyAliases[i]);
+    		}
             if (pair == null) {
                 log.info("No keys with alias "+keyAliases[i]+" exists.");
             } else {
@@ -208,7 +210,7 @@ public abstract class BaseCAToken implements ICAToken {
     			// If no autoactivation PIN codes exists we can debug log everything as original.
         		log.debug("Properties: "+(properties!=null ? properties.toString() : "null"));    			
     		}
-    	}
+    	} // if (log.isDebugEnabled())
         this.keyStrings = new KeyStrings(properties);
         this.mAuthCode = BaseCAToken.getAutoActivatePin(properties);
     } // updateProperties
@@ -235,7 +237,9 @@ public abstract class BaseCAToken implements ICAToken {
         if (pin != null) {
             return StringTools.passwordDecryption(pin, "autoactivation pin");
         }
-        log.debug("Not using autoactivation pin");
+        if (log.isDebugEnabled()) {
+        	log.debug("Not using autoactivation pin");
+        }
         return null;
     }
     /** Sets auto activation pin in passed in properties. Also returns the string format of the 
@@ -328,7 +332,9 @@ public abstract class BaseCAToken implements ICAToken {
                 throw new ProviderException("Not possible to install provider: "+pName);
             }
         } else {
-        	log.debug("No provider passed to setProvider()");
+        	if (log.isDebugEnabled()) {
+        		log.debug("No provider passed to setProvider()");
+        	}
         }
     }
 
