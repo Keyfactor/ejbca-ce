@@ -32,7 +32,6 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CRLData;
 import org.ejbca.core.ejb.ca.store.CertificateData;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -70,8 +69,6 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
 
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
-    private PublisherSessionLocal publisherSession;
     @EJB
     private LogSessionLocal logSession;
 
@@ -200,7 +197,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * @throws EJBException if communication or system error occurrs
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public boolean runDeltaCRLnewTransactionConditioned(Admin admin, CA ca, long crloverlaptime) {
+    public boolean runDeltaCRLnewTransactionConditioned(Admin admin, CA ca, long crloverlaptime) throws CATokenOfflineException {
     	boolean ret = false;
 		Date currenttime = new Date();
 		CAInfo cainfo = ca.getCAInfo();
@@ -251,6 +248,8 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
 					}
 				}    					
 		   }
+        } catch (CATokenOfflineException e) {
+            throw e;            
 		}catch(Exception e) {
         	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(cainfo.getCAId()));            	    			    	   
         	log.error(msg, e);
@@ -266,6 +265,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
 	/**
 	 * Generates a new CRL by looking in the database for revoked certificates and generating a
 	 * CRL. This method also "archives" certificates when after they are no longer needed in the CRL. 
+     * Generates the CRL and stores it in the database.
 	 *
 	 * @param admin administrator performing the task
      * @param ca the CA this operation regards
@@ -359,6 +359,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     /**
      * Generates a new Delta CRL by looking in the database for revoked certificates since the last complete CRL issued and generating a
      * CRL with the difference. If either of baseCrlNumber or baseCrlCreateTime is -1 this method will try to query the database for the last complete CRL.
+     * Generates the CRL and stores it in the database.
      *
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
@@ -368,7 +369,7 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
      * 
      * @throws EJBException if a communications- or system error occurs
      */
-    public byte[] runDeltaCRL(Admin admin, CA ca, int baseCrlNumber, long baseCrlCreateTime)  {
+    public byte[] runDeltaCRL(Admin admin, CA ca, int baseCrlNumber, long baseCrlCreateTime) throws CATokenOfflineException {
 		if (ca == null) {
 			throw new EJBException("No CA specified.");
 		}
@@ -408,6 +409,8 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     			X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
     			log.debug("Created delta CRL with expire date: "+crl.getNextUpdate());
     		}
+        } catch (CATokenOfflineException e) {
+            throw e;            
     	} catch (Exception e) {
     		logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,e.getMessage());
     		throw new EJBException(e);
@@ -419,7 +422,8 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     }
         
     /**
-     * Requests for a CRL to be created with the passed (revoked) certificates.
+     * Requests for a CRL to be created with the passed (revoked) certificates. 
+     * Generates the CRL and stores it in the database.
      *
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
@@ -462,11 +466,10 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
                 // Store CRL in the database
                 String fingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
                 crlBytes = crl.getEncoded();            	
-                log.debug("Storing CRL in certificate store.");
+                if (log.isDebugEnabled()) {
+                	log.debug("Storing CRL in certificate store.");
+                }
                 storeCRL(admin, crlBytes, fingerprint, nextCrlNumber, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
-                // Store crl in ca CRL publishers.
-                log.debug("Storing CRL in publishers");
-                publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, ca.getSubjectDN());
             }
         } catch (CATokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
@@ -651,31 +654,4 @@ public class CreateCRLSessionBean implements CreateCRLSessionLocal, CreateCRLSes
     	return maxnumber;
     }
 
-    /**
-     * (Re-)Publish the last CRLs for a CA.
-     *
-     * @param admin            Information about the administrator or admin preforming the event.
-     * @param caCert           The certificate for the CA to publish CRLs for
-     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
-     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
-     * @param doPublishDeltaCRL should delta CRLs be published?
-     */
-    public void publishCRL(Admin admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
-    	if ( usedpublishers==null ) {
-    		return;
-    	}
-    	final String issuerDN = CertTools.getSubjectDN(caCert);
-    	final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
-    	final byte crl[] = getLastCRL(admin, issuerDN, false);
-    	if ( crl!=null ) {
-    		publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, caDataDN);
-    	}
-    	if ( !doPublishDeltaCRL ) {
-    		return;
-    	}
-    	final byte deltaCrl[] = getLastCRL(admin, issuerDN, true);
-    	if ( deltaCrl!=null ) {
-    		publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, caDataDN);
-    	}
-    }
 }

@@ -515,14 +515,11 @@
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/admins"/>
 					<pathelement location="${build-temp.dir}/ca"/>
 					<pathelement location="${build-temp.dir}/logging"/>
 					<pathelement location="${build-temp.dir}/authorization"/>
 					<pathelement location="${build-temp.dir}/catoken"/>
 					<pathelement location="${build-temp.dir}/certstore"/>
-					<pathelement location="${build-temp.dir}/approval"/>
-					<pathelement location="${build-temp.dir}/publish"/>
 				</classpath>
 			</javac>
 

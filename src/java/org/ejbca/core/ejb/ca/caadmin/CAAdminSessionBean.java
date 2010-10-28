@@ -429,6 +429,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     	log.trace("<createCA");
     }
 
+    /**
+     * Generates the CRL and potentially deltaCRL and stores it in the database.
+     * 
+     * @param admin
+     * @param ca
+     * @param cainfo
+     * @throws CATokenOfflineException
+     */
     private void createCRLs(Admin admin, CA ca, CAInfo cainfo) throws CATokenOfflineException {
         final String fp = this.crlSession.run(admin, ca);
         // If we could not create a full CRL (for example CVC CAs does not even
@@ -1467,8 +1475,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     try {
                         KeyTools.testKey(catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), pk, catoken.getProvider());
                     } catch (Exception e1) {
-                        log
-                                .debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
+                        log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
                         if (e1 instanceof InvalidKeyException) {
                             log.trace(e1);
                         } else {
@@ -1486,8 +1493,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             // keystore we must make sure it is activated
                             ca.getCAToken().activate(tokenAuthenticationCode);
                         } catch (Exception e2) {
-                            log
-                                    .debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
+                            log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
                             if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
                                 log.trace(e2);
                             } else {
@@ -1502,7 +1508,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
                     // Publish CA Cert
                     publishCACertificate(admin, chain, ca.getCRLPublishers(), ca.getSubjectDN());
-                    crlSession.publishCRL(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
+                    publishCRL(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
 
                     // Set status to active, so we can sign certificates for the
                     // external services below.
@@ -1780,7 +1786,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     }
                     // Publish CA certificates.
                     publishCACertificate(admin, certchain, signca.getCRLPublishers(), ca != null ? ca.getSubjectDN() : null);
-                    crlSession.publishCRL(admin, cacertificate, signca.getCRLPublishers(), ca != null ? ca.getSubjectDN() : null, ca != null
+                    publishCRL(admin, cacertificate, signca.getCRLPublishers(), ca != null ? ca.getSubjectDN() : null, ca != null
                             && ca.getDeltaCRLPeriod() > 0);
 
                 } catch (CATokenOfflineException e) {
@@ -2102,7 +2108,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Publish the new CA certificate
             publishCACertificate(admin, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
             createCRLs(admin, ca, ca.getCAInfo());
-            crlSession.publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
+            publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
         } catch (CATokenOfflineException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrenewca", new Integer(caid));
             logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
@@ -3289,6 +3295,38 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } catch (javax.ejb.CreateException ce) {
             throw new EJBException(ce);
         }
+    }
+
+    /**
+     * (Re-)Publish the last CRLs for a CA.
+     *
+     * @param admin            Information about the administrator or admin preforming the event.
+     * @param caCert           The certificate for the CA to publish CRLs for
+     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
+     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
+     * @param doPublishDeltaCRL should delta CRLs be published?
+     */
+    public void publishCRL(Admin admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
+    	if ( usedpublishers==null ) {
+    		return;
+    	}
+        // Store crl in ca CRL publishers.
+        if (log.isDebugEnabled()) {
+        	log.debug("Storing CRL in publishers");
+        }
+    	final String issuerDN = CertTools.getSubjectDN(caCert);
+    	final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
+    	final byte crl[] = crlSession.getLastCRL(admin, issuerDN, false);
+    	if ( crl!=null ) {
+    		publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, caDataDN);
+    	}
+    	if ( !doPublishDeltaCRL ) {
+    		return;
+    	}
+    	final byte deltaCrl[] = crlSession.getLastCRL(admin, issuerDN, true);
+    	if ( deltaCrl!=null ) {
+    		publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, caDataDN);
+    	}
     }
 
     /**
