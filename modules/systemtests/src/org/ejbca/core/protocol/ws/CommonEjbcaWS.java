@@ -2067,9 +2067,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Check that the cert was received and the CA activated
         dvinfo = caAdminSessionRemote.getCAInfo(intAdmin, caname);
         assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
-        Collection<CardVerifiableCertificate> dvcerts = dvinfo.getCertificateChain();
+        Collection<java.security.cert.Certificate> dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
-        CardVerifiableCertificate dvcertactive = dvcerts.iterator().next();
+        CardVerifiableCertificate dvcertactive = (CardVerifiableCertificate)dvcerts.iterator().next();
         obj = CertificateParser.parseCVCObject(dvcertactive.getEncoded());
         // System.out.println(obj.getAsText());
         dvcertactive.verify(cvcakeypair.getPublic());
@@ -2126,7 +2126,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
         dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
-        dvcertactive = dvcerts.iterator().next();
+        dvcertactive = (CardVerifiableCertificate)dvcerts.iterator().next();
         obj = CertificateParser.parseCVCObject(dvcertactive.getEncoded());
         // System.out.println(obj.getAsText());
         dvcertactive.verify(cvcakeypair.getPublic());
@@ -2170,7 +2170,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Check to see that is really is a new keypair
         dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
-        dvcertactive = dvcerts.iterator().next();
+        dvcertactive = (CardVerifiableCertificate)dvcerts.iterator().next();
         String sequence4 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
         assertEquals(sequence2, sequence4);
         PublicKey oldPublicKey = dvcertactive.getPublicKey();
