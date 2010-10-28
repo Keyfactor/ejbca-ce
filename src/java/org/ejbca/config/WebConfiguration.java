@@ -25,7 +25,8 @@ public class WebConfiguration {
 	public static final String CONFIG_HTTPSSERVERHOSTNAME  = "httpsserver.hostname";
 	public static final String CONFIG_HTTPSERVERPUBHTTP    = "httpserver.pubhttp";
 	public static final String CONFIG_HTTPSSERVERPRIVHTTPS = "httpserver.privhttps";
-
+	public static final String CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS = "httpserver.external.privhttps";
+	
 	/**
 	 * The configured server host name
 	 */
@@ -58,7 +59,20 @@ public class WebConfiguration {
 		}
 		return value;
 	}
-	
+
+	/**
+	 * Port used by EJBCA public web to construct a correct url.
+	 */
+	public static int getExternalPrivateHttpsPort() {
+		int value = 8443;
+		try {
+			value = Integer.parseInt(ConfigurationHolder.getString(CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS, String.valueOf(getPrivateHttpsPort())));
+		} catch( NumberFormatException e ) {
+			log.warn("\"httpserver.external.privhttps\" is not a decimal number. Using default value: " + value);
+		}
+		return value;
+	}
+
 	/**
 	 * Defines the available languages by language codes separated with a comma
 	 */
