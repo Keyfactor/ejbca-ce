@@ -18,7 +18,8 @@ import java.util.Date;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.CertificateStatus;
 
-/**
+/** Class used to encapsulate the data that goes into a OCSP response
+ * 
  * @version $Id$
  */
 public class OCSPResponseItem {
