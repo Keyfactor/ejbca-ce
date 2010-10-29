@@ -34,7 +34,6 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -80,7 +79,6 @@ public class CADataHandler implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private EndEntityProfileSession endEntityProfileSession;
     private EjbcaWebBean ejbcawebbean;
-    private CreateCRLSession crlSession;
     
     /** Creates a new instance of CertificateProfileDataHandler */
     public CADataHandler(Admin administrator, 
@@ -91,7 +89,6 @@ public class CADataHandler implements Serializable {
                          CertificateStoreSession certificatesession,
                          CertificateProfileSession certificateProfileSession,
                          AuthorizationSession authorizationsession,
-                         CreateCRLSession crlSession,
                          EjbcaWebBean ejbcawebbean) {
                             
        this.caadminsession = caadminsession;           
@@ -102,7 +99,6 @@ public class CADataHandler implements Serializable {
        this.endEntityProfileSession = endEntityProfileSession;
        this.raadminsession = raadminsession;
        this.administrator = administrator;          
-       this.crlSession = crlSession;
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
     }
