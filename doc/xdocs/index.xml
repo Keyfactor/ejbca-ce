@@ -24,6 +24,9 @@
   Did you know that EJBCA includes a stand-alone OCSP responder? The responder is scalable with high-performance and can be used
   also with any other CA than EJBCA. 
   </note>
+  <note>
+  <strong>Roadmap for EJBCA 4</strong>. We have outlined a basic roadmap for EJBCA 4 at <a href="http://blog.ejbca.org/2010/10/ejbca-4-basic-roadmap.html">blog.ejbca.org</a>.
+  </note>
   </section>
 
 <section name="EJBCA Enterprise PKI">
