@@ -24,7 +24,6 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -61,8 +60,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private CertificateStoreSession certificatesession;
 	private CertificateProfileSession certificateProfileSession;
 	private CAAdminSession caadminsession;
-        private CreateCRLSession createCrlSession;
-        private EndEntityProfileSession endEntityProfileSession;
+	private EndEntityProfileSession endEntityProfileSession;
 	private AuthorizationSession authorizationsession;
 	private UserAdminSession adminsession;
 	private RaAdminSession raadminsession;
@@ -86,7 +84,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			EjbLocalHelper ejb = new EjbLocalHelper();
 			certificatesession = ejb.getCertStoreSession();
 			caadminsession = ejb.getCAAdminSession();
-			createCrlSession = ejb.getCreateCrlSession();
 			authorizationsession = ejb.getAuthorizationSession();
 			adminsession = ejb.getUserAdminSession();
 			raadminsession = ejb.getRAAdminSession();             
@@ -95,7 +92,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			this.informationmemory = webBean.getInformationMemory();
 
 			new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, certificateProfileSession, informationmemory);
-			cadatahandler = new CADataHandler(administrator, caadminsession, endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, createCrlSession, webBean);
+			cadatahandler = new CADataHandler(administrator, caadminsession, endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, webBean);
 			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();
 		} catch (Exception e){
