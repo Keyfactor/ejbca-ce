@@ -187,7 +187,9 @@ public abstract class CaTestCase extends TestCase {
                 true, true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true // useCertReqHistory
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true // useCertificateStorage
         );
 
         try {

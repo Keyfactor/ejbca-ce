@@ -211,6 +211,33 @@ If unsure leave enabled.
 </p>
 </subsubsection>
 
+<subsubsection name="Use User Storage">
+<p>
+Certificates are normally issued in a two step process where a User is first added to the database with a username, password and additional information that
+should go into the certificate. Later EJBCA processes a request that this user should be issued a certificate and the provided credentials (username and password)
+is verified with the stored User data. In the EJBCA Admin GUI it is currently only possible to search for Users and not certificates, so without this enabled,
+the Admin GUI will not be very useful.
+</p>
+<p>
+The user data storage is enabled by default.
+</p>
+<p>
+If EJBCA is used as a factory and where the functionality if the Admin GUI is not required, this could be disabled to improve performance.
+</p>
+</subsubsection>
+
+<subsubsection name="Use Certificate Storage">
+<p>
+Issued certificates are stored in the database to be able to provide them upon request or provide revocation information.
+</p>
+<p>
+The certificate data storage is enabled by default.
+</p>
+<p>
+If EJBCA is used as a factory and where the functionality if the Admin GUI is not required, this could be disabled to improve performance.
+</p>
+</subsubsection>
+
 <subsubsection name="CRL Period">
 <p>
 There are four settings in CA configuration dictating the times when CRL generation is done:

@@ -114,6 +114,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	private static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
 	private static final String DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER = "doEnforceUniqueSubjectDNSerialnumber";
 	private static final String USE_CERTREQ_HISTORY 			 = "useCertreqHistory";
+	private static final String USE_USER_STORAGE                 = "useUserStorage";
+	private static final String USE_CERTIFICATE_STORAGE          = "useCertificateStorage";
 
     private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
     
@@ -144,6 +146,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
        setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
        setUseCertReqHistory(cainfo.isUseCertReqHistory());
+       setUseUserStorage(cainfo.isUseUserStorage());
+       setUseCertificateStorage(cainfo.isUseCertificateStorage());
 	   
 	   Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
 	   ArrayList<Integer> extendedservicetypes = new ArrayList<Integer>(); 
@@ -453,13 +457,29 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private void setDoEnforceUniqueSubjectDNSerialnumber(boolean doEnforceUniqueSubjectDNSerialnumber) {
     	data.put(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, new Boolean(doEnforceUniqueSubjectDNSerialnumber));
 	}
-    /** whether certificate request history should be used or not, default true as was the case before 3.10.4
-     */
+
+    /** whether certificate request history should be used or not, default true as was the case before 3.10.4 */
 	public boolean isUseCertReqHistory() {
 		return getBoolean(USE_CERTREQ_HISTORY, true);
 	}
     private void setUseCertReqHistory(boolean useCertReqHistory) {
-    	data.put(USE_CERTREQ_HISTORY, new Boolean(useCertReqHistory));
+    	data.put(USE_CERTREQ_HISTORY, Boolean.valueOf(useCertReqHistory));
+	}
+    
+    /** whether users should be stored or not, default true as was the case before 3.10.x */
+	public boolean isUseUserStorage() {
+		return getBoolean(USE_USER_STORAGE, true);
+	}
+    private void setUseUserStorage(boolean useUserStorage) {
+    	data.put(USE_USER_STORAGE, Boolean.valueOf(useUserStorage));
+	}
+    
+    /** whether issued certificates should be stored or not, default true as was the case before 3.10.x */
+	public boolean isUseCertificateStorage() {
+		return getBoolean(USE_CERTIFICATE_STORAGE, true);
+	}
+    private void setUseCertificateStorage(boolean useCertificateStorage) {
+    	data.put(USE_CERTIFICATE_STORAGE, Boolean.valueOf(useCertificateStorage));
 	}
     
 	/**
@@ -526,6 +546,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         setDoEnforceUniqueDistinguishedName(cainfo.isDoEnforceUniqueDistinguishedName());
         setDoEnforceUniqueSubjectDNSerialnumber(cainfo.isDoEnforceUniqueSubjectDNSerialnumber());
         setUseCertReqHistory(cainfo.isUseCertReqHistory());
+        setUseUserStorage(cainfo.isUseUserStorage());
+        setUseCertificateStorage(cainfo.isUseCertificateStorage());
     	
     	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
     	while(iter.hasNext()){

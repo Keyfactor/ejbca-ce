@@ -119,6 +119,8 @@
   static final String CHECKBOX_DOENFORCEUNIQUEDN                  = "isdoenforceuniquedn";
   static final String CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER="doenforceuniquesubjectdnerialnumber";
   static final String CHECKBOX_USECERTREQHISTORY                  = "checkboxusecertreqhistory";
+  static final String CHECKBOX_USEUSERSTORAGE                     = "checkboxuseuserstorage";
+  static final String CHECKBOX_USECERTIFICATESTORAGE              = "checkboxusecertificatestorage";
   static final String CHECKBOX_USEUTF8POLICYTEXT                  = "checkboxuseutf8policytext";
   static final String CHECKBOX_USEPRINTABLESTRINGSUBJECTDN        = "checkboxuseprintablestringsubjectdn";
   static final String CHECKBOX_USELDAPDNORDER                     = "checkboxuseldapdnorder";
@@ -511,6 +513,16 @@
             	 final String value = request.getParameter(CHECKBOX_USECERTREQHISTORY);
             	 useCertReqHistory = value!=null && value.equals(CHECKBOX_VALUE);
              }
+             final boolean useUserStorage;
+             {
+                 final String value = request.getParameter(CHECKBOX_USEUSERSTORAGE);
+                 useUserStorage = value!=null && value.equals(CHECKBOX_VALUE);
+             }
+             final boolean useCertificateStorage;
+             {
+                 final String value = request.getParameter(CHECKBOX_USECERTIFICATESTORAGE);
+                 useCertificateStorage = value!=null && value.equals(CHECKBOX_VALUE);
+             }
 
 
              
@@ -686,7 +698,9 @@
                                                         isDoEnforceUniquePublicKeys,
                                                         isDoEnforceUniqueDistinguishedName,
                                                         isDoEnforceUniqueSubjectDNSerialnumber,
-                                                        useCertReqHistory);
+                                                        useCertReqHistory,
+                                                        useUserStorage,
+                                                        useCertificateStorage);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -763,7 +777,9 @@
                                                         isDoEnforceUniquePublicKeys,
                                                         isDoEnforceUniqueDistinguishedName,
                                                         isDoEnforceUniqueSubjectDNSerialnumber,
-                                                        useCertReqHistory);
+                                                        useCertReqHistory,
+                                                        useUserStorage,
+                                                        useCertificateStorage);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -801,7 +817,9 @@
                          isDoEnforceUniquePublicKeys,
                          isDoEnforceUniqueDistinguishedName,
                          isDoEnforceUniqueSubjectDNSerialnumber,
-                         useCertReqHistory);
+                         useCertReqHistory,
+                         useUserStorage,
+                         useCertificateStorage);
                                   
           		if(request.getParameter(BUTTON_CREATE) != null){           
                      try{
@@ -938,6 +956,16 @@
             {
             	final String value = request.getParameter(CHECKBOX_USECERTREQHISTORY);
             	useCertReqHistory = value!=null && value.equals(CHECKBOX_VALUE);
+            }
+            final boolean useUserStorage;
+            {
+            	final String value = request.getParameter(CHECKBOX_USEUSERSTORAGE);
+           		useUserStorage = value!=null && value.equals(CHECKBOX_VALUE);
+            }
+            final boolean useCertificateStorage;
+            {
+           		final String value = request.getParameter(CHECKBOX_USECERTIFICATESTORAGE);
+           		useCertificateStorage = value!=null && value.equals(CHECKBOX_VALUE);
             }
             
             String[] values = request.getParameterValues(SELECT_APPROVALSETTINGS);
@@ -1092,7 +1120,9 @@
                                                       isDoEnforceUniquePublicKeys,
                                                       isDoEnforceUniqueDistinguishedName,
                                                       isDoEnforceUniqueSubjectDNSerialnumber,
-                                                      useCertReqHistory);
+                                                      useCertReqHistory,
+                                                      useUserStorage,
+                                                      useCertificateStorage);
              } // if(catype == CAInfo.CATYPE_X509)
             	 
              // Info specific for CVC CA
@@ -1112,7 +1142,9 @@
                            isDoEnforceUniquePublicKeys,
                            isDoEnforceUniqueDistinguishedName,
                            isDoEnforceUniqueSubjectDNSerialnumber,
-                           useCertReqHistory);
+                           useCertReqHistory,
+                           useUserStorage,
+                           useCertificateStorage);
              } // if(catype == CAInfo.CATYPE_CVC)
             	 
                if(request.getParameter(BUTTON_SAVE) != null){
@@ -1375,6 +1407,8 @@
              final boolean isDoEnforceUniqueDistinguishedName = true;
              final boolean isDoEnforceUniqueSubjectDNSerialnumber = false;
              final boolean useCertReqHistory = true;
+             final boolean useUserStorage = true;
+             final boolean useCertificateStorage = true;
              final ArrayList crlpublishers = new ArrayList(); 
              final int crlperiod = 0;
              final int crlIssueInterval = 0;
@@ -1453,7 +1487,9 @@
                                                         isDoEnforceUniquePublicKeys,
                                                         isDoEnforceUniqueDistinguishedName,
                                                         isDoEnforceUniqueSubjectDNSerialnumber,
-                                                        useCertReqHistory);
+                                                        useCertReqHistory,
+                                                        useUserStorage,
+                                                        useCertificateStorage);
                }                               
                }
              } // if(catype == CAInfo.CATYPE_X509)
@@ -1482,7 +1518,9 @@
                        isDoEnforceUniquePublicKeys,
                        isDoEnforceUniqueDistinguishedName,
                        isDoEnforceUniqueSubjectDNSerialnumber,
-                       useCertReqHistory);
+                       useCertReqHistory,
+                       useUserStorage,
+                       useCertificateStorage);
                    }
                  }
                }  // if(catype == CAInfo.CATYPE_CVC)

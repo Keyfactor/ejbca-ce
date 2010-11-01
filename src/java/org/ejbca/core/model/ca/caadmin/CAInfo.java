@@ -109,6 +109,8 @@ public class CAInfo implements Serializable {
 	protected boolean doEnforceUniqueDistinguishedName;
 	protected boolean doEnforceUniqueSubjectDNSerialnumber;
 	protected boolean useCertReqHistory;
+	protected boolean useUserStorage;
+	protected boolean useCertificateStorage;
 	
     public CAInfo(){}
     
@@ -207,18 +209,30 @@ public class CAInfo implements Serializable {
 	public void setNumOfReqApprovals(int numOfReqApprovals) {this.numOfReqApprovals = numOfReqApprovals;}
 
     /**
-	 * @return answer this: should this CA issue certificates to only one user of a specific subjectDN serialnumber.
+	 * @return true if the UserData used to issue a certificate should be kept in the database.
      */
     public boolean isUseCertReqHistory() {
 		return this.useCertReqHistory;
 	}
 
 	/**
-	 * @param doEnforceUniqueSubjectDNSerialnumber
+	 * @param useCertReqHistory true means that the UserData used at the time of certificate issuance should be kept in the database.
 	 */
 	public void setUseCertReqHistory(boolean useCertReqHistory) {
 		this.useCertReqHistory = useCertReqHistory;
 	}
+
+    /** @return true if the UserData used to issue a certificate should be kept in the database. */
+    public boolean isUseUserStorage() {	return this.useUserStorage; }
+
+	/** @param useUserStorage true means that the latest UserData used to issue a certificate should be kept in the database. */
+	public void setUseUserStorage(boolean useUserStorage) { this.useUserStorage = useUserStorage; }
+
+    /** @return true if the issued certificate should be kept in the database. */
+    public boolean isUseCertificateStorage() {	return this.useCertificateStorage; }
+
+	/** @param useCertificateStorage true means that the issued certificate should be kept in the database. */
+	public void setUseCertificateStorage(boolean useCertificateStorage) { this.useCertificateStorage = useCertificateStorage; }
 
 	/**
 	 * @return answer this: should this CA issue certificates to only one user with certificates from one specific key.

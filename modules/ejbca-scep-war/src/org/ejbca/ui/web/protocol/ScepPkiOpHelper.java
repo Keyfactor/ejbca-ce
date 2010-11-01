@@ -71,7 +71,7 @@ public class ScepPkiOpHelper {
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
                 // Get the certificate
                 IResponseMessage resp = signsession.createCertificate(admin, reqmsg,
-                        Class.forName(org.ejbca.core.protocol.scep.ScepResponseMessage.class.getName()));
+                        Class.forName(org.ejbca.core.protocol.scep.ScepResponseMessage.class.getName()), null);
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }

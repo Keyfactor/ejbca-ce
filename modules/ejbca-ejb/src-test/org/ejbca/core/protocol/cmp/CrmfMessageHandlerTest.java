@@ -176,7 +176,7 @@ public class CrmfMessageHandlerTest extends TestCase {
 		 * This method has been stubbed to respond to
 		 * testExtractUserNameComponent
 		 */
-		public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws EjbcaException {
+		public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass, UserDataVO suppliedUserData) throws EjbcaException {
             userName = req.getUsername();		
 		    return null;
 		}
