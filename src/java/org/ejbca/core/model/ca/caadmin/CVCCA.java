@@ -112,7 +112,7 @@ public class CVCCA extends CA implements Serializable {
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
 				getApprovalSettings(), getNumOfRequiredApprovals(),
 				getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(), isDoEnforceUniqueSubjectDNSerialnumber(),
-				isUseCertReqHistory());
+				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage());
 		super.setCAInfo(info);
 	}
 

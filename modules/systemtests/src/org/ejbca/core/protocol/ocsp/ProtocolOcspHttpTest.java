@@ -1251,7 +1251,9 @@ public class ProtocolOcspHttpTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cainfo);
@@ -1343,7 +1345,9 @@ public class ProtocolOcspHttpTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cainfo);

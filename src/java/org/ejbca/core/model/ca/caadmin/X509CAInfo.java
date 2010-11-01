@@ -62,7 +62,7 @@ public class X509CAInfo extends CAInfo{
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
                     boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
                     boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-                    boolean _useCertReqHistory) {
+                    boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -122,6 +122,8 @@ public class X509CAInfo extends CAInfo{
         this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
         this.doEnforceUniqueSubjectDNSerialnumber = _doEnforceUniqueSubjectDNSerialnumber;
         this.useCertReqHistory = _useCertReqHistory;
+        this.useUserStorage = _useUserStorage;
+        this.useCertificateStorage = _useCertificateStorage;
     }
 
     /**
@@ -137,7 +139,7 @@ public class X509CAInfo extends CAInfo{
                       boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
                       boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
                       boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-                      boolean _useCertReqHistory) {        
+                      boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -169,7 +171,9 @@ public class X509CAInfo extends CAInfo{
         this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
         this.doEnforceUniqueSubjectDNSerialnumber = _doEnforceUniqueSubjectDNSerialnumber;
         this.useCertReqHistory = _useCertReqHistory;
-    }  
+        this.useUserStorage = _useUserStorage;
+        this.useCertificateStorage = _useCertificateStorage;
+    }
   
   
   public X509CAInfo(){}

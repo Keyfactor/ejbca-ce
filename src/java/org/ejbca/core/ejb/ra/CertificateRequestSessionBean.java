@@ -193,7 +193,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 				//imsg = reqmsg;
 			}
 			if (imsg != null) {
-				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
+				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType, userdata);
 			}
 		} catch (NotFoundException e) {
 			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
@@ -252,7 +252,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 		addOrEditUser(admin, userdata, false, true);
 		IResponseMessage retval = null;
 		try {
-			retval = signSession.createCertificate(admin, req, responseClass);				
+			retval = signSession.createCertificate(admin, req, responseClass, userdata);
 		} catch (NotFoundException e) {
 			sessionContext.setRollbackOnly();	// This is an application exception so it wont trigger a roll-back automatically
 			throw e;
@@ -315,11 +315,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
 	 */
-	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg, String hardTokenSN, int responseType)
+	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg, String hardTokenSN, int responseType, UserDataVO userData)
 	throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
 		byte[] retval = null;
 		Class respClass = org.ejbca.core.protocol.X509ResponseMessage.class; 
-		IResponseMessage resp =  signSession.createCertificate(admin, msg, respClass);
+		IResponseMessage resp =  signSession.createCertificate(admin, msg, respClass, userData);
 		java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
 		if(responseType == SecConst.CERT_RES_TYPE_CERTIFICATE){
 			retval = cert.getEncoded();

@@ -1062,7 +1062,7 @@ public class EjbcaWS implements IEjbcaWS {
 	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg,
 			String hardTokenSN, String responseType) throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
 		byte[] retval = null;
-		IResponseMessage resp =  signSession.createCertificate(admin, msg, org.ejbca.core.protocol.X509ResponseMessage.class);
+		IResponseMessage resp =  signSession.createCertificate(admin, msg, org.ejbca.core.protocol.X509ResponseMessage.class, null);
 		java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
 		if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)){
 			retval = cert.getEncoded();
@@ -1073,8 +1073,6 @@ public class EjbcaWS implements IEjbcaWS {
 		if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)){
 			retval = signSession.createPKCS7(admin, cert, true);
 		}
-
-
 		if(hardTokenSN != null){ 
 			hardTokenSession.addHardTokenCertificateMapping(admin,hardTokenSN,cert);				  
 		}

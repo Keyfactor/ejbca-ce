@@ -598,6 +598,36 @@ function checkallfields(){
       </td>
     </tr>
 
+    <tr id="Row<%=row++%2%>">
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USEUSERSTORAGE") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20User%20Storage") %> <br>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_USEUSERSTORAGE %>" value="<%=CHECKBOX_VALUE %>" 
+            <% if(editca) {
+            	  if (cainfo.isUseUserStorage()) out.write("CHECKED"); // edit CA
+               } else {
+            	  out.write("CHECKED"); // new CA default to true
+               }%>>         
+      </td>
+    </tr>
+
+    <tr id="Row<%=row++%2%>">
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USECERTIFICATESTORAGE") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20Certificate%20Storage") %> <br>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" 
+            <% if(editca) {
+            	  if (cainfo.isUseCertificateStorage()) out.write("CHECKED"); // edit CA
+               } else {
+            	  out.write("CHECKED"); // new CA default to true
+               }%>>         
+      </td>
+    </tr>
+
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         &nbsp;

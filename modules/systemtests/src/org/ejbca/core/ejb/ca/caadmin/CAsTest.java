@@ -155,7 +155,9 @@ public class CAsTest extends CaTestCase {
                     true, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cainfo);
@@ -293,7 +295,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
             
             removeOldCa("TESTECDSA");
@@ -388,7 +392,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cainfo);
@@ -476,7 +482,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
             caAdminSessionRemote.createCA(admin, cainfo);
 
@@ -567,7 +575,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cainfo);
@@ -663,7 +673,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cainfo);
@@ -738,7 +750,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cvccainfo);
@@ -800,7 +814,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cvccainfo);
@@ -858,7 +874,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cvccainfo);
@@ -1042,7 +1060,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cvccainfo);
@@ -1097,7 +1117,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cvccainfo);
@@ -1155,7 +1177,9 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cvccainfo);
@@ -1372,7 +1396,9 @@ public class CAsTest extends CaTestCase {
                     true, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             info = caAdminSessionRemote.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -1490,7 +1516,9 @@ public class CAsTest extends CaTestCase {
                     true, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(admin, cainfo);

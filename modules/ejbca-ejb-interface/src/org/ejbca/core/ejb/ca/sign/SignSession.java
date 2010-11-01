@@ -27,6 +27,7 @@ import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
 
 public interface SignSession {
 
@@ -214,6 +215,7 @@ public interface SignSession {
      * @param responseClass
      *            The implementation class that will be used as the response
      *            message.
+     * @param suppliedUserData Optional (can be null) supplied user data, if we are running without storing UserData this will be used. Should only be supplied when we issue certificates in a single transaction.
      * @return The newly created response message or null.
      * @throws ObjectNotFoundException
      *             if the user does not exist.
@@ -232,7 +234,7 @@ public interface SignSession {
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
     public org.ejbca.core.protocol.IResponseMessage createCertificate(org.ejbca.core.model.log.Admin admin, org.ejbca.core.protocol.IRequestMessage req,
-            java.lang.Class responseClass) throws EjbcaException;
+            java.lang.Class responseClass, UserDataVO suppliedUserData) throws EjbcaException;
 
 	/**
 	 * Requests for a certificate to be created for the passed public key with the passed key

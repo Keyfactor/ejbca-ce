@@ -41,7 +41,7 @@ public class CVCCAInfo extends CAInfo {
 			Collection approvalSettings, int numOfReqApprovals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-			boolean _useCertReqHistory) {
+			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
 		this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
 		this.caid = this.subjectdn.hashCode();
 		this.name = name;
@@ -71,6 +71,8 @@ public class CVCCAInfo extends CAInfo {
 		this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
 		this.doEnforceUniqueSubjectDNSerialnumber = _doEnforceUniqueSubjectDNSerialnumber;
 		this.useCertReqHistory = _useCertReqHistory;
+        this.useUserStorage = _useUserStorage;
+        this.useCertificateStorage = _useCertificateStorage;
 	}
 
 	/**
@@ -84,7 +86,7 @@ public class CVCCAInfo extends CAInfo {
 			Collection approvalSettings, int numOfReqApprovals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-			boolean _useCertReqHistory) {        
+			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
 		this.caid = caid;
 		this.validity=validity;
 		this.catokeninfo = catokeninfo; 
@@ -103,6 +105,8 @@ public class CVCCAInfo extends CAInfo {
 		this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
 		this.doEnforceUniqueSubjectDNSerialnumber = _doEnforceUniqueSubjectDNSerialnumber;
 		this.useCertReqHistory = _useCertReqHistory;
+        this.useUserStorage = _useUserStorage;
+        this.useCertificateStorage = _useCertificateStorage;
 	}  
 
 

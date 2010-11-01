@@ -1876,7 +1876,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistoru
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
             cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(), certprofileid, validity, null, CAInfo.CATYPE_CVC, signedby, null, null, description, -1,
@@ -1884,7 +1886,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     numofreqapprovals, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
         }
         if (cainfo instanceof X509CAInfo) {
@@ -2708,7 +2712,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
             ca = new X509CA((X509CAInfo) cainfo);
         } else if (caSignatureCertificate.getType().equals("CVC")) {
@@ -2726,7 +2732,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
             ca = new CVCCA((CVCCAInfo) cainfo);
         }

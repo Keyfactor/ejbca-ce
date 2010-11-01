@@ -2447,7 +2447,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(intAdmin, cvccainfo);
@@ -2478,7 +2480,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(intAdmin, cvcdvinfo);
@@ -2527,7 +2531,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true // useCertReqHistory
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true // useCertificateStorage
             );
 
             caAdminSessionRemote.createCA(intAdmin, cvcdvinfo);
