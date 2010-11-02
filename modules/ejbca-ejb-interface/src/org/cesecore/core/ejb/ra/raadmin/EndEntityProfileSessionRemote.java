@@ -15,8 +15,7 @@ package org.cesecore.core.ejb.ra.raadmin;
 import javax.ejb.Remote;
 
 /**
- * @author mikek
- *
+ * @version $Id$
  */
 @Remote
 public interface EndEntityProfileSessionRemote extends EndEntityProfileSession {

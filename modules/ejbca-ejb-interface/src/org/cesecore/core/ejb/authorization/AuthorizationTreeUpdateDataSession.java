@@ -15,8 +15,7 @@ package org.cesecore.core.ejb.authorization;
 import org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateData;
 
 /**
- * @version
- * 
+ * @version $Id$
  */
 public interface AuthorizationTreeUpdateDataSession {
 

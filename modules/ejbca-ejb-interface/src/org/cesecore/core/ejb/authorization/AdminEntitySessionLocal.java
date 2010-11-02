@@ -15,7 +15,7 @@ package org.cesecore.core.ejb.authorization;
 import javax.ejb.Local;
 
 /**
- * @version
+ * @version $Id$
  *
  */
 @Local

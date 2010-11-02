@@ -15,8 +15,7 @@ package org.cesecore.core.ejb.ra.raadmin;
 import javax.ejb.Local;
 
 /**
- * @author mikek
- *
+ * @version $Id$
  */
 @Local
 public interface EndEntityProfileSessionLocal extends EndEntityProfileSession {

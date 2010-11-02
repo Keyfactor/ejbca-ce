@@ -15,8 +15,7 @@ package org.cesecore.core.ejb.authorization;
 import javax.ejb.Remote;
 
 /**
- * @version
- *
+ * @version $Id$
  */
 @Remote
 public interface AuthorizationTreeUpdateDataSessionRemote extends AuthorizationTreeUpdateDataSession {

@@ -15,8 +15,7 @@ package org.cesecore.core.ejb.authorization;
 import javax.ejb.Remote;
 
 /**
- * @author mikek
- *
+ * @version $Id$
  */
 @Remote
 public interface AdminEntitySessionRemote extends AdminEntitySession {

@@ -19,7 +19,7 @@ import org.ejbca.core.model.log.Admin;
 
 /**
  * 
- * @version
+ * @version $Id$
  *
  */
 public interface AdminEntitySession {

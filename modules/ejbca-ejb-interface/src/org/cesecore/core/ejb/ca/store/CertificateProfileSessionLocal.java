@@ -15,8 +15,7 @@ package org.cesecore.core.ejb.ca.store;
 import javax.ejb.Local;
 
 /**
- * @author mikek
- *
+ * @version $Id$
  */
 @Local
 public interface CertificateProfileSessionLocal extends CertificateProfileSession {
