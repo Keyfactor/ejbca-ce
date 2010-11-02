@@ -19,8 +19,7 @@ import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.log.Admin;
 
 /**
- * @version
- *
+ * @version $Id$
  */
 public interface AdminGroupSession {
 

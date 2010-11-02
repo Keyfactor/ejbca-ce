@@ -16,6 +16,7 @@ import javax.ejb.Remote;
 
 /**
  * Remote interface for LogSession.
+ * @version $Id$
  */
 @Remote
 public interface LogSessionRemote extends LogSession {

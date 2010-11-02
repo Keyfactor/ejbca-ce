@@ -15,8 +15,7 @@ package org.cesecore.core.ejb.ca.store;
 import javax.ejb.Remote;
 
 /**
- * @author mikek
- *
+ * @version $Id$
  */
 @Remote
 public interface CertificateProfileSessionRemote extends CertificateProfileSession {

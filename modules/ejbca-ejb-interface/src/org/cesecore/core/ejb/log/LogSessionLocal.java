@@ -18,6 +18,7 @@ import org.ejbca.core.model.log.LogConfiguration;
 
 /**
  * Local interface for LogSession.
+ * @version $Id$
  */
 @Local
 public interface LogSessionLocal extends LogSession {
