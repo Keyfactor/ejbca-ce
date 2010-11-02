@@ -236,6 +236,17 @@ Bug
     * [ECA-1584] - PublisherQueue process service does not work in PostgreSQL
     * [ECA-1590] - Hash of a CA certificates can not be used to get "CA" if the subject DN of the certificate is not the same as the subject DN of the CA data.
 
+3.9.9, 2010-11-02
+---
+New Feature
+    * [ECA-1264] - Add extended information to edit user WS-API.
+
+Bug
+    * [ECA-1704] - Tomcat's server.xml must have URIEncoding also for port 8080
+    * [ECA-1714] - Issuer CA DN is HTML escaped when revoking through Admin GUI
+    * [ECA-1773] - Using multiple of the same Custom OID field for OtherName in Subject Alternative Names results in double values
+    * [ECA-1841] - Error adding end entity with several required and non required OUs
+
 3.9.8, 2010-06-17
 ---
 Improvement
