@@ -262,10 +262,14 @@ public class EjbcaWS implements IEjbcaWS {
 		  authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +userdatavo.getCAId());
 		  
 		  if(userAdminSession.existsUser(admin, userdatavo.getUsername())){
-			  log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
+			  if (log.isDebugEnabled()) {
+				  log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );				  
+			  }
 			  userAdminSession.changeUser(admin,userdatavo,userdata.isClearPwd(), true);
 		  }else{
-			  log.debug("New User " + userdata.getUsername() + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
+			  if (log.isDebugEnabled()) {
+				  log.debug("New User " + userdata.getUsername() + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
+			  }
 			  userAdminSession.addUserFromWS(admin,userdatavo,userdata.isClearPwd());
 		  }
 		}catch(UserDoesntFullfillEndEntityProfile e){
@@ -899,7 +903,9 @@ public class EjbcaWS implements IEjbcaWS {
 	EjbcaException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
-	        log.debug("PKCS10 from user '"+username+"'.");
+	    	if (log.isDebugEnabled()) {
+	    		log.debug("PKCS10 from user '"+username+"'.");
+	    	}
 	        return new CertificateResponse(responseType, processCertReq(username, password,
 	                                                                    pkcs10, REQTYPE_PKCS10, hardTokenSN, responseType, logger));
         } catch( CADoesntExistsException t ) {
@@ -2484,7 +2490,9 @@ public class EjbcaWS implements IEjbcaWS {
 	ApprovalException, WaitingForApprovalException, EjbcaException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
-	        log.debug("CertReq for user '" + userdata.getUsername() + "'.");
+	    	if (log.isDebugEnabled()) {
+	    		log.debug("CertReq for user '" + userdata.getUsername() + "'.");
+	    	}
 	        setUserDataVOWS (userdata);
 	    	EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, endEntityProfileSession, hardTokenSession, userAdminSession);
 	    	Admin admin = ejbcawshelper.getAdmin(false);
