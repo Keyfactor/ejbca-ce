@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.authorization;
 import java.util.Collection;
 
 import org.ejbca.core.model.authorization.AccessRule;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 
 public interface AuthorizationSession {
@@ -30,7 +29,7 @@ public interface AuthorizationSession {
      *            the resource to check authorization for.
      * @return true if authorized
      */
-    public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException;
+    public boolean isAuthorized(Admin admin, String resource);
 
     /**
      * Method to check if a user is authorized to a certain resource without
@@ -41,18 +40,16 @@ public interface AuthorizationSession {
      *            Admin class.
      * @param resource
      *            the resource to check authorization for.
-     * @return true if authorized, but not false if not authorized, throws
-     *         exception instead so return value can safely be ignored.
+     * @return true if authorized, false if not.
      */
-    public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException;
+    public boolean isAuthorizedNoLog(Admin admin, String resource);
 
     /**
      * Method to check if a group is authorized to a resource.
      * 
      * @return true if authorized
      */
-    public boolean isGroupAuthorized(Admin admin, int adminGroupId, String resource)
-            throws AuthorizationDeniedException;
+    public boolean isGroupAuthorized(Admin admin, int adminGroupId, String resource);
 
     /**
      * Method to check if a group is authorized to a resource without any
@@ -60,30 +57,10 @@ public interface AuthorizationSession {
      * 
      * @return true if authorized
      */
-    public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) throws AuthorizationDeniedException;
-
-
-
-    /**
-     * Adds a Collection of AccessRule to an an admin group.
-     */
-    public void addAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
-
-    /**
-     * Removes a Collection of (String) containing accessrules to remove from
-     * admin group.
-     */
-    public void removeAccessRules(Admin admin, String admingroupname, Collection<String> accessrules);
-
-    /**
-     * Replaces a groups accessrules with a new set of rules
-     */
-    public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
-
+    public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource);
    
 
-    public void isAuthorizedToGroup(Admin administrator, String admingroupname)
-            throws AuthorizationDeniedException;
+    public boolean isAuthorizedToGroup(Admin administrator, String admingroupname);
 
     /**
      * Method used to collect an administrators available access rules based on

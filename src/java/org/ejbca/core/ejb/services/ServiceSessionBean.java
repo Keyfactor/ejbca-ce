@@ -275,8 +275,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     public Collection<Integer> getAuthorizedVisibleServiceIds(Admin admin) {
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
-        try {
-            authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        if(authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             Collection<Integer> allServiceIds = getServiceIdToNameMap(admin).keySet();
             Iterator<Integer> i = allServiceIds.iterator();
             while (i.hasNext()) {
@@ -286,8 +285,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     allVisibleServiceIds.add(new Integer(id));
                 }
             }
-        } catch (AuthorizationDeniedException e) {
-            log.debug("AuthorizationDeniedException: ", e);
+        } else {
+            log.debug("Authorization denied for admin " + admin.getUsername() + " for resouce " + AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         }
         return allVisibleServiceIds;
     }
@@ -856,17 +855,16 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToEditService(Admin admin, ServiceConfiguration serviceConfiguraion) {
-        try {
-            if (serviceConfiguraion.isHidden() && admin.getAdminType() != Admin.TYPE_INTERNALUSER) {
-                return false;
-            } else if (serviceConfiguraion.isHidden() && admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
-                return true;
-            }
-            if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
-                return true;
-            }
-        } catch (AuthorizationDeniedException e) {
+        
+        if (serviceConfiguraion.isHidden() && admin.getAdminType() != Admin.TYPE_INTERNALUSER) {
+            return false;
+        } else if (serviceConfiguraion.isHidden() && admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
+            return true;
         }
+        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+            return true;
+        }
+
         return false;
     }
     

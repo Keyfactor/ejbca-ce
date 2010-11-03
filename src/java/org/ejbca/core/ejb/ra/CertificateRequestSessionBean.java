@@ -62,6 +62,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.WrongTokenTypeException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -281,8 +282,12 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 			PersistenceException, CADoesntExistsException, EjbcaException {
 		
 		int caid = userdata.getCAId();
-		authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
-		authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+		if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
+		    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
+		}
+		if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
+		    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
+		}
 		
 		// Add or edit user
 		try {

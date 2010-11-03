@@ -65,6 +65,7 @@ import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalReque
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -152,29 +153,32 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     private boolean authorizedToCA(Admin admin, int caid) {
         boolean returnval = false;
-        try {
-            returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
-        } catch (AuthorizationDeniedException e) {
-            log.info(e.getMessage()); // be sure to log the full real resource
-                                      // we are denied
+
+        returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
+        if (!returnval) {
+            log.info("Admin " + admin.getUsername() + " not authorized to resource " + AccessRulesConstants.CAPREFIX + caid);
         }
         return returnval;
     }
 
     private boolean authorizedToEndEntityProfile(Admin admin, int profileid, String rights) {
         boolean returnval = false;
-        try {
-            if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
-                    && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
-                returnval = authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
+
+        if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
+                && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
+            if (authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+
+                returnval = true;
             } else {
-                returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights)
-                        && authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+                log.info("Admin " + admin.getUsername() + " was not authorized to resource /super_administrator");
             }
-        } catch (AuthorizationDeniedException e) {
-            log.info(e.getMessage()); // be sure to log the full real resource
-                                      // we are denied
+
+        } else {
+
+            returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights)
+                    && authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         }
+
         return returnval;
     }
 
@@ -1630,7 +1634,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             throw new FinderException("Could not find user " + username);
         }
         // Check that the user have revokation rigths.
-        authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY);
+        if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
+            Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY, null);
+        }
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));

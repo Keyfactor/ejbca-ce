@@ -30,6 +30,8 @@ import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests CA import and export.
+ * 
+ * @version $Id$
  */
 public class CAImportExportTest extends TestCase  {
     private static Logger log = Logger.getLogger(CAImportExportTest.class);
@@ -315,7 +317,7 @@ public class CAImportExportTest extends TestCase  {
 		try {
 			keyFingerPrint = caadminsession.getKeyFingerPrint(admin, caname);
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) {}
 		assertFalse("Could get key fingerprint for \"" + caname + "\".", ret);
 		ret = false;
 		try {

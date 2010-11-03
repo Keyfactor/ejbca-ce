@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import javax.ejb.EJB;
@@ -37,7 +38,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
@@ -85,10 +85,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
             adminEntitySession.addAdminEntities(admin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
             ArrayList<AccessRule> accessrules = new ArrayList<AccessRule>();
             accessrules.add(new AccessRule(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));
-            authorizationSession.addAccessRules(admin, AdminGroup.TEMPSUPERADMINGROUP, accessrules);
-            
-            
-            
+            addAccessRules(admin, AdminGroup.TEMPSUPERADMINGROUP, accessrules);
+     
         }
         // Add Special Admin Group
         // Special admin group is a group that is not authenticated with client
@@ -146,7 +144,32 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         }
     
     }
-    
+   
+    /**
+     * Adds a Collection of AccessRule to an an admin group.
+     * 
+     */
+    public void addAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules) {
+        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
+            try {
+                AdminGroupData agd = AdminGroupData.findByGroupName(entityManager, admingroupname);
+                if (agd == null) {
+                    throw new FinderException("Could not find admin group " + admingroupname);
+                }
+                agd.addAccessRules(entityManager, accessrules);
+                authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
+                String msg = intres.getLocalizedMessage("authorization.accessrulesadded", admingroupname);
+                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+            } catch (Exception e) {
+                String msg = intres.getLocalizedMessage("authorization.erroraddaccessrules", admingroupname);
+                log.error(msg, e);
+                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                        LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
+            }
+        }
+    }
+   
     /**
      * Method to add an admingroup.
      * 
@@ -204,6 +227,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
     
     /**
      * Method to get a reference to a admingroup.
+     * 
+     * @return The Admin group, null if it doesn't exist. 
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AdminGroup getAdminGroup(Admin admin, String admingroupname) {
@@ -212,7 +237,7 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         if (agd != null) {
             returnval = agd.getAdminGroup();
         } else {
-            log.error("Can't get admingroup: " + admingroupname);
+            log.info("Can't get admingroup: " + admingroupname);
         }
         return returnval;
     }
@@ -236,10 +261,9 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
     public Collection<AdminGroup> getAuthorizedAdminGroupNames(Admin admin, Collection<Integer> availableCaIds) {
         ArrayList<AdminGroup> returnval = new ArrayList<AdminGroup>();
         boolean issuperadmin = false;
-        try {
-            issuperadmin = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
-        } catch (AuthorizationDeniedException e1) {
-        }
+    
+        issuperadmin = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+     
         HashSet<Integer> authorizedcaids = new HashSet<Integer>();
         HashSet<Integer> allcaids = new HashSet<Integer>();
         if (!issuperadmin) {
@@ -331,6 +355,64 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
                 log.error(msg, e);
                 logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
                         LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
+            }
+        }
+    }
+    
+
+    /**
+     * Removes a Collection of (String) containing accessrules to remove from
+     * admin group.
+     * 
+     */
+    public void removeAccessRules(Admin admin, String admingroupname, List<String> accessrules) {
+        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
+            try {
+                AdminGroupData agd = AdminGroupData.findByGroupName(entityManager, admingroupname);
+                if (agd == null) {
+                    throw new FinderException("Could not find admin group " + admingroupname);
+                }
+                agd.removeAccessRules(entityManager, accessrules);
+                authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
+                String msg = intres.getLocalizedMessage("authorization.accessrulesremoved", admingroupname);
+                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+            } catch (Exception e) {
+                String msg = intres.getLocalizedMessage("authorization.errorremoveaccessrules", admingroupname);
+                log.error(msg, e);
+                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+            }
+        }
+    }
+    
+    /**
+     * Replaces a groups accessrules with a new set of rules
+     */
+    public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules) {
+        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
+            try {
+                AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
+                if (agdl == null) {
+                    throw new FinderException("Could not find admin group " + admingroupname);
+                }
+                Collection<AccessRule> currentrules = agdl.getAdminGroup().getAccessRules();
+                ArrayList<String> removerules = new ArrayList<String>();
+                Iterator<AccessRule> iter = currentrules.iterator();
+                while (iter.hasNext()) {
+                    removerules.add(iter.next().getAccessRule());
+                }
+                agdl.removeAccessRules(entityManager, removerules);
+                agdl.addAccessRules(entityManager, accessrules);
+                authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
+                String msg = intres.getLocalizedMessage("authorization.accessrulesreplaced", admingroupname);
+                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+            } catch (Exception e) {
+                String msg = intres.getLocalizedMessage("authorization.errorreplaceaccessrules", admingroupname);
+                log.error(msg, e);
+                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     }

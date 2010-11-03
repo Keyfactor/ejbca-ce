@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 
@@ -33,7 +34,8 @@ import org.ejbca.util.StringTools;
  */
 public class X509CAInfo extends CAInfo{
    
-  private List policies;
+    private static final long serialVersionUID = 1349353519030677161L;
+    private List<CertificatePolicy> policies;
   private boolean useauthoritykeyidentifier;
   private boolean authoritykeyidentifiercritical;
   private boolean usecrlnumber;
@@ -78,7 +80,7 @@ public class X509CAInfo extends CAInfo{
 		try {
 			if (certificatechain != null) {
 		        X509Certificate[] certs = (X509Certificate[])certificatechain.toArray(new X509Certificate[0]);
-		        ArrayList list = CertTools.getCertCollectionFromArray(certs, null);
+		        ArrayList<java.security.cert.Certificate> list = CertTools.getCertCollectionFromArray(certs, null);
 		        this.certificatechain = list;        				
 			} else {
 				this.certificatechain = null;
@@ -178,7 +180,7 @@ public class X509CAInfo extends CAInfo{
   
   public X509CAInfo(){}
     
-  public List getPolicies() {
+  public List<CertificatePolicy> getPolicies() {
 	  return this.policies;
   }
   public boolean getUseCRLNumber(){ return usecrlnumber;}

@@ -60,6 +60,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
@@ -92,11 +93,11 @@ import org.ejbca.util.query.Query;
  */
 public class EjbcaWSHelper {
 
-	private static final Logger log = Logger.getLogger(EjbcaWSHelper.class);				
+    private static final Logger log = Logger.getLogger(EjbcaWSHelper.class);
 
-	private static final InternalResources intres = InternalResources.getInstance();
-	
-	private WebServiceContext wsContext;
+    private static final InternalResources intres = InternalResources.getInstance();
+
+    private WebServiceContext wsContext;
     private AuthorizationSession authorizationSession;
     private CAAdminSession caAdminSession;
     private CertificateStoreSession certificateStoreSession;
@@ -161,7 +162,9 @@ public class EjbcaWSHelper {
 			// Check that user have the administrator flag set.
 			if(!allowNonAdmins){
 				userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
-				authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR);
+				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+				    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+				}
 			}
 
 			try {
@@ -172,9 +175,6 @@ public class EjbcaWSHelper {
 				// But it can also be that the certificate has expired, very unlikely since the SSL server checks that
 				throw new AuthorizationDeniedException(e.getMessage());
 			}
-		/*} catch (RemoteException e) {
-			log.error("EJBCA WebService error: ",e);
-			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());*/
 		} catch (EJBException e) {
 			log.error("EJBCA WebService error: ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
@@ -204,14 +204,13 @@ public class EjbcaWSHelper {
 		try{
 			Admin admin = userAdminSession.getAdmin(certificates[0]);
 			userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
-			authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR);
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+			}
 			retval = true;
 		}catch(AuthorizationDeniedException e){
 		} catch (EJBException e) {			
 			log.error("Error checking if isAdmin: ", e);
-		/*} catch (RemoteException e) {
-			log.error("EJBCA WebService error, isAdmin : ",e);
-			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());*/
 		} 
 		
 		return retval;
@@ -219,16 +218,21 @@ public class EjbcaWSHelper {
 
 	protected void isAuthorizedToRepublish(Admin admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException/*, RemoteException*/{
 		try {
-			authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
+			}
 			UserDataVO userdata = userAdminSession.findUser(admin, username);
 			if(userdata == null){
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
-			authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS);
-			authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid );		
-		/*} catch (RemoteException e) {
-			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);*/
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS, null);
+			}
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid )){
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + caid, null);
+			}
+
 		} catch (EJBException e) {
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		}
@@ -236,29 +240,37 @@ public class EjbcaWSHelper {
 	}
 	
 	
-	protected void isAuthorizedToHardTokenData(Admin admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException/*, RemoteException*/ {
+	protected void isAuthorizedToHardTokenData(Admin admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
 		try {
-			authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null);
+			}
 			UserDataVO userdata = userAdminSession.findUser(admin, username);
 			if(userdata == null){
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
 
-			authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS);
-			if(viewPUKData){
-				authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWPUKS);
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null);
 			}
-
-			if(userdata != null){
-				authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS);
-				if(viewPUKData){
-					authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS);			
+			if(viewPUKData){
+				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWPUKS)) {
+				    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWPUKS, null);
 				}
 			}
 
-		/*} catch (RemoteException e) {
-			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);*/
+			if(userdata != null){
+			    if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS)) {
+			        Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS, null);
+			    }
+				if(viewPUKData){
+				    if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {	
+				        Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS, null);
+				    }
+				}
+			}
+
 		} catch (EJBException e) {
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		}		
@@ -607,10 +619,7 @@ public class EjbcaWSHelper {
 			} catch (CertificateNotYetValidException e) {   // Drop invalid cert
 			} catch (CertificateEncodingException e) {		// Drop invalid cert
 				log.error("A defect certificate was detected.");
-			} catch (AuthorizationDeniedException e) {		// Drop unauthorized cert
-			/*} catch (RemoteException e) {
-				throw new EJBException(e);	// No reason to use checked Exception here*/
-			}
+			} 
 		}
 		return retval;
 	}

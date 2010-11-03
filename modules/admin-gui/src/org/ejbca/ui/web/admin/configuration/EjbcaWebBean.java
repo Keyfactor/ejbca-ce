@@ -354,20 +354,20 @@ public class EjbcaWebBean implements Serializable {
 
     /* Checks if the admin have authorization to view the resource */
     public boolean isAuthorized(String resource) throws AuthorizationDeniedException {
-      boolean returnval=false;
-      if(certificates != null){         
-        returnval= authorizedatahandler.isAuthorized(administrator,resource);
-      } else{
-        throw new  AuthorizationDeniedException("Client certificate required.");
-      }
-      return returnval;
+        boolean returnval = false;
+        if (certificates != null) {
+            returnval = authorizationSession.isAuthorized(administrator, resource);
+        } else {
+            throw new AuthorizationDeniedException("Client certificate required.");
+        }
+        return returnval;
     }
 
     /* Checks if the admin have authorization to view the resource without performing any logging. Used by menu page */
     public boolean isAuthorizedNoLog(String resource) throws AuthorizationDeniedException {
       boolean returnval=false;
       if(certificates != null){
-        returnval= authorizedatahandler.isAuthorizedNoLog(administrator,resource);
+        returnval= authorizationSession.isAuthorizedNoLog(administrator,resource);
       } else{
         throw new  AuthorizationDeniedException("Client certificate required.");
       }
@@ -382,7 +382,7 @@ public class EjbcaWebBean implements Serializable {
       if(certificates != null){
         if(raauthorized[resource] == null) {
         	// We don't bother to lookup the admin's username and email for this check..
-        	raauthorized[resource] = Boolean.valueOf(authorizedatahandler.isAuthorizedNoLog(new Admin(certificates[0], null, null),AUTHORIZED_RA_RESOURCES[resource]));
+        	raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLog(new Admin(certificates[0], null, null),AUTHORIZED_RA_RESOURCES[resource]));
         }
         returnval = raauthorized[resource].booleanValue();
       } else{

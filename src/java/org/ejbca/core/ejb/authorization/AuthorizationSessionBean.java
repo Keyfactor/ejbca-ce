@@ -15,11 +15,11 @@ package org.ejbca.core.ejb.authorization;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -33,12 +33,10 @@ import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.AdminGroupDoesNotExistException;
 import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
@@ -57,9 +55,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     private static final Logger log = Logger.getLogger(AuthorizationSessionBean.class);
     private static final long serialVersionUID = 1L;
-
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -115,7 +110,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @return true if authorized
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorized(Admin admin, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
@@ -135,7 +130,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      *         exception instead so return value can safely be ignored.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorizedNoLog(Admin admin, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
@@ -148,7 +143,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @return true if authorized
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isGroupAuthorized(Admin admin, int adminGroupId, String resource) throws AuthorizationDeniedException {
+    public boolean isGroupAuthorized(Admin admin, int adminGroupId, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
@@ -162,7 +157,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      * @return true if authorized
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) throws AuthorizationDeniedException {
+    public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
@@ -171,110 +166,45 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
 
 
-
-
-
     /**
-     * Adds a Collection of AccessRule to an an admin group.
-     */
-    public void addAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules) {
-        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
-            try {
-                AdminGroupData agd = AdminGroupData.findByGroupName(entityManager, admingroupname);
-                if (agd == null) {
-                    throw new FinderException("Could not find admin group " + admingroupname);
-                }
-                agd.addAccessRules(entityManager, accessrules);
-                authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
-                String msg = intres.getLocalizedMessage("authorization.accessrulesadded", admingroupname);
-                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
-            } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("authorization.erroraddaccessrules", admingroupname);
-                log.error(msg, e);
-                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
-            }
-        }
-    }
-
-    /**
-     * Removes a Collection of (String) containing accessrules to remove from
-     * admin group.
+     * Checks that the given Admin is authorized to all CAs in the given group. Will return false if the group is empty.
      * 
+     * @param administrator Admin token to check
+     * @param admingroupname Name of group to check in.
+     * 
+     * @throws AdminGroupDoesNotExistException
+     *             if the admin group doesn't exist.
      */
-    public void removeAccessRules(Admin admin, String admingroupname, Collection<String> accessrules) {
-        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
-            try {
-                AdminGroupData agd = AdminGroupData.findByGroupName(entityManager, admingroupname);
-                if (agd == null) {
-                    throw new FinderException("Could not find admin group " + admingroupname);
-                }
-                agd.removeAccessRules(entityManager, accessrules);
-                authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
-                String msg = intres.getLocalizedMessage("authorization.accessrulesremoved", admingroupname);
-                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
-            } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("authorization.errorremoveaccessrules", admingroupname);
-                log.error(msg, e);
-                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
-            }
-        }
-    }
-
-    /**
-     * Replaces a groups accessrules with a new set of rules
-     */
-    public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules) {
-        if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
-            try {
-                AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
-                if (agdl == null) {
-                    throw new FinderException("Could not find admin group " + admingroupname);
-                }
-                Collection<AccessRule> currentrules = agdl.getAdminGroup().getAccessRules();
-                ArrayList<String> removerules = new ArrayList<String>();
-                Iterator<AccessRule> iter = currentrules.iterator();
-                while (iter.hasNext()) {
-                    removerules.add(iter.next().getAccessRule());
-                }
-                agdl.removeAccessRules(entityManager, removerules);
-                agdl.addAccessRules(entityManager, accessrules);
-                authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
-                String msg = intres.getLocalizedMessage("authorization.accessrulesreplaced", admingroupname);
-                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
-            } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("authorization.errorreplaceaccessrules", admingroupname);
-                log.error(msg, e);
-                logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
-            }
-        }
-    }
-
-    /**
-     * @throws AuthorizationDeniedException
-     *             if administrator isn't authorized to all issuers of the admin
-     *             certificates in this group
-     */
-    public void isAuthorizedToGroup(Admin administrator, String admingroupname) throws AuthorizationDeniedException {
-        ArrayList<Integer> al = new ArrayList<Integer>();
+    public boolean isAuthorizedToGroup(Admin administrator, String admingroupname) throws AdminGroupDoesNotExistException {
+        HashSet<Integer> al = new HashSet<Integer>();
         AdminGroupData adminGroupData = AdminGroupData.findByGroupName(entityManager, admingroupname);
+        boolean result = true;
         if (adminGroupData != null) {
-            Iterator<AdminEntity> i = adminGroupData.getAdminEntityObjects().iterator();
-            while (i.hasNext()) {
-                int currentCaId = i.next().getCaId();
-                if (!al.contains(currentCaId)) {
-                    isAuthorizedNoLog(administrator, AccessRulesConstants.CAPREFIX + currentCaId);
-                    al.add(currentCaId);
+            Collection<AdminEntity> adminEntityObjects = adminGroupData.getAdminEntityObjects();
+            if(adminEntityObjects.isEmpty()) {
+                result = false;
+            } else {
+                for (AdminEntity adminEntity : adminEntityObjects) {
+                    int currentCaId = adminEntity.getCaId();
+                    if (!al.contains(currentCaId)) {
+                        if (!isAuthorizedNoLog(administrator, AccessRulesConstants.CAPREFIX + currentCaId)) {
+                            if(log.isDebugEnabled()) {
+                                log.debug("Authorization failed for CA ID " + currentCaId + " and " + administrator.getAdminData());
+                            }
+                            result = false;
+                            break;
+                        }
+                        al.add(currentCaId);
+                    }
                 }
             }
+ 
         } else {
             log.error("Could not find admin group " + admingroupname);
+            throw new AdminGroupDoesNotExistException("Could not find admin group " + admingroupname);
         }
+
+        return result;
     }
 
     /**

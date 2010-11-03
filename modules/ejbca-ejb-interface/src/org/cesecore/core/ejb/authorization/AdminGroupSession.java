@@ -13,7 +13,9 @@
 package org.cesecore.core.ejb.authorization;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.log.Admin;
@@ -24,10 +26,15 @@ import org.ejbca.core.model.log.Admin;
 public interface AdminGroupSession {
 
     /**
+     * Adds a Collection of AccessRule to an an admin group.
+     */
+    public void addAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
+    
+    /**
      * Method to add an admingroup.
      * 
      * @param admingroupname
-     *            name of new admingroup, have to be unique.
+     *            name of new admingroup, has to be unique.
      * @throws AdminGroupExistsException
      *             if admingroup already exists.
      */
@@ -50,6 +57,8 @@ public interface AdminGroupSession {
     
     /**
      * Method to get a reference to a admingroup.
+     * 
+     * @return The Admin group, null if it doesn't exist. 
      */
     public AdminGroup getAdminGroup(Admin admin, String admingroupname);
     
@@ -68,6 +77,17 @@ public interface AdminGroupSession {
      *            A Collection<Integer> of all CA Ids
      */
     public Collection<AdminGroup> getAuthorizedAdminGroupNames(Admin admin, Collection<Integer> availableCaIds);
+    
+    /**
+     * Removes a Collection of (String) containing accessrules to remove from
+     * admin group.
+     */
+    public void removeAccessRules(Admin admin, String admingroupname, List<String> accessrules);
+
+    /**
+     * Replaces a groups accessrules with a new set of rules
+     */
+    public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
     
     /**
      * Method to remove a admingroup.

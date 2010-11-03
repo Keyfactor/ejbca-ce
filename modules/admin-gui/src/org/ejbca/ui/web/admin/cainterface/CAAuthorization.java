@@ -24,7 +24,6 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 
@@ -34,6 +33,8 @@ import org.ejbca.core.model.log.Admin;
  * @version $Id$
  */
 public class CAAuthorization implements Serializable {
+
+    private static final long serialVersionUID = -7397428143642714604L;
 
     private Collection authcas = null;
     private TreeMap profilenamesendentity = null;
@@ -116,28 +117,27 @@ public class CAAuthorization implements Serializable {
     }
     
     public TreeMap getEditCertificateProfileNames(boolean includefixedhardtokenprofiles){
-      if(allprofilenames==null){
-      	// check if administrator
-      	boolean superadministrator = false;
-		try{
-		  superadministrator = authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
-		}catch(AuthorizationDeniedException ade){}
-      	
-        allprofilenames = new TreeMap();
-        Iterator iter= null;  
+        if (allprofilenames == null) {
+            // check if administrator
+            boolean superadministrator = false;
+
+            superadministrator = authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+
+            allprofilenames = new TreeMap();
+        Iterator<Integer> iter= null;  
         if(includefixedhardtokenprofiles){
           iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, 0, getAuthorizedCAIds()).iterator();
         }else{
-          ArrayList certprofiles = new ArrayList();
+          ArrayList<Integer> certprofiles = new ArrayList<Integer>();
 		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()));
 		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()));
 		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()));
 		  iter = certprofiles.iterator();
         }
-        HashMap idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
+        HashMap<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
         
-          Integer id = (Integer) iter.next();
+          Integer id = iter.next();
           CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin,id.intValue());
  
           // If not superadministrator, then should only end entity profiles be added.

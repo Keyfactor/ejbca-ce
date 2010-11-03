@@ -35,6 +35,8 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  */
 public class PublisherDataHandler implements Serializable {
 	   
+    private static final long serialVersionUID = -5646053740072121787L;
+    
     private PublisherSession publishersession; 
     private AuthorizationSession authorizationsession;
     private CAAdminSession caadminsession;
@@ -161,12 +163,7 @@ public class PublisherDataHandler implements Serializable {
     /**
      * Help function that checks if administrator is authorized to edit publisher.
      */    
-    private boolean authorizedToEditPublishers(){          
-        try{
-          authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
-          return true;  
-        }catch(AuthorizationDeniedException ade){}
-              
-       return false;  
-    }    
+    private boolean authorizedToEditPublishers() {
+        return authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+    } 
 }

@@ -307,18 +307,16 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		return list;
 	}
 
-	/** @return the available cas as a Collection<SelectItem>  */
-	public Collection<SelectItem> getAvailableCasAndAll() {
-		Collection<SelectItem> cas = getAvailableCaIds();
-		try {
-			if (getAuthorizationDataHandler().isAuthorizedNoLog(getAdmin(), AccessRulesConstants.CABASE)) {
-				cas.add(new SelectItem(String.valueOf(BasicAccessRuleSet.CA_ALL), getEjbcaWebBean().getText("ALL")));
-			}
-		} catch (AuthorizationDeniedException e) {
-			// Ignore
-		}
-		return cas;
-	}
+    /** @return the available cas as a Collection<SelectItem> */
+    public Collection<SelectItem> getAvailableCasAndAll() {
+        Collection<SelectItem> cas = getAvailableCaIds();
+
+        if (getAuthorizationDataHandler().isAuthorizedNoLog(getAdmin(), AccessRulesConstants.CABASE)) {
+            cas.add(new SelectItem(String.valueOf(BasicAccessRuleSet.CA_ALL), getEjbcaWebBean().getText("ALL")));
+        }
+
+        return cas;
+    }
 
 	/** @return the available end entity rules as a Collection<SelectItem>  */
 	public Collection<SelectItem> getAvailableEndEntityRules()  {
@@ -451,7 +449,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		log.info("Trying to replace access rules..");
 		Collection<AccessRule> allRules = new ArrayList<AccessRule>();
 		Collection<AccessRule> toReplace = new ArrayList<AccessRule>();
-		Collection<String> toRemove = new ArrayList<String>();
+		List<String> toRemove = new ArrayList<String>();
 		allRules.addAll(getAccessRules().getRoleBasedAccessRules());
 		allRules.addAll(getAccessRules().getRegularAccessRules());
 		allRules.addAll(getAccessRules().getEndEntityProfileAccessRules());

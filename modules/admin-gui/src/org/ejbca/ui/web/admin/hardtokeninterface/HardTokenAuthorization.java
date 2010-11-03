@@ -25,7 +25,6 @@ import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.model.log.Admin;
 
@@ -99,36 +98,32 @@ public class HardTokenAuthorization implements Serializable {
     
     
     /**
-     * Checks if administrator is authorized to edit the specified hard token issuer.
+     * Checks if administrator is authorized to edit the specified hard token
+     * issuer.
      * 
-     * @param alias of hard token issuer
+     * @param alias
+     *            of hard token issuer
      * @return true if administrator is authorized to edit ahrd token issuer.
      */
-    
-    public boolean authorizedToHardTokenIssuer(String alias){
-    	boolean returnval = false;
-    	try{
-    	  returnval = this.authorizationsession.isAuthorizedNoLog(admin,"/hardtoken_functionality/edit_hardtoken_issuers");
-    	}catch(AuthorizationDeniedException ade){}
-    	
-    	return returnval && this.getHardTokenIssuers().keySet().contains(alias);    	
+
+    public boolean authorizedToHardTokenIssuer(String alias) {
+        return authorizationsession.isAuthorizedNoLog(admin, "/hardtoken_functionality/edit_hardtoken_issuers")
+                && this.getHardTokenIssuers().keySet().contains(alias);
     }
 
-	/**
-	 * Checks if administrator is authorized to edit the specified hard token profile.
-	 * 
-	 * @param alias of hard token profile
-	 * @return true if administrator is authorized to edit hard token profile.
-	 */
-    
-	public boolean authorizedToHardTokenProfile(String name){
-		boolean returnval = false;
-		try{
-		  returnval = this.authorizationsession.isAuthorizedNoLog(admin,"/hardtoken_functionality/edit_hardtoken_profiles");
-		}catch(AuthorizationDeniedException ade){}
-    	
-		return returnval && this.getHardTokenProfiles().keySet().contains(name);    	
-	}
+    /**
+     * Checks if administrator is authorized to edit the specified hard token
+     * profile.
+     * 
+     * @param alias
+     *            of hard token profile
+     * @return true if administrator is authorized to edit hard token profile.
+     */
+
+    public boolean authorizedToHardTokenProfile(String name) {
+        return authorizationsession.isAuthorizedNoLog(admin, "/hardtoken_functionality/edit_hardtoken_profiles")
+                && this.getHardTokenProfiles().keySet().contains(name);
+    }
 
     /**
      * Returns a Map of hard token profile id (Integer) -> hard token profile
@@ -150,12 +145,9 @@ public class HardTokenAuthorization implements Serializable {
         if (authissueingadmgrps == null) {
             authissueingadmgrps = new ArrayList<AdminGroup>();
             for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caadminsession.getAvailableCAs(admin))) {
-                try {
-                    if (authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId(), "/hardtoken_functionality/issue_hardtokens")) {
-                        authissueingadmgrps.add(next);
-                    }
-                } catch (AuthorizationDeniedException e) {
-                }
+                if (authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId(), "/hardtoken_functionality/issue_hardtokens")) {
+                    authissueingadmgrps.add(next);
+                }        
             }
         }
         return authissueingadmgrps;

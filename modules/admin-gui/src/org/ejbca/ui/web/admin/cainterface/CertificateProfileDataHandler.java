@@ -37,6 +37,8 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  */
 public class CertificateProfileDataHandler implements Serializable {
 
+    private static final long serialVersionUID = 6293364591292667934L;
+
     private AuthorizationSession authorizationsession;
     private CAAdminSession caadminsession;
     private Admin administrator;
@@ -149,37 +151,34 @@ public class CertificateProfileDataHandler implements Serializable {
      */
     private boolean authorizedToProfile(CertificateProfile profile, boolean editcheck) {
         boolean returnval = false;
-        try {
-            boolean issuperadministrator = false;
-            try {
-                issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-            } catch (AuthorizationDeniedException ade) {
-            }
 
-            if (editcheck) {
-                authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
-            }
-            HashSet authorizedcaids = new HashSet(caadminsession.getAvailableCAs(administrator));
+        boolean issuperadministrator = false;
 
-            if (profile != null) {
-                if (!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY) {
-                    returnval = false;
-                } else {
-                    Collection availablecas = profile.getAvailableCAs();
-                    if (availablecas.contains(new Integer(CertificateProfile.ANYCA))) {
-                        if (issuperadministrator && editcheck) {
-                            returnval = true;
-                        }
-                        if (!editcheck) {
-                            returnval = true;
-                        }
-                    } else {
-                        returnval = authorizedcaids.containsAll(availablecas);
+        issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
+
+        if (editcheck) {
+            authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
+        }
+        HashSet<Integer> authorizedcaids = new HashSet<Integer>(caadminsession.getAvailableCAs(administrator));
+
+        if (profile != null) {
+            if (!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY) {
+                returnval = false;
+            } else {
+                Collection<Integer> availablecas = profile.getAvailableCAs();
+                if (availablecas.contains(new Integer(CertificateProfile.ANYCA))) {
+                    if (issuperadministrator && editcheck) {
+                        returnval = true;
                     }
+                    if (!editcheck) {
+                        returnval = true;
+                    }
+                } else {
+                    returnval = authorizedcaids.containsAll(availablecas);
                 }
             }
-        } catch (AuthorizationDeniedException e) {
         }
+   
 
         return returnval;
     }

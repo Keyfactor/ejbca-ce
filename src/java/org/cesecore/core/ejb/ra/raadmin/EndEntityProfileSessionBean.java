@@ -36,7 +36,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -331,12 +330,11 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         ArrayList<Integer> returnval = new ArrayList<Integer>();
         HashSet<Integer> authorizedcaids = new HashSet<Integer>(caAdminSession.getAvailableCAs(admin));
         // debug("Admin authorized to "+authorizedcaids.size()+" CAs.");
-        try {
-            if (authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
-                returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
-            }
-        } catch (AuthorizationDeniedException e) {
+   
+        if (authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+            returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
+
         try {
             Iterator<EndEntityProfileData> i = EndEntityProfileData.findAll(entityManager).iterator();
             while (i.hasNext()) {

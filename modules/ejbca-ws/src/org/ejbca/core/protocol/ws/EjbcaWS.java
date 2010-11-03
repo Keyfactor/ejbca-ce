@@ -99,6 +99,7 @@ import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalReque
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
@@ -259,8 +260,10 @@ public class EjbcaWS implements IEjbcaWS {
           logAdminName(admin,logger);
 		  UserDataVO userdatavo = ejbhelper.convertUserDataVOWS(admin, userdata);
 
-		  authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +userdatavo.getCAId());
-		  
+            if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + userdatavo.getCAId())) {
+                Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + userdatavo.getCAId(), null);
+            }
+
 		  if(userAdminSession.existsUser(admin, userdatavo.getUsername())){
 			  if (log.isDebugEnabled()) {
 				  log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );				  
@@ -943,9 +946,12 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			int caid = userdata.getCAId();
 			caAdminSession.verifyExistenceOfCA(caid);
-			authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
-			authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
-
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
+		}
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
+		}
 			// Check tokentype
 			if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
 				throw EjbcaWSHelper.getEjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests",
@@ -1105,9 +1111,13 @@ public class EjbcaWS implements IEjbcaWS {
 			  }
 			  int caid = userdata.getCAId();
 			  caAdminSession.verifyExistenceOfCA(caid);
-			  authorizationSession.isAuthorized(admin,AccessRulesConstants.CAPREFIX +caid);
+			  if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.CAPREFIX +caid)) {
+			      Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
+			  }
 
-			  authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_CREATECERTIFICATE);
+			  if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
+			      Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
+			  }
 			  
 			  // Check tokentype
 			  if(userdata.getTokenType() != SecConst.TOKEN_SOFT_P12){
@@ -1192,7 +1202,9 @@ public class EjbcaWS implements IEjbcaWS {
 			String username = certificateStoreSession.findUsernameByCertSerno(admin,serno,issuerDN);
 
 			// check that admin is authorized to CA
-			authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);			  
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
+			}
 
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
@@ -1235,7 +1247,9 @@ public class EjbcaWS implements IEjbcaWS {
 			// Check caid
 			int caid = userdata.getCAId();
 			caAdminSession.verifyExistenceOfCA(caid);
-			authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);						
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
+			}
 			if (deleteUser) {
 				userAdminSession.revokeAndDeleteUser(admin,username,reason);
 			} else {
@@ -1290,7 +1304,9 @@ public class EjbcaWS implements IEjbcaWS {
 			// check CAID
 			int caid = userdata.getCAId();
 			caAdminSession.verifyExistenceOfCA(caid);
-			authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);						
+            if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid)) {
+                Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + caid, null);
+            }
 
 			// Do the work, mark user for key recovery
 			userAdminSession.prepareForKeyRecovery(admin, userdata.getUsername(), userdata.getEndEntityProfileId(), null);
@@ -1356,7 +1372,9 @@ public class EjbcaWS implements IEjbcaWS {
 				// check that admin is authorized to CA
 				int caid = CertTools.getIssuerDN(next).hashCode();
 				caAdminSession.verifyExistenceOfCA(caid);
-				authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
+				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
+				    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
+				}
 				try {
 					// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 					// that was permanently revoked
@@ -1412,7 +1430,9 @@ public class EjbcaWS implements IEjbcaWS {
 		  // check that admin is autorized to CA
 		  int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
 		  caAdminSession.verifyExistenceOfCA(caid);
-		  authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
+		  if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
+		      Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
+		  }
 		  
 		  CertificateStatus certinfo = certificateStoreSession.getStatus(issuerDN, new BigInteger(certificateSN,16));
 		  if(certinfo != null){
@@ -1565,25 +1585,58 @@ public class EjbcaWS implements IEjbcaWS {
 			
 			
 			if(ejbhelper.isAdmin()){			
-				authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE);
-				authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
-				authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + significantcAInfo.getCAId());
-				if(userExists){
-					authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_EDITENDENTITY);					
-					endEntityProfileId = userDataVO.getEndEntityProfileId();
-					authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.EDIT_RIGHTS);
-					if(overwriteExistingSN){
-						authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY);
-						authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.REVOKE_RIGHTS);
-					}
-				}else{
-					authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATEENDENTITY);
-					authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.CREATE_RIGHTS);
-					if(overwriteExistingSN){
-						authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY);
-						authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.REVOKE_RIGHTS);				       
-					}
-				}
+				
+                if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
+                    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
+                }
+                if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS)) {
+                    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, null);
+                }
+                if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + significantcAInfo.getCAId())) {
+                    throw new AuthorizationDeniedException("Admin " + admin + " was not authorized to resource " + AccessRulesConstants.CAPREFIX
+                            + significantcAInfo.getCAId());
+                }
+                if (userExists) {
+                    if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_EDITENDENTITY)) {
+                        Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_EDITENDENTITY, null);
+                    }
+                    endEntityProfileId = userDataVO.getEndEntityProfileId();
+                    if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+                            + AccessRulesConstants.EDIT_RIGHTS)) {
+                        Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+                                + AccessRulesConstants.EDIT_RIGHTS, null);
+                    }
+
+                    if (overwriteExistingSN) {
+                        if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
+                            Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY, null);
+                        }
+                        if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+                                + AccessRulesConstants.REVOKE_RIGHTS)) {
+                            Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+                                    + AccessRulesConstants.REVOKE_RIGHTS, null);
+                        }
+                    }
+                } else {
+                    if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATEENDENTITY)) {
+                        Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_CREATEENDENTITY, null);
+                    }
+                    if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+                            + AccessRulesConstants.CREATE_RIGHTS)) {
+                        Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+                                + AccessRulesConstants.CREATE_RIGHTS, null);
+                    }
+                    if (overwriteExistingSN) {
+                        if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
+                            Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY, null);
+                        }
+                        if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+                                + AccessRulesConstants.REVOKE_RIGHTS)) {
+                            Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+                                    + AccessRulesConstants.REVOKE_RIGHTS, null);
+                        }
+                    }
+                }
 
 			}else{
 				if(WebServiceConfiguration.getApprovalForGenTokenCertificates()){
@@ -1725,7 +1778,9 @@ public class EjbcaWS implements IEjbcaWS {
 						logger, ErrorCode.CA_NOT_EXISTS, null);
 				}
 
-				authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + cAInfo.getCAId());
+				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + cAInfo.getCAId())) {
+				    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + cAInfo.getCAId(), null);
+				}
 				if(next.getType() == HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST){						
 					userData.setCertificateProfileId(certificateProfileId);
 					userData.setCAId(cAInfo.getCAId());
@@ -2048,7 +2103,9 @@ public class EjbcaWS implements IEjbcaWS {
 				HardTokenData next = (HardTokenData) iter.next();
 				int caid = next.getSignificantIssuerDN().hashCode();
 				caAdminSession.verifyExistenceOfCA(caid);
-				authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
+				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid)) {
+				    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + caid, null);
+				}
 				Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(admin, next.getTokenSN());
 				if(onlyValidCertificates){
 					certs = ejbhelper.returnOnlyValidCertificates(admin, certs);
@@ -2059,8 +2116,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
 		} 
 
 		return retval;
@@ -2135,7 +2190,9 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try{
 	        // Check authorization to perform custom logging
-			authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_LOG_CUSTOM_EVENTS);
+			if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_LOG_CUSTOM_EVENTS)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_LOG_CUSTOM_EVENTS, null);
+			}
 
 			int event = LogConstants.EVENT_ERROR_CUSTOMLOG;
 			switch (level) {
@@ -2257,8 +2314,12 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			caAdminSession.verifyExistenceOfCA(caid);
-			authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
-			authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
+			}
+			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid)) {
+			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + caid, null);
+			}
 
 			java.security.cert.Certificate cert = certificateStoreSession.findCertificateByIssuerAndSerno(admin, issuerDN, new BigInteger(certSNinHex,16));
 			if(cert != null){
@@ -2268,8 +2329,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (CertificateEncodingException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2300,8 +2359,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2330,8 +2387,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2364,8 +2419,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2398,8 +2451,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2426,8 +2477,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2461,8 +2510,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-        /*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;

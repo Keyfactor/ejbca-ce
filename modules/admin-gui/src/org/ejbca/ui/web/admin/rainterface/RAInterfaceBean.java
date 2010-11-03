@@ -47,6 +47,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -673,31 +674,30 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
 
     public void loadCertificates(BigInteger serno, String issuerdn) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
-	  try{	
-		  authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.CAPREFIX + issuerdn.hashCode());        
-		  Certificate cert = certificatesession.findCertificateByIssuerAndSerno(administrator, issuerdn, serno);
-		  
-		  if(cert != null){
-			  RevokedInfoView revokedinfo = null;
-			  String username = certificatesession.findUsernameByCertSerno(administrator,serno, CertTools.getIssuerDN(cert));
-			  if(this.adminsession.findUser(administrator, username) != null){
-				  int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
-				  this.endEntityAuthorization(administrator,endentityprofileid,AccessRulesConstants.VIEW_RIGHTS,true);
-			  }
-			  CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-			  if(revinfo != null) {
-				  revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(cert));
-			  }
-			  certificates = new CertificateView[1];
-			  certificates[0] = new CertificateView(cert, revokedinfo, username);
-			  
-		  }
-		  else{
-			  certificates = null;
-		  }
-	  }catch(AuthorizationDeniedException ade){
-		  throw new AuthorizationDeniedException("Not authorized to view certificate, error: " + ade.getMessage());
-	  }
+	
+        if (!authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.CAPREFIX + issuerdn.hashCode())) {
+            Authorizer.throwAuthorizationException(administrator, AccessRulesConstants.CAPREFIX + issuerdn.hashCode(), "Not authorized to view certificate.");
+        }
+        Certificate cert = certificatesession.findCertificateByIssuerAndSerno(administrator, issuerdn, serno);
+
+        if (cert != null) {
+            RevokedInfoView revokedinfo = null;
+            String username = certificatesession.findUsernameByCertSerno(administrator, serno, CertTools.getIssuerDN(cert));
+            if (this.adminsession.findUser(administrator, username) != null) {
+                int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
+                this.endEntityAuthorization(administrator, endentityprofileid, AccessRulesConstants.VIEW_RIGHTS, true);
+            }
+            CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+            if (revinfo != null) {
+                revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(cert));
+            }
+            certificates = new CertificateView[1];
+            certificates[0] = new CertificateView(cert, revokedinfo, username);
+
+        } else {
+            certificates = null;
+        }
+
     }
 
     public int getNumberOfCertificates(){
@@ -760,11 +760,8 @@ public class RAInterfaceBean implements java.io.Serializable {
     public boolean keyRecoveryPossible(Certificate cert, String username) throws Exception{
       boolean returnval = true;
       
-      try{
-        authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_KEYRECOVERY);
-      }catch(AuthorizationDeniedException ade){
-      	returnval = false;
-      }
+   
+        returnval = authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_KEYRECOVERY);
 	  
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
       	UserDataVO data = adminsession.findUser(administrator, username);
@@ -817,22 +814,22 @@ public class RAInterfaceBean implements java.io.Serializable {
     /**
      * Help function used to check end entity profile authorization.
      */
-    public boolean endEntityAuthorization(Admin admin, int profileid, String rights, boolean log) throws RemoteException {
+    public boolean endEntityAuthorization(Admin admin, int profileid, String rights, boolean log) {
       boolean returnval = false;
       
       // TODO FIX
       if(admin.getAdminInformation().isSpecialUser()){
         return true;
       }
-      try{
-        if(log) {
-           returnval = authorizationsession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights) &&
-           authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+  
+        if (log) {
+            returnval = authorizationsession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights)
+                    && authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         } else {
-           returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights)&&
-           authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+            returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
+                    + rights)
+                    && authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         }
-      } catch(AuthorizationDeniedException e){}
 
       return returnval;
     }    

@@ -30,6 +30,8 @@ import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
+import org.ejbca.core.model.authorization.AdminGroupDoesNotExistException;
+import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -46,17 +48,16 @@ public class AuthorizationSessionTest extends CaTestCase {
 
     private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
     private static final String SUPER_ADMIN = "superadmin";
+    private static final String TEST_GROUPNAME = "testgroup";
 
-    //private static final Logger log = Logger.getLogger(AuthorizationSessionTest.class);
-
-    private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    // private static final Logger log =
+    // Logger.getLogger(AuthorizationSessionTest.class);
 
     private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
     private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    
 
     /**
      * Creates a new TestAuthenticationSession object.
@@ -86,7 +87,7 @@ public class AuthorizationSessionTest extends CaTestCase {
      */
     public void testInitialize() throws Exception {
         int caid = "CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
-
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         // Initialize with a new CA
         adminGroupSession.init(admin, caid, DEFAULT_SUPERADMIN_CN);
 
@@ -101,7 +102,7 @@ public class AuthorizationSessionTest extends CaTestCase {
         accessrules.add(new AccessRule("/public_foo_user", AccessRule.RULE_ACCEPT, false));
         accessrules.add(new AccessRule("/foo_functionality/basic_functions", AccessRule.RULE_ACCEPT, false));
         accessrules.add(new AccessRule("/foo_functionality/view_certificate", AccessRule.RULE_ACCEPT, false));
-        authorizationSession.addAccessRules(admin, AdminGroup.PUBLICWEBGROUPNAME, accessrules);
+        adminGroupSession.addAccessRules(admin, AdminGroup.PUBLICWEBGROUPNAME, accessrules);
 
         // Retrieve the access rules and check that they were added
         ag = adminGroupSession.getAdminGroup(admin, AdminGroup.PUBLICWEBGROUPNAME);
@@ -142,53 +143,50 @@ public class AuthorizationSessionTest extends CaTestCase {
 
     public void testExistMethods() throws Exception {
         int caid = "CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         authorizationSession.existsCAInRules(admin, caid);
 
     }
 
     public void testIsAuthorizedInternalUserRegularApproveIdentity() {
-        try {
-            authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-        } catch (AuthorizationDeniedException e) {
-            fail("Could not authorize internal user with AccessRulesConstants.REGULAR_APPROVEENDENTITY");
-        }
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        assertTrue("Could not authorize internal user with AccessRulesConstants.REGULAR_APPROVEENDENTITY", authorizationSession.isAuthorized(admin,
+                AccessRulesConstants.REGULAR_APPROVEENDENTITY));
+
     }
 
     public void testIsAuthorizedCertUserRegularApproveIdentity() throws Exception {
-        
+
         String adminusername = genRandomUserName();
         Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
 
         int caid = getTestCAId();
-        
+
         UserDataVO userdata = new UserDataVO(adminusername, "CN=" + adminusername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
 
         userAdminSession.addUser(intadmin, userdata, true);
-        
+
         File tmpfile = File.createTempFile("ejbca", "p12");
         BatchMakeP12 makep12 = new BatchMakeP12();
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
         tmpfile.delete();
-        
+
         List<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
         adminEntities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername, caid));
         adminEntitySession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
         authorizationSession.forceRuleUpdate(intadmin);
-        
-        X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername).iterator().next();
-        admin = new Admin(admincert, adminusername, null);
 
-        try {
-            authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-        } catch (AuthorizationDeniedException e) {
-            fail("Could not authorize certificate user with AccessRulesConstants.REGULAR_APPROVEENDENTITY");
-        }
+        X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername).iterator().next();
+        Admin admin = new Admin(admincert, adminusername, null);
+
+        assertTrue("Could not authorize certificate user with AccessRulesConstants.REGULAR_APPROVEENDENTITY", authorizationSession.isAuthorized(
+                admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY));
+
     }
-    
-  
+
     /**
      * 
      * This test reproduces an error where the superadmin user was invalid.
@@ -196,12 +194,111 @@ public class AuthorizationSessionTest extends CaTestCase {
      * @throws AuthorizationDeniedException
      */
     public void testIsAuthorizedWithSuperAdminFromX509Certificate() throws AuthorizationDeniedException {
-
-       Admin superadmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, SUPER_ADMIN).iterator().next(),
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin superadmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, SUPER_ADMIN).iterator().next(),
                 SUPER_ADMIN, null);
-        assertTrue("Authorization for superadmin user failed. This probably means that your SuperAdmin user isn't feeling very well.", authorizationSession.isAuthorized(superadmin,
-                AccessRulesConstants.REGULAR_APPROVEENDENTITY));
-                
+        assertTrue("Authorization for superadmin user failed. This probably means that your SuperAdmin user isn't feeling very well.",
+                authorizationSession.isAuthorized(superadmin, AccessRulesConstants.REGULAR_APPROVEENDENTITY));
+
     }
 
+    /**
+     * Tests the method isAuthorizedToGroup, happypath.
+     * 
+     * @throws AdminGroupExistsException
+     * @throws AdminGroupDoesNotExistException
+     */
+    public void testIsAuthorizedToGroup_Authorized() throws AdminGroupExistsException, AdminGroupDoesNotExistException {
+        // Set up
+        final String testCaName = "FailureTestCA";
+        final String testAdminName = "FailureAdmin";
+
+        createTestCA(testCaName);
+
+        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin anAdmin = new Admin(getTestCACert(testCaName), testAdminName, null);
+
+        List<AccessRule> accessrules = new ArrayList<AccessRule>();
+        accessrules.add(new AccessRule(AccessRulesConstants.CAPREFIX + ("CN=" + testCaName).hashCode(), AccessRule.RULE_ACCEPT, false));
+
+        cleanUpAdminGroupTests(anAdmin, TEST_GROUPNAME, accessrules);
+        adminGroupSession.addAdminGroup(anAdmin, TEST_GROUPNAME);
+
+        List<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
+        adminEntities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, testCaName, ("CN=" + testCaName).hashCode()));
+        adminEntitySession.addAdminEntities(anAdmin, TEST_GROUPNAME, adminEntities);
+
+        adminGroupSession.addAccessRules(anAdmin, TEST_GROUPNAME, accessrules);
+
+        authorizationSession.forceRuleUpdate(admin);
+        try {
+            // Do test with internal user
+            assertTrue("Internal user was not authorized to group <" + TEST_GROUPNAME + "> as expected.", authorizationSession.isAuthorizedToGroup(
+                    admin, TEST_GROUPNAME));
+            // Do test with external user
+            assertTrue("Admin of type " + anAdmin + " not authorized to group <" + TEST_GROUPNAME + "> as expected.", authorizationSession
+                    .isAuthorizedToGroup(anAdmin, TEST_GROUPNAME));
+        } finally {
+            // Clean up
+            cleanUpAdminGroupTests(anAdmin, TEST_GROUPNAME, accessrules);
+            removeTestCA(testCaName);
+        }
+    }
+
+    /**
+     * Cleans up for AdminGroup-related tests
+     * 
+     * @param admin
+     * @param groupname
+     * @param accessRules
+     */
+    private void cleanUpAdminGroupTests(Admin admin, String groupname, List<AccessRule> accessRules) {
+        List<String> accessRuleNames = new ArrayList<String>();
+        for (AccessRule accessRule : accessRules) {
+            accessRuleNames.add(accessRule.getAccessRule());
+        }
+        if (adminGroupSession.getAdminGroup(admin, TEST_GROUPNAME) != null) {
+            adminGroupSession.removeAccessRules(admin, TEST_GROUPNAME, accessRuleNames);
+            adminGroupSession.removeAdminGroup(admin, TEST_GROUPNAME);
+        }
+    }
+
+    /**
+     * This tests failure scenarios for the method isAuthorizedToGroup()
+     * 
+     * @throws AdminGroupExistsException
+     */
+    public void testIsAuthorizedToGroup_Failure() throws AdminGroupExistsException {
+        // Set up
+        final String testCaName = "FailureTestCA";
+        final String testAdminName = "FailureAdmin";
+        createTestCA(testCaName);
+
+        Admin anAdmin = new Admin(getTestCACert(testCaName), testAdminName, null);
+
+        List<AccessRule> accessrules = new ArrayList<AccessRule>();
+        accessrules.add(new AccessRule(AccessRulesConstants.CAPREFIX + ("CN=SpiderMonkey").hashCode(), AccessRule.RULE_ACCEPT, false));
+        
+        cleanUpAdminGroupTests(anAdmin, TEST_GROUPNAME, accessrules);
+        adminGroupSession.addAdminGroup(anAdmin, TEST_GROUPNAME);
+
+        try {
+            // Do test with external user and an empty group
+            assertFalse("Admin of type " + anAdmin + " with username " + anAdmin.getUsername() + " was authorized to group <" + TEST_GROUPNAME
+                    + "> incorrectly when group was empty.", authorizationSession.isAuthorizedToGroup(anAdmin, TEST_GROUPNAME));
+
+            // Same test for a group with members
+            List<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
+            adminEntities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, DEFAULT_SUPERADMIN_CN,
+                    "CN=TEST Authorization,O=PrimeKey,C=SE".hashCode()));
+
+            assertFalse("Admin of type " + anAdmin + " with username " + anAdmin.getUsername() + " was authorized to group <" + TEST_GROUPNAME
+                    + "> incorrectly when group was not empty.", authorizationSession.isAuthorizedToGroup(anAdmin, TEST_GROUPNAME));
+
+        } finally {
+            // Clean up
+            adminGroupSession.removeAdminGroup(anAdmin, TEST_GROUPNAME);
+            removeTestCA(testCaName);
+        }
+    }
 }

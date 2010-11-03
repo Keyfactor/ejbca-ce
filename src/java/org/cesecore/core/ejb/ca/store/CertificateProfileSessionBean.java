@@ -37,7 +37,6 @@ import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -398,10 +397,9 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             certificateprofile = (CertificateProfile) getCertificateProfile(admin, originalcertificateprofilename).clone();
 
             boolean issuperadministrator = false;
-            try {
-                issuperadministrator = authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
-            } catch (AuthorizationDeniedException ade) {
-            }
+          
+            issuperadministrator = authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
+          
 
             if (!issuperadministrator && certificateprofile.isApplicableToAnyCA()) {
                 // Not superadministrator, do not use ANYCA;

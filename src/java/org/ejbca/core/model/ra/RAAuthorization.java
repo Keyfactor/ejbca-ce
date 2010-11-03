@@ -91,16 +91,14 @@ public class RAAuthorization implements Serializable {
     public String getEndEntityProfileAuthorizationString() throws AuthorizationDeniedException {
         boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
         boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
-        try {
-			authorizedToApproveCAActions = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
-		} catch (AuthorizationDeniedException e1) {}
-        try {
-			authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-		} catch (AuthorizationDeniedException e1) {
-		}
-		if(!authorizedToApproveCAActions && !authorizedToApproveRAActions){
-			throw new AuthorizationDeniedException("Not authorized to query apporvals");
-		}
+     
+        authorizedToApproveCAActions = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
+
+        authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+
+        if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
+            throw new AuthorizationDeniedException("Not authorized to query apporvals");
+        }
 
     	String endentityauth = "";
         GlobalConfiguration globalconfiguration = raadminsession.getCachedGlobalConfiguration(admin);
@@ -198,22 +196,22 @@ public class RAAuthorization implements Serializable {
 	  return returnval;
 	}     
     
-    
-	/**
-	 * Help function used to check end entity profile authorization.
-	 */
-	public boolean endEntityAuthorization(Admin admin, int profileid, String rights){
-	  boolean returnval = false;
-	  // TODO FIX
-	  if(admin.getAdminInformation().isSpecialUser()){
-		  returnval = true;
-	  } else {
-		  try{
-			   returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-		  }catch(AuthorizationDeniedException e){}		  
-	  }
-	  return returnval;
-	}    
+    /**
+     * Help function used to check end entity profile authorization.
+     */
+    public boolean endEntityAuthorization(Admin admin, int profileid, String rights) {
+        boolean returnval = false;
+        // TODO FIX
+        if (admin.getAdminInformation().isSpecialUser()) {
+            returnval = true;
+        } else {
+
+            returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
+                    + rights);
+
+        }
+        return returnval;
+    }  
 }
 
 

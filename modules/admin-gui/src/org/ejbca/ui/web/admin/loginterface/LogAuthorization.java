@@ -16,12 +16,10 @@ package org.ejbca.ui.web.admin.loginterface;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
@@ -33,9 +31,10 @@ import org.ejbca.core.model.log.LogConstants;
  */
 public class LogAuthorization implements Serializable {
     
+    private static final long serialVersionUID = 5643565073694963982L;
     private String querystring = null;
     private String caidstring = null;
-    private Collection authorizedmodules = null;
+    private Collection<Integer> authorizedmodules = null;
     private AuthorizationSession authorizationsession;
     private CAAdminSession caAdminSession;
     private Admin administrator;
@@ -52,33 +51,29 @@ public class LogAuthorization implements Serializable {
      *
      * @return a string of log module privileges that should be used in the where clause of SQL queries.
      */
-    public String getViewLogRights() {      
-      if(querystring == null){
-        querystring = "";  
-        boolean first = true;
-        boolean authorized = false;
-        
-        for(int i = 0 ; i < LogConstants.MODULETEXTS.length; i++){
-          authorized = false; 
-          String resource = AccessRulesConstants.VIEWLOGACCESSRULES[i];
-          try{ 
-            authorized = this.authorizationsession.isAuthorizedNoLog(administrator,resource);
-          }catch(AuthorizationDeniedException e){} 
-          if(authorized){
-            if(first){
-              querystring = "(";
-              first = false;
-            } else {
-             querystring += " OR ";
+    public String getViewLogRights() {
+        if (querystring == null) {
+            querystring = "";
+            boolean first = true;
+
+            for (int i = 0; i < LogConstants.MODULETEXTS.length; i++) {
+
+                String resource = AccessRulesConstants.VIEWLOGACCESSRULES[i];
+
+                if (authorizationsession.isAuthorizedNoLog(administrator, resource)) {
+                    if (first) {
+                        querystring = "(";
+                        first = false;
+                    } else {
+                        querystring += " OR ";
+                    }
+                    querystring += "module=" + i;
+                }
             }
-            querystring += "module=" + i;
-          }  
-        }
-       
-       if(!querystring.equals("")) {
-        querystring += ")";
-       }
-     }   
+            if (!querystring.equals("")) {
+                querystring += ")";
+            }
+        }   
               
       return querystring; 
     } 
@@ -88,24 +83,24 @@ public class LogAuthorization implements Serializable {
      *
      * @return a string of log module privileges that should be used in the where clause of SQL queries.
      */
-    public String getCARights(){
-    	if (caidstring == null) {
-    		caidstring = "";
-    		Iterator iter = caAdminSession.getAvailableCAs(administrator).iterator();
-    		try { 
-    			this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-    			// Superadmin authorized to all
-    			caidstring = " cAId = " + LogConstants.INTERNALCAID;       
-    		} catch(AuthorizationDeniedException e){ /* ignore */ } 
-    		while(iter.hasNext()) {
-    			if(caidstring.equals("")) {
-    				caidstring = " cAId = " + ((Integer) iter.next()).toString();   
-    			} else {    
-    				caidstring = caidstring + " OR cAId = " + ((Integer) iter.next()).toString();
-    			}
-    		}                
-    	}
-    	return caidstring;   
+    public String getCARights() {
+        if (caidstring == null) {
+            caidstring = "";
+
+            if (authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator")) {
+                // Superadmin authorized to all
+                caidstring = " cAId = " + LogConstants.INTERNALCAID;
+            }
+
+            for (Integer caId : caAdminSession.getAvailableCAs(administrator)) {
+                if (caidstring.equals("")) {
+                    caidstring = " cAId = " + caId;
+                } else {
+                    caidstring = caidstring + " OR cAId = " + caId;
+                }
+            }
+        }
+        return caidstring;
     }
     
     public void clear(){
@@ -114,18 +109,18 @@ public class LogAuthorization implements Serializable {
       this.authorizedmodules = null;
     }
     
-    public Collection getAuthorizedModules(){    
-       if(authorizedmodules == null){
-	     authorizedmodules = new ArrayList();
-	     
-	     for(int i=0; i < AccessRulesConstants.VIEWLOGACCESSRULES.length; i++){
-	     	 try{
-	     	 	this.authorizationsession.isAuthorizedNoLog(administrator,AccessRulesConstants.VIEWLOGACCESSRULES[i]);
-				authorizedmodules.add(new Integer(i));
-	         }catch(AuthorizationDeniedException ade){}  
-	     }	             
-      }    
-       return authorizedmodules;
+    public Collection<Integer> getAuthorizedModules() {
+        if (authorizedmodules == null) {
+            authorizedmodules = new ArrayList<Integer>();
+
+            for (int i = 0; i < AccessRulesConstants.VIEWLOGACCESSRULES.length; i++) {
+                if (authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.VIEWLOGACCESSRULES[i])) {
+                    authorizedmodules.add(i);
+                }
+
+            }
+        }
+        return authorizedmodules;
     }
 }
 
