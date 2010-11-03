@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -24,6 +23,7 @@ import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -130,8 +130,9 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     
     /**
      * Help function that checks if administrator is authorized to edit profile with given name.
+     * @throws AuthorizationDeniedException 
      */
-    private boolean authorizedToProfileName(String profilename, boolean editcheck){
+    private boolean authorizedToProfileName(String profilename, boolean editcheck) throws AuthorizationDeniedException{
        EndEntityProfile profile = null;	
 		if(profilename.equals(EndEntityProfileSession.EMPTY_ENDENTITYPROFILE)) {
 		  profile = null;
@@ -144,8 +145,9 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     
 /**
      * Help function that checks if administrator is authorized to edit profile with given name.
+ * @throws AuthorizationDeniedException 
      */
-    private boolean authorizedToProfileId(int profileid, boolean editcheck){      	    	
+    private boolean authorizedToProfileId(int profileid, boolean editcheck) throws AuthorizationDeniedException{      	    	
       EndEntityProfile profile = null;	
       if(profileid == EndEntityProfileSession.EMPTY_ENDENTITYPROFILEID) {
         profile = null;
@@ -157,54 +159,62 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     
     /**
      * Help function that checks if administrator is authorized to edit profile.
+     * @throws AuthorizationDeniedException 
      */    
-    private boolean authorizedToProfile(EndEntityProfile profile, boolean editcheck){
-      boolean returnval = false;  
-      boolean allexists = false;  
-      try{  
-        if(editcheck) {
-          authorizationsession.isAuthorizedNoLog(administrator, "/ra_functionality/edit_end_entity_profiles");
+    private boolean authorizedToProfile(EndEntityProfile profile, boolean editcheck)  {
+        boolean returnval = false;
+        boolean allexists = false;
+
+        if (!(editcheck && !authorizationsession.isAuthorizedNoLog(administrator, "/ra_functionality/edit_end_entity_profiles"))
+                && !((profile == null && editcheck) && !authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator"))) {
+
+            HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizationsession.getAuthorizedCAIds(administrator, caadminsession
+                    .getAvailableCAs()));
+    
+            if (profile == null) {
+                returnval = true;
+            } else {
+                String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);
+                if (availablecasstring == null || availablecasstring.equals("")) {
+                    allexists = true;
+                } else {
+                    /*
+                     * Go through all available CAs in the profile and check
+                     * that the administrator is authorized to all CAs specified
+                     * in the profile If ALLCAS is selected in the end entity
+                     * profile, we must check that the administrator is
+                     * authorized to all CAs in the system.
+                     */
+                    String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+                    /*
+                     * If availablecas contains SecConst ALLCAS, change
+                     * availablecas /to be a list of all CAs
+                     */
+                    if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
+                        Collection<Integer> allcaids = caadminsession.getAvailableCAs();
+                        if (log.isDebugEnabled()) {
+                            log.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "
+                                    + allcaids.size() + " CAs in the system");
+                        }
+                        availablecas = new String[allcaids.size()];
+                        int index = 0;
+                        for (Integer id : allcaids) {
+                            availablecas[index++] = id.toString();
+                        }
+                    }
+                    allexists = true;
+                    for (int j = 0; j < availablecas.length; j++) {
+                        Integer caid = new Integer(availablecas[j]);
+                        if (!authorizedcaids.contains(caid)) {
+                            log.debug("Not authorized to profile because admin is not authorized to CA " + caid);
+                            allexists = false;
+                        }
+                    }
+                }
+                returnval = allexists;
+            }
         }
-        HashSet authorizedcaids = new HashSet(authorizationsession.getAuthorizedCAIds(administrator, caadminsession.getAvailableCAs()));
-       if(profile == null && editcheck){
-			authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-       }
-       if(profile == null){  
-           returnval = true;                                           
-       }else{
-          String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);   
-          if(availablecasstring == null || availablecasstring.equals("")){
-            allexists = true;  
-          }else{
-        	  // Go through all available CAs in the profile and check that the administrator is authorized to all CAs specified in the profile
-        	  // If ALLCAS is selected in the end entity profile, we must check that the administrator is authorized to all CAs in the system.
-        	  String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-    		  // If availablecas contains SecConst ALLCAS, change availablecas to be a list of all CAs
-        	  if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
-            	  Collection allcaids = caadminsession.getAvailableCAs();
-            	  if (log.isDebugEnabled()) {
-            		  log.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "+allcaids.size()+" CAs in the system");
-            	  }
-            	  availablecas = new String[allcaids.size()];
-            	  int index = 0;
-            	  for (Iterator iterator = allcaids.iterator(); iterator.hasNext();) {
-            		  Integer id = (Integer) iterator.next();
-            		  availablecas[index++] = id.toString();
-            	  }
-        	  }
-        	  allexists = true;
-        	  for(int j=0; j < availablecas.length; j++){
-        		  Integer caid = new Integer(availablecas[j]);
-        		  if(!authorizedcaids.contains(caid)){
-        			  log.debug("Not authorized to profile because admin is not authorized to CA "+caid);
-        			  allexists = false;            		              		  
-        		  }
-        	  }
-          }  
-          returnval = allexists;          
-        }
-      }catch(AuthorizationDeniedException e){}
-         
-      return returnval;  
+
+        return returnval;
     }
 }

@@ -92,16 +92,16 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 				return;
 			}
 			boolean recursive = "TRUE".equalsIgnoreCase(args[4]);
-			Collection<String> accessRuleStrings = new ArrayList<String>();
+			List<String> accessRuleStrings = new ArrayList<String>();
 			accessRuleStrings.add(accessRule);
 			if (rule == AccessRule.RULE_NOTUSED) {
-				authorizationSession.removeAccessRules(getAdmin(), groupName, accessRuleStrings);
+			    adminGroupSession.removeAccessRules(getAdmin(), groupName, accessRuleStrings);
 			} else {
-				authorizationSession.removeAccessRules(getAdmin(), groupName, accessRuleStrings);
+			    adminGroupSession.removeAccessRules(getAdmin(), groupName, accessRuleStrings);
 				AccessRule accessRuleObject = new AccessRule(accessRule, rule, recursive);
 				Collection<AccessRule> accessRules = new ArrayList<AccessRule>();
 				accessRules.add(accessRuleObject);
-				authorizationSession.addAccessRules(getAdmin(), groupName, accessRules);
+				adminGroupSession.addAccessRules(getAdmin(), groupName, accessRules);
 			}
 		} catch (Exception e) {
 			getLogger().error("",e);

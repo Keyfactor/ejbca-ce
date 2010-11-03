@@ -55,12 +55,14 @@ public class Authorizer implements Serializable {
      *
      * @param admininformation information about the user to be authorized.
      * @param resource the resource to look up.
-     * @return true if authorizes
-     * @throws AuthorizationDeniedException when authorization is denied.
+     * @return true if authorized and false if not
      */
-    public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorized(Admin admin, String resource) {
         if(admin == null) {
-            throw  new AuthorizationDeniedException("Administrator is null, and therefore not authorized to resource : " + resource);
+            if(log.isInfoEnabled()) {
+                log.info("Administrator is null, and therefore group not authorized to resource : " + resource);
+            }
+            return false;
         }
         AdminInformation admininformation = admin.getAdminInformation();
         if(!authorizationProxy.isAuthorized(admininformation, resource)  && !authorizationProxy.isAuthorized(admininformation, "/super_administrator")){            
@@ -73,7 +75,7 @@ public class Authorizer implements Serializable {
         	} catch (Throwable e) {
         		log.info("Missed to log 'Admin not authorized to resource', admin="+admin.toString()+", resource="+resource, e);
         	}
-            throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+            return false;
         }
         try {
             if(!admininformation.isSpecialUser()) {
@@ -93,31 +95,32 @@ public class Authorizer implements Serializable {
      *
      * @param AdminInformation information about the user to be authorized.
      * @param resource the resource to look up.
-     * @return true if authorized, but not false if not authorized, throws exception instead so return value can safely be ignored.
-     * @throws AuthorizationDeniedException when authorization is denied.
+     * @return true if authorized and false if not authorized
      */
-    public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorizedNoLog(Admin admin, String resource) {
         if(admin == null) {
-            throw  new AuthorizationDeniedException("Administrator is null, and therefore not authorized to resource : " + resource);
+            if(log.isInfoEnabled()) {
+                log.info("Administrator is null, and therefore group not authorized to resource : " + resource);
+            }
+            return false;
         }
         // Check in accesstree.
-        if(!authorizationProxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationProxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
-            throw new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
-        }
-        return true;
+         return (authorizationProxy.isAuthorized(admin.getAdminInformation(), resource)  || authorizationProxy.isAuthorized(admin.getAdminInformation(), "/super_administrator"));
+  
     }
-    
     /**
      * Method to check if a group is authorized to a resource
      *
      * @param admininformation information about the user to be authorized.
      * @param resource the resource to look up.
-     * @return true if authorizes
-     * @throws AuthorizationDeniedException when authorization is denied.
+     * @return true if authorized
      */
-    public boolean isGroupAuthorized(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
+    public boolean isGroupAuthorized(Admin admin, int pk, String resource) {
         if(admin == null) {
-            throw  new AuthorizationDeniedException("Administrator is null, and therefore group not authorized to resource : " + resource);
+            if(log.isInfoEnabled()) {
+                log.info("Administrator is null, and therefore group not authorized to resource : " + resource);
+            }
+            return false;
         }
         
         AdminInformation admininformation = admin.getAdminInformation();
@@ -132,7 +135,7 @@ public class Authorizer implements Serializable {
         	} catch (Throwable e) {
         		log.info("Missed to log 'Admin group not authorized to resource', admin="+admin.toString()+", resource="+resource, e);
         	}
-            throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+            return false;
         }
         try {
         	if(!admininformation.isSpecialUser()) {
@@ -155,12 +158,9 @@ public class Authorizer implements Serializable {
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) throws AuthorizationDeniedException {
+    public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) {
         // Check in accesstree.
-        if(!authorizationProxy.isGroupAuthorized(adminGroupId, resource)) {
-            throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
-        }
-        return true;
+        return authorizationProxy.isGroupAuthorized(adminGroupId, resource);
     }
     
     /**
@@ -170,13 +170,10 @@ public class Authorizer implements Serializable {
      */
     public Collection<Integer> getAuthorizedCAIds(Admin admin, Collection<Integer> availableCaIds) {         
         ArrayList<Integer> returnval = new ArrayList<Integer>();  
-        Iterator<Integer> iter = availableCaIds.iterator();
-        while(iter.hasNext()){
-            Integer caid = (Integer) iter.next();
-            try{           
-                isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid.toString());               
+        for(Integer caid : availableCaIds){
+            if(isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid.toString())) {              
                 returnval.add(caid); 
-            }catch(AuthorizationDeniedException e){
+            }else {
             	if (log.isDebugEnabled()) {
             		log.debug("Admin not authorized to CA: "+caid);
             	}
@@ -198,10 +195,9 @@ public class Authorizer implements Serializable {
         Iterator<Integer> iter = availableEndEntityProfileId.iterator();
         while(iter.hasNext()){
             Integer profileid = iter.next();
-            try{
-                isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
+            if(isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rapriviledge)) {     
                 returnval.add(profileid); 
-            }catch(AuthorizationDeniedException e){
+            } else {
             	if (log.isDebugEnabled()) {
             		log.debug("Admin not authorized to end entity profile: "+profileid);
             	}            	
@@ -214,5 +210,23 @@ public class Authorizer implements Serializable {
     public void buildAccessTree(Collection<AdminGroup> admingroups){
         accesstree.buildTree(admingroups);
         authorizationProxy.clear();
+    }
+    
+    /**
+     * Throws an AuthorizationDeniedException. This method is merely a stop-gap
+     * measure to make authorization handling a bit more elegant. This is merely
+     * a temporary fix until we've found a better solution to authorization.
+     * 
+     * 
+     * @param admin The Admin involved.
+     * @param resource The resource to which admin was denied.
+     * @param msg Any additional information. Can be null.
+     * @throws AuthorizationDeniedException
+     */
+    public static void throwAuthorizationException(Admin admin, String resource, String msg) throws AuthorizationDeniedException {
+        if(msg == null) {
+            msg = "";
+        }
+        throw new AuthorizationDeniedException("Admin " + admin + " was not authorized to resource " + resource + ". " + msg);
     }
 }

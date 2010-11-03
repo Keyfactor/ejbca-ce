@@ -49,6 +49,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovedActionAdmin;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
@@ -354,14 +355,23 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
         if (retval != null) {
             if (retval.getEndentityprofileid() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
-                authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
+                if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVECAACTION)) {
+                    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_APPROVECAACTION, null);
+                }
             } else {
-                authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-                authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
-                        + AccessRulesConstants.APPROVAL_RIGHTS);
+                if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY)) {
+                    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY, null);
+                }
+                if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
+                        + AccessRulesConstants.APPROVAL_RIGHTS)) {
+                    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
+                            + AccessRulesConstants.APPROVAL_RIGHTS, null);
+                }
             }
             if (retval.getCaid() != ApprovalDataVO.ANY_CA) {
-                authorizationSession.isAuthorized(admin, AccessRulesConstants.CAPREFIX + retval.getCaid());
+                if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.CAPREFIX + retval.getCaid())) {
+                    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + retval.getCaid(), null);
+                }
             }
         } else {
             throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Suitable approval with id : " + approvalId + " doesn't exist");

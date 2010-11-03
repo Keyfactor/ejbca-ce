@@ -15,7 +15,9 @@ package org.ejbca.ui.web.admin.configuration;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminEntitySession;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
@@ -25,6 +27,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -37,6 +40,8 @@ import org.ejbca.core.model.log.Admin;
 public class AuthorizationDataHandler implements java.io.Serializable {
 	
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger log = Logger.getLogger(AuthorizationDataHandler.class);
     
     private CAAdminSession caAdminSession; 
     private AuthorizationSession authorizationsession;
@@ -65,7 +70,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException{
+    public boolean isAuthorized(Admin admin, String resource) {
       return authorizationsession.isAuthorized(admin, resource);  
     }
 
@@ -77,7 +82,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException{
+    public boolean isAuthorizedNoLog(Admin admin, String resource) {
       return authorizationsession.isAuthorizedNoLog(admin, resource);
     }
 
@@ -85,7 +90,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
         /** Method to add a new admingroup to the administrator priviledges data.*/
     public void addAdminGroup(String name) throws AdminGroupExistsException, AuthorizationDeniedException{
 		// Authorized to edit administrative priviledges
-	  authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges");
+	  if(authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges")) {
+	      Authorizer.throwAuthorizationException(administrator, "/system_functionality/edit_administrator_privileges", null);
+	  }
 	  adminGroupSession.addAdminGroup(administrator, name);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
@@ -137,7 +144,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     public void addAccessRules(String admingroupname, Collection accessrules) throws AuthorizationDeniedException{
       authorizedToEditAdministratorPrivileges(admingroupname);
       authorizedToAddAccessRules(accessrules);
-      authorizationsession.addAccessRules(administrator, admingroupname, accessrules);
+      adminGroupSession.addAccessRules(administrator, admingroupname, accessrules);
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -147,9 +154,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @param accessrules a Collection of String containing accesssrules to remove.
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA.
      */
-    public void removeAccessRules(String admingroupname, Collection accessrules) throws AuthorizationDeniedException {
+    public void removeAccessRules(String admingroupname, List<String> accessrules) throws AuthorizationDeniedException {
       authorizedToEditAdministratorPrivileges(admingroupname);
-      authorizationsession.removeAccessRules(administrator, admingroupname, accessrules);
+      adminGroupSession.removeAccessRules(administrator, admingroupname, accessrules);
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -161,7 +168,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      */
     public void replaceAccessRules(String admingroupname, Collection accessrules) throws AuthorizationDeniedException {
     	authorizedToEditAdministratorPrivileges(admingroupname);
-    	authorizationsession.replaceAccessRules(administrator, admingroupname, accessrules);
+    	adminGroupSession.replaceAccessRules(administrator, admingroupname, accessrules);
     	informationmemory.administrativePriviledgesEdited();
     }
     
@@ -202,21 +209,27 @@ public class AuthorizationDataHandler implements java.io.Serializable {
 
 
     private void authorizedToEditAdministratorPrivileges(String admingroup) throws AuthorizationDeniedException{
-       // Authorized to edit administrative privileges
-      authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES);
-      // Authorized to group
-      authorizationsession.isAuthorizedToGroup(administrator, admingroup);
+       // Authorized to edit administrative privileges     
+        if (!authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES)) {
+            Authorizer.throwAuthorizationException(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, null);
+        }
+        // Authorized to group
+        if (!authorizationsession.isAuthorizedToGroup(administrator, admingroup)) {
+            throw new AuthorizationDeniedException("Admin " + administrator + " not authorized to group "
+                    + admingroup);
+        }
       // Check if admin group is among available admin groups
-      Iterator<AdminGroup> iter = getAdminGroupNames().iterator();
       boolean exists = false;
-      while (iter.hasNext()) {
-        AdminGroup next = iter.next();  
+      for(AdminGroup next : getAdminGroupNames()) {
         if (next.getAdminGroupName().equals(admingroup)) {
           exists = true;
         }
       }
       if (!exists) {
-        throw new AuthorizationDeniedException("Admingroup not among authorized admingroups.");
+          if(log.isDebugEnabled()) {
+              log.debug("Admingroup " + admingroup + " not among authorized admingroups.");
+          }
+        throw new AuthorizationDeniedException("Admingroup " + admingroup + " not among authorized admingroups.");
       }
     }
     

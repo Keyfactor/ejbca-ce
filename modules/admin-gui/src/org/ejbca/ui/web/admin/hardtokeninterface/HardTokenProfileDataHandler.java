@@ -39,6 +39,8 @@ import org.ejbca.util.Base64PutHashMap;
  */
 public class HardTokenProfileDataHandler implements Serializable {
 
+    private static final long serialVersionUID = -2864964753767713852L;
+  
     private HardTokenSession hardtokensession; 
     private AuthorizationSession authorizationsession;
     private CertificateProfileSession certificateProfileSession;
@@ -183,32 +185,29 @@ public class HardTokenProfileDataHandler implements Serializable {
     /**
      * Help function that checks if administrator is authorized to edit profile.
      */    
-    private boolean authorizedToProfile(HardTokenProfile profile, boolean editcheck){
-      boolean returnval = false;  
-      try {
-    	  authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-    	  return true; // yes authorized to everything  
-      }  catch(AuthorizationDeniedException ade){}
-        
-      try {          
-    	  if(editcheck) { 
-    		  // throws exception if we are not authorized
-    		  authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles");
-    	  }
-    	  HashSet authorizedcaids = new HashSet(caadminsession.getAvailableCAs(administrator));
-    	  HashSet authorizedcertprofiles = new HashSet(certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
-    	  if(profile instanceof EIDProfile){		  	
-    		  if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds()) &&
-    				  authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())){
-    			  returnval = true;			  	   
-    		  }		  	
-    	  } else {
-    		  //Implement for other profile types
-    	  }
-      } catch(AuthorizationDeniedException e) {}
-          
-      return returnval;  
-    }    
+    private boolean authorizedToProfile(HardTokenProfile profile, boolean editcheck) {
+        boolean returnval = false;
+        if (authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator")) {
+            returnval = true; // yes authorized to everything
+        } else {
+            if (editcheck && authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles")) {      
+                HashSet<Integer> authorizedcaids = new HashSet<Integer>(caadminsession.getAvailableCAs(administrator));
+                HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(administrator,
+                        SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
+                if (profile instanceof EIDProfile) {
+                    if (authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds())
+                            && authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())) {
+                        returnval = true;
+                    }
+                } else {
+                    // Implement for other profile types
+                }
+
+            }
+
+        }
+        return returnval;
+    }
    
     /**
      * Method that test to XML encode and decode a profile.

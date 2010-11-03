@@ -558,12 +558,10 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         boolean returnval = false;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
         if (htih != null) {
-            try {
-                int admingroupid = htih.getAdminGroupId();
-                returnval = authorizationSession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
-                returnval = returnval && adminGroupSession.existsAdministratorInGroup(admin, admingroupid);
-            } catch (AuthorizationDeniedException ade) {
-            }
+            int admingroupid = htih.getAdminGroupId();
+            returnval = authorizationSession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens")
+                    && adminGroupSession.existsAdministratorInGroup(admin, admingroupid);
+
         }
         log.trace("<getAuthorizedToHardTokenIssuer(" + returnval + ")");
         return returnval;

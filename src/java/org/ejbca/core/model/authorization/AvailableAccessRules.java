@@ -45,11 +45,8 @@ public class AvailableAccessRules {
       this.usekeyrecovery = usekeyrecovery;        
       
       // Is Admin SuperAdministrator.
-      try{
-        issuperadministrator = authorizer.isAuthorizedNoLog(admin, "/super_administrator");
-      }catch(AuthorizationDeniedException e){
-        issuperadministrator=false;
-      }
+     issuperadministrator = authorizer.isAuthorizedNoLog(admin, "/super_administrator");
+  
       
       // Get CA:s
       authorizedcaids = new HashSet<Integer>();
@@ -121,23 +118,21 @@ public class AvailableAccessRules {
      */
     private void insertAvailableEndEntityProfileAccessRules(Admin admin, ArrayList<String> accessrules, Collection<Integer> authorizedEndEntityProfileIds) {
     	// Add most basic rule if authorized to it.
-    	try {
-    		authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEBASE);  
+    	if(authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEBASE)) {
     		accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
-    	} catch(AuthorizationDeniedException e) {
+    	} else {
     		//  Add it to SuperAdministrator anyway
-    		if (issuperadministrator) {
-    			accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
-    		}
+            if (issuperadministrator) {
+                accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
+            }
     	}
     	// Add all authorized End Entity Profiles                        	
-    	for(int profileid : authorizedEndEntityProfileIds) { 	
-    		// Administrator is authorized to this End Entity Profile, add it.
-    		try {
-    			authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid);  
-    			addEndEntityProfile( profileid, accessrules);
-    		} catch (AuthorizationDeniedException e) {}
-    	}
+        for (int profileid : authorizedEndEntityProfileIds) {
+            // Administrator is authorized to this End Entity Profile, add it.
+            if (authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid)) {
+                addEndEntityProfile(profileid, accessrules);
+            }
+        }
     }
     
     /** 
@@ -162,12 +157,10 @@ public class AvailableAccessRules {
      */
     private void insertAvailableCAAccessRules(Admin admin, ArrayList<String> accessrules){
     	// Add All Authorized CAs
-    	try {
-    		if (authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.CABASE)) {
-    			accessrules.add(AccessRulesConstants.CABASE);
-    		}
-    	} catch (AuthorizationDeniedException e) {
-    	}
+
+        if (authorizer.isAuthorizedNoLog(admin, AccessRulesConstants.CABASE)) {
+            accessrules.add(AccessRulesConstants.CABASE);
+        }
     	
     	for(int caId : authorizedcaids) {
     		accessrules.add(AccessRulesConstants.CAPREFIX + caId);  
@@ -201,10 +194,8 @@ public class AvailableAccessRules {
      * Method that checks if administrator himself is authorized to access rule, and if so adds it to list.
      */    
     private void addAuthorizedAccessRule(Admin admin, String accessrule, ArrayList<String> accessrules){
-      try{    	
-        authorizer.isAuthorizedNoLog(admin, accessrule);
+      if(authorizer.isAuthorizedNoLog(admin, accessrule)) {
         accessrules.add(accessrule);
-      }catch(AuthorizationDeniedException e){
       }
     }
 }

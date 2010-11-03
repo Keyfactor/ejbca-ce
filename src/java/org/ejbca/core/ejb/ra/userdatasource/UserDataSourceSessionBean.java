@@ -399,11 +399,9 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         HashSet<Integer> returnval = new HashSet<Integer>();
         boolean superadmin = false;
         // If superadmin return all available user data sources
-        try{
-        	superadmin = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
-        }catch (AuthorizationDeniedException e1) {
-        	log.debug("AuthorizationDeniedException: ", e1);
-        }
+     
+        superadmin = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+      
         Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
         Iterator<UserDataSourceData> i = UserDataSourceData.findAll(entityManager).iterator();
         while (i.hasNext()) {
@@ -541,42 +539,28 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToUserDataSource(Admin admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
-    	if(isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
+    	if(authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
     		return true;
-    	}
-    	if(remove){
-    		isAuthorized(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS);
-    	}else{
-    		isAuthorized(admin,AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS);    			
-    	}
-    	if(isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR)){
-    		if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
-    			return true;
-    		}
-    		Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
-    		if(authorizedcas.containsAll(userdatasource.getApplicableCAs())){
-    			return true;
-    		}
-    	}    	
-		return false;
-	}
-
-    private boolean isAuthorizedNoLog(Admin admin, String resource){
-    	boolean retval = false;
-    	try {
-    		retval = authorizationSession.isAuthorizedNoLog(admin, resource);
-    	} catch (AuthorizationDeniedException e) {
-    	}
-    	return retval;
-    }
-    
-    private boolean isAuthorized(Admin admin, String resource){
-    	boolean retval = false;
-    	try {
-    		retval = authorizationSession.isAuthorized(admin, resource);
-    	} catch (AuthorizationDeniedException e) {
-    	}
-    	return retval;
+        }
+        if (remove) {
+            if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_REMOVE_RIGHTS)) {
+                return false;
+            }
+        } else {
+            if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.USERDATASOURCEPREFIX + id + AccessRulesConstants.UDS_FETCH_RIGHTS)) {
+                return false;
+            }
+        }
+        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+            if (userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))) {
+                return true;
+            }
+            Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
+            if (authorizedcas.containsAll(userdatasource.getApplicableCAs())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -591,27 +575,24 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToEditUserDataSource(Admin admin, BaseUserDataSource userdatasource) {
-    	try {
-    		if(authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
-    			return true;
-    		}
-    	} catch (AuthorizationDeniedException e) {
-    	}
-    	try {
-    		if(authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_ADMINISTRATOR) &&
-    				authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)){
-    			if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
-    				return false;
-    			}
-    			Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
-    			if(authorizedcas.containsAll(userdatasource.getApplicableCAs())){
-    				return true;
-    			}
-    		}
-		} catch (AuthorizationDeniedException e) {
-		}
-		return false;
-	}
+
+        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+            return true;
+        }
+
+        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)
+                && authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
+            if (userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))) {
+                return false;
+            }
+            Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
+            if (authorizedcas.containsAll(userdatasource.getApplicableCAs())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private Integer findFreeUserDataSourceId() {
         Random ran = (new Random((new Date()).getTime()));

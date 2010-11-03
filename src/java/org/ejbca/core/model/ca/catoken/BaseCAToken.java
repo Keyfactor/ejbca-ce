@@ -56,7 +56,7 @@ public abstract class BaseCAToken implements ICAToken {
 
     private KeyStrings keyStrings;
     protected String sSlotLabel = null;
-    private Map mKeys;
+    private Map<String, KeyPair> mKeys;
 	private String mAuthCode;
 
     public BaseCAToken() {
@@ -377,9 +377,7 @@ public abstract class BaseCAToken implements ICAToken {
         throws CATokenOfflineException {
     	autoActivate();
     	String keystring = this.keyStrings.getString(purpose);
-        KeyPair keyPair = this.mKeys!=null ?
-            (KeyPair)this.mKeys.get(keystring) :
-            null;
+        KeyPair keyPair = this.mKeys != null ? (KeyPair) this.mKeys.get(keystring) : null;
         if ( keyPair==null ) {
     		String msg = intres.getLocalizedMessage("catoken.errornosuchkey", keystring, purpose);
             throw new CATokenOfflineException(msg);

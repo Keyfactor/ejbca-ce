@@ -102,19 +102,19 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 	 * @return true if the admin is authorized to keyrecover
 	 * @throws AuthorizationDeniedException if administrator isn't authorized.
 	 */
-    private boolean authorizedToKeyRecover(Admin admin, int profileid) throws AuthorizationDeniedException{
+    private boolean authorizedToKeyRecover(Admin admin, int profileid) {
         boolean returnval = false;
-        try {
-        	authorizationSession.isAuthorizedNoLog(admin, "/super_administrator");
-        	returnval = true;
-        } catch(AuthorizationDeniedException e) {
+        if (authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+            returnval = true;
         }
-        if(admin.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER){
-        	returnval = true; // Special Case, public web use should be able to key recover
+        if (admin.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER) {
+            returnval = true; // Special Case, public web use should be able to
+                              // key recover
         }
-        if(!returnval){
-        	returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.KEYRECOVERY_RIGHTS) &&
-        	authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_KEYRECOVERY);                         
+        if (!returnval) {
+            returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid
+                    + AccessRulesConstants.KEYRECOVERY_RIGHTS)
+                    && authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_KEYRECOVERY);
         }
         return returnval;
     }

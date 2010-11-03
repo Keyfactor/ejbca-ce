@@ -39,6 +39,7 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
@@ -49,7 +50,6 @@ import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-//import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -450,7 +450,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     /**
-     * Retrives a Collection of id:s (Integer) for all authorized publishers if
+     * Retrieves a Collection of id:s (Integer) for all authorized publishers if
      * the Admin has the SUPERADMIN role.
      * 
      * Use CAAdminSession.getAuthorizedPublisherIds to get the list for any
@@ -464,7 +464,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      */
     public Collection<Integer> getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
         HashSet<Integer> returnval = new HashSet<Integer>();
-        authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+            Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR, null);
+        }
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {
         	returnval.add(i.next().getId());

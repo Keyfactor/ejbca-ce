@@ -569,8 +569,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * 
      * @return a Collection of String, where the string is an integer.
      */
-    public Collection getAvailableCAs(){
-        ArrayList availablecaids = new ArrayList();
+    public Collection<String> getAvailableCAs(){
+        ArrayList<String> availablecaids = new ArrayList<String>();
         availablecaids.addAll(Arrays.asList(getValue(AVAILCAS,0).split(SPLITCHAR)));
         return availablecaids;
     }

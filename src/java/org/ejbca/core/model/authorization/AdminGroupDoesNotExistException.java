@@ -12,38 +12,37 @@
  *************************************************************************/
  
 /*
- * AuthorizationDeniedException.java
+ * AdmingroupExistsException.java
  *
- * Created on den 1 april 2002, 12:37
+ * Created on den 23 mars 2002, 19:44
  */
 
 package org.ejbca.core.model.authorization;
 
 /**
- * An exception thrown by the isauthorized method in the EjbcaAthorization bean.
+ * An exception thrown when someone tries to access a nonexistent admin group
  *
- * @author  Philip Vendil
+ * @author  mikek
  * @version $Id$
  */
-public class AuthorizationDeniedException extends java.lang.Exception {
-    
+public class AdminGroupDoesNotExistException extends RuntimeException {
 
-    private static final long serialVersionUID = 4400551462100867374L;
+    private static final long serialVersionUID = -8087139077140416387L;
 
 
     /**
-     * Creates a new instance of <code>AuthorizationDeniedException</code> without detail message.
+     * Creates a new instance of <code>AdmingroupExistsException</code> without detail message.
      */
-    public AuthorizationDeniedException() {
-      super();  
+    public AdminGroupDoesNotExistException() {
+        super();
     }
-    
-    
+
+
     /**
-     * Constructs an instance of <code>AuthorizationDeniedException</code> with the specified detail message.
+     * Constructs an instance of <code>AdmingroupExistsException</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public AuthorizationDeniedException(String msg) {
+    public AdminGroupDoesNotExistException(String msg) {
         super(msg);
     }
 }
