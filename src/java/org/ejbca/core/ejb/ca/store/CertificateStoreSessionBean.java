@@ -521,7 +521,9 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      */
     public CertificateInfo getCertificateInfo(Admin admin, String fingerprint) {
     	// TODO: Either enforce authorization check or drop the Admin parameter
-    	log.trace(">getCertificateInfo()");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getCertificateInfo(): "+fingerprint);
+    	}
     	return CertificateData.getCertificateInfo(entityManager, fingerprint);
     }
 
@@ -880,11 +882,11 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     }
 
     /**
-     * Get status fast.
+     * Get certificate status fast.
      * 
      * @param issuerDN
      * @param serno
-     * @return the status of the certificate
+     * @return CertificateStatus status of the certificate, never null, CertificateStatus.NOT_AVAILABLE if the certificate is not found.
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
         return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, tableProtectSession, adapter);
