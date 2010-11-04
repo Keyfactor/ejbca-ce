@@ -105,8 +105,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean. Uses JNDI
  * name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  * 
- * @version $Id: UserAdminSessionBean.java 9677 2010-08-18 16:15:32Z
- *          mikekushner $
+ * @version $Id$
  * 
  */
 @Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "UserAdminSessionRemote")
