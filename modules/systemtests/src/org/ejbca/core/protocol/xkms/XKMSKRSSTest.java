@@ -977,7 +977,8 @@ public class XKMSKRSSTest extends TestCase {
 //        for (String s : keyBindingType.getStatus().getValidReason()) {
 //        	log.debug("ValidReason: " + s);
 //        }
-        // http://www.w3.org/2002/03/xkms#IssuerTrust, RevocationStatus, ValidityInterval, Signature
+        // All Values: http://www.w3.org/2002/03/xkms#IssuerTrust, RevocationStatus, ValidityInterval, Signature
+        // Should be: http://www.w3.org/2002/03/xkms#ValidityInterval, IssuerTrust, Signature
         assertEquals("Wrong number of ValidReason in KeyBinding: ", 3, keyBindingType.getStatus().getValidReason().size());	// TODO: Was 3 in EJBCA 3.11?? Why has this changed?
         assertEquals("Wrong number of InvalidReason in KeyBinding: ", 1, keyBindingType.getStatus().getInvalidReason().size());	// TODO: Was 1 in EJBCA 3.11?? Why has this changed?
 
