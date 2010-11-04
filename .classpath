@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="modules/ejbca-cmp-tcp/src"/>
+	<classpathentry kind="src" path="dist/ejbca-ejb-cli"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-interface/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-renew-war/src"/>
@@ -61,6 +62,7 @@
 	<classpathentry kind="lib" path="lib/bctsp-jdk16-145.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
+	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/libidn.jar"/>
 	<classpathentry kind="lib" path="lib/reports/jfreechart-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/reports/jcommon-1.0.8.jar"/>
