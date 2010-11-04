@@ -309,11 +309,6 @@
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar"/>
             <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="xmlsec-1.4.3.jar xalan-2.7.1.jar serializer-2.7.1.jar"/>	<!-- XKMS -->
-            <zipfileset prefix="lib" dir="${lib}/reports">
-			    <include name="jasperreports-1.3.3.jar" />
-			    <include name="jfreechart-1.0.0.jar" />
-			    <include name="jcommon-1.0.8.jar" />
-            </zipfileset>
             <fileset dir="${dist.dir}">
                 <include name="*-ejb.jar" />
                 <include name="*.war" />

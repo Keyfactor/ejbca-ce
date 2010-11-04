@@ -196,14 +196,6 @@
         <fileset dir="lib" includes="bcmail-jdk${java.ver}-145.jar"/>
     	<fileset dir="lib" includes="bcprov-jdk${java.ver}-145.jar"/>
     	<fileset dir="lib" includes="cert-cvc.jar"/>
-    	<!--
-        <fileset dir="lib/jaxws">
-    	  <include name="**/*.jar"/>
-    	</fileset>
-    	--> 
-        <fileset dir="lib/reports">
-    	  <include name="**/*.jar"/>
-    	</fileset> 
         <fileset dir="lib/batik">
     	  <include name="**/*.jar"/>
     	</fileset> 
