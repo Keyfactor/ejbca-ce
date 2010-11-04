@@ -370,15 +370,24 @@ public class KRSSResponseGenerator extends
 	 */
 	protected UserDataVO findUserData(X509Certificate cert) {
 		UserDataVO retval = null;
-        
 		try {
 			String username = certificateStoreSession.findUsernameByCertSerno(pubAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert));
+			if (log.isDebugEnabled()) {
+				log.debug("Username for certificate with issuerDN:"+CertTools.getIssuerDN(cert)+", serialNo:"+CertTools.getSerialNumber(cert)+" :"+username);
+			}
 			retval = userAdminSession.findUser(pubAdmin, username);
+			if(retval==null){
+				if (log.isDebugEnabled()) {
+					log.debug("User with username "+username+"not found.");
+				}
+			}
 		} catch (Exception e) {
 			log.error(intres.getLocalizedMessage("xkms.errorfindinguserdata",cert.getSubjectDN().toString()));			
 		}
-		
 		if(retval==null){
+			if (log.isDebugEnabled()) {
+				log.debug("No user for certificate with issuerDN:"+CertTools.getIssuerDN(cert)+", serialNo:"+CertTools.getSerialNumber(cert));
+			}
 			resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 			resultMinor = XKMSConstants.RESULTMINOR_NOMATCH;
 		}

@@ -33,12 +33,12 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
+import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
@@ -419,9 +419,9 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         		}
 
         		// Check RevokationReason
-        		CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(pubAdmin, CertTools.getFingerprintAsString(cert));
-        		if(certInfo != null){
-        			if(certInfo.getRevocationReason() == RevokedCertInfo.NOT_REVOKED){
+        		CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        		if(status != CertificateStatus.NOT_AVAILABLE){
+        			if(status.revocationReason == RevokedCertInfo.NOT_REVOKED){
         				retval.getValidReason().add(XKMSConstants.STATUSREASON_REVOCATIONSTATUS);				  
         			}else{
         				retval.getInvalidReason().add(XKMSConstants.STATUSREASON_REVOCATIONSTATUS);
