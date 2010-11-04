@@ -154,7 +154,7 @@ public interface IResponseMessage extends Serializable {
     public boolean requireSignKeyInfo();
 
     /**
-     * indicates if this message needs recipients public and private key to encrypt. If this
+     * indicates if this message needs recipients public key to encrypt. If this
      * returns true, setEncKeyInfo() should be called.
      *
      * @return True if public and private key is needed.
@@ -174,16 +174,14 @@ public interface IResponseMessage extends Serializable {
     public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider);
 
     /**
-     * Sets the public and private key needed to encrypt the message. Must be set if
+     * Sets the public key needed to encrypt the message. Must be set if
      * requireEncKeyInfo() returns true.
      *
      * @param cert certificate containing the public key.
-     * @param key private key.
-     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireEncKeyInfo()
      */
-    public void setEncKeyInfo(Certificate cert, PrivateKey key, String provider);
+    public void setEncKeyInfo(Certificate cert);
 
     /**
      * Sets a senderNonce if it should be present in the response

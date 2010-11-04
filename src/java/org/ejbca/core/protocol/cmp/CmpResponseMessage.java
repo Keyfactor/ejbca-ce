@@ -280,8 +280,7 @@ public class CmpResponseMessage implements IResponseMessage {
 		}
 	}
 	
-	public void setEncKeyInfo(Certificate cert, PrivateKey key,
-			String provider) {
+	public void setEncKeyInfo(Certificate cert) {
 	}
 	
 	public void setSenderNonce(String senderNonce) {

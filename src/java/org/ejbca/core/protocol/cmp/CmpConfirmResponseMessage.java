@@ -123,8 +123,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements IRespon
 			String provider) {
 	}
 
-	public void setEncKeyInfo(Certificate cert, PrivateKey key,
-			String provider) {
+	public void setEncKeyInfo(Certificate cert) {
 	}
 
 	public void setSenderNonce(String senderNonce) {
