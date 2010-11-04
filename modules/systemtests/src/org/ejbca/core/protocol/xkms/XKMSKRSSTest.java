@@ -969,14 +969,14 @@ public class XKMSKRSSTest extends TestCase {
 
         RevokeResultType revokeResultType = xKMSInvoker.revoke(revokeRequestType, null, null, null, keyBindingType.getId());
 
-        assertTrue(revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
-        assertTrue(revokeResultType.getResultMinor() == null);
+        assertEquals(XKMSConstants.RESULTMAJOR_SUCCESS, revokeResultType.getResultMajor());
+        assertNull(revokeResultType.getResultMinor());
 
         assertTrue(revokeResultType.getKeyBinding().size() == 1);
         keyBindingType = revokeResultType.getKeyBinding().get(0);
-        for (String s : keyBindingType.getStatus().getValidReason()) {
-        	log.debug("ValidReason: " + s);
-        }
+//        for (String s : keyBindingType.getStatus().getValidReason()) {
+//        	log.debug("ValidReason: " + s);
+//        }
         // http://www.w3.org/2002/03/xkms#IssuerTrust, RevocationStatus, ValidityInterval, Signature
         assertEquals("Wrong number of ValidReason in KeyBinding: ", 3, keyBindingType.getStatus().getValidReason().size());	// TODO: Was 3 in EJBCA 3.11?? Why has this changed?
         assertEquals("Wrong number of InvalidReason in KeyBinding: ", 1, keyBindingType.getStatus().getInvalidReason().size());	// TODO: Was 1 in EJBCA 3.11?? Why has this changed?
@@ -991,7 +991,7 @@ public class XKMSKRSSTest extends TestCase {
             byte[] encoded = (byte[]) next.getValue();
             Certificate nextCert = CertTools.getCertfromByteArray(encoded);
 
-            assertTrue(CertTools.getSubjectDN(nextCert).equals(CertTools.stringToBCDNString(dn2)));
+            assertEquals(CertTools.stringToBCDNString(dn2), CertTools.getSubjectDN(nextCert));
 
         }
     }
