@@ -185,7 +185,7 @@ public class CertificateDataUtil {
         		}
         		final CertificateStatus result = getIt(data);
         		if (adapter.getLogger().isTraceEnabled()) {
-        			adapter.getLogger().trace("<getStatus() returned " + result + " for cert number "+serno);
+        			adapter.getLogger().trace("<getStatus() returned " + result + " for cert number "+serno.toString(16));
         		}
         		return result;
         	}
