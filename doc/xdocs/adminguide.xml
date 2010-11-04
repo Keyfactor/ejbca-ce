@@ -1784,25 +1784,6 @@ java.util.Collection IUserDataSourceSessionLocal.fetch(Admin admin, Collection u
 </ol>
 </p>
 </section>
-<section name="Framework for Reports">
-<p>
-Jasper Reports and JFreeChart. 
-The reports function can be accessed from the Admin-GUI under 'Supervisor Functions->Reports'.
-<br/>
-JasperReports files can be created using the free tool
-iReport (http://jasperforge.org/sf/projects/ireport). The report definition file is under src/adminweb/WEB-INF/reports/reports.jrxml.
-There are a few pre-defined reports, and suggestions for more real-usage reports are welcome.
-</p>
-<p>
-To create a new report:
-<ul>
-<li>Create a report definition file and put in src/adminweb/WEB-INF/reports/*.jrxml</li>
-<li>Add a new method generating the report in src/java/org/ejbca/ui/web/admin/reports/ReportsManagedBean.java</li>
-<li>Add potential new methods to src/java/org/ejbca/ui/web/admin/reports/ReportsDataSource.java</li>
-<li>Edit src/adminweb/reports/resportslist.jsp and add a call to the new method in ReportsManagedBean</li>
-</ul>
-</p>
-</section>
 
 <section name="Services Framework">
 <p>
