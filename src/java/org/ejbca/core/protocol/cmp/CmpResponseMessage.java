@@ -268,19 +268,12 @@ public class CmpResponseMessage implements IResponseMessage {
 		return true;
 	}
 	
-	public boolean requireEncKeyInfo() {
-		return false;
-	}
-	
 	public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider) {
 		this.signCert = cert;
 		this.signKey = key;
 		if (provider != null) {
 			this.provider = provider;
 		}
-	}
-	
-	public void setEncKeyInfo(Certificate cert) {
 	}
 	
 	public void setSenderNonce(String senderNonce) {

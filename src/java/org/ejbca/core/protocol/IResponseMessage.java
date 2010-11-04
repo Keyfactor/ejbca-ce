@@ -35,9 +35,6 @@ import org.ejbca.core.model.ra.NotFoundException;
  * if (resp.requireSignKeyInfo()) { 
  *     resp.setSignKeyInfo(signcert,signkey) 
  * }; 
- * if (resp.requireEncKeyInfo()) { 
- *     resp.setEncKeyInfo(enccert,enckey) 
- * }; 
  * resp.create(); 
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
@@ -127,7 +124,7 @@ public interface IResponseMessage extends Serializable {
 
     /**
      * Create encrypts and creates signatures as needed to produce a complete response message.  If
-     * needed setSignKeyInfo and setEncKeyInfo must be called before this method. After this is
+     * needed setSignKeyInfo must be called before this method. After this is
      * called the response message can be retrieved with getResponseMessage();
      *
      * @return True if signature/encryption was successful, false if it failed, request should not
@@ -140,7 +137,6 @@ public interface IResponseMessage extends Serializable {
      *         algorithm.
      *
      * @see #setSignKeyInfo
-     * @see #setEncKeyInfo
      */
     public boolean create()
             throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException, NotFoundException;
@@ -154,14 +150,6 @@ public interface IResponseMessage extends Serializable {
     public boolean requireSignKeyInfo();
 
     /**
-     * indicates if this message needs recipients public key to encrypt. If this
-     * returns true, setEncKeyInfo() should be called.
-     *
-     * @return True if public and private key is needed.
-     */
-    public boolean requireEncKeyInfo();
-
-    /**
      * Sets the public and private key needed to sign the message. Must be set if
      * requireSignKeyInfo() returns true.
      *
@@ -172,16 +160,6 @@ public interface IResponseMessage extends Serializable {
      * @see #requireSignKeyInfo()
      */
     public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider);
-
-    /**
-     * Sets the public key needed to encrypt the message. Must be set if
-     * requireEncKeyInfo() returns true.
-     *
-     * @param cert certificate containing the public key.
-     *
-     * @see #requireEncKeyInfo()
-     */
-    public void setEncKeyInfo(Certificate cert);
 
     /**
      * Sets a senderNonce if it should be present in the response
