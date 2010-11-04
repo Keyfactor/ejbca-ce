@@ -82,10 +82,7 @@ public class RevokeResponseGenerator extends
 						UserDataVO userData = findUserData(cert);
 						String revokationCodeId = getRevokationCodeFromUserData(userData);
 						if(userData != null && revokationCodeId != null){
-							
-							
 							String revokeCode = getRevocationCode(req);
-
 							if(XKMSConfig.isRevokationAllowed()){
 							  if(revokeCode != null ){
 								X509Certificate newCert = revoke(userData,revokeCode, revokationCodeId, cert);
