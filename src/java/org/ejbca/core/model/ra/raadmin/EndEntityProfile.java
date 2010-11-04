@@ -580,8 +580,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * 
      * @return a Collection of String, where the string is an integer.
      */
-    public Collection getAvailableCertificateProfileIds() {
-        ArrayList profiles = new ArrayList();
+    public Collection<String> getAvailableCertificateProfileIds() {
+        ArrayList<String> profiles = new ArrayList<String>();
         String list = getValue(AVAILCERTPROFILES,0);
         if (list != null) {
             profiles.addAll(Arrays.asList(list.split(SPLITCHAR)));        	

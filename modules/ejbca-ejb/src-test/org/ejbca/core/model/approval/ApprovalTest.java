@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Test to externalize an approval
@@ -55,12 +56,12 @@ public class ApprovalTest extends TestCase {
 
 	public void setUp() throws Exception {
 		super.setUp();
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 	}
 
 	public void testWriteExternal() throws Exception {
 		Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
-		ArrayList approvals = new ArrayList();
+		ArrayList<Approval> approvals = new ArrayList<Approval>();
 		
 		Approval ap = new Approval("test");
 		Date apDate = ap.getApprovalDate();
@@ -72,7 +73,7 @@ public class ApprovalTest extends TestCase {
     	
 		int size = approvals.size();
 		oos.writeInt(size);
-		Iterator iter = approvals.iterator();
+		Iterator<Approval> iter = approvals.iterator();
 		while(iter.hasNext()){
 			Approval next = (Approval) iter.next();
 			oos.writeObject(next);
@@ -80,7 +81,7 @@ public class ApprovalTest extends TestCase {
 		oos.flush();
     	String result = new String(Base64.encode(baos.toByteArray(),false));
 
-    	Collection readapprovals = ApprovalDataUtil.getApprovals(result);
+    	Collection<Approval> readapprovals = ApprovalDataUtil.getApprovals(result);
     	assertTrue(readapprovals.size() == 1);
     	
     	Approval rap = (Approval) readapprovals.iterator().next();

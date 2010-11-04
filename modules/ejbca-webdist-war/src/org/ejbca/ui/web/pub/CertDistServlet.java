@@ -198,7 +198,7 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 log.debug("Looking for certificates for '"+dn+"'.");
-                Collection certcoll = storesession.findCertificatesBySubject(administrator, dn);
+                Collection<Certificate> certcoll = storesession.findCertificatesBySubject(administrator, dn);
                 Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {

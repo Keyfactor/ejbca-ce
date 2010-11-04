@@ -44,7 +44,7 @@ public class ExtendedKeyUsageConfiguration {
      * Array of all OIDs for Extended Key Usage, is filled by below and must therefore appear
      * before the below line in this file.
      */
-    private static List extendedKeyUsageOids = null;
+    private static List<String> extendedKeyUsageOids = null;
 
     public static synchronized Map getExtendedKeyUsageOidsAndNames() {
     	if (extendedKeyUsageOidsAndNames == null) {
@@ -53,7 +53,7 @@ public class ExtendedKeyUsageConfiguration {
 		return extendedKeyUsageOidsAndNames;
 	}
 			
-    public static synchronized List getExtendedKeyUsageOids() {
+    public static synchronized List<String> getExtendedKeyUsageOids() {
     	if (extendedKeyUsageOids == null) {
     		fillExtendedKeyUsageOidsAndTexts();
     	}
@@ -90,7 +90,7 @@ public class ExtendedKeyUsageConfiguration {
     	extendedKeyUsageOids = map.asList();
     	if (extendedKeyUsageOids == null) {
     		log.error("Extended key usage OIDs is null, there is a serious error with extendedkeyusage.properties");
-    		extendedKeyUsageOids = new ArrayList();
+    		extendedKeyUsageOids = new ArrayList<String>();
     	}
     	extendedKeyUsageOidsAndNames = Collections.synchronizedMap(map);
     }

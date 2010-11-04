@@ -212,13 +212,13 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
 	/** @return the administrators for the current admin group */
 	public Collection<AdminEntity> getAdmins() {
-		Collection<AdminEntity> list = new ArrayList();
+		List<AdminEntity> list = new ArrayList<AdminEntity>();
 		try {
 			list = getAuthorizationDataHandler().getAdminGroup(getCurrentAdminGroup()).getAdminEntities();
 		} catch (AuthorizationDeniedException e) {
 			addErrorMessage("AUTHORIZATIONDENIED");
 		}
-		Collections.sort((List<AdminEntity>) list);
+		Collections.sort(list);
 		return list;
 	}
 
@@ -342,7 +342,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
 	/** @return the available other access rules as a Collection<SelectItem> */
 	public Collection<SelectItem> getAvailableOtherRules()  {
-		Collection<SelectItem> list = new ArrayList();
+		Collection<SelectItem> list = new ArrayList<SelectItem>();
 		for (Integer currentRule : (Collection<Integer>) getBasicRuleSet().getAvailableOtherRules()) {
 			list.add(new SelectItem(currentRule, getEjbcaWebBean().getText(BasicAccessRuleSet.OTHERTEXTS[currentRule])));
 		}

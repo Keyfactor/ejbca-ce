@@ -13,6 +13,7 @@ import java.util.TimeZone;
  * */
 public class RollingCalendar extends GregorianCalendar {
 
+    private static final long serialVersionUID = -4760808619955630392L;
     // The code assumes that the following constants are in a increasing
     // sequence.
     static public final int TOP_OF_TROUBLE=-1;

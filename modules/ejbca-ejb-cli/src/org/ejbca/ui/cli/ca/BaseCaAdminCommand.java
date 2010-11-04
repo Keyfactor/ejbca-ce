@@ -21,6 +21,7 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -63,9 +64,9 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
      *            readable name of CA
      * @return array of certificates, from ISignSession.getCertificateChain()
      */
-    protected Collection getCertChain(String caname) throws Exception {
+    protected Collection<Certificate> getCertChain(String caname) throws Exception {
         getLogger().trace(">getCertChain()");
-        Collection returnval = new ArrayList();
+        Collection<Certificate> returnval = new ArrayList<Certificate>();
         try {
             CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caname);
             if (cainfo != null) {

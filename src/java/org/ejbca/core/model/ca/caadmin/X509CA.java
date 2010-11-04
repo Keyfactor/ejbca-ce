@@ -395,7 +395,7 @@ public class X509CA extends CA implements Serializable {
         } else {
         	converter = new X509DefaultEntryConverter();
         }
-        Vector dnorder = CertTools.getX509FieldOrder(getUseLdapDNOrder());
+        Vector<DERObjectIdentifier> dnorder = CertTools.getX509FieldOrder(getUseLdapDNOrder());
         X509Name x509dn = CertTools.stringToBcX509Name(getSubjectDN(), converter, dnorder);
         PKCS10CertificationRequest req;
 		try {

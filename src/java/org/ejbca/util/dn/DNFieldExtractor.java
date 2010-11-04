@@ -30,6 +30,9 @@ import org.ietf.ldap.LDAPDN;
  * @version $Id$
  */
 public class DNFieldExtractor implements java.io.Serializable {
+
+    private static final long serialVersionUID = -1313839342568999844L;
+
     private static final Logger log = Logger.getLogger(DNFieldExtractor.class);
     // Public constants
     public static final int TYPE_SUBJECTDN = 0;
@@ -92,7 +95,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @param type DOCUMENT ME!
      */
     public DNFieldExtractor(String dn, int type) {
-        dnfields = new HashMap();
+        dnfields = new HashMap<Integer, String>();
         setDN(dn, type);
     }
     
@@ -238,7 +241,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      */
     public String getField(int field, int number) {
         String returnval;
-        returnval = (String) dnfields.get(new Integer((field * BOUNDRARY) + number));
+        returnval = (String) dnfields.get(Integer.valueOf((field * BOUNDRARY) + number));
 
         if (returnval == null) {
             returnval = "";
@@ -301,7 +304,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      *
      * @return DOCUMENT ME!
      */
-    public HashMap getNumberOfFields() {
+    public HashMap<Integer, Integer> getNumberOfFields() {
         return fieldnumbers;
     }
 
@@ -311,8 +314,8 @@ public class DNFieldExtractor implements java.io.Serializable {
 
     private static final int BOUNDRARY = 100;
     // Mapping dnid to number of occurances in this DN
-    private HashMap fieldnumbers;
-    private HashMap dnfields;
+    private HashMap<Integer, Integer> fieldnumbers;
+    private HashMap<Integer, String> dnfields;
     private boolean existsother = false;
     private boolean illegal = false;
     private int type;
