@@ -189,7 +189,7 @@ public class MSCertTools {
 			}
 			certProfile.setUseExtendedKeyUsage(true);
 			certProfile.setExtendedKeyUsageCritical(true);
-			ArrayList eku = new ArrayList();
+			ArrayList<String> eku = new ArrayList<String>();
 			for (int i=0; i<extendedKeyUsages.length; i++) {
 				eku.add(extendedKeyUsages[i]);
 			}

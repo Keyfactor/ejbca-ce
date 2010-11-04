@@ -112,7 +112,7 @@ public class ApprovalExecutorUtil {
 	
 	private static ApprovalOveradableClassName[] getGloballyAllowed() {
 		if (globallyAllowed == null) {
-			ArrayList arr = new ArrayList();
+			ArrayList<ApprovalOveradableClassName> arr = new ArrayList<ApprovalOveradableClassName>();
             StringTokenizer tokenizer = new StringTokenizer(globallyAllowedString, ",", false);
             while (tokenizer.hasMoreTokens()) {
             	String t = tokenizer.nextToken();

@@ -13,11 +13,12 @@
  
 package org.ejbca.core.model.authorization;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Collection;
-import java.util.Iterator;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A class that represents a group of users and their access rules.
@@ -65,7 +66,7 @@ public class AdminGroup implements Serializable, Comparable<Object> {
     }
 
     /** Returns an ArrayList of AdminEntity containing all the admingroup's admin entities.*/
-    public Collection<AdminEntity> getAdminEntities() {
+    public List<AdminEntity> getAdminEntities() {
       return adminentities;
     }
     

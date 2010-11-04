@@ -251,15 +251,13 @@ public class CertTools {
     private static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter) {
     	return stringToBcX509Name(dn, converter, getDefaultX509FieldOrder());
     }
-    public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter, Vector dnOrder) {
-    	/*if (log.isTraceEnabled()) {
-    		log.trace(">stringToBcX509Name: " + dn);
-    	}*/
+    public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter, Vector<DERObjectIdentifier> dnOrder) {
+
       if (dn == null) {
         return null;
       }
-      Vector defaultOrdering = new Vector();
-      Vector values = new Vector();
+      Vector<DERObjectIdentifier> defaultOrdering = new Vector<DERObjectIdentifier>();
+      Vector<String> values = new Vector<String>();
       X509NameTokenizer x509NameTokenizer = new X509NameTokenizer(dn);
 
       while (x509NameTokenizer.hasMoreTokens()) {
@@ -392,13 +390,13 @@ public class CertTools {
      *
 	 * @return ArrayList containing email or empty list if email is not present
      */
-    public static ArrayList getEmailFromDN(String dn) {
+    public static ArrayList<String> getEmailFromDN(String dn) {
     	if (log.isTraceEnabled()) {
     		log.trace(">getEmailFromDN(" + dn + ")");
     	}
-        ArrayList ret = new ArrayList();
+        ArrayList<String> ret = new ArrayList<String>();
         for (int i = 0; i < EMAILIDS.length ; i++) {
-            ArrayList emails = getPartsFromDN(dn, EMAILIDS[i]);
+            ArrayList<String> emails = getPartsFromDN(dn, EMAILIDS[i]);
             if (!emails.isEmpty()) {
             	ret.addAll(emails);
             }
@@ -427,10 +425,7 @@ public class CertTools {
 			X509Certificate x509cert = (X509Certificate) certificate;
 	        try {
 	            if (x509cert.getSubjectAlternativeNames() != null) {
-	                java.util.Collection altNames = x509cert.getSubjectAlternativeNames();
-	                Iterator iter = altNames.iterator();
-	                while (iter.hasNext()) {
-	                    java.util.List item = (java.util.List)iter.next();
+	                for(List<?> item : x509cert.getSubjectAlternativeNames()) {	  
 	                    Integer type = (Integer)item.get(0);
 	                    if (type.intValue() == 1) {
 	                        return (String)item.get(1);
@@ -441,7 +436,7 @@ public class CertTools {
 	            log.error("Error parsing certificate: ", e);
 	        }
 	        log.debug("Searching for EMail Address in Subject DN");
-	        ArrayList emails = CertTools.getEmailFromDN(x509cert.getSubjectDN().getName());
+	        ArrayList<String> emails = CertTools.getEmailFromDN(x509cert.getSubjectDN().getName());
 	        if (!emails.isEmpty()) {
 	        	return (String)emails.get(0);
 	        }			
@@ -586,11 +581,11 @@ public class CertTools {
 	 *
 	 * @return ArrayList containing dnparts or empty list if dnpart is not present
 	 */
-	public static ArrayList getPartsFromDN(String dn, String dnpart) {
+	public static ArrayList<String> getPartsFromDN(String dn, String dnpart) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getPartsFromDN: dn:'" + dn + "', dnpart=" + dnpart);
 		}
-		ArrayList parts = new ArrayList();
+		ArrayList<String> parts = new ArrayList<String>();
 		if ((dn != null) && (dnpart != null)) {
 			String o;
 			dnpart += "="; // we search for 'CN=' etc.
@@ -618,11 +613,11 @@ public class CertTools {
 	 *
 	 * @return ArrayList containing unique oids or empty list if no custom OIDs are present
 	 */
-	public static ArrayList getCustomOids(String dn) {
+	public static ArrayList<String> getCustomOids(String dn) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getCustomOids: dn:'" + dn);
 		}
-		ArrayList parts = new ArrayList();
+		ArrayList<String> parts = new ArrayList<String>();
 		if (dn != null) {
 			String o;
 			X509NameTokenizer xt = new X509NameTokenizer(dn);
@@ -1141,7 +1136,7 @@ public class CertTools {
     throws CertificateException {
         ByteArrayOutputStream ostr = new ByteArrayOutputStream();
         PrintStream opstr = new PrintStream(ostr);
-        Iterator iter = certs.iterator();
+        Iterator<Certificate> iter = certs.iterator();
         while (iter.hasNext()) {
             Certificate cert = (Certificate)iter.next();
             byte[] certbuf = Base64.encode(cert.getEncoded());
@@ -1558,11 +1553,11 @@ public class CertTools {
     	String ret = null;
         if (cert instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) cert;
-	        Collection altNames = x509cert.getSubjectAlternativeNames();
+	        Collection<List<?>> altNames = x509cert.getSubjectAlternativeNames();
 	        if (altNames != null) {
-	            Iterator i = altNames.iterator();
+	            Iterator<List<?>> i = altNames.iterator();
 	            while (i.hasNext()) {
-	                ASN1Sequence seq = getAltnameSequence((List)i.next());
+	                ASN1Sequence seq = getAltnameSequence((List<?>)i.next());
 	                ret = getUPNStringFromSequence(seq);
 	                if (ret != null) {
 	                    break;
@@ -1618,6 +1613,7 @@ public class CertTools {
      * @param seq the OtherName sequence
      * @return String with the krb5 name in the form of "principal1/principal2@realm" or null if the altName does not exist
      */
+    @SuppressWarnings("unchecked")
     protected static String getKrb5PrincipalNameFromSequence(ASN1Sequence seq) {
     	String ret = null;
         if ( seq != null) {                    
@@ -1644,7 +1640,7 @@ public class CertTools {
                 ASN1TaggedObject nobj = (ASN1TaggedObject) nseq.getObjectAt(1);
                 // The name is yet another sequence of GeneralString
                 ASN1Sequence sseq = ASN1Sequence.getInstance(nobj.getObject());
-                Enumeration en = sseq.getObjects();
+                Enumeration<ASN1Object> en = sseq.getObjects();
                 while (en.hasMoreElements()) {
                 	ASN1Object o = (ASN1Object)en.nextElement();
                     DERGeneralString str = DERGeneralString.getInstance(o);
@@ -1671,11 +1667,11 @@ public class CertTools {
         throws IOException, CertificateParsingException {
         if (cert instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) cert;
-	        Collection altNames = x509cert.getSubjectAlternativeNames();
+	        Collection<List<?>> altNames = x509cert.getSubjectAlternativeNames();
 	        if (altNames != null) {
-	            Iterator i = altNames.iterator();
+	            Iterator<List<?>> i = altNames.iterator();
 	            while (i.hasNext()) {
-	                ASN1Sequence seq = getAltnameSequence((List)i.next());
+	                ASN1Sequence seq = getAltnameSequence((List<?>)i.next());
 	                if ( seq != null) {                    
 	                    // First in sequence is the object identifier, that we must check
 	                    DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
@@ -1693,7 +1689,7 @@ public class CertTools {
 
     /** Helper for the above methods 
      */
-    private static ASN1Sequence getAltnameSequence(List listitem) throws IOException {
+    private static ASN1Sequence getAltnameSequence(List<?> listitem) throws IOException {
         Integer no = (Integer) listitem.get(0);
         if (no.intValue() == 0) {
             byte[] altName = (byte[]) listitem.get(1);
@@ -1776,14 +1772,14 @@ public class CertTools {
         if (certificate instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) certificate;
 			
-			java.util.Collection altNames = x509cert.getSubjectAlternativeNames();
+			Collection<List<?>> altNames = x509cert.getSubjectAlternativeNames();
 	        if (altNames == null) {
 	            return null;
 	        }
-	        Iterator iter = altNames.iterator();
+	        Iterator<List<?>> iter = altNames.iterator();
 	        String append = "";
 	        while (iter.hasNext()) {
-	            java.util.List item = (java.util.List)iter.next();
+	            List<?> item = iter.next();
 	            Integer type = (Integer)item.get(0);
 	            Object value = item.get(1);
 	            if (!StringUtils.isEmpty(result)) {
@@ -1840,18 +1836,18 @@ public class CertTools {
     	}
         ASN1EncodableVector vec = new ASN1EncodableVector();
 
-        ArrayList emails = CertTools.getEmailFromDN(altName);
+        ArrayList<String> emails = CertTools.getEmailFromDN(altName);
         if (!emails.isEmpty()) {
-            Iterator iter = emails.iterator();
+            Iterator<String> iter = emails.iterator();
             while (iter.hasNext()) {
             	GeneralName gn = new GeneralName(1, new DERIA5String((String)iter.next()));
             	vec.add(gn);
             }
         }
         
-        ArrayList dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
+        ArrayList<String> dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
         if (!dns.isEmpty()) {            
-            Iterator iter = dns.iterator();
+            Iterator<String> iter = dns.iterator();
             while (iter.hasNext()) {
                 GeneralName gn = new GeneralName(2, new DERIA5String((String)iter.next()));
                 vec.add(gn);
@@ -1865,9 +1861,9 @@ public class CertTools {
           vec.add(gn);
         }
                                 
-        ArrayList uri = CertTools.getPartsFromDN(altName, CertTools.URI);
+        ArrayList<String> uri = CertTools.getPartsFromDN(altName, CertTools.URI);
         if (!uri.isEmpty()) {            
-            Iterator iter = uri.iterator();
+            Iterator<String> iter = uri.iterator();
             while (iter.hasNext()) {
                 GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
                 vec.add(gn);
@@ -1875,7 +1871,7 @@ public class CertTools {
         }
         uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
         if (!uri.isEmpty()) {            
-            Iterator iter = uri.iterator();
+            Iterator<String> iter = uri.iterator();
             while (iter.hasNext()) {
                 GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
                 vec.add(gn);
@@ -1883,7 +1879,7 @@ public class CertTools {
         }
         uri = CertTools.getPartsFromDN(altName, CertTools.URI2);
         if (!uri.isEmpty()) {            
-            Iterator iter = uri.iterator();
+            Iterator<String> iter = uri.iterator();
             while (iter.hasNext()) {
                 GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
                 vec.add(gn);
@@ -1891,9 +1887,9 @@ public class CertTools {
         }
         
                 
-        ArrayList ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
+        ArrayList<String> ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
         if (!ipstr.isEmpty()) {            
-            Iterator iter = ipstr.iterator();
+            Iterator<String> iter = ipstr.iterator();
             while (iter.hasNext()) {
                 byte[] ipoctets = StringTools.ipStringToOctets((String)iter.next());
                 GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
@@ -1902,9 +1898,9 @@ public class CertTools {
         }
                     
         // UPN is an OtherName see method getUpn... for asn.1 definition
-        ArrayList upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
+        ArrayList<String> upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
         if (!upn.isEmpty()) {            
-            Iterator iter = upn.iterator();             
+            Iterator<String> iter = upn.iterator();             
             while (iter.hasNext()) {
                 ASN1EncodableVector v = new ASN1EncodableVector();
                 v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
@@ -1916,9 +1912,9 @@ public class CertTools {
         }
         
         
-        ArrayList guid =  CertTools.getPartsFromDN(altName, CertTools.GUID);
+        ArrayList<String> guid =  CertTools.getPartsFromDN(altName, CertTools.GUID);
         if (!guid.isEmpty()) {            
-            Iterator iter = guid.iterator();                
+            Iterator<String> iter = guid.iterator();                
             while (iter.hasNext()) {                    
                 ASN1EncodableVector v = new ASN1EncodableVector();
                 byte[] guidbytes = Hex.decode((String)iter.next());
@@ -1934,9 +1930,9 @@ public class CertTools {
         }
         
         // Krb5PrincipalName is an OtherName, see method getKrb5Principal...for ASN.1 definition
-        ArrayList krb5principalname =  CertTools.getPartsFromDN(altName, CertTools.KRB5PRINCIPAL);
+        ArrayList<String> krb5principalname =  CertTools.getPartsFromDN(altName, CertTools.KRB5PRINCIPAL);
         if (!krb5principalname.isEmpty()) {            
-            Iterator iter = krb5principalname.iterator();             
+            Iterator<String> iter = krb5principalname.iterator();             
             while (iter.hasNext()) {
             	// Start by parsing the input string to separate it in different parts
                 String principalString = (String)iter.next();
@@ -1953,7 +1949,7 @@ public class CertTools {
                     log.debug("realm: "+realm);                	
                 }
                 // Now we can have several principals separated by /
-                ArrayList principalarr = new ArrayList();
+                ArrayList<String> principalarr = new ArrayList<String>();
                 int jndex = 0;
             	int bindex = 0;
                 while (jndex < index) {
@@ -1983,7 +1979,7 @@ public class CertTools {
                 // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
                 principals.add(new DERTaggedObject(true, 0, new DERInteger(0)));
                 // The names themselves are yet another sequence
-                Iterator i = principalarr.iterator();
+                Iterator<String> i = principalarr.iterator();
                 ASN1EncodableVector names = new ASN1EncodableVector();
                 while (i.hasNext()) {
                     String principalName = (String)i.next();
@@ -1999,14 +1995,14 @@ public class CertTools {
         }
 
     	// To support custom OIDs in altNames, they must be added as an OtherName of plain type UTF8String
-        ArrayList customoids =  CertTools.getCustomOids(altName);
+        ArrayList<String> customoids =  CertTools.getCustomOids(altName);
         if (!customoids.isEmpty()) {            
-        	Iterator iter = customoids.iterator();
+        	Iterator<String> iter = customoids.iterator();
         	while (iter.hasNext()) {
         		String oid = (String)iter.next();
-        		ArrayList oidval =  CertTools.getPartsFromDN(altName, oid);
+        		ArrayList<String> oidval =  CertTools.getPartsFromDN(altName, oid);
         		if (!oidval.isEmpty()) {            
-        			Iterator valiter = oidval.iterator();
+        			Iterator<String> valiter = oidval.iterator();
         			while (valiter.hasNext()) {
         				ASN1EncodableVector v = new ASN1EncodableVector();
         				v.add(new DERObjectIdentifier(oid));
@@ -2088,9 +2084,9 @@ public class CertTools {
 	 * @return true if verified OK
 	 * @throws Exception if verification failed
 	 */
-	public static boolean verify(Certificate certificate, Collection caCertPath) throws Exception {
+	public static boolean verify(Certificate certificate, Collection<Certificate> caCertPath) throws Exception {
 		try {
-			ArrayList certlist = new ArrayList();
+			ArrayList<Certificate> certlist = new ArrayList<Certificate>();
 			// Create CertPath
 			certlist.add(certificate);
 			// Add other certs...			
@@ -2683,8 +2679,8 @@ public class CertTools {
      * 
      * @return Vector with DERObjectIdentifiers defining the known order we require
      */
-    private static Vector getDefaultX509FieldOrder(){
-      Vector fieldOrder = new Vector();
+    private static Vector<DERObjectIdentifier> getDefaultX509FieldOrder(){
+      Vector<DERObjectIdentifier> fieldOrder = new Vector<DERObjectIdentifier>();
       String[] dNObjects = DnComponents.getDnObjects();
       for (int i = 0; i < dNObjects.length; i++) {
           fieldOrder.add(DnComponents.getOid(dNObjects[i]));
@@ -2698,8 +2694,8 @@ public class CertTools {
      * @param ldaporder if true the returned order are as defined in LDAP RFC (CN=foo,O=bar,C=SE), otherwise the order is a defined in X.500 (C=SE,O=bar,CN=foo).
      * @return Vector with DERObjectIdentifiers defining the known order we require
      */
-    public static Vector getX509FieldOrder(boolean ldaporder){
-      Vector fieldOrder = new Vector();
+    public static Vector<DERObjectIdentifier> getX509FieldOrder(boolean ldaporder){
+      Vector<DERObjectIdentifier> fieldOrder = new Vector<DERObjectIdentifier>();
       String[] dNObjects = DnComponents.getDnObjects(ldaporder);
       for (int i = 0; i < dNObjects.length; i++) {
           fieldOrder.add(DnComponents.getOid(dNObjects[i]));
@@ -2716,16 +2712,17 @@ public class CertTools {
      * @param ordering Vector of DERObjectIdentifier defining the desired order of components
      * @return X509Name with ordered conmponents according to the orcering vector
      */
+
     private static X509Name getOrderedX509Name( X509Name x509Name, Vector ordering, X509NameEntryConverter converter ){
         
         //-- Null prevent
         if ( ordering == null ){ ordering = new Vector(); }
         
         //-- New order for the X509 Fields
-        Vector newOrdering  = new Vector();
-        Vector newValues    = new Vector();
+        Vector<DERObjectIdentifier> newOrdering  = new Vector<DERObjectIdentifier>();
+        Vector<Object> newValues    = new Vector<Object>();
         
-        Hashtable ht = new Hashtable();
+        Hashtable<DERObjectIdentifier, Object> ht = new Hashtable<DERObjectIdentifier, Object>();
         Iterator it = ordering.iterator();
         
         //-- Add ordered fields
@@ -2733,10 +2730,11 @@ public class CertTools {
             DERObjectIdentifier oid = (DERObjectIdentifier) it.next();
             
             if ( !ht.containsKey(oid) ){
-                Vector valueList = getX509NameFields(x509Name, oid);
+                @SuppressWarnings("unchecked")
+                Vector<Object> valueList = getX509NameFields(x509Name, oid);
                 //-- Only add the OID if has not null value
                 if ( valueList != null ){
-                    Iterator itVals = valueList.iterator();
+                    Iterator<Object> itVals = valueList.iterator();
                     while( itVals.hasNext() ){
                         Object value = itVals.next();
                         ht.put(oid, value);
@@ -2746,8 +2744,8 @@ public class CertTools {
                 }
             } // if ht.containsKey
         } // while it.hasNext
-        
-        Vector allOids    = x509Name.getOIDs();
+        @SuppressWarnings("unchecked")
+        Vector<DERObjectIdentifier> allOids    = x509Name.getOIDs();
         
         //-- Add unexpected fields to the end
         for ( int i=0; i<allOids.size(); i++ ) {
@@ -2834,15 +2832,15 @@ public class CertTools {
      * @throws NoSuchAlgorithmException 
      * @throws CertificateException 
      */
-    public static Collection createCertChain(Collection certlist) throws CertPathValidatorException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException{
-    	ArrayList returnval = new ArrayList();
+    public static Collection<Certificate> createCertChain(Collection<?> certlist) throws CertPathValidatorException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException{
+    	ArrayList<Certificate> returnval = new ArrayList<Certificate>();
 
     	certlist = orderCertificateChain(certlist);
 
     	// set certificate chain
     	Certificate rootcert = null;
-    	ArrayList calist = new ArrayList();
-    	Iterator iter = certlist.iterator();
+    	ArrayList<Certificate> calist = new ArrayList<Certificate>();
+    	Iterator<?> iter = certlist.iterator();
     	while(iter.hasNext()){
     		Certificate next = (Certificate) iter.next();
     		if (CertTools.isSelfSigned(next)){
@@ -2905,11 +2903,11 @@ public class CertTools {
      * @param certlist list of certificates to order.
      * @return Collection with certificatechain.
      */
-    private static Collection orderCertificateChain(Collection certlist) throws CertPathValidatorException{
-    	 ArrayList returnval = new ArrayList();
+    private static Collection<Certificate> orderCertificateChain(Collection<?> certlist) throws CertPathValidatorException{
+    	 ArrayList<Certificate> returnval = new ArrayList<Certificate>();
     	 Certificate rootca = null;
-    	 HashMap cacertmap = new HashMap();
-    	 Iterator iter = certlist.iterator();
+    	 HashMap<String, Certificate> cacertmap = new HashMap<String, Certificate>();
+    	 Iterator<?> iter = certlist.iterator();
     	 while(iter.hasNext()){
     	 	Certificate cert = null;
     	 	Object o = iter.next();

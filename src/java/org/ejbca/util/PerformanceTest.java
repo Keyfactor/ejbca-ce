@@ -268,9 +268,7 @@ public class PerformanceTest {
         void taskFinished() {
             this.nrOfSuccesses++;
         }
-        Statistic(int nr) {
-            this(nr, System.out);
-        }
+
         void addTime(String timeName, long duration) {
             getJob(timeName).addTime(duration);
         }

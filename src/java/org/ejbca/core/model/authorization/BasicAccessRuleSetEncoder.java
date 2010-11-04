@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A class used as a help class for displaying and configuring basic access rules
@@ -38,7 +39,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	private HashSet currentendentityprofiles = new HashSet();
 	private HashSet availableendentityprofiles = new HashSet();
 	private HashSet currentotherrules = new HashSet();
-	private ArrayList availableotherrules = new ArrayList();
+	private List<Integer> availableotherrules = new ArrayList<Integer>();
     
     /**
      * Tries to encode a advanced ruleset into basic ones. 
@@ -137,7 +138,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	/**
 	 * @return a Collection of available other rules (Integer).
 	 */ 		
-	public Collection getAvailableOtherRules(){
+	public Collection<Integer> getAvailableOtherRules(){
 	   return availableotherrules;	
 	}
     

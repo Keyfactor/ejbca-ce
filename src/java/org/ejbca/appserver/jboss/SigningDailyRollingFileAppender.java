@@ -28,7 +28,7 @@ import org.bouncycastle.tsp.TimeStampRequest;
 import org.bouncycastle.tsp.TimeStampRequestGenerator;
 import org.bouncycastle.tsp.TimeStampResponse;
 import org.bouncycastle.util.encoders.Base64;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 
 /**
@@ -159,7 +159,7 @@ public class SigningDailyRollingFileAppender extends FileAppender {
 		} else {
 			LogLog.error("SignMethod option is not set for appender ["+name+"].");			
 		}
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 	}
 
 	void printPeriodicity(int type) {

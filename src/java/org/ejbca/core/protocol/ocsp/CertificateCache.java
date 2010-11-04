@@ -81,11 +81,11 @@ public class CertificateCache {
     /**  
      * @param testcerts can be set to null or be a collection of test certificates
      */
-	protected CertificateCache(Collection testcerts) {
+	protected CertificateCache(Collection<Certificate> testcerts) {
 		// Default values
 		m_valid_time = OcspConfiguration.getSigningCertsValidTime();
 		if (testcerts == null) {
-			this.testcerts = new ArrayList();
+			this.testcerts = new ArrayList<Certificate>();
 		} else {
 			this.testcerts = testcerts;
 		}

@@ -27,6 +27,7 @@ import org.bouncycastle.ocsp.CertificateID;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * @author tomas
@@ -36,13 +37,13 @@ public class CertificateCacheTest extends TestCase {
 	private static final Logger log = Logger.getLogger(CertificateCacheTest.class);
 
 	public void setUp() throws Exception {
-		CertTools.installBCProvider();
+	    CryptoProviderTools.installBCProvider();
 	}
 
 	public void test01CACertificates() throws Exception {
 		// Prepare the certificate cache with some test certificates
 		ConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "15");
-		Collection certs = new ArrayList();
+		Collection<Certificate> certs = new ArrayList<Certificate>();
 		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);
 		certs.add(testrootcert);
 		X509Certificate testrootnewcert = (X509Certificate)CertTools.getCertfromByteArray(testrootnew);
@@ -121,7 +122,7 @@ public class CertificateCacheTest extends TestCase {
 	public static Throwable threadException = null;
 	public void test02loadCertificates() throws Exception {
 		ConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "1");
-		Collection certs = new ArrayList();
+		Collection<Certificate> certs = new ArrayList<Certificate>();
 		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);
 		certs.add(testrootcert);
 		X509Certificate testrootnewcert = (X509Certificate)CertTools.getCertfromByteArray(testrootnew);

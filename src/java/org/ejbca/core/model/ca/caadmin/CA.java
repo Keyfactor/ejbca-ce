@@ -251,7 +251,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public long getCRLOverlapTime(){return ((Long)data.get(CRLOVERLAPTIME)).longValue();}
     public void setCRLOverlapTime(long crlOverlapTime) {data.put(CRLOVERLAPTIME, new Long(crlOverlapTime));}
 
-    public Collection  getCRLPublishers(){return ((Collection)data.get(CRLPUBLISHERS));}
+    public Collection<Integer>  getCRLPublishers(){return ((Collection<Integer>)data.get(CRLPUBLISHERS));}
     public void setCRLPublishers(Collection crlpublishers) {data.put(CRLPUBLISHERS, crlpublishers);}    
     
     

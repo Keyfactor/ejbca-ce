@@ -46,11 +46,11 @@ public class ApprovalDataVOViewList extends AbstractList implements java.io.Seri
 
     private String _sort;
     private boolean _ascending;
-    private List listData;
+    private List<ApprovalDataVOView> listData;
 
-    public ApprovalDataVOViewList(Collection approvalDataVOs) {
-        listData = new ArrayList();
-        Iterator iter = approvalDataVOs.iterator();
+    public ApprovalDataVOViewList(Collection<ApprovalDataVO> approvalDataVOs) {
+        listData = new ArrayList<ApprovalDataVOView>();
+        Iterator<ApprovalDataVO> iter = approvalDataVOs.iterator();
         while (iter.hasNext()) {
             listData.add(new ApprovalDataVOView((ApprovalDataVO) iter.next()));
         }

@@ -29,10 +29,10 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.config.EjbcaConfiguration;
 
-/** Class holding information and utilitites for handling different DN components, CN, O etc
+/** Class holding information and utilities for handling different DN components, CN, O etc
  * 
  * This is a very complex class with lots of maps and stuff. It is because it is a first step of refactoring the DN/AltName/DirAttr handling. 
- * This previously consisted of lotsa of different arrays spread out all over the place, now it's gathered here in order to be able to get a view of it.
+ * This previously consisted of lots of different arrays spread out all over the place, now it's gathered here in order to be able to get a view of it.
  * The underlying implementations have not changed much though, in order to still have things working, therefore there are lots of different maps and arrays, with
  * seemingly similar contents. 
  * 
@@ -49,7 +49,7 @@ public class DnComponents {
      * 
      * This map is used in CertTools so sort and order DN strings so they all look the same in the database.
      * */
-    private static HashMap oids = new HashMap();
+    private static HashMap<String, DERObjectIdentifier> oids = new HashMap<String, DERObjectIdentifier>();
     // Default values
     static {
         oids.put("c", X509Name.C);
@@ -161,7 +161,7 @@ public class DnComponents {
     private static HashMap dirAttrIdToExtractorFieldMap = new HashMap();
     private static ArrayList dnProfileFields = new ArrayList();
     private static ArrayList dnLanguageTexts = new ArrayList();
-    private static ArrayList dnDnIds = new ArrayList();
+    private static ArrayList<Integer> dnDnIds = new ArrayList<Integer>();
     private static ArrayList altNameFields = new ArrayList();
     private static ArrayList altNameLanguageTexts = new ArrayList();
     private static ArrayList altNameDnIds = new ArrayList();
@@ -216,7 +216,7 @@ public class DnComponents {
     	return altNameDnIds;
     }
     // Used by DNFieldExtractor and EntityProfile, don't USE
-    public static ArrayList getDnDnIds() {
+    public static ArrayList<Integer> getDnDnIds() {
     	return dnDnIds;
     }
     // Used only by DNFieldExtractor, don't USE
