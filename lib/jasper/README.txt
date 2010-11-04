@@ -1,1 +1,0 @@
-Jasper and JSP 2.0 /Servlet 2.4 API for JSP precompilation
