@@ -257,9 +257,9 @@ public class AuthorizationSessionTest extends CaTestCase {
         for (AccessRule accessRule : accessRules) {
             accessRuleNames.add(accessRule.getAccessRule());
         }
-        if (adminGroupSession.getAdminGroup(admin, TEST_GROUPNAME) != null) {
-            adminGroupSession.removeAccessRules(admin, TEST_GROUPNAME, accessRuleNames);
-            adminGroupSession.removeAdminGroup(admin, TEST_GROUPNAME);
+        if (adminGroupSession.getAdminGroup(admin, groupname) != null) {
+            adminGroupSession.removeAccessRules(admin, groupname, accessRuleNames);
+            adminGroupSession.removeAdminGroup(admin, groupname);
         }
     }
 
