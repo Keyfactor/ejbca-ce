@@ -64,9 +64,6 @@
 	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/libidn.jar"/>
-	<classpathentry kind="lib" path="lib/reports/jfreechart-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/reports/jcommon-1.0.8.jar"/>
-	<classpathentry kind="lib" path="lib/reports/jasperreports-1.3.3.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jbossall-client.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/activation.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system.jar"/>
