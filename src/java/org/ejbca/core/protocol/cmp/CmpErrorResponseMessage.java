@@ -141,15 +141,8 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponse
 		return false;
 	}
 
-	public boolean requireEncKeyInfo() {
-		return false;
-	}
-
 	public void setSignKeyInfo(Certificate cert, PrivateKey key,
 			String provider) {
-	}
-
-	public void setEncKeyInfo(Certificate cert) {
 	}
 
 	public void setSenderNonce(String senderNonce) {

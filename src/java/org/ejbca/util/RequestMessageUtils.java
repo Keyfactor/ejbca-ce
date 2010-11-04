@@ -77,9 +77,6 @@ public class RequestMessageUtils {
 		if (ret.requireSignKeyInfo()) {
 			ret.setSignKeyInfo(cert, signPriv, provider);
 		}
-		if (ret.requireEncKeyInfo()) {
-			ret.setEncKeyInfo(cert);
-		}
 		if (req.getSenderNonce() != null) {
 			ret.setRecipientNonce(req.getSenderNonce());
 		}
