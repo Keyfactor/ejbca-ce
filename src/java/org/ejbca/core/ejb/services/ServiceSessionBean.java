@@ -47,7 +47,6 @@ import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.services.IInterval;

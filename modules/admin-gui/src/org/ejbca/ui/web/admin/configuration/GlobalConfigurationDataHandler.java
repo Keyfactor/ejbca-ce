@@ -20,7 +20,6 @@ import javax.naming.NamingException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 

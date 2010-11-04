@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.authorization;
 
 import java.util.Collection;
 
-import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.log.Admin;
 
 public interface AuthorizationSession {
