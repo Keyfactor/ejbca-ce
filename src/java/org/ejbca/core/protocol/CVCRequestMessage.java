@@ -399,8 +399,8 @@ public class CVCRequestMessage implements IRequestMessage {
     
     /** @see org.ejbca.core.protocol.IRequestMessage
      */
-    public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, PrivateKey encPriv, String provider) {
-    	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, encPriv, provider);
+    public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
+    	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
     
     /** Specific to CVC request messages, EAC requests contains a sequence */

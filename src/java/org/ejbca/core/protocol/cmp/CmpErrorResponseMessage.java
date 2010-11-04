@@ -149,8 +149,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponse
 			String provider) {
 	}
 
-	public void setEncKeyInfo(Certificate cert, PrivateKey key,
-			String provider) {
+	public void setEncKeyInfo(Certificate cert) {
 	}
 
 	public void setSenderNonce(String senderNonce) {

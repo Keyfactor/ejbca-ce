@@ -224,16 +224,14 @@ public class X509ResponseMessage implements IResponseMessage {
     }
 
     /**
-     * Sets the public and private key needed to encrypt the message. Must be set if
+     * Sets the public key needed to encrypt the message. Must be set if
      * requireEncKeyInfo() returns true.
      *
      * @param cert certificate containing the public key.
-     * @param key private key.
-     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireEncKeyInfo()
      */
-    public void setEncKeyInfo(Certificate cert, PrivateKey key, String provider) {
+    public void setEncKeyInfo(Certificate cert) {
     }
 
     /**

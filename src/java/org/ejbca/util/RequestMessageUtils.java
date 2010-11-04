@@ -61,7 +61,7 @@ public class RequestMessageUtils {
 		return ret;
 	}
 
-	public static IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, PrivateKey encPriv, String provider){
+	public static IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, String provider){
 		IResponseMessage ret = null;
 		// Create the response message and set all required fields
 		try {
@@ -78,7 +78,7 @@ public class RequestMessageUtils {
 			ret.setSignKeyInfo(cert, signPriv, provider);
 		}
 		if (ret.requireEncKeyInfo()) {
-			ret.setEncKeyInfo(cert, encPriv, provider);
+			ret.setEncKeyInfo(cert);
 		}
 		if (req.getSenderNonce() != null) {
 			ret.setRecipientNonce(req.getSenderNonce());

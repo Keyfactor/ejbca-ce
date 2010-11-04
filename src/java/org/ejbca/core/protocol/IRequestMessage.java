@@ -244,11 +244,10 @@ public interface IRequestMessage extends Serializable {
      * @param req
      * @param cert
      * @param signPriv
-     * @param encPriv
      * @param provider
      * @return IResponseMessage
      */
-    public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, PrivateKey encPriv, String provider);
+    public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, String provider);
 
 
 }
