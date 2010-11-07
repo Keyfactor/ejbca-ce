@@ -113,7 +113,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                 throw new CertificateProfileExistsException(msg);
             } else {
                 try {
-                    entityManager.persist(new CertificateProfileData(new Integer(certificateprofileid), certificateprofilename, certificateprofile));
+                    entityManager.persist(new CertificateProfileData(Integer.valueOf(certificateprofileid), certificateprofilename, certificateprofile));
                     flushProfileCache();
                     String msg = intres.getLocalizedMessage("store.addedcertprofile", certificateprofilename);
                     logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
@@ -245,21 +245,21 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
         // Add fixed certificate profiles.
         if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ENDENTITY || certprofiletype == SecConst.CERTTYPE_HARDTOKEN){
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ENDUSER));
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_OCSPSIGNER));
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SERVER));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_ENDUSER));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_OCSPSIGNER));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_SERVER));
         }
         if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_SUBCA) {
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SUBCA));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_SUBCA));
         }
         if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_ROOTCA) {
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ROOTCA));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_ROOTCA));
         }
         if (certprofiletype == 0 || certprofiletype == SecConst.CERTTYPE_HARDTOKEN) {
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH));
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
-            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
+            returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
         }
         Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
         Iterator<CertificateProfileData> i = result.iterator();
@@ -620,7 +620,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
 
     public int findFreeCertificateProfileId() {
-        Random random = new Random((new Date()).getTime());
+        Random random = new Random(new Date().getTime());
         int id = random.nextInt();
         boolean foundfree = false;
         while (!foundfree) {
