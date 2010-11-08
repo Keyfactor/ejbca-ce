@@ -15,10 +15,10 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
 
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -40,17 +40,17 @@ public class PublisherDataHandler implements Serializable {
     private PublisherSession publishersession; 
     private AuthorizationSession authorizationsession;
     private CAAdminSession caadminsession;
-    private CertificateStoreSession certificatestoresession;
+    private CertificateProfileSession certificateProfileSession;
     private Admin administrator;
     private InformationMemory info;
 
     /** Creates a new instance of PublisherDataHandler */
     public PublisherDataHandler(Admin administrator, PublisherSession publishersession, AuthorizationSession authorizationsession, 
-                                CAAdminSession caadminsession, CertificateStoreSession certificatestoresession, InformationMemory info) {
+                                CAAdminSession caadminsession, CertificateProfileSession certificateProfileSession, InformationMemory info) {
        this.publishersession = publishersession;           
        this.authorizationsession = authorizationsession;
        this.caadminsession = caadminsession;
-       this.certificatestoresession = certificatestoresession;
+       this.certificateProfileSession = certificateProfileSession;
        this.administrator = administrator;          
        this.info = info;       
     }
@@ -81,7 +81,7 @@ public class PublisherDataHandler implements Serializable {
 
       if(authorizedToEditPublishers()){
       	int publisherid = publishersession.getPublisherId(administrator, name);
-        if(!caadminsession.exitsPublisherInCAs(administrator, publisherid) && !certificatestoresession.existsPublisherInCertificateProfiles(administrator,publisherid)){      	
+        if(!caadminsession.exitsPublisherInCAs(administrator, publisherid) && !certificateProfileSession.existsPublisherInCertificateProfiles(administrator,publisherid)){      	
 		  publishersession.removePublisher(administrator, name);
 		  this.info.publishersEdited();
 		  returnval = false;

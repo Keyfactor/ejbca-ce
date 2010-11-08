@@ -436,15 +436,7 @@ public interface CertificateStoreSession {
     public java.util.List<CertReqHistory> getCertReqHistory(org.ejbca.core.model.log.Admin admin, java.lang.String username);
 
 
-    /**
-     * Method to check if a Publisher exists in any of the certificate profiles.
-     * Used to avoid desyncronization of publisher data.
-     * 
-     * @param publisherid
-     *            the publisherid to search for.
-     * @return true if publisher exists in any of the certificate profiles.
-     */
-    public boolean existsPublisherInCertificateProfiles(org.ejbca.core.model.log.Admin admin, int publisherid);
+
 
 
 

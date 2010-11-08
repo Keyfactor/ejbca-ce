@@ -77,7 +77,7 @@ public class InformationMemory implements Serializable {
     HardTokenAuthorization hardtokenauthorization = null;
     
     HashMap<Integer, String> endentityprofileidtonamemap = null;
-    HashMap caidtonamemap = null;
+    HashMap<Integer, String>  caidtonamemap = null;
     HashMap certificateprofileidtonamemap = null;    
     HashMap<Integer, HashMap<Integer, List>> endentityavailablecas = null;
     HashMap publisheridtonamemap = null;
@@ -146,7 +146,7 @@ public class InformationMemory implements Serializable {
     /**
      * Returns a Map of CA id (Integer) -> CA name (String).
      */
-    public HashMap getCAIdToNameMap(){
+    public HashMap<Integer, String>  getCAIdToNameMap(){
       if(caidtonamemap == null){
         caidtonamemap = caadminsession.getCAIdToNameMap(administrator);
       }

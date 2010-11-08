@@ -576,6 +576,29 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return exists;
     }
     
+    /**
+     * Method to check if a Publisher exists in any of the certificate profiles. Used to avoid desyncronization of publisher data.
+     *
+     * @param publisherid the publisherid to search for.
+     * @return true if publisher exists in any of the certificate profiles.
+     */
+    public boolean existsPublisherInCertificateProfiles(Admin admin, int publisherid) {
+        boolean exists = false;
+        Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+        Iterator<CertificateProfileData> i = result.iterator();
+        while (i.hasNext() && !exists) {
+                Iterator<Integer> availablepublishers = i.next().getCertificateProfile().getPublisherList().iterator();
+                while (availablepublishers.hasNext()) {
+                        if (availablepublishers.next().intValue() == publisherid) {
+                                exists = true;
+                                break;
+                        }
+                }
+        }
+        return exists;
+    }
+
+    
     private Map<Integer, CertificateProfile> getProfileCacheInternal() {
         if ((profileCache == null) || (lastProfileCacheUpdateTime + EjbcaConfiguration.getCacheCertificateProfileTime() < System.currentTimeMillis())) {
             flushProfileCache();
