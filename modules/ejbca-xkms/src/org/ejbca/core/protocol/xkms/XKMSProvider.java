@@ -313,7 +313,7 @@ public class XKMSProvider implements Provider<Source> {
 							int cAId = CertTools.getIssuerDN(verCert).hashCode();
 
 							Collection acceptedCAIds = XKMSConfig.getAcceptedCA(intAdmin, caAdminSession);
-							if(!acceptedCAIds.contains(new Integer(cAId))){
+							if(!acceptedCAIds.contains(Integer.valueOf(cAId))){
 								throw new Exception("Error XKMS request signature certificate isn't among the list of accepted CA certificates");
 							}
 

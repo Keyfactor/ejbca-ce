@@ -194,7 +194,7 @@ public class CAInfo implements Serializable {
 	 * @param action, on of the CAInfo.REQ_APPROVAL_ constants
 	 */
 	public boolean isApprovalRequired(int action){		
-		return approvalSettings.contains(new Integer(action));
+		return approvalSettings.contains(Integer.valueOf(action));
 	}
 	
 	

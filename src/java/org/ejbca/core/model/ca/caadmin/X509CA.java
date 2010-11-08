@@ -174,7 +174,7 @@ public class X509CA extends CA implements Serializable {
       setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
       setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
 
-      data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
+      data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_X509));
       data.put(VERSION, new Float(LATEST_VERSION));   
     }
     
@@ -1022,7 +1022,7 @@ public class X509CA extends CA implements Serializable {
 
     	if(getCAInfo().getStatus() != SecConst.CA_EXTERNAL){
     		// Create XKMS service if it does not exist
-    		if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE))){
+    		if (!extendedServiceTypes.contains(Integer.valueOf(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE))){
 
     			String keytype = AlgorithmConstants.KEYALGORITHM_RSA;
     			String keyspec = "2048";
@@ -1046,12 +1046,12 @@ public class X509CA extends CA implements Serializable {
     				log.error(intres.getLocalizedMessage("signsession.errorupgradingxkmsservice",caname), e);
     			}
     			setExtendedCAService(xkmsservice);
-    			extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
+    			extendedServiceTypes.add(Integer.valueOf(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
     			data.put(EXTENDEDCASERVICES, extendedServiceTypes);
     		}		
 
     		// Create CMS service if it does not exist
-    		if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE))){
+    		if (!extendedServiceTypes.contains(Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE))){
 
     			String keytype = AlgorithmConstants.KEYALGORITHM_RSA;
     			String keyspec = "2048";
@@ -1075,7 +1075,7 @@ public class X509CA extends CA implements Serializable {
     				log.error(intres.getLocalizedMessage("signsession.errorupgradingcmsservice",caname), e);
     			}
     			setExtendedCAService(cmsservice);
-    			extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
+    			extendedServiceTypes.add(Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
     			data.put(EXTENDEDCASERVICES, extendedServiceTypes);
     		}		
     	}

@@ -183,7 +183,7 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
             boolean success = false;
             if (AdminGroupData.findByGroupName(entityManager, admingroupname) == null) {
                 try {
-                    entityManager.persist(new AdminGroupData(new Integer(findFreeAdminGroupId()), admingroupname));
+                    entityManager.persist(new AdminGroupData(Integer.valueOf(findFreeAdminGroupId()), admingroupname));
                     success = true;
                 } catch (Exception e) {
                     String msg = intres.getLocalizedMessage("authorization.erroraddadmingroup", admingroupname);

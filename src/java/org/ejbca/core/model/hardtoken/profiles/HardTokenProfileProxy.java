@@ -55,14 +55,14 @@ public class HardTokenProfileProxy {
      */
     public HardTokenProfile getHardTokenProfile(int profileid) throws RemoteException {
       HardTokenProfile returnval = null;
-      Integer id = new Integer(profileid);
+      Integer id = Integer.valueOf(profileid);
       int count = 0;
 
       if(updatecount.get(id) == null ||
 	    (count = hardTokenSession.getHardTokenProfileUpdateCount(admin, profileid)) > ((Integer)  updatecount.get(id)).intValue()){         
         returnval = hardTokenSession.getHardTokenProfile(admin, profileid);
         profilestore.put(id, returnval);
-		updatecount.put(id, new Integer(count));
+		updatecount.put(id, Integer.valueOf(count));
 	  }
       return returnval;
     }

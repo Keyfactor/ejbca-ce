@@ -83,7 +83,7 @@ public class XKMSConfig {
     			throw new EJBException("Property parameter xkms.response.causedforsigning ("+XkmsConfiguration.getResponseCaUsedForSigning()+") is missconfigured, should contain a existing CA name.");
     		}    	    
     		
-    		cAIdUsedForSigning = new Integer(info.getCAId());    		
+    		cAIdUsedForSigning = Integer.valueOf(info.getCAId());    		
     	}
     	return cAIdUsedForSigning.intValue();
     }
@@ -104,7 +104,7 @@ public class XKMSConfig {
     		  if(info == null){    		
     			throw new EJBException("Property parameter xkms.request.acceptedcas is missconfigured, should contain a ';' separated string of existing CA names.");
     		  }
-    		  acceptedCAs.add(new Integer(info.getCAId()));
+    		  acceptedCAs.add(Integer.valueOf(info.getCAId()));
     		}
     	}
     	return acceptedCAs;

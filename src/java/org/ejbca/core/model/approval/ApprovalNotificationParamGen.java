@@ -64,7 +64,7 @@ public class ApprovalNotificationParamGen extends NotificationParamGen {
 		}
 		paramPut("approvalRequest.ID", approvalRequestID);
 		if (approvalRequestID != null) {
-			paramPut("approvalRequest.ABS.ID", new Integer(Math.abs(approvalRequestID.intValue())));
+			paramPut("approvalRequest.ABS.ID", Integer.valueOf(Math.abs(approvalRequestID.intValue())));
 		}
 		paramPut("approvalRequest.TYPE", approvalRequestType);
 		// Wrong spelled parameter kept for backwards compatibility

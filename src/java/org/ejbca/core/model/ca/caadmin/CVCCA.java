@@ -89,7 +89,7 @@ public class CVCCA extends CA implements Serializable {
 	public CVCCA(CVCCAInfo cainfo) {
 		super(cainfo);  
 
-		data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_CVC));
+		data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_CVC));
 		data.put(VERSION, new Float(LATEST_VERSION));   
 	}
 

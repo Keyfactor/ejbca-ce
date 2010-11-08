@@ -240,7 +240,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		if (catokeninfo instanceof NullCATokenInfo) {
 			log.debug("CA Token is CATOKENTYPE_NULL");
 			if (data.get(CATOKENTYPE) == null) {
-		    	data.put(CATOKENTYPE, new Integer(CATokenConstants.CATOKENTYPE_NULL));
+		    	data.put(CATOKENTYPE, Integer.valueOf(CATokenConstants.CATOKENTYPE_NULL));
 				changed = true;				
 			}
 		}
@@ -248,7 +248,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		if (catokeninfo instanceof HardCATokenInfo) {
 			log.debug("CA Token is CATOKENTYPE_HSM");
 			if (data.get(CATOKENTYPE) == null) {
-				data.put(CATOKENTYPE, new Integer(CATokenConstants.CATOKENTYPE_HSM));
+				data.put(CATOKENTYPE, Integer.valueOf(CATokenConstants.CATOKENTYPE_HSM));
 				changed = true;
 			}
 		}
@@ -256,7 +256,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		if (catokeninfo instanceof SoftCATokenInfo) {
 			log.debug("CA Token is CATOKENTYPE_P12");
 			if (data.get(CATOKENTYPE) == null) {
-				data.put(CATOKENTYPE, new Integer(CATokenConstants.CATOKENTYPE_P12));
+				data.put(CATOKENTYPE, Integer.valueOf(CATokenConstants.CATOKENTYPE_P12));
 				changed = true;
 			}
 			SoftCATokenInfo sinfo = (SoftCATokenInfo) catokeninfo;
@@ -921,7 +921,7 @@ public class CATokenContainerImpl extends CATokenContainer {
     private int getKeySequenceFormat(){
         Object seqF = data.get(SEQUENCE_FORMAT);
         if (seqF == null) {
-            seqF = new Integer(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            seqF = Integer.valueOf(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         }
         return (Integer)seqF;
     }

@@ -74,7 +74,7 @@ public class CAData implements Serializable {
 	 */
 	public CAData(String subjectdn, String name, int status, CA ca) {
 		try {
-    		setCaId(new Integer(subjectdn.hashCode()));
+    		setCaId(Integer.valueOf(subjectdn.hashCode()));
     		setName(name);        
     		setSubjectDN(subjectdn);
     		if (ca.getCertificateChain().size() != 0) {

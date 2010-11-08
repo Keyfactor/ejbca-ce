@@ -306,7 +306,7 @@ public abstract class CaTestCase extends TestCase {
         String password = "";
         for (int i = 0; i < 8; i++) {
             int randint = rand.nextInt(9);
-            password += (new Integer(randint)).toString();
+            password += (Integer.valueOf(randint)).toString();
         }
         log.debug("Generated random pwd: password=" + password);
         return password;
@@ -318,7 +318,7 @@ public abstract class CaTestCase extends TestCase {
         String username = "";
         for (int i = 0; i < 6; i++) {
             int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
+            username += (Integer.valueOf(randint)).toString();
         }
         log.debug("Generated random username: username =" + username);
         return username;

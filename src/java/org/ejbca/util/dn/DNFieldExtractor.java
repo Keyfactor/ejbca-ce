@@ -199,13 +199,13 @@ public class DNFieldExtractor implements java.io.Serializable {
                             }
 
                             if (type == TYPE_SUBJECTDN) {
-                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
+                                dnfields.put(Integer.valueOf((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
                             } else if (type == TYPE_SUBJECTALTNAME) {
-                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
+                                dnfields.put(Integer.valueOf((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
                             } else if (type == TYPE_SUBJECTDIRATTR) {
-                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
+                                dnfields.put(Integer.valueOf((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
                             }
-                            number = new Integer(number.intValue()+1);
+                            number = Integer.valueOf(number.intValue()+1);
                             fieldnumbers.put(id, number);
                         }
                     }
@@ -217,12 +217,12 @@ public class DNFieldExtractor implements java.io.Serializable {
             	log.error("setDN: ", e);
 				illegal = true;
                 if (type == TYPE_SUBJECTDN) {
-                    dnfields.put(new Integer((CN * BOUNDRARY)), "Illegal DN : " + dn);
+                    dnfields.put(Integer.valueOf((CN * BOUNDRARY)), "Illegal DN : " + dn);
                 } else if (type == TYPE_SUBJECTALTNAME){
-                    dnfields.put(new Integer((RFC822NAME * BOUNDRARY)),
+                    dnfields.put(Integer.valueOf((RFC822NAME * BOUNDRARY)),
                         "Illegal Subjectaltname : " + dn);
                 } else if (type == TYPE_SUBJECTDIRATTR){
-                    dnfields.put(new Integer((PLACEOFBIRTH * BOUNDRARY)),
+                    dnfields.put(Integer.valueOf((PLACEOFBIRTH * BOUNDRARY)),
                         "Illegal Subjectdirectory attribute : " + dn);
                 }
             }
@@ -290,7 +290,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @return number of componenets available for a fiels, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
     public int getNumberOfFields(int field) {
-        Integer ret = (Integer)fieldnumbers.get(new Integer(field));
+        Integer ret = (Integer)fieldnumbers.get(Integer.valueOf(field));
         if (ret == null) {
         	log.error("Not finding fieldnumber value for "+field);
         	return 0;

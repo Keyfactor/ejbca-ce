@@ -73,8 +73,8 @@ public class LogInterfaceBean implements java.io.Serializable {
 		HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
         
         // Add Internal CA Name if it doesn't exists
-        if(caidtonamemap.get(new Integer(LogConstants.INTERNALCAID)) == null){
-			caidtonamemap.put(new Integer(LogConstants.INTERNALCAID),ejbcawebbean.getText("INTERNALCA"));
+        if(caidtonamemap.get(Integer.valueOf(LogConstants.INTERNALCAID)) == null){
+			caidtonamemap.put(Integer.valueOf(LogConstants.INTERNALCAID),ejbcawebbean.getText("INTERNALCA"));
         }
               
         logentriesview = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localsystemeventnamesunsorted, localmodulenamesunsorted,  caidtonamemap);
@@ -286,10 +286,10 @@ public class LogInterfaceBean implements java.io.Serializable {
     	  String translateds = HTMLTools.htmlunescape(s);
     	  alllocaleventnames[i] = translateds;
     	  // We must make this independent of language encoding, utf, html escaped etc
-    	  Integer hashcode = new Integer(localinfoeventnames[i].hashCode());
+    	  Integer hashcode = Integer.valueOf(localinfoeventnames[i].hashCode());
     	  String hash = hashcode.toString();
-    	  localeventnamehashtoid.put(hash, new Integer(i));
-    	  localtranslatedeventnamestoid.put(translateds, new Integer(i));
+    	  localeventnamehashtoid.put(hash, Integer.valueOf(i));
+    	  localtranslatedeventnamestoid.put(translateds, Integer.valueOf(i));
       }
       Arrays.sort(localinfoeventnames);          
       
@@ -303,10 +303,10 @@ public class LogInterfaceBean implements java.io.Serializable {
     	  String translateds = HTMLTools.htmlunescape(s);
     	  alllocaleventnames[LogConstants.EVENTNAMES_INFO.length + i] = translateds;
     	  // We must make this independent of language encoding, utf, html escaped etc
-    	  Integer hashcode = new Integer(s.hashCode());
+    	  Integer hashcode = Integer.valueOf(s.hashCode());
     	  String hash = hashcode.toString();
-    	  localeventnamehashtoid.put(hash, new Integer(i + LogConstants.EVENT_ERROR_BOUNDRARY));
-    	  localtranslatedeventnamestoid.put(translateds, new Integer(i + LogConstants.EVENT_ERROR_BOUNDRARY));
+    	  localeventnamehashtoid.put(hash, Integer.valueOf(i + LogConstants.EVENT_ERROR_BOUNDRARY));
+    	  localtranslatedeventnamestoid.put(translateds, Integer.valueOf(i + LogConstants.EVENT_ERROR_BOUNDRARY));
       }
       Arrays.sort(localerroreventnames);     
 
@@ -320,10 +320,10 @@ public class LogInterfaceBean implements java.io.Serializable {
     	  String translateds = HTMLTools.htmlunescape(s);
     	  alllocaleventnames[LogConstants.EVENTNAMES_INFO.length + LogConstants.EVENTNAMES_ERROR.length + i] = translateds;
     	  // We must make this independent of language encoding, utf, html escaped etc
-    	  Integer hashcode = new Integer(s.hashCode());
+    	  Integer hashcode = Integer.valueOf(s.hashCode());
     	  String hash = hashcode.toString();
-    	  localeventnamehashtoid.put(hash, new Integer(i + LogConstants.EVENT_SYSTEM_BOUNDRARY));
-    	  localtranslatedeventnamestoid.put(translateds, new Integer(i + LogConstants.EVENT_SYSTEM_BOUNDRARY));
+    	  localeventnamehashtoid.put(hash, Integer.valueOf(i + LogConstants.EVENT_SYSTEM_BOUNDRARY));
+    	  localtranslatedeventnamestoid.put(translateds, Integer.valueOf(i + LogConstants.EVENT_SYSTEM_BOUNDRARY));
       }
       Arrays.sort(localsystemeventnames);     
       Arrays.sort(alllocaleventnames);
@@ -334,7 +334,7 @@ public class LogInterfaceBean implements java.io.Serializable {
       for(int i = 0; i < localmodulenames.length; i++){
         localmodulenames[i] = ejbcawebbean.getText(LogConstants.MODULETEXTS[i]);   
         localmodulenamesunsorted[i] = localmodulenames[i];  
-        localmodulenamestoid.put(localmodulenames[i], new Integer(i));
+        localmodulenamestoid.put(localmodulenames[i], Integer.valueOf(i));
       }
       Arrays.sort(localmodulenames);
     }

@@ -290,7 +290,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setExtendedKeyUsageCritical(false);
 
       ArrayList<Integer> availablecas = new ArrayList<Integer>();
-      availablecas.add(new Integer(ANYCA));
+      availablecas.add(Integer.valueOf(ANYCA));
       setAvailableCAs(availablecas);
       
       setPublisherList(new ArrayList());
@@ -565,7 +565,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public int getType(){ return ((Integer) data.get(TYPE)).intValue(); }
-    public void setType(int type){ data.put(TYPE, new Integer(type)); }
+    public void setType(int type){ data.put(TYPE, Integer.valueOf(type)); }
     public boolean isTypeCA() { return ((Integer) data.get(TYPE)).intValue() == TYPE_SUBCA; }
     public boolean isTypeRootCA() { return ((Integer) data.get(TYPE)).intValue() == TYPE_ROOTCA; }
     public boolean isTypeEndEntity() { return ((Integer) data.get(TYPE)).intValue() == TYPE_ENDENTITY; }
@@ -594,11 +594,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if( availablebitlengths[i] < minimumavailablebitlength) {
           minimumavailablebitlength = availablebitlengths[i];
         }
-        availbitlengths.add(new Integer(availablebitlengths[i]));
+        availbitlengths.add(Integer.valueOf(availablebitlengths[i]));
       }
       data.put(AVAILABLEBITLENGTHS, availbitlengths);
-      data.put(MINIMUMAVAILABLEBITLENGTH, new Integer(minimumavailablebitlength));
-      data.put(MAXIMUMAVAILABLEBITLENGTH, new Integer(maximumavailablebitlength));
+      data.put(MINIMUMAVAILABLEBITLENGTH, Integer.valueOf(minimumavailablebitlength));
+      data.put(MAXIMUMAVAILABLEBITLENGTH, Integer.valueOf(maximumavailablebitlength));
     }
 
     public int getMinimumAvailableBitLength(){return ((Integer) data.get(MINIMUMAVAILABLEBITLENGTH)).intValue();}
@@ -909,7 +909,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     public boolean isApplicableToAnyCA(){
-    	return ((Collection) data.get(AVAILABLECAS)).contains(new Integer(ANYCA));
+    	return ((Collection) data.get(AVAILABLECAS)).contains(Integer.valueOf(ANYCA));
     }
     
     /**
@@ -956,7 +956,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
   
     public void setPathLengthConstraint(int pathlength) {
-		data.put(PATHLENGTHCONSTRAINT, new Integer(pathlength));			
+		data.put(PATHLENGTHCONSTRAINT, Integer.valueOf(pathlength));			
 	}   
 
     /**
@@ -1071,9 +1071,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseQCEtsiValueLimit(){ return ((Boolean) data.get(USEQCETSIVALUELIMIT)).booleanValue(); }
     public void setUseQCEtsiValueLimit(boolean useqcetsivaluelimit) { data.put(USEQCETSIVALUELIMIT, Boolean.valueOf(useqcetsivaluelimit));}
     public int getQCEtsiValueLimit(){return ((Integer) data.get(QCETSIVALUELIMIT)).intValue();}
-    public void setQCEtsiValueLimit(int qcetsivaluelimit){data.put(QCETSIVALUELIMIT, new Integer(qcetsivaluelimit));}
+    public void setQCEtsiValueLimit(int qcetsivaluelimit){data.put(QCETSIVALUELIMIT, Integer.valueOf(qcetsivaluelimit));}
     public int getQCEtsiValueLimitExp(){return ((Integer) data.get(QCETSIVALUELIMITEXP)).intValue();}
-    public void setQCEtsiValueLimitExp(int qcetsivaluelimitexp){data.put(QCETSIVALUELIMITEXP, new Integer(qcetsivaluelimitexp));}
+    public void setQCEtsiValueLimitExp(int qcetsivaluelimitexp){data.put(QCETSIVALUELIMITEXP, Integer.valueOf(qcetsivaluelimitexp));}
     public String getQCEtsiValueLimitCurrency(){ return (String) data.get(QCETSIVALUELIMITCURRENCY); }
     public void setQCEtsiValueLimitCurrency(String qcetsicaluelimitcurrency) {
       if(qcetsicaluelimitcurrency==null) {
@@ -1085,7 +1085,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseQCEtsiRetentionPeriod(){ return ((Boolean) data.get(USEQCETSIRETENTIONPERIOD)).booleanValue(); }
     public void setUseQCEtsiRetentionPeriod(boolean useqcetsiretentionperiod) { data.put(USEQCETSIRETENTIONPERIOD, Boolean.valueOf(useqcetsiretentionperiod));}
     public int getQCEtsiRetentionPeriod(){return ((Integer) data.get(QCETSIRETENTIONPERIOD)).intValue();}
-    public void setQCEtsiRetentionPeriod(int qcetsiretentionperiod){data.put(QCETSIRETENTIONPERIOD, new Integer(qcetsiretentionperiod));}
+    public void setQCEtsiRetentionPeriod(int qcetsiretentionperiod){data.put(QCETSIRETENTIONPERIOD, Integer.valueOf(qcetsiretentionperiod));}
     public boolean getUseQCEtsiSignatureDevice(){ return ((Boolean) data.get(USEQCETSISIGNATUREDEVICE)).booleanValue(); }
     public void setUseQCEtsiSignatureDevice(boolean useqcetsisignaturedevice) { data.put(USEQCETSISIGNATUREDEVICE, Boolean.valueOf(useqcetsisignaturedevice));}
 
@@ -1200,7 +1200,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	 * The number of different administrators that needs to approve
 	 */
 	public void setNumOfReqApprovals(int numOfReqApprovals) {
-		data.put(NUMOFREQAPPROVALS, new Integer(numOfReqApprovals));
+		data.put(NUMOFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
 	}
 	
 	/**
@@ -1209,7 +1209,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	 */
 	public boolean isApprovalRequired(int action){
 		Collection approvalSettings = (Collection) data.get(APPROVALSETTINGS);
-		return approvalSettings.contains(new Integer(action));
+		return approvalSettings.contains(Integer.valueOf(action));
 	}
 
     public Object clone() throws CloneNotSupportedException {
@@ -1264,7 +1264,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if(data.get(AVAILABLECAS) == null) {
                 ArrayList availablecas = new ArrayList();
-                availablecas.add(new Integer(ANYCA));
+                availablecas.add(Integer.valueOf(ANYCA));
                 data.put(AVAILABLECAS, availablecas);
             }
             if(data.get(USEDPUBLISHERS) == null) {

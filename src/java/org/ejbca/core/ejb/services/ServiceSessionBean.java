@@ -281,7 +281,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 int id = i.next().intValue();
                 // Remove hidden services here..
                 if (!getServiceConfiguration(admin, id).isHidden()) {
-                    allVisibleServiceIds.add(new Integer(id));
+                    allVisibleServiceIds.add(Integer.valueOf(id));
                 }
             }
         } else {

@@ -53,7 +53,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
       log.debug("OCSPCAService : constructor " + serviceinfo.getStatus()); 
       CryptoProviderTools.installBCProvider();
       data = new HashMap();   
-      data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
+      data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
 	  setStatus(serviceinfo.getStatus());
       data.put(VERSION, new Float(LATEST_VERSION));
     }

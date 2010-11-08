@@ -131,10 +131,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        this.cainfo = cainfo;
               
        data.put(VALIDITY, new Long(cainfo.getValidity()));
-       data.put(SIGNEDBY, new Integer(cainfo.getSignedBy()));
+       data.put(SIGNEDBY, Integer.valueOf(cainfo.getSignedBy()));
        data.put(DESCRIPTION, cainfo.getDescription());
-       data.put(REVOKATIONREASON, new Integer(-1));
-       data.put(CERTIFICATEPROFILEID, new Integer(cainfo.getCertificateProfileId()));
+       data.put(REVOKATIONREASON, Integer.valueOf(-1));
+       data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
        setCRLPeriod(cainfo.getCRLPeriod());
        setCRLIssueInterval(cainfo.getCRLIssueInterval());
        setCRLOverlapTime(cainfo.getCRLOverlapTime());
@@ -155,15 +155,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	   	 ExtendedCAServiceInfo next = iter.next();
 	   	 if(next instanceof OCSPCAServiceInfo){
 	   	   setExtendedCAService(new OCSPCAService(next));
-	   	   extendedservicetypes.add(new Integer(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
+	   	   extendedservicetypes.add(Integer.valueOf(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
 	   	 }
 	   	 if(next instanceof XKMSCAServiceInfo){
 		   setExtendedCAService(new XKMSCAService(next));
-		   extendedservicetypes.add(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
+		   extendedservicetypes.add(Integer.valueOf(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
 		 }
 	   	 if(next instanceof CmsCAServiceInfo){
 			   setExtendedCAService(new CmsCAService(next));
-			   extendedservicetypes.add(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
+			   extendedservicetypes.add(Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
 			 }
 	   }
 	   data.put(EXTENDEDCASERVICES, extendedservicetypes);
@@ -228,7 +228,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public void setDescription(String description) { data.put(DESCRIPTION,description);}  
     
     public int getRevokationReason(){return ((Integer) data.get(REVOKATIONREASON)).intValue();}
-    public void setRevokationReason(int reason){ data.put(REVOKATIONREASON,new Integer(reason));}
+    public void setRevokationReason(int reason){ data.put(REVOKATIONREASON,Integer.valueOf(reason));}
         
 	public Date getRevokationDate(){return (Date) data.get(REVOKATIONDATE);}
 	public void setRevokationDate(Date date){ data.put(REVOKATIONDATE,date);}
@@ -519,7 +519,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	 * The number of different administrators that needs to approve
 	 */
     public void setNumOfRequiredApprovals(int numOfReqApprovals){
-    	data.put(NUMBEROFREQAPPROVALS,new Integer(numOfReqApprovals));
+    	data.put(NUMBEROFREQAPPROVALS,Integer.valueOf(numOfReqApprovals));
     }
 	
     public void updateCA(CAInfo cainfo) throws Exception{            
@@ -531,9 +531,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	data.put(CRLOVERLAPTIME, new Long(cainfo.getCRLOverlapTime()));
     	data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
     	data.put(APPROVALSETTINGS,cainfo.getApprovalSettings());
-        data.put(NUMBEROFREQAPPROVALS,new Integer(cainfo.getNumOfReqApprovals()));
+        data.put(NUMBEROFREQAPPROVALS,Integer.valueOf(cainfo.getNumOfReqApprovals()));
         if (cainfo.getCertificateProfileId() > 0) {
-            data.put(CERTIFICATEPROFILEID,new Integer(cainfo.getCertificateProfileId()));        	
+            data.put(CERTIFICATEPROFILEID,Integer.valueOf(cainfo.getCertificateProfileId()));        	
         }
     	CATokenContainer token = getCAToken();
     	if (token != null) {
@@ -798,7 +798,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected ExtendedCAService getExtendedCAService(int type){
       ExtendedCAService returnval = null;
 	  try{
-	    returnval = (ExtendedCAService) extendedcaservicemap.get(new Integer(type));	     		  
+	    returnval = (ExtendedCAService) extendedcaservicemap.get(Integer.valueOf(type));	     		  
         if(returnval == null) {
         	switch(((Integer) ((HashMap)data.get(EXTENDEDCASERVICE+type)).get(ExtendedCAService.EXTENDEDCASERVICETYPE)).intValue()) {
 	        	case ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE:
@@ -811,7 +811,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	        		returnval = new CmsCAService((HashMap)data.get(EXTENDEDCASERVICE+type));
 	        		break;	
         	}
-        	extendedcaservicemap.put(new Integer(type), returnval);
+        	extendedcaservicemap.put(Integer.valueOf(type), returnval);
         }
 	  }catch(Exception e){
 		  throw new RuntimeException(e);  
@@ -822,15 +822,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected void setExtendedCAService(ExtendedCAService extendedcaservice) {  
     	if(extendedcaservice instanceof OCSPCAService){		
     		data.put(EXTENDEDCASERVICE+ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, extendedcaservice.saveData());    
-    		extendedcaservicemap.put(new Integer(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE), extendedcaservice);
+    		extendedcaservicemap.put(Integer.valueOf(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE), extendedcaservice);
     	} 
     	if(extendedcaservice instanceof XKMSCAService){		
     		data.put(EXTENDEDCASERVICE+ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE, extendedcaservice.saveData());    
-    		extendedcaservicemap.put(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE), extendedcaservice);
+    		extendedcaservicemap.put(Integer.valueOf(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE), extendedcaservice);
     	} 
     	if(extendedcaservice instanceof CmsCAService){		
     		data.put(EXTENDEDCASERVICE+ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE, extendedcaservice.saveData());    
-    		extendedcaservicemap.put(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE), extendedcaservice);
+    		extendedcaservicemap.put(Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE), extendedcaservice);
     	} 
     }
 	/** 

@@ -88,7 +88,7 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
 		while(iter.hasNext()){
 			Integer next = (Integer) iter.next();
 			
-			if(next.equals(new Integer(BasicAccessRuleSet.CA_ALL))){
+			if(next.equals(Integer.valueOf(BasicAccessRuleSet.CA_ALL))){
 				allcafound= true;
 				break;
 			}
@@ -109,10 +109,10 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
 		while(iter.hasNext()){
 			Integer next = (Integer) iter.next();
 		
-			if(next.equals(new Integer(BasicAccessRuleSet.OTHER_VIEWLOG))){
+			if(next.equals(Integer.valueOf(BasicAccessRuleSet.OTHER_VIEWLOG))){
 				currentruleset.add(new AccessRule(AccessRulesConstants.REGULAR_VIEWLOG, AccessRule.RULE_ACCEPT, true));
 			}else
-		    if(next.equals(new Integer(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS))){
+		    if(next.equals(Integer.valueOf(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS))){
 		        currentruleset.add(new AccessRule(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRule.RULE_ACCEPT, false));
 			}
 		}

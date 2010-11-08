@@ -103,7 +103,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
     public abstract boolean isTokenSupported(String tokenidentificationstring);
     // Public Methods mostly used by EJBCA  
 
-	public void setNumberOfCopies(int numberofcopies) { data.put(NUMBEROFCOPIES,new Integer(numberofcopies));}
+	public void setNumberOfCopies(int numberofcopies) { data.put(NUMBEROFCOPIES,Integer.valueOf(numberofcopies));}
 
 	public void setEreasableToken(boolean ereasabletoken) {data.put(EREASABLETOKEN, Boolean.valueOf(ereasabletoken));}
 	
@@ -123,7 +123,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 	}
 	
 	public  void setPINType(int certusage, int pintype){
-		((List) data.get(PINTYPE)).set(certusage, new Integer(pintype));		
+		((List) data.get(PINTYPE)).set(certusage, Integer.valueOf(pintype));		
 	}
 	
 	/**
@@ -138,7 +138,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 	}
 	
 	public  void setMinimumPINLength(int certusage, int length){
-		((List) data.get(MINIMUMPINLENGTH)).set(certusage, new Integer(length));		
+		((List) data.get(MINIMUMPINLENGTH)).set(certusage, Integer.valueOf(length));		
 	}
 
     public abstract Object clone() throws CloneNotSupportedException;

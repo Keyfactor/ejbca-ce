@@ -45,11 +45,11 @@ public class LogConfiguration implements Serializable {
 
         // Fill log configuration data with values from LogEntry constants. Default is true for all events.
         for (int i = 0; i < LogConstants.EVENTNAMES_INFO.length; i++) {
-            configurationdata.put(new Integer(i), Boolean.TRUE);
+            configurationdata.put(Integer.valueOf(i), Boolean.TRUE);
         }
 
         for (int i = 0; i < LogConstants.EVENTNAMES_ERROR.length; i++) {
-            configurationdata.put(new Integer(i + LogConstants.EVENT_ERROR_BOUNDRARY), Boolean.TRUE);
+            configurationdata.put(Integer.valueOf(i + LogConstants.EVENT_ERROR_BOUNDRARY), Boolean.TRUE);
         }
     }
     /** Used for upgrading from EJBCA 3.1.x to 3.2.x.
@@ -63,7 +63,7 @@ public class LogConfiguration implements Serializable {
 
     // Public Methods
     public boolean logEvent(int event) {
-        Boolean log = (Boolean) configurationdata.get(new Integer(event));
+        Boolean log = (Boolean) configurationdata.get(Integer.valueOf(event));
 
         if (log == null) {
             return true; // Default is log everything.
@@ -79,7 +79,7 @@ public class LogConfiguration implements Serializable {
      * @return DOCUMENT ME!
      */
     public Boolean getLogEvent(int event) {
-        return (Boolean) configurationdata.get(new Integer(event));
+        return (Boolean) configurationdata.get(Integer.valueOf(event));
     }
 
     /**
@@ -89,7 +89,7 @@ public class LogConfiguration implements Serializable {
      * @param log DOCUMENT ME!
      */
     public void setLogEvent(int event, boolean log) {
-        configurationdata.put(new Integer(event), Boolean.valueOf(log));
+        configurationdata.put(Integer.valueOf(event), Boolean.valueOf(log));
     }
 
     /**

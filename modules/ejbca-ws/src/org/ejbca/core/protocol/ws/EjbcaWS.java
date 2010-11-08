@@ -1512,7 +1512,7 @@ public class EjbcaWS implements IEjbcaWS {
 			        final String name = iter.next();
 			        final int id = userDataSourceSession.getUserDataSourceId(admin, name);
 				    if(id != 0){
-			            userDataSourceIds.add(new Integer(id));
+			            userDataSourceIds.add(Integer.valueOf(id));
 			        }else{
 			            log.error("Error User Data Source with name : " + name + " doesn't exist.");
 			        }
@@ -2256,7 +2256,7 @@ public class EjbcaWS implements IEjbcaWS {
 				if(id == 0){
 					throw new UserDataSourceException("Error: User Data Source with name : " + nextName + " couldn't be found, aborting operation.");
 				}
-				userDataSourceIds.add(new Integer(id));
+				userDataSourceIds.add(Integer.valueOf(id));
 			}
 			ret = userDataSourceSession.removeUserData(admin, userDataSourceIds, searchString, removeMultipleMatch);
 		} catch (EJBException e) {

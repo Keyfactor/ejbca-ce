@@ -97,7 +97,7 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     }
     
 	public void setTokenProfileId(int hardtokenprofileid) {
-	  data.put(HardToken.TOKENPROFILE, new Integer(hardtokenprofileid));
+	  data.put(HardToken.TOKENPROFILE, Integer.valueOf(hardtokenprofileid));
 	}
 	
 	/**

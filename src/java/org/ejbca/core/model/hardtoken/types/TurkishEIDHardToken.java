@@ -52,7 +52,7 @@ public class TurkishEIDHardToken extends HardToken {
 
         setTokenProfileId(hardtokenprofileid);        
         
-        data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
+        data.put(TOKENTYPE, Integer.valueOf(THIS_TOKENTYPE));
     } 
     
     /** Constructor only to be used internally. */
@@ -62,7 +62,7 @@ public class TurkishEIDHardToken extends HardToken {
       	  setInitialPIN("");
       	  setPUK("");
       	}
-    	data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
+    	data.put(TOKENTYPE, Integer.valueOf(THIS_TOKENTYPE));
     }
 
 

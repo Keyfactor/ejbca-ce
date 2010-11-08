@@ -30,7 +30,7 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
 		
 	public static final String STATUS = "status";
 	
-	protected void setStatus(int status){ this.data.put(STATUS, new Integer(status)); }
+	protected void setStatus(int status){ this.data.put(STATUS, Integer.valueOf(status)); }
 	
 	protected int getStatus(){ return ((Integer) data.get(STATUS)).intValue(); }
 	

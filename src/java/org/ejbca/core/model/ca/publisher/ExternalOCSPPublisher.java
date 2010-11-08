@@ -64,7 +64,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
      */
     public ExternalOCSPPublisher() {
         super();
-        data.put(TYPE, new Integer(PublisherConst.TYPE_EXTOCSPPUBLISHER));
+        data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_EXTOCSPPUBLISHER));
         setDataSource(DEFAULT_DATASOURCE);
         setProtect(DEFAULT_PROTECT);
     }

@@ -352,10 +352,10 @@ public class CreateCRLSessionTest extends CaTestCase {
                     profile.setUse(EndEntityProfile.ENDTIME, 0, true);
                     profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, false);
                     profile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.FALSE);
-                    profile.setValue(EndEntityProfile.AVAILCAS, 0, new Integer(caid).toString());
+                    profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.valueOf(caid).toString());
                     profile.setUse(EndEntityProfile.STARTTIME, 0, true);
-                    profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, new Integer(certprofileid).toString());
-                    profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, new Integer(certprofileid).toString());
+                    profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.valueOf(certprofileid).toString());
+                    profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, Integer.valueOf(certprofileid).toString());
                     endEntityProfileSession.addEndEntityProfile(admin, TESTPROFILE, profile);
                 } catch (EndEntityProfileExistsException pee) {
                 }

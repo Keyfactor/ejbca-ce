@@ -107,7 +107,7 @@ public class UserMatch extends BasicMatch {
         this.matchvalue = matchvalue;
 
         if ((matchwith >= MATCH_WITH_STATUS) && (matchwith <= MATCH_WITH_CA)) {
-            new Integer(matchvalue);
+            Integer.valueOf(matchvalue);
         }
     }
 

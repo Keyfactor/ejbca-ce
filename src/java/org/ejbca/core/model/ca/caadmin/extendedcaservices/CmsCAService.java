@@ -102,7 +102,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		// Currently only RSA keys are supported
 		CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo;	
 		data = new HashMap();   
-		data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
+		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
 
 		data.put(KEYSPEC, info.getKeySpec());
 		data.put(KEYALGORITHM, info.getKeyAlgorithm());
@@ -139,7 +139,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 						(String) data.get(KEYALGORITHM), this.certificatechain);
 			}
 
-			data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));        
+			data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));        
 		} 
 	}
 

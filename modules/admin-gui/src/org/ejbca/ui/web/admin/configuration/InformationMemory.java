@@ -361,14 +361,14 @@ public class InformationMemory implements Serializable {
            }
            
            boolean endentityprofileallcas = false;
-           if(endentityprofileavailcas.contains(new Integer(SecConst.ALLCAS))){
+           if(endentityprofileavailcas.contains(Integer.valueOf(SecConst.ALLCAS))){
              endentityprofileallcas = true;   
            }
            
            values = endentityprofile.getValue(EndEntityProfile.AVAILCERTPROFILES,0).split(EndEntityProfile.SPLITCHAR); 
            HashMap<Integer, List> certificateprofilemap = new HashMap<Integer, List>();
            for(int i=0;i < values.length;i++){             
-             Integer nextcertprofileid = new Integer(values[i]);
+             Integer nextcertprofileid = Integer.valueOf(values[i]);
              CertificateProfile certprofile = (CertificateProfile) certproftemp.get(nextcertprofileid);
              if(certprofile == null){
                certprofile = certificateProfileSession.getCertificateProfile(administrator,nextcertprofileid.intValue());   
@@ -376,7 +376,7 @@ public class InformationMemory implements Serializable {
              }
              
              Collection certprofilesavailablecas = certprofile.getAvailableCAs();
-             if(certprofilesavailablecas.contains(new Integer(CertificateProfile.ANYCA))){
+             if(certprofilesavailablecas.contains(Integer.valueOf(CertificateProfile.ANYCA))){
                ArrayList authorizedcastemp = new ArrayList(authorizedcas);
                if(!endentityprofileallcas) {
                  authorizedcastemp.retainAll(endentityprofileavailcas);
@@ -459,7 +459,7 @@ public class InformationMemory implements Serializable {
         Iterator iter = this.adminGroupSession.getAuthorizedAdminGroupNames(administrator, caadminsession.getAvailableCAs(administrator)).iterator();
         while(iter.hasNext()){
           AdminGroup admingroup = (AdminGroup) iter.next();	
-          authgroups.put(admingroup.getAdminGroupName(),new Integer(admingroup.getAdminGroupId()));
+          authgroups.put(admingroup.getAdminGroupName(),Integer.valueOf(admingroup.getAdminGroupId()));
         }              		
       }
       return authgroups;	 

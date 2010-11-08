@@ -132,7 +132,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             throw new EndEntityProfileExistsException(errorMessage);
         } else {
             try {
-                entityManager.persist(new EndEntityProfileData(new Integer(profileid), profilename, profile));
+                entityManager.persist(new EndEntityProfileData(Integer.valueOf(profileid), profilename, profile));
                 flushProfileCache();
                 String msg = intres.getLocalizedMessage("ra.addedprofile", profilename);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
@@ -170,7 +170,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             boolean success = false;
             if (pdl != null) {
                 try {
-                    entityManager.persist(new EndEntityProfileData(new Integer(findFreeEndEntityProfileId()), newprofilename, (EndEntityProfile) pdl
+                    entityManager.persist(new EndEntityProfileData(Integer.valueOf(findFreeEndEntityProfileId()), newprofilename, (EndEntityProfile) pdl
                             .getProfile().clone()));
                     flushProfileCache();
                     String msg = intres.getLocalizedMessage("ra.clonedprofile", newprofilename, originalprofilename);
@@ -268,8 +268,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         HashMap<Integer, String> idNameCache = new HashMap<Integer, String>();
         HashMap<String, Integer> nameIdCache = new HashMap<String, Integer>();
         HashMap<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
-        idNameCache.put(new Integer(SecConst.EMPTY_ENDENTITYPROFILE), EMPTY_ENDENTITYPROFILENAME);
-        nameIdCache.put(EMPTY_ENDENTITYPROFILENAME, new Integer(SecConst.EMPTY_ENDENTITYPROFILE));
+        idNameCache.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EMPTY_ENDENTITYPROFILENAME);
+        nameIdCache.put(EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         try {
             Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
             if (log.isDebugEnabled()) {
@@ -349,7 +349,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                     boolean allexists = true;
                     for (int j = 0; j < availablecas.length; j++) {
                         // debug("Available CA["+j+"]: "+availablecas[j]);
-                        Integer caid = new Integer(availablecas[j]);
+                        Integer caid = Integer.valueOf(availablecas[j]);
                         // If this is the special value ALLCAs we are authorized
                         if ((caid.intValue() != SecConst.ALLCAS) && (!authorizedcaids.contains(caid))) {
                             allexists = false;

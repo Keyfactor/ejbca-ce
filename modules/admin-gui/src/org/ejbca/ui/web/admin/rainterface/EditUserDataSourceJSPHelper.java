@@ -219,7 +219,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                                 request.getParameter(BUTTON_TESTCONNECTION) != null){
 
                             if(userdatasourcedata == null){
-                                int tokentype = new Integer(request.getParameter(HIDDEN_USERDATASOURCETYPE)).intValue();
+                                int tokentype = Integer.valueOf(request.getParameter(HIDDEN_USERDATASOURCETYPE)).intValue();
                                 if(tokentype == CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER) {
                                     userdatasourcedata = new CustomUserDataSourceContainer();
                                 }
@@ -237,7 +237,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                             if(values != null){
                                 Set modifyablefields = new HashSet();
                                 for(int i=0;i< values.length;i++){
-                                	modifyablefields.add(new Integer(values[i]));
+                                	modifyablefields.add(Integer.valueOf(values[i]));
                                 }
 
                                 userdatasourcedata.setModifiableFields(modifyablefields);
@@ -249,13 +249,13 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                             if(values != null){
                                 ArrayList useCAs = new ArrayList();
                                 for(int i=0;i< values.length;i++){
-                                	Integer caid = new Integer(values[i]);
+                                	Integer caid = Integer.valueOf(values[i]);
                                 	if(caid.intValue() == BaseUserDataSource.ANYCA){
                                 		useCAs = new ArrayList();
                                 		useCAs.add(caid);
                                 		break;
                                 	}
-                                	useCAs.add(new Integer(values[i]));
+                                	useCAs.add(Integer.valueOf(values[i]));
                                 }
 
                                 userdatasourcedata.setApplicableCAs(useCAs);
@@ -359,46 +359,46 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		String subjectaltnametext = ejbcawebbean.getText("SUBALTNAME");
     		String subjectdirattrtext = ejbcawebbean.getText("SUBDIRATTR");
     		
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UID"),new Integer(DNFieldExtractor.UID));  
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("COMMONNAME"),new Integer(DNFieldExtractor.CN));  
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DNSERIALNUMBER"), new Integer(DNFieldExtractor.SN)); 
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("GIVENNAME1"),new Integer(DNFieldExtractor.GIVENNAME)); 
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("INITIALS"), new Integer(DNFieldExtractor.INITIALS)); 
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("SURNAME"), new Integer(DNFieldExtractor.SURNAME)); 
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("TITLE"), new Integer(DNFieldExtractor.T));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("ORGANIZATIONUNIT"), new Integer(DNFieldExtractor.OU));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("ORGANIZATION"), new Integer(DNFieldExtractor.O));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("LOCALE"), new Integer(DNFieldExtractor.L));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("STATE"), new Integer(DNFieldExtractor.ST));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DOMAINCOMPONENT"), new Integer(DNFieldExtractor.DC));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("COUNTRY"), new Integer(DNFieldExtractor.C));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDADDRESS"), new Integer(DNFieldExtractor.UNSTRUCTUREDADDRESS));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDNAME"), new Integer(DNFieldExtractor.UNSTRUCTUREDNAME));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UID"),Integer.valueOf(DNFieldExtractor.UID));  
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("COMMONNAME"),Integer.valueOf(DNFieldExtractor.CN));  
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DNSERIALNUMBER"), Integer.valueOf(DNFieldExtractor.SN)); 
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("GIVENNAME1"),Integer.valueOf(DNFieldExtractor.GIVENNAME)); 
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("INITIALS"), Integer.valueOf(DNFieldExtractor.INITIALS)); 
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("SURNAME"), Integer.valueOf(DNFieldExtractor.SURNAME)); 
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("TITLE"), Integer.valueOf(DNFieldExtractor.T));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("ORGANIZATIONUNIT"), Integer.valueOf(DNFieldExtractor.OU));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("ORGANIZATION"), Integer.valueOf(DNFieldExtractor.O));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("LOCALE"), Integer.valueOf(DNFieldExtractor.L));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("STATE"), Integer.valueOf(DNFieldExtractor.ST));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DOMAINCOMPONENT"), Integer.valueOf(DNFieldExtractor.DC));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("COUNTRY"), Integer.valueOf(DNFieldExtractor.C));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDADDRESS"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDADDRESS));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDNAME"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDNAME));
     		    		
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("DNSNAME"), new Integer(DNFieldExtractor.DNSNAME));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("IPADDRESS"), new Integer(DNFieldExtractor.IPADDRESS));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("DIRECTORYNAME"), new Integer(DNFieldExtractor.DIRECTORYNAME));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("UNIFORMRESOURCEID"), new Integer(DNFieldExtractor.URI));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_UPN"), new Integer(DNFieldExtractor.UPN));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_GUID"), new Integer(DNFieldExtractor.GUID));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_KERBEROS_KPN"), new Integer(DNFieldExtractor.KRB5PRINCIPAL));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("DNSNAME"), Integer.valueOf(DNFieldExtractor.DNSNAME));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("IPADDRESS"), Integer.valueOf(DNFieldExtractor.IPADDRESS));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("DIRECTORYNAME"), Integer.valueOf(DNFieldExtractor.DIRECTORYNAME));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("UNIFORMRESOURCEID"), Integer.valueOf(DNFieldExtractor.URI));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_UPN"), Integer.valueOf(DNFieldExtractor.UPN));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_GUID"), Integer.valueOf(DNFieldExtractor.GUID));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_KERBEROS_KPN"), Integer.valueOf(DNFieldExtractor.KRB5PRINCIPAL));
     	    
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("DATEOFBIRTH"), new Integer(DNFieldExtractor.DATEOFBIRTH));
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("PLACEOFBIRTH"),new Integer( DNFieldExtractor.PLACEOFBIRTH));
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("GENDER"),new Integer( DNFieldExtractor.GENDER));
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("COUNTRYOFCITIZENSHIP"),new Integer( DNFieldExtractor.COUNTRYOFCITIZENSHIP));
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("COUNTRYOFRESIDENCE"),new Integer( DNFieldExtractor.COUNTRYOFRESIDENCE));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("DATEOFBIRTH"), Integer.valueOf(DNFieldExtractor.DATEOFBIRTH));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("PLACEOFBIRTH"),Integer.valueOf( DNFieldExtractor.PLACEOFBIRTH));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("GENDER"),Integer.valueOf( DNFieldExtractor.GENDER));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("COUNTRYOFCITIZENSHIP"),Integer.valueOf( DNFieldExtractor.COUNTRYOFCITIZENSHIP));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("COUNTRYOFRESIDENCE"),Integer.valueOf( DNFieldExtractor.COUNTRYOFRESIDENCE));
 
 
-    		modifyableFieldTexts.put(ejbcawebbean.getText("USERNAME"), new Integer(UserDataSourceVO.ISMODIFYABLE_USERNAME));
-    		modifyableFieldTexts.put(ejbcawebbean.getText("PASSWORD"), new Integer(UserDataSourceVO.ISMODIFYABLE_PASSWORD));
-    		modifyableFieldTexts.put(ejbcawebbean.getText("CA"), new Integer(UserDataSourceVO.ISMODIFYABLE_CAID));
-    		modifyableFieldTexts.put(ejbcawebbean.getText("EMAIL"), new Integer(UserDataSourceVO.ISMODIFYABLE_EMAILDATA));
-    		modifyableFieldTexts.put(ejbcawebbean.getText("PASSWORD"), new Integer(UserDataSourceVO.ISMODIFYABLE_TYPE));
-    		modifyableFieldTexts.put(ejbcawebbean.getText("ENDENTITYPROFILE"), new Integer(UserDataSourceVO.ISMODIFYABLE_ENDENTITYPROFILE));
-    		modifyableFieldTexts.put(ejbcawebbean.getText("CERTIFICATEPROFILE"), new Integer(UserDataSourceVO.ISMODIFYABLE_CERTIFICATEPROFILE));
-    		modifyableFieldTexts.put(ejbcawebbean.getText("TOKEN"), new Integer(UserDataSourceVO.ISMODIFYABLE_TOKENTYPE));    		
-    		modifyableFieldTexts.put(ejbcawebbean.getText("HARDTOKENISSUER"), new Integer(UserDataSourceVO.ISMODIFYABLE_HARDTOKENISSUER));    		
+    		modifyableFieldTexts.put(ejbcawebbean.getText("USERNAME"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_USERNAME));
+    		modifyableFieldTexts.put(ejbcawebbean.getText("PASSWORD"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_PASSWORD));
+    		modifyableFieldTexts.put(ejbcawebbean.getText("CA"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_CAID));
+    		modifyableFieldTexts.put(ejbcawebbean.getText("EMAIL"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_EMAILDATA));
+    		modifyableFieldTexts.put(ejbcawebbean.getText("PASSWORD"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_TYPE));
+    		modifyableFieldTexts.put(ejbcawebbean.getText("ENDENTITYPROFILE"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_ENDENTITYPROFILE));
+    		modifyableFieldTexts.put(ejbcawebbean.getText("CERTIFICATEPROFILE"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_CERTIFICATEPROFILE));
+    		modifyableFieldTexts.put(ejbcawebbean.getText("TOKEN"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_TOKENTYPE));    		
+    		modifyableFieldTexts.put(ejbcawebbean.getText("HARDTOKENISSUER"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_HARDTOKENISSUER));    		
     	    		
     		
     	}

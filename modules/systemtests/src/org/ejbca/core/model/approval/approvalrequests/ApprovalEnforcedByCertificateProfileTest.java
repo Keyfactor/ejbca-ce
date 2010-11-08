@@ -365,7 +365,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     private String genRandomUserName(String usernameBase) {
-        return usernameBase + (new Integer((new Random(new Date().getTime() + 4711)).nextInt(999999))).toString();
+        return usernameBase + (Integer.valueOf((new Random(new Date().getTime() + 4711)).nextInt(999999))).toString();
     }
 
     private int createCertificateProfile(Admin admin, String certProfileName, Integer[] reqApprovals, int type) throws Exception {
@@ -474,11 +474,11 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         profile.setUse(EndEntityProfile.ENDTIME, 0, true);
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         profile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.TRUE);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, new Integer(approvalCAID).toString());
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.valueOf(approvalCAID).toString());
         profile.setUse(EndEntityProfile.STARTTIME, 0, true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles.toString());
-        profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, new Integer(certProfiles[0]).toString());
-        profile.setValue(EndEntityProfile.DEFAULTCA, 0, new Integer(approvalCAID).toString());
+        profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, Integer.valueOf(certProfiles[0]).toString());
+        profile.setValue(EndEntityProfile.DEFAULTCA, 0, Integer.valueOf(approvalCAID).toString());
         endEntityProfileSession.addEndEntityProfile(admin, endEntityProfileName, profile);
 
         int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(admin1, endEntityProfileName);

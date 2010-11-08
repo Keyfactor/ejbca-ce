@@ -53,10 +53,10 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.CAPREFIX)) {
             Map caIdToNameMap = caAdminSession.getCAIdToNameMap(getAdmin());
             if (resource.lastIndexOf('/') < AccessRulesConstants.CAPREFIX.length()) {
-                return AccessRulesConstants.CAPREFIX + caIdToNameMap.get(new Integer(resource.substring(AccessRulesConstants.CAPREFIX.length())));
+                return AccessRulesConstants.CAPREFIX + caIdToNameMap.get(Integer.valueOf(resource.substring(AccessRulesConstants.CAPREFIX.length())));
             } else {
                 return AccessRulesConstants.CAPREFIX
-                        + caIdToNameMap.get(new Integer(resource.substring(AccessRulesConstants.CAPREFIX.length(), resource.lastIndexOf('/'))))
+                        + caIdToNameMap.get(Integer.valueOf(resource.substring(AccessRulesConstants.CAPREFIX.length(), resource.lastIndexOf('/'))))
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }

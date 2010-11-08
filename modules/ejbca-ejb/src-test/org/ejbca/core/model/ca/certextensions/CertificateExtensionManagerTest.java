@@ -81,7 +81,7 @@ public class CertificateExtensionManagerTest extends TestCase {
 		assertTrue(availExt.getDisplayName().equals("TESTEXTENSION3"));
 		assertTrue(availExt.isTranslatable() == true);
 		
-		CertificateExtension certExt = fact.getCertificateExtensions(new Integer(1));
+		CertificateExtension certExt = fact.getCertificateExtensions(Integer.valueOf(1));
 		assertTrue(certExt != null);
 		assertTrue(certExt.getId() == 1);
 		assertTrue(certExt.getOID().equals("1.2.3.4"));
@@ -89,9 +89,9 @@ public class CertificateExtensionManagerTest extends TestCase {
 		assertTrue(certExt.getValue(null, null, null, null, null) instanceof DERPrintableString);
 		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null, null)).getString().equals("Test 123"));
 		
-		assertNull(fact.getCertificateExtensions(new Integer(2)));
+		assertNull(fact.getCertificateExtensions(Integer.valueOf(2)));
 		
-		certExt = fact.getCertificateExtensions(new Integer(3));
+		certExt = fact.getCertificateExtensions(Integer.valueOf(3));
 		assertTrue(certExt != null);
 		assertTrue(certExt.getId() == 3);
 		assertTrue(certExt.getOID().equals("3.2.3.4"));

@@ -69,7 +69,7 @@ public class LogMatch extends BasicMatch {
         // The row below does not do anything but check that matchvalue contains
         // a legal number value when matching number field. See @throws clause.
         if ((matchwith == MATCH_WITH_EVENT) || (matchwith == MATCH_WITH_SPECIALADMIN)) {
-            new Integer(matchvalue);
+            Integer.valueOf(matchvalue);
         }
     }
 

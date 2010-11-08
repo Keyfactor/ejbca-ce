@@ -75,7 +75,7 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 		final byte value[] = new byte[length];
 		final int readLength = read(value);
 		if ( readLength != length ) {
-			final String msg = intres.getLocalizedMessage("request.notcorrectasn1length", new Integer(length), new Integer(readLength));
+			final String msg = intres.getLocalizedMessage("request.notcorrectasn1length", Integer.valueOf(length), Integer.valueOf(readLength));
 			m_log.info(msg);
 			throw new MalformedRequestException(msg);
 		}
@@ -92,20 +92,20 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 	public byte[] readFirstASN1Object() throws IOException, MalformedRequestException {
 		final int tag = read() & 0x1f;
 		if (tag != SEQUENCE) {
-			final String msg = intres.getLocalizedMessage("request.notasequence", new Integer(tag));
+			final String msg = intres.getLocalizedMessage("request.notasequence", Integer.valueOf(tag));
 			m_log.info(msg);
 			throw new MalformedRequestException(msg);
 		}
 		final int length = readLength();
 		if (length > MAX_REQUEST_SIZE) {
-			final String msg = intres.getLocalizedMessage("request.toolarge", new Integer(MAX_REQUEST_SIZE), new Integer(length));
+			final String msg = intres.getLocalizedMessage("request.toolarge", Integer.valueOf(MAX_REQUEST_SIZE), Integer.valueOf(length));
 			m_log.info(msg);
 			throw new MalformedRequestException(msg);
 		}
 		// If there was an asn.1 stream of undefined length we will try to read it the classic way, limiting the size of bytes read.
 		if (length < 0) {// undefined length
 			if (this.contentLength > MAX_REQUEST_SIZE) {
-				final String msg = intres.getLocalizedMessage("request.toolarge", new Integer(MAX_REQUEST_SIZE), new Integer(this.baos.size()));
+				final String msg = intres.getLocalizedMessage("request.toolarge", Integer.valueOf(MAX_REQUEST_SIZE), Integer.valueOf(this.baos.size()));
 				m_log.info(msg);
 				throw new MalformedRequestException(msg);
 			}
@@ -125,13 +125,13 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 			}
 			// Read content-length bytes from stream
 			if (m_log.isTraceEnabled()) {
-				m_log.trace("Got content-length: "+new Integer(this.contentLength));
+				m_log.trace("Got content-length: "+Integer.valueOf(this.contentLength));
 			}
 			return readTopASN1(this.contentLength-tlByteLength); // 'tlByteLength' bytes already read. 'this.contentLength <= MAX_REQUEST_SIZE' tested above.
 		}
 		// defined length, just read as many bytes as the length tag says
 		if (m_log.isTraceEnabled()) {
-			m_log.trace("Got ASN1 length: "+new Integer(length));
+			m_log.trace("Got ASN1 length: "+Integer.valueOf(length));
 		}
 		return readTopASN1(length);
 	}

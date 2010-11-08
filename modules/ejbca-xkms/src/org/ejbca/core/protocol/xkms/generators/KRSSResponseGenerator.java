@@ -291,7 +291,7 @@ public class KRSSResponseGenerator extends
 			}
 			
 		}else{
-			log.error(intres.getLocalizedMessage("xkms.errorinreqwrongstatus",new Integer(userDataVO.getStatus()),userDataVO.getUsername()));			
+			log.error(intres.getLocalizedMessage("xkms.errorinreqwrongstatus",Integer.valueOf(userDataVO.getStatus()),userDataVO.getUsername()));			
 			resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 			resultMinor = XKMSConstants.RESULTMINOR_REFUSED;
 		}

@@ -133,7 +133,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 */
 	public void setCertificateProfileId(int certusage, int certprofileid){
 	  List list = (List) data.get(CERTIFICATEPROFILEID);	  
-	  list.set(certusage, new Integer(certprofileid));
+	  list.set(certusage, Integer.valueOf(certprofileid));
 	  data.put(CERTIFICATEPROFILEID, list);
 	}
 
@@ -152,7 +152,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 */
 	public void setCAId (int certusage, int caid){
       List list = (List) data.get(CAID);	  
-	  list.set(certusage, new Integer(caid));
+	  list.set(certusage, Integer.valueOf(caid));
 	  data.put(CAID, list);		
 	}
 
@@ -179,7 +179,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 */
 	public void setMinimumKeyLength (int certusage, int minimumkeylength){		
 		List list = (List) data.get(MINIMUMKEYLENGTH);	  
-		list.set(certusage, new Integer(minimumkeylength));
+		list.set(certusage, Integer.valueOf(minimumkeylength));
 		data.put(MINIMUMKEYLENGTH, list);				 
 	}
 

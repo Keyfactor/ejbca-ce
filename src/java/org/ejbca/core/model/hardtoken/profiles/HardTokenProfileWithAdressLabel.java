@@ -121,7 +121,7 @@ public abstract class HardTokenProfileWithAdressLabel extends HardTokenProfileWi
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#setNumberOfAdressLabelCopies(int)
 	 */
 	public void setNumberOfAdressLabelCopies(int copies) {
-		  data.put(ADRESSLABELCOPIES, new Integer(copies));	
+		  data.put(ADRESSLABELCOPIES, Integer.valueOf(copies));	
 	}
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#setAdressLabelData(java.lang.String)
@@ -139,6 +139,6 @@ public abstract class HardTokenProfileWithAdressLabel extends HardTokenProfileWi
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#setAdressLabeltype(int)
 	 */
 	public void setAdressLabelType(int type) {
-		data.put(ADRESSLABELTYPE, new Integer(type));
+		data.put(ADRESSLABELTYPE, Integer.valueOf(type));
 	}
 }

@@ -165,10 +165,10 @@ public class CertificateProfileTest extends TestCase {
     	CertificateProfile profile = new CertificateProfile();
     	
     	ArrayList<Integer> dnsubset = new ArrayList<Integer>();
-    	dnsubset.add(new Integer(DNFieldExtractor.CN));
-    	dnsubset.add(new Integer(DNFieldExtractor.UID));
-    	dnsubset.add(new Integer(DNFieldExtractor.GIVENNAME));
-    	dnsubset.add(new Integer(DNFieldExtractor.SURNAME));    	
+    	dnsubset.add(Integer.valueOf(DNFieldExtractor.CN));
+    	dnsubset.add(Integer.valueOf(DNFieldExtractor.UID));
+    	dnsubset.add(Integer.valueOf(DNFieldExtractor.GIVENNAME));
+    	dnsubset.add(Integer.valueOf(DNFieldExtractor.SURNAME));    	
     	profile.setSubjectDNSubSet(dnsubset);
     	
     	String indn1 = "UID=PVE,CN=Philip Vendil,SN=123435,GIVENNAME=Philip,SURNAME=Vendil";
@@ -190,8 +190,8 @@ public class CertificateProfileTest extends TestCase {
     	CertificateProfile profile = new CertificateProfile();
     	
     	ArrayList<Integer> altnamesubset = new ArrayList<Integer>();
-    	altnamesubset.add(new Integer(DNFieldExtractor.RFC822NAME));
-    	altnamesubset.add(new Integer(DNFieldExtractor.UPN));    	
+    	altnamesubset.add(Integer.valueOf(DNFieldExtractor.RFC822NAME));
+    	altnamesubset.add(Integer.valueOf(DNFieldExtractor.UPN));    	
     	profile.setSubjectAltNameSubSet(altnamesubset);
     	
     	String inaltname1 = "RFC822NAME=test@test.se,UPN=testacc@test.se,IPADDRESS=10.1.1.0";

@@ -27,7 +27,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 	
 	public LdapSearchPublisher() {
 		super();
-		data.put(TYPE, new Integer(PublisherConst.TYPE_LDAPSEARCHPUBLISHER));
+		data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_LDAPSEARCHPUBLISHER));
 		
 		setSearchBaseDN("");
 		setSearchFilter("");

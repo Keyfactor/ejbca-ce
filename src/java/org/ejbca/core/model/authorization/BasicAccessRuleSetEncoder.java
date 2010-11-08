@@ -143,14 +143,14 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	}
     
 	private void initAvailableRoles(HashSet availableruleset){		
-		availableroles.add(new Integer(BasicAccessRuleSet.ROLE_NONE));
-        availableroles.add(new Integer(BasicAccessRuleSet.ROLE_CAADMINISTRATOR));
+		availableroles.add(Integer.valueOf(BasicAccessRuleSet.ROLE_NONE));
+        availableroles.add(Integer.valueOf(BasicAccessRuleSet.ROLE_CAADMINISTRATOR));
         
-        availableroles.add(new Integer(BasicAccessRuleSet.ROLE_RAADMINISTRATOR));        
-        availableroles.add(new Integer(BasicAccessRuleSet.ROLE_SUPERVISOR));                
+        availableroles.add(Integer.valueOf(BasicAccessRuleSet.ROLE_RAADMINISTRATOR));        
+        availableroles.add(Integer.valueOf(BasicAccessRuleSet.ROLE_SUPERVISOR));                
 		// Check if administrator can create superadministrators
 		if(availableruleset.contains(AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){						
-			availableroles.add(new Integer(BasicAccessRuleSet.ROLE_SUPERADMINISTRATOR));
+			availableroles.add(Integer.valueOf(BasicAccessRuleSet.ROLE_SUPERADMINISTRATOR));
 		}	
 
 	}
@@ -389,42 +389,42 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	}
 			
 	private void initAvailableRules(boolean usehardtokens, boolean usekeyrecovery, Collection availableaccessrules){
-		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEW));
-		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
+		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEW));
+		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
 		if(usehardtokens) {
-		  availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS)); 
+		  availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS)); 
 		}
-		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_CREATE));
-		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_EDIT));
-		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_DELETE));
-		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_REVOKE));
-		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_APPROVE));
-		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWPUK));
+		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_CREATE));
+		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_EDIT));
+		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_DELETE));
+		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_REVOKE));
+		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_APPROVE));
+		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEWPUK));
 		if(usekeyrecovery) {
-		  availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));
+		  availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));
 		}
 		Iterator iter = availableaccessrules.iterator();
 		while(iter.hasNext()){
 			String nextrule = (String) iter.next();
 			if (nextrule.equals(AccessRulesConstants.CABASE)) {
-				this.availablecas.add(new Integer(BasicAccessRuleSet.CA_ALL));
+				this.availablecas.add(Integer.valueOf(BasicAccessRuleSet.CA_ALL));
 			} else if(nextrule.startsWith(AccessRulesConstants.CAPREFIX)) {
-				this.availablecas.add(new Integer(nextrule.substring(AccessRulesConstants.CAPREFIX.length())));
+				this.availablecas.add(Integer.valueOf(nextrule.substring(AccessRulesConstants.CAPREFIX.length())));
 			} else if(nextrule.equals(AccessRulesConstants.ENDENTITYPROFILEBASE)) {
-				this.availableendentityprofiles.add(new Integer(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));	
+				this.availableendentityprofiles.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));	
 			} else if(nextrule.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
 				if (nextrule.lastIndexOf('/') <= AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
-					this.availableendentityprofiles.add(new Integer(nextrule.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length())));
+					this.availableendentityprofiles.add(Integer.valueOf(nextrule.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length())));
 				} else {
 					String tmpString = nextrule.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
-					this.availableendentityprofiles.add(new Integer(tmpString.substring(0, tmpString.indexOf('/'))));
+					this.availableendentityprofiles.add(Integer.valueOf(tmpString.substring(0, tmpString.indexOf('/'))));
 				}
 			}		    		    		    						
 		}
 				
-		this.availableotherrules.add(new Integer(BasicAccessRuleSet.OTHER_VIEWLOG));
+		this.availableotherrules.add(Integer.valueOf(BasicAccessRuleSet.OTHER_VIEWLOG));
 		if(usehardtokens) {
-			this.availableotherrules.add(new Integer(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS));
+			this.availableotherrules.add(Integer.valueOf(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS));
 		}
 	}
 	
@@ -432,8 +432,8 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		Iterator iter = currentaccessrules.iterator();
 		HashMap endentityrules = new HashMap();
 		
-		Integer general = new Integer(0);
-		endentityrules.put(general, new Integer(0));
+		Integer general = Integer.valueOf(0);
+		endentityrules.put(general, Integer.valueOf(0));
 		
 		
 		while(iter.hasNext()){
@@ -445,44 +445,44 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive()){
 					if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_VIEWENDENTITY)){
 						
-						currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEW));
-						endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEW));	
+						currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEW));
+						endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEW));	
 					}else
 				    if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY)){				    	
-				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));							
-				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
+				    	currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));							
+				    	endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
 				    }else
 				    if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_CREATEENDENTITY)){				    	
-				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_CREATE));							
-				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_CREATE));				    	
+				    	currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_CREATE));							
+				    	endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_CREATE));				    	
 				    }else
 				    if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_DELETEENDENTITY)){				    	
-				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_DELETE));							
-				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_DELETE));				    	
+				    	currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_DELETE));							
+				    	endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_DELETE));				    	
 				    }else
 				    if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_EDITENDENTITY)){				    	
-				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_EDIT));							
-				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_EDIT));				    	
+				    	currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_EDIT));							
+				    	endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_EDIT));				    	
 				    }else
 				     if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_REVOKEENDENTITY)){				     	
-				     	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_REVOKE));							
-				     	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_REVOKE));				     	
+				     	currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_REVOKE));							
+				     	endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_REVOKE));				     	
 				    }else				    	
 				    if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_VIEWHARDTOKENS)){				    	
-				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS));							
-				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS));				    	
+				    	currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS));							
+				    	endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS));				    	
 				    }else
 				    if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_KEYRECOVERY)){				    	
-				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));							
-				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_KEYRECOVER));				    	
+				    	currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));							
+				    	endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_KEYRECOVER));				    	
 				    }else
 				    if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_APPROVEENDENTITY)){				    	
-				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_APPROVE));							
-				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_APPROVE));				    	
+				    	currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_APPROVE));							
+				    	endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_APPROVE));				    	
 				    }else
 					if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_VIEWPUKS)){				    	
-						currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWPUK));							
-						endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWPUK));				    	
+						currentendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEWPUK));							
+						endentityrules.put(general,  Integer.valueOf(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWPUK));				    	
 					}
 				}else{
 				   this.forceadvanced = true;
@@ -491,7 +491,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 			}else{
 				if(ar.getAccessRule().equals(AccessRulesConstants.ENDENTITYPROFILEBASE)){
 				  if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive()){				  	
-				       this.currentendentityprofiles.add(new Integer(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));
+				       this.currentendentityprofiles.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));
 				  }else{
 				  	this.forceadvanced = true;
 				  	break;				  	
@@ -502,7 +502,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
                     Integer profileid = null; 
 				  	if(ar.getAccessRule().lastIndexOf('/') > AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()){
 				  		String tmpString = ar.getAccessRule().substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
-					  profileid = new Integer(tmpString.substring(0, tmpString.indexOf('/')));
+					  profileid = Integer.valueOf(tmpString.substring(0, tmpString.indexOf('/')));
 				  	}else{
 				  		this.forceadvanced = true;
 				  		break;
@@ -541,7 +541,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 					if(ar.getAccessRule().endsWith(AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)){
 						currentval += BasicAccessRuleSet.ENDENTITY_VIEWPUK;
 					}
-					endentityrules.put(profileid, new Integer(currentval));					
+					endentityrules.put(profileid, Integer.valueOf(currentval));					
 				  }else{
 				  	this.forceadvanced = true;
 				  	break;
@@ -549,7 +549,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				}else{
                   if(ar.getAccessRule().equals(AccessRulesConstants.CABASE)){
                   	if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive()){                  	
-                  	  this.currentcas.add(new Integer(BasicAccessRuleSet.CA_ALL));
+                  	  this.currentcas.add(Integer.valueOf(BasicAccessRuleSet.CA_ALL));
                     }else{
                   	  this.forceadvanced = true;
                   	  break;
@@ -557,7 +557,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
                   }else{
                    	 if(ar.getAccessRule().startsWith(AccessRulesConstants.CAPREFIX)){
                    	 	if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive()){                  	
-                           Integer caid = new Integer(ar.getAccessRule().substring(AccessRulesConstants.CAPREFIX.length()));
+                           Integer caid = Integer.valueOf(ar.getAccessRule().substring(AccessRulesConstants.CAPREFIX.length()));
                            this.currentcas.add(caid);
                    	 	}else{
                    	 		this.forceadvanced = true;
@@ -566,7 +566,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
                   	 }else{
                   	 	  if(ar.getAccessRule().equals(AccessRulesConstants.REGULAR_VIEWLOG)){
                   	 	      if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive()){
-                  	 	  	    this.currentotherrules.add( new Integer(BasicAccessRuleSet.OTHER_VIEWLOG));
+                  	 	  	    this.currentotherrules.add( Integer.valueOf(BasicAccessRuleSet.OTHER_VIEWLOG));
                   	 	      }else{
                   	 	      	this.forceadvanced = true;
                   	 	      	break;                  	 	      	
@@ -574,7 +574,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
                   	 	  }else
                   	 	  if(ar.getAccessRule().equals(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS)){
                   	 	  		if(ar.getRule() == AccessRule.RULE_ACCEPT){
-                  	 	  			this.currentotherrules.add( new Integer(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS));
+                  	 	  			this.currentotherrules.add( Integer.valueOf(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS));
                   	 	  		}else{
                   	 	  			this.forceadvanced = true;
                   	 	  			break;                  	 	      	                  	 	  			

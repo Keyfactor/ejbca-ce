@@ -224,7 +224,7 @@ public class DnComponents {
     	return dnExtractorFields;
     }
     protected static String getDnExtractorFieldFromDnId(int field) {
-    	String val = (String)dnIdToExtractorFieldMap.get(new Integer(field));
+    	String val = (String)dnIdToExtractorFieldMap.get(Integer.valueOf(field));
     	return val;    	
     }
     // Used only by DNFieldExtractor, don't USE
@@ -232,7 +232,7 @@ public class DnComponents {
     	return altNameExtractorFields;
     }
     protected static String getAltNameExtractorFieldFromDnId(int field) {
-    	String val = (String)altNameIdToExtractorFieldMap.get(new Integer(field));
+    	String val = (String)altNameIdToExtractorFieldMap.get(Integer.valueOf(field));
     	return val;    	
     }
     // Used only by DNFieldExtractor, don't USE
@@ -240,16 +240,16 @@ public class DnComponents {
     	return dirAttrExtractorFields;
     }
     protected static String getDirAttrExtractorFieldFromDnId(int field) {
-    	String val = (String)dirAttrIdToExtractorFieldMap.get(new Integer(field));
+    	String val = (String)dirAttrIdToExtractorFieldMap.get(Integer.valueOf(field));
     	return val;    	
     }
     
     public static String dnIdToProfileName(int dnid) {
-    	String val = (String)dnIdToProfileNameMap.get(new Integer(dnid));
+    	String val = (String)dnIdToProfileNameMap.get(Integer.valueOf(dnid));
     	return val;
     }
     public static int dnIdToProfileId(int dnid) {
-    	Integer val = (Integer)dnIdToProfileIdMap.get(new Integer(dnid));
+    	Integer val = (Integer)dnIdToProfileIdMap.get(Integer.valueOf(dnid));
     	return val.intValue();
     }
     /**
@@ -263,14 +263,14 @@ public class DnComponents {
      * Method to get a language error constant for the admin-GUI from a profile id
      */
     public static String getLanguageConstantFromProfileId(int id) {
-    	String ret = (String)profileIdLanguageMap.get(new Integer(id));
+    	String ret = (String)profileIdLanguageMap.get(Integer.valueOf(id));
     	return ret;
     }
     /**
      * Method to get a clear text error msg for the admin-GUI from a dn id
      */
     public static String getErrTextFromDnId(int id) {
-    	String ret = (String)dnIdErrorMap.get(new Integer(id));
+    	String ret = (String)dnIdErrorMap.get(Integer.valueOf(id));
     	return ret;
     }
     
@@ -288,7 +288,7 @@ public class DnComponents {
      *  Should only be used with subjectDN, Subject Alternative Names and subject directory attribute fields.
      */
     public static int profileIdToDnId(int profileid) {
-    	Integer val = (Integer)profileIdToDnIdMap.get(new Integer(profileid));
+    	Integer val = (Integer)profileIdToDnIdMap.get(Integer.valueOf(profileid));
     	if (val == null) {
     		log.error("No dn id mapping from profile id "+profileid);
     		// We allow it to fail here

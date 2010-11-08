@@ -99,7 +99,7 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
     }
     
     public Integer getHardTokenProfileId(){    	
-    	  return new Integer(tokendata.getHardToken().getTokenProfileId());
+    	  return Integer.valueOf(tokendata.getHardToken().getTokenProfileId());
     }
 
     public Object getField(int index) {

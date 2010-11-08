@@ -66,13 +66,13 @@ public class SwedishEIDHardToken extends HardToken {
         setSignaturePUK(signaturepuk);
         setTokenProfileId(hardtokenprofileid);        
         
-        data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
+        data.put(TOKENTYPE, Integer.valueOf(THIS_TOKENTYPE));
     } 
     
     /** Constructor only to be used internally. */
     public SwedishEIDHardToken(boolean includePUK) {
     	super(includePUK);
-    	data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
+    	data.put(TOKENTYPE, Integer.valueOf(THIS_TOKENTYPE));
     	if(!includePUK){
     	  setInitialAuthEncPIN("");
     	  setAuthEncPUK("");

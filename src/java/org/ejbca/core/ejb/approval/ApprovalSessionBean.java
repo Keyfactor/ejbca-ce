@@ -638,7 +638,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     approvalAdminDN = CertTools.getSubjectDN(approval.getAdmin().getAdminInformation().getX509Certificate());
                     approveComment = approval.getComment();
                 }
-                Integer numAppr = new Integer(numberOfApprovalsLeft);
+                Integer numAppr = Integer.valueOf(numberOfApprovalsLeft);
                 ApprovalNotificationParamGen paramGen = new ApprovalNotificationParamGen(requestDate, id, approvalTypeText, numAppr, approvalURL,
                         approveComment, requestAdminUsername, requestAdminDN, approvalAdminUsername, approvalAdminDN);
                 String subject = paramGen.interpolate(notificationSubject);
@@ -681,6 +681,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 }
                 id = ran.nextInt();
         }
-        return new Integer(id);
+        return Integer.valueOf(id);
     }
 }

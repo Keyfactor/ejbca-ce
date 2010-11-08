@@ -67,7 +67,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			if (status != null) {
 				int st = status.getStatus().getValue().intValue();
 				if (st != 0) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorcertconfirmstatus", new Integer(st));
+					String errMsg = intres.getLocalizedMessage("cmp.errorcertconfirmstatus", Integer.valueOf(st));
 					log.error(errMsg);
 					// TODO: if it is rejected, we should revoke the cert?
 				}

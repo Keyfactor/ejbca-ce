@@ -97,7 +97,7 @@ public class UserAdminSessionTest extends CaTestCase {
         serialnumber = "";
         for (int i = 0; i < 8; i++) {
             int randint = rand.nextInt(9);
-            serialnumber += (new Integer(randint)).toString();
+            serialnumber += (Integer.valueOf(randint)).toString();
         }
         log.debug("Generated random serialnumber: serialnumber =" + serialnumber);
 
