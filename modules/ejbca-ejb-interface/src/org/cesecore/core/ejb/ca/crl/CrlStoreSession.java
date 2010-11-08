@@ -10,15 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ca.crl;
+package org.cesecore.core.ejb.ca.crl;
 
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 
-/** Session bean generating CRLs
+/**
+ * Interface for CrlStoreSession, a session bean for performing business
+ * operations on CRLs, which mostly entail running them.
  * 
  * @version $Id$
+ * 
  */
-public interface CreateCRLSession {
+public interface CrlStoreSession {
+
 
     /**
      * Method that checks if the CRL is needed to be updated for the CA and
@@ -61,7 +65,7 @@ public interface CreateCRLSession {
      *             if communication or system error occurrs
      */
     public boolean runDeltaCRLnewTransactionConditioned(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, long crloverlaptime)
-    		throws CATokenOfflineException;
+                throws CATokenOfflineException;
 
     /**
      * Generates a new CRL by looking in the database for revoked certificates
@@ -106,61 +110,6 @@ public interface CreateCRLSession {
      *             if a communications- or system error occurs
      */
     public byte[] runDeltaCRL(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, int baseCrlNumber, long baseCrlCreateTime)
-    		throws CATokenOfflineException;
-
-    /**
-     * Retrieves the latest CRL issued by this CA.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param issuerdn
-     *            the CRL issuers DN (CAs subject DN)
-     * @param deltaCRL
-     *            true to get the latest deltaCRL, false to get the
-     *            latestcomplete CRL
-     * @return byte[] with DER encoded X509CRL or null of no CRLs have been
-     *         issued.
-     */
-    public byte[] getLastCRL(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
-
-    /**
-     * Retrieves the information about the lastest CRL issued by this CA.
-     * Retreives less information than getLastCRL, i.e. not the actual CRL data.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param issuerdn
-     *            the CRL issuers DN (CAs subject DN)
-     * @param deltaCRL
-     *            true to get the latest deltaCRL, false to get the
-     *            latestcomplete CRL
-     * @return CRLInfo of last CRL by CA or null if no CRL exists.
-     */
-    public org.ejbca.core.model.ca.store.CRLInfo getLastCRLInfo(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
-
-    /**
-     * Retrieves the information about the specified CRL. Retreives less
-     * information than getLastCRL, i.e. not the actual CRL data.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param fingerprint
-     *            fingerprint of the CRL
-     * @return CRLInfo of CRL or null if no CRL exists.
-     */
-    public org.ejbca.core.model.ca.store.CRLInfo getCRLInfo(org.ejbca.core.model.log.Admin admin, java.lang.String fingerprint);
-
-    /**
-     * Retrieves the highest CRLNumber issued by the CA.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param issuerdn
-     *            the subjectDN of a CA certificate
-     * @param deltaCRL
-     *            true to get the latest deltaCRL, false to get the latest
-     *            complete CRL
-     */
-    public int getLastCRLNumber(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
-
+                throws CATokenOfflineException;
+    
 }

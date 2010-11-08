@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -54,7 +56,8 @@ public class DeltaCRLTest extends CaTestCase {
 
     private static final String USERNAME = "foo";
 
-    private CreateCRLSessionRemote createCrlSession = InterfaceCache.getCrlSession();
+    private CrlSessionRemote createCrlSession = InterfaceCache.getCrlSession();
+    private CrlStoreSessionRemote crlStoreSession = InterfaceCache.getCrlStoreSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -86,7 +89,7 @@ public class DeltaCRLTest extends CaTestCase {
 
     public void test01CreateNewDeltaCRL() throws Exception {
         log.trace(">test01CreateNewCRL()");
-        createCrlSession.runDeltaCRL(admin, ca, -1, -1);
+        crlStoreSession.runDeltaCRL(admin, ca, -1, -1);
         log.trace("<test01CreateNewCRL()");
     }
 
@@ -101,7 +104,7 @@ public class DeltaCRLTest extends CaTestCase {
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         assertEquals(number, num.intValue());
         // Create a new CRL again to see that the number increases
-        createCrlSession.runDeltaCRL(admin, ca, -1, -1);
+        crlStoreSession.runDeltaCRL(admin, ca, -1, -1);
         int number1 = createCrlSession.getLastCRLNumber(admin, ca.getSubjectDN(), true);
         assertEquals(number + 1, number1);
         byte[] crl1 = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), true);
@@ -110,8 +113,8 @@ public class DeltaCRLTest extends CaTestCase {
         assertEquals(number + 1, num1.intValue());
         // Now create a normal CRL and a deltaCRL again. CRLNUmber should now be
         // increased by two
-        createCrlSession.run(admin, ca);
-        createCrlSession.runDeltaCRL(admin, ca, -1, -1);
+        crlStoreSession.run(admin, ca);
+        crlStoreSession.runDeltaCRL(admin, ca, -1, -1);
         int number2 = createCrlSession.getLastCRLNumber(admin, ca.getSubjectDN(), true);
         assertEquals(number1 + 2, number2);
         byte[] crl2 = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), true);
@@ -128,13 +131,13 @@ public class DeltaCRLTest extends CaTestCase {
         byte[] crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         // Get number of last CRL
-        Collection revfp = certificateStoreSession.listRevokedCertInfo(admin, ca.getSubjectDN(), x509crl.getThisUpdate().getTime());
+        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(admin, ca.getSubjectDN(), x509crl.getThisUpdate().getTime());
         log.debug("Number of revoked certificates=" + revfp.size());
         crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
 
         x509crl = CertTools.getCRLfromByteArray(crl);
-        Set revset = x509crl.getRevokedCertificates();
+        Set<? extends X509CRLEntry> revset = x509crl.getRevokedCertificates();
         int revsize = 0;
         // This is probably 0
         if (revset != null) {
@@ -149,7 +152,7 @@ public class DeltaCRLTest extends CaTestCase {
         // as the revocation
         Thread.sleep(1000);
         // Create a new CRL again...
-        crl = createCrlSession.runDeltaCRL(admin, ca, -1, -1);
+        crl = crlStoreSession.runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate is present in a new CRL
         // crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -168,7 +171,7 @@ public class DeltaCRLTest extends CaTestCase {
         X509Certificate cert = createUserAndCert();
 
         // Create a new CRL again...
-        createCrlSession.run(admin, ca);
+        crlStoreSession.run(admin, ca);
         // Check that our newly signed certificate is not present in a new CRL
         byte[] crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
@@ -187,7 +190,7 @@ public class DeltaCRLTest extends CaTestCase {
         // as the revocation
         Thread.sleep(1000);
         // Create a new delta CRL again...
-        crl = createCrlSession.runDeltaCRL(admin, ca, -1, -1);
+        crl = crlStoreSession.runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate IS present in a new Delta CRL
         // crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -208,7 +211,7 @@ public class DeltaCRLTest extends CaTestCase {
         // Unrevoke the certificate that we just revoked
         certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED, null);
         // Create a new Delta CRL again...
-        createCrlSession.runDeltaCRL(admin, ca, -1, -1);
+        crlStoreSession.runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new
         // CRL.
         crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), true);
@@ -236,7 +239,7 @@ public class DeltaCRLTest extends CaTestCase {
         // as the revocation
         Thread.sleep(1000);
         // Create a new delta CRL again...
-        crl = createCrlSession.runDeltaCRL(admin, ca, -1, -1);
+        crl = crlStoreSession.runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate IS present in a new Delta CRL
         // crl = storeremote.getLastCRL(admin, cadn, true);
         assertNotNull("Could not get CRL", crl);
@@ -260,7 +263,7 @@ public class DeltaCRLTest extends CaTestCase {
         // as the revocation
         Thread.sleep(1000);
         // Create a new Full CRL
-        createCrlSession.run(admin, ca);
+        crlStoreSession.run(admin, ca);
         // Check that our newly signed certificate IS present in a new Full CRL
         crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
@@ -285,7 +288,7 @@ public class DeltaCRLTest extends CaTestCase {
         // as the revocation
         Thread.sleep(1000);
         // Create a new Delta CRL again...
-        createCrlSession.runDeltaCRL(admin, ca, -1, -1);
+        crlStoreSession.runDeltaCRL(admin, ca, -1, -1);
         // Check that our newly signed certificate IS NOT present in the new
         // Delta CRL.
         crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), true);

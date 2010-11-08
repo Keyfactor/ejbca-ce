@@ -47,6 +47,7 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
@@ -55,7 +56,6 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
@@ -108,7 +108,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
-    private CreateCRLSessionLocal crlSession;
+    private CrlSessionLocal crlSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB

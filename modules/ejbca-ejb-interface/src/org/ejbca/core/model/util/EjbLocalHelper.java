@@ -14,6 +14,10 @@ package org.ejbca.core.model.util;
 
 import javax.ejb.CreateException;
 
+import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlStoreSession;
+import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSession;
@@ -31,8 +35,6 @@ import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
@@ -70,6 +72,7 @@ public class EjbLocalHelper {
 	// For now we will return the remote stub instead, just to get things working..
 
     private CertificateProfileSession certificateProfileSession;
+    private CrlStoreSession crlStoreSession;
     private EndEntityProfileSession endEntityProfileSession;
     
     private SignSession signsession = null;
@@ -102,6 +105,13 @@ public class EjbLocalHelper {
     		authorizationSession = JndiHelper.getRemoteSession(AuthorizationSessionRemote.class);
     	}
     	return authorizationSession;
+    }
+    
+    public CrlStoreSession getCrlStoreSession() {
+        if(crlStoreSession == null) {
+            crlStoreSession = JndiHelper.getRemoteSession(CrlStoreSessionRemote.class);
+        }
+        return crlStoreSession;
     }
 
     private KeyRecoverySession keyrecoverysession = null;
@@ -214,10 +224,10 @@ public class EjbLocalHelper {
 		return userDataSourceSession;
 	}
 
-	private CreateCRLSession createCRLSession = null;
-	public CreateCRLSession getCreateCrlSession() {
+	private CrlSession createCRLSession = null;
+	public CrlSession getCreateCrlSession() {
 		if (createCRLSession == null) {
-			createCRLSession = JndiHelper.getRemoteSession(CreateCRLSessionRemote.class);
+			createCRLSession = JndiHelper.getRemoteSession(CrlSessionRemote.class);
 		}
 		return createCRLSession;
 	}

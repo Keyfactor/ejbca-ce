@@ -10,16 +10,17 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ca.crl;
+package org.cesecore.core.ejb.ca.crl;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 /**
- * Local interface for CreateCRLSession
+ * Remote interface for CrlStoresession
  * 
+ * @version $Id$
+ *
  */
-@Local
-public interface CreateCRLSessionLocal extends CreateCRLSession {
-
+@Remote
+public interface CrlStoreSessionRemote extends CrlStoreSession {
 
 }

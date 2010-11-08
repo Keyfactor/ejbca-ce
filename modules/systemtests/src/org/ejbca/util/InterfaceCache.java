@@ -15,6 +15,8 @@ package org.ejbca.util;
 
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -22,7 +24,6 @@ import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -69,6 +70,10 @@ public class InterfaceCache {
 
 	public static CertificateProfileSessionRemote getCertificateProfileSession() {
 	    return getEjb().getCertificateProfileSession();
+	}
+	
+	public static CrlStoreSessionRemote getCrlStoreSession() {
+	    return getEjb().getCrlStoreSession();
 	}
 	
 	public static RaAdminSessionRemote getRAAdminSession() {
@@ -127,7 +132,7 @@ public class InterfaceCache {
 		return getEjb().getPublisherSession();
     }
     
-	public static CreateCRLSessionRemote getCrlSession() {
+	public static CrlSessionRemote getCrlSession() {
 		return getEjb().getCrlSession();
 	}
 
