@@ -127,7 +127,7 @@ public class CAInterfaceBean implements Serializable {
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, certificateProfileSession, informationmemory);;
           cadatahandler = new CADataHandler(administrator, caadminsession, endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, ejbcawebbean);
-          publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificatesession,  informationmemory);
+          publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
         }
@@ -163,7 +163,7 @@ public class CAInterfaceBean implements Serializable {
      *
      */ 
     
-    public HashMap getCAIdToNameMap(){
+    public HashMap<Integer, String>  getCAIdToNameMap(){
       return informationmemory.getCAIdToNameMap();      
     }
 

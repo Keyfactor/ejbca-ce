@@ -188,5 +188,15 @@ public interface CertificateProfileSession {
      * @return true if ca exists in any of the certificate profiles.
      */
     public boolean existsCAInCertificateProfiles(org.ejbca.core.model.log.Admin admin, int caid);
+    
+    /**
+     * Method to check if a Publisher exists in any of the certificate profiles.
+     * Used to avoid desyncronization of publisher data.
+     * 
+     * @param publisherid
+     *            the publisherid to search for.
+     * @return true if publisher exists in any of the certificate profiles.
+     */
+    public boolean existsPublisherInCertificateProfiles(org.ejbca.core.model.log.Admin admin, int publisherid);
 
 }
