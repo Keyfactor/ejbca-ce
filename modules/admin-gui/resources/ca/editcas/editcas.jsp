@@ -322,7 +322,7 @@
          // Rename selected profile and display profilespage.
        if(request.getParameter(SELECT_CAS) != null  && !request.getParameter(SELECT_CAS).equals("") && request.getParameter(TEXTFIELD_CANAME) != null){
          String newcaname = request.getParameter(TEXTFIELD_CANAME).trim();
-         String oldcaname = (String) caidtonamemap.get(new Integer(request.getParameter(SELECT_CAS)));    
+         String oldcaname = (String) caidtonamemap.get(Integer.valueOf(request.getParameter(SELECT_CAS)));    
          if(!newcaname.equals("") ){           
            try{
              cadatahandler.renameCA(oldcaname, newcaname);
@@ -480,7 +480,7 @@
              final ArrayList approvalsettings = new ArrayList(); 
              if(values != null){
                for(int i=0; i < values.length; i++){
-            	   approvalsettings.add(new Integer(values[i]));
+            	   approvalsettings.add(Integer.valueOf(values[i]));
                }
              }
              final int numofreqapprovals;
@@ -579,7 +579,7 @@
               ArrayList crlpublishers = new ArrayList(); 
               if(values != null){
                 for(int i=0; i < values.length; i++){
-                   crlpublishers.add(new Integer(values[i]));
+                   crlpublishers.add(Integer.valueOf(values[i]));
                 }
               }
 
@@ -972,7 +972,7 @@
             final ArrayList approvalsettings = new ArrayList(); 
             if(values != null){
               for(int i=0; i < values.length; i++){
-           	   approvalsettings.add(new Integer(values[i]));
+           	   approvalsettings.add(Integer.valueOf(values[i]));
               }
             }
             
@@ -986,7 +986,7 @@
             ArrayList crlpublishers = new ArrayList(); 
             if(values != null){
                 for(int i=0; i < values.length; i++){
-                   crlpublishers.add(new Integer(values[i]));
+                   crlpublishers.add(Integer.valueOf(values[i]));
                 }
              }
              

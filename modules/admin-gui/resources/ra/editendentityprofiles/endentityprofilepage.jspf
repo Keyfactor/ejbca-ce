@@ -1304,7 +1304,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            value = profiledata.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON ,0);
 
            if((value != null) && (((String) value).length() > 0)) {
-               revstatus = (new Integer(value)).intValue();
+               revstatus = (Integer.valueOf(value)).intValue();
            }
         %>
         <select name="<%= SELECT_ISSUANCEREVOCATIONREASON %>" size="1">

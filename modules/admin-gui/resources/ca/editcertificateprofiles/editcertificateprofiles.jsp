@@ -561,10 +561,10 @@
                  for(int i=0; i < values.length; i++){
                     if(Integer.parseInt(values[i]) == CertificateProfile.ANYCA){
                       availablecas = new ArrayList();
-                      availablecas.add(new Integer(CertificateProfile.ANYCA));
+                      availablecas.add(Integer.valueOf(CertificateProfile.ANYCA));
                       break;  
                     }
-                    availablecas.add(new Integer(values[i]));
+                    availablecas.add(Integer.valueOf(values[i]));
                  }
               }
               certificateprofiledata.setAvailableCAs(availablecas);
@@ -573,7 +573,7 @@
               ArrayList availablepublishers = new ArrayList(); 
               if(values != null){
                  for(int i=0; i < values.length; i++){
-                    availablepublishers.add(new Integer(values[i]));
+                    availablepublishers.add(Integer.valueOf(values[i]));
                  }
               }
               certificateprofiledata.setPublisherList(availablepublishers);
@@ -707,7 +707,7 @@
                  if(values != null){
                      ArrayList usefields = new ArrayList();
                      for(int i=0;i< values.length;i++){
-                         usefields.add(new Integer(values[i]));	
+                         usefields.add(Integer.valueOf(values[i]));	
                      }                     
                      certificateprofiledata.setSubjectDNSubSet(usefields);
                  }
@@ -727,7 +727,7 @@
                  if(values != null){
                      ArrayList usefields = new ArrayList();
                      for(int i=0;i< values.length;i++){
-                         usefields.add(new Integer(values[i]));	
+                         usefields.add(Integer.valueOf(values[i]));	
                      }                     
                      certificateprofiledata.setSubjectAltNameSubSet(usefields);
                  }
@@ -741,7 +741,7 @@
              if(values != null){
                 ArrayList useextensions = new ArrayList();
                 for(int i=0;i< values.length;i++){
-                  useextensions.add(new Integer(values[i]));	
+                  useextensions.add(Integer.valueOf(values[i]));	
                 }                     
                 certificateprofiledata.setUsedCertificateExtensions(useextensions);
              } else {
@@ -791,14 +791,14 @@
                      value = request.getParameter(CHECKBOX_USEQCETSIVALUELIMIT);
                      if(value != null) {
                        certificateprofiledata.setUseQCEtsiValueLimit(value.equals(CHECKBOX_VALUE));
-                       certificateprofiledata.setQCEtsiValueLimit(new Integer(request.getParameter(TEXTFIELD_QCETSIVALUELIMIT)).intValue());
-                       certificateprofiledata.setQCEtsiValueLimitExp(new Integer(request.getParameter(TEXTFIELD_QCETSIVALUELIMITEXP)).intValue());  
+                       certificateprofiledata.setQCEtsiValueLimit(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIVALUELIMIT)).intValue());
+                       certificateprofiledata.setQCEtsiValueLimitExp(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIVALUELIMITEXP)).intValue());  
                        certificateprofiledata.setQCEtsiValueLimitCurrency(request.getParameter(TEXTFIELD_QCETSIVALUELIMITCUR));                                                                    
                      }                     
                      value = request.getParameter(CHECKBOX_USEQCETSIRETENTIONPERIOD);
                      if(value != null) {
                        certificateprofiledata.setUseQCEtsiRetentionPeriod(value.equals(CHECKBOX_VALUE));
-                       certificateprofiledata.setQCEtsiRetentionPeriod(new Integer(request.getParameter(TEXTFIELD_QCETSIRETENTIONPERIOD)).intValue());
+                       certificateprofiledata.setQCEtsiRetentionPeriod(Integer.valueOf(request.getParameter(TEXTFIELD_QCETSIRETENTIONPERIOD)).intValue());
                      }                     
                      value = request.getParameter(CHECKBOX_USEQCCUSTOMSTRING);
                      if(value != null) {
@@ -815,7 +815,7 @@
              ArrayList approvalsettings = new ArrayList(); 
              if(values != null){
                for(int i=0; i < values.length; i++){
-            	   approvalsettings.add(new Integer(values[i]));
+            	   approvalsettings.add(Integer.valueOf(values[i]));
                }
              }
 			certificateprofiledata.setApprovalSettings(approvalsettings);

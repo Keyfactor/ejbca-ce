@@ -1431,7 +1431,7 @@ function checkallfields(){
                for(int i=0; i<availableCertExt.size();i++){ 
                  AvailableCertificateExtension availCertExt = (AvailableCertificateExtension) availableCertExt.get(i); %>
            <option  value="<%= availCertExt.getId() %>" 
-              <%  if(usedCertExt.contains(new Integer(availCertExt.getId()))){
+              <%  if(usedCertExt.contains(Integer.valueOf(availCertExt.getId()))){
                       out.write(" selected ");
                   }%>>
               <% if(availCertExt.isTranslatable()){ 
@@ -1455,7 +1455,7 @@ function checkallfields(){
            <% Collection usedcas = certificateprofiledata.getAvailableCAs(); 
               if(issuperadministrator){ %>
            <option  value="<%= CertificateProfile.ANYCA %>" 
-              <% if(usedcas.contains(new Integer(CertificateProfile.ANYCA)))
+              <% if(usedcas.contains(Integer.valueOf(CertificateProfile.ANYCA)))
                    out.write(" selected ");%>>
               <%= ejbcawebbean.getText("ANYCA") %>         
            </option>      

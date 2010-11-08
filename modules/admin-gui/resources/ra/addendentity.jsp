@@ -686,7 +686,7 @@
                 Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles().iterator();
                 while(iter.hasNext()){
                   if(Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
-                    tokenissuers[i].add(new Integer(availablehardtokenissuers[j]));
+                    tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
                 }
               }
             }
@@ -817,7 +817,7 @@ function isKeyRecoveryPossible(){
         Object next = iter.next();
         Integer nextca = null;   
         if(next instanceof String)
-           nextca =  new Integer((String) next);
+           nextca =  Integer.valueOf((String) next);
         else
            nextca = (Integer) next;
     %> 

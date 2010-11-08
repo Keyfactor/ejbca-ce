@@ -148,7 +148,7 @@ function checkallfields(){
            <% Collection usedcas = userdatasourcedata.getApplicableCAs(); 
               if(userdatasourcehelper.issuperadministrator){ %>
            <option  value="<%= BaseUserDataSource.ANYCA %>" 
-              <% if(usedcas.contains(new Integer(BaseUserDataSource.ANYCA)))
+              <% if(usedcas.contains(Integer.valueOf(BaseUserDataSource.ANYCA)))
                    out.write(" selected ");%>>
               <%= ejbcawebbean.getText("ANYCA") %>         
            </option>      
