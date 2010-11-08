@@ -31,7 +31,8 @@ import org.ejbca.util.dn.DNFieldExtractor;
  */
 public class UserDataSourceVO implements Serializable {    
 
-	/**
+    private static final long serialVersionUID = -7921890622152981851L;
+    /**
 	 * Constants used in isModifyable sets.
 	 */
     public static final int ISMODIFYABLE_USERNAME           = 101;
@@ -59,7 +60,7 @@ public class UserDataSourceVO implements Serializable {
     };
 
     private UserDataVO userDataVO = null;
-    private Set isModifyableSet = null;
+    private Set<Integer> isModifyableSet = null;
 	
     /**
 	 * Constuctor that should be used from the User Data Source Implementations
@@ -74,7 +75,7 @@ public class UserDataSourceVO implements Serializable {
 	 * Method that should be used bu BaseUserDataSource only.
 	 * @param isModifyableSet
 	 */
-	void setIsModifyableSet(Set isModifyableSet){
+	void setIsModifyableSet(Set<Integer> isModifyableSet){
 		this.isModifyableSet = isModifyableSet;
 	}
 	
@@ -93,7 +94,7 @@ public class UserDataSourceVO implements Serializable {
 	 * @return true if the field should be modifyable.
 	 */
 	public boolean isFieldModifyable(int field){
-		return isModifyableSet.contains(new Integer(field));
+		return isModifyableSet.contains(field);
 	}	
 	
 	/**
@@ -102,7 +103,7 @@ public class UserDataSourceVO implements Serializable {
 	 * 
 	 * @return the complete isFieldModifyable Set
 	 */
-	public Set getIsFieldModifyableSet(){
+	public Set<Integer> getIsFieldModifyableSet(){
 		return isModifyableSet;
 	}		
 

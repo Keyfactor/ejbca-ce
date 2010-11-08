@@ -71,9 +71,9 @@ public class CertificateExtensionFactory {
 	private static String PROPERTY_TRANSLATABLE = ".translatable";
 	private static String PROPERTY_CRITICAL     = ".critical";
 	
-	private ArrayList availableCertificateExtensions = new ArrayList();
-	private HashMap certificateExtensions = new HashMap();
-	private HashMap standardCertificateExtensions = new HashMap();
+	private ArrayList<AvailableCertificateExtension> availableCertificateExtensions = new ArrayList<AvailableCertificateExtension>();
+	private HashMap<Integer, CertificateExtension> certificateExtensions = new HashMap<Integer, CertificateExtension>();
+	private HashMap<String, String> standardCertificateExtensions = new HashMap<String, String>();
 	{
 		standardCertificateExtensions.put(X509Extensions.BasicConstraints.getId(), BasicConstraint.class.getName());
 		standardCertificateExtensions.put(X509Extensions.SubjectKeyIdentifier.getId(), SubjectKeyIdentifier.class.getName());
@@ -123,7 +123,7 @@ public class CertificateExtensionFactory {
 	 * Method returning a list of all of (AvailableCertificateExtensions)
 	 * to be used in the 'Edit Certificate Profile' page
 	 */
-	public List getAvailableCertificateExtensions(){				
+	public List<AvailableCertificateExtension> getAvailableCertificateExtensions(){				
 		return availableCertificateExtensions;
 	}
 	
@@ -152,7 +152,7 @@ public class CertificateExtensionFactory {
 		String classPath = (String)standardCertificateExtensions.get(oid);
 		if (classPath != null) {
 			try {
-				Class implClass = Class.forName(classPath);
+				Class<?> implClass = Class.forName(classPath);
 				ret = (StandardCertificateExtension)implClass.newInstance();					
 				ret.init(certProf);                    
 			} catch (ClassNotFoundException e) {
@@ -229,11 +229,11 @@ public class CertificateExtensionFactory {
 			if(used){
 				if(oid != null && classPath != null && displayName != null){					
 					AvailableCertificateExtension availableCertificateExtension = new AvailableCertificateExtension(id,oid.trim(),displayName.trim(),translatable);
-					Class implClass = Class.forName(classPath);
+					Class<?> implClass = Class.forName(classPath);
 					CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();					
 					certificateExtension.init(id, oid.trim(), critical, props);                    
 					availableCertificateExtensions.add(availableCertificateExtension);
-                    certificateExtensions.put(new Integer(id), certificateExtension);
+                    certificateExtensions.put(Integer.valueOf(id), certificateExtension);
 
 				}else{
 					throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",new Integer(id)));

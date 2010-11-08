@@ -70,7 +70,7 @@ public abstract class ServiceType implements Serializable{
 	 * All implementing classes should populate the properties
 	 * @return
 	 */
-	public abstract Properties getProperties(ArrayList errorMessages) throws IOException;
+	public abstract Properties getProperties(ArrayList<String> errorMessages) throws IOException;
 	
 	/**
 	 * All implementing classes should populate the gui data

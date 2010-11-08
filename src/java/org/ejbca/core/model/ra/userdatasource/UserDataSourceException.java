@@ -17,13 +17,16 @@ import org.ejbca.core.EjbcaException;
 
 
 /**
- * Is thrown when error occured when searching or retriving userdata 
+ * Is thrown when error occurred when searching or retrieving userdata 
  *
  * @author  Philip Vendil
  * @version $Id$
  */
 public class UserDataSourceException extends EjbcaException {
     
+    private static final long serialVersionUID = -7910687478479123115L;
+
+
     /**
      * Creates a new instance of <code>UserDataSourceException</code> without detail message.
      */

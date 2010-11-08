@@ -46,7 +46,10 @@ import org.ejbca.util.query.Query;
  * @version $Id$
  */
 public class ApproveActionSessionBean extends BaseManagedBean {
-	private static final Logger log = Logger.getLogger(ApproveActionSessionBean.class);
+
+    private static final long serialVersionUID = 1940920496104779323L;
+
+    private static final Logger log = Logger.getLogger(ApproveActionSessionBean.class);
 
 	private String comment = "";
 
@@ -57,20 +60,20 @@ public class ApproveActionSessionBean extends BaseManagedBean {
 	}
 
 
-	private  HashMap statustext = null;
+	private  HashMap<Integer, String> statustext = null;
     
-	public  HashMap getStatusText(){
+	public  HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
 	    	EjbcaWebBean ejbcawebbean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
-	    	statustext = new HashMap();
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), ejbcawebbean.getText("WAITING", true));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIRED), ejbcawebbean.getText("EXPIRED", true));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED), ejbcawebbean.getText("EXPIREDANDNOTIFIED", true));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTED), ejbcawebbean.getText("EXECUTED", true));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_APPROVED), ejbcawebbean.getText("APPROVED", true));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_REJECTED), ejbcawebbean.getText("REJECTED", true));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONFAILED), ejbcawebbean.getText("EXECUTIONFAILED", true));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONDENIED), ejbcawebbean.getText("EXECUTIONDENIED", true));
+	    	statustext = new HashMap<Integer, String>();
+	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), ejbcawebbean.getText("WAITING", true));
+	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_EXPIRED), ejbcawebbean.getText("EXPIRED", true));
+	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED), ejbcawebbean.getText("EXPIREDANDNOTIFIED", true));
+	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_EXECUTED), ejbcawebbean.getText("EXECUTED", true));
+	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_APPROVED), ejbcawebbean.getText("APPROVED", true));
+	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_REJECTED), ejbcawebbean.getText("REJECTED", true));
+	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_EXECUTIONFAILED), ejbcawebbean.getText("EXECUTIONFAILED", true));
+	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_EXECUTIONDENIED), ejbcawebbean.getText("EXECUTIONDENIED", true));
 	    }
 	    return statustext;
 	}
@@ -100,19 +103,18 @@ public class ApproveActionSessionBean extends BaseManagedBean {
    }
    
 
-public List getApprovalViews(){
-   	  List approvalViews = new ArrayList();
-   	 
-   	 if(approveRequestData != null && 
-   	    approveRequestData.getApproveActionDataVO().getApprovals() != null){   	  	
-   	  	Iterator iter =  approveRequestData.getApproveActionDataVO().getApprovals().iterator();
-   	  	while(iter.hasNext())
-   	  	{
-   	  		approvalViews.add(new ApprovalView((Approval) iter.next()));
-   	  	}
-   	  } 
-   	  return approvalViews; 
-   }
+
+    public List<ApprovalView> getApprovalViews() {
+        List<ApprovalView> approvalViews = new ArrayList<ApprovalView>();
+
+        if (approveRequestData != null && approveRequestData.getApproveActionDataVO().getApprovals() != null) {
+            Iterator<Approval> iter = approveRequestData.getApproveActionDataVO().getApprovals().iterator();
+            while (iter.hasNext()) {
+                approvalViews.add(new ApprovalView((Approval) iter.next()));
+            }
+        }
+        return approvalViews;
+    }
    
    public boolean isExistsApprovals(){
    	  return approveRequestData.getApproveActionDataVO().getApprovals().size() >0;

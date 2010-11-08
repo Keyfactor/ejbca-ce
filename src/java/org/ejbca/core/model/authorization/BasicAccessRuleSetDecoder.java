@@ -32,7 +32,7 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
      * Tries to encode a advanced ruleset into basic ones. 
      * Sets the forceadvanced flag if encoding isn't possible.
      */
-    public BasicAccessRuleSetDecoder(int currentrole, Collection<Integer> currentcas, Collection<Integer> currentendentityrules, Collection<Integer> currentendentityprofiles, Collection currentotherrules){
+    public BasicAccessRuleSetDecoder(int currentrole, Collection<Integer> currentcas, Collection<Integer> currentendentityrules, Collection<Integer> currentendentityprofiles, Collection<Integer> currentotherrules){
     	if(currentrole != BasicAccessRuleSet.ROLE_NONE){
           if(currentrole == BasicAccessRuleSet.ROLE_SUPERADMINISTRATOR){
          	currentruleset.add(new AccessRule(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRule.RULE_ACCEPT, false));        	
@@ -104,8 +104,8 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
 		
 	}
     
-	private void addOtherRules(Collection currentotherrules){
-		Iterator iter = currentotherrules.iterator();		
+	private void addOtherRules(Collection<Integer> currentotherrules){
+		Iterator<Integer> iter = currentotherrules.iterator();		
 		while(iter.hasNext()){
 			Integer next = (Integer) iter.next();
 		
@@ -169,15 +169,15 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
 	
 	private void addEndEntityProfiles(Collection<Integer> currentendentityprofiles, Collection<String> endentityrules){
 		boolean allexists = false;	   
-	  	Iterator iter =currentendentityprofiles.iterator(); 	
-	  	ArrayList profilerules = new ArrayList();
+	  	Iterator<Integer> iter =currentendentityprofiles.iterator(); 	
+	  	ArrayList<AccessRule> profilerules = new ArrayList<AccessRule>();
 	  	while(iter.hasNext() && !allexists){	  	  
 	  	   Integer next = (Integer) iter.next();
 	  	   if(next.intValue() == BasicAccessRuleSet.ENDENTITYPROFILE_ALL){	  	   	
 	  	   	 allexists = true;
 	  	   	 break;
 	  	   }
-	  	   Iterator iter2 = endentityrules.iterator();	  	  
+	  	   Iterator<String> iter2 = endentityrules.iterator();	  	  
 	  	   String profilerule = AccessRulesConstants.ENDENTITYPROFILEPREFIX + next.toString();
 	  	   while(iter2.hasNext()){
 	  	   	 String nextrule = (String) iter2.next(); 

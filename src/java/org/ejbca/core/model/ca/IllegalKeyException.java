@@ -23,6 +23,8 @@ import org.ejbca.core.EjbcaException;
  * @version $Id$
  */
 public class IllegalKeyException extends EjbcaException {
+
+    private static final long serialVersionUID = -3144774253953346584L;
     /**
      * Constructor used to create exception with an errormessage. Calls the same constructor in
      * baseclass <code>Exception</code>.

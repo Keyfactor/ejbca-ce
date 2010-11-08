@@ -34,10 +34,11 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  */
 public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 
-	
-	public static final boolean DEFAULT_USEENDUSERNOTIFICATIONS = false;
+   
+    public static final boolean DEFAULT_USEENDUSERNOTIFICATIONS = false;
 	public static final boolean DEFAULT_USEADMINNOTIFICATIONS = false;
 	
+	 private static final long serialVersionUID = -4521088640797284656L;
 	
 	private String timeUnit  = DEFAULT_TIMEUNIT;
 	private String timeValue = DEFAULT_TIMEVALUE;
@@ -60,7 +61,7 @@ public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 	/** Overrides
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
-	public Properties getProperties(ArrayList errorMessages) throws IOException {
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {
 		Properties retval = super.getProperties(errorMessages);
 				
 		retval.setProperty(BaseWorker.PROP_TIMEUNIT, timeUnit);
@@ -126,8 +127,8 @@ public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 		this.timeUnit = unit;
 	}
 	
-	public List getAvailableUnits(){
-		ArrayList retval = new ArrayList();
+	public List<SelectItem> getAvailableUnits(){
+		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
 		for(int i = 0 ; i<PeriodicalInterval.AVAILABLE_UNITS.length; i++){
 			retval.add(new SelectItem(PeriodicalInterval.AVAILABLE_UNITS[i],(String) EjbcaJSFHelper.getBean().getText().get(PeriodicalInterval.AVAILABLE_UNITS[i])));
 		}

@@ -71,11 +71,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int DECIPHERONLY     = 8;
 
     /** Returns a List<String> of all extended key usage oids, as strings */
-    public static List getAllExtendedKeyUsageOIDStrings() {
+    public static List<String> getAllExtendedKeyUsageOIDStrings() {
     	return ExtendedKeyUsageConfiguration.getExtendedKeyUsageOids();
     }
     /** Returns a Map<String, String> that maps oid string to displayable/translatable text strings */
-    public static Map getAllExtendedKeyUsageTexts() {
+    public static Map<String, String> getAllExtendedKeyUsageTexts() {
     	return ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames();
     }
 
@@ -204,7 +204,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final String OID_CARDNUMBER= "1.2.752.34.2.1";
 
     /** Constants holding the use properties for certificate extensions */
-    protected static final HashMap useStandardCertificateExtensions = new HashMap();
+    protected static final HashMap<String, String> useStandardCertificateExtensions = new HashMap<String, String>();
     {
     	useStandardCertificateExtensions.put(USEBASICCONSTRAINTS,X509Extensions.BasicConstraints.getId());
     	useStandardCertificateExtensions.put(USEKEYUSAGE,X509Extensions.KeyUsage.getId());
@@ -272,7 +272,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
       setUseCertificatePolicies(false);
       setCertificatePoliciesCritical(false);
-      ArrayList policies = new ArrayList();
+      ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
       setCertificatePolicies(policies);
 
       setType(TYPE_ENDENTITY);
@@ -289,7 +289,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setExtendedKeyUsage(new ArrayList());
       setExtendedKeyUsageCritical(false);
 
-      ArrayList availablecas = new ArrayList();
+      ArrayList<Integer> availablecas = new ArrayList<Integer>();
       availablecas.add(new Integer(ANYCA));
       setAvailableCAs(availablecas);
       
@@ -979,7 +979,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
-    public void setCaIssuers(List caIssuers) {
+    public void setCaIssuers(List<String> caIssuers) {
         data.put(CAISSUERS, caIssuers);
     }
 

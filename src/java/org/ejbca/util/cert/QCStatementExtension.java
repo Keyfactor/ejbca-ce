@@ -73,8 +73,8 @@ public class QCStatementExtension extends CertTools {
      * @return Collection of String with the oid, for example "1.1.1.2", or empty Collection if no identifier is found, never returns null.
      * @throws IOException if there is a problem parsing the certificate
      */
-    public static Collection getQcStatementIds(Certificate cert) throws IOException {
-        ArrayList ret = new ArrayList();
+    public static Collection<String> getQcStatementIds(Certificate cert) throws IOException {
+        ArrayList<String> ret = new ArrayList<String>();
         if (cert instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) cert;
             DERObject obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
